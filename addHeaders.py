@@ -1,5 +1,8 @@
-/**
- * @file    Program.tsx
+import os
+
+def getHeader(fileName):
+  return f"""/**
+ * @file    {fileName}
  *
  * @author  Michal Majer
  *          Faculty of Information Technology
@@ -27,26 +30,27 @@
  *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+ */"""
 
-import { parsedInstructions } from '@/lib/redux/compilerSlice';
-import { useAppSelector } from '@/lib/redux/hooks';
-
-import Block from '@/components/simulation/Block';
-import InstructionField from '@/components/simulation/InstructionField';
-
-export default function Program() {
-  const instructions = useAppSelector(parsedInstructions);
-
-  return (
-    <Block title='Program'>
-      <div className='flex h-[600px] flex-col gap-1 overflow-y-scroll'>
-        {instructions.map((instruction) => {
-          return (
-            <InstructionField instruction={instruction} key={instruction.id} />
-          );
-        })}
-      </div>
-    </Block>
-  );
-}
+#for all files, recursively
+for root, dirs, files in os.walk("."):
+  print("Searching in: " + root)
+  # for each file with extension .ts or .tsx
+  for file in files:
+    print("File: " + file)
+    if file.endswith(".ts") or file.endswith(".tsx"):
+      # open file
+      with open(os.path.join(root, file), 'r+') as f:
+        # read file
+        content = f.read()
+        # if file doesn't contain header
+        if content.find("Michal Majer") == -1:
+          # Create a description using ChatGPT
+          
+          # prepend header
+          f.seek(0, 0)
+          f.write(getHeader(file) + "\n\n" + content)
+          f.close()
+          print("Added header to: " + os.path.join(root, file))
+        else:
+          print("File already contains header: " + os.path.join(root, file))
