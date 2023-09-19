@@ -24,6 +24,6 @@ This repository extends the superscalar simulator created by Jakub Horky and Jan
 ## Author information
 
  * Name: Michal Majer
- * Email:
+ * Email: xmajer21@stud.fit.vutbr.cz, misa@majer.cz
  * Data: 2023/2024
-
+ * Phone: +420 773 959 458
