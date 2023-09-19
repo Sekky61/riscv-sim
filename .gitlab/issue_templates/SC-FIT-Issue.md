@@ -6,6 +6,13 @@ Include details of the general approach and algorithms $`x = a^2`$, etc.
 
 For bug fixes, include a description of how the bug can be reproduced. 
 
+Notes:
+- Do not forget to *label* the issue by:
+  - type (bug, docs, feature, maintenance, ...)
+  - status (new, impl)
+  - priority
+  - severity
+
 ## Branch Name
 
 `branch_name`
@@ -32,16 +39,16 @@ Details of how the feature, function, or bug fix was tested.
 
 Static tests
 
-1. [ ] Compile with Visual Studio 2019 and Windows 10
-1. [ ] Compile with GCC 11.3.0 and Intel 2022
+1. [ ] Java build passed
 1. [ ] Doxygen passed
+1. [ ] JS lint and TS type check passed
+1. [ ] Web server build passed
 
 Unit tests
  
-1. [ ] Unit testes passed 
+1. [ ] Java unit tests passed
+2. [ ] JS tests passed
 
-Regression tests
+End-to-end testing
 
-1. [ ] Linux systems (Barbora, Karolina)
-1. [ ] Windows systems
-
+1. [ ] API tests passed

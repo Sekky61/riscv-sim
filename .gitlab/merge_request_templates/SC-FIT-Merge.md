@@ -1,6 +1,6 @@
 ## Summary
 
-Short description of the code being merged.
+Short description of the code being merged. (Do not forget to label the PR)
 
 ## Related Issues
 
