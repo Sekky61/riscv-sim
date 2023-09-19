@@ -17,22 +17,13 @@ export default function Timeline({ className = '' }: TimelineProps) {
         ' flex gap-2 rounded-full border bg-gray-100 p-1 drop-shadow'
       }
     >
-      <AnimatedButton
-        shortCut='left'
-        clickCallback={() => console.log('callback')}
-      >
+      <AnimatedButton shortCut='left'>
         <ArrowBigLeft strokeWidth={1.5} />
       </AnimatedButton>
-      <AnimatedButton
-        shortCut='right'
-        clickCallback={() => console.log('callback 2')}
-      >
+      <AnimatedButton shortCut='right'>
         <ArrowBigRight strokeWidth={1.5} />
       </AnimatedButton>
-      <AnimatedButton
-        shortCut='ctrl+enter'
-        clickCallback={() => console.log('callback 3')}
-      >
+      <AnimatedButton shortCut='ctrl+enter'>
         <SkipForward />
       </AnimatedButton>
     </div>

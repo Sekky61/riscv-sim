@@ -19,7 +19,6 @@ export default function Block({ children, className, title }: BlockProps) {
   const classes = clsx(className, 'w-[200px] rounded border bg-white p-2');
 
   const handleMore = () => {
-    console.log('More');
     dispatch(
       openModal({
         modalType: 'ROB_DETAILS_MODAL',

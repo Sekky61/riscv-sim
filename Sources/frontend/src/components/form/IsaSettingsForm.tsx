@@ -265,9 +265,9 @@ function FunctionalUnitInput({
   const funits = field.value;
 
   const removeUnit = (index: number) => {
-    const funits_clone = [...funits];
-    funits_clone.splice(index, 1);
-    field.onChange(funits_clone);
+    const funitsClone = [...funits];
+    funitsClone.splice(index, 1);
+    field.onChange(funitsClone);
   };
 
   return (

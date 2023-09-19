@@ -5,8 +5,8 @@ import { useCodeMirror } from '@uiw/react-codemirror';
 import React, { useEffect, useRef } from 'react';
 
 import {
-  change_dirty_effect,
-  change_highlight_effect,
+  changeDirtyEffect,
+  changeHighlightEffect,
   lineDecor,
 } from '@/lib/editor/lineDecorExtension';
 import {
@@ -47,7 +47,7 @@ export default function CCodeInput() {
   const dispatch = useAppDispatch();
   const mode = useAppSelector(selectEditorMode);
   const dirty = useAppSelector(selectDirty);
-  const code = useAppSelector((state) => state.compiler.c_code);
+  const code = useAppSelector((state) => state.compiler.cCode);
   const mappedCLines = useAppSelector(selectCCodeMappings);
 
   const isEnabled = mode == 'c';
@@ -73,7 +73,7 @@ export default function CCodeInput() {
       return;
     }
     view.dispatch({
-      effects: change_highlight_effect.of(mappedCLines),
+      effects: changeHighlightEffect.of(mappedCLines),
     });
   }, [view, mappedCLines]);
 
@@ -82,7 +82,7 @@ export default function CCodeInput() {
       return;
     }
     view.dispatch({
-      effects: change_dirty_effect.of(dirty),
+      effects: changeDirtyEffect.of(dirty),
     });
   }, [view, dirty]);
 

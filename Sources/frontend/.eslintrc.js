@@ -18,6 +18,7 @@ module.exports = {
     'plugin:prettier/recommended',
   ],
   rules: {
+    camelcase: ['warn', { ignoreGlobals: true }],
     'prettier/prettier': 'error',
     'no-unused-vars': 'off',
     'no-console': ['warn', { allow: ['warn', 'error'] }],

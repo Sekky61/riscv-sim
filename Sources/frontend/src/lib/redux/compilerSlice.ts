@@ -23,28 +23,28 @@ export interface Example {
 
 // Define a type for the slice state
 interface CompilerState extends CompilerOptions {
-  c_code: string;
-  asm_code: string;
+  cCode: string;
+  asmCode: string;
   // Mapping from c_line to asm_line(s) and back
-  c_lines: number[];
-  asm_to_c: number[];
+  cLines: number[];
+  asmToC: number[];
   compileStatus: 'idle' | 'loading' | 'success' | 'failed';
   // Editor options
   editorMode: 'c' | 'asm';
   // True if the c_code or asm code has been changed since the last call to the compiler
   dirty: boolean;
-  asm_manually_edited: boolean;
+  asmManuallyEdited: boolean;
   compilerError?: string;
 }
 
 // Define the initial state using that type
 const initialState: CompilerState = {
-  c_code:
+  cCode:
     'int add(int a, int b) {\n  int d = 2*a  + 2;\n  int x = d + b;\n  for(int i = 0; i < a; i++) {\n    x += b;\n  }\n  return x;\n} ',
-  asm_code:
+  asmCode:
     'add:\n\taddi sp,sp,-48\n\tsw s0,44(sp)\n\taddi s0,sp,48\n\tsw a0,-36(s0)\n\tsw a1,-40(s0)\n\tlw a5,-36(s0)\n\taddi a5,a5,1\n\tslli a5,a5,1\n\tsw a5,-28(s0)\n\tlw a4,-28(s0)\n\tlw a5,-40(s0)\n\tadd a5,a4,a5\n\tsw a5,-20(s0)\n.LBB2:\n\tsw zero,-24(s0)\n\tj .L2\n.L3:\n\tlw a4,-20(s0)\n\tlw a5,-40(s0)\n\tadd a5,a4,a5\n\tsw a5,-20(s0)\n\tlw a5,-24(s0)\n\taddi a5,a5,1\n\tsw a5,-24(s0)\n.L2:\n\tlw a4,-24(s0)\n\tlw a5,-36(s0)\n\tblt a4,a5,.L3\n.LBE2:\n\tlw a5,-20(s0)\n\tmv a0,a5\n\tlw s0,44(sp)\n\taddi sp,sp,48\n\tjr ra',
-  c_lines: [0, 1, 2, 3, 4, 5, 0, 7, 8],
-  asm_to_c: [
+  cLines: [0, 1, 2, 3, 4, 5, 0, 7, 8],
+  asmToC: [
     0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 5, 5, 5, 5, 4, 4,
     4, 4, 4, 4, 4, 4, 7, 8, 8, 8, 8,
   ],
@@ -52,7 +52,7 @@ const initialState: CompilerState = {
   compileStatus: 'idle',
   optimize: false,
   editorMode: 'c',
-  asm_manually_edited: false,
+  asmManuallyEdited: false,
   compilerError: undefined,
 };
 
@@ -109,19 +109,19 @@ export const compilerSlice = createSlice({
   reducers: {
     // Use the PayloadAction type to declare the contents of `action.payload`
     cFieldTyping: (state, action: PayloadAction<string>) => {
-      state.c_code = action.payload;
+      state.cCode = action.payload;
       state.dirty = true;
     },
     asmFieldTyping: (state, action: PayloadAction<string>) => {
-      state.asm_code = action.payload;
+      state.asmCode = action.payload;
       state.dirty = true;
-      state.asm_manually_edited = true;
+      state.asmManuallyEdited = true;
     },
     setCCode: (state, action: PayloadAction<string>) => {
-      state.c_code = action.payload;
+      state.cCode = action.payload;
     },
     setAsmCode: (state, action: PayloadAction<string>) => {
-      state.asm_code = action.payload;
+      state.asmCode = action.payload;
     },
     setOptimize: (state, action: PayloadAction<boolean>) => {
       state.optimize = action.payload;
@@ -130,10 +130,10 @@ export const compilerSlice = createSlice({
       state.editorMode = action.payload;
     },
     openExample: (state, action: PayloadAction<Example>) => {
-      state.c_code = action.payload.type === 'c' ? action.payload.code : '';
-      state.asm_code = action.payload.type === 'asm' ? action.payload.code : '';
-      state.c_lines = [];
-      state.asm_to_c = [];
+      state.cCode = action.payload.type === 'c' ? action.payload.code : '';
+      state.asmCode = action.payload.type === 'asm' ? action.payload.code : '';
+      state.cLines = [];
+      state.asmToC = [];
       state.editorMode = action.payload.type;
       state.dirty = false;
     },
@@ -142,14 +142,14 @@ export const compilerSlice = createSlice({
       action: PayloadAction<{ code: string; type: 'c' | 'asm' }>,
     ) => {
       if (action.payload.type === 'c') {
-        state.c_code = action.payload.code;
-        state.asm_code = '';
+        state.cCode = action.payload.code;
+        state.asmCode = '';
       } else {
-        state.c_code = '';
-        state.asm_code = action.payload.code;
+        state.cCode = '';
+        state.asmCode = action.payload.code;
       }
-      state.c_lines = [];
-      state.asm_to_c = [];
+      state.cLines = [];
+      state.asmToC = [];
       state.editorMode = action.payload.type;
       state.dirty = false;
     },
@@ -162,13 +162,13 @@ export const compilerSlice = createSlice({
           state.compilerError = action.payload.compilerError;
           return;
         }
-        state.asm_code = action.payload.program.join('\n');
+        state.asmCode = action.payload.program.join('\n');
         state.compileStatus = 'success';
         state.compilerError = undefined;
         state.dirty = false;
-        state.asm_manually_edited = false;
-        state.c_lines = action.payload.cLines;
-        state.asm_to_c = action.payload.asmToC;
+        state.asmManuallyEdited = false;
+        state.cLines = action.payload.cLines;
+        state.asmToC = action.payload.asmToC;
       })
       .addCase(callCompiler.rejected, (state, _action) => {
         state.compileStatus = 'failed';
@@ -190,19 +190,19 @@ export const {
   openFile,
 } = compilerSlice.actions;
 
-export const selectCCode = (state: RootState) => state.compiler.c_code;
-export const selectCCodeMappings = (state: RootState) => state.compiler.c_lines;
-export const selectAsmMappings = (state: RootState) => state.compiler.asm_to_c;
+export const selectCCode = (state: RootState) => state.compiler.cCode;
+export const selectCCodeMappings = (state: RootState) => state.compiler.cLines;
+export const selectAsmMappings = (state: RootState) => state.compiler.asmToC;
 export const selectCompileStatus = (state: RootState) =>
   state.compiler.compileStatus;
 export const selectCompilerError = (state: RootState) =>
   state.compiler.compilerError;
-export const selectAsmCode = (state: RootState) => state.compiler.asm_code;
+export const selectAsmCode = (state: RootState) => state.compiler.asmCode;
 export const selectOptimize = (state: RootState) => state.compiler.optimize;
 export const selectEditorMode = (state: RootState) => state.compiler.editorMode;
 export const selectDirty = (state: RootState) => state.compiler.dirty;
 export const selectAsmManuallyEdited = (state: RootState) =>
-  state.compiler.asm_manually_edited;
+  state.compiler.asmManuallyEdited;
 
 export interface Instruction {
   // Id of instruction in program. ~line number

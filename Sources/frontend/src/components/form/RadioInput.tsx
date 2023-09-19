@@ -42,15 +42,15 @@ export function RadioInput<T extends FieldValues, U extends string>({
   ...rest
 }: RadioInputProps<T, U>) {
   const radioId = useId();
-  let input_props = {};
+  let inputProps = {};
   let activeChoice = '';
   if ('register' in rest) {
-    input_props = { ...rest.register(rest.name) };
+    inputProps = { ...rest.register(rest.name) };
   } else {
     const handleClick: React.MouseEventHandler<HTMLInputElement> = (e) => {
       rest.onNewValue(e.currentTarget.value as U);
     };
-    input_props = {
+    inputProps = {
       onClick: handleClick,
       value: rest.value,
       name: radioId, // The radios need to have the same name to be grouped
@@ -76,7 +76,7 @@ export function RadioInput<T extends FieldValues, U extends string>({
               id={inputId}
               className='hidden'
               hidden
-              {...input_props}
+              {...inputProps}
               value={choice}
             />
             <label

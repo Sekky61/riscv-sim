@@ -3,8 +3,8 @@ import { useCodeMirror } from '@uiw/react-codemirror';
 import React, { useEffect, useRef } from 'react';
 
 import {
-  change_dirty_effect,
-  change_highlight_effect,
+  changeDirtyEffect,
+  changeHighlightEffect,
   lineDecor,
 } from '@/lib/editor/lineDecorExtension';
 import { wordHover } from '@/lib/editor/wordHover';
@@ -66,13 +66,13 @@ export default function AsmDisplay() {
   useEffect(() => {
     // Set the c_line_ar state
     view?.dispatch({
-      effects: change_highlight_effect.of(cLineMap),
+      effects: changeHighlightEffect.of(cLineMap),
     });
   }, [view, cLineMap]);
 
   useEffect(() => {
     view?.dispatch({
-      effects: change_dirty_effect.of(dirty),
+      effects: changeDirtyEffect.of(dirty),
     });
   }, [view, dirty]);
 

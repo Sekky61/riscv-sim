@@ -10,7 +10,7 @@ type EditorBarProps = {
 export default function EditorBar({ mode }: EditorBarProps) {
   const dispatch = useAppDispatch();
   const editorMode = useAppSelector(selectEditorMode);
-  const isActive = editorMode == mode;
+  const _isActive = editorMode == mode;
   const editorName = mode == 'c' ? 'C code' : 'ASM code';
   const inputId = 'file-input-' + mode;
 
