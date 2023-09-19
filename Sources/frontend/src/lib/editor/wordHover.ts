@@ -6,7 +6,7 @@
  *          Brno University of Technology
  *          xmajer21@stud.fit.vutbr.cz
  *
- * @brief   [TODO]
+ * @brief   Word hover for code editor - display instruction info
  *
  * @date    19 September 2023, 22:00 (created)
  *

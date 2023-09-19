@@ -32,10 +32,8 @@
 'use client';
 
 import { ZoomIn, ZoomOut } from 'lucide-react';
-import { useCallback, useRef, useState } from 'react';
+import { useState } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
-
-import { renderLine } from '@/lib/svgRender';
 
 import AnimatedButton from '@/components/AnimatedButton';
 import CanvasWindow from '@/components/CanvasWindow';
@@ -44,7 +42,6 @@ import Line from '@/components/simulation/Line';
 import Program from '@/components/simulation/Program';
 import ReorderBuffer from '@/components/simulation/ReorderBuffer';
 import Timeline from '@/components/simulation/Timeline';
-import { useSvgRender } from '@/components/SvgRender';
 
 export default function HomePage() {
   const [scale, setScale] = useState(1);
@@ -56,13 +53,6 @@ export default function HomePage() {
   const scaleDown = () => {
     setScale(scale - 0.2);
   };
-
-  const renderFunction = useCallback(() => {
-    return renderLine('#ff0000');
-  }, []);
-
-  const svgRenderTarget = useRef<HTMLDivElement>(null);
-  useSvgRender(svgRenderTarget, renderFunction);
 
   return (
     <>
@@ -76,7 +66,6 @@ export default function HomePage() {
         <Placement x={500} y={100}>
           <ReorderBuffer />
         </Placement>
-        <div ref={svgRenderTarget} />
       </CanvasWindow>
       <div className='pointer-events-none absolute top-0 flex w-full justify-center pt-2'>
         <Timeline className='pointer-events-auto' />

@@ -6,7 +6,7 @@
  *          Brno University of Technology
  *          xmajer21@stud.fit.vutbr.cz
  *
- * @brief   [TODO]
+ * @brief   Generic animated button, reacts to click and optionally shortcut
  *
  * @date    19 September 2023, 22:00 (created)
  *

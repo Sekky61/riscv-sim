@@ -6,7 +6,7 @@
  *          Brno University of Technology
  *          xmajer21@stud.fit.vutbr.cz
  *
- * @brief   [TODO]
+ * @brief   A yes/no confirmation modal
  *
  * @date    19 September 2023, 22:00 (created)
  *

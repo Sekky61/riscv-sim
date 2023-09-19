@@ -6,7 +6,7 @@
  *          Brno University of Technology
  *          xmajer21@stud.fit.vutbr.cz
  *
- * @brief   [TODO]
+ * @brief   Display notifications in the corner of the screen
  *
  * @date    19 September 2023, 22:00 (created)
  *

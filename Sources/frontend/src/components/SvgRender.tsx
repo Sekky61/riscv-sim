@@ -6,7 +6,7 @@
  *          Brno University of Technology
  *          xmajer21@stud.fit.vutbr.cz
  *
- * @brief   [TODO]
+ * @brief   A hook to render svg.js function to element
  *
  * @date    19 September 2023, 22:00 (created)
  *
