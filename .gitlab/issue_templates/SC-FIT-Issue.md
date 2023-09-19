@@ -26,11 +26,11 @@ High-level list of modified parts, e.g., IO, SimCore, etc.
 Checkbox list of the changes made to the software, and the remaining tasks to complete, e.g., profile the code using Allinea MAP, enhance CudaFFTMatrix class to support 1D FFTs over x/y/z dimensions.
 
 1. [ ] Major task 1
-  1. [ ] Part 1
-  1. [ ] Part 2
+    1. [ ] Part 1
+    1. [ ] Part 2
 1. [ ] Major task 2
-  1. [ ] Part 1
-  1. [ ] Part 2
+    1. [ ] Part 1
+    1. [ ] Part 2
 1. [ ] Major task 3
 
 ## Testing
