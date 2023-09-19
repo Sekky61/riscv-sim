@@ -1,0 +1,276 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    font-family: 'Open Sans', sans-serif;
+    @apply neutral-bg;
+  }
+
+  .neutral-bg {
+    @apply bg-neutral-99 text-neutral-10;
+  }
+
+  p {
+    @apply my-2;
+  }
+
+  table {
+    @apply text-left text-sm text-gray-600;
+  }
+
+  thead {
+    @apply bg-gray-50 text-xs uppercase text-gray-700;
+  }
+
+  thead th {
+    @apply px-6 py-3;
+  }
+
+  tbody tr {
+    @apply border-b bg-white;
+  }
+
+  tbody th {
+    @apply whitespace-nowrap px-6 py-4 font-medium text-gray-900;
+  }
+
+  /* Source: https://helplogger.blogspot.com/2013/10/css-keyboard-keys-on-blogger.html */
+  kbd {
+    border: 1px solid gray;
+    box-shadow:
+      1px 0 1px 0 #eee,
+      0 2px 0 2px #ccc,
+      0 2px 0 3px #666;
+    border-radius: 3px;
+    margin: 2px 3px;
+    padding: 2px 5px;
+  }
+
+  .small-container {
+    @apply mx-auto w-full xl:w-[1200px];
+  }
+
+  .heading-underline {
+    @apply decoration-primary-40 dark: decoration-primary-80 underline decoration-4 underline-offset-[5px];
+  }
+
+  .primary-text {
+    @apply text-primary-20 dark:text-primary-70;
+  }
+
+  
+  .button-interactions {
+    @apply bg-gray-100 duration-100 hover:cursor-pointer hover:bg-gray-200 active:button-active;
+  }
+
+  .button-active {
+    @apply bg-gray-400;
+  }
+
+  .button-colors {
+    @apply enabled:button-interactions bg-gray-200 disabled:cursor-not-allowed;
+  }
+
+  /* padding around text */
+  .button-shape {
+    @apply px-4 py-2;
+  }
+
+  .button {
+    @apply button-colors button-shape rounded-md border;
+  }
+
+  .small-button {
+    @apply button-colors rounded-md px-2 py-1 text-sm;
+  }
+
+  /* inter var - latin */
+  @font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 100 900;
+    font-display: optional;
+    src: url('/fonts/inter-var-latin.woff2') format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+      U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212,
+      U+2215, U+FEFF, U+FFFD;
+  }
+
+  /* #region  /**=========== Typography =========== */
+}
+
+@layer components {
+  .cm-line {
+    background-color: rgba(var(--line-highlight-color), 0.2);
+    position: relative;
+  }
+
+  /* add a rectangle :before */
+  .cm-line::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0.3rem;
+    height: 100%;
+    background-color: rgba(var(--line-highlight-color), 0.3);
+  }
+
+  .cm-line.code_highlight_red {
+    --line-highlight-color: 240, 5, 0;
+  }
+
+  .cm-line.code_highlight_green {
+    --line-highlight-color: 0, 255, 0;
+  }
+
+  .cm-line.code_highlight_blue {
+    --line-highlight-color: 0, 0, 255;
+  }
+
+  .cm-line.code_highlight_yellow {
+    --line-highlight-color: 255, 255, 0;
+  }
+
+  .cm-line.code_highlight_orange {
+    --line-highlight-color: 255, 165, 0;
+  }
+
+  .cm-line.code_highlight_pink {
+    --line-highlight-color: 255, 100, 233;
+  }
+}
+
+@layer utilities {
+  .animated-underline {
+    background-image: linear-gradient(#33333300, #33333300),
+      linear-gradient(
+        to right,
+        var(--color-primary-400),
+        var(--color-primary-500)
+      );
+    background-size:
+      100% 2px,
+      0 2px;
+    background-position:
+      100% 100%,
+      0 100%;
+    background-repeat: no-repeat;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .animated-underline {
+      transition: 0.3s ease;
+      transition-property: background-size, color, background-color,
+        border-color;
+    }
+  }
+
+  .animated-underline:hover,
+  .animated-underline:focus-visible {
+    background-size:
+      0 2px,
+      100% 2px;
+  }
+
+  /* Tooltip - behavior only */
+
+  .tooltip {
+    @apply relative;
+  }
+
+  /* styling the tooltip */
+  .tooltiptext {
+    @apply absolute z-10 min-w-max;
+  }
+
+  .show-tooltip-right {
+    @apply left-full top-0 ml-2;
+  }
+
+  .show-tooltip-bottom {
+    @apply top-full left-0 mt-2;
+  }
+
+  /* Tooltip text */
+  .tooltip .tooltiptext {
+    @apply invisible opacity-0 delay-300;
+  }
+
+  /* Show the tooltip text when you mouse over the tooltip container */
+  .tooltip:hover .tooltiptext {
+    @apply visible opacity-100;
+  }
+
+  /* Form */
+  .form-input {
+    @apply block w-full rounded-lg border border-gray-300 bg-gray-50 p-2 text-gray-900 focus:border-blue-500 focus:ring-blue-500 sm:text-xs;
+  }
+
+  .form-input.error {
+    @apply border-red-500 bg-red-50 text-red-900 placeholder-red-700 focus:border-red-500 focus:ring-red-500;
+  }
+
+  /* folding */
+  .foldable-content {
+    @apply hidden;
+  }
+
+  input:checked ~ .foldable-content {
+    @apply block;
+  }
+
+  .radio-selected {
+    @apply bg-gray-300;
+  }
+
+  /* radio input */
+  /* Source: https://thestizmedia.com/radio-buttons-as-toggle-buttons-with-css/ */
+  .radio-field input[type='radio']:checked + label {
+    @apply radio-selected;
+  }
+
+  /* schemaLine */
+
+  .schemaLine {
+    stroke: black;
+    stroke-width: 3px;
+  }
+
+  /* dropdown bubble - style only */
+  .dropdown-bubble {
+    @apply flex w-48 flex-col divide-y rounded border bg-white;
+  }
+
+  /* instruction hover */
+  /* .instruction-tooltip */
+
+  .cm-tooltip {
+    @apply rounded bg-gray-200 p-1;
+  }
+
+  .tooltip-name {
+    @apply font-bold;
+  }
+
+  /* Timeline button + press animation */
+
+  .iconHighlight {
+    @apply duration-100 hover:bg-gray-200 active:bg-gray-300;
+  }
+
+  /* Icon highlight */
+  .timelineHighlight {
+    @apply duration-100 hover:bg-gray-200;
+  }
+
+  .tlbutton-animation-outer {
+    @apply bg-gray-300;
+  }
+
+  .tlbutton-animation-inner {
+    transform: translateY(2px);
+  }
+}
