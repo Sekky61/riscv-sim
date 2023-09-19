@@ -13,10 +13,12 @@ Technology stack:
 
 ```
 ./src
+  +--__tests__  - Tests
   +--app        - Pages of the application.
   +--components - Units of UI.
   +--constant   - Data (examples, descriptions of instructions)
   +--lib        - Non-UI modules (Global state, API, etc.)
+    +--__tests__- Tests
   +--styles     - Global styles
 Readme.md       - Read me file
 ```

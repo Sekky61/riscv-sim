@@ -32,14 +32,21 @@
 // !STARTERCONF You should delete this page
 
 import { render, screen } from '@testing-library/react';
+import { Provider } from 'react-redux';
+
+import { store } from '@/lib/redux/store';
 
 import HomePage from '@/app/page';
 
 describe('Homepage', () => {
-  it('renders the Components', () => {
-    render(<HomePage />);
+  it('renders the simulation schema', () => {
+    render(
+      <Provider store={store}>
+        <HomePage />
+      </Provider>,
+    );
 
-    const heading = screen.getByText(/A starter for Next.js/i);
+    const heading = screen.getByText(/Reorder/i);
 
     expect(heading).toBeInTheDocument();
   });

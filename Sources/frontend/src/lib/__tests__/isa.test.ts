@@ -1,12 +1,12 @@
 /**
- * @file    svg.tsx
+ * @file    isa.test.ts
  *
  * @author  Michal Majer
  *          Faculty of Information Technology
  *          Brno University of Technology
  *          xmajer21@stud.fit.vutbr.cz
  *
- * @brief   [TODO]
+ * @brief   Tests for ISA configuration
  *
  * @date    19 September 2023, 22:00 (created)
  *
@@ -29,11 +29,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import React, { SVGProps } from 'react';
+import { isaFormDefaultValues, isaSchema } from '@/lib/forms/Isa';
 
-const SvgrMock = React.forwardRef<SVGSVGElement, SVGProps<SVGSVGElement>>(
-  (props, ref) => <svg ref={ref} {...props} />,
-);
-
-export const ReactComponent = SvgrMock;
-export default SvgrMock;
+describe('The ISA configuration', () => {
+  it('Default config should pass the validation', () => {
+    // Should throw if not valid
+    const _result = isaSchema.parse(isaFormDefaultValues);
+  });
+});
