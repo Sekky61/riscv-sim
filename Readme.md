@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This repository contains the bachelor thesis focusing on development of the Dashboard and Web Interface for k-Dispatch workflow management system.
+This repository extends the superscalar simulator created by Jakub Horky and Jan Vavra. The goal is to add a WEB and CLI interface.
 
 ## Repository structure
 
@@ -43,6 +43,6 @@ To develop the app, see `Sources/frontend/Readme.md`.
 ## Author information
 
  * Name: Michal Majer
- * Email:
+ * Email: xmajer21@stud.fit.vutbr.cz, misa@majer.cz
  * Data: 2023/2024
-
+ * Phone: +420 773 959 458
