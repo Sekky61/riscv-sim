@@ -1,0 +1,378 @@
+{
+  "jalr": {
+    "name": "jalr",
+    "inputDataType": "kInt",
+    "outputDataType": "kInt",
+    "instructionType": "kJumpbranch",
+    "instructionSyntax": "jalr rd rs1",
+    "interpretableAs": "jump rs1"
+  },
+  "bne": {
+    "name": "bne",
+    "inputDataType": "kInt",
+    "outputDataType": "kInt",
+    "instructionType": "kJumpbranch",
+    "instructionSyntax": "bne rs1 rs2 imm",
+    "interpretableAs": "signed:rs1 != rs2"
+  },
+  "add": {
+    "name": "add",
+    "instructionType": "kArithmetic",
+    "inputDataType": "kInt",
+    "outputDataType": "kInt",
+    "instructionSyntax": "add rd rs1 rs2",
+    "interpretableAs": "rd=rs1+rs2;"
+  },
+  "lh": {
+    "name": "lh",
+    "instructionType": "kLoadstore",
+    "inputDataType": "kInt",
+    "outputDataType": "kInt",
+    "instructionSyntax": "lh rd rs1 imm",
+    "interpretableAs": "load half:signed rd rs1 imm;"
+  },
+  "inc": {
+    "name": "inc",
+    "instructionType": "kArithmetic",
+    "inputDataType": "kInt",
+    "outputDataType": "kInt",
+    "instructionSyntax": "inc rd rs1",
+    "interpretableAs": "rd=++rs1;"
+  },
+  "fdiv": {
+    "name": "fdiv",
+    "instructionType": "kArithmetic",
+    "inputDataType": "kFloat",
+    "outputDataType": "kFloat",
+    "instructionSyntax": "fdiv rd rs1 rs2",
+    "interpretableAs": "rd=rs1/rs2;"
+  },
+  "beq": {
+    "name": "beq",
+    "inputDataType": "kInt",
+    "outputDataType": "kInt",
+    "instructionType": "kJumpbranch",
+    "instructionSyntax": "beq rs1 rs2 imm",
+    "interpretableAs": "signed:rs1 == rs2"
+  },
+  "dec": {
+    "name": "dec",
+    "instructionType": "kArithmetic",
+    "inputDataType": "kInt",
+    "outputDataType": "kInt",
+    "instructionSyntax": "dec rd rs1",
+    "interpretableAs": "rd=--rs1;"
+  },
+  "fcvt.l.s": {
+    "name": "fcvt.l.s",
+    "instructionType": "kArithmetic",
+    "inputDataType": "kFloat",
+    "outputDataType": "kLong",
+    "instructionSyntax": "fcvt.l.s rd rs1",
+    "interpretableAs": "rd=rs1<-;"
+  },
+  "bge": {
+    "name": "bge",
+    "inputDataType": "kInt",
+    "outputDataType": "kInt",
+    "instructionType": "kJumpbranch",
+    "instructionSyntax": "bge rs1 rs2 imm",
+    "interpretableAs": "signed:rs1 >= rs2"
+  },
+  "nop": {
+    "name": "nop",
+    "instructionType": "kArithmetic",
+    "inputDataType": "kInt",
+    "outputDataType": "kInt",
+    "instructionSyntax": "nop",
+    "interpretableAs": "0=0+0;"
+  },
+  "sw": {
+    "name": "sw",
+    "inputDataType": "kInt",
+    "outputDataType": "kInt",
+    "instructionType": "kLoadstore",
+    "instructionSyntax": "sw rs2 rs1 imm",
+    "interpretableAs": "store word rs2 rs1 imm"
+  },
+  "sub": {
+    "name": "sub",
+    "inputDataType": "kInt",
+    "outputDataType": "kInt",
+    "instructionType": "kArithmetic",
+    "instructionSyntax": "sub rd rs1 rs2",
+    "interpretableAs": "rd=rs1-rs2;"
+  },
+  "jal": {
+    "name": "jal",
+    "inputDataType": "kInt",
+    "outputDataType": "kInt",
+    "instructionType": "kJumpbranch",
+    "instructionSyntax": "jal rd imm",
+    "interpretableAs": "jump"
+  },
+  "srli": {
+    "name": "srli",
+    "instructionType": "kArithmetic",
+    "inputDataType": "kInt",
+    "outputDataType": "kInt",
+    "instructionSyntax": "srli rd rs1 imm",
+    "interpretableAs": "rd=rs1>>imm;"
+  },
+  "fmul": {
+    "name": "fmul",
+    "instructionType": "kArithmetic",
+    "inputDataType": "kFloat",
+    "outputDataType": "kFloat",
+    "instructionSyntax": "fmul rd rs1 rs2",
+    "interpretableAs": "rd=rs1*rs2;"
+  },
+  "blt": {
+    "name": "blt",
+    "inputDataType": "kInt",
+    "outputDataType": "kInt",
+    "instructionType": "kJumpbranch",
+    "instructionSyntax": "blt rs1 rs2 imm",
+    "interpretableAs": "signed:rs1 < rs2"
+  },
+  "bltu": {
+    "name": "bltu",
+    "inputDataType": "kInt",
+    "outputDataType": "kInt",
+    "instructionType": "kJumpbranch",
+    "instructionSyntax": "bltu rs1 rs2 imm",
+    "interpretableAs": "unsigned:rs1 < rs2"
+  },
+  "fcvt.s.l": {
+    "name": "fcvt.s.l",
+    "instructionType": "kArithmetic",
+    "inputDataType": "kLong",
+    "outputDataType": "kFloat",
+    "instructionSyntax": "fcvt.s.l rd rs1",
+    "interpretableAs": "rd=rs1<-;"
+  },
+  "ld": {
+    "name": "ld",
+    "inputDataType": "kLong",
+    "outputDataType": "kLong",
+    "instructionType": "kLoadstore",
+    "instructionSyntax": "ld rd rs1 imm",
+    "interpretableAs": "load doubleword:signed rd rs1 imm"
+  },
+  "div": {
+    "name": "div",
+    "instructionType": "kArithmetic",
+    "inputDataType": "kInt",
+    "outputDataType": "kInt",
+    "instructionSyntax": "div rd rs1 rs2",
+    "interpretableAs": "rd=rs1/rs2;"
+  },
+  "lb": {
+    "name": "lb",
+    "instructionType": "kLoadstore",
+    "inputDataType": "kInt",
+    "outputDataType": "kInt",
+    "instructionSyntax": "lb rd rs1 imm",
+    "interpretableAs": "load byte:signed rd rs1 imm;"
+  },
+  "fcvt.w.s": {
+    "name": "fcvt.w.s",
+    "instructionType": "kArithmetic",
+    "inputDataType": "kFloat",
+    "outputDataType": "kInt",
+    "instructionSyntax": "fcvt.w.s rd rs1",
+    "interpretableAs": "rd=rs1<-;"
+  },
+  "subi": {
+    "name": "subi",
+    "inputDataType": "kInt",
+    "outputDataType": "kInt",
+    "instructionType": "kArithmetic",
+    "instructionSyntax": "subi rd rs1 imm",
+    "interpretableAs": "rd=rs1-imm;"
+  },
+  "lw": {
+    "name": "lw",
+    "inputDataType": "kInt",
+    "outputDataType": "kInt",
+    "instructionType": "kLoadstore",
+    "instructionSyntax": "lw rd rs1 imm",
+    "interpretableAs": "load word:signed rd rs1 imm"
+  },
+  "addi": {
+    "name": "addi",
+    "inputDataType": "kInt",
+    "outputDataType": "kInt",
+    "instructionType": "kArithmetic",
+    "instructionSyntax": "addi rd rs1 imm",
+    "interpretableAs": "rd=rs1+imm;"
+  },
+  "sb": {
+    "name": "sb",
+    "inputDataType": "kInt",
+    "outputDataType": "kInt",
+    "instructionType": "kLoadstore",
+    "instructionSyntax": "sb rs2 rs1 imm",
+    "interpretableAs": "store byte rs2 rs1 imm"
+  },
+  "srai": {
+    "name": "srai",
+    "instructionType": "kArithmetic",
+    "inputDataType": "kInt",
+    "outputDataType": "kInt",
+    "instructionSyntax": "srai rd rs1 imm",
+    "interpretableAs": "rd=rs1>>>imm;"
+  },
+  "or": {
+    "name": "or",
+    "instructionType": "kArithmetic",
+    "inputDataType": "kInt",
+    "outputDataType": "kInt",
+    "instructionSyntax": "or rd rs1 rs2",
+    "interpretableAs": "rd=rs1|rs2;"
+  },
+  "sh": {
+    "name": "sh",
+    "inputDataType": "kInt",
+    "outputDataType": "kInt",
+    "instructionType": "kLoadstore",
+    "instructionSyntax": "sh rs2 rs1 imm",
+    "interpretableAs": "store half rs2 rs1 imm"
+  },
+  "sd": {
+    "name": "sd",
+    "inputDataType": "kLong",
+    "outputDataType": "kLong",
+    "instructionType": "kLoadstore",
+    "instructionSyntax": "sd rs2 rs1 imm",
+    "interpretableAs": "store doubleword rs2 rs1 imm"
+  },
+  "and": {
+    "name": "and",
+    "instructionType": "kArithmetic",
+    "inputDataType": "kInt",
+    "outputDataType": "kInt",
+    "instructionSyntax": "and rd rs1 rs2",
+    "interpretableAs": "rd=rs1&rs2;"
+  },
+  "flw": {
+    "name": "flw",
+    "inputDataType": "kInt",
+    "outputDataType": "kFloat",
+    "instructionType": "kLoadstore",
+    "instructionSyntax": "flw rd rs1 imm",
+    "interpretableAs": "load float:signed rd rs1 imm"
+  },
+  "slli": {
+    "name": "slli",
+    "instructionType": "kArithmetic",
+    "inputDataType": "kInt",
+    "outputDataType": "kInt",
+    "instructionSyntax": "slli rd rs1 imm",
+    "interpretableAs": "rd=rs1<<imm;"
+  },
+  "fsqrt": {
+    "name": "fsqrt",
+    "instructionType": "kArithmetic",
+    "inputDataType": "kFloat",
+    "outputDataType": "kFloat",
+    "instructionSyntax": "fsqrt rd rs1",
+    "interpretableAs": "rd=rs1#;"
+  },
+  "fsub": {
+    "name": "fsub",
+    "inputDataType": "kFloat",
+    "outputDataType": "kFloat",
+    "instructionType": "kArithmetic",
+    "instructionSyntax": "fsub rd rs1 rs2",
+    "interpretableAs": "rd=rs1-rs2;"
+  },
+  "not": {
+    "name": "not",
+    "instructionType": "kArithmetic",
+    "inputDataType": "kInt",
+    "outputDataType": "kInt",
+    "instructionSyntax": "not rd rs1",
+    "interpretableAs": "rd=!rs1;"
+  },
+  "lwu": {
+    "name": "lwu",
+    "inputDataType": "kInt",
+    "outputDataType": "kInt",
+    "instructionType": "kLoadstore",
+    "instructionSyntax": "lwu rd rs1 imm",
+    "interpretableAs": "load word:unsigned rd rs1 imm"
+  },
+  "lbu": {
+    "name": "lbu",
+    "instructionType": "kLoadstore",
+    "inputDataType": "kInt",
+    "outputDataType": "kInt",
+    "instructionSyntax": "lbu rd rs1 imm",
+    "interpretableAs": "load byte:unsigned rd rs1 imm;"
+  },
+  "fadd": {
+    "name": "fadd",
+    "inputDataType": "kFloat",
+    "outputDataType": "kFloat",
+    "instructionType": "kArithmetic",
+    "instructionSyntax": "fadd rd rs1 rs2",
+    "interpretableAs": "rd=rs1+rs2;"
+  },
+  "fsd": {
+    "name": "fsd",
+    "inputDataType": "kInt",
+    "outputDataType": "kDouble",
+    "instructionType": "kLoadstore",
+    "instructionSyntax": "fsd rs2 rs1 imm",
+    "interpretableAs": "store double rs2 rs1 imm"
+  },
+  "lhu": {
+    "name": "lhu",
+    "instructionType": "kLoadstore",
+    "inputDataType": "kInt",
+    "outputDataType": "kInt",
+    "instructionSyntax": "lhu rd rs1 imm",
+    "interpretableAs": "load half:unsigned rd rs1 imm;"
+  },
+  "fcvt.s.w": {
+    "name": "fcvt.s.w",
+    "instructionType": "kArithmetic",
+    "inputDataType": "kInt",
+    "outputDataType": "kFloat",
+    "instructionSyntax": "fcvt.s.w rd rs1",
+    "interpretableAs": "rd=rs1<-;"
+  },
+  "bgeu": {
+    "name": "bgeu",
+    "inputDataType": "kInt",
+    "outputDataType": "kInt",
+    "instructionType": "kJumpbranch",
+    "instructionSyntax": "bgeu rs1 rs2 imm",
+    "interpretableAs": "unsigned:rs1 >= rs2"
+  },
+  "fld": {
+    "name": "fld",
+    "inputDataType": "kInt",
+    "outputDataType": "kDouble",
+    "instructionType": "kLoadstore",
+    "instructionSyntax": "fld rd rs1 imm",
+    "interpretableAs": "load double:signed rd rs1 imm"
+  },
+  "fsw": {
+    "name": "fsw",
+    "inputDataType": "kInt",
+    "outputDataType": "kFloat",
+    "instructionType": "kLoadstore",
+    "instructionSyntax": "fsw rs2 rs1 imm",
+    "interpretableAs": "store float rs2 rs1 imm"
+  },
+  "mul": {
+    "name": "mul",
+    "instructionType": "kArithmetic",
+    "inputDataType": "kInt",
+    "outputDataType": "kInt",
+    "instructionSyntax": "mul rd rs1 rs2",
+    "interpretableAs": "rd=rs1*rs2;"
+  }
+}
