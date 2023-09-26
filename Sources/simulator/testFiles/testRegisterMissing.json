@@ -1,0 +1,7 @@
+{
+  "name": "Integer physical register",
+  "registerList": [
+    {"name": "x0", "isConstant": true,"value": 0},
+    {"name": "x1", "isConstant": false,"value": 25}
+  ]
+}
