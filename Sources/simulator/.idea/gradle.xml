@@ -10,7 +10,7 @@
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
         <option name="modules">
           <set>
-            <option value="/mnt/data/projects/dp/superscalarsim/Source" />
+            <option value="/mnt/data/projects/dp/web-based-simulator-of-superscalar-processors/Sources/simulator" />
           </set>
         </option>
       </GradleProjectSettings>
