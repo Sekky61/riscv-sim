@@ -44,15 +44,17 @@ import static io.undertow.Handlers.*;
 
 public class Server {
 
+    String host = "localhost";
     int port = 8000;
 
-    public Server(int port) {
+    public Server(String host, int port) {
+        this.host = host;
         this.port = port;
     }
 
     public void start() throws IOException {
         Undertow server = Undertow.builder()
-                .addHttpListener(8000, "localhost")
+                .addHttpListener(port, host)
                 .setHandler(path()
                         .addPrefixPath("/compile", new MyRequestHandler<>(new CompileHandler()))
                         .addPrefixPath("/checkConfig", new MyRequestHandler<>(new CheckConfigHandler()))

@@ -61,6 +61,9 @@ class SimOptions implements Callable<Integer> {
       @Option(names = "--server", description = "Launch in server mode")
         boolean server;
     }
+  
+  @Option(names = "--host", description = "Host to listen on")
+    String host = "localhost";
 
   @Option(names = "--port", description = "Port to listen on")
     int port = 8000;
@@ -96,7 +99,7 @@ public class RISCVsimulator
     }
 
     if (simOptions.mode.server) {
-      Server server = new Server(simOptions.port);
+      Server server = new Server(simOptions.host, simOptions.port);
       try {
         server.start();
       } catch (IOException e) {
