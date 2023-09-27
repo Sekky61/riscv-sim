@@ -238,7 +238,7 @@ export type IsaItemsProps = {
   onIsaSavePicked: (name: string) => void;
 };
 
-export function IsaLocalStorageItems({ onIsaSavePicked }: IsaItemsProps) {
+function IsaLocalStorageItems({ onIsaSavePicked }: IsaItemsProps) {
   const validatedIsas = useAppSelector(selectValidatedIsas);
   return (
     <>
@@ -279,7 +279,7 @@ interface IsaSettingsDisplayProps {
   isa: IsaConfig;
 }
 
-export function IsaSettingsDisplay({ isa }: IsaSettingsDisplayProps) {
+function IsaSettingsDisplay({ isa }: IsaSettingsDisplayProps) {
   return (
     <div className='tooltiptext neutral-bg ml-2 rounded border p-4'>
       <h3 className='my-1'>Fetch</h3>
