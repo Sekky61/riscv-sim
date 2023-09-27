@@ -54,7 +54,10 @@ export async function callCompilerImpl(code: string, options: CompilerOptions) {
   //   "optimize": boolean
   // }
 
-  const response = await fetch('http://localhost:8000/compile', {
+  const serverUrl =
+    process.env.NEXT_PUBLIC_SIMSERVER_URL || 'http://localhost:8000';
+
+  const response = await fetch(`${serverUrl}/compile`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
