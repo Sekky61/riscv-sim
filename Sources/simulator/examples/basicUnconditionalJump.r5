@@ -1,0 +1,8 @@
+jal x0 lab3
+lab1:
+jal x0 labFinal
+lab2:
+jal x0 lab1
+lab3:
+jal x0 lab2
+labFinal:

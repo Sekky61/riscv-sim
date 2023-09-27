@@ -1,0 +1,10 @@
+addi x1 x0 10
+addi x2 x0 10
+
+addi x3 x0 20
+sw x1 x3 0
+sw x2 x3 0
+
+addi x4 x0 20
+lw x5 x4 0
+lw x6 x4 0 
