@@ -50,6 +50,8 @@ const nextConfig = withBundleAnalyzer({
 
     return config;
   },
+  // For docker deployment
+  output: 'standalone',
 });
 
 module.exports = nextConfig;
