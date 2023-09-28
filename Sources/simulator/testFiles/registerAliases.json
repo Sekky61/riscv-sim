@@ -1,0 +1,10 @@
+[
+  {
+    "register": "x0",
+    "alias": "zero"
+  },
+  {
+    "register": "x1",
+    "alias": "ra"
+  }
+]

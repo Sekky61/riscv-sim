@@ -54,4 +54,21 @@ public class RegisterSubloaderTest
     RegisterFileModel model = this.registerSubloader.loadRegisterFile("./testFiles/testRegisterCorruptedRegister.json");
     Assert.assertNull(model);
   }
+
+  @Test
+  public void testLoadingAliases() {
+    // Setup
+    InitLoader loader = new InitLoader();
+    loader.setRegisterAliasesFilePath("testFiles/registerAliases.json");
+
+    // Exercise
+    loader.load();
+
+    //Assert
+    Assert.assertEquals("x0", loader.getRegisterAliases().get(0).register);
+    Assert.assertEquals("zero", loader.getRegisterAliases().get(0).alias);
+
+    Assert.assertEquals("x1", loader.getRegisterAliases().get(1).register);
+    Assert.assertEquals("ra", loader.getRegisterAliases().get(1).alias);
+  }
 }

@@ -64,6 +64,7 @@ public class InitLoader {
 
     /// Path to file with instructions definitions
     private String instructionsFilePath;
+
     /**
      * @brief File path with register aliases
      * File structure: array of objects with keys "register" and "alias"
@@ -356,5 +357,13 @@ public class InitLoader {
      */
     public List<RegisterMapping> getRegisterAliases() {
         return registerAliases;
+    }
+
+    /**
+     * @brief Set register aliases file path
+     * File format described in field declaration
+     */
+    public void setRegisterAliasesFilePath(String registerAliasesFilePath) {
+        this.registerAliasesFilePath = registerAliasesFilePath;
     }
 }

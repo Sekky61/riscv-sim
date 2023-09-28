@@ -88,7 +88,15 @@ public class UnifiedRegisterFileBlock {
         this.registerList = new ArrayList<>();
         this.registerMap = new HashMap<>();
         loadRegisters(initLoader.getRegisterFileModelList());
+        loadAliases(initLoader.getRegisterAliases());
     }// end of Constructor
+
+    private void loadAliases(List<InitLoader.RegisterMapping> registerAliases) {
+        for (InitLoader.RegisterMapping alias : registerAliases) {
+            RegisterModel register = getRegister(alias.register);
+            registerMap.put(alias.alias, register);
+        }
+    }
     //----------------------------------------------------------------------
 
     public void setRegisterList(List<RegisterFileModel> registerList) {
@@ -223,6 +231,7 @@ public class UnifiedRegisterFileBlock {
      * @brief Creates speculative register file
      */
     private RegisterFileModel createSpeculativeRegisters(int size) {
+        // TODO: Do not instantiate all speculative registers ahead of time
         List<RegisterModel> registerModelList = new ArrayList<>();
         for (int i = 0; i < size; i++) {
             RegisterModel reg = new RegisterModel("t" + i, false, DataTypeEnum.kSpeculative, 0,
