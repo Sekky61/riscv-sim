@@ -310,8 +310,9 @@ public class ReorderBufferBlock implements AbstractBlock {
                 currentInstruction.getArguments().stream().filter(
                         argument -> argument.getName().equals(
                                 "rd")).findFirst().ifPresent(
-                        argument -> registerFileBlock.setRegisterState(
-                                argument.getValue(), RegisterReadinessEnum.kExecuted));
+                        argument -> registerFileBlock.getRegister(
+                                argument.getValue()).setReadiness(
+                                RegisterReadinessEnum.kExecuted));
             }
         }
 
@@ -402,7 +403,7 @@ public class ReorderBufferBlock implements AbstractBlock {
      */
     private void saveRegisterValue(final String register, final int orderId) {
         if (this.renameMapTableBlock.isSpeculativeRegister(register)) {
-            //Workaround for the same register being freed from invalidation in reorder buffer
+            // Workaround for the same register being freed from invalidation in reorder buffer
             // and invalidation from fetch buffer
             if (!this.renameMapTableBlock.getRegisterMap().containsKey(register)) {
                 return;
@@ -415,7 +416,7 @@ public class ReorderBufferBlock implements AbstractBlock {
                             registerModel.getValue(),
                             orderId, registerModel.getReadiness()));
         } else {
-            double value = this.registerFileBlock.getRegisterValue(register);
+            double value = this.registerFileBlock.getRegister(register).getValue();
             this.state.preCommitModelStack.push(
                     new PreCommitModel(this.state.commitId, register, "", value, orderId,
                             null));
@@ -430,8 +431,8 @@ public class ReorderBufferBlock implements AbstractBlock {
         while (!this.state.preCommitModelStack.empty() && this.state.preCommitModelStack.peek().getId() == this.state.commitId) {
             PreCommitModel destinationRegister = this.state.preCommitModelStack.pop();
             if (destinationRegister.getSpeculRegister().isEmpty()) {
-                this.registerFileBlock.setRegisterValue(
-                        destinationRegister.getArchRegister(),
+                this.registerFileBlock.getRegister(
+                        destinationRegister.getArchRegister()).setValue(
                         destinationRegister.getValue());
             } else {
                 boolean mappingExists = this.renameMapTableBlock.getRegisterMap().containsKey(
@@ -442,16 +443,17 @@ public class ReorderBufferBlock implements AbstractBlock {
                         destinationRegister.getRegisterOrder());
 
                 if (!mappingExists) {
-                    double value = this.registerFileBlock.getRegisterValue(
-                            destinationRegister.getArchRegister());
-                    this.registerFileBlock.setRegisterValue(
-                            destinationRegister.getArchRegister(),
+                    double value = this.registerFileBlock.getRegister(
+                            destinationRegister.getArchRegister()).getValue();
+                    this.registerFileBlock.getRegister(
+                            destinationRegister.getArchRegister()).setValue(
                             destinationRegister.getValue());
-                    this.registerFileBlock.setRegisterValue(
-                            destinationRegister.getSpeculRegister(), value);
+                    this.registerFileBlock.getRegister(
+                            destinationRegister.getSpeculRegister()).setValue(
+                            value);
                 }
-                this.registerFileBlock.setRegisterState(
-                        destinationRegister.getSpeculRegister(),
+                this.registerFileBlock.getRegister(
+                        destinationRegister.getSpeculRegister()).setReadiness(
                         destinationRegister.getSpeculState());
             }
         }

@@ -453,7 +453,9 @@ public class LoadBufferBlock implements AbstractBlock {
         if (resultStoreItem == null) {
             return simCodeModel;
         }
-        RegisterReadinessEnum resultState = registerFileBlock.getRegister(resultStoreItem.getSourceRegister()).getReadiness();
+        RegisterModel sourceReg = registerFileBlock.getRegister(
+                resultStoreItem.getSourceRegister());
+        RegisterReadinessEnum resultState = sourceReg.getReadiness();
 
         boolean storeSourceReady = resultState == RegisterReadinessEnum.kExecuted || resultState == RegisterReadinessEnum.kAssigned;
         if (!storeSourceReady) {
@@ -462,11 +464,10 @@ public class LoadBufferBlock implements AbstractBlock {
         }
 
         // Bypass memory access by speculation
-        double result = registerFileBlock.getRegisterValue(
-                resultStoreItem.getSourceRegister());
-        registerFileBlock.setRegisterValue(loadItem.getDestinationRegister(), result);
-        registerFileBlock.setRegisterState(loadItem.getDestinationRegister(),
-                RegisterReadinessEnum.kAssigned);
+        RegisterModel destinationReg = registerFileBlock.getRegister(
+                loadItem.getDestinationRegister());
+        destinationReg.setValue(sourceReg.getValue());
+        destinationReg.setReadiness(RegisterReadinessEnum.kAssigned);
         loadMap.get(simCodeModel.getId()).setDestinationReady(true);
         loadMap.get(simCodeModel.getId()).setHasBypassed(true);
         loadMap.get(simCodeModel.getId()).setMemoryAccessId(this.commitId);
@@ -559,7 +560,7 @@ public class LoadBufferBlock implements AbstractBlock {
                 item.setMemoryAccessId(-1);
                 item.setDestinationReady(false);
                 item.setHasBypassed(false);
-                registerFileBlock.setRegisterState(item.getDestinationRegister(),
+                registerFileBlock.getRegister(item.getDestinationRegister()).setReadiness(
                         RegisterReadinessEnum.kAllocated);
                 if (reorderBufferBlock.getFlagsMap().containsKey(codeModel.getId())) {
                     reorderBufferBlock.getFlagsMap().get(codeModel.getId()).setBusy(true);

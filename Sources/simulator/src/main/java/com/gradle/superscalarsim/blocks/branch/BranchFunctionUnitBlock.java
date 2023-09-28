@@ -4,10 +4,10 @@
  * Faculty of Information Technology \n
  * Brno University of Technology \n
  * xvavra20@fit.vutbr.cz
- * @author  Michal Majer
- *          Faculty of Information Technology
- *          Brno University of Technology
- *          xmajer21@stud.fit.vutbr.cz
+ * @author Michal Majer
+ * Faculty of Information Technology
+ * Brno University of Technology
+ * xmajer21@stud.fit.vutbr.cz
  * @brief File contains class for Branch Function Unit
  * @date 1  March  2020 16:00 (created) \n
  * 14 May    2021 10:30 (revised)
@@ -39,10 +39,9 @@ import com.gradle.superscalarsim.blocks.base.UnifiedRegisterFileBlock;
 import com.gradle.superscalarsim.code.CodeBranchInterpreter;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.models.InputCodeArgument;
+import com.gradle.superscalarsim.models.RegisterModel;
 import com.gradle.superscalarsim.models.SimCodeModel;
 
-import java.beans.PropertyChangeEvent;
-import java.util.Objects;
 import java.util.OptionalInt;
 
 public class BranchFunctionUnitBlock extends AbstractFunctionUnitBlock {
@@ -109,23 +108,23 @@ public class BranchFunctionUnitBlock extends AbstractFunctionUnitBlock {
             int instructionPosition = this.simCodeModel.getSavedPc();
             int nextInstructionPosition = instructionPosition + 1;
 
-            OptionalInt jumpOffset = branchInterpreter.interpretInstruction(this.simCodeModel,
+            OptionalInt jumpOffset = branchInterpreter.interpretInstruction(
+                    this.simCodeModel,
                     instructionPosition);
             boolean jumpTaken = jumpOffset.isPresent();
             // If the branch was taken or not
             this.simCodeModel.setBranchLogicResult(jumpTaken);
             // Used to fix BTB and PC in misprediction
-            if(jumpTaken) {
+            if (jumpTaken) {
                 this.simCodeModel.setBranchTargetOffset(jumpOffset.getAsInt());
             }
             // Write the result to the register
             InputCodeArgument destinationArgument = simCodeModel.getArgumentByName("rd");
             if (destinationArgument != null) {
-                registerFileBlock.setRegisterValue(
-                        Objects.requireNonNull(destinationArgument).getValue(),
-                        nextInstructionPosition);
-                registerFileBlock.setRegisterState(destinationArgument.getValue(),
-                        RegisterReadinessEnum.kExecuted);
+                RegisterModel reg = registerFileBlock.getRegister(
+                        destinationArgument.getValue());
+                reg.setValue(nextInstructionPosition);
+                reg.setReadiness(RegisterReadinessEnum.kExecuted);
             }
 
             this.reorderBufferBlock.getFlagsMap().get(this.simCodeModel.getId()).setBusy(
@@ -168,8 +167,8 @@ public class BranchFunctionUnitBlock extends AbstractFunctionUnitBlock {
             // Restore result readiness
             simCodeModel.getArguments().stream().filter(
                     argument -> argument.getName().equals("rd")).findFirst().ifPresent(
-                    destinationArgument -> registerFileBlock.setRegisterState(
-                            destinationArgument.getValue(),
+                    destinationArgument -> registerFileBlock.getRegister(
+                            destinationArgument.getValue()).setReadiness(
                             RegisterReadinessEnum.kAllocated));
             // Remove target and brcd arguments
             simCodeModel.setBranchLogicResult(false);

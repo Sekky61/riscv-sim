@@ -135,9 +135,9 @@ public class SerializationTest {
 
         // Assert
         Assert.assertEquals(1, cpu.cpuState.statisticsCounter.getCommittedInstructions());
-        Assert.assertEquals(5, cpu.cpuState.unifiedRegisterFileBlock.getRegisterValue("x1"), 0.5);
+        Assert.assertEquals(5, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(), 0.5);
 
         Assert.assertEquals(1, cpuSer.cpuState.statisticsCounter.getCommittedInstructions());
-        Assert.assertEquals(5, cpuSer.cpuState.unifiedRegisterFileBlock.getRegisterValue("x1"), 0.5);
+        Assert.assertEquals(5, cpuSer.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(), 0.5);
     }
 }

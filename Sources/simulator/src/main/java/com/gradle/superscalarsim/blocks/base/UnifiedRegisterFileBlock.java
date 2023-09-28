@@ -117,15 +117,6 @@ public class UnifiedRegisterFileBlock {
     //----------------------------------------------------------------------
 
     /**
-     * @return List of all existing register file models
-     * @brief Get all the register file models
-     */
-    public List<RegisterFileModel> getAllRegisterFileModels() {
-        return this.registerList;
-    }// end of getAllRegisterFileModels
-    //----------------------------------------------------------------------
-
-    /**
      * @param [in] dataType - Data type of searched register list
      * @return List of registers
      * @brief Get list of registers based on data type provided. Assumes that there is only one register file with provided data type
@@ -139,17 +130,6 @@ public class UnifiedRegisterFileBlock {
     //----------------------------------------------------------------------
 
     /**
-     * @param [in] registerName  - Name (tag) of the register
-     * @param [in] registerState - New state of the register
-     * @brief Set register state of provided register name (tag)
-     */
-    public void setRegisterState(final String registerName, final RegisterReadinessEnum registerState) {
-        RegisterModel reg = getRegister(registerName);
-        reg.setReadiness(registerState);
-    }// end of setRegisterState
-    //----------------------------------------------------------------------
-
-    /**
      * @param [in] registerName - Name (tag) of the register
      * @return The register object
      * @brief Get object representation of register based on provided name (tag or arch. name)
@@ -157,34 +137,6 @@ public class UnifiedRegisterFileBlock {
     public RegisterModel getRegister(final String registerName) {
         return this.registerMap.get(registerName);
     }// end of getRegisterValue
-    //----------------------------------------------------------------------
-
-    /**
-     * @param [in] registerName - Name (tag) of the register
-     * @return Double value
-     * @brief Get value of register based on provided name (tag)
-     */
-    public double getRegisterValue(final String registerName) {
-        RegisterModel resultRegister = getRegister(registerName);
-        return resultRegister.getValue();
-    }// end of getRegisterValue
-    //----------------------------------------------------------------------
-
-    /**
-     * @param [in] registerName  - Name (tag) of the register
-     * @param [in] registerValue - New double value
-     * @brief Sets register value specified by register name to provided value
-     */
-    public void setRegisterValue(final String registerName, double registerValue) {
-        for (RegisterFileModel registerFile : this.registerList) {
-            RegisterModel resultRegister = registerFile.getRegister(registerName);
-            if (resultRegister != null) {
-                resultRegister.setValue(registerValue);
-                return;
-            }
-        }
-        throw new IllegalArgumentException("Register " + registerName + " not found");
-    }// end of setRegisterValue
     //----------------------------------------------------------------------
 
     /**
@@ -240,21 +192,6 @@ public class UnifiedRegisterFileBlock {
                 registerModelList);
     }// end of createSpeculativeRegisters
     //----------------------------------------------------------------------
-
-    /**
-     * @param [in] registerName - Name of the register
-     * @return True if register is constant, false otherwise
-     * @brief Checks if specified register if constant
-     */
-    public boolean isRegisterConstant(String registerName) {
-        for (RegisterFileModel registerFile : this.registerList) {
-            RegisterModel resultRegister = registerFile.getRegister(registerName);
-            if (resultRegister != null) {
-                return resultRegister.isConstant();
-            }
-        }
-        return false;
-    }// end of isRegisterConstant
 
     /**
      * @return Map of all registers. For testing purposes *only*

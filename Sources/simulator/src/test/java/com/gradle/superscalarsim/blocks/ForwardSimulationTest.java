@@ -277,7 +277,7 @@ public class ForwardSimulationTest {
         this.cpu.step();
         Assert.assertTrue(this.reorderBufferBlock.getReorderQueue().isEmpty());
         Assert.assertTrue(this.reorderBufferBlock.getFlagsMap().isEmpty());
-        Assert.assertEquals(31, unifiedRegisterFileBlock.getRegisterValue("x1"), 0.01);
+        Assert.assertEquals(31, unifiedRegisterFileBlock.getRegister("x1").getValue(), 0.01);
         Assert.assertEquals(RegisterReadinessEnum.kFree,
                 this.unifiedRegisterFileBlock.getRegister("tg0").getReadiness());
     }
@@ -506,11 +506,11 @@ public class ForwardSimulationTest {
                 this.unifiedRegisterFileBlock.getRegister("tg1").getReadiness());
         Assert.assertEquals(RegisterReadinessEnum.kFree,
                 this.unifiedRegisterFileBlock.getRegister("tg2").getReadiness());
-        Assert.assertEquals(-2, this.unifiedRegisterFileBlock.getRegisterValue("x3"),
+        Assert.assertEquals(-2, this.unifiedRegisterFileBlock.getRegister("x3").getValue(),
                 0.01);
-        Assert.assertEquals(-4, this.unifiedRegisterFileBlock.getRegisterValue("x2"),
+        Assert.assertEquals(-4, this.unifiedRegisterFileBlock.getRegister("x2").getValue(),
                 0.01);
-        Assert.assertEquals(-6, this.unifiedRegisterFileBlock.getRegisterValue("x1"),
+        Assert.assertEquals(-6, this.unifiedRegisterFileBlock.getRegister("x1").getValue(),
                 0.01);
     }
 
@@ -683,7 +683,7 @@ public class ForwardSimulationTest {
                 this.addSecondFunctionBlock.getSimCodeModel().getRenamedCodeLine());
         Assert.assertEquals("add tg2 tg1 x3",
                 this.addFunctionBlock.getSimCodeModel().getRenamedCodeLine());
-        Assert.assertEquals(4, this.unifiedRegisterFileBlock.getRegisterValue("tg1"),
+        Assert.assertEquals(4, this.unifiedRegisterFileBlock.getRegister("tg1").getValue(),
                 0.01);
         Assert.assertEquals(RegisterReadinessEnum.kAllocated,
                 this.unifiedRegisterFileBlock.getRegister("tg3").getReadiness());
@@ -700,9 +700,9 @@ public class ForwardSimulationTest {
                 this.reorderBufferBlock.getFlagsMap().get(3).isReadyToBeCommitted());
         Assert.assertEquals("add tg2 tg1 x3",
                 this.addFunctionBlock.getSimCodeModel().getRenamedCodeLine());
-        Assert.assertEquals(-2, this.unifiedRegisterFileBlock.getRegisterValue("x5"),
+        Assert.assertEquals(-2, this.unifiedRegisterFileBlock.getRegister("x5").getValue(),
                 0.01);
-        Assert.assertEquals(4, this.unifiedRegisterFileBlock.getRegisterValue("x2"),
+        Assert.assertEquals(4, this.unifiedRegisterFileBlock.getRegister("x2").getValue(),
                 0.01);
         Assert.assertEquals(RegisterReadinessEnum.kExecuted,
                 this.unifiedRegisterFileBlock.getRegister("tg3").getReadiness());
@@ -729,9 +729,9 @@ public class ForwardSimulationTest {
 
         this.cpu.step();
         Assert.assertEquals(0, this.reorderBufferBlock.getReorderQueue().size());
-        Assert.assertEquals(4, this.unifiedRegisterFileBlock.getRegisterValue("x2"),
+        Assert.assertEquals(4, this.unifiedRegisterFileBlock.getRegister("x2").getValue(),
                 0.01);
-        Assert.assertEquals(10, this.unifiedRegisterFileBlock.getRegisterValue("x1"),
+        Assert.assertEquals(10, this.unifiedRegisterFileBlock.getRegister("x1").getValue(),
                 0.01);
     }
 
@@ -820,7 +820,7 @@ public class ForwardSimulationTest {
         this.cpu.step();
         Assert.assertTrue(this.reorderBufferBlock.getReorderQueue().isEmpty());
         Assert.assertTrue(this.reorderBufferBlock.getFlagsMap().isEmpty());
-        Assert.assertEquals(8.625, unifiedRegisterFileBlock.getRegisterValue("f1"),
+        Assert.assertEquals(8.625, unifiedRegisterFileBlock.getRegister("f1").getValue(),
                 0.001);
         Assert.assertEquals(RegisterReadinessEnum.kFree,
                 this.unifiedRegisterFileBlock.getRegister("tg0").getReadiness());
@@ -1047,11 +1047,11 @@ public class ForwardSimulationTest {
                 this.unifiedRegisterFileBlock.getRegister("tg1").getReadiness());
         Assert.assertEquals(RegisterReadinessEnum.kFree,
                 this.unifiedRegisterFileBlock.getRegister("tg2").getReadiness());
-        Assert.assertEquals(12.26, this.unifiedRegisterFileBlock.getRegisterValue("f3"),
+        Assert.assertEquals(12.26, this.unifiedRegisterFileBlock.getRegister("f3").getValue(),
                 0.01);
-        Assert.assertEquals(24.51, this.unifiedRegisterFileBlock.getRegisterValue("f2"),
+        Assert.assertEquals(24.51, this.unifiedRegisterFileBlock.getRegister("f2").getValue(),
                 0.01);
-        Assert.assertEquals(36.77, this.unifiedRegisterFileBlock.getRegisterValue("f1"),
+        Assert.assertEquals(36.77, this.unifiedRegisterFileBlock.getRegister("f1").getValue(),
                 0.01);
     }
 
@@ -1224,7 +1224,7 @@ public class ForwardSimulationTest {
                 this.faddSecondFunctionBlock.getSimCodeModel().getRenamedCodeLine());
         Assert.assertEquals("fadd tg2 tg1 f3",
                 this.faddFunctionBlock.getSimCodeModel().getRenamedCodeLine());
-        Assert.assertEquals(15.375, this.unifiedRegisterFileBlock.getRegisterValue("tg1"),
+        Assert.assertEquals(15.375, this.unifiedRegisterFileBlock.getRegister("tg1").getValue(),
                 0.001);
         Assert.assertEquals(RegisterReadinessEnum.kAllocated,
                 this.unifiedRegisterFileBlock.getRegister("tg3").getReadiness());
@@ -1241,9 +1241,9 @@ public class ForwardSimulationTest {
                 this.reorderBufferBlock.getFlagsMap().get(3).isReadyToBeCommitted());
         Assert.assertEquals("fadd tg2 tg1 f3",
                 this.faddFunctionBlock.getSimCodeModel().getRenamedCodeLine());
-        Assert.assertEquals(12.24, this.unifiedRegisterFileBlock.getRegisterValue("f5"),
+        Assert.assertEquals(12.24, this.unifiedRegisterFileBlock.getRegister("f5").getValue(),
                 0.001);
-        Assert.assertEquals(15.375, this.unifiedRegisterFileBlock.getRegisterValue("f2"),
+        Assert.assertEquals(15.375, this.unifiedRegisterFileBlock.getRegister("f2").getValue(),
                 0.001);
         Assert.assertEquals(RegisterReadinessEnum.kExecuted,
                 this.unifiedRegisterFileBlock.getRegister("tg3").getReadiness());
@@ -1270,9 +1270,9 @@ public class ForwardSimulationTest {
 
         this.cpu.step();
         Assert.assertEquals(0, this.reorderBufferBlock.getReorderQueue().size());
-        Assert.assertEquals(15.375, this.unifiedRegisterFileBlock.getRegisterValue("f2"),
+        Assert.assertEquals(15.375, this.unifiedRegisterFileBlock.getRegister("f2").getValue(),
                 0.001);
-        Assert.assertEquals(18.5, this.unifiedRegisterFileBlock.getRegisterValue("f1"),
+        Assert.assertEquals(18.5, this.unifiedRegisterFileBlock.getRegister("f1").getValue(),
                 0.01);
     }
 
@@ -1525,7 +1525,7 @@ public class ForwardSimulationTest {
         Assert.assertEquals(8, this.branchTargetBuffer.getEntryTarget(2));
         Assert.assertTrue(this.branchTargetBuffer.isEntryUnconditional(2));
         Assert.assertEquals(-1, this.globalHistoryRegister.getHistoryValueAsInt(9));
-        Assert.assertEquals(0, this.unifiedRegisterFileBlock.getRegisterValue("x0"),
+        Assert.assertEquals(0, this.unifiedRegisterFileBlock.getRegister("x0").getValue(),
                 0.01);
     }
 
@@ -1605,9 +1605,9 @@ public class ForwardSimulationTest {
                 this.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
         Assert.assertEquals("subi",
                 this.instructionFetchBlock.getFetchedCode().get(2).getInstructionName());
-        Assert.assertEquals(0, this.unifiedRegisterFileBlock.getRegisterValue("x0"),
+        Assert.assertEquals(0, this.unifiedRegisterFileBlock.getRegister("x0").getValue(),
                 0.01);
-        Assert.assertEquals(6, this.unifiedRegisterFileBlock.getRegisterValue("x3"),
+        Assert.assertEquals(6, this.unifiedRegisterFileBlock.getRegister("x3").getValue(),
                 0.01);
 
         this.cpu.step();
@@ -1625,7 +1625,7 @@ public class ForwardSimulationTest {
         Assert.assertEquals("subi tg0 x3 1",
                 this.decodeAndDispatchBlock.getAfterRenameCodeList().get(
                         1).getRenamedCodeLine());
-        Assert.assertEquals(0, this.unifiedRegisterFileBlock.getRegisterValue("x0"),
+        Assert.assertEquals(0, this.unifiedRegisterFileBlock.getRegister("x0").getValue(),
                 0.01);
 
         this.cpu.step();
@@ -1647,7 +1647,7 @@ public class ForwardSimulationTest {
         Assert.assertEquals("subi tg0 x3 1",
                 this.aluIssueWindowBlock.getIssuedInstructions().get(
                         0).getRenamedCodeLine());
-        Assert.assertEquals(0, this.unifiedRegisterFileBlock.getRegisterValue("x0"),
+        Assert.assertEquals(0, this.unifiedRegisterFileBlock.getRegister("x0").getValue(),
                 0.01);
 
         this.cpu.step();
@@ -1670,7 +1670,7 @@ public class ForwardSimulationTest {
                 this.branchFunctionUnitBlock1.getSimCodeModel().getRenamedCodeLine());
         Assert.assertEquals("subi tg0 x3 1",
                 this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
-        Assert.assertEquals(0, this.unifiedRegisterFileBlock.getRegisterValue("x0"),
+        Assert.assertEquals(0, this.unifiedRegisterFileBlock.getRegister("x0").getValue(),
                 0.01);
 
         this.cpu.step();
@@ -1695,7 +1695,7 @@ public class ForwardSimulationTest {
                 this.branchFunctionUnitBlock1.getSimCodeModel().getRenamedCodeLine());
         Assert.assertEquals("subi tg0 x3 1",
                 this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
-        Assert.assertEquals(0, this.unifiedRegisterFileBlock.getRegisterValue("x0"),
+        Assert.assertEquals(0, this.unifiedRegisterFileBlock.getRegister("x0").getValue(),
                 0.01);
 
         this.cpu.step();
@@ -1726,7 +1726,7 @@ public class ForwardSimulationTest {
                 this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
         Assert.assertFalse(
                 this.reorderBufferBlock.getFlagsMap().get(1).isReadyToBeCommitted());
-        Assert.assertEquals(0, this.unifiedRegisterFileBlock.getRegisterValue("x0"),
+        Assert.assertEquals(0, this.unifiedRegisterFileBlock.getRegister("x0").getValue(),
                 0.01);
 
         this.cpu.step();
@@ -1749,7 +1749,7 @@ public class ForwardSimulationTest {
                 this.reorderBufferBlock.getFlagsMap().get(2).isReadyToBeCommitted());
         Assert.assertFalse(
                 this.reorderBufferBlock.getFlagsMap().get(3).isReadyToBeCommitted());
-        Assert.assertEquals(0, this.unifiedRegisterFileBlock.getRegisterValue("x0"),
+        Assert.assertEquals(0, this.unifiedRegisterFileBlock.getRegister("x0").getValue(),
                 0.01);
 
         this.cpu.step();
@@ -1765,7 +1765,7 @@ public class ForwardSimulationTest {
                 this.branchFunctionUnitBlock1.getSimCodeModel().getRenamedCodeLine());
         Assert.assertEquals("subi tg4 tg2 1",
                 this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
-        Assert.assertEquals(0, this.unifiedRegisterFileBlock.getRegisterValue("x0"),
+        Assert.assertEquals(0, this.unifiedRegisterFileBlock.getRegister("x0").getValue(),
                 0.01);
         Assert.assertTrue(
                 this.reorderBufferBlock.getFlagsMap().get(3).isReadyToBeCommitted());
@@ -1783,7 +1783,7 @@ public class ForwardSimulationTest {
                 this.branchFunctionUnitBlock1.getSimCodeModel().getRenamedCodeLine());
         Assert.assertEquals("subi tg4 tg2 1",
                 this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
-        Assert.assertEquals(0, this.unifiedRegisterFileBlock.getRegisterValue("x0"),
+        Assert.assertEquals(0, this.unifiedRegisterFileBlock.getRegister("x0").getValue(),
                 0.01);
 
         this.cpu.step();
@@ -1807,7 +1807,7 @@ public class ForwardSimulationTest {
                 this.branchFunctionUnitBlock1.getSimCodeModel().getRenamedCodeLine());
         Assert.assertEquals("subi tg6 tg4 1",
                 this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
-        Assert.assertEquals(0, this.unifiedRegisterFileBlock.getRegisterValue("x0"),
+        Assert.assertEquals(0, this.unifiedRegisterFileBlock.getRegister("x0").getValue(),
                 0.01);
         Assert.assertTrue(
                 this.reorderBufferBlock.getFlagsMap().get(9).isReadyToBeCommitted());
@@ -1819,7 +1819,7 @@ public class ForwardSimulationTest {
                 this.branchFunctionUnitBlock1.getSimCodeModel().getRenamedCodeLine());
         Assert.assertEquals("subi tg8 tg6 1",
                 this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
-        Assert.assertEquals(0, this.unifiedRegisterFileBlock.getRegisterValue("x0"),
+        Assert.assertEquals(0, this.unifiedRegisterFileBlock.getRegister("x0").getValue(),
                 0.01);
 
         this.cpu.step();
@@ -1972,7 +1972,7 @@ public class ForwardSimulationTest {
         Assert.assertEquals(0, this.aluIssueWindowBlock.getIssuedInstructions().size());
         Assert.assertEquals(0,
                 this.branchIssueWindowBlock.getIssuedInstructions().size());
-        Assert.assertEquals(0, this.unifiedRegisterFileBlock.getRegisterValue("x3"),
+        Assert.assertEquals(0, this.unifiedRegisterFileBlock.getRegister("x3").getValue(),
                 0.01);
     }
 
@@ -2170,7 +2170,7 @@ public class ForwardSimulationTest {
                 this.reorderBufferBlock.getFlagsMap().get(21).isReadyToBeCommitted());
 
         this.cpu.step();
-        Assert.assertEquals(10, this.unifiedRegisterFileBlock.getRegisterValue("x1"),
+        Assert.assertEquals(10, this.unifiedRegisterFileBlock.getRegister("x1").getValue(),
                 0.01);
         Assert.assertEquals(0, this.globalHistoryRegister.getRegisterValueAsInt());
     }
@@ -2316,7 +2316,7 @@ public class ForwardSimulationTest {
         this.cpu.step();
         Assert.assertTrue(
                 this.reorderBufferBlock.getFlagsMap().get(3).isReadyToBeCommitted());
-        Assert.assertEquals(-10, this.unifiedRegisterFileBlock.getRegisterValue("x1"),
+        Assert.assertEquals(-10, this.unifiedRegisterFileBlock.getRegister("x1").getValue(),
                 0.01);
 
         this.cpu.step();
@@ -2483,7 +2483,7 @@ public class ForwardSimulationTest {
                 this.reorderBufferBlock.getFlagsMap().get(0).isReadyToBeCommitted());
 
         this.cpu.step();
-        Assert.assertTrue(this.unifiedRegisterFileBlock.getRegisterValue("x1") == 0);
+        Assert.assertTrue(this.unifiedRegisterFileBlock.getRegister("x1").getValue() == 0);
     }
 
     @Test
@@ -2625,7 +2625,7 @@ public class ForwardSimulationTest {
 
         this.cpu.step();
         Assert.assertEquals(0, this.reorderBufferBlock.getReorderQueue().size());
-        Assert.assertEquals(6, this.unifiedRegisterFileBlock.getRegisterValue("x1"),
+        Assert.assertEquals(6, this.unifiedRegisterFileBlock.getRegister("x1").getValue(),
                 0.01);
     }
 
@@ -2821,7 +2821,7 @@ public class ForwardSimulationTest {
         Assert.assertNull(this.memoryAccessUnit.getSimCodeModel());
 
         this.cpu.step();
-        Assert.assertEquals(1, this.unifiedRegisterFileBlock.getRegisterValue("x1"),
+        Assert.assertEquals(1, this.unifiedRegisterFileBlock.getRegister("x1").getValue(),
                 0.01);
         Assert.assertNull(this.memoryAccessUnit.getSimCodeModel());
     }
@@ -2875,11 +2875,11 @@ public class ForwardSimulationTest {
         this.memoryAccessUnit.setDelay(3);
         this.memoryAccessUnit.setBaseDelay(3);
 
-        Assert.assertEquals(0, this.unifiedRegisterFileBlock.getRegisterValue("x1"),
+        Assert.assertEquals(0, this.unifiedRegisterFileBlock.getRegister("x1").getValue(),
                 0.01);
-        Assert.assertEquals(25, this.unifiedRegisterFileBlock.getRegisterValue("x2"),
+        Assert.assertEquals(25, this.unifiedRegisterFileBlock.getRegister("x2").getValue(),
                 0.01);
-        Assert.assertEquals(6, this.unifiedRegisterFileBlock.getRegisterValue("x3"),
+        Assert.assertEquals(6, this.unifiedRegisterFileBlock.getRegister("x3").getValue(),
                 0.01);
 
         this.cpu.step();
@@ -3030,7 +3030,7 @@ public class ForwardSimulationTest {
         Assert.assertEquals(0, this.reorderBufferBlock.getReorderQueue().size());
         Assert.assertEquals(0, this.loadBufferBlock.getQueueSize());
         Assert.assertEquals(0, this.storeBufferBlock.getQueueSize());
-        Assert.assertEquals(1, this.unifiedRegisterFileBlock.getRegisterValue("x1"),
+        Assert.assertEquals(1, this.unifiedRegisterFileBlock.getRegister("x1").getValue(),
                 0.01);
     }
 

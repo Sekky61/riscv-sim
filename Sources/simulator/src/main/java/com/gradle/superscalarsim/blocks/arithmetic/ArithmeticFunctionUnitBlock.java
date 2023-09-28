@@ -4,10 +4,10 @@
  * Faculty of Information Technology \n
  * Brno University of Technology \n
  * xvavra20@fit.vutbr.cz
- * @author  Michal Majer
- *          Faculty of Information Technology
- *          Brno University of Technology
- *          xmajer21@stud.fit.vutbr.cz
+ * @author Michal Majer
+ * Faculty of Information Technology
+ * Brno University of Technology
+ * xmajer21@stud.fit.vutbr.cz
  * @brief File contains class for Arithmetic Function Unit
  * @date 9  February 2021 16:00 (created) \n
  * 14 May      2021 10:30 (revised)
@@ -39,9 +39,8 @@ import com.gradle.superscalarsim.blocks.base.UnifiedRegisterFileBlock;
 import com.gradle.superscalarsim.code.CodeArithmeticInterpreter;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.models.InputCodeArgument;
+import com.gradle.superscalarsim.models.RegisterModel;
 import com.gradle.superscalarsim.models.SimCodeModel;
-
-import java.util.Objects;
 
 /**
  * @class ArithmeticFunctionUnitBlock
@@ -115,10 +114,10 @@ public class ArithmeticFunctionUnitBlock extends AbstractFunctionUnitBlock {
             }
             InputCodeArgument destinationArgument = simCodeModel.getArgumentByName("rd");
             double result = arithmeticInterpreter.interpretInstruction(this.simCodeModel);
-            registerFileBlock.setRegisterValue(
-                    Objects.requireNonNull(destinationArgument).getValue(), result);
-            registerFileBlock.setRegisterState(destinationArgument.getValue(),
-                    RegisterReadinessEnum.kExecuted);
+            RegisterModel reg = registerFileBlock.getRegister(
+                    destinationArgument.getValue());
+            reg.setValue(result);
+            reg.setReadiness(RegisterReadinessEnum.kExecuted);
 
             this.reorderBufferBlock.getFlagsMap().get(this.simCodeModel.getId()).setBusy(
                     false);
@@ -151,7 +150,7 @@ public class ArithmeticFunctionUnitBlock extends AbstractFunctionUnitBlock {
                     }
                     InputCodeArgument arg = simCodeModel.getArgumentByName("rd");
                     if (arg != null) {
-                        registerFileBlock.setRegisterState(arg.getValue(),
+                        registerFileBlock.getRegister(arg.getValue()).setReadiness(
                                 RegisterReadinessEnum.kAllocated);
                     }
                     reorderBufferBlock.getFlagsMap().get(codeModel.getId()).setBusy(true);

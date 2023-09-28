@@ -38,11 +38,7 @@ import com.gradle.superscalarsim.blocks.base.ReorderBufferBlock;
 import com.gradle.superscalarsim.blocks.base.UnifiedRegisterFileBlock;
 import com.gradle.superscalarsim.code.CodeLoadStoreInterpreter;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
-import com.gradle.superscalarsim.models.InputCodeArgument;
-import com.gradle.superscalarsim.models.LoadBufferItem;
-import com.gradle.superscalarsim.models.SimCodeModel;
-import com.gradle.superscalarsim.models.StoreBufferItem;
-import com.gradle.superscalarsim.models.Pair;
+import com.gradle.superscalarsim.models.*;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -158,11 +154,10 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock {
                 if (this.loadBufferBlock.getLoadMap().containsKey(
                         this.simCodeModel.getId())) {
                     InputCodeArgument destinationArgument = simCodeModel.getArgumentByName("rd");
-                    registerFileBlock.setRegisterValue(
-                            Objects.requireNonNull(destinationArgument).getValue(),
-                            savedResult);
-                    registerFileBlock.setRegisterState(destinationArgument.getValue(),
-                            RegisterReadinessEnum.kExecuted);
+                    RegisterModel destRegister = registerFileBlock.getRegister(
+                            Objects.requireNonNull(destinationArgument).getValue());
+                    destRegister.setValue(savedResult);
+                    destRegister.setReadiness(RegisterReadinessEnum.kExecuted);
                     this.loadBufferBlock.setDestinationAvailable(simCodeModel.getId());
                     this.loadBufferBlock.setMemoryAccessFinished(simCodeModel.getId());
                 } else if (this.storeBufferBlock.getStoreMap().containsKey(

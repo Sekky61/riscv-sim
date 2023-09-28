@@ -4,10 +4,10 @@
  * Faculty of Information Technology \n
  * Brno University of Technology \n
  * xvavra20@fit.vutbr.cz
- * @author  Michal Majer
- *          Faculty of Information Technology
- *          Brno University of Technology
- *          xmajer21@stud.fit.vutbr.cz
+ * @author Michal Majer
+ * Faculty of Information Technology
+ * Brno University of Technology
+ * xmajer21@stud.fit.vutbr.cz
  * @brief File contains class for decoding and renaming fetched code
  * @date 3  February  2021 16:00 (created) \n
  * 27 April     2021 20:00 (revised)
@@ -357,9 +357,10 @@ public class DecodeAndDispatchBlock implements AbstractBlock {
     private void renameSourceRegisters(SimCodeModel simCodeModel) {
         simCodeModel.getArguments().forEach(argument -> {
             String oldArgumentValue = argument.getValue();
-            boolean isDestination = argument.getName().equals("rd");
-            // Rename source registers
-            if (!isDestination) {
+            boolean shouldRename = !argument.getName().equals(
+                    "rd") && !argument.getName().equals(
+                    "imm");
+            if (shouldRename) {
                 String rename = renameMapTableBlock.getMappingForRegister(
                         oldArgumentValue);
                 argument.setValue(rename);

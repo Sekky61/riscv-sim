@@ -47,7 +47,11 @@ public class RenameMapModel implements Comparable<RenameMapModel>
 {
   /// Name of the architectural register
   private final String architecturalRegister;
-  /// Order id, specifying order between multiple same mapping
+
+  /**
+   * Order id, specifying order between multiple same mapping
+   * Grows with time, so the newest mapping has the highest order id.
+   */
   private final int order;
 
   /**
@@ -83,4 +87,8 @@ public class RenameMapModel implements Comparable<RenameMapModel>
     return architecturalRegister;
   }// end of getArchitecturalRegister
   //------------------------------------------------------
+
+  public int getOrder() {
+    return order;
+  }
 }
