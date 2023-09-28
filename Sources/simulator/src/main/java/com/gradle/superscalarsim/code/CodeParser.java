@@ -4,10 +4,10 @@
  * Faculty of Information Technology \n
  * Brno University of Technology \n
  * xvavra20@fit.vutbr.cz
- * @author  Michal Majer
- *          Faculty of Information Technology
- *          Brno University of Technology
- *          xmajer21@stud.fit.vutbr.cz
+ * @author Michal Majer
+ * Faculty of Information Technology
+ * Brno University of Technology
+ * xmajer21@stud.fit.vutbr.cz
  * @brief File contains parser for user made code
  * @date 10 November  2020 18:00 (created) \n
  * 12 May       2020 11:00 (revised)
@@ -35,12 +35,12 @@ package com.gradle.superscalarsim.code;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.loader.InitLoader;
-import com.gradle.superscalarsim.models.InputCodeArgument;
-import com.gradle.superscalarsim.models.InputCodeModel;
-import com.gradle.superscalarsim.models.InstructionFunctionModel;
-import com.gradle.superscalarsim.models.RegisterFileModel;
+import com.gradle.superscalarsim.models.*;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -357,11 +357,13 @@ public class CodeParser {
             return false;
         }
         for (RegisterFileModel registerFileModel : initLoader.getRegisterFileModelList()) {
-            boolean foundRegister = registerFileModel.getRegisterList().stream()
-                    .anyMatch(register -> argumentValue.equals(register.getName()) &&
-                            checkDatatype(argumentDataType,
-                                    registerFileModel.getDataType()));
-            if (foundRegister) {
+            if (!checkDatatype(argumentDataType,
+                    registerFileModel.getDataType())) {
+                // Incorrect data type in this register file, skip
+                continue;
+            }
+            RegisterModel regModel = registerFileModel.getRegister(argumentValue);
+            if (regModel != null) {
                 return true;
             }
         }

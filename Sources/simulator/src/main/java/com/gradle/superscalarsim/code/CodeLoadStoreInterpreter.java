@@ -187,9 +187,7 @@ public class CodeLoadStoreInterpreter {
 
         RegisterModel registerModel = null;
         for (RegisterFileModel registerFileModel : initLoader.getRegisterFileModelList()) {
-            registerModel = registerFileModel.getRegisterList().stream().filter(
-                    register -> destination.equals(
-                            register.getName())).findFirst().orElse(null);
+            registerModel = registerFileModel.getRegister(destination);
             if (registerModel != null) {
                 break;
             }

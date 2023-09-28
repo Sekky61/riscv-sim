@@ -144,8 +144,7 @@ public class UnifiedRegisterFileBlock
   {
     for (RegisterFileModel registerFile : this.registerList)
     {
-      RegisterModel resultRegister = registerFile.getRegisterList().stream()
-        .filter(registerModel -> registerModel.getName().equals(registerName)).findFirst().orElse(null);
+      RegisterModel resultRegister = registerFile.getRegister(registerName);
       if (resultRegister != null)
       {
         return resultRegister.getValue();
@@ -164,8 +163,7 @@ public class UnifiedRegisterFileBlock
   {
     for (RegisterFileModel registerFile : this.registerList)
     {
-      RegisterModel resultRegister = registerFile.getRegisterList().stream()
-        .filter(registerModel -> registerModel.getName().equals(registerName)).findFirst().orElse(null);
+      RegisterModel resultRegister = registerFile.getRegister(registerName);
       if (resultRegister != null)
       {
         resultRegister.setValue(registerValue);
@@ -255,8 +253,7 @@ public class UnifiedRegisterFileBlock
   {
     for (RegisterFileModel registerFile : this.registerList)
     {
-      RegisterModel resultRegister = registerFile.getRegisterList().stream()
-        .filter(registerModel -> registerModel.getName().equals(registerName)).findFirst().orElse(null);
+      RegisterModel resultRegister = registerFile.getRegister(registerName);
       if (resultRegister != null)
       {
         return resultRegister.isConstant();
