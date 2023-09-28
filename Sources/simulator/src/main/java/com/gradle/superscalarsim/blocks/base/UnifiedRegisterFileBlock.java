@@ -39,19 +39,36 @@ import com.gradle.superscalarsim.models.RegisterFileModel;
 import com.gradle.superscalarsim.models.RegisterModel;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @class UnifiedRegisterFileBlock
  * @brief Class contains interface to interact with all register files and its registers
  */
 public class UnifiedRegisterFileBlock {
-    /// Multiplier on how many speculative registers should be created based on existing number of ISA registers
+    /**
+     * Multiplier on how many speculative registers should be created based on existing number of ISA registers
+     * TODO: Take the total number of registers on construction
+     */
     private static final int specRegisterMultiplier = 10;
-    /// InitLoader class holding information about instruction and registers
+    /**
+     * InitLoader class holding information about instruction and registers
+     * TODO: remove this reference
+     */
     private InitLoader initLoader;
-    /// List of all register files
+    /**
+     * List of all register files
+     * TODO: Remove this list and use a field for each register file type (one for ints, ...)
+     */
     private List<RegisterFileModel> registerList;
+    /**
+     * Mapping of names to register objects
+     * Allows to have multiple names for one register
+     * Also theoretically faster than searching through the list (O(1) vs O(n))
+     */
+    private Map<String, RegisterModel> registerMap;
 
     /**
      * @brief Default constructor - You need to call loadRegisters later
@@ -59,6 +76,7 @@ public class UnifiedRegisterFileBlock {
     public UnifiedRegisterFileBlock() {
         this.initLoader = null;
         this.registerList = new ArrayList<>();
+        this.registerMap = null;
     }
 
     /**
@@ -68,13 +86,10 @@ public class UnifiedRegisterFileBlock {
     public UnifiedRegisterFileBlock(final InitLoader loader) {
         this.initLoader = loader;
         this.registerList = new ArrayList<>();
+        this.registerMap = new HashMap<>();
         loadRegisters(initLoader.getRegisterFileModelList());
     }// end of Constructor
     //----------------------------------------------------------------------
-
-    public List<RegisterFileModel> getRegisterList() {
-        return registerList;
-    }
 
     public void setRegisterList(List<RegisterFileModel> registerList) {
         this.registerList = registerList;
@@ -86,6 +101,7 @@ public class UnifiedRegisterFileBlock {
      */
     public void refreshRegisters() {
         this.registerList.clear();
+        this.registerMap.clear();
         initLoader.load();
         loadRegisters(initLoader.getRegisterFileModelList());
     }// end of refreshRegisters
@@ -190,6 +206,10 @@ public class UnifiedRegisterFileBlock {
         int registerCount = 0;
         for (RegisterFileModel registerFile : registerFileModelList) {
             this.registerList.add(registerFile);
+            // Put entry into the map for each register
+            for (RegisterModel register : registerFile.getRegisterList()) {
+                this.registerMap.put(register.getName(), register);
+            }
             registerCount = registerCount + registerFile.getRegisterList().size();
         }
         this.registerList.add(
@@ -205,8 +225,10 @@ public class UnifiedRegisterFileBlock {
     private RegisterFileModel createSpeculativeRegisters(int size) {
         List<RegisterModel> registerModelList = new ArrayList<>();
         for (int i = 0; i < size; i++) {
-            registerModelList.add(
-                    new RegisterModel("t" + i, false, 0, RegisterReadinessEnum.kFree));
+            RegisterModel reg = new RegisterModel("t" + i, false, DataTypeEnum.kSpeculative, 0,
+                    RegisterReadinessEnum.kFree);
+            registerModelList.add(reg);
+            this.registerMap.put(reg.getName(), reg);
         }
 
         return new RegisterFileModel("Speculative register file", "kSpeculative",

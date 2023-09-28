@@ -3,6 +3,7 @@ package com.gradle.superscalarsim.code;
 import com.gradle.superscalarsim.blocks.base.UnifiedRegisterFileBlock;
 import com.gradle.superscalarsim.builders.*;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
+import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.loader.InitLoader;
 import com.gradle.superscalarsim.models.*;
 import org.junit.Assert;
@@ -26,20 +27,20 @@ public class CodeLoadStoreInterpreterTest
   public void setUp()
   {
     MockitoAnnotations.openMocks(this);
-    RegisterModel integer1 = new RegisterModelBuilder().hasName("x1").HasValue(0).IsConstant(false).build();
-    RegisterModel integer2 = new RegisterModelBuilder().hasName("x2").HasValue(25).IsConstant(false).build();
-    RegisterModel integer3 = new RegisterModelBuilder().hasName("x3").HasValue(6).IsConstant(false).build();
-    RegisterModel integer4 = new RegisterModelBuilder().hasName("x4").HasValue(-1000).IsConstant(false).build();
-    RegisterModel integer5 = new RegisterModelBuilder().hasName("x5").HasValue(-65535).IsConstant(false).build();
-    RegisterModel integer6 = new RegisterModelBuilder().hasName("x6").HasValue(-4294967295L).IsConstant(false).build();
+    RegisterModel integer1 = new RegisterModel("x1", false, DataTypeEnum.kInt, 0, RegisterReadinessEnum.kAssigned);
+    RegisterModel integer2 = new RegisterModel("x2", false, DataTypeEnum.kInt, 25, RegisterReadinessEnum.kAssigned);
+    RegisterModel integer3 = new RegisterModel("x3", false, DataTypeEnum.kInt, 6, RegisterReadinessEnum.kAssigned);
+    RegisterModel integer4 = new RegisterModel("x4", false, DataTypeEnum.kInt, -1000, RegisterReadinessEnum.kAssigned);
+    RegisterModel integer5 = new RegisterModel("x5", false, DataTypeEnum.kInt, -65535, RegisterReadinessEnum.kAssigned);
+    RegisterModel integer6 = new RegisterModel("x6", false, DataTypeEnum.kInt, -4294967295L, RegisterReadinessEnum.kAssigned);
     RegisterFileModel integerFile = new RegisterFileModelBuilder().hasName("integer")
       .hasDataType(DataTypeEnum.kLong)
       .hasRegisterList(Arrays.asList(integer1,integer2,integer3,integer4,integer5,integer6))
       .build();
 
-    RegisterModel float1 = new RegisterModelBuilder().hasName("f1").HasValue(0.0).IsConstant(false).build();
-    RegisterModel float2 = new RegisterModelBuilder().hasName("f2").HasValue(25.0).IsConstant(false).build();
-    RegisterModel float3 = new RegisterModelBuilder().hasName("f3").HasValue(6.0).IsConstant(false).build();
+    RegisterModel float1 = new RegisterModel("f1", false, DataTypeEnum.kFloat, 0.0, RegisterReadinessEnum.kAssigned);
+    RegisterModel float2 = new RegisterModel("f2", false, DataTypeEnum.kFloat, 25.0, RegisterReadinessEnum.kAssigned);
+    RegisterModel float3 = new RegisterModel("f3", false, DataTypeEnum.kFloat, 6.0, RegisterReadinessEnum.kAssigned);
     RegisterFileModel floatFile = new RegisterFileModelBuilder().hasName("float")
       .hasDataType(DataTypeEnum.kDouble)
       .hasRegisterList(Arrays.asList(float1,float2,float3))

@@ -3,6 +3,7 @@ package com.gradle.superscalarsim.code;
 import com.gradle.superscalarsim.blocks.base.UnifiedRegisterFileBlock;
 import com.gradle.superscalarsim.builders.*;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
+import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.loader.InitLoader;
 import com.gradle.superscalarsim.models.*;
 import org.junit.Assert;
@@ -28,10 +29,10 @@ public class CodeArithmeticInterpreterFloatTest
   public void setUp()
   {
     MockitoAnnotations.openMocks(this);
-    RegisterModel float1 = new RegisterModelBuilder().hasName("f1").HasValue(0).IsConstant(false).build();
-    RegisterModel float2 = new RegisterModelBuilder().hasName("f2").HasValue(5.5).IsConstant(false).build();
-    RegisterModel float3 = new RegisterModelBuilder().hasName("f3").HasValue(3.125).IsConstant(false).build();
-    RegisterModel float4 = new RegisterModelBuilder().hasName("f4").HasValue(12.25).IsConstant(false).build();
+    RegisterModel float1 = new RegisterModel("f1", false, DataTypeEnum.kFloat, 0, RegisterReadinessEnum.kAssigned);
+    RegisterModel float2 = new RegisterModel("f2", false, DataTypeEnum.kFloat, 5.5, RegisterReadinessEnum.kAssigned);
+    RegisterModel float3 = new RegisterModel("f3", false, DataTypeEnum.kFloat, 3.125, RegisterReadinessEnum.kAssigned);
+    RegisterModel float4 = new RegisterModel("f4", false, DataTypeEnum.kFloat, 12.25, RegisterReadinessEnum.kAssigned);
     RegisterFileModel floatFile = new RegisterFileModelBuilder().hasName("float")
         .hasDataType(DataTypeEnum.kFloat)
         .hasRegisterList(Arrays.asList(float1,float2,float3,float4))

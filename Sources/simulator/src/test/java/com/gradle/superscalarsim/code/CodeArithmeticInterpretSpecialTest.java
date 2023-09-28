@@ -3,6 +3,7 @@ package com.gradle.superscalarsim.code;
 import com.gradle.superscalarsim.blocks.base.UnifiedRegisterFileBlock;
 import com.gradle.superscalarsim.builders.*;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
+import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.loader.InitLoader;
 import com.gradle.superscalarsim.models.*;
 import org.junit.Assert;
@@ -27,12 +28,12 @@ public class CodeArithmeticInterpretSpecialTest
   public void setUp()
   {
     MockitoAnnotations.openMocks(this);
-    RegisterModel integer1 = new RegisterModelBuilder().hasName("x1").HasValue(0).IsConstant(false).build();
-    RegisterModel integer2 = new RegisterModelBuilder().hasName("x2").HasValue(25).IsConstant(false).build();
-    RegisterModel integer3 = new RegisterModelBuilder().hasName("x3").HasValue(6).IsConstant(false).build();
-    RegisterModel integer4 = new RegisterModelBuilder().hasName("x4").HasValue(11).IsConstant(false).build();
-    RegisterModel integer5 = new RegisterModelBuilder().hasName("x5").HasValue(-2).IsConstant(false).build();
-    RegisterModel integer6 = new RegisterModelBuilder().hasName("x6").HasValue(-20).IsConstant(false).build();
+    RegisterModel integer1 = new RegisterModel("x1", false, DataTypeEnum.kInt, 0, RegisterReadinessEnum.kAssigned);
+    RegisterModel integer2 = new RegisterModel("x2", false, DataTypeEnum.kInt, 25, RegisterReadinessEnum.kAssigned);
+    RegisterModel integer3 = new RegisterModel("x3", false, DataTypeEnum.kInt, 6, RegisterReadinessEnum.kAssigned);
+    RegisterModel integer4 = new RegisterModel("x4", false, DataTypeEnum.kInt, 11, RegisterReadinessEnum.kAssigned);
+    RegisterModel integer5 = new RegisterModel("x5", false, DataTypeEnum.kInt, -2, RegisterReadinessEnum.kAssigned);
+    RegisterModel integer6 = new RegisterModel("x6", false, DataTypeEnum.kInt, -20, RegisterReadinessEnum.kAssigned);
     RegisterFileModel integerFile = new RegisterFileModelBuilder().hasName("integer")
         .hasDataType(DataTypeEnum.kInt)
         .hasRegisterList(Arrays.asList(integer1, integer2, integer3, integer4, integer5, integer6))

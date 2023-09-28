@@ -3,6 +3,7 @@ package com.gradle.superscalarsim.code;
 import com.gradle.superscalarsim.blocks.base.UnifiedRegisterFileBlock;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.builders.*;
+import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.loader.InitLoader;
 import com.gradle.superscalarsim.models.*;
 import org.junit.Assert;
@@ -25,34 +26,34 @@ public class CodeArithmeticInterpreterConstraintsTest {
   public void setUp()
   {
     MockitoAnnotations.openMocks(this);
-    RegisterModel integer1 = new RegisterModelBuilder().hasName("x1").HasValue(0).IsConstant(false).build();
-    RegisterModel integer2 = new RegisterModelBuilder().hasName("x2").HasValue(Integer.MAX_VALUE).IsConstant(false).build();
-    RegisterModel integer3 = new RegisterModelBuilder().hasName("x3").HasValue(Integer.MIN_VALUE).IsConstant(false).build();
-    RegisterModel integer4 = new RegisterModelBuilder().hasName("x4").HasValue(4).IsConstant(false).build();
+    RegisterModel integer1 = new RegisterModel("x1", false, DataTypeEnum.kInt, 0, RegisterReadinessEnum.kAssigned);
+    RegisterModel integer2 = new RegisterModel("x2", false, DataTypeEnum.kInt, Integer.MAX_VALUE, RegisterReadinessEnum.kAssigned);
+    RegisterModel integer3 = new RegisterModel("x3", false, DataTypeEnum.kInt, Integer.MIN_VALUE, RegisterReadinessEnum.kAssigned);
+    RegisterModel integer4 = new RegisterModel("x4", false, DataTypeEnum.kInt, 4, RegisterReadinessEnum.kAssigned);
     RegisterFileModel integerFile = new RegisterFileModelBuilder().hasName("integer")
         .hasDataType(DataTypeEnum.kInt)
         .hasRegisterList(Arrays.asList(integer1, integer2, integer3, integer4))
         .build();
 
-    RegisterModel long1 = new RegisterModelBuilder().hasName("l1").HasValue(0).IsConstant(false).build();
-    RegisterModel long2 = new RegisterModelBuilder().hasName("l2").HasValue(Long.MAX_VALUE).IsConstant(false).build();
-    RegisterModel long3 = new RegisterModelBuilder().hasName("l3").HasValue(Long.MIN_VALUE).IsConstant(false).build();
+    RegisterModel long1 = new RegisterModel("l1", false, DataTypeEnum.kLong, 0, RegisterReadinessEnum.kAssigned);
+    RegisterModel long2 = new RegisterModel("l2", false, DataTypeEnum.kLong, Long.MAX_VALUE, RegisterReadinessEnum.kAssigned);
+    RegisterModel long3 = new RegisterModel("l3", false, DataTypeEnum.kLong, Long.MIN_VALUE, RegisterReadinessEnum.kAssigned);
     RegisterFileModel longFile = new RegisterFileModelBuilder().hasName("long")
         .hasDataType(DataTypeEnum.kLong)
         .hasRegisterList(Arrays.asList(long1, long2, long3))
         .build();
 
-    RegisterModel float1 = new RegisterModelBuilder().hasName("f1").HasValue(0).IsConstant(false).build();
-    RegisterModel float2 = new RegisterModelBuilder().hasName("f2").HasValue(Float.MAX_VALUE).IsConstant(false).build();
-    RegisterModel float3 = new RegisterModelBuilder().hasName("f3").HasValue(Float.MIN_VALUE).IsConstant(false).build();
+    RegisterModel float1 = new RegisterModel("f1", false, DataTypeEnum.kFloat, 0, RegisterReadinessEnum.kAssigned);
+    RegisterModel float2 = new RegisterModel("f2", false, DataTypeEnum.kFloat, Float.MAX_VALUE, RegisterReadinessEnum.kAssigned);
+    RegisterModel float3 = new RegisterModel("f3", false, DataTypeEnum.kFloat, Float.MIN_VALUE, RegisterReadinessEnum.kAssigned);
     RegisterFileModel floatFile = new RegisterFileModelBuilder().hasName("float")
         .hasDataType(DataTypeEnum.kFloat)
         .hasRegisterList(Arrays.asList(float1, float2, float3))
         .build();
 
-    RegisterModel double1 = new RegisterModelBuilder().hasName("d1").HasValue(0).IsConstant(false).build();
-    RegisterModel double2 = new RegisterModelBuilder().hasName("d2").HasValue(Double.MAX_VALUE).IsConstant(false).build();
-    RegisterModel double3 = new RegisterModelBuilder().hasName("d3").HasValue(Double.MIN_VALUE).IsConstant(false).build();
+    RegisterModel double1 = new RegisterModel("d1", false, DataTypeEnum.kDouble, 0, RegisterReadinessEnum.kAssigned);
+    RegisterModel double2 = new RegisterModel("d2", false, DataTypeEnum.kDouble, Double.MAX_VALUE, RegisterReadinessEnum.kAssigned);
+    RegisterModel double3 = new RegisterModel("d3", false, DataTypeEnum.kDouble, Double.MIN_VALUE, RegisterReadinessEnum.kAssigned);
     RegisterFileModel doubleFile = new RegisterFileModelBuilder().hasName("double")
         .hasDataType(DataTypeEnum.kDouble)
         .hasRegisterList(Arrays.asList(double1, double2, double3))

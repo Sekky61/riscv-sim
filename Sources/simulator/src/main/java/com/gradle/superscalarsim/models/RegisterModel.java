@@ -32,6 +32,7 @@
  */
 package com.gradle.superscalarsim.models;
 
+import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 
 /**
@@ -47,6 +48,11 @@ public class RegisterModel {
      * True if the value of register is constant (example: register x0 from risc-v)
      */
     private final boolean isConstant;
+
+    /**
+     * Data type of register (int, float)
+     */
+    private final DataTypeEnum dataType;
     /**
      * Value inside the register
      */
@@ -64,9 +70,10 @@ public class RegisterModel {
      * @param [in] value      - Register value
      * @brief Constructor
      */
-    public RegisterModel(String name, boolean isConstant, double value, RegisterReadinessEnum readiness) {
+    public RegisterModel(String name, boolean isConstant, DataTypeEnum dataType, double value, RegisterReadinessEnum readiness) {
         this.name = name;
         this.isConstant = isConstant;
+        this.dataType = dataType;
         this.value = value;
         this.readiness = readiness;
     }// end of Constructor
@@ -101,6 +108,13 @@ public class RegisterModel {
         return isConstant;
     }// end of isConstant
     //------------------------------------------------------
+
+    /**
+     * @brief Get data type of register
+     */
+    public DataTypeEnum getDataType() {
+        return dataType;
+    }
 
     /**
      * @return Value inside register
