@@ -356,6 +356,7 @@ public class CodeParser {
                     "Line " + this.codeLineNumber + ": Expecting register, got :" + argumentValue + ".\n");
             return false;
         }
+        // Lookup all register files and aliases, check if the register exists
         for (RegisterFileModel registerFileModel : initLoader.getRegisterFileModelList()) {
             if (!checkDatatype(argumentDataType,
                     registerFileModel.getDataType())) {
@@ -364,6 +365,11 @@ public class CodeParser {
             }
             RegisterModel regModel = registerFileModel.getRegister(argumentValue);
             if (regModel != null) {
+                return true;
+            }
+        }
+        for(InitLoader.RegisterMapping alias : initLoader.getRegisterAliases()) {
+            if (alias.alias.equals(argumentValue)) {
                 return true;
             }
         }

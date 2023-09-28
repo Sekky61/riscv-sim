@@ -101,6 +101,11 @@ public class InitLoader {
     public class RegisterMapping {
         public String register;
         public String alias;
+
+        public RegisterMapping(String register, String alias) {
+            this.register = register;
+            this.alias = alias;
+        }
     }
 
     /**
