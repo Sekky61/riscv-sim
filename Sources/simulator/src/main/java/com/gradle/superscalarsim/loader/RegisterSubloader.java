@@ -39,6 +39,7 @@ package com.gradle.superscalarsim.loader;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
+import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.models.RegisterFileModel;
 import com.gradle.superscalarsim.models.RegisterModel;
 
@@ -77,6 +78,11 @@ public class RegisterSubloader
       Gson gson         = new Gson();
       Reader reader     = Files.newBufferedReader(Paths.get(filePath));
       registerFileModel = gson.fromJson(reader,RegisterFileModel.class);
+      // Arch. registers are assigned by default
+      for(RegisterModel register : registerFileModel.getRegisterList())
+      {
+        register.setReadiness(RegisterReadinessEnum.kAssigned);
+      }
       registerFileModel = validateModel(registerFileModel) ? registerFileModel : null;
     }
     catch (IOException | JsonSyntaxException e)

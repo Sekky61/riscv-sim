@@ -352,8 +352,7 @@ public class StoreBufferBlock implements AbstractBlock {
      */
     private void updateMapValues() {
         this.storeMap.forEach((string, item) -> {
-            RegisterReadinessEnum state = registerFileBlock.getReadyMap().get(
-                    item.getSourceRegister());
+            RegisterReadinessEnum state = registerFileBlock.getRegister(item.getSourceRegister()).getReadiness();
             item.setSourceReady(
                     state == RegisterReadinessEnum.kExecuted || state == RegisterReadinessEnum.kAssigned);
         });

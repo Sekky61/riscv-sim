@@ -4,10 +4,10 @@
  * Faculty of Information Technology \n
  * Brno University of Technology \n
  * xvavra20@fit.vutbr.cz
- * @author  Michal Majer
- *          Faculty of Information Technology
- *          Brno University of Technology
- *          xmajer21@stud.fit.vutbr.cz
+ * @author Michal Majer
+ * Faculty of Information Technology
+ * Brno University of Technology
+ * xmajer21@stud.fit.vutbr.cz
  * @brief File contains class with Reorder buffer logic
  * @date 3  February   2021 16:00 (created) \n
  * 27 April      2021 20:00 (revised)
@@ -41,10 +41,7 @@ import com.gradle.superscalarsim.blocks.loadstore.LoadBufferBlock;
 import com.gradle.superscalarsim.blocks.loadstore.StoreBufferBlock;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
-import com.gradle.superscalarsim.models.InputCodeArgument;
-import com.gradle.superscalarsim.models.PreCommitModel;
-import com.gradle.superscalarsim.models.ReorderFlags;
-import com.gradle.superscalarsim.models.SimCodeModel;
+import com.gradle.superscalarsim.models.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -210,11 +207,12 @@ public class ReorderBufferBlock implements AbstractBlock {
             if (currentReorderFlags.isReadyToBeCommitted()) {
                 currentInstruction.setReadyId(this.state.commitId);
                 InputCodeArgument argument = currentInstruction.getArgumentByName("rd");
-                // TODO: add getreadiness() to registerFileBlock
-                if (argument != null && registerFileBlock.getReadyMap().get(
-                        argument.getValue()) == RegisterReadinessEnum.kExecuted) {
-                    registerFileBlock.setRegisterState(argument.getValue(),
-                            RegisterReadinessEnum.kAssigned);
+                if (argument == null) {
+                    continue;
+                }
+                RegisterModel reg = registerFileBlock.getRegister(argument.getValue());
+                if (reg.getReadiness() == RegisterReadinessEnum.kExecuted) {
+                    reg.setReadiness(RegisterReadinessEnum.kAssigned);
                 }
             }
         }// End assign check
@@ -411,12 +409,11 @@ public class ReorderBufferBlock implements AbstractBlock {
             }
             String registerName = this.renameMapTableBlock.getRegisterMap().get(
                     register).getArchitecturalRegister();
-            double value = this.registerFileBlock.getRegisterValue(registerName);
-            RegisterReadinessEnum speculativeReadyEnum = this.registerFileBlock.getReadyMap().get(
-                    register);
+            RegisterModel registerModel = registerFileBlock.getRegister(registerName);
             this.state.preCommitModelStack.push(
-                    new PreCommitModel(this.state.commitId, registerName, register, value,
-                            orderId, speculativeReadyEnum));
+                    new PreCommitModel(this.state.commitId, registerName, register,
+                            registerModel.getValue(),
+                            orderId, registerModel.getReadiness()));
         } else {
             double value = this.registerFileBlock.getRegisterValue(register);
             this.state.preCommitModelStack.push(

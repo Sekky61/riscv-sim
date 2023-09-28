@@ -111,7 +111,7 @@ public class RenameMapTableBlock
     this.registerMap.put(speculativeRegister,new RenameMapModel(registerName, order));
     this.freeList.remove(speculativeRegister);
     this.referenceMap.put(speculativeRegister, 1);
-    this.registerFileBlock.getReadyMap().replace(speculativeRegister, RegisterReadinessEnum.kAllocated);
+    this.registerFileBlock.getRegister(speculativeRegister).setReadiness(RegisterReadinessEnum.kAllocated);
     return speculativeRegister;
   }// end of mapRegister
   //----------------------------------------------------------------------
@@ -125,10 +125,11 @@ public class RenameMapTableBlock
    */
   public String mapRegister(String registerName, String speculativeRegister, int order)
   {
+    // TODO: merge with previous method
     this.registerMap.put(speculativeRegister,new RenameMapModel(registerName, order));
     this.freeList.remove(speculativeRegister);
     increaseReference(speculativeRegister);
-    this.registerFileBlock.getReadyMap().replace(speculativeRegister, RegisterReadinessEnum.kAllocated);
+    this.registerFileBlock.getRegister(speculativeRegister).setReadiness(RegisterReadinessEnum.kAllocated);
     return speculativeRegister;
   }// end of mapRegister
   //----------------------------------------------------------------------
@@ -198,7 +199,7 @@ public class RenameMapTableBlock
         .filter(reg -> reg.getName().equals(speculativeRegister))
         .findFirst().ifPresent(register ->
       {
-        this.registerFileBlock.getReadyMap().replace(register.getName(), RegisterReadinessEnum.kFree);
+        this.registerFileBlock.getRegister(speculativeRegister).setReadiness(RegisterReadinessEnum.kFree);
         this.referenceMap.remove(register.getName());
         this.registerMap.remove(register.getName());
         this.freeList.add(register.getName());

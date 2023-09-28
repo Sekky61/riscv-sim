@@ -453,8 +453,7 @@ public class LoadBufferBlock implements AbstractBlock {
         if (resultStoreItem == null) {
             return simCodeModel;
         }
-        RegisterReadinessEnum resultState = registerFileBlock.getReadyMap().get(
-                resultStoreItem.getSourceRegister());
+        RegisterReadinessEnum resultState = registerFileBlock.getRegister(resultStoreItem.getSourceRegister()).getReadiness();
 
         boolean storeSourceReady = resultState == RegisterReadinessEnum.kExecuted || resultState == RegisterReadinessEnum.kAssigned;
         if (!storeSourceReady) {

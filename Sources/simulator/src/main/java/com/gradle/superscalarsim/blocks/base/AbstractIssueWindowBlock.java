@@ -37,10 +37,7 @@ import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.loader.InitLoader;
-import com.gradle.superscalarsim.models.InputCodeArgument;
-import com.gradle.superscalarsim.models.InstructionFunctionModel;
-import com.gradle.superscalarsim.models.IssueItemModel;
-import com.gradle.superscalarsim.models.SimCodeModel;
+import com.gradle.superscalarsim.models.*;
 
 import java.beans.PropertyChangeEvent;
 import java.util.*;
@@ -226,9 +223,10 @@ public abstract class AbstractIssueWindowBlock implements AbstractBlock {
         for (InputCodeArgument argument : codeModel.getArguments()) {
             if (argument.getName().startsWith("rs")) {
                 String registerName = argument.getValue();
-                RegisterReadinessEnum readiness = this.registerFileBlock.getReadyMap().get(registerName);
+                RegisterModel reg = this.registerFileBlock.getRegister(registerName);
+                RegisterReadinessEnum readiness = reg.getReadiness();
                 boolean validity = readiness == RegisterReadinessEnum.kExecuted || readiness == RegisterReadinessEnum.kAssigned;
-                itemModelList.add(new IssueItemModel(registerName, registerFileBlock.getRegisterValue(registerName), validity));
+                itemModelList.add(new IssueItemModel(registerName, reg.getValue(), validity));
             } else if (argument.getName().startsWith("imm")) {
                 try {
                     itemModelList.add(new IssueItemModel(argument.getName(), Double.parseDouble(argument.getValue()), true));
@@ -272,9 +270,11 @@ public abstract class AbstractIssueWindowBlock implements AbstractBlock {
         if (item.getTag().equals("imm")) {
             return;
         }
-        RegisterReadinessEnum readinessEnum = this.registerFileBlock.getReadyMap().get(item.getTag());
+        // TODO: maybe refactor this pattern into a function
+        RegisterModel reg = this.registerFileBlock.getRegister(item.getTag());
+        RegisterReadinessEnum readinessEnum = reg.getReadiness();
         if (readinessEnum == RegisterReadinessEnum.kExecuted || readinessEnum == RegisterReadinessEnum.kAssigned) {
-            item.setValue(this.registerFileBlock.getRegisterValue(item.getTag()));
+            item.setValue(reg.getValue());
             item.setValidityBit(true);
         } else {
             item.setValue(0);
