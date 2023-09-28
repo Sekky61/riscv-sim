@@ -236,7 +236,7 @@ public class UnifiedRegisterFileBlock
     List<RegisterModel> registerModelList = new ArrayList<>();
     for (int i = 0; i < size; i++)
     {
-      registerModelList.add(new RegisterModel("t" + i, false, 0));
+      registerModelList.add(new RegisterModel("t" + i, false, 0, RegisterReadinessEnum.kFree));
       readyMap.put("t" + i, RegisterReadinessEnum.kFree);
     }
 
