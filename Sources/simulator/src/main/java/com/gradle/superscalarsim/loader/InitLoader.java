@@ -64,6 +64,19 @@ public class InitLoader {
 
     /// Path to file with instructions definitions
     private String instructionsFilePath;
+    /**
+     * @brief File path with register aliases
+     * File structure: array of objects with keys "register" and "alias"
+     */
+    private String registerAliasesFilePath;
+
+    /**
+     * The aliases between registers.
+     * The key is the architecture name (x0), the value is the alias (zero).
+     * Must be a list - register x8 has two aliases (s0 and fp).
+     */
+    private List<RegisterMapping> registerAliases;
+
     /// Holds error message, if any occurs, otherwise is empty
     private String errorMessage;
 
@@ -84,6 +97,11 @@ public class InitLoader {
     private int cacheLoadDelay;
     private int cacheLineReplacementDelay;
 
+    public class RegisterMapping {
+        public String register;
+        public String alias;
+    }
+
     /**
      * @brief Constructor
      */
@@ -93,6 +111,7 @@ public class InitLoader {
 
         this.registerFileDir = "./registers/";
         this.instructionsFilePath = "./supportedInstructions.json";
+        this.registerAliasesFilePath = "./registerAliases.json";
 
         this.errorMessage = "";
 
@@ -212,10 +231,24 @@ public class InitLoader {
         try {
             loadRegisters();
             loadInstructions();
+            loadAliases();
         } catch (NullPointerException | IOException e) {
             handleNullPointerException();
         }
     }// end of load
+
+    private void loadAliases() {
+        Gson gson = new Gson();
+        Reader reader = null;
+        try {
+            reader = Files.newBufferedReader(Paths.get(registerAliasesFilePath));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        // read
+        registerAliases = gson.fromJson(reader, new TypeToken<List<RegisterMapping>>() {
+        }.getType());
+    }
     //------------------------------------------------------
 
     /**
@@ -316,5 +349,12 @@ public class InitLoader {
 
     public void setInstructionFunctionModelList(List<InstructionFunctionModel> instructionFunctionModelList) {
         this.instructionFunctionModelList = instructionFunctionModelList;
+    }
+
+    /**
+     * @brief Get register aliases
+     */
+    public List<RegisterMapping> getRegisterAliases() {
+        return registerAliases;
     }
 }

@@ -1,0 +1,262 @@
+[
+  {
+    "register": "x0",
+    "alias": "zero"
+  },
+  {
+    "register": "x1",
+    "alias": "ra"
+  },
+  {
+    "register": "x2",
+    "alias": "sp"
+  },
+  {
+    "register": "x3",
+    "alias": "gp"
+  },
+  {
+    "register": "x4",
+    "alias": "tp"
+  },
+  {
+    "register": "x5",
+    "alias": "t0"
+  },
+  {
+    "register": "x6",
+    "alias": "t1"
+  },
+  {
+    "register": "x7",
+    "alias": "t2"
+  },
+  {
+    "register": "x8",
+    "alias": "s0"
+  },
+  {
+    "register": "x8",
+    "alias": "fp"
+  },
+  {
+    "register": "x9",
+    "alias": "s1"
+  },
+  {
+    "register": "x10",
+    "alias": "a0"
+  },
+  {
+    "register": "x11",
+    "alias": "a1"
+  },
+  {
+    "register": "x12",
+    "alias": "a2"
+  },
+  {
+    "register": "x13",
+    "alias": "a3"
+  },
+  {
+    "register": "x14",
+    "alias": "a4"
+  },
+  {
+    "register": "x15",
+    "alias": "a5"
+  },
+  {
+    "register": "x16",
+    "alias": "a6"
+  },
+  {
+    "register": "x17",
+    "alias": "a7"
+  },
+  {
+    "register": "x18",
+    "alias": "s2"
+  },
+  {
+    "register": "x19",
+    "alias": "s3"
+  },
+  {
+    "register": "x20",
+    "alias": "s4"
+  },
+  {
+    "register": "x21",
+    "alias": "s5"
+  },
+  {
+    "register": "x22",
+    "alias": "s6"
+  },
+  {
+    "register": "x23",
+    "alias": "s7"
+  },
+  {
+    "register": "x24",
+    "alias": "s8"
+  },
+  {
+    "register": "x25",
+    "alias": "s9"
+  },
+  {
+    "register": "x26",
+    "alias": "s10"
+  },
+  {
+    "register": "x27",
+    "alias": "s11"
+  },
+  {
+    "register": "x28",
+    "alias": "t3"
+  },
+  {
+    "register": "x29",
+    "alias": "t4"
+  },
+  {
+    "register": "x30",
+    "alias": "t5"
+  },
+  {
+    "register": "x31",
+    "alias": "t6"
+  },
+  {
+    "register": "f0",
+    "alias": "ft0"
+  },
+  {
+    "register": "f1",
+    "alias": "ft1"
+  },
+  {
+    "register": "f2",
+    "alias": "ft2"
+  },
+  {
+    "register": "f3",
+    "alias": "ft3"
+  },
+  {
+    "register": "f4",
+    "alias": "ft4"
+  },
+  {
+    "register": "f5",
+    "alias": "ft5"
+  },
+  {
+    "register": "f6",
+    "alias": "ft6"
+  },
+  {
+    "register": "f7",
+    "alias": "ft7"
+  },
+  {
+    "register": "f8",
+    "alias": "fs0"
+  },
+  {
+    "register": "f9",
+    "alias": "fs1"
+  },
+  {
+    "register": "f10",
+    "alias": "fa0"
+  },
+  {
+    "register": "f11",
+    "alias": "fa1"
+  },
+  {
+    "register": "f12",
+    "alias": "fa2"
+  },
+  {
+    "register": "f13",
+    "alias": "fa3"
+  },
+  {
+    "register": "f14",
+    "alias": "fa4"
+  },
+  {
+    "register": "f15",
+    "alias": "fa5"
+  },
+  {
+    "register": "f16",
+    "alias": "fa6"
+  },
+  {
+    "register": "f17",
+    "alias": "fa7"
+  },
+  {
+    "register": "f18",
+    "alias": "fs2"
+  },
+  {
+    "register": "f19",
+    "alias": "fs3"
+  },
+  {
+    "register": "f20",
+    "alias": "fs4"
+  },
+  {
+    "register": "f21",
+    "alias": "fs5"
+  },
+  {
+    "register": "f22",
+    "alias": "fs6"
+  },
+  {
+    "register": "f23",
+    "alias": "fs7"
+  },
+  {
+    "register": "f24",
+    "alias": "fs8"
+  },
+  {
+    "register": "f25",
+    "alias": "fs9"
+  },
+  {
+    "register": "f26",
+    "alias": "fs10"
+  },
+  {
+    "register": "f27",
+    "alias": "fs11"
+  },
+  {
+    "register": "f28",
+    "alias": "ft8"
+  },
+  {
+    "register": "f29",
+    "alias": "ft9"
+  },
+  {
+    "register": "f30",
+    "alias": "ft10"
+  },
+  {
+    "register": "f31",
+    "alias": "ft11"
+  }
+]
