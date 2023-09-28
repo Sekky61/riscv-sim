@@ -80,15 +80,13 @@ public class InstructionTests {
     @Test
     public void testSUB() {
         // Setup + exercise
-        Cpu init = new Cpu();
-        init.setDefaultState();
-        init.cpuState.unifiedRegisterFileBlock.setRegisterValue("x1", 10.0);
-        init.cpuState.unifiedRegisterFileBlock.setRegisterValue("x2", 5.0);
-        init.cpuState.unifiedRegisterFileBlock.setRegisterValue("x3", 3.0);
-        Cpu cpu = ExecuteUtil.executeProgram("sub x1, x2, x3", init);
+        cpu.cpuState.unifiedRegisterFileBlock.setRegisterValue("x1", 10.0);
+        cpu.cpuState.unifiedRegisterFileBlock.setRegisterValue("x2", 5.0);
+        cpu.cpuState.unifiedRegisterFileBlock.setRegisterValue("x3", 3.0);
+        Cpu cpuAfter = ExecuteUtil.executeProgram("sub x1, x2, x3", cpu);
 
         // Assert
-        Assert.assertEquals(2, cpu.cpuState.unifiedRegisterFileBlock.getRegisterValue("x1"), 0.5);
+        Assert.assertEquals(2, cpuAfter.cpuState.unifiedRegisterFileBlock.getRegisterValue("x1"), 0.5);
     }
 
     /**

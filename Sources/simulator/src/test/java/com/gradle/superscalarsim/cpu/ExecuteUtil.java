@@ -40,6 +40,12 @@ public class ExecuteUtil {
         return executeProgram(instruction, cpu);
     }
 
+    /**
+     * Fully execute a program
+     * @param instruction - Program to execute
+     * @param cpu - CPU to use. Will be modified.
+     * @return The passed in CPU, with the program executed. Does not copy the CPU.
+     */
     static Cpu executeProgram(String instruction, Cpu cpu) {
         boolean success = cpu.loadProgram(instruction);
         if(!success) {

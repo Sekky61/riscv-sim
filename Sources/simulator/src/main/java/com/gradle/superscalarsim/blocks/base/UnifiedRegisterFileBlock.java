@@ -63,6 +63,7 @@ public class UnifiedRegisterFileBlock {
      * TODO: Remove this list and use a field for each register file type (one for ints, ...)
      */
     private List<RegisterFileModel> registerList;
+
     /**
      * Mapping of names to register objects
      * Allows to have multiple names for one register
@@ -154,13 +155,7 @@ public class UnifiedRegisterFileBlock {
      * @brief Get object representation of register based on provided name (tag or arch. name)
      */
     public RegisterModel getRegister(final String registerName) {
-        for (RegisterFileModel registerFile : this.registerList) {
-            RegisterModel resultRegister = registerFile.getRegister(registerName);
-            if (resultRegister != null) {
-                return resultRegister;
-            }
-        }
-        throw new IllegalArgumentException("Register " + registerName + " not found");
+        return this.registerMap.get(registerName);
     }// end of getRegisterValue
     //----------------------------------------------------------------------
 
@@ -188,6 +183,7 @@ public class UnifiedRegisterFileBlock {
                 return;
             }
         }
+        throw new IllegalArgumentException("Register " + registerName + " not found");
     }// end of setRegisterValue
     //----------------------------------------------------------------------
 
@@ -234,7 +230,7 @@ public class UnifiedRegisterFileBlock {
         // TODO: Do not instantiate all speculative registers ahead of time
         List<RegisterModel> registerModelList = new ArrayList<>();
         for (int i = 0; i < size; i++) {
-            RegisterModel reg = new RegisterModel("t" + i, false, DataTypeEnum.kSpeculative, 0,
+            RegisterModel reg = new RegisterModel("tg" + i, false, DataTypeEnum.kSpeculative, 0,
                     RegisterReadinessEnum.kFree);
             registerModelList.add(reg);
             this.registerMap.put(reg.getName(), reg);
@@ -259,4 +255,11 @@ public class UnifiedRegisterFileBlock {
         }
         return false;
     }// end of isRegisterConstant
+
+    /**
+     * @return Map of all registers. For testing purposes *only*
+     */
+    public Map<String, RegisterModel> getRegisterMap() {
+        return registerMap;
+    }
 }

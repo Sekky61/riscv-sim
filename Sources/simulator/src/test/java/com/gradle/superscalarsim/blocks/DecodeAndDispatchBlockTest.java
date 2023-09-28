@@ -98,9 +98,9 @@ public class DecodeAndDispatchBlockTest
     decodeAndDispatchBlock.simulate();
 
     Assert.assertEquals(3, decodeAndDispatchBlock.getAfterRenameCodeList().size());
-    Assert.assertEquals("add t0 x2 x3", decodeAndDispatchBlock.getAfterRenameCodeList().get(0).getRenamedCodeLine());
-    Assert.assertEquals("sub t1 x2 x3", decodeAndDispatchBlock.getAfterRenameCodeList().get(1).getRenamedCodeLine());
-    Assert.assertEquals("mul t2 x2 x3", decodeAndDispatchBlock.getAfterRenameCodeList().get(2).getRenamedCodeLine());
+    Assert.assertEquals("add tg0 x2 x3", decodeAndDispatchBlock.getAfterRenameCodeList().get(0).getRenamedCodeLine());
+    Assert.assertEquals("sub tg1 x2 x3", decodeAndDispatchBlock.getAfterRenameCodeList().get(1).getRenamedCodeLine());
+    Assert.assertEquals("mul tg2 x2 x3", decodeAndDispatchBlock.getAfterRenameCodeList().get(2).getRenamedCodeLine());
   }
 
   @Test
@@ -134,9 +134,9 @@ public class DecodeAndDispatchBlockTest
     decodeAndDispatchBlock.simulate();
 
     Assert.assertEquals(3, decodeAndDispatchBlock.getAfterRenameCodeList().size());
-    Assert.assertEquals("add t0 x2 x3", decodeAndDispatchBlock.getAfterRenameCodeList().get(0).getRenamedCodeLine());
-    Assert.assertEquals("sub t1 x3 x4", decodeAndDispatchBlock.getAfterRenameCodeList().get(1).getRenamedCodeLine());
-    Assert.assertEquals("mul t2 x4 x5", decodeAndDispatchBlock.getAfterRenameCodeList().get(2).getRenamedCodeLine());
+    Assert.assertEquals("add tg0 x2 x3", decodeAndDispatchBlock.getAfterRenameCodeList().get(0).getRenamedCodeLine());
+    Assert.assertEquals("sub tg1 x3 x4", decodeAndDispatchBlock.getAfterRenameCodeList().get(1).getRenamedCodeLine());
+    Assert.assertEquals("mul tg2 x4 x5", decodeAndDispatchBlock.getAfterRenameCodeList().get(2).getRenamedCodeLine());
   }
 
   @Test
@@ -170,8 +170,8 @@ public class DecodeAndDispatchBlockTest
     decodeAndDispatchBlock.simulate();
 
     Assert.assertEquals(3, decodeAndDispatchBlock.getAfterRenameCodeList().size());
-    Assert.assertEquals("add t0 x4 x5", decodeAndDispatchBlock.getAfterRenameCodeList().get(0).getRenamedCodeLine());
-    Assert.assertEquals("sub t1 t0 x4", decodeAndDispatchBlock.getAfterRenameCodeList().get(1).getRenamedCodeLine());
-    Assert.assertEquals("mul t2 t1 t0", decodeAndDispatchBlock.getAfterRenameCodeList().get(2).getRenamedCodeLine());
+    Assert.assertEquals("add tg0 x4 x5", decodeAndDispatchBlock.getAfterRenameCodeList().get(0).getRenamedCodeLine());
+    Assert.assertEquals("sub tg1 tg0 x4", decodeAndDispatchBlock.getAfterRenameCodeList().get(1).getRenamedCodeLine());
+    Assert.assertEquals("mul tg2 tg1 tg0", decodeAndDispatchBlock.getAfterRenameCodeList().get(2).getRenamedCodeLine());
   }
 }
