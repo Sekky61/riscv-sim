@@ -47,156 +47,175 @@ import java.util.Map;
  * @class UnifiedRegisterFileBlock
  * @brief Class contains interface to interact with all register files and its registers
  */
-public class UnifiedRegisterFileBlock {
-    /**
-     * Multiplier on how many speculative registers should be created based on existing number of ISA registers
-     * TODO: Take the total number of registers on construction
-     */
-    private static final int specRegisterMultiplier = 10;
-    /**
-     * InitLoader class holding information about instruction and registers
-     * TODO: remove this reference
-     */
-    private InitLoader initLoader;
-    /**
-     * List of all register files
-     * TODO: Remove this list and use a field for each register file type (one for ints, ...)
-     */
-    private List<RegisterFileModel> registerList;
-
-    /**
-     * Mapping of names to register objects
-     * Allows to have multiple names for one register
-     * Also theoretically faster than searching through the list (O(1) vs O(n))
-     */
-    private Map<String, RegisterModel> registerMap;
-
-    /**
-     * @brief Default constructor - You need to call loadRegisters later
-     */
-    public UnifiedRegisterFileBlock() {
-        this.initLoader = null;
-        this.registerList = new ArrayList<>();
-        this.registerMap = null;
+public class UnifiedRegisterFileBlock
+{
+  /**
+   * Multiplier on how many speculative registers should be created based on existing number of ISA registers
+   * TODO: Take the total number of registers on construction
+   */
+  private static final int specRegisterMultiplier = 10;
+  /**
+   * InitLoader class holding information about instruction and registers
+   * TODO: remove this reference
+   */
+  private final InitLoader initLoader;
+  /**
+   * List of all register files
+   * TODO: Remove this list and use a field for each register file type (one for ints, ...)
+   */
+  private List<RegisterFileModel> registerList;
+  
+  /**
+   * Mapping of names to register objects
+   * Allows to have multiple names for one register
+   * Also theoretically faster than searching through the list (O(1) vs O(n))
+   */
+  private final Map<String, RegisterModel> registerMap;
+  
+  /**
+   * @brief Default constructor - You need to call loadRegisters later
+   */
+  public UnifiedRegisterFileBlock()
+  {
+    this.initLoader   = null;
+    this.registerList = new ArrayList<>();
+    this.registerMap  = null;
+  }
+  
+  /**
+   * @param [in] loader - InitLoader class holding information about instruction and registers
+   *
+   * @brief Constructor
+   */
+  public UnifiedRegisterFileBlock(final InitLoader loader)
+  {
+    this.initLoader   = loader;
+    this.registerList = new ArrayList<>();
+    this.registerMap  = new HashMap<>();
+    loadRegisters(initLoader.getRegisterFileModelList());
+    loadAliases(initLoader.getRegisterAliases());
+  }// end of Constructor
+  
+  private void loadAliases(List<InitLoader.RegisterMapping> registerAliases)
+  {
+    for (InitLoader.RegisterMapping alias : registerAliases)
+    {
+      RegisterModel register = getRegister(alias.register);
+      registerMap.put(alias.alias, register);
     }
-
-    /**
-     * @param [in] loader - InitLoader class holding information about instruction and registers
-     * @brief Constructor
-     */
-    public UnifiedRegisterFileBlock(final InitLoader loader) {
-        this.initLoader = loader;
-        this.registerList = new ArrayList<>();
-        this.registerMap = new HashMap<>();
-        loadRegisters(initLoader.getRegisterFileModelList());
-        loadAliases(initLoader.getRegisterAliases());
-    }// end of Constructor
-
-    private void loadAliases(List<InitLoader.RegisterMapping> registerAliases) {
-        for (InitLoader.RegisterMapping alias : registerAliases) {
-            RegisterModel register = getRegister(alias.register);
-            registerMap.put(alias.alias, register);
-        }
+  }
+  //----------------------------------------------------------------------
+  
+  public void setRegisterList(List<RegisterFileModel> registerList)
+  {
+    this.registerList = registerList;
+  }
+  //----------------------------------------------------------------------
+  
+  /**
+   * @brief Resets the register from the initial register file
+   */
+  public void refreshRegisters()
+  {
+    this.registerList.clear();
+    this.registerMap.clear();
+    initLoader.load();
+    loadRegisters(initLoader.getRegisterFileModelList());
+  }// end of refreshRegisters
+  //----------------------------------------------------------------------
+  
+  /**
+   * @param [in] dataType - Data type of searched register list
+   *
+   * @return List of registers
+   * @brief Get list of registers based on data type provided. Assumes that there is only one register file with provided data type
+   */
+  public final List<RegisterModel> getRegisterList(DataTypeEnum dataType)
+  {
+    RegisterFileModel registerModelList = this.registerList.stream()
+                                                           .filter(registerFileModel -> registerFileModel.getDataType() == dataType)
+                                                           .findFirst().orElse(null);
+    return registerModelList == null ? new ArrayList<>() : registerModelList.getRegisterList();
+  }// end of getRegisterList
+  //----------------------------------------------------------------------
+  
+  /**
+   * @param [in] registerName - Name (tag) of the register
+   *
+   * @return The register object
+   * @brief Get object representation of register based on provided name (tag or arch. name)
+   */
+  public RegisterModel getRegister(final String registerName)
+  {
+    return this.registerMap.get(registerName);
+  }// end of getRegisterValue
+  //----------------------------------------------------------------------
+  
+  /**
+   * @param [in] fromRegister
+   * @param [in] toRegister
+   *
+   * @brief Copies value from speculative register to architectural one and frees the mapping
+   */
+  public void copyAndFree(String fromRegister, String toRegister)
+  {
+    RegisterModel fromRegisterModel = getRegister(fromRegister);
+    RegisterModel toRegisterModel   = getRegister(toRegister);
+    
+    double value = fromRegisterModel.getValue();
+    toRegisterModel.setValue(value);
+    fromRegisterModel.setReadiness(RegisterReadinessEnum.kFree);
+  }// end of copyAndFree
+  //----------------------------------------------------------------------
+  
+  /**
+   * @param [in] registerFileModelList - List of all architectural register files
+   *
+   * @brief Load all register files to this class and create the speculative one
+   */
+  public void loadRegisters(final List<RegisterFileModel> registerFileModelList)
+  {
+    int registerCount = 0;
+    for (RegisterFileModel registerFile : registerFileModelList)
+    {
+      this.registerList.add(registerFile);
+      // Put entry into the map for each register
+      for (RegisterModel register : registerFile.getRegisterList())
+      {
+        this.registerMap.put(register.getName(), register);
+      }
+      registerCount = registerCount + registerFile.getRegisterList().size();
     }
-    //----------------------------------------------------------------------
-
-    public void setRegisterList(List<RegisterFileModel> registerList) {
-        this.registerList = registerList;
+    this.registerList.add(createSpeculativeRegisters(registerCount * specRegisterMultiplier));
+  }// end of loadRegisters
+  //----------------------------------------------------------------------
+  
+  /**
+   * @param [in] size - Number of speculative registers
+   *
+   * @return New speculative register file
+   * @brief Creates speculative register file
+   */
+  private RegisterFileModel createSpeculativeRegisters(int size)
+  {
+    // TODO: Do not instantiate all speculative registers ahead of time
+    List<RegisterModel> registerModelList = new ArrayList<>();
+    for (int i = 0; i < size; i++)
+    {
+      RegisterModel reg = new RegisterModel("tg" + i, false, DataTypeEnum.kSpeculative, 0, RegisterReadinessEnum.kFree);
+      registerModelList.add(reg);
+      this.registerMap.put(reg.getName(), reg);
     }
-    //----------------------------------------------------------------------
-
-    /**
-     * @brief Resets the register from the initial register file
-     */
-    public void refreshRegisters() {
-        this.registerList.clear();
-        this.registerMap.clear();
-        initLoader.load();
-        loadRegisters(initLoader.getRegisterFileModelList());
-    }// end of refreshRegisters
-    //----------------------------------------------------------------------
-
-    /**
-     * @param [in] dataType - Data type of searched register list
-     * @return List of registers
-     * @brief Get list of registers based on data type provided. Assumes that there is only one register file with provided data type
-     */
-    public final List<RegisterModel> getRegisterList(DataTypeEnum dataType) {
-        RegisterFileModel registerModelList = this.registerList.stream()
-                .filter(registerFileModel -> registerFileModel.getDataType() == dataType).findFirst().orElse(
-                        null);
-        return registerModelList == null ? new ArrayList<>() : registerModelList.getRegisterList();
-    }// end of getRegisterList
-    //----------------------------------------------------------------------
-
-    /**
-     * @param [in] registerName - Name (tag) of the register
-     * @return The register object
-     * @brief Get object representation of register based on provided name (tag or arch. name)
-     */
-    public RegisterModel getRegister(final String registerName) {
-        return this.registerMap.get(registerName);
-    }// end of getRegisterValue
-    //----------------------------------------------------------------------
-
-    /**
-     * @param [in] fromRegister
-     * @param [in] toRegister
-     * @brief Copies value from speculative register to architectural one and frees the mapping
-     */
-    public void copyAndFree(String fromRegister, String toRegister) {
-        RegisterModel fromRegisterModel = getRegister(fromRegister);
-        RegisterModel toRegisterModel = getRegister(toRegister);
-
-        double value = fromRegisterModel.getValue();
-        toRegisterModel.setValue(value);
-        fromRegisterModel.setReadiness(RegisterReadinessEnum.kFree);
-    }// end of copyAndFree
-    //----------------------------------------------------------------------
-
-    /**
-     * @param [in] registerFileModelList - List of all architectural register files
-     * @brief Load all register files to this class and create the speculative one
-     */
-    public void loadRegisters(final List<RegisterFileModel> registerFileModelList) {
-        int registerCount = 0;
-        for (RegisterFileModel registerFile : registerFileModelList) {
-            this.registerList.add(registerFile);
-            // Put entry into the map for each register
-            for (RegisterModel register : registerFile.getRegisterList()) {
-                this.registerMap.put(register.getName(), register);
-            }
-            registerCount = registerCount + registerFile.getRegisterList().size();
-        }
-        this.registerList.add(
-                createSpeculativeRegisters(registerCount * specRegisterMultiplier));
-    }// end of loadRegisters
-    //----------------------------------------------------------------------
-
-    /**
-     * @param [in] size - Number of speculative registers
-     * @return New speculative register file
-     * @brief Creates speculative register file
-     */
-    private RegisterFileModel createSpeculativeRegisters(int size) {
-        // TODO: Do not instantiate all speculative registers ahead of time
-        List<RegisterModel> registerModelList = new ArrayList<>();
-        for (int i = 0; i < size; i++) {
-            RegisterModel reg = new RegisterModel("tg" + i, false, DataTypeEnum.kSpeculative, 0,
-                    RegisterReadinessEnum.kFree);
-            registerModelList.add(reg);
-            this.registerMap.put(reg.getName(), reg);
-        }
-
-        return new RegisterFileModel("Speculative register file", "kSpeculative",
-                registerModelList);
-    }// end of createSpeculativeRegisters
-    //----------------------------------------------------------------------
-
-    /**
-     * @return Map of all registers. For testing purposes *only*
-     */
-    public Map<String, RegisterModel> getRegisterMap() {
-        return registerMap;
-    }
+    
+    return new RegisterFileModel("Speculative register file", "kSpeculative", registerModelList);
+  }// end of createSpeculativeRegisters
+  //----------------------------------------------------------------------
+  
+  /**
+   * @return Map of all registers. For testing purposes *only*
+   */
+  public Map<String, RegisterModel> getRegisterMap()
+  {
+    return registerMap;
+  }
 }

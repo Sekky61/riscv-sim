@@ -1,34 +1,29 @@
 /**
- * @file    LoadBufferTableModel.java
- *
- * @author  Jan Vavra \n
- *          Faculty of Information Technology \n
- *          Brno University of Technology \n
- *          xvavra20@fit.vutbr.cz
- *
+ * @file LoadBufferTableModel.java
+ * @author Jan Vavra \n
+ * Faculty of Information Technology \n
+ * Brno University of Technology \n
+ * xvavra20@fit.vutbr.cz
  * @brief File contains container class for Load buffer table entries
- *
- * @date  18 April  2020 15:00 (created) \n
- *        28 April  2020 18:00 (revised)
- *
+ * @date 18 April  2020 15:00 (created) \n
+ * 28 April  2020 18:00 (revised)
  * @section Licence
  * This file is part of the Superscalar simulator app
- *
+ * <p>
  * Copyright (C) 2020  Jan Vavra
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
  */
 package com.gradle.superscalarsim.models;
 
@@ -48,7 +43,7 @@ public class LoadBufferTableModel
   private final String bypassed;
   /// Load buffer item for comparing and highlighting
   private final LoadBufferItem item;
-
+  
   /**
    * @brief Constructor
    * @param [in] codeModel -
@@ -63,7 +58,7 @@ public class LoadBufferTableModel
     this.item         = item;
   }// end of Constructor
   //----------------------------------------------------------------------
-
+  
   /**
    * @brief Dummy Constructor
    */
@@ -76,7 +71,7 @@ public class LoadBufferTableModel
     this.item         = null;
   }// end of Dummy Constructor
   //----------------------------------------------------------------------
-
+  
   /**
    * @brief Get code line of the instruction
    * @return Code line of instruction
@@ -86,7 +81,7 @@ public class LoadBufferTableModel
     return codeLine;
   }// end of getCodeLine
   //----------------------------------------------------------------------
-
+  
   /**
    * @brief Get string state of the address
    * @return String value of the address
@@ -96,7 +91,7 @@ public class LoadBufferTableModel
     return addressReady;
   }// end of getAddressReady
   //----------------------------------------------------------------------
-
+  
   /**
    * @brief Get string state of the data
    * @return String state of data
@@ -106,7 +101,7 @@ public class LoadBufferTableModel
     return dataReady;
   }// end of getDataReady
   //----------------------------------------------------------------------
-
+  
   /**
    * @brief Check if the address is ready
    * @return True if address is ready, false otherwise
@@ -116,7 +111,7 @@ public class LoadBufferTableModel
     return this.addressReady.equals("READY");
   }// end of isAddressReady
   //----------------------------------------------------------------------
-
+  
   /**
    * @brief Check if the data are ready
    * @return True if data are ready, false otherwise
@@ -126,7 +121,7 @@ public class LoadBufferTableModel
     return this.dataReady.equals("READY");
   }// end of isDataReady
   //----------------------------------------------------------------------
-
+  
   /**
    * @brief Get load item
    * @return Load item model
@@ -136,7 +131,7 @@ public class LoadBufferTableModel
     return item;
   }// end of getItem
   //----------------------------------------------------------------------
-
+  
   /**
    * @brief Get string state of the bypassed flag
    * @return String state of the bypassed flag

@@ -35,100 +35,115 @@ package com.gradle.superscalarsim.models;
 /**
  * @class IssueItemModel
  * @brief Container for item, which should be build into a list for updating
- *        readiness of values in Issue window for one instruction
+ * readiness of values in Issue window for one instruction
  */
-public class IssueItemModel {
-    /// Register name
-    private String tag;
-    /// Value inside of the register
-    private double value;
-    /// If register has correct value
-    private boolean validityBit;
-
-    /**
-     * @brief Constructor
-     * @param [in] tag         - Register name
-     * @param [in] validityBit - Is register valid?
-     */
-    public IssueItemModel(String tag, boolean validityBit) {
-        this.tag = tag;
-        this.value = 0;
-        this.validityBit = validityBit;
-    }// end of Constructor
-    //------------------------------------------------------
-
-    /**
-     * @brief Constructor
-     * @param [in] tag         - Register name
-     * @param [in] value       - Register value (if any)
-     * @param [in] validityBit - Is register valid?
-     */
-    public IssueItemModel(String tag, double value, boolean validityBit) {
-        this.tag = tag;
-        this.value = value;
-        this.validityBit = validityBit;
-    }// end of Constructor
-    //------------------------------------------------------
-
-    /**
-     * @brief Get item tag (register name)
-     * @return String containing a tag
-     */
-    public String getTag() {
-        return tag;
-    }// end of getTag
-    //------------------------------------------------------
-
-    /**
-     * @brief Sets item tag
-     * @param [in] tag - New String value of a tag
-     */
-    public void setTag(String tag) {
-        this.tag = tag;
-    }// end of setTag
-    //------------------------------------------------------
-
-    /**
-     * @brief Get item value
-     * @return Double value
-     */
-    public double getValue() {
-        return value;
-    }// end of getValue
-    //------------------------------------------------------
-
-    /**
-     * @brief Sets item value
-     * @param [in] value - New Double value of the item
-     */
-    public void setValue(double value) {
-        this.value = value;
-    }// end of setValue
-    //------------------------------------------------------
-
-    /**
-     * @brief Gets validity bit
-     * @return Boolean value of the bit
-     */
-    public boolean isValidityBit() {
-        return validityBit;
-    }// end of isValidityBit
-    //------------------------------------------------------
-
-    /**
-     * @brief Sets validity bit
-     * @param [in] validityBit - new value of the validity bit
-     */
-    public void setValidityBit(boolean validityBit) {
-        this.validityBit = validityBit;
-    }// end of setValidityBit
-    //------------------------------------------------------
-
-    /**
-     * @brief String representation for debugging purposes
-     */
-    @Override
-    public String toString() {
-        return tag + " " + value + " Valid: " + validityBit;
-    }// end of toString
+public class IssueItemModel
+{
+  /// Register name
+  private String tag;
+  /// Value inside of the register
+  private double value;
+  /// If register has correct value
+  private boolean validityBit;
+  
+  /**
+   * @param [in] tag         - Register name
+   * @param [in] validityBit - Is register valid?
+   *
+   * @brief Constructor
+   */
+  public IssueItemModel(String tag, boolean validityBit)
+  {
+    this.tag         = tag;
+    this.value       = 0;
+    this.validityBit = validityBit;
+  }// end of Constructor
+  //------------------------------------------------------
+  
+  /**
+   * @param [in] tag         - Register name
+   * @param [in] value       - Register value (if any)
+   * @param [in] validityBit - Is register valid?
+   *
+   * @brief Constructor
+   */
+  public IssueItemModel(String tag, double value, boolean validityBit)
+  {
+    this.tag         = tag;
+    this.value       = value;
+    this.validityBit = validityBit;
+  }// end of Constructor
+  //------------------------------------------------------
+  
+  /**
+   * @return String containing a tag
+   * @brief Get item tag (register name)
+   */
+  public String getTag()
+  {
+    return tag;
+  }// end of getTag
+  //------------------------------------------------------
+  
+  /**
+   * @param [in] tag - New String value of a tag
+   *
+   * @brief Sets item tag
+   */
+  public void setTag(String tag)
+  {
+    this.tag = tag;
+  }// end of setTag
+  //------------------------------------------------------
+  
+  /**
+   * @return Double value
+   * @brief Get item value
+   */
+  public double getValue()
+  {
+    return value;
+  }// end of getValue
+  //------------------------------------------------------
+  
+  /**
+   * @param [in] value - New Double value of the item
+   *
+   * @brief Sets item value
+   */
+  public void setValue(double value)
+  {
+    this.value = value;
+  }// end of setValue
+  //------------------------------------------------------
+  
+  /**
+   * @return Boolean value of the bit
+   * @brief Gets validity bit
+   */
+  public boolean isValidityBit()
+  {
+    return validityBit;
+  }// end of isValidityBit
+  //------------------------------------------------------
+  
+  /**
+   * @param [in] validityBit - new value of the validity bit
+   *
+   * @brief Sets validity bit
+   */
+  public void setValidityBit(boolean validityBit)
+  {
+    this.validityBit = validityBit;
+  }// end of setValidityBit
+  //------------------------------------------------------
+  
+  /**
+   * @brief String representation for debugging purposes
+   */
+  @Override
+  public String toString()
+  {
+    return tag + " " + value + " Valid: " + validityBit;
+  }// end of toString
 }

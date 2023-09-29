@@ -71,7 +71,7 @@ public class CodeParser {
     /// Holds error messages, if any occurs, otherwise is empty
     private final List<String> errorMessages;
     /// InitLoader object with loaded instructions and registers
-    private InitLoader initLoader;
+    private final InitLoader initLoader;
     /// List of parsed instructions
     private List<InputCodeModel> parsedCode;
     /// Counter for number of lines processed
@@ -140,14 +140,12 @@ public class CodeParser {
 
     /**
      * Get the position of the label in the code. (Assumes the label exists)
+     *
      * @param label Label name to search for. (example: "loop")
      * @return Position of the label in the code, or -1 if the label does not exist.
      */
     public int getLabelPosition(String label) {
-        InputCodeModel labelCode = getParsedCode().stream().filter(
-                inputCodeModel -> inputCodeModel.getInstructionName().equals(
-                        "label") && inputCodeModel.getCodeLine().equals(
-                        label)).findFirst().orElse(null);
+        InputCodeModel labelCode = getParsedCode().stream().filter(inputCodeModel -> inputCodeModel.getInstructionName().equals("label") && inputCodeModel.getCodeLine().equals(label)).findFirst().orElse(null);
         return getParsedCode().indexOf(labelCode);
     }
     //-------------------------------------------------------------------------------------------
@@ -215,37 +213,26 @@ public class CodeParser {
         // Instruction validation -> instruction exists
         InstructionFunctionModel instruction = codeModel.getInstructionFunctionModel();
         if (instruction == null) {
-            this.errorMessages.add(
-                    "Line " + this.codeLineNumber + ": Instruction does not exists.\n");
+            this.errorMessages.add("Line " + this.codeLineNumber + ": Instruction does not exists.\n");
             return false;
         }
 
         // Number of arguments validation
-        List<String> splitSyntax = new LinkedList<>(
-                Arrays.asList(instruction.getInstructionSyntax().split(" ")));
+        List<String> splitSyntax = new LinkedList<>(Arrays.asList(instruction.getInstructionSyntax().split(" ")));
         splitSyntax.remove(0);
         int syntaxArgumentSize = splitSyntax.size();
         int codeModelArgumentSize = codeModel.getArguments().size();
 
         if (syntaxArgumentSize != codeModelArgumentSize) {
-            this.errorMessages.add(
-                    "Line " + this.codeLineNumber + ": Invalid number of arguments. Expected: " +
-                            syntaxArgumentSize + ", got: " + codeModelArgumentSize + ".\n");
+            this.errorMessages.add("Line " + this.codeLineNumber + ": Invalid number of arguments. Expected: " + syntaxArgumentSize + ", got: " + codeModelArgumentSize + ".\n");
             return false;
         }
 
         // Validation of separate arguments
         for (int i = 0; i < codeModel.getArguments().size(); i++) {
-            DataTypeEnum instructionDataType =
-                    isLValue(splitSyntax.get(i), instruction.getInterpretableAs(),
-                            instruction.getInstructionType()) ?
-                            instruction.getOutputDataType() :
-                            instruction.getInputDataType();
+            DataTypeEnum instructionDataType = isLValue(splitSyntax.get(i), instruction.getInterpretableAs(), instruction.getInstructionType()) ? instruction.getOutputDataType() : instruction.getInputDataType();
             // "isLValue" is true only for the first argument of the instruction
-            boolean isArgumentValid = validateArgument(codeModel.getArguments().get(i),
-                    instruction.getInstructionType(),
-                    instructionDataType,
-                    i == 0);
+            boolean isArgumentValid = validateArgument(codeModel.getArguments().get(i), instruction.getInstructionType(), instructionDataType, i == 0);
             if (!isArgumentValid) {
                 return false;
             }
@@ -286,10 +273,7 @@ public class CodeParser {
      * @return True in case of valid argument, false otherwise
      * @brief Validates argument's value and data type
      */
-    private boolean validateArgument(final InputCodeArgument inputCodeArgument,
-                                     final InstructionTypeEnum instructionType,
-                                     final DataTypeEnum instructionDataType,
-                                     final boolean isLValue) {
+    private boolean validateArgument(final InputCodeArgument inputCodeArgument, final InstructionTypeEnum instructionType, final DataTypeEnum instructionDataType, final boolean isLValue) {
         String argumentName = inputCodeArgument.getName();
         String argumentValue = inputCodeArgument.getValue();
         boolean isDirectValue = isNumeralLiteral(argumentValue);
@@ -304,8 +288,7 @@ public class CodeParser {
             return checkImmediateArgument(argumentValue, isLValue, isDirectValue);
         } else if (this.registerPattern.matcher(argumentName).matches()) {
             // A register (rd, rs1, ...)
-            return checkRegisterArgument(argumentValue, instructionDataType, isLValue,
-                    isDirectValue);
+            return checkRegisterArgument(argumentValue, instructionDataType, isLValue, isDirectValue);
         }
         return false;
     }// end of validateArgument
@@ -318,16 +301,12 @@ public class CodeParser {
      * @return True if argument is valid immediated value, otherwise false
      * @brief Verifies if argument is immediate value
      */
-    private boolean checkImmediateArgument(final String argumentValue,
-                                           final boolean isLValue,
-                                           final boolean isDirectValue) {
+    private boolean checkImmediateArgument(final String argumentValue, final boolean isLValue, final boolean isDirectValue) {
         if (isLValue) {
-            this.errorMessages.add(
-                    "Line " + this.codeLineNumber + ": LValue cannot be immediate value.\n");
+            this.errorMessages.add("Line " + this.codeLineNumber + ": LValue cannot be immediate value.\n");
             return false;
         } else if (!isDirectValue) {
-            this.errorMessages.add("Line " + this.codeLineNumber +
-                    ": Expecting immediate value, got :" + argumentValue + ".\n");
+            this.errorMessages.add("Line " + this.codeLineNumber + ": Expecting immediate value, got :" + argumentValue + ".\n");
             return false;
         }
         return true;
@@ -342,24 +321,18 @@ public class CodeParser {
      * @return True if argument is valid register, otherwise false
      * @brief Verifies if argument is register
      */
-    private boolean checkRegisterArgument(final String argumentValue,
-                                          final DataTypeEnum argumentDataType,
-                                          final boolean isLValue,
-                                          final boolean isDirectValue) {
+    private boolean checkRegisterArgument(final String argumentValue, final DataTypeEnum argumentDataType, final boolean isLValue, final boolean isDirectValue) {
         if (isDirectValue && isLValue) {
-            this.errorMessages.add(
-                    "Line " + this.codeLineNumber + ": LValue cannot be immediate value.\n");
+            this.errorMessages.add("Line " + this.codeLineNumber + ": LValue cannot be immediate value.\n");
             return false;
         }
         if (isDirectValue) {
-            this.errorMessages.add(
-                    "Line " + this.codeLineNumber + ": Expecting register, got :" + argumentValue + ".\n");
+            this.errorMessages.add("Line " + this.codeLineNumber + ": Expecting register, got :" + argumentValue + ".\n");
             return false;
         }
         // Lookup all register files and aliases, check if the register exists
         for (RegisterFileModel registerFileModel : initLoader.getRegisterFileModelList()) {
-            if (!checkDatatype(argumentDataType,
-                    registerFileModel.getDataType())) {
+            if (!checkDatatype(argumentDataType, registerFileModel.getDataType())) {
                 // Incorrect data type in this register file, skip
                 continue;
             }
@@ -368,13 +341,12 @@ public class CodeParser {
                 return true;
             }
         }
-        for(InitLoader.RegisterMapping alias : initLoader.getRegisterAliases()) {
+        for (InitLoader.RegisterMapping alias : initLoader.getRegisterAliases()) {
             if (alias.alias.equals(argumentValue)) {
                 return true;
             }
         }
-        this.errorMessages.add(
-                "Line " + this.codeLineNumber + ": Argument \"" + argumentValue + "\" is not a register nor value.\n");
+        this.errorMessages.add("Line " + this.codeLineNumber + ": Argument \"" + argumentValue + "\" is not a register nor value.\n");
         return false;
     }// end of checkRegisterArgument
     //-------------------------------------------------------------------------------------------
@@ -387,11 +359,9 @@ public class CodeParser {
      */
     private boolean checkDatatype(final DataTypeEnum argumentDataType, final DataTypeEnum registerDataType) {
         return switch (argumentDataType) {
-            case kInt ->
-                    registerDataType == DataTypeEnum.kInt || registerDataType == DataTypeEnum.kLong;
+            case kInt -> registerDataType == DataTypeEnum.kInt || registerDataType == DataTypeEnum.kLong;
             case kLong -> registerDataType == DataTypeEnum.kLong;
-            case kFloat ->
-                    registerDataType == DataTypeEnum.kFloat || registerDataType == DataTypeEnum.kDouble;
+            case kFloat -> registerDataType == DataTypeEnum.kFloat || registerDataType == DataTypeEnum.kDouble;
             case kDouble -> registerDataType == DataTypeEnum.kDouble;
             case kSpeculative -> false;
         };
@@ -411,8 +381,7 @@ public class CodeParser {
         }
 
         // Split the line to instruction name and array of arguments
-        List<String> splitCodeLine = new LinkedList<>(
-                Arrays.asList(cleanedCodeLine.split("\\s+", 2)));
+        List<String> splitCodeLine = new LinkedList<>(Arrays.asList(cleanedCodeLine.split("\\s+", 2)));
         if (splitCodeLine.size() > 2) {
             return null;
         }
@@ -426,28 +395,20 @@ public class CodeParser {
         }
 
         // Instruction validation -> instruction exists
-        InstructionFunctionModel instDescription = initLoader.getInstructionFunctionModelList().stream()
-                .filter(instr -> instructionName.equals(
-                        instr.getName())).findFirst().orElse(null);
+        InstructionFunctionModel instDescription = initLoader.getInstructionFunctionModelList().stream().filter(instr -> instructionName.equals(instr.getName())).findFirst().orElse(null);
         if (instDescription == null) {
             // Add error
-            this.errorMessages.add("Line " + this.codeLineNumber +
-                    ": Error - unknown instruction '" + instructionName + "'\n"
-            );
+            this.errorMessages.add("Line " + this.codeLineNumber + ": Error - unknown instruction '" + instructionName + "'\n");
             return null;
         }
 
         // Check the arguments based on the description
-        List<String> splitSyntax = new LinkedList<>(
-                Arrays.asList(instDescription.getInstructionSyntax().split(" ")));
+        List<String> splitSyntax = new LinkedList<>(Arrays.asList(instDescription.getInstructionSyntax().split(" ")));
         splitSyntax.remove(0);
         int expectedNumOfArgs = splitSyntax.size();
 
         if (arguments.length != expectedNumOfArgs) {
-            this.errorMessages.add("Line " + this.codeLineNumber +
-                    ": Error - instruction '" + instructionName + "' expected "
-                    + expectedNumOfArgs + " arguments, got " + arguments.length + "\n"
-            );
+            this.errorMessages.add("Line " + this.codeLineNumber + ": Error - instruction '" + instructionName + "' expected " + expectedNumOfArgs + " arguments, got " + arguments.length + "\n");
             return null;
         }
 
@@ -457,15 +418,7 @@ public class CodeParser {
             parsedArgs.add(new InputCodeArgument(splitSyntax.get(i), arguments[i]));
         }
 
-        InputCodeModel instruction = new InputCodeModel(
-                instDescription,
-                instructionName,
-                cleanedCodeLine,
-                parsedArgs,
-                instDescription.getInstructionType(),
-                instDescription.getOutputDataType(),
-                insertionIndex
-        );
+        InputCodeModel instruction = new InputCodeModel(instDescription, instructionName, cleanedCodeLine, parsedArgs, instDescription.getInstructionType(), instDescription.getOutputDataType(), insertionIndex);
 
         // Now validate (semantics)
         if (!validateCodeModel(instruction)) {
@@ -482,17 +435,12 @@ public class CodeParser {
      */
     private void insertLabel(final String label) {
         String labelWithoutColon = label.substring(0, label.length() - 1);
-        if (this.parsedCode.stream().anyMatch(
-                code -> code.getCodeLine().equals(labelWithoutColon))) {
-            this.errorMessages.add("Line " + this.codeLineNumber +
-                    ": Warning - Label \"" + labelWithoutColon + "\" already exists in current scope, using the first instance.\n"
-            );
+        if (this.parsedCode.stream().anyMatch(code -> code.getCodeLine().equals(labelWithoutColon))) {
+            this.errorMessages.add("Line " + this.codeLineNumber + ": Warning - Label \"" + labelWithoutColon + "\" already exists in current scope, using the first instance.\n");
             return;
         }
         int insertionIndex = this.parsedCode.size();
-        InputCodeModel inputCodeModel =
-                new InputCodeModel(null, "label", labelWithoutColon, null,
-                        InstructionTypeEnum.kLabel, null, insertionIndex);
+        InputCodeModel inputCodeModel = new InputCodeModel(null, "label", labelWithoutColon, null, InstructionTypeEnum.kLabel, null, insertionIndex);
         this.parsedCode.add(inputCodeModel);
     }// end of insertLabel
     //-------------------------------------------------------------------------------------------
@@ -504,15 +452,9 @@ public class CodeParser {
     private boolean areLabelsMissing() {
         this.codeLineNumber = 1;
         for (InputCodeModel codeModel : this.parsedCode) {
-            InstructionFunctionModel instruction = initLoader.getInstructionFunctionModelList().stream()
-                    .filter(instr -> codeModel.getInstructionName().equals(
-                            instr.getName()))
-                    .findFirst()
-                    .orElse(null);
+            InstructionFunctionModel instruction = initLoader.getInstructionFunctionModelList().stream().filter(instr -> codeModel.getInstructionName().equals(instr.getName())).findFirst().orElse(null);
             if (instruction != null && instruction.getInstructionType() == InstructionTypeEnum.kJumpbranch) {
-                InputCodeArgument jumpBranchArgument = codeModel.getArguments().stream()
-                        .filter(arg -> arg.getName().equals("imm"))
-                        .findFirst().orElse(null);
+                InputCodeArgument jumpBranchArgument = codeModel.getArguments().stream().filter(arg -> arg.getName().equals("imm")).findFirst().orElse(null);
                 if (jumpBranchArgument != null) {
                     // Checking if jump target exists: two cases - label or literal value
                     boolean isLabelText = isLabel(jumpBranchArgument.getValue());
@@ -520,24 +462,15 @@ public class CodeParser {
                         // It must be literal value
                         continue;
                     }
-                    boolean labelExists = this.parsedCode.stream()
-                            .anyMatch(code -> code.getCodeLine().equals(
-                                    jumpBranchArgument.getValue()));
+                    boolean labelExists = this.parsedCode.stream().anyMatch(code -> code.getCodeLine().equals(jumpBranchArgument.getValue()));
                     if (!labelExists) {
-                        this.errorMessages.add("Line " + this.codeLineNumber +
-                                ": Label \"" + jumpBranchArgument.getValue() +
-                                "\" does not exists in current scope.\n"
-                        );
+                        this.errorMessages.add("Line " + this.codeLineNumber + ": Label \"" + jumpBranchArgument.getValue() + "\" does not exists in current scope.\n");
                         return false;
                     }
                 } else {
-                    InputCodeArgument jumpBranchRegisterDestination = codeModel.getArguments().stream()
-                            .filter(arg -> arg.getName().equals("rs1"))
-                            .findFirst().orElse(null);
+                    InputCodeArgument jumpBranchRegisterDestination = codeModel.getArguments().stream().filter(arg -> arg.getName().equals("rs1")).findFirst().orElse(null);
                     if (jumpBranchRegisterDestination == null) {
-                        this.errorMessages.add("Line " + this.codeLineNumber +
-                                ": There was something wrong with the label\n"
-                        );
+                        this.errorMessages.add("Line " + this.codeLineNumber + ": There was something wrong with the label\n");
                         return false;
                     }
                 }
@@ -548,8 +481,7 @@ public class CodeParser {
     }// end of areLabelsMissing
 
     private boolean isNumeralLiteral(String argValue) {
-        return this.hexadecimalPattern.matcher(argValue).matches() ||
-                this.decimalPattern.matcher(argValue).matches();
+        return this.hexadecimalPattern.matcher(argValue).matches() || this.decimalPattern.matcher(argValue).matches();
     }
 
     /**

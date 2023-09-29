@@ -1,34 +1,29 @@
 /**
- * @file    IssueItemTableModel.java
- *
- * @author  Jan Vavra \n
- *          Faculty of Information Technology \n
- *          Brno University of Technology \n
- *          xvavra20@fit.vutbr.cz
- *
+ * @file IssueItemTableModel.java
+ * @author Jan Vavra \n
+ * Faculty of Information Technology \n
+ * Brno University of Technology \n
+ * xvavra20@fit.vutbr.cz
  * @brief File contains container class for displaying issue items in issue window table
- *
- * @date  18 April  2021 16:00 (created) \n
- *        28 April  2021 18:10 (revised)
- *
+ * @date 18 April  2021 16:00 (created) \n
+ * 28 April  2021 18:10 (revised)
  * @section Licence
  * This file is part of the Superscalar simulator app
- *
+ * <p>
  * Copyright (C) 2020  Jan Vavra
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
  */
 package com.gradle.superscalarsim.models;
 
@@ -56,7 +51,7 @@ public class IssueItemTableModel
   private final double source2Value;
   /// Validity bit for the second source tag
   private final String source2Validity;
-
+  
   /**
    * @brief Constructor
    * @param [in] simCodeModel       - SimCodeModel to transform into IssueItemTableModel
@@ -65,58 +60,58 @@ public class IssueItemTableModel
   public IssueItemTableModel(SimCodeModel simCodeModel, List<IssueItemModel> issueItemModelList)
   {
     InputCodeArgument destinationArgument = simCodeModel.getArgumentByName("rd");
-    IssueItemModel item1 = issueItemModelList.isEmpty() ? null : issueItemModelList.get(0);
-    IssueItemModel item2 = issueItemModelList.size() < 2 ? null : issueItemModelList.get(1);
-
-    this.codeLine        = simCodeModel.getRenamedCodeLine();
-    this.destinationTag  = destinationArgument != null ? destinationArgument.getValue() : "";
-
-    if(item1 != null)
+    IssueItemModel    item1               = issueItemModelList.isEmpty() ? null : issueItemModelList.get(0);
+    IssueItemModel    item2               = issueItemModelList.size() < 2 ? null : issueItemModelList.get(1);
+    
+    this.codeLine       = simCodeModel.getRenamedCodeLine();
+    this.destinationTag = destinationArgument != null ? destinationArgument.getValue() : "";
+    
+    if (item1 != null)
     {
-      this.source1Tag = item1.getTag();
-      this.source1Value = item1.getValue();
+      this.source1Tag      = item1.getTag();
+      this.source1Value    = item1.getValue();
       this.source1Validity = item1.isValidityBit() ? "YES" : "NO";
     }
     else
     {
-      this.source1Tag = "nop";
-      this.source1Value = Double.NaN;
+      this.source1Tag      = "nop";
+      this.source1Value    = Double.NaN;
       this.source1Validity = "";
     }
-
-    if(item2 != null)
+    
+    if (item2 != null)
     {
-      this.source2Tag = item2.getTag();
-      this.source2Value = item2.getValue();
+      this.source2Tag      = item2.getTag();
+      this.source2Value    = item2.getValue();
       this.source2Validity = item2.isValidityBit() ? "YES" : "NO";
     }
     else
     {
-      this.source2Tag = "nop";
-      this.source2Value = Double.NaN;
+      this.source2Tag      = "nop";
+      this.source2Value    = Double.NaN;
       this.source2Validity = "";
     }
   }// end of Constructor
   //-----------------------------------------------------------------------------------------
-
+  
   /**
    * @brief Dummy Constructor
    */
   public IssueItemTableModel()
   {
-    this.codeLine        = "";
-    this.destinationTag  = "";
-
+    this.codeLine       = "";
+    this.destinationTag = "";
+    
     this.source1Tag      = "";
     this.source1Value    = Double.NaN;
     this.source1Validity = "";
-
+    
     this.source2Tag      = "";
     this.source2Value    = Double.NaN;
     this.source2Validity = "";
   }// end of Dummy Constructor
   //-----------------------------------------------------------------------------------------
-
+  
   /**
    * @brief Get code line
    * @return String value of the code line
@@ -126,7 +121,7 @@ public class IssueItemTableModel
     return codeLine;
   }// end of getCodeLine
   //-----------------------------------------------------------------------------------------
-
+  
   /**
    * @brief Get destination tag
    * @return String value of the destination tag
@@ -136,7 +131,7 @@ public class IssueItemTableModel
     return destinationTag;
   }// end of getDestinationTag
   //-----------------------------------------------------------------------------------------
-
+  
   /**
    * @brief Get first source tag
    * @return First source tag
@@ -146,7 +141,7 @@ public class IssueItemTableModel
     return source1Tag;
   }// end of getSource1Tag
   //-----------------------------------------------------------------------------------------
-
+  
   /**
    * @brief Get value of the first source tag
    * @return Double value of the first source tag
@@ -156,7 +151,7 @@ public class IssueItemTableModel
     return source1Value;
   }// end of getSource1Value
   //-----------------------------------------------------------------------------------------
-
+  
   /**
    * @brief Get validity bit of the first source tag
    * @return Validity bit of the first source tag
@@ -166,7 +161,7 @@ public class IssueItemTableModel
     return source1Validity;
   }// end of getSource1Validity
   //-----------------------------------------------------------------------------------------
-
+  
   /**
    * @brief Check if first source tag is valid
    * @return True if it is valid, false otherwise
@@ -176,7 +171,7 @@ public class IssueItemTableModel
     return source1Validity.equals("YES") || source1Validity.isEmpty() && source1Tag.equals("nop");
   }// end of isSource1Validity
   //-----------------------------------------------------------------------------------------
-
+  
   /**
    * @brief Get second source tag
    * @return First source tag
@@ -186,7 +181,7 @@ public class IssueItemTableModel
     return source2Tag;
   }// end of getSource2Tag
   //-----------------------------------------------------------------------------------------
-
+  
   /**
    * @brief Get value of the second source tag
    * @return Double value of the second source tag
@@ -196,7 +191,7 @@ public class IssueItemTableModel
     return source2Value;
   }// end of getSource2Value
   //-----------------------------------------------------------------------------------------
-
+  
   /**
    * @brief Get validity bit of the second source tag
    * @return Validity bit of the second source tag
@@ -206,7 +201,7 @@ public class IssueItemTableModel
     return source2Validity;
   }// end of getSource2Validity
   //-----------------------------------------------------------------------------------------
-
+  
   /**
    * @brief Check if second source tag is valid
    * @return True if it is valid, false otherwise

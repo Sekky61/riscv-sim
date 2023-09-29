@@ -1,39 +1,34 @@
 /**
- * @file    ReorderBufferTableModel.java
- *
- * @author  Jan Vavra \n
- *          Faculty of Information Technology \n
- *          Brno University of Technology \n
- *          xvavra20@fit.vutbr.cz
- *
- * @author  Michal Majer
- *          Faculty of Information Technology
- *          Brno University of Technology
- *          xmajer21@stud.fit.vutbr.cz
+ * @file ReorderBufferTableModel.java
+ * @author Jan Vavra \n
+ * Faculty of Information Technology \n
+ * Brno University of Technology \n
+ * xvavra20@fit.vutbr.cz
+ * @author Michal Majer
+ * Faculty of Information Technology
+ * Brno University of Technology
+ * xmajer21@stud.fit.vutbr.cz
  * @brief File contains container class for reorder buffer table entries
- *
- * @date  25 April     2021 15:00 (created) \n
- *        28 April     2021 19:30 (revised)
+ * @date 25 April     2021 15:00 (created) \n
+ * 28 April     2021 19:30 (revised)
  * 26 Sep      2023 10:00 (revised)
- *
  * @section Licence
  * This file is part of the Superscalar simulator app
- *
+ * <p>
  * Copyright (C) 2020  Jan Vavra
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
  */
 package com.gradle.superscalarsim.models;
 
@@ -53,7 +48,7 @@ public class ReorderBufferTableModel
   private final String speculativeBit;
   /// Reorder flags item of highlighting
   private final ReorderFlags reorderFlags;
-
+  
   /**
    * @brief Constructor
    * @param [in] simCodeModel - CodeModel of an instruction used in simulation
@@ -68,7 +63,7 @@ public class ReorderBufferTableModel
     this.reorderFlags   = reorderFlags;
   }// end of Constructor
   //----------------------------------------------------------------------------------
-
+  
   /**
    * @brief Dummy Constructor
    */
@@ -81,7 +76,7 @@ public class ReorderBufferTableModel
     this.reorderFlags   = null;
   }// end of Dummy Constructor
   //----------------------------------------------------------------------------------
-
+  
   /**
    * @brief Get code line of this entry
    * @return String code line
@@ -91,7 +86,7 @@ public class ReorderBufferTableModel
     return codeLine;
   }// end of getCodeLine
   //----------------------------------------------------------------------------------
-
+  
   /**
    * @brief Get string value of the valid bit
    * @return String value of the valid bit
@@ -101,7 +96,7 @@ public class ReorderBufferTableModel
     return validBit;
   }// end of getValidBit
   //----------------------------------------------------------------------------------
-
+  
   /**
    * @brief Get string value of the busy bit
    * @return String value of the busy bit
@@ -111,7 +106,7 @@ public class ReorderBufferTableModel
     return busyBit;
   }// end of getBusyBit
   //----------------------------------------------------------------------------------
-
+  
   /**
    * @brief Get string value of the speculative bit
    * @return String value of the speculative bit
@@ -121,7 +116,7 @@ public class ReorderBufferTableModel
     return speculativeBit;
   }// end of getSpeculativeBit
   //----------------------------------------------------------------------------------
-
+  
   /**
    * @brief Get reorder buffer flags used for creating this entry
    * @return Reorder buffer flags used for creating this entry

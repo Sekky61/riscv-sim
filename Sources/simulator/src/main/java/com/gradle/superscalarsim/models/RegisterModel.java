@@ -39,112 +39,126 @@ import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
  * @class RegisterModel
  * @brief Definition of single register in register file
  */
-public class RegisterModel {
-    /**
-     * Name of register
-     */
-    private final String name;
-    /**
-     * True if the value of register is constant (example: register x0 from risc-v)
-     */
-    private final boolean isConstant;
-
-    /**
-     * Data type of register (int, float)
-     */
-    private final DataTypeEnum dataType;
-    /**
-     * Value inside the register
-     */
-    private double value;
-
-    /**
-     * State of the register in terms of readiness
-     * Architecture registers are `kAssigned` by default, speculative ones are `kFree`
-     */
-    private RegisterReadinessEnum readiness;
-
-    /**
-     * @param [in] name       - Register name
-     * @param [in] isConstant - Ture in case of static value, false otherwise
-     * @param [in] value      - Register value
-     * @brief Constructor
-     */
-    public RegisterModel(String name, boolean isConstant, DataTypeEnum dataType, double value, RegisterReadinessEnum readiness) {
-        this.name = name;
-        this.isConstant = isConstant;
-        this.dataType = dataType;
-        this.value = value;
-        this.readiness = readiness;
-    }// end of Constructor
-    //------------------------------------------------------
-
-    /**
-     * @return String representation of the object
-     * @brief Overrides toString method with custom formating
-     */
-    @Override
-    public String toString() {
-        return "register name: " + name + ", " +
-                (isConstant ? "constant " : "variable ") +
-                "= " + value + '\n';
-    }// end of toString
-    //------------------------------------------------------
-
-    /**
-     * @return Register name
-     * @brief Get register name
-     */
-    public String getName() {
-        return name;
-    }// end of getName
-    //------------------------------------------------------
-
-    /**
-     * @return Bool value
-     * @brief Get bool value, if value of the register can be edited or not
-     */
-    public boolean isConstant() {
-        return isConstant;
-    }// end of isConstant
-    //------------------------------------------------------
-
-    /**
-     * @brief Get data type of register
-     */
-    public DataTypeEnum getDataType() {
-        return dataType;
-    }
-
-    /**
-     * @return Value inside register
-     * @brief Get register value
-     */
-    public double getValue() {
-        return value;
-    }// end of getValue
-    //------------------------------------------------------
-
-    /**
-     * @param [in] newValue - New value to be set. In case of constant register, value is ignored
-     * @brief Set register value.
-     */
-    public void setValue(double newValue) {
-        this.value = this.isConstant ? this.value : newValue;
-    }// end of setValue
-    //------------------------------------------------------
-
-    /**
-     * @return Register readiness
-     */
-    public RegisterReadinessEnum getReadiness() {
-        return readiness;
-    }
-
-    /**
-     * @param readiness - New readiness to be set
-     */
-    public void setReadiness(RegisterReadinessEnum readiness) {
-        this.readiness = readiness;
-    }
+public class RegisterModel
+{
+  /**
+   * Name of register
+   */
+  private final String name;
+  /**
+   * True if the value of register is constant (example: register x0 from risc-v)
+   */
+  private final boolean isConstant;
+  
+  /**
+   * Data type of register (int, float)
+   */
+  private final DataTypeEnum dataType;
+  /**
+   * Value inside the register
+   */
+  private double value;
+  
+  /**
+   * State of the register in terms of readiness
+   * Architecture registers are `kAssigned` by default, speculative ones are `kFree`
+   */
+  private RegisterReadinessEnum readiness;
+  
+  /**
+   * @param [in] name       - Register name
+   * @param [in] isConstant - Ture in case of static value, false otherwise
+   * @param [in] value      - Register value
+   *
+   * @brief Constructor
+   */
+  public RegisterModel(String name,
+                       boolean isConstant,
+                       DataTypeEnum dataType,
+                       double value,
+                       RegisterReadinessEnum readiness)
+  {
+    this.name       = name;
+    this.isConstant = isConstant;
+    this.dataType   = dataType;
+    this.value      = value;
+    this.readiness  = readiness;
+  }// end of Constructor
+  //------------------------------------------------------
+  
+  /**
+   * @return String representation of the object
+   * @brief Overrides toString method with custom formating
+   */
+  @Override
+  public String toString()
+  {
+    return "register name: " + name + ", " + (isConstant ? "constant " : "variable ") + "= " + value + '\n';
+  }// end of toString
+  //------------------------------------------------------
+  
+  /**
+   * @return Register name
+   * @brief Get register name
+   */
+  public String getName()
+  {
+    return name;
+  }// end of getName
+  //------------------------------------------------------
+  
+  /**
+   * @return Bool value
+   * @brief Get bool value, if value of the register can be edited or not
+   */
+  public boolean isConstant()
+  {
+    return isConstant;
+  }// end of isConstant
+  //------------------------------------------------------
+  
+  /**
+   * @brief Get data type of register
+   */
+  public DataTypeEnum getDataType()
+  {
+    return dataType;
+  }
+  
+  /**
+   * @return Value inside register
+   * @brief Get register value
+   */
+  public double getValue()
+  {
+    return value;
+  }// end of getValue
+  //------------------------------------------------------
+  
+  /**
+   * @param [in] newValue - New value to be set. In case of constant register, value is ignored
+   *
+   * @brief Set register value.
+   */
+  public void setValue(double newValue)
+  {
+    this.value = this.isConstant ? this.value : newValue;
+  }// end of setValue
+  //------------------------------------------------------
+  
+  /**
+   * @return Register readiness
+   */
+  public RegisterReadinessEnum getReadiness()
+  {
+    return readiness;
+  }
+  
+  /**
+   * @param readiness - New readiness to be set
+   */
+  public void setReadiness(RegisterReadinessEnum readiness)
+  {
+    this.readiness = readiness;
+  }
 }

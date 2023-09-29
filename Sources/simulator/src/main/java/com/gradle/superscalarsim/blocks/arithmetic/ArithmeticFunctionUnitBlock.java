@@ -46,131 +46,154 @@ import com.gradle.superscalarsim.models.SimCodeModel;
  * @class ArithmeticFunctionUnitBlock
  * @brief Specific function unit class for executing arithmetic instructions
  */
-public class ArithmeticFunctionUnitBlock extends AbstractFunctionUnitBlock {
-    /// Array of all supported operators by this FU
-    private final String[] allowedOperators;
-    /// Interpreter for interpreting executing instructions
-    private CodeArithmeticInterpreter arithmeticInterpreter;
-    /// Class containing all registers, that simulator uses
-    private UnifiedRegisterFileBlock registerFileBlock;
-
-    public ArithmeticFunctionUnitBlock() {
-        // Empty
-        this.allowedOperators = new String[0];
+public class ArithmeticFunctionUnitBlock extends AbstractFunctionUnitBlock
+{
+  /// Array of all supported operators by this FU
+  private final String[] allowedOperators;
+  /// Interpreter for interpreting executing instructions
+  private CodeArithmeticInterpreter arithmeticInterpreter;
+  /// Class containing all registers, that simulator uses
+  private UnifiedRegisterFileBlock registerFileBlock;
+  
+  public ArithmeticFunctionUnitBlock()
+  {
+    // Empty
+    this.allowedOperators = new String[0];
+  }
+  
+  /**
+   * @param [in] blockScheduleTask  - Task class, where blocks are periodically triggered by the GlobalTimer
+   * @param [in] reorderBufferBlock - Class containing simulated Reorder Buffer
+   * @param [in] delay              - Delay for function unit
+   * @param [in] allowedOperators   - Array of all supported operators by this FU
+   *
+   * @brief Constructor
+   */
+  public ArithmeticFunctionUnitBlock(ReorderBufferBlock reorderBufferBlock,
+                                     int delay,
+                                     AbstractIssueWindowBlock issueWindowBlock,
+                                     String[] allowedOperators)
+  {
+    super(reorderBufferBlock, delay, issueWindowBlock);
+    this.allowedOperators = allowedOperators;
+  }// end of Constructor
+  //----------------------------------------------------------------------
+  
+  /**
+   * @param [in] arithmeticInterpreter - Arithmetic interpreter object
+   *
+   * @brief Injects Arithmetic interpreter to the FU
+   */
+  public void addArithmeticInterpreter(CodeArithmeticInterpreter arithmeticInterpreter)
+  {
+    this.arithmeticInterpreter = arithmeticInterpreter;
+  }// end of addArithmeticInterpreter
+  //----------------------------------------------------------------------
+  
+  
+  /**
+   * @param [in] registerFileBlock - UnifiedRegisterFileBlock object with all registers
+   *
+   * @brief Injects UnifiedRegisterFileBlock to the FU
+   */
+  public void addRegisterFileBlock(UnifiedRegisterFileBlock registerFileBlock)
+  {
+    this.registerFileBlock = registerFileBlock;
+  }// end of addRegisterFileBlock
+  //----------------------------------------------------------------------
+  
+  /**
+   * @brief Simulates execution of an instruction
+   */
+  @Override
+  public void simulate()
+  {
+    if (!isFunctionUnitEmpty() && this.simCodeModel.hasFailed())
+    {
+      hasDelayPassed();
+      this.simCodeModel.setFunctionUnitId(this.functionUnitId);
+      this.failedInstructions.push(this.simCodeModel);
+      this.simCodeModel = null;
+      this.zeroTheCounter();
     }
-
-    /**
-     * @param [in] blockScheduleTask  - Task class, where blocks are periodically triggered by the GlobalTimer
-     * @param [in] reorderBufferBlock - Class containing simulated Reorder Buffer
-     * @param [in] delay              - Delay for function unit
-     * @param [in] allowedOperators   - Array of all supported operators by this FU
-     * @brief Constructor
-     */
-    public ArithmeticFunctionUnitBlock(ReorderBufferBlock reorderBufferBlock, int delay, AbstractIssueWindowBlock issueWindowBlock, String[] allowedOperators) {
-        super(reorderBufferBlock, delay, issueWindowBlock);
-        this.allowedOperators = allowedOperators;
-    }// end of Constructor
-    //----------------------------------------------------------------------
-
-    /**
-     * @param [in] arithmeticInterpreter - Arithmetic interpreter object
-     * @brief Injects Arithmetic interpreter to the FU
-     */
-    public void addArithmeticInterpreter(CodeArithmeticInterpreter arithmeticInterpreter) {
-        this.arithmeticInterpreter = arithmeticInterpreter;
-    }// end of addArithmeticInterpreter
-    //----------------------------------------------------------------------
-
-
-    /**
-     * @param [in] registerFileBlock - UnifiedRegisterFileBlock object with all registers
-     * @brief Injects UnifiedRegisterFileBlock to the FU
-     */
-    public void addRegisterFileBlock(UnifiedRegisterFileBlock registerFileBlock) {
-        this.registerFileBlock = registerFileBlock;
-    }// end of addRegisterFileBlock
-    //----------------------------------------------------------------------
-
-    /**
-     * @brief Simulates execution of an instruction
-     */
-    @Override
-    public void simulate() {
-        if (!isFunctionUnitEmpty() && this.simCodeModel.hasFailed()) {
-            hasDelayPassed();
-            this.simCodeModel.setFunctionUnitId(this.functionUnitId);
-            this.failedInstructions.push(this.simCodeModel);
-            this.simCodeModel = null;
-            this.zeroTheCounter();
+    if (!isFunctionUnitEmpty() && hasTimerStarted())
+    {
+      this.simCodeModel.setFunctionUnitId(this.functionUnitId);
+    }
+    
+    if (!isFunctionUnitEmpty() && hasDelayPassed())
+    {
+      // Write result to the destination register
+      if (hasTimerStarted())
+      {
+        this.simCodeModel.setFunctionUnitId(this.functionUnitId);
+      }
+      InputCodeArgument destinationArgument = simCodeModel.getArgumentByName("rd");
+      double            result              = arithmeticInterpreter.interpretInstruction(this.simCodeModel);
+      RegisterModel reg = registerFileBlock.getRegister(destinationArgument.getValue());
+      reg.setValue(result);
+      reg.setReadiness(RegisterReadinessEnum.kExecuted);
+      
+      this.reorderBufferBlock.getFlagsMap().get(this.simCodeModel.getId()).setBusy(false);
+      this.simCodeModel = null;
+    }
+    
+    
+    if (isFunctionUnitEmpty())
+    {
+      this.functionUnitId += this.functionUnitCount;
+    }
+  }// end of simulate
+  //----------------------------------------------------------------------
+  
+  /**
+   * @brief Simulates backwards (resets flags and waits until un-execution of instruction)
+   */
+  @Override
+  public void simulateBackwards()
+  {
+    if (isFunctionUnitEmpty())
+    {
+      this.functionUnitId -= this.functionUnitCount;
+      for (SimCodeModel codeModel : this.reorderBufferBlock.getReorderQueue())
+      {
+        if (codeModel.getFunctionUnitId() == this.functionUnitId && issueWindowBlock.isCorrectDataType(
+                codeModel.getResultDataType()) && issueWindowBlock.isCorrectInstructionType(
+                codeModel.getInstructionTypeEnum()))
+        {
+          this.resetReverseCounter();
+          this.simCodeModel = codeModel;
+          if (!this.failedInstructions.isEmpty() && this.simCodeModel == this.failedInstructions.peek())
+          {
+            this.failedInstructions.pop();
+            this.popHistoryCounter();
+          }
+          InputCodeArgument arg = simCodeModel.getArgumentByName("rd");
+          if (arg != null)
+          {
+            registerFileBlock.getRegister(arg.getValue()).setReadiness(RegisterReadinessEnum.kAllocated);
+          }
+          reorderBufferBlock.getFlagsMap().get(codeModel.getId()).setBusy(true);
+          return;
         }
-        if (!isFunctionUnitEmpty() && hasTimerStarted()) {
-            this.simCodeModel.setFunctionUnitId(this.functionUnitId);
-        }
-
-        if (!isFunctionUnitEmpty() && hasDelayPassed()) {
-            // Write result to the destination register
-            if (hasTimerStarted()) {
-                this.simCodeModel.setFunctionUnitId(this.functionUnitId);
-            }
-            InputCodeArgument destinationArgument = simCodeModel.getArgumentByName("rd");
-            double result = arithmeticInterpreter.interpretInstruction(this.simCodeModel);
-            RegisterModel reg = registerFileBlock.getRegister(
-                    destinationArgument.getValue());
-            reg.setValue(result);
-            reg.setReadiness(RegisterReadinessEnum.kExecuted);
-
-            this.reorderBufferBlock.getFlagsMap().get(this.simCodeModel.getId()).setBusy(
-                    false);
-            this.simCodeModel = null;
-        }
-
-
-        if (isFunctionUnitEmpty()) {
-            this.functionUnitId += this.functionUnitCount;
-        }
-    }// end of simulate
-    //----------------------------------------------------------------------
-
-    /**
-     * @brief Simulates backwards (resets flags and waits until un-execution of instruction)
-     */
-    @Override
-    public void simulateBackwards() {
-        if (isFunctionUnitEmpty()) {
-            this.functionUnitId -= this.functionUnitCount;
-            for (SimCodeModel codeModel : this.reorderBufferBlock.getReorderQueue()) {
-                if (codeModel.getFunctionUnitId() == this.functionUnitId && issueWindowBlock.isCorrectDataType(
-                        codeModel.getResultDataType()) && issueWindowBlock.isCorrectInstructionType(
-                        codeModel.getInstructionTypeEnum())) {
-                    this.resetReverseCounter();
-                    this.simCodeModel = codeModel;
-                    if (!this.failedInstructions.isEmpty() && this.simCodeModel == this.failedInstructions.peek()) {
-                        this.failedInstructions.pop();
-                        this.popHistoryCounter();
-                    }
-                    InputCodeArgument arg = simCodeModel.getArgumentByName("rd");
-                    if (arg != null) {
-                        registerFileBlock.getRegister(arg.getValue()).setReadiness(
-                                RegisterReadinessEnum.kAllocated);
-                    }
-                    reorderBufferBlock.getFlagsMap().get(codeModel.getId()).setBusy(true);
-                    return;
-                }
-            }
-            if (!this.failedInstructions.isEmpty() && this.failedInstructions.peek().getFunctionUnitId() == this.functionUnitId) {
-                this.simCodeModel = this.failedInstructions.pop();
-                this.popHistoryCounter();
-            }
-        }
-    }// end of simulateBackwards
-    //----------------------------------------------------------------------
-
-    /**
-     * @return Array of allowed operators
-     * @brief Get all allowed operators by this FU
-     */
-    public String[] getAllowedOperators() {
-        return allowedOperators;
-    }// end of getAllowedOperators
-    //----------------------------------------------------------------------
+      }
+      if (!this.failedInstructions.isEmpty() && this.failedInstructions.peek()
+                                                                       .getFunctionUnitId() == this.functionUnitId)
+      {
+        this.simCodeModel = this.failedInstructions.pop();
+        this.popHistoryCounter();
+      }
+    }
+  }// end of simulateBackwards
+  //----------------------------------------------------------------------
+  
+  /**
+   * @return Array of allowed operators
+   * @brief Get all allowed operators by this FU
+   */
+  public String[] getAllowedOperators()
+  {
+    return allowedOperators;
+  }// end of getAllowedOperators
+  //----------------------------------------------------------------------
 }

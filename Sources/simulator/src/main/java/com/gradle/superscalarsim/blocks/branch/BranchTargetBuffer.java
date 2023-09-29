@@ -1,49 +1,45 @@
 /**
- * @file    BranchTargetBuffer.java
- *
- * @author  Jan Vavra \n
- *          Faculty of Information Technology \n
- *          Brno University of Technology \n
- *          xvavra20@fit.vutbr.cz
- *
- * @author  Michal Majer
- *          Faculty of Information Technology
- *          Brno University of Technology
- *          xmajer21@stud.fit.vutbr.cz
+ * @file BranchTargetBuffer.java
+ * @author Jan Vavra \n
+ * Faculty of Information Technology \n
+ * Brno University of Technology \n
+ * xvavra20@fit.vutbr.cz
+ * @author Michal Majer
+ * Faculty of Information Technology
+ * Brno University of Technology
+ * xmajer21@stud.fit.vutbr.cz
  * @brief File contains class for holding branch targets
- *
- * @date  1 March   2020 16:00 (created) \n
- *        7 March   2020 20:30 (revised)
+ * @date 1 March   2020 16:00 (created) \n
+ * 7 March   2020 20:30 (revised)
  * 26 Sep      2023 10:00 (revised)
- *
  * @section Licence
  * This file is part of the Superscalar simulator app
- *
+ * <p>
  * Copyright (C) 2020  Jan Vavra
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
  */
 package com.gradle.superscalarsim.blocks.branch;
 
 import com.gradle.superscalarsim.loader.InitLoader;
 import com.gradle.superscalarsim.models.BranchTargetEntryModel;
 import com.gradle.superscalarsim.models.IInputCodeModel;
-import com.gradle.superscalarsim.models.InputCodeModel;
 import com.gradle.superscalarsim.models.InstructionFunctionModel;
 
-import java.util.*;
+import java.util.Map;
+import java.util.Stack;
+import java.util.TreeMap;
 
 /**
  * @class BranchTargetBuffer
@@ -56,10 +52,10 @@ public class BranchTargetBuffer
   /// Size of the buffer
   private int size;
   /// InitLoader class holding information about instruction and registers
-  private InitLoader initLoader;
+  private final InitLoader initLoader;
   /// Stack holding history of all rewritten entries
   private final Stack<BranchTargetEntryModel> previousEntries;
-
+  
   /**
    * @brief Constructor
    * @param [in] initLoader - InitLoader class holding information about instruction and registers
@@ -67,14 +63,14 @@ public class BranchTargetBuffer
    */
   public BranchTargetBuffer(InitLoader initLoader, int size)
   {
-    this.initLoader      = initLoader;
+    this.initLoader = initLoader;
     // TreeMap is used to have sorted keys - display in GUI
     this.buffer          = new TreeMap<>();
     this.previousEntries = new Stack<>();
     reallocateTargetBuffer(size);
   }// end of Constructor
   //----------------------------------------------------------------------
-
+  
   /**
    * @brief Resets the BTB
    */
@@ -85,12 +81,12 @@ public class BranchTargetBuffer
     reallocateTargetBuffer(size);
   }// end of reset
   //----------------------------------------------------------------------
-
-  BranchTargetEntryModel getBranchEntry(int programCounter) {
-    return this.buffer.getOrDefault(programCounter % this.size,
-            new BranchTargetEntryModel(-1,false, -1, -1, -1));
+  
+  BranchTargetEntryModel getBranchEntry(int programCounter)
+  {
+    return this.buffer.getOrDefault(programCounter % this.size, new BranchTargetEntryModel(-1, false, -1, -1, -1));
   }
-
+  
   /**
    * @brief Get whole BTB
    * @return List of BTB entries
@@ -100,7 +96,7 @@ public class BranchTargetBuffer
     return buffer;
   }// end of getBuffer
   //----------------------------------------------------------------------
-
+  
   /**
    * @brief Get BTB buffer size
    * @return BTB buffer size
@@ -110,7 +106,7 @@ public class BranchTargetBuffer
     return size;
   }// end of getBufferSize
   //----------------------------------------------------------------------
-
+  
   /**
    * @brief Reallocates buffer to new size
    * @param [in] size - New size of the buffer
@@ -121,7 +117,7 @@ public class BranchTargetBuffer
     this.buffer.clear();
   }// end of reallocateTargetBuffer
   //----------------------------------------------------------------------
-
+  
   /**
    * @brief Sets entry to BTB
    * @param [in] programCounter - Position fo the instruction in program
@@ -132,19 +128,15 @@ public class BranchTargetBuffer
   public void setEntry(int programCounter, IInputCodeModel codeModel, int target, int id, int commitId)
   {
     InstructionFunctionModel instruction = codeModel.getInstructionFunctionModel();
-    BranchTargetEntryModel entryModel = new BranchTargetEntryModel(
-      programCounter,
-      instruction != null && !instruction.isUnconditionalJump(),
-      target,
-      id,
-      commitId
-      );
-
+    BranchTargetEntryModel entryModel = new BranchTargetEntryModel(programCounter,
+                                                                   instruction != null && !instruction.isUnconditionalJump(),
+                                                                   target, id, commitId);
+    
     this.previousEntries.push(getBranchEntry(programCounter));
     this.buffer.put(programCounter % this.size, entryModel);
   }// end of setEntry
   //----------------------------------------------------------------------
-
+  
   /**
    * @brief Gets entry target specified by the program position
    * @param [in] programCounter - Position of the instruction in program
@@ -153,14 +145,14 @@ public class BranchTargetBuffer
   public int getEntryTarget(int programCounter)
   {
     BranchTargetEntryModel entryModel = getBranchEntry(programCounter);
-    if(entryModel == null) // todo redundant
+    if (entryModel == null) // todo redundant
     {
       return -1;
     }
     return entryModel.getPcTag() == programCounter ? entryModel.getTarget() : -1;
   }// end of getEntryTarget
   //----------------------------------------------------------------------
-
+  
   /**
    * @brief Ccheck if an entry is of unconditional branch instruction
    * @param [in] programCounter - Position of the instruction in the program
@@ -172,7 +164,7 @@ public class BranchTargetBuffer
     return entryModel.getPcTag() == programCounter && !entryModel.isConditional();
   }// end of isEntryUnconditional
   //----------------------------------------------------------------------
-
+  
   /**
    * @brief Clears entry on the specified position
    * @param [in] programCounter - Position of the instruction in the program
@@ -182,7 +174,7 @@ public class BranchTargetBuffer
     this.buffer.remove(programCounter % this.size);
   }// end of clearEntry
   //----------------------------------------------------------------------
-
+  
   /**
    * @brief Resets entry from memory if ids are equal with the current entry
    * @param [in] programCounter - Position of the instruction in the program
@@ -192,7 +184,7 @@ public class BranchTargetBuffer
   public void resetEntry(int programCounter, int id, int commitId)
   {
     BranchTargetEntryModel entryModel = getBranchEntry(programCounter);
-    if(entryModel.getInstructionId() == id && entryModel.getCommitId() == commitId)
+    if (entryModel.getInstructionId() == id && entryModel.getCommitId() == commitId)
     {
       entryModel = this.previousEntries.pop();
       this.buffer.put(programCounter % this.size, entryModel);

@@ -1,34 +1,29 @@
 /**
- * @file    StatisticsCounter.java
- *
- * @author  Jan Vavra \n
- *          Faculty of Information Technology \n
- *          Brno University of Technology \n
- *          xvavra20@fit.vutbr.cz
- *
+ * @file StatisticsCounter.java
+ * @author Jan Vavra \n
+ * Faculty of Information Technology \n
+ * Brno University of Technology \n
+ * xvavra20@fit.vutbr.cz
  * @brief File contains class that gather statistics from the simulation
- *
- * @date  27 April  2021 16:00 (created) \n
- *        28 April  2021 17:30 (revised)
- *
+ * @date 27 April  2021 16:00 (created) \n
+ * 28 April  2021 17:30 (revised)
  * @section Licence
  * This file is part of the Superscalar simulator app
- *
+ * <p>
  * Copyright (C) 2020  Jan Vavra
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
  */
 package com.gradle.superscalarsim.blocks;
 
@@ -48,7 +43,7 @@ public class StatisticsCounter
   private long correctlyPredictedBranches;
   /// Counter for all branch instructions
   private long allBranches;
-
+  
   /**
    * @brief Constructor
    */
@@ -57,7 +52,7 @@ public class StatisticsCounter
     this.resetCounters();
   }// end of Constructor
   //----------------------------------------------------------------------
-
+  
   /**
    * @brief Resets the counters to the initial values
    */
@@ -70,7 +65,7 @@ public class StatisticsCounter
     this.allBranches                = 0;
   }// end of resetCounters
   //----------------------------------------------------------------------
-
+  
   /**
    * @brief Increments number of committed instructions
    */
@@ -79,7 +74,7 @@ public class StatisticsCounter
     this.committedInstructions++;
   }// end of incrementCommittedInstructions
   //----------------------------------------------------------------------
-
+  
   /**
    * @brief Increments number of simulate() calls
    */
@@ -88,7 +83,7 @@ public class StatisticsCounter
     this.clockCycles++;
   }// end of incrementClockCycles
   //----------------------------------------------------------------------
-
+  
   /**
    * @brief Increment number of failed instructions
    */
@@ -97,7 +92,7 @@ public class StatisticsCounter
     this.failedInstructions++;
   }// end of incrementFailedInstructions
   //----------------------------------------------------------------------
-
+  
   /**
    * @brief Increments number of correctly predicted branching instructions
    */
@@ -106,7 +101,7 @@ public class StatisticsCounter
     this.correctlyPredictedBranches++;
   }// end of incrementCorrectlyPredictedBranches
   //----------------------------------------------------------------------
-
+  
   /**
    * @brief Increments number of all branch instructions that were committed
    */
@@ -115,7 +110,7 @@ public class StatisticsCounter
     this.allBranches++;
   }// end of incrementAllBranches
   //----------------------------------------------------------------------
-
+  
   /**
    * @brief Decrements number of committed instructions
    */
@@ -124,7 +119,7 @@ public class StatisticsCounter
     this.committedInstructions--;
   }// end of decrementCommittedInstructions
   //----------------------------------------------------------------------
-
+  
   /**
    * @brief Decrements number of simulate() calls
    */
@@ -133,7 +128,7 @@ public class StatisticsCounter
     this.clockCycles--;
   }// end of decrementClockCycles
   //----------------------------------------------------------------------
-
+  
   /**
    * @brief Increment number of failed instructions
    */
@@ -142,7 +137,7 @@ public class StatisticsCounter
     this.failedInstructions--;
   }// end of decrementFailedInstructions
   //----------------------------------------------------------------------
-
+  
   /**
    * @brief Increments number of correctly predicted branching instructions
    */
@@ -151,7 +146,7 @@ public class StatisticsCounter
     this.correctlyPredictedBranches--;
   }// end of decrementCorrectlyPredictedBranches
   //----------------------------------------------------------------------
-
+  
   /**
    * @brief Increments number of all branch instructions that were committed
    */
@@ -160,35 +155,35 @@ public class StatisticsCounter
     this.allBranches--;
   }// end of decrementAllBranches
   //----------------------------------------------------------------------
-
+  
   /**
    * @brief Calculates CPI from values inside the class
    * @return Float value of CPI
    */
   public float calculateClocksPerInstruction()
   {
-    if(this.committedInstructions <= 0)
+    if (this.committedInstructions <= 0)
     {
       return 0;
     }
-    return (float)this.clockCycles / (float)this.committedInstructions;
+    return (float) this.clockCycles / (float) this.committedInstructions;
   }// end of calculateClocksPerInstruction
   //----------------------------------------------------------------------
-
+  
   /**
    * @brief Calculate prediction accuracy in percent from values inside the class
    * @return Percent value of branch prediction accuracy
    */
   public int calculateBranchPredictionPercentage()
   {
-    if(this.allBranches <= 0)
+    if (this.allBranches <= 0)
     {
       return 100;
     }
-    return (int) (((float)this.correctlyPredictedBranches / (float) this.allBranches) * 100.0f);
+    return (int) (((float) this.correctlyPredictedBranches / (float) this.allBranches) * 100.0f);
   }// end of calculateBranchPredictionPercentage
   //----------------------------------------------------------------------
-
+  
   /**
    * @brief Get number of failed instructions
    * @return Number of failed instructions
@@ -198,7 +193,7 @@ public class StatisticsCounter
     return this.failedInstructions;
   }// end of getFailedInstructions
   //----------------------------------------------------------------------
-
+  
   /**
    * @brief Get number of committed instructions
    * @return Number of committed instructions
@@ -208,7 +203,7 @@ public class StatisticsCounter
     return this.committedInstructions;
   }// end of getCommittedInstructions
   //----------------------------------------------------------------------
-
+  
   /**
    * @brief Get all committed branch instructions
    * @return Number of committed branch instructions
@@ -218,7 +213,7 @@ public class StatisticsCounter
     return allBranches;
   }// end of getAllBranches
   //----------------------------------------------------------------------
-
+  
   /**
    * @brief Get number of clock cycles
    * @return Number of clock cycles

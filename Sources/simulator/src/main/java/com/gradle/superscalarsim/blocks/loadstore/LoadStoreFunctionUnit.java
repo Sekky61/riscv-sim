@@ -4,10 +4,10 @@
  * Faculty of Information Technology \n
  * Brno University of Technology \n
  * xvavra20@fit.vutbr.cz
- * @author  Michal Majer
- *          Faculty of Information Technology
- *          Brno University of Technology
- *          xmajer21@stud.fit.vutbr.cz
+ * @author Michal Majer
+ * Faculty of Information Technology
+ * Brno University of Technology
+ * xmajer21@stud.fit.vutbr.cz
  * @brief File contains class for Load/Store Function unit
  * @date 14 March   2021 12:00 (created) \n
  * 14 May     2021 10:30 (revised)
@@ -38,116 +38,134 @@ import com.gradle.superscalarsim.blocks.base.ReorderBufferBlock;
 import com.gradle.superscalarsim.code.CodeLoadStoreInterpreter;
 import com.gradle.superscalarsim.models.SimCodeModel;
 
-import java.beans.PropertyChangeEvent;
-
 /**
  * @class ArithmeticFunctionUnitBlock
  * @brief Specific function unit class for executing load/store instructions
  */
-public class LoadStoreFunctionUnit extends AbstractFunctionUnitBlock {
-    /// Load buffer with all load instruction entries
-    private LoadBufferBlock loadBufferBlock;
-    /// Store buffer with all store instruction entries
-    private StoreBufferBlock storeBufferBlock;
-    /// Interpreter for processing load store instructions
-    private CodeLoadStoreInterpreter loadStoreInterpreter;
-
-    public LoadStoreFunctionUnit() {
-
+public class LoadStoreFunctionUnit extends AbstractFunctionUnitBlock
+{
+  /// Load buffer with all load instruction entries
+  private LoadBufferBlock loadBufferBlock;
+  /// Store buffer with all store instruction entries
+  private StoreBufferBlock storeBufferBlock;
+  /// Interpreter for processing load store instructions
+  private CodeLoadStoreInterpreter loadStoreInterpreter;
+  
+  public LoadStoreFunctionUnit()
+  {
+  
+  }
+  
+  /**
+   * @param [in] blockScheduleTask  - Task class, where blocks are periodically triggered by the GlobalTimer
+   * @param [in] reorderBufferBlock - Class containing simulated Reorder Buffer
+   * @param [in] delay              - Delay for function unit
+   * @param [in] issueWindowBlock   - Issue window block for comparing instruction and data types
+   * @param [in] loadBufferBlock    - Load buffer with all load instruction entries
+   * @param [in] storeBufferBlock   - Store buffer with all store instruction entries
+   * @brief Constructor
+   */
+  public LoadStoreFunctionUnit(ReorderBufferBlock reorderBufferBlock,
+                               int delay,
+                               AbstractIssueWindowBlock issueWindowBlock,
+                               LoadBufferBlock loadBufferBlock,
+                               StoreBufferBlock storeBufferBlock,
+                               CodeLoadStoreInterpreter loadStoreInterpreter)
+  {
+    super(reorderBufferBlock, delay, issueWindowBlock);
+    this.loadBufferBlock      = loadBufferBlock;
+    this.storeBufferBlock     = storeBufferBlock;
+    this.loadStoreInterpreter = loadStoreInterpreter;
+  }// end of Constructor
+  //----------------------------------------------------------------------
+  
+  /**
+   * @brief Simulates execution of an instruction
+   */
+  @Override
+  public void simulate()
+  {
+    if (!isFunctionUnitEmpty() && this.simCodeModel.hasFailed())
+    {
+      hasDelayPassed();
+      this.simCodeModel.setFunctionUnitId(this.functionUnitId);
+      this.failedInstructions.push(this.simCodeModel);
+      this.simCodeModel = null;
+      this.zeroTheCounter();
     }
-
-    /**
-     * @param [in] blockScheduleTask  - Task class, where blocks are periodically triggered by the GlobalTimer
-     * @param [in] reorderBufferBlock - Class containing simulated Reorder Buffer
-     * @param [in] delay              - Delay for function unit
-     * @param [in] issueWindowBlock   - Issue window block for comparing instruction and data types
-     * @param [in] loadBufferBlock    - Load buffer with all load instruction entries
-     * @param [in] storeBufferBlock   - Store buffer with all store instruction entries
-     * @brief Constructor
-     */
-    public LoadStoreFunctionUnit(
-                                 ReorderBufferBlock reorderBufferBlock,
-                                 int delay,
-                                 AbstractIssueWindowBlock issueWindowBlock,
-                                 LoadBufferBlock loadBufferBlock,
-                                 StoreBufferBlock storeBufferBlock,
-                                 CodeLoadStoreInterpreter loadStoreInterpreter) {
-        super(reorderBufferBlock, delay, issueWindowBlock);
-        this.loadBufferBlock = loadBufferBlock;
-        this.storeBufferBlock = storeBufferBlock;
-        this.loadStoreInterpreter = loadStoreInterpreter;
-    }// end of Constructor
-    //----------------------------------------------------------------------
-
-    /**
-     * @brief Simulates execution of an instruction
-     */
-    @Override
-    public void simulate() {
-        if (!isFunctionUnitEmpty() && this.simCodeModel.hasFailed()) {
-            hasDelayPassed();
-            this.simCodeModel.setFunctionUnitId(this.functionUnitId);
-            this.failedInstructions.push(this.simCodeModel);
-            this.simCodeModel = null;
-            this.zeroTheCounter();
+    
+    if (!isFunctionUnitEmpty() && hasTimerStarted())
+    {
+      this.simCodeModel.setFunctionUnitId(this.functionUnitId);
+    }
+    
+    if (!isFunctionUnitEmpty() && hasDelayPassed())
+    {
+      if (hasTimerStarted())
+      {
+        this.simCodeModel.setFunctionUnitId(this.functionUnitId);
+      }
+      long address = loadStoreInterpreter.interpretAddress(simCodeModel);
+      if (storeBufferBlock.getStoreMap().containsKey(simCodeModel.getId()))
+      {
+        storeBufferBlock.setAddress(simCodeModel.getId(), address);
+      }
+      else
+      {
+        loadBufferBlock.setAddress(simCodeModel.getId(), address);
+      }
+      this.simCodeModel = null;
+    }
+    
+    
+    if (isFunctionUnitEmpty())
+    {
+      this.functionUnitId += this.functionUnitCount;
+    }
+  }// end of simulate
+  //----------------------------------------------------------------------
+  
+  /**
+   * @brief Simulates backwards (resets flags and waits until un-execution of instruction)
+   */
+  @Override
+  public void simulateBackwards()
+  {
+    if (isFunctionUnitEmpty())
+    {
+      this.functionUnitId -= this.functionUnitCount;
+      for (SimCodeModel codeModel : this.reorderBufferBlock.getReorderQueue())
+      {
+        if (codeModel.getFunctionUnitId() == this.functionUnitId && issueWindowBlock.isCorrectDataType(
+                codeModel.getResultDataType()) && issueWindowBlock.isCorrectInstructionType(
+                codeModel.getInstructionTypeEnum()))
+        {
+          this.resetReverseCounter();
+          this.simCodeModel = codeModel;
+          if (!this.failedInstructions.isEmpty() && this.simCodeModel == this.failedInstructions.peek())
+          {
+            this.failedInstructions.pop();
+            this.popHistoryCounter();
+          }
+          if (this.loadBufferBlock.getLoadMap().containsKey(codeModel.getId()))
+          {
+            this.loadBufferBlock.getLoadMap().get(codeModel.getId()).setAddress(-1);
+          }
+          else if (this.storeBufferBlock.getStoreMap().containsKey(codeModel.getId()))
+          {
+            this.storeBufferBlock.getStoreMap().get(codeModel.getId()).setAddress(-1);
+          }
+          reorderBufferBlock.getFlagsMap().get(codeModel.getId()).setBusy(true);
+          return;
         }
-
-        if (!isFunctionUnitEmpty() && hasTimerStarted()) {
-            this.simCodeModel.setFunctionUnitId(this.functionUnitId);
-        }
-
-        if (!isFunctionUnitEmpty() && hasDelayPassed()) {
-            if (hasTimerStarted()) {
-                this.simCodeModel.setFunctionUnitId(this.functionUnitId);
-            }
-            long address = loadStoreInterpreter.interpretAddress(simCodeModel);
-            if (storeBufferBlock.getStoreMap().containsKey(simCodeModel.getId())) {
-                storeBufferBlock.setAddress(simCodeModel.getId(), address);
-            } else {
-                loadBufferBlock.setAddress(simCodeModel.getId(), address);
-            }
-            this.simCodeModel = null;
-        }
-
-
-        if (isFunctionUnitEmpty()) {
-            this.functionUnitId += this.functionUnitCount;
-        }
-    }// end of simulate
-    //----------------------------------------------------------------------
-
-    /**
-     * @brief Simulates backwards (resets flags and waits until un-execution of instruction)
-     */
-    @Override
-    public void simulateBackwards() {
-        if (isFunctionUnitEmpty()) {
-            this.functionUnitId -= this.functionUnitCount;
-            for (SimCodeModel codeModel : this.reorderBufferBlock.getReorderQueue()) {
-                if (codeModel.getFunctionUnitId() == this.functionUnitId &&
-                        issueWindowBlock.isCorrectDataType(codeModel.getResultDataType()) &&
-                        issueWindowBlock.isCorrectInstructionType(codeModel.getInstructionTypeEnum())) {
-                    this.resetReverseCounter();
-                    this.simCodeModel = codeModel;
-                    if (!this.failedInstructions.isEmpty() && this.simCodeModel == this.failedInstructions.peek()) {
-                        this.failedInstructions.pop();
-                        this.popHistoryCounter();
-                    }
-                    if (this.loadBufferBlock.getLoadMap().containsKey(codeModel.getId())) {
-                        this.loadBufferBlock.getLoadMap().get(codeModel.getId()).setAddress(-1);
-                    } else if (this.storeBufferBlock.getStoreMap().containsKey(codeModel.getId())) {
-                        this.storeBufferBlock.getStoreMap().get(codeModel.getId()).setAddress(-1);
-                    }
-                    reorderBufferBlock.getFlagsMap().get(codeModel.getId()).setBusy(true);
-                    return;
-                }
-            }
-            if (!this.failedInstructions.isEmpty() &&
-                    this.failedInstructions.peek().getFunctionUnitId() == this.functionUnitId) {
-                this.simCodeModel = this.failedInstructions.pop();
-                this.popHistoryCounter();
-            }
-        }
-    }// end of simulateBackwards
-    //----------------------------------------------------------------------
+      }
+      if (!this.failedInstructions.isEmpty() && this.failedInstructions.peek()
+                                                                       .getFunctionUnitId() == this.functionUnitId)
+      {
+        this.simCodeModel = this.failedInstructions.pop();
+        this.popHistoryCounter();
+      }
+    }
+  }// end of simulateBackwards
+  //----------------------------------------------------------------------
 }

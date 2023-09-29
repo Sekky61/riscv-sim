@@ -41,99 +41,109 @@ import java.util.List;
  * @brief Definition of register file
  * @details Class contains definition of register file, which is used for displaying and storing simulation values
  */
-public class RegisterFileModel {
-    /// Name of register file
-    private final String name;
-    /// Data type of register file
-    private final DataTypeEnum dataType;
-    /// List of registers of register file
-    private final List<RegisterModel> registerList;
-
-    // TODO: This acts as default values, meaning file reading does not fail on bad json file
-    public RegisterFileModel() {
-        this.name = "";
-        this.dataType = DataTypeEnum.kInt;
-        this.registerList = null;
+public class RegisterFileModel
+{
+  /// Name of register file
+  private final String name;
+  /// Data type of register file
+  private final DataTypeEnum dataType;
+  /// List of registers of register file
+  private final List<RegisterModel> registerList;
+  
+  // TODO: This acts as default values, meaning file reading does not fail on bad json file
+  public RegisterFileModel()
+  {
+    this.name         = "";
+    this.dataType     = DataTypeEnum.kInt;
+    this.registerList = null;
+  }
+  
+  /**
+   * @param [in] name         - Register file name
+   * @param [in] dataType     - Register file data type
+   * @param [in] registerList - List of registers of register file
+   *
+   * @brief Constructor
+   */
+  public RegisterFileModel(String name, String dataType, List<RegisterModel> registerList)
+  {
+    this.name         = name;
+    this.dataType     = DataTypeEnum.valueOf(dataType);
+    this.registerList = registerList;
+  }// end of Constructor
+  //------------------------------------------------------
+  
+  /**
+   * @return String representation of the object
+   * @brief Overrides toString method with custom formating
+   */
+  @Override
+  public String toString()
+  {
+    return "Register file: " + name + '\n' + "data type: " + dataType + '\n' + "registers: " + '\n' + "------------------------------------" + '\n' + registerList + "------------------------------------" + '\n';
+  }// end of toString
+  //------------------------------------------------------
+  
+  /**
+   * @return Name of register file
+   * @brief Get name of register file
+   */
+  public final String getName()
+  {
+    return name;
+  }// end of getName
+  //------------------------------------------------------
+  
+  /**
+   * @return Data type of register file
+   * @brief Get data type of register file
+   */
+  public final DataTypeEnum getDataType()
+  {
+    return dataType;
+  }// end of getDataType
+  //------------------------------------------------------
+  
+  /**
+   * @return List of registers in register file
+   * @brief Get registers in register file
+   */
+  public final List<RegisterModel> getRegisterList()
+  {
+    return registerList;
+  }// end of getRegisterList
+  //------------------------------------------------------
+  
+  /**
+   * @brief check if register exists in register file
+   */
+  public boolean hasRegister(String registerName)
+  {
+    for (RegisterModel register : registerList)
+    {
+      if (register.getName().equals(registerName))
+      {
+        return true;
+      }
     }
-
-    /**
-     * @param [in] name         - Register file name
-     * @param [in] dataType     - Register file data type
-     * @param [in] registerList - List of registers of register file
-     * @brief Constructor
-     */
-    public RegisterFileModel(String name, String dataType, List<RegisterModel> registerList) {
-        this.name = name;
-        this.dataType = DataTypeEnum.valueOf(dataType);
-        this.registerList = registerList;
-    }// end of Constructor
-    //------------------------------------------------------
-
-    /**
-     * @return String representation of the object
-     * @brief Overrides toString method with custom formating
-     */
-    @Override
-    public String toString() {
-        return "Register file: " + name + '\n' +
-                "data type: " + dataType + '\n' +
-                "registers: " + '\n' +
-                "------------------------------------" + '\n'
-                + registerList +
-                "------------------------------------" + '\n';
-    }// end of toString
-    //------------------------------------------------------
-
-    /**
-     * @return Name of register file
-     * @brief Get name of register file
-     */
-    public final String getName() {
-        return name;
-    }// end of getName
-    //------------------------------------------------------
-
-    /**
-     * @return Data type of register file
-     * @brief Get data type of register file
-     */
-    public final DataTypeEnum getDataType() {
-        return dataType;
-    }// end of getDataType
-    //------------------------------------------------------
-
-    /**
-     * @return List of registers in register file
-     * @brief Get registers in register file
-     */
-    public final List<RegisterModel> getRegisterList() {
-        return registerList;
-    }// end of getRegisterList
-    //------------------------------------------------------
-
-    /**
-     * @brief check if register exists in register file
-     */
-    public boolean hasRegister(String registerName) {
-        for (RegisterModel register : registerList) {
-            if (register.getName().equals(registerName)) {
-                return true;
-            }
-        }
-        return false;
-    }// end of hasRegister
-
-    /**
-     * @param [in] registerName - Name of register
-     * @return Register, or null if not found
-     * @brief Get register by name
-     */
-    public RegisterModel getRegister(String registerName) {
-        for (RegisterModel register : registerList) {
-            if (register.getName().equals(registerName)) {
-                return register;
-            }
-        }
-        return null;
-    }// end of getRegister
+    return false;
+  }// end of hasRegister
+  
+  /**
+   * @param [in] registerName - Name of register
+   *
+   * @return Register, or null if not found
+   * @brief Get register by name
+   */
+  public RegisterModel getRegister(String registerName)
+  {
+    for (RegisterModel register : registerList)
+    {
+      if (register.getName().equals(registerName))
+      {
+        return register;
+      }
+    }
+    return null;
+  }// end of getRegister
 }

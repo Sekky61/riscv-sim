@@ -1,39 +1,34 @@
 /**
- * @file    CodeInterpreter.java
- *
- * @author  Jan Vavra \n
- *          Faculty of Information Technology \n
- *          Brno University of Technology \n
- *          xvavra20@fit.vutbr.cz
- *
- * @author  Michal Majer
- *          Faculty of Information Technology
- *          Brno University of Technology
- *          xmajer21@stud.fit.vutbr.cz
+ * @file CodeInterpreter.java
+ * @author Jan Vavra \n
+ * Faculty of Information Technology \n
+ * Brno University of Technology \n
+ * xvavra20@fit.vutbr.cz
+ * @author Michal Majer
+ * Faculty of Information Technology
+ * Brno University of Technology
+ * xmajer21@stud.fit.vutbr.cz
  * @brief File contains arithmetic interpreter
- *
- * @date  11 November  2020 22:00 (created) \n
- *        12 May       2021 11:00 (revised)
+ * @date 11 November  2020 22:00 (created) \n
+ * 12 May       2021 11:00 (revised)
  * 26 Sep      2023 10:00 (revised)
- *
  * @section Licence
  * This file is part of the Superscalar simulator app
- *
+ * <p>
  * Copyright (C) 2020  Jan Vavra
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
  */
 package com.gradle.superscalarsim.code;
 
@@ -71,8 +66,8 @@ public class CodeArithmeticInterpreter
   private final Stack<String> operationStack;
   /// Stack to store values loaded from expression from left to right
   private final Stack<String> valueStack;
-  private UnifiedRegisterFileBlock registerFileBlock;
-
+  private final UnifiedRegisterFileBlock registerFileBlock;
+  
   /**
    * @brief Constructor
    * @param [in] initLoader     - Initial loader of interpretable instructions and register files
@@ -93,7 +88,7 @@ public class CodeArithmeticInterpreter
     this.temporaryValue     = 0.0;
   }// end of Constructor
   //-------------------------------------------------------------------------------------------
-
+  
   /**
    * @brief Evaluates expressions divided by semicolon ';'
    * @param [in] parsedCode - Parsed instruction from code file to be interpreted
@@ -102,38 +97,34 @@ public class CodeArithmeticInterpreter
   public double interpretInstruction(final IInputCodeModel parsedCode)
   {
     final InstructionFunctionModel instruction = parsedCode.getInstructionFunctionModel();
-    if(instruction == null)
+    if (instruction == null)
     {
       return Double.NaN;
     }
-
+    
     String[] splitInterpretable = instruction.getInterpretableAs().split(";");
-    for(String command: splitInterpretable)
+    for (String command : splitInterpretable)
     {
-      int equalIndex    = command.indexOf('=');
-      String lValue     = command.substring(0,equalIndex);
+      int    equalIndex = command.indexOf('=');
+      String lValue     = command.substring(0, equalIndex);
       String expression = command.substring(equalIndex + 1);
-
+      
       // Find result arg (for example rd:t0)
-      InputCodeArgument resultArg = parsedCode.getArguments().stream()
-                                      .filter(arg -> lValue.contains(arg.getName()))
-                                      .findFirst().orElse(null);
-      OperandModel resultOperand  = new OperandModel(lValue,resultArg);
-      double result               = evaluateExpression(expression,
-                                      instruction.getInputDataType(),
-                                      instruction.getOutputDataType(),
-                                      parsedCode.getArguments());
-
+      InputCodeArgument resultArg = parsedCode.getArguments().stream().filter(arg -> lValue.contains(arg.getName()))
+                                              .findFirst().orElse(null);
+      OperandModel resultOperand = new OperandModel(lValue, resultArg);
+      double result = evaluateExpression(expression, instruction.getInputDataType(), instruction.getOutputDataType(),
+                                         parsedCode.getArguments());
+      
       this.temporaryTag   = resultOperand.getValue();
-      this.temporaryValue = resultOperand.getBitHigh() == -1 ?
-                              result :
-                              writeSpecificBits(resultOperand, (long) result, (long) this.temporaryValue);
+      this.temporaryValue = resultOperand.getBitHigh() == -1 ? result : writeSpecificBits(resultOperand, (long) result,
+                                                                                          (long) this.temporaryValue);
     }
-
-    return Double.parseDouble(convertDoubleToDatatype(this.temporaryValue,instruction.getOutputDataType()));
+    
+    return Double.parseDouble(convertDoubleToDatatype(this.temporaryValue, instruction.getOutputDataType()));
   }// end of interpretInstruction
   //-------------------------------------------------------------------------------------------
-
+  
   /**
    * @brief Evaluates one expression
    * @param [in] expression     - Expression to be interpreted
@@ -151,18 +142,18 @@ public class CodeArithmeticInterpreter
     operationStack.clear();
     valueStack.clear();
     operationStack.push("$");
-
-    char[] expressionCharArray          = expression.toCharArray();
+    
+    char[]        expressionCharArray   = expression.toCharArray();
     StringBuilder valueStringBuilder    = new StringBuilder();
     StringBuilder operatorStringBuilder = new StringBuilder();
-
+    
     // Load until the expressionCharArray is read
-    for(char character: expressionCharArray)
+    for (char character : expressionCharArray)
     {
       // Current char is part of allowed operation
-      if(this.precedingTable.isAllowedOperation(operatorStringBuilder.toString() + character))
+      if (this.precedingTable.isAllowedOperation(operatorStringBuilder.toString() + character))
       {
-        if(!valueStringBuilder.isEmpty())
+        if (!valueStringBuilder.isEmpty())
         {
           valueStack.push(valueStringBuilder.toString());
         }
@@ -170,7 +161,7 @@ public class CodeArithmeticInterpreter
         operatorStringBuilder.append(character);
       }
       // Current char is not part of operation, but we have loaded some operation
-      else if(!operatorStringBuilder.isEmpty())
+      else if (!operatorStringBuilder.isEmpty())
       {
         String operation = operatorStringBuilder.toString();
         operatorStringBuilder.setLength(0);
@@ -182,15 +173,15 @@ public class CodeArithmeticInterpreter
         {
           valueStringBuilder.append(character);
         }
-        evaluateAllUnaryOperations(argumentList,inputDataType);
-        PrecedingPriorityEnum priority = this.precedingTable.getPrecedingPriority(operationStack.peek(),operation);
+        evaluateAllUnaryOperations(argumentList, inputDataType);
+        PrecedingPriorityEnum priority = this.precedingTable.getPrecedingPriority(operationStack.peek(), operation);
         switch (priority)
         {
           case kError:
             return Double.NaN;
           case kEvaluate:
-            String stackOperation  = operationStack.pop();
-            double result          = evaluateOperation(stackOperation, argumentList, inputDataType);
+            String stackOperation = operationStack.pop();
+            double result = evaluateOperation(stackOperation, argumentList, inputDataType);
             valueStack.push(convertDoubleToDatatype(result, inputDataType));
             operationStack.push(operation);
             break;
@@ -205,30 +196,30 @@ public class CodeArithmeticInterpreter
         valueStringBuilder.append(character);
       }
     }// End of array reading
-
+    
     // Empty out the operation stack
-    if(!valueStringBuilder.isEmpty())
+    if (!valueStringBuilder.isEmpty())
     {
       valueStack.push(valueStringBuilder.toString());
     }
     String operation = operatorStringBuilder.isEmpty() ? operationStack.pop() : operatorStringBuilder.toString();
-
+    
     // Evaluate every operation on stack
     while (!operation.equals("$"))
     {
-      double result = evaluateOperation(operation,argumentList, inputDataType);
+      double result = evaluateOperation(operation, argumentList, inputDataType);
       valueStack.push(convertDoubleToDatatype(result, inputDataType));
-      operation     = operationStack.pop();
+      operation = operationStack.pop();
     }// End of operation stack emptier
-
+    
     // Overload last value on stack and return
-    String resultValue          = valueStack.pop();
-    InputCodeArgument resultArg = argumentList.stream().filter(arg -> resultValue.equals(arg.getName()))
-                                    .findFirst().orElse(null);
+    String resultValue = valueStack.pop();
+    InputCodeArgument resultArg = argumentList.stream().filter(arg -> resultValue.equals(arg.getName())).findFirst()
+                                              .orElse(null);
     return getValueFromOperand(resultArg == null ? resultValue : resultArg.getValue(), outputDataType);
   }// end of evaluateExpression
   //-------------------------------------------------------------------------------------------
-
+  
   /**
    * @brief Evaluates all previously read unary operation for immediate evaluation
    * @param [in] argumentList  - List of arguments provided by parsed instruction
@@ -238,13 +229,13 @@ public class CodeArithmeticInterpreter
   {
     while (this.precedingTable.isUnaryOperation(operationStack.peek()))
     {
-      String stackOperation  = operationStack.pop();
-      double result          = evaluateOperation(stackOperation,argumentList, inputDataType);
+      String stackOperation = operationStack.pop();
+      double result         = evaluateOperation(stackOperation, argumentList, inputDataType);
       valueStack.push(convertDoubleToDatatype(result, inputDataType));
     }
   }// end of evaluateAllUnaryOperations
   //-------------------------------------------------------------------------------------------
-
+  
   /**
    * @brief Decides what type of operation was given and prepares operators for interpretation
    * @param [in] operation     - Operation to be interpreted
@@ -256,16 +247,14 @@ public class CodeArithmeticInterpreter
                                    final List<InputCodeArgument> argumentList,
                                    final DataTypeEnum inputDataType)
   {
-    if(precedingTable.isBinaryOperation(operation))
+    if (precedingTable.isBinaryOperation(operation))
     {
       String operand2 = valueStack.pop();
       String operand1 = valueStack.empty() ? "unknown" : valueStack.pop();
-      InputCodeArgument arg2 = argumentList.stream()
-                                .filter(arg -> operand2.startsWith(arg.getName()))
-                                .findFirst().orElse(null);
-      InputCodeArgument arg1 = argumentList.stream()
-                                .filter(arg -> operand1.startsWith(arg.getName()))
-                                .findFirst().orElse(null);
+      InputCodeArgument arg2 = argumentList.stream().filter(arg -> operand2.startsWith(arg.getName())).findFirst()
+                                           .orElse(null);
+      InputCodeArgument arg1 = argumentList.stream().filter(arg -> operand1.startsWith(arg.getName())).findFirst()
+                                           .orElse(null);
       OperandModel operandModel2 = arg2 == null ? new OperandModel(operand2) : new OperandModel(operand2, arg2);
       OperandModel operandModel1 = arg1 == null ? new OperandModel(operand1) : new OperandModel(operand1, arg1);
       return processOperation(operandModel1, operandModel2, operation, inputDataType);
@@ -273,28 +262,27 @@ public class CodeArithmeticInterpreter
     else if (precedingTable.isUnaryOperation(operation))
     {
       String operand = valueStack.pop();
-      InputCodeArgument argument = argumentList.stream()
-                                    .filter(arg -> operand.startsWith(arg.getName()))
-                                    .findFirst().orElse(null);
+      InputCodeArgument argument = argumentList.stream().filter(arg -> operand.startsWith(arg.getName())).findFirst()
+                                               .orElse(null);
       OperandModel operandModel = new OperandModel(operand, argument);
       return processOperation(operandModel, null, operation, inputDataType);
     }
-    else if(operation.equals(")"))
+    else if (operation.equals(")"))
     {
       String currentOperation = operationStack.pop();
-      while(!currentOperation.equals("("))
+      while (!currentOperation.equals("("))
       {
-        double result = evaluateOperation(currentOperation,argumentList, inputDataType);
+        double result = evaluateOperation(currentOperation, argumentList, inputDataType);
         valueStack.push(String.valueOf(result));
         currentOperation = operationStack.pop();
       }
       return Double.parseDouble(valueStack.pop());
     }
-
+    
     return Double.NaN;
   }// end of evaluateOperation
   //-------------------------------------------------------------------------------------------
-
+  
   /**
    * @brief Interpret operation
    * @param [in] operand1      - First operand
@@ -310,23 +298,22 @@ public class CodeArithmeticInterpreter
   {
     double operandValue1 = operand1 != null ? getValueFromOperand(operand1.getValue(), inputDataType) : 0.0;
     double operandValue2 = operand2 != null ? getValueFromOperand(operand2.getValue(), inputDataType) : 0.0;
-    operandValue1 = operand1 == null || operand1.getBitHigh() == -1 ?
-                        operandValue1 :
-                        selectSpecificBits(operand1,operandValue1);
-    operandValue2 = operand2 == null || operand2.getBitHigh() == -1 ?
-                      operandValue2 :
-                      selectSpecificBits(operand2,operandValue2);
-
-    return switch (inputDataType){
-      case kInt    -> processIntOperation((int) operandValue1,(int) operandValue2,operator);
-      case kLong   -> processLongOperation((long) operandValue1, (long) operandValue2,operator);
-      case kFloat  -> processFloatOperation((float) operandValue1, (float) operandValue2, operator);
+    operandValue1 = operand1 == null || operand1.getBitHigh() == -1 ? operandValue1 : selectSpecificBits(operand1,
+                                                                                                         operandValue1);
+    operandValue2 = operand2 == null || operand2.getBitHigh() == -1 ? operandValue2 : selectSpecificBits(operand2,
+                                                                                                         operandValue2);
+    
+    return switch (inputDataType)
+    {
+      case kInt -> processIntOperation((int) operandValue1, (int) operandValue2, operator);
+      case kLong -> processLongOperation((long) operandValue1, (long) operandValue2, operator);
+      case kFloat -> processFloatOperation((float) operandValue1, (float) operandValue2, operator);
       case kDouble -> processDoubleOperation(operandValue1, operandValue2, operator);
       case kSpeculative -> Double.NaN;
     };
   }// end of processOperation
   //-------------------------------------------------------------------------------------------
-
+  
   /**
    * @brief Process 32-bit integer operation and keeps overflow capabilities
    * @param [in] operand1 - First operand
@@ -338,31 +325,31 @@ public class CodeArithmeticInterpreter
   {
     return switch (operator)
     {
-      case "+"   -> operand1 + operand2;
-      case "-"   -> operand1 - operand2;
-      case "*"   -> operand1 * operand2;
-      case "<-"  -> operand1;
-      case "%"   -> operand1 % operand2;
-      case "/"   -> operand2 != 0 ? operand1 / operand2 : Double.NaN;
-      case "&"   -> operand1 &   operand2;
-      case "|"   -> operand1 |   operand2;
-      case "<<"  -> operand1 <<  operand2;
-      case ">>"  -> operand1 >>  operand2;
+      case "+" -> operand1 + operand2;
+      case "-" -> operand1 - operand2;
+      case "*" -> operand1 * operand2;
+      case "<-" -> operand1;
+      case "%" -> operand1 % operand2;
+      case "/" -> operand2 != 0 ? operand1 / operand2 : Double.NaN;
+      case "&" -> operand1 & operand2;
+      case "|" -> operand1 | operand2;
+      case "<<" -> operand1 << operand2;
+      case ">>" -> operand1 >> operand2;
       case ">>>" -> operand1 >>> operand2;
-      case "++"  -> operand1 + 1;
-      case "--"  -> operand1 - 1;
-      case "#"   -> Math.sqrt(operand1);
-      case "!"   -> ~operand1;
-      case ">"   -> operand1 >  operand2 ? 1.0 : 0.0;
-      case ">="  -> operand1 >= operand2 ? 1.0 : 0.0;
-      case "<"   -> operand1 <  operand2 ? 1.0 : 0.0;
-      case "<="  -> operand1 <= operand2 ? 1.0 : 0.0;
-      case "=="  -> operand1 == operand2 ? 1.0 : 0.0;
-      default    -> Double.NaN;
+      case "++" -> operand1 + 1;
+      case "--" -> operand1 - 1;
+      case "#" -> Math.sqrt(operand1);
+      case "!" -> ~operand1;
+      case ">" -> operand1 > operand2 ? 1.0 : 0.0;
+      case ">=" -> operand1 >= operand2 ? 1.0 : 0.0;
+      case "<" -> operand1 < operand2 ? 1.0 : 0.0;
+      case "<=" -> operand1 <= operand2 ? 1.0 : 0.0;
+      case "==" -> operand1 == operand2 ? 1.0 : 0.0;
+      default -> Double.NaN;
     };
   }// end of processIntOperation
   //-------------------------------------------------------------------------------------------
-
+  
   /**
    * @brief Process 64-bit integer operation and keeps overflow capabilities
    * @param [in] operand1 - First operand
@@ -374,31 +361,31 @@ public class CodeArithmeticInterpreter
   {
     return switch (operator)
     {
-      case "+"   -> operand1 + operand2;
-      case "-"   -> operand1 - operand2;
-      case "*"   -> operand1 * operand2;
-      case "<-"  -> operand1;
-      case "%"   -> operand1 % operand2;
-      case "/"   -> operand2 != 0 ? operand1 / operand2 : Double.NaN;
-      case "&"   -> operand1 &   operand2;
-      case "|"   -> operand1 |   operand2;
-      case "<<"  -> operand1 <<  operand2;
-      case ">>"  -> operand1 >>  operand2;
+      case "+" -> operand1 + operand2;
+      case "-" -> operand1 - operand2;
+      case "*" -> operand1 * operand2;
+      case "<-" -> operand1;
+      case "%" -> operand1 % operand2;
+      case "/" -> operand2 != 0 ? operand1 / operand2 : Double.NaN;
+      case "&" -> operand1 & operand2;
+      case "|" -> operand1 | operand2;
+      case "<<" -> operand1 << operand2;
+      case ">>" -> operand1 >> operand2;
       case ">>>" -> operand1 >>> operand2;
-      case "++"  -> operand1 + 1;
-      case "--"  -> operand1 - 1;
-      case "#"   -> Math.sqrt(operand1);
-      case "!"   -> ~operand1;
-      case ">"   -> operand1 >  operand2 ? 1.0 : 0.0;
-      case ">="  -> operand1 >= operand2 ? 1.0 : 0.0;
-      case "<"   -> operand1 <  operand2 ? 1.0 : 0.0;
-      case "<="  -> operand1 <= operand2 ? 1.0 : 0.0;
-      case "=="  -> operand1 == operand2 ? 1.0 : 0.0;
-      default    -> Double.NaN;
+      case "++" -> operand1 + 1;
+      case "--" -> operand1 - 1;
+      case "#" -> Math.sqrt(operand1);
+      case "!" -> ~operand1;
+      case ">" -> operand1 > operand2 ? 1.0 : 0.0;
+      case ">=" -> operand1 >= operand2 ? 1.0 : 0.0;
+      case "<" -> operand1 < operand2 ? 1.0 : 0.0;
+      case "<=" -> operand1 <= operand2 ? 1.0 : 0.0;
+      case "==" -> operand1 == operand2 ? 1.0 : 0.0;
+      default -> Double.NaN;
     };
   }// end of processLongOperation
   //-------------------------------------------------------------------------------------------
-
+  
   /**
    * @brief Process 32-bit float operation and keeps overflow capabilities
    * @param [in] operand1 - First operand
@@ -410,25 +397,25 @@ public class CodeArithmeticInterpreter
   {
     return switch (operator)
     {
-      case "+"  -> operand1 + operand2;
-      case "-"  -> operand1 - operand2;
-      case "*"  -> operand1 * operand2;
+      case "+" -> operand1 + operand2;
+      case "-" -> operand1 - operand2;
+      case "*" -> operand1 * operand2;
       case "<-" -> operand1;
-      case "%"  -> operand1 % operand2;
-      case "/"  -> operand2 != 0 ? operand1 / operand2 : Double.NaN;
+      case "%" -> operand1 % operand2;
+      case "/" -> operand2 != 0 ? operand1 / operand2 : Double.NaN;
       case "++" -> operand1 + 1;
       case "--" -> operand1 - 1;
-      case "#"   -> Math.sqrt(operand1);
-      case ">"  -> operand1 >  operand2 ? 1.0 : 0.0;
+      case "#" -> Math.sqrt(operand1);
+      case ">" -> operand1 > operand2 ? 1.0 : 0.0;
       case ">=" -> operand1 >= operand2 ? 1.0 : 0.0;
-      case "<"  -> operand1 <  operand2 ? 1.0 : 0.0;
+      case "<" -> operand1 < operand2 ? 1.0 : 0.0;
       case "<=" -> operand1 <= operand2 ? 1.0 : 0.0;
       case "==" -> operand1 == operand2 ? 1.0 : 0.0;
-      default  -> Double.NaN;
+      default -> Double.NaN;
     };
   }// end of processFloatOperation
   //-------------------------------------------------------------------------------------------
-
+  
   /**
    * @brief Process 64-bit double operation and keeps overflow capabilities
    * @param [in] operand1 - First operand
@@ -440,25 +427,25 @@ public class CodeArithmeticInterpreter
   {
     return switch (operator)
     {
-      case "+"  -> operand1 + operand2;
-      case "-"  -> operand1 - operand2;
-      case "*"  -> operand1 * operand2;
+      case "+" -> operand1 + operand2;
+      case "-" -> operand1 - operand2;
+      case "*" -> operand1 * operand2;
       case "<-" -> operand1;
-      case "%"  -> operand1 % operand2;
-      case "/"  -> operand2 != 0 ? operand1 / operand2 : Double.NaN;
+      case "%" -> operand1 % operand2;
+      case "/" -> operand2 != 0 ? operand1 / operand2 : Double.NaN;
       case "++" -> operand1 + 1;
       case "--" -> operand1 - 1;
-      case "#"   -> Math.sqrt(operand1);
-      case ">"  -> operand1 >  operand2 ? 1.0 : 0.0;
+      case "#" -> Math.sqrt(operand1);
+      case ">" -> operand1 > operand2 ? 1.0 : 0.0;
       case ">=" -> operand1 >= operand2 ? 1.0 : 0.0;
-      case "<"  -> operand1 <  operand2 ? 1.0 : 0.0;
+      case "<" -> operand1 < operand2 ? 1.0 : 0.0;
       case "<=" -> operand1 <= operand2 ? 1.0 : 0.0;
       case "==" -> operand1 == operand2 ? 1.0 : 0.0;
-      default   -> Double.NaN;
+      default -> Double.NaN;
     };
   }// end of processDoubleOperation
   //-------------------------------------------------------------------------------------------
-
+  
   /**
    * @brief Writes bits in specified bit range
    * @param [in] operandModel  - OperandModel object of lValue
@@ -470,21 +457,21 @@ public class CodeArithmeticInterpreter
   {
     //Get new bits in given range
     long bitResult = selectSpecificBits(operandModel, newValue);
-    long offset = operandModel.getBitLow();
+    long offset    = operandModel.getBitLow();
     bitResult = bitResult << offset;
-
+    
     //Get low bits of actual value and write them into the new bits
-    OperandModel dummyModel = new OperandModel("", operandModel.getBitLow() - 1,0);
-    long lowValue = selectSpecificBits(dummyModel, previousValue);
+    OperandModel dummyModel = new OperandModel("", operandModel.getBitLow() - 1, 0);
+    long         lowValue   = selectSpecificBits(dummyModel, previousValue);
     bitResult = bitResult | lowValue;
-
+    
     // Make zeroes in place of new result and write new result in place of zeroes
     long bitValue = previousValue >> (operandModel.getBitHigh() + 1);
     bitValue = bitValue << (operandModel.getBitHigh() + 1);
     return bitValue | bitResult;
   }// end of writeSpecificBits
   //-------------------------------------------------------------------------------------------
-
+  
   /**
    * Selects bits from value
    * @param [in] operandModel - OperandModel object of the value
@@ -494,7 +481,7 @@ public class CodeArithmeticInterpreter
   private long selectSpecificBits(final OperandModel operandModel, final double actualValue)
   {
     long actualLongValue = (long) actualValue;
-    long mask = 0;
+    long mask            = 0;
     for (int i = operandModel.getBitLow(); i <= operandModel.getBitHigh(); i++)
     {
       mask += (long) Math.pow(2, i);
@@ -502,7 +489,7 @@ public class CodeArithmeticInterpreter
     return actualLongValue & mask;
   }// end of selectSpecificBits
   //-------------------------------------------------------------------------------------------
-
+  
   /**
    * @brief Gets value from string operand
    * @param [in] operand  - Value to be parsed, either immediate (hex or decimal) or register
@@ -512,46 +499,44 @@ public class CodeArithmeticInterpreter
   private double getValueFromOperand(String operand, DataTypeEnum dataType)
   {
     // Checks if value is immediate
-    if(hexadecimalPattern.matcher(operand).matches())
+    if (hexadecimalPattern.matcher(operand).matches())
     {
       return Long.parseLong(operand.substring(2), 16);
     }
-    else if(decimalPattern.matcher(operand).matches())
+    else if (decimalPattern.matcher(operand).matches())
     {
       return Double.parseDouble(operand);
     }
-
+    
     // If value is value of previously calculated expression
-    if(temporaryTag.equals(operand))
+    if (temporaryTag.equals(operand))
     {
       return temporaryValue;
     }
-
+    
     DataTypeEnum[] dataTypeEnums = getFitRegisterTypes(dataType);
-    RegisterModel registerModel = null;
+    RegisterModel  registerModel = null;
     for (DataTypeEnum possibleDataType : dataTypeEnums)
     {
       registerModel = this.registerFileBlock.getRegisterList(possibleDataType).stream()
-        .filter(register -> register.getName()
-          .equals(operand))
-        .findFirst().orElse(null);
-      if(registerModel != null)
+                                            .filter(register -> register.getName().equals(operand)).findFirst()
+                                            .orElse(null);
+      if (registerModel != null)
       {
         break;
       }
     }
-
-    if(registerModel == null)
+    
+    if (registerModel == null)
     {
       registerModel = this.registerFileBlock.getRegisterList(DataTypeEnum.kSpeculative).stream()
-        .filter(register -> register.getName()
-          .equals(operand))
-        .findFirst().orElse(null);
+                                            .filter(register -> register.getName().equals(operand)).findFirst()
+                                            .orElse(null);
     }
     return registerModel != null ? registerModel.getValue() : Double.NaN;
   }// end of getValueFromOperand
   //-------------------------------------------------------------------------------------------
-
+  
   /**
    * @brief Get list of data types in which specified data type can fit
    * @param [in] dataType - Data type of the register
@@ -559,7 +544,8 @@ public class CodeArithmeticInterpreter
    */
   private DataTypeEnum[] getFitRegisterTypes(DataTypeEnum dataType)
   {
-    return switch (dataType){
+    return switch (dataType)
+    {
       case kInt -> new DataTypeEnum[]{DataTypeEnum.kInt, DataTypeEnum.kLong};
       case kLong -> new DataTypeEnum[]{DataTypeEnum.kLong};
       case kFloat -> new DataTypeEnum[]{DataTypeEnum.kFloat, DataTypeEnum.kDouble};
@@ -568,7 +554,7 @@ public class CodeArithmeticInterpreter
     };
   }// end of getFitRegisterTypes
   //-------------------------------------------------------------------------------------------
-
+  
   /**
    * @brief Overload value to expected data type
    * @param [in] value    - Value to be overloaded
@@ -577,25 +563,29 @@ public class CodeArithmeticInterpreter
    */
   private String convertDoubleToDatatype(final double value, final DataTypeEnum dataType)
   {
-    if(Double.isNaN(value))
+    if (Double.isNaN(value))
     {
       return String.valueOf(Double.NaN);
     }
     switch (dataType)
     {
-      case kInt -> {
+      case kInt ->
+      {
         int convertedValue = (int) value;
         return String.valueOf(convertedValue);
       }
-      case kLong -> {
+      case kLong ->
+      {
         long convertedValue = (long) value;
         return String.valueOf(convertedValue);
       }
-      case kFloat -> {
+      case kFloat ->
+      {
         float convertedValue = (float) value;
         return String.valueOf(convertedValue);
       }
-      case kDouble -> {
+      case kDouble ->
+      {
         return String.valueOf(value);
       }
     }

@@ -44,145 +44,163 @@ import com.gradle.superscalarsim.models.SimCodeModel;
 
 import java.util.OptionalInt;
 
-public class BranchFunctionUnitBlock extends AbstractFunctionUnitBlock {
-    /// Interpreter for interpreting executing instructions
-    private CodeBranchInterpreter branchInterpreter;
-    /// Class containing all registers, that simulator uses
-    private UnifiedRegisterFileBlock registerFileBlock;
-
-    public BranchFunctionUnitBlock() {
-
+public class BranchFunctionUnitBlock extends AbstractFunctionUnitBlock
+{
+  /// Interpreter for interpreting executing instructions
+  private CodeBranchInterpreter branchInterpreter;
+  /// Class containing all registers, that simulator uses
+  private UnifiedRegisterFileBlock registerFileBlock;
+  
+  public BranchFunctionUnitBlock()
+  {
+  
+  }
+  
+  /**
+   * @param [in] blockScheduleTask     - Task class, where blocks are periodically triggered by the GlobalTimer
+   * @param [in] reorderBufferBlock    - Class containing simulated Reorder Buffer
+   * @param [in] delay                 - Delay for function unit
+   * @param [in] issueWindowBlock   - Issue window block for comparing instruction and data types
+   *
+   * @brief Constructor
+   */
+  public BranchFunctionUnitBlock(ReorderBufferBlock reorderBufferBlock,
+                                 AbstractIssueWindowBlock issueWindowBlock,
+                                 int delay)
+  {
+    super(reorderBufferBlock, delay, issueWindowBlock);
+  }// end of Constructor
+  //----------------------------------------------------------------------
+  
+  /**
+   * @param [in] branchInterpreter - Branch interpreter object
+   *
+   * @brief Injects Branch interpreter to the FU
+   */
+  public void addBranchInterpreter(CodeBranchInterpreter branchInterpreter)
+  {
+    this.branchInterpreter = branchInterpreter;
+  }// end of addBranchInterpreter
+  //----------------------------------------------------------------------
+  
+  /**
+   * @param [in] registerFileBlock - UnifiedRegisterFileBlock object with all registers
+   *
+   * @brief Injects UnifiedRegisterFileBlock to the FU
+   */
+  public void addRegisterFileBlock(UnifiedRegisterFileBlock registerFileBlock)
+  {
+    this.registerFileBlock = registerFileBlock;
+  }// end of addRegisterFileBlock
+  //----------------------------------------------------------------------
+  
+  /**
+   * @brief Simulates execution of an instruction
+   */
+  @Override
+  public void simulate()
+  {
+    if (!isFunctionUnitEmpty() && this.simCodeModel.hasFailed())
+    {
+      hasDelayPassed();
+      this.simCodeModel.setFunctionUnitId(this.functionUnitId);
+      this.failedInstructions.push(this.simCodeModel);
+      this.simCodeModel = null;
+      this.zeroTheCounter();
     }
-
-    /**
-     * @param [in] blockScheduleTask     - Task class, where blocks are periodically triggered by the GlobalTimer
-     * @param [in] reorderBufferBlock    - Class containing simulated Reorder Buffer
-     * @param [in] delay                 - Delay for function unit
-     * @param [in] issueWindowBlock   - Issue window block for comparing instruction and data types
-     * @brief Constructor
-     */
-    public BranchFunctionUnitBlock(ReorderBufferBlock reorderBufferBlock, AbstractIssueWindowBlock issueWindowBlock, int delay) {
-        super(reorderBufferBlock, delay, issueWindowBlock);
-    }// end of Constructor
-    //----------------------------------------------------------------------
-
-    /**
-     * @param [in] branchInterpreter - Branch interpreter object
-     * @brief Injects Branch interpreter to the FU
-     */
-    public void addBranchInterpreter(CodeBranchInterpreter branchInterpreter) {
-        this.branchInterpreter = branchInterpreter;
-    }// end of addBranchInterpreter
-    //----------------------------------------------------------------------
-
-    /**
-     * @param [in] registerFileBlock - UnifiedRegisterFileBlock object with all registers
-     * @brief Injects UnifiedRegisterFileBlock to the FU
-     */
-    public void addRegisterFileBlock(UnifiedRegisterFileBlock registerFileBlock) {
-        this.registerFileBlock = registerFileBlock;
-    }// end of addRegisterFileBlock
-    //----------------------------------------------------------------------
-
-    /**
-     * @brief Simulates execution of an instruction
-     */
-    @Override
-    public void simulate() {
-        if (!isFunctionUnitEmpty() && this.simCodeModel.hasFailed()) {
-            hasDelayPassed();
-            this.simCodeModel.setFunctionUnitId(this.functionUnitId);
-            this.failedInstructions.push(this.simCodeModel);
-            this.simCodeModel = null;
-            this.zeroTheCounter();
-        }
-
-        if (!isFunctionUnitEmpty() && hasTimerStarted()) {
-            this.simCodeModel.setFunctionUnitId(this.functionUnitId);
-        }
-
-        if (!isFunctionUnitEmpty() && hasDelayPassed()) {
-            if (hasTimerStarted()) {
-                this.simCodeModel.setFunctionUnitId(this.functionUnitId);
-            }
-            int instructionPosition = this.simCodeModel.getSavedPc();
-            int nextInstructionPosition = instructionPosition + 1;
-
-            OptionalInt jumpOffset = branchInterpreter.interpretInstruction(
-                    this.simCodeModel,
-                    instructionPosition);
-            boolean jumpTaken = jumpOffset.isPresent();
-            // If the branch was taken or not
-            this.simCodeModel.setBranchLogicResult(jumpTaken);
-            // Used to fix BTB and PC in misprediction
-            if (jumpTaken) {
-                this.simCodeModel.setBranchTargetOffset(jumpOffset.getAsInt());
-            }
-            // Write the result to the register
-            InputCodeArgument destinationArgument = simCodeModel.getArgumentByName("rd");
-            if (destinationArgument != null) {
-                RegisterModel reg = registerFileBlock.getRegister(
-                        destinationArgument.getValue());
-                reg.setValue(nextInstructionPosition);
-                reg.setReadiness(RegisterReadinessEnum.kExecuted);
-            }
-
-            this.reorderBufferBlock.getFlagsMap().get(this.simCodeModel.getId()).setBusy(
-                    false);
-            this.simCodeModel = null;
-        }
-
-        if (isFunctionUnitEmpty()) {
-            this.functionUnitId += this.functionUnitCount;
-        }
-    }// end of simulate
-    //----------------------------------------------------------------------
-
-    /**
-     * @brief Simulates backwards (resets flags and waits until un-execution of instruction)
-     */
-    @Override
-    public void simulateBackwards() {
-        if (!isFunctionUnitEmpty()) {
-            return;
-        }
-
-        this.functionUnitId -= this.functionUnitCount;
-        for (SimCodeModel codeModel : this.reorderBufferBlock.getReorderQueue()) {
-            if (codeModel.getFunctionUnitId() != this.functionUnitId || !issueWindowBlock.isCorrectDataType(
-                    codeModel.getResultDataType()) || !issueWindowBlock.isCorrectInstructionType(
-                    codeModel.getInstructionTypeEnum())) {
-                // Skip
-                continue;
-            }
-
-            // Put `codeModel` back to this unit
-            this.resetReverseCounter();
-            reorderBufferBlock.getFlagsMap().get(codeModel.getId()).setBusy(true);
-            this.simCodeModel = codeModel;
-            if (!this.failedInstructions.isEmpty() && this.simCodeModel == this.failedInstructions.peek()) {
-                this.failedInstructions.pop();
-                this.popHistoryCounter();
-            }
-            // Restore result readiness
-            simCodeModel.getArguments().stream().filter(
-                    argument -> argument.getName().equals("rd")).findFirst().ifPresent(
-                    destinationArgument -> registerFileBlock.getRegister(
-                            destinationArgument.getValue()).setReadiness(
-                            RegisterReadinessEnum.kAllocated));
-            // Remove target and brcd arguments
-            simCodeModel.setBranchLogicResult(false);
-            simCodeModel.setBranchTargetOffset(0);
-
-            return;
-        }
-
-        // Not found in ROB, check failed instructions
-        if (!this.failedInstructions.isEmpty() && this.failedInstructions.peek().getFunctionUnitId() == this.functionUnitId) {
-            // Put failed `codeModel` back to this unit
-            this.simCodeModel = this.failedInstructions.pop();
-            this.popHistoryCounter();
-        }
-    }// end of simulateBackwards
-    //----------------------------------------------------------------------
+    
+    if (!isFunctionUnitEmpty() && hasTimerStarted())
+    {
+      this.simCodeModel.setFunctionUnitId(this.functionUnitId);
+    }
+    
+    if (!isFunctionUnitEmpty() && hasDelayPassed())
+    {
+      if (hasTimerStarted())
+      {
+        this.simCodeModel.setFunctionUnitId(this.functionUnitId);
+      }
+      int instructionPosition     = this.simCodeModel.getSavedPc();
+      int nextInstructionPosition = instructionPosition + 1;
+      
+      OptionalInt jumpOffset = branchInterpreter.interpretInstruction(this.simCodeModel, instructionPosition);
+      boolean jumpTaken = jumpOffset.isPresent();
+      // If the branch was taken or not
+      this.simCodeModel.setBranchLogicResult(jumpTaken);
+      // Used to fix BTB and PC in misprediction
+      if (jumpTaken)
+      {
+        this.simCodeModel.setBranchTargetOffset(jumpOffset.getAsInt());
+      }
+      // Write the result to the register
+      InputCodeArgument destinationArgument = simCodeModel.getArgumentByName("rd");
+      if (destinationArgument != null)
+      {
+        RegisterModel reg = registerFileBlock.getRegister(destinationArgument.getValue());
+        reg.setValue(nextInstructionPosition);
+        reg.setReadiness(RegisterReadinessEnum.kExecuted);
+      }
+      
+      this.reorderBufferBlock.getFlagsMap().get(this.simCodeModel.getId()).setBusy(false);
+      this.simCodeModel = null;
+    }
+    
+    if (isFunctionUnitEmpty())
+    {
+      this.functionUnitId += this.functionUnitCount;
+    }
+  }// end of simulate
+  //----------------------------------------------------------------------
+  
+  /**
+   * @brief Simulates backwards (resets flags and waits until un-execution of instruction)
+   */
+  @Override
+  public void simulateBackwards()
+  {
+    if (!isFunctionUnitEmpty())
+    {
+      return;
+    }
+    
+    this.functionUnitId -= this.functionUnitCount;
+    for (SimCodeModel codeModel : this.reorderBufferBlock.getReorderQueue())
+    {
+      if (codeModel.getFunctionUnitId() != this.functionUnitId || !issueWindowBlock.isCorrectDataType(
+              codeModel.getResultDataType()) || !issueWindowBlock.isCorrectInstructionType(
+              codeModel.getInstructionTypeEnum()))
+      {
+        // Skip
+        continue;
+      }
+      
+      // Put `codeModel` back to this unit
+      this.resetReverseCounter();
+      reorderBufferBlock.getFlagsMap().get(codeModel.getId()).setBusy(true);
+      this.simCodeModel = codeModel;
+      if (!this.failedInstructions.isEmpty() && this.simCodeModel == this.failedInstructions.peek())
+      {
+        this.failedInstructions.pop();
+        this.popHistoryCounter();
+      }
+      // Restore result readiness
+      simCodeModel.getArguments().stream().filter(argument -> argument.getName().equals("rd")).findFirst().ifPresent(
+              destinationArgument -> registerFileBlock.getRegister(destinationArgument.getValue())
+                                                      .setReadiness(RegisterReadinessEnum.kAllocated));
+      // Remove target and brcd arguments
+      simCodeModel.setBranchLogicResult(false);
+      simCodeModel.setBranchTargetOffset(0);
+      
+      return;
+    }
+    
+    // Not found in ROB, check failed instructions
+    if (!this.failedInstructions.isEmpty() && this.failedInstructions.peek().getFunctionUnitId() == this.functionUnitId)
+    {
+      // Put failed `codeModel` back to this unit
+      this.simCodeModel = this.failedInstructions.pop();
+      this.popHistoryCounter();
+    }
+  }// end of simulateBackwards
+  //----------------------------------------------------------------------
 }

@@ -4,10 +4,10 @@
  * Faculty of Information Technology \n
  * Brno University of Technology \n
  * xvavra20@fit.vutbr.cz
- * @author  Michal Majer
- *          Faculty of Information Technology
- *          Brno University of Technology
- *          xmajer21@stud.fit.vutbr.cz
+ * @author Michal Majer
+ * Faculty of Information Technology
+ * Brno University of Technology
+ * xmajer21@stud.fit.vutbr.cz
  * @brief File contains container for processed line of code
  * @date 10 November  2020 17:45 (created) \n
  * 10 March     2021 18:00 (revised)
@@ -43,138 +43,154 @@ import java.util.List;
  * @brief Represents a processed line of code
  * Should be used only for reading (referencing), not for writing
  */
-public class InputCodeModel implements IInputCodeModel {
-    /**
-     * ID - the index of the instruction in the code
-     */
-    private final int codeId;
-    /**
-     * Name of the parsed instruction, matches name from InstructionFunctionLoader
-     * Example: "addi"
-     */
-    private final String instructionName;
-    /**
-     * @brief Original line of code
-     * Example: "addi x1, x1, 5"
-     */
-    private final String codeLine;
-    /**
-     * Arguments of the instruction
-     */
-    private final List<InputCodeArgument> arguments;
-    /**
-     * Type of the instruction
-     */
-    private final InstructionTypeEnum instructionTypeEnum;
-    /**
-     * Data type of the output
-     */
-    private final DataTypeEnum resultDataType;
-
-    /**
-     * @brief Instruction function model
-     * Contains information about the instruction
-     */
-    private InstructionFunctionModel instructionFunctionModel;
-
-    /**
-     * @param [in] instructionName     - Name of the parsed instruction
-     * @param [in] codeLine            - Unparsed line of code
-     * @param [in] arguments           - Arguments of the instruction
-     * @param [in] instructionTypeEnum - Type of the instruction
-     * @param [in] resultDataType      - Data type of the output
-     * @param [in] id                  - ID of the instruction (index in the code)
-     * @brief Constructor
-     */
-    public InputCodeModel(InstructionFunctionModel instructionFunctionModel, final String instructionName, final String codeLine, final List<InputCodeArgument> arguments, final InstructionTypeEnum instructionTypeEnum, final DataTypeEnum resultDataType, int codeId) {
-        this.instructionFunctionModel = instructionFunctionModel;
-        this.codeId = codeId;
-        this.instructionName = instructionName;
-        this.codeLine = codeLine;
-        this.arguments = arguments == null ? new ArrayList<>() : arguments;
-        this.instructionTypeEnum = instructionTypeEnum;
-        this.resultDataType = resultDataType;
-    }// end of Constructor
-    //------------------------------------------------------
-
-    /**
-     * @return Name of instruction
-     * @brief Get name of instruction
-     */
-    @Override
-    public String getInstructionName() {
-        return instructionName;
-    }// end of getInstructionName
-    //------------------------------------------------------
-
-    /**
-     * @return Unparsed line of code
-     * @brief Get unparsed line of code
-     */
-    @Override
-    public String getCodeLine() {
-        return codeLine;
-    }// end of getCodeLine
-    //------------------------------------------------------
-
-    /**
-     * @return Instruction arguments
-     * @brief Get instruction arguments
-     */
-    @Override
-    public List<InputCodeArgument> getArguments() {
-        return arguments;
-    }// end of getArguments
-    //------------------------------------------------------
-
-    /**
-     * @param name Name of the argument
-     * @return An argument by its name
-     */
-    @Override
-    public InputCodeArgument getArgumentByName(String name) {
-        return arguments.stream().filter(
-                argument -> argument.getName().equals(name)).findFirst().orElse(null);
-    }// end of getArgumentByName
-
-    /**
-     * @return Enum value of instruction type
-     * @brief Get instruction type
-     */
-    @Override
-    public InstructionTypeEnum getInstructionTypeEnum() {
-        return instructionTypeEnum;
-    }// end of getInstructionTypeEnum
-    //------------------------------------------------------
-
-    /**
-     * @return Enum value of output data type
-     * @brief Get output data type
-     */
-    @Override
-    public DataTypeEnum getResultDataType() {
-        return resultDataType;
-    }// end of getResultDataType
-
-    /**
-     * @return ID of the instruction (index in the code)
-     */
-    @Override
-    public int getCodeId() {
-        return codeId;
-    }
-    //------------------------------------------------------
-
-    @Override
-    public InstructionFunctionModel getInstructionFunctionModel() {
-        return instructionFunctionModel;
-    }
-
-    /**
-     * String representation of the object
-     */
-    @Override
-    public String toString() {
-        return this.getCodeLine();
-    }
+public class InputCodeModel implements IInputCodeModel
+{
+  /**
+   * ID - the index of the instruction in the code
+   */
+  private final int codeId;
+  /**
+   * Name of the parsed instruction, matches name from InstructionFunctionLoader
+   * Example: "addi"
+   */
+  private final String instructionName;
+  /**
+   * @brief Original line of code
+   * Example: "addi x1, x1, 5"
+   */
+  private final String codeLine;
+  /**
+   * Arguments of the instruction
+   */
+  private final List<InputCodeArgument> arguments;
+  /**
+   * Type of the instruction
+   */
+  private final InstructionTypeEnum instructionTypeEnum;
+  /**
+   * Data type of the output
+   */
+  private final DataTypeEnum resultDataType;
+  
+  /**
+   * @brief Instruction function model
+   * Contains information about the instruction
+   */
+  private final InstructionFunctionModel instructionFunctionModel;
+  
+  /**
+   * @param [in] instructionName     - Name of the parsed instruction
+   * @param [in] codeLine            - Unparsed line of code
+   * @param [in] arguments           - Arguments of the instruction
+   * @param [in] instructionTypeEnum - Type of the instruction
+   * @param [in] resultDataType      - Data type of the output
+   * @param [in] id                  - ID of the instruction (index in the code)
+   * @brief Constructor
+   */
+  public InputCodeModel(InstructionFunctionModel instructionFunctionModel,
+                        final String instructionName,
+                        final String codeLine,
+                        final List<InputCodeArgument> arguments,
+                        final InstructionTypeEnum instructionTypeEnum,
+                        final DataTypeEnum resultDataType,
+                        int codeId)
+  {
+    this.instructionFunctionModel = instructionFunctionModel;
+    this.codeId                   = codeId;
+    this.instructionName          = instructionName;
+    this.codeLine                 = codeLine;
+    this.arguments                = arguments == null ? new ArrayList<>() : arguments;
+    this.instructionTypeEnum      = instructionTypeEnum;
+    this.resultDataType           = resultDataType;
+  }// end of Constructor
+  //------------------------------------------------------
+  
+  /**
+   * @return Name of instruction
+   * @brief Get name of instruction
+   */
+  @Override
+  public String getInstructionName()
+  {
+    return instructionName;
+  }// end of getInstructionName
+  //------------------------------------------------------
+  
+  /**
+   * @return Unparsed line of code
+   * @brief Get unparsed line of code
+   */
+  @Override
+  public String getCodeLine()
+  {
+    return codeLine;
+  }// end of getCodeLine
+  //------------------------------------------------------
+  
+  /**
+   * @return Instruction arguments
+   * @brief Get instruction arguments
+   */
+  @Override
+  public List<InputCodeArgument> getArguments()
+  {
+    return arguments;
+  }// end of getArguments
+  //------------------------------------------------------
+  
+  /**
+   * @param name Name of the argument
+   * @return An argument by its name
+   */
+  @Override
+  public InputCodeArgument getArgumentByName(String name)
+  {
+    return arguments.stream().filter(argument -> argument.getName().equals(name)).findFirst().orElse(null);
+  }// end of getArgumentByName
+  
+  /**
+   * @return Enum value of instruction type
+   * @brief Get instruction type
+   */
+  @Override
+  public InstructionTypeEnum getInstructionTypeEnum()
+  {
+    return instructionTypeEnum;
+  }// end of getInstructionTypeEnum
+  //------------------------------------------------------
+  
+  /**
+   * @return Enum value of output data type
+   * @brief Get output data type
+   */
+  @Override
+  public DataTypeEnum getResultDataType()
+  {
+    return resultDataType;
+  }// end of getResultDataType
+  
+  /**
+   * @return ID of the instruction (index in the code)
+   */
+  @Override
+  public int getCodeId()
+  {
+    return codeId;
+  }
+  //------------------------------------------------------
+  
+  @Override
+  public InstructionFunctionModel getInstructionFunctionModel()
+  {
+    return instructionFunctionModel;
+  }
+  
+  /**
+   * String representation of the object
+   */
+  @Override
+  public String toString()
+  {
+    return this.getCodeLine();
+  }
 }
