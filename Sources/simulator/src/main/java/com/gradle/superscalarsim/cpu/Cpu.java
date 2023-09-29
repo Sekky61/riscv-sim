@@ -112,10 +112,8 @@ public class Cpu implements Serializable
     boolean pcEnd         = cpuState.instructionFetchBlock.getPcCounter() >= cpuState.codeParser.getParsedCode().size();
     boolean renameEmpty   = cpuState.decodeAndDispatchBlock.getAfterRenameCodeList().isEmpty();
     boolean fetchNotEmpty = !cpuState.instructionFetchBlock.getFetchedCode().isEmpty();
-    boolean nop = fetchNotEmpty && cpuState.instructionFetchBlock.getFetchedCode()
-            .get(0)
-            .getInstructionName()
-            .equals("nop");
+    boolean nop = fetchNotEmpty && cpuState.instructionFetchBlock.getFetchedCode().get(0).getInstructionName().equals(
+        "nop");
     return robEmpty && pcEnd && renameEmpty && nop;
   }
   

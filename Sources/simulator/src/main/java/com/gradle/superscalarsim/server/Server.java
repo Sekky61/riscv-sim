@@ -37,16 +37,28 @@ import java.io.IOException;
 
 import static io.undertow.Handlers.path;
 
-public class Server {
-
-    int port = 8000;
-
-    public Server(int port) {
-        this.port = port;
-    }
-
-    public void start() throws IOException {
-        Undertow server = Undertow.builder().addHttpListener(8000, "localhost").setHandler(path().addPrefixPath("/compile", new MyRequestHandler<>(new CompileHandler())).addPrefixPath("/checkConfig", new MyRequestHandler<>(new CheckConfigHandler())).addPrefixPath("/getState", new MyRequestHandler<>(new GetStateHandler())).addPrefixPath("/simulation", new MyRequestHandler<>(new SimulationHandler()))).build();
-        server.start();
-    }
+public class Server
+{
+  
+  int port = 8000;
+  
+  public Server(int port)
+  {
+    this.port = port;
+  }
+  
+  public void start() throws IOException
+  {
+    Undertow server = Undertow.builder()
+                              .addHttpListener(8000, "localhost")
+                              .setHandler(path().addPrefixPath("/compile", new MyRequestHandler<>(new CompileHandler()))
+                                                .addPrefixPath("/checkConfig", new MyRequestHandler<>(
+                                                    new CheckConfigHandler()))
+                                                .addPrefixPath("/getState", new MyRequestHandler<>(
+                                                    new GetStateHandler()))
+                                                .addPrefixPath("/simulation", new MyRequestHandler<>(
+                                                    new SimulationHandler())))
+                              .build();
+    server.start();
+  }
 }

@@ -38,9 +38,11 @@ public class CodeArithmeticInterpretSpecialTest
     RegisterModel integer5 = new RegisterModel("x5", false, DataTypeEnum.kInt, -2, RegisterReadinessEnum.kAssigned);
     RegisterModel integer6 = new RegisterModel("x6", false, DataTypeEnum.kInt, -20, RegisterReadinessEnum.kAssigned);
     RegisterFileModel integerFile = new RegisterFileModelBuilder().hasName("integer")
-            .hasDataType(DataTypeEnum.kInt)
-            .hasRegisterList(Arrays.asList(integer1, integer2, integer3, integer4, integer5, integer6))
-            .build();
+                                                                  .hasDataType(DataTypeEnum.kInt)
+                                                                  .hasRegisterList(
+                                                                      Arrays.asList(integer1, integer2, integer3,
+                                                                                    integer4, integer5, integer6))
+                                                                  .build();
     
     Mockito.when(initLoader.getRegisterFileModelList()).thenReturn(Collections.singletonList(integerFile));
     Mockito.when(initLoader.getInstructionFunctionModelList()).thenReturn(setUpInstructions());
@@ -59,9 +61,11 @@ public class CodeArithmeticInterpretSpecialTest
     InputCodeArgument argument5 = new InputCodeArgumentBuilder().hasName("rs4").hasValue("x5").build();
     InputCodeArgument argument6 = new InputCodeArgumentBuilder().hasName("rs5").hasValue("x6").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader)
-            .hasInstructionName("multipleLines")
-            .hasArguments(Arrays.asList(argument1, argument2, argument3, argument4, argument5, argument6))
-            .build();
+                                                               .hasInstructionName("multipleLines")
+                                                               .hasArguments(
+                                                                   Arrays.asList(argument1, argument2, argument3,
+                                                                                 argument4, argument5, argument6))
+                                                               .build();
     Assert.assertEquals(2, this.codeArithmeticInterpreter.interpretInstruction(inputCodeModel), 0.01);
   }
   
@@ -74,10 +78,9 @@ public class CodeArithmeticInterpretSpecialTest
     InputCodeArgument argument4 = new InputCodeArgumentBuilder().hasName("rs3").hasValue("x5").build();
     InputCodeArgument argument5 = new InputCodeArgumentBuilder().hasName("rs4").hasValue("x2").build();
     InputCodeArgument argument6 = new InputCodeArgumentBuilder().hasName("rs5").hasValue("x6").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader)
-            .hasInstructionName("multipleBrackets")
-            .hasArguments(Arrays.asList(argument1, argument2, argument3, argument4, argument5, argument6))
-            .build();
+    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName(
+        "multipleBrackets").hasArguments(
+        Arrays.asList(argument1, argument2, argument3, argument4, argument5, argument6)).build();
     Assert.assertEquals(15, this.codeArithmeticInterpreter.interpretInstruction(inputCodeModel), 0.01);
   }
   
@@ -87,10 +90,8 @@ public class CodeArithmeticInterpretSpecialTest
     InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rd").hasValue("x1").build();
     InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x2").build();
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x3").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader)
-            .hasInstructionName("multipleInstructions")
-            .hasArguments(Arrays.asList(argument1, argument2, argument3))
-            .build();
+    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName(
+        "multipleInstructions").hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     Assert.assertEquals(154, this.codeArithmeticInterpreter.interpretInstruction(inputCodeModel), 0.01);
   }
   
@@ -100,10 +101,8 @@ public class CodeArithmeticInterpretSpecialTest
     InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rd").hasValue("x1").build();
     InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x2").build();
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x3").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader)
-            .hasInstructionName("bitArrayOperation")
-            .hasArguments(Arrays.asList(argument1, argument2, argument3))
-            .build();
+    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName(
+        "bitArrayOperation").hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     Assert.assertEquals(7, this.codeArithmeticInterpreter.interpretInstruction(inputCodeModel), 0.01);
   }
   
@@ -112,17 +111,15 @@ public class CodeArithmeticInterpretSpecialTest
   {
     InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rd").hasValue("x1").build();
     InputCodeModel inputCodeModel1 = new InputCodeModelBuilder().hasLoader(initLoader)
-            .hasInstructionName("set31")
-            .hasArguments(Collections.singletonList(argument1))
-            .build();
+                                                                .hasInstructionName("set31")
+                                                                .hasArguments(Collections.singletonList(argument1))
+                                                                .build();
     
     Assert.assertEquals(31, this.codeArithmeticInterpreter.interpretInstruction(inputCodeModel1), 0.01);
     
     InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rd").hasValue("x1").build();
-    InputCodeModel inputCodeModel2 = new InputCodeModelBuilder().hasLoader(initLoader)
-            .hasInstructionName("setZeroes3to1")
-            .hasArguments(Collections.singletonList(argument2))
-            .build();
+    InputCodeModel inputCodeModel2 = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName(
+        "setZeroes3to1").hasArguments(Collections.singletonList(argument2)).build();
     
     Assert.assertEquals(17, this.codeArithmeticInterpreter.interpretInstruction(inputCodeModel2), 0.01);
   }
@@ -130,50 +127,43 @@ public class CodeArithmeticInterpretSpecialTest
   private List<InstructionFunctionModel> setUpInstructions()
   {
     InstructionFunctionModel instructionMultipleLines = new InstructionFunctionModelBuilder().hasName("multipleLines")
-            .hasInputDataType(DataTypeEnum.kInt)
-            .hasOutputDataType(DataTypeEnum.kInt)
-            .isInterpretedAs("rd=rs1+rs2;rd=rd-rs3;rd=rd*rs4;rd=rd/rs5;")
-            .hasSyntax("multipleLines rd rs1 rs2 rs3 rs4 rs5")
-            .build();
+                                                                                             .hasInputDataType(
+                                                                                                 DataTypeEnum.kInt)
+                                                                                             .hasOutputDataType(
+                                                                                                 DataTypeEnum.kInt)
+                                                                                             .isInterpretedAs(
+                                                                                                 "rd=rs1" + "+rs2;" + "rd=rd-rs3;" + "rd=rd*rs4;" + "rd=rd/rs5;")
+                                                                                             .hasSyntax(
+                                                                                                 "multipleLines rd " + "rs1 rs2 rs3 rs4" + " rs5")
+                                                                                             .build();
     
     InstructionFunctionModel instructionMultipleBrackets = new InstructionFunctionModelBuilder().hasName(
-                    "multipleBrackets")
-            .hasInputDataType(DataTypeEnum.kInt)
-            .hasOutputDataType(DataTypeEnum.kInt)
-            .isInterpretedAs("rd=rs1+(rs2-(rs3*(rs4/rs5)));")
-            .hasSyntax("multipleBrackets rd rs1 rs2 rs3 rs4 rs5")
-            .build();
+        "multipleBrackets").hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt).isInterpretedAs(
+        "rd" + "=rs1+(rs2-(rs3*" + "(rs4/rs5)));").hasSyntax(
+        "multipleBrackets" + " rd rs1 " + "rs2 " + "rs3" + " rs4 rs5").build();
     
     InstructionFunctionModel instructionMultipleInstructions = new InstructionFunctionModelBuilder().hasName(
-                    "multipleInstructions")
-            .hasInputDataType(DataTypeEnum.kInt)
-            .hasOutputDataType(DataTypeEnum.kInt)
-            .isInterpretedAs("rd=rs1*rs2+rs1/rs2;")
-            .hasSyntax("multipleInstructions rd rs1 rs2")
-            .build();
+                                                                                                        "multipleInstructions")
+                                                                                                    .hasInputDataType(
+                                                                                                        DataTypeEnum.kInt)
+                                                                                                    .hasOutputDataType(
+                                                                                                        DataTypeEnum.kInt)
+                                                                                                    .isInterpretedAs(
+                                                                                                        "rd=rs1*rs2" + "+rs1/rs2;")
+                                                                                                    .hasSyntax(
+                                                                                                        "multipleInstructions rd rs1 rs2")
+                                                                                                    .build();
     
     InstructionFunctionModel instructionArrayOperations = new InstructionFunctionModelBuilder().hasName(
-                    "bitArrayOperation")
-            .hasInputDataType(DataTypeEnum.kInt)
-            .hasOutputDataType(DataTypeEnum.kInt)
-            .isInterpretedAs("rd[2:0]=rs1[3:0]|rs2[3:0];")
-            .hasSyntax("bitArrayOperation rd rs1 rs2")
-            .build();
+        "bitArrayOperation").hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt).isInterpretedAs(
+        "rd[2" + ":0]=rs1[3:0" + "]|rs2" + "[3:0];").hasSyntax("bitArrayOperation" + " rd rs1 rs2").build();
     
-    InstructionFunctionModel instructionSet31 = new InstructionFunctionModelBuilder().hasName("set31")
-            .hasInputDataType(DataTypeEnum.kInt)
-            .hasOutputDataType(DataTypeEnum.kInt)
-            .isInterpretedAs("rd=31")
-            .hasSyntax("set31 rd")
-            .build();
+    InstructionFunctionModel instructionSet31 = new InstructionFunctionModelBuilder().hasName("set31").hasInputDataType(
+        DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt).isInterpretedAs("rd=31").hasSyntax("set31 rd").build();
     
     InstructionFunctionModel instructionSetZeroesOnIndexFrom3to1 = new InstructionFunctionModelBuilder().hasName(
-                    "setZeroes3to1")
-            .hasInputDataType(DataTypeEnum.kInt)
-            .hasOutputDataType(DataTypeEnum.kInt)
-            .isInterpretedAs("rd[3:1]=0")
-            .hasSyntax("setZeroes3to1 rd")
-            .build();
+        "setZeroes3to1").hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt).isInterpretedAs(
+        "rd[3:1]=0").hasSyntax("setZeroes3to1 rd").build();
     
     
     return Arrays.asList(instructionMultipleLines, instructionMultipleBrackets, instructionMultipleInstructions,

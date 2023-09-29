@@ -355,8 +355,8 @@ public class StoreBufferBlock implements AbstractBlock
     for (AbstractFunctionUnitBlock memoryAccessUnit : this.memoryAccessUnitList)
     {
       if (!memoryAccessUnit.isFunctionUnitEmpty() && memoryAccessUnit.hasReversedDelayPassed() && this.storeMap.containsKey(
-              memoryAccessUnit.getSimCodeModel().getId()) && this.storeMap.get(
-              memoryAccessUnit.getSimCodeModel().getId()).getAccessingMemoryId() == this.commitId)
+          memoryAccessUnit.getSimCodeModel().getId()) && this.storeMap.get(memoryAccessUnit.getSimCodeModel().getId())
+                                                                      .getAccessingMemoryId() == this.commitId)
       {
         SimCodeModel codeModel = memoryAccessUnit.getSimCodeModel();
         memoryAccessUnit.setSimCodeModel(null);
@@ -379,19 +379,21 @@ public class StoreBufferBlock implements AbstractBlock
                                                               if (isInstructionStore(codeModel))
                                                               {
                                                                 if (isBufferFull(
-                                                                        1) || !this.reorderBufferBlock.getFlagsMap()
-                                                                        .containsKey(codeModel.getId()))
+                                                                    1) || !this.reorderBufferBlock.getFlagsMap()
+                                                                                                  .containsKey(
+                                                                                                      codeModel.getId()))
                                                                 {
                                                                   return;
                                                                 }
                                                                 this.storeQueue.add(codeModel);
-                                                                InputCodeArgument argument = codeModel.getArgumentByName(
-                                                                        "rs2");
+                                                                InputCodeArgument argument =
+                                                                    codeModel.getArgumentByName(
+                                                                    "rs2");
                                                                 this.storeMap.put(codeModel.getId(),
                                                                                   new StoreBufferItem(
-                                                                                          Objects.requireNonNull(
-                                                                                                  argument).getValue(),
-                                                                                          codeModel.getId()));
+                                                                                      Objects.requireNonNull(argument)
+                                                                                             .getValue(),
+                                                                                      codeModel.getId()));
                                                               }
                                                             });
   }// end of pullStoreInstructionsFromDecode
@@ -405,9 +407,9 @@ public class StoreBufferBlock implements AbstractBlock
     this.storeMap.forEach((string, item) ->
                           {
                             RegisterReadinessEnum state = registerFileBlock.getRegister(item.getSourceRegister())
-                                    .getReadiness();
+                                                                           .getReadiness();
                             item.setSourceReady(
-                                    state == RegisterReadinessEnum.kExecuted || state == RegisterReadinessEnum.kAssigned);
+                                state == RegisterReadinessEnum.kExecuted || state == RegisterReadinessEnum.kAssigned);
                           });
   }// end of updateMapValues
   //-------------------------------------------------------------------------------------------
@@ -428,9 +430,11 @@ public class StoreBufferBlock implements AbstractBlock
         break;
       }
       
-      boolean isAvailableForMA = item.getAddress() != -1 && !item.isAccessingMemory() && item.getAccessingMemoryId() == -1 && item.isSourceReady() && !reorderBufferBlock.getFlagsMap()
-              .get(simCodeModel.getId())
-              .isSpeculative();
+      boolean isAvailableForMA =
+          item.getAddress() != -1 && !item.isAccessingMemory() && item.getAccessingMemoryId() == -1 && item.isSourceReady() && !reorderBufferBlock.getFlagsMap()
+                                                                                                                                                                         .get(
+                                                                                                                                                                             simCodeModel.getId())
+                                                                                                                                                                         .isSpeculative();
       if (isAvailableForMA)
       {
         for (SimCodeModel previousStore : this.storeQueue)

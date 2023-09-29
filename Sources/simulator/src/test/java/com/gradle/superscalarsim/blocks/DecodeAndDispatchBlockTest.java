@@ -54,18 +54,21 @@ public class DecodeAndDispatchBlockTest
     RegisterModel integer5 = new RegisterModel("x5", false, DataTypeEnum.kInt, -2, RegisterReadinessEnum.kAssigned);
     RegisterModel integer6 = new RegisterModel("x6", false, DataTypeEnum.kInt, -20, RegisterReadinessEnum.kAssigned);
     RegisterFileModel integerFile = new RegisterFileModelBuilder().hasName("integer")
-            .hasDataType(DataTypeEnum.kInt)
-            .hasRegisterList(Arrays.asList(integer1, integer2, integer3, integer4, integer5, integer6))
-            .build();
+                                                                  .hasDataType(DataTypeEnum.kInt)
+                                                                  .hasRegisterList(
+                                                                      Arrays.asList(integer1, integer2, integer3,
+                                                                                    integer4, integer5, integer6))
+                                                                  .build();
     
     RegisterModel float1 = new RegisterModel("f1", false, DataTypeEnum.kFloat, 0, RegisterReadinessEnum.kAssigned);
     RegisterModel float2 = new RegisterModel("f2", false, DataTypeEnum.kFloat, 5.5, RegisterReadinessEnum.kAssigned);
     RegisterModel float3 = new RegisterModel("f3", false, DataTypeEnum.kFloat, 3.125, RegisterReadinessEnum.kAssigned);
     RegisterModel float4 = new RegisterModel("f4", false, DataTypeEnum.kFloat, 12.25, RegisterReadinessEnum.kAssigned);
     RegisterFileModel floatFile = new RegisterFileModelBuilder().hasName("float")
-            .hasDataType(DataTypeEnum.kFloat)
-            .hasRegisterList(Arrays.asList(float1, float2, float3, float4))
-            .build();
+                                                                .hasDataType(DataTypeEnum.kFloat)
+                                                                .hasRegisterList(
+                                                                    Arrays.asList(float1, float2, float3, float4))
+                                                                .build();
     
     List<RegisterFileModel> registerFileModels = Arrays.asList(integerFile, floatFile);
     Mockito.when(loader.getRegisterFileModelList()).thenReturn(registerFileModels);
@@ -85,19 +88,19 @@ public class DecodeAndDispatchBlockTest
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x3").build();
     
     InputCodeModel ins1 = new InputCodeModelBuilder().hasInstructionName("add")
-            .hasCodeLine("add x1 x2 x3")
-            .hasArguments(Arrays.asList(argument1, argument2, argument3))
-            .build();
+                                                     .hasCodeLine("add x1 x2 x3")
+                                                     .hasArguments(Arrays.asList(argument1, argument2, argument3))
+                                                     .build();
     SimCodeModel sim1 = new SimCodeModel(ins1, 0, 0);
     InputCodeModel ins2 = new InputCodeModelBuilder().hasInstructionName("sub")
-            .hasCodeLine("sub x1 x2 x3")
-            .hasArguments(Arrays.asList(argument1, argument2, argument3))
-            .build();
+                                                     .hasCodeLine("sub x1 x2 x3")
+                                                     .hasArguments(Arrays.asList(argument1, argument2, argument3))
+                                                     .build();
     SimCodeModel sim2 = new SimCodeModel(ins2, 0, 0);
     InputCodeModel ins3 = new InputCodeModelBuilder().hasInstructionName("mul")
-            .hasCodeLine("mul x1 x2 x3")
-            .hasArguments(Arrays.asList(argument1, argument2, argument3))
-            .build();
+                                                     .hasCodeLine("mul x1 x2 x3")
+                                                     .hasArguments(Arrays.asList(argument1, argument2, argument3))
+                                                     .build();
     SimCodeModel       sim3         = new SimCodeModel(ins3, 0, 0);
     List<SimCodeModel> instructions = Arrays.asList(sim1, sim2, sim3);
     Mockito.when(instructionFetchBlock.getFetchedCode()).thenReturn(instructions);
@@ -127,19 +130,22 @@ public class DecodeAndDispatchBlockTest
     
     
     InputCodeModel ins1 = new InputCodeModelBuilder().hasInstructionName("add")
-            .hasCodeLine("add x1 x2 x3")
-            .hasArguments(Arrays.asList(argumentAdd1, argumentAdd2, argumentAdd3))
-            .build();
+                                                     .hasCodeLine("add x1 x2 x3")
+                                                     .hasArguments(
+                                                         Arrays.asList(argumentAdd1, argumentAdd2, argumentAdd3))
+                                                     .build();
     SimCodeModel sim1 = new SimCodeModel(ins1, 0, 0);
     InputCodeModel ins2 = new InputCodeModelBuilder().hasInstructionName("sub")
-            .hasCodeLine("sub x2 x3 x4")
-            .hasArguments(Arrays.asList(argumentSub1, argumentSub2, argumentSub3))
-            .build();
+                                                     .hasCodeLine("sub x2 x3 x4")
+                                                     .hasArguments(
+                                                         Arrays.asList(argumentSub1, argumentSub2, argumentSub3))
+                                                     .build();
     SimCodeModel sim2 = new SimCodeModel(ins2, 0, 0);
     InputCodeModel ins3 = new InputCodeModelBuilder().hasInstructionName("mul")
-            .hasCodeLine("mul x3 x4 x5")
-            .hasArguments(Arrays.asList(argumentMul1, argumentMul2, argumentMul3))
-            .build();
+                                                     .hasCodeLine("mul x3 x4 x5")
+                                                     .hasArguments(
+                                                         Arrays.asList(argumentMul1, argumentMul2, argumentMul3))
+                                                     .build();
     SimCodeModel       sim3         = new SimCodeModel(ins3, 0, 0);
     List<SimCodeModel> instructions = Arrays.asList(sim1, sim2, sim3);
     Mockito.when(instructionFetchBlock.getFetchedCode()).thenReturn(instructions);
@@ -169,19 +175,22 @@ public class DecodeAndDispatchBlockTest
     
     
     InputCodeModel ins1 = new InputCodeModelBuilder().hasInstructionName("add")
-            .hasCodeLine("add x3 x4 x5")
-            .hasArguments(Arrays.asList(argumentAdd1, argumentAdd2, argumentAdd3))
-            .build();
+                                                     .hasCodeLine("add x3 x4 x5")
+                                                     .hasArguments(
+                                                         Arrays.asList(argumentAdd1, argumentAdd2, argumentAdd3))
+                                                     .build();
     SimCodeModel sim1 = new SimCodeModel(ins1, 0, 0);
     InputCodeModel ins2 = new InputCodeModelBuilder().hasInstructionName("sub")
-            .hasCodeLine("sub x2 x3 x4")
-            .hasArguments(Arrays.asList(argumentSub1, argumentSub2, argumentSub3))
-            .build();
+                                                     .hasCodeLine("sub x2 x3 x4")
+                                                     .hasArguments(
+                                                         Arrays.asList(argumentSub1, argumentSub2, argumentSub3))
+                                                     .build();
     SimCodeModel sim2 = new SimCodeModel(ins2, 0, 0);
     InputCodeModel ins3 = new InputCodeModelBuilder().hasInstructionName("mul")
-            .hasCodeLine("mul x1 x2 x3")
-            .hasArguments(Arrays.asList(argumentMul1, argumentMul2, argumentMul3))
-            .build();
+                                                     .hasCodeLine("mul x1 x2 x3")
+                                                     .hasArguments(
+                                                         Arrays.asList(argumentMul1, argumentMul2, argumentMul3))
+                                                     .build();
     SimCodeModel       sim3         = new SimCodeModel(ins3, 0, 0);
     List<SimCodeModel> instructions = Arrays.asList(sim1, sim2, sim3);
     Mockito.when(instructionFetchBlock.getFetchedCode()).thenReturn(instructions);

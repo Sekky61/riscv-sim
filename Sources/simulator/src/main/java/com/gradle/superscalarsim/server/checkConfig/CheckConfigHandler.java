@@ -47,7 +47,7 @@ public class CheckConfigHandler implements IRequestResolver<CheckConfigRequest, 
     if (request == null || request.config == null)
     {
       response = new CheckConfigResponse(false, new ArrayList<>(
-              List.of("Wrong format. Expected JSON with 'config' object field")));
+          List.of("Wrong format. Expected JSON with 'config' " + "object field")));
     }
     else
     {

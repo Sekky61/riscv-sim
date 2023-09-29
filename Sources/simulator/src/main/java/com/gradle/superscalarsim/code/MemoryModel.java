@@ -122,8 +122,7 @@ public class MemoryModel
     if (cache != null)
     {
       com.gradle.superscalarsim.models.Pair<Integer, Long> returnValx = cache.getData(address, size, id, currentCycle);
-      Pair<Integer, Long>                                  returnVal  = new Pair<>(returnValx.getFirst(),
-                                                                                   returnValx.getSecond());
+      Pair<Integer, Long> returnVal = new Pair<>(returnValx.getFirst(), returnValx.getSecond());
       this.lastAccess.setData(returnVal.getSecond());
       cacheStatisticsCounter.incrementTotalDelay(currentCycle, returnVal.getFirst());
       return returnVal;

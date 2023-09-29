@@ -80,7 +80,8 @@ public class RegisterFileModel
   @Override
   public String toString()
   {
-    return "Register file: " + name + '\n' + "data type: " + dataType + '\n' + "registers: " + '\n' + "------------------------------------" + '\n' + registerList + "------------------------------------" + '\n';
+    return "Register file: " + name + '\n' + "data type: " + dataType + '\n' + "registers: " + '\n' +
+        "------------------------------------" + '\n' + registerList + "------------------------------------" + '\n';
   }// end of toString
   //------------------------------------------------------
   

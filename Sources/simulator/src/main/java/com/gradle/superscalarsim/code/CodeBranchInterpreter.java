@@ -95,7 +95,7 @@ public class CodeBranchInterpreter
     if (splitInterpretableAs.length != 2)
     {
       throw new IllegalArgumentException(
-              "InterpretableAs in instruction " + instruction.getName() + " is not valid: " + instruction.getInterpretableAs());
+          "InterpretableAs in instruction " + instruction.getName() + " is not valid: " + instruction.getInterpretableAs());
     }
     // Do not jump if condition is not met
     
@@ -274,11 +274,8 @@ public class CodeBranchInterpreter
     RegisterModel  registerModel = null;
     for (DataTypeEnum possibleDataType : dataTypeEnums)
     {
-      registerModel = this.registerFileBlock.getRegisterList(possibleDataType)
-              .stream()
-              .filter(register -> register.getName().equals(operand))
-              .findFirst()
-              .orElse(null);
+      registerModel = this.registerFileBlock.getRegisterList(possibleDataType).stream().filter(
+          register -> register.getName().equals(operand)).findFirst().orElse(null);
       if (registerModel != null)
       {
         break;
@@ -288,11 +285,8 @@ public class CodeBranchInterpreter
     if (registerModel == null)
     {
       // Not found in register files, look in speculative register file
-      registerModel = this.registerFileBlock.getRegisterList(DataTypeEnum.kSpeculative)
-              .stream()
-              .filter(register -> register.getName().equals(operand))
-              .findFirst()
-              .orElse(null);
+      registerModel = this.registerFileBlock.getRegisterList(DataTypeEnum.kSpeculative).stream().filter(
+          register -> register.getName().equals(operand)).findFirst().orElse(null);
     }
     
     if (registerModel == null)

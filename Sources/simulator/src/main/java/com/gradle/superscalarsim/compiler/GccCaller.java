@@ -36,12 +36,13 @@ public class GccCaller
 {
   static String compilerPath = "/usr/bin/riscv64-linux-gnu-gcc";
   
-  // /usr/bin/riscv64-linux-gnu-gcc -xc -O0 -march=rv32imfd -mabi=ilp32d -o /dev/stdout -S -g -fverbose-asm -fcf-protection=none -fno-stack-protector -fno-asynchronous-unwind-tables -fno-dwarf2-cfi-asm -nostdlib -xc -
+  // /usr/bin/riscv64-linux-gnu-gcc -xc -O0 -march=rv32imfd -mabi=ilp32d -o /dev/stdout -S -g -fverbose-asm
+  // -fcf-protection=none -fno-stack-protector -fno-asynchronous-unwind-tables -fno-dwarf2-cfi-asm -nostdlib -xc -
   static List<String> getCommand(boolean optimize)
   {
     return List.of(compilerPath, "-xc", "-O" + (optimize ? "2" : "0"), "-march=rv32imfd", "-mabi=ilp32d", "-o",
-                   "/dev/stdout", "-S", "-g", "-fverbose-asm", "-fcf-protection=none", "-fno-stack-protector",
-                   "-fno-asynchronous-unwind-tables", "-fno-dwarf2-cfi-asm", "-nostdlib", "-xc", "-");
+                   "/dev" + "/stdout", "-S", "-g", "-fverbose-asm", "-fcf-protection=none", "-fno-stack-protector",
+                   "-fno" + "-asynchronous" + "-unwind-tables", "-fno-dwarf2-cfi-asm", "-nostdlib", "-xc", "-");
   }
   
   public static class CompileResult

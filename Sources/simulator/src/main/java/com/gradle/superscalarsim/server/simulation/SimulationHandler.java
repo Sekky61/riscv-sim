@@ -34,7 +34,8 @@ import com.gradle.superscalarsim.server.IRequestResolver;
  * Handler for /simulation requests
  * Gets a CpuState and a number of steps to run and returns the resulting CpuState
  * - For backwards simulation, TODO
- * - For Getting initial state from a configuration, see {@link com.gradle.superscalarsim.server.getState.GetStateHandler}
+ * - For Getting initial state from a configuration, see
+ * {@link com.gradle.superscalarsim.server.getState.GetStateHandler}
  */
 public class SimulationHandler implements IRequestResolver<SimulationRequest, SimulationResponse>
 {

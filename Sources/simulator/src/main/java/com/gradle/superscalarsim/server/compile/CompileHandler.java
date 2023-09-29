@@ -37,27 +37,35 @@ import com.gradle.superscalarsim.server.IRequestResolver;
  * @brief Handler class for compile requests
  * Gets C code, calls the compiler, returns ASM for RISC-V
  */
-public class CompileHandler implements IRequestResolver<CompileRequest, CompileResponse> {
-
-    public CompileResponse resolve(CompileRequest request) {
-
-        CompileResponse response;
-        if (request == null || request.code == null) {
-            // Send error
-            response = CompileResponse.failure("Wrong request format. Expected JSON with 'code' object field");
-        } else {
-            // Compile
-            GccCaller.CompileResult res = GccCaller.compile(request.code, request.optimize);
-            if (!res.success) {
-                System.err.println("Failed to compile code");
-                response = CompileResponse.failure(res.error);
-            } else {
-                int cCodeLen = request.code.split("\n").length;
-                CompiledProgram program = AsmParser.parse(res.code, cCodeLen);
-                response = new CompileResponse(true, program.program, program.cLines, program.asmToC, null);
-            }
-        }
-
-        return response;
+public class CompileHandler implements IRequestResolver<CompileRequest, CompileResponse>
+{
+  
+  
+  public CompileResponse resolve(CompileRequest request)
+  {
+    CompileResponse response;
+    if (request == null || request.code == null)
+    {
+      // Send error
+      response = CompileResponse.failure("Wrong request format. Expected JSON with 'code' object field");
     }
+    else
+    {
+      // Compile
+      GccCaller.CompileResult res = GccCaller.compile(request.code, request.optimize);
+      if (!res.success)
+      {
+        System.err.println("Failed to compile code");
+        response = CompileResponse.failure(res.error);
+      }
+      else
+      {
+        int             cCodeLen = request.code.split("\n").length;
+        CompiledProgram program  = AsmParser.parse(res.code, cCodeLen);
+        response = new CompileResponse(true, program.program, program.cLines, program.asmToC, null);
+      }
+    }
+    
+    return response;
+  }
 }

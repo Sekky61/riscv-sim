@@ -86,10 +86,11 @@ public class InputCodeModelBuilder
     if (this.loader != null)
     {
       model = this.loader.getInstructionFunctionModelList()
-              .stream()
-              .filter(instructionFunctionModel -> instructionFunctionModel.getName().equals(this.instructionName))
-              .findFirst()
-              .orElse(null);
+                         .stream()
+                         .filter(instructionFunctionModel -> instructionFunctionModel.getName()
+                                                                                     .equals(this.instructionName))
+                         .findFirst()
+                         .orElse(null);
     }
     else
     {

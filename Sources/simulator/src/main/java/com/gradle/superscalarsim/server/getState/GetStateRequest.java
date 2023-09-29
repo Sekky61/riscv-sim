@@ -29,6 +29,7 @@ package com.gradle.superscalarsim.server.getState;
 
 import com.gradle.superscalarsim.cpu.CpuConfiguration;
 
-public class GetStateRequest {
-    CpuConfiguration config;
+public class GetStateRequest
+{
+  CpuConfiguration config;
 }

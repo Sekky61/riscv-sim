@@ -58,15 +58,15 @@ public class CodeArithmeticInterpreter
   private final InitLoader initLoader;
   /// Preceding table object
   private final PrecedingTable precedingTable;
-  /// String value of last evaluated lValue
-  private String temporaryTag;
-  /// Value of last evaluated lValue
-  private double temporaryValue;
   /// Stack used by interpreter to store operations with less priority
   private final Stack<String> operationStack;
   /// Stack to store values loaded from expression from left to right
   private final Stack<String> valueStack;
   private final UnifiedRegisterFileBlock registerFileBlock;
+  /// String value of last evaluated lValue
+  private String temporaryTag;
+  /// Value of last evaluated lValue
+  private double temporaryValue;
   
   /**
    * @param [in] initLoader     - Initial loader of interpretable instructions and register files
@@ -113,10 +113,10 @@ public class CodeArithmeticInterpreter
       
       // Find result arg (for example rd:t0)
       InputCodeArgument resultArg = parsedCode.getArguments()
-              .stream()
-              .filter(arg -> lValue.contains(arg.getName()))
-              .findFirst()
-              .orElse(null);
+                                              .stream()
+                                              .filter(arg -> lValue.contains(arg.getName()))
+                                              .findFirst()
+                                              .orElse(null);
       OperandModel resultOperand = new OperandModel(lValue, resultArg);
       double result = evaluateExpression(expression, instruction.getInputDataType(), instruction.getOutputDataType(),
                                          parsedCode.getArguments());
@@ -221,9 +221,9 @@ public class CodeArithmeticInterpreter
     // Overload last value on stack and return
     String resultValue = valueStack.pop();
     InputCodeArgument resultArg = argumentList.stream()
-            .filter(arg -> resultValue.equals(arg.getName()))
-            .findFirst()
-            .orElse(null);
+                                              .filter(arg -> resultValue.equals(arg.getName()))
+                                              .findFirst()
+                                              .orElse(null);
     return getValueFromOperand(resultArg == null ? resultValue : resultArg.getValue(), outputDataType);
   }// end of evaluateExpression
   //-------------------------------------------------------------------------------------------
@@ -262,13 +262,13 @@ public class CodeArithmeticInterpreter
       String operand2 = valueStack.pop();
       String operand1 = valueStack.empty() ? "unknown" : valueStack.pop();
       InputCodeArgument arg2 = argumentList.stream()
-              .filter(arg -> operand2.startsWith(arg.getName()))
-              .findFirst()
-              .orElse(null);
+                                           .filter(arg -> operand2.startsWith(arg.getName()))
+                                           .findFirst()
+                                           .orElse(null);
       InputCodeArgument arg1 = argumentList.stream()
-              .filter(arg -> operand1.startsWith(arg.getName()))
-              .findFirst()
-              .orElse(null);
+                                           .filter(arg -> operand1.startsWith(arg.getName()))
+                                           .findFirst()
+                                           .orElse(null);
       OperandModel operandModel2 = arg2 == null ? new OperandModel(operand2) : new OperandModel(operand2, arg2);
       OperandModel operandModel1 = arg1 == null ? new OperandModel(operand1) : new OperandModel(operand1, arg1);
       return processOperation(operandModel1, operandModel2, operation, inputDataType);
@@ -277,9 +277,9 @@ public class CodeArithmeticInterpreter
     {
       String operand = valueStack.pop();
       InputCodeArgument argument = argumentList.stream()
-              .filter(arg -> operand.startsWith(arg.getName()))
-              .findFirst()
-              .orElse(null);
+                                               .filter(arg -> operand.startsWith(arg.getName()))
+                                               .findFirst()
+                                               .orElse(null);
       OperandModel operandModel = new OperandModel(operand, argument);
       return processOperation(operandModel, null, operation, inputDataType);
     }
@@ -543,11 +543,8 @@ public class CodeArithmeticInterpreter
     RegisterModel  registerModel = null;
     for (DataTypeEnum possibleDataType : dataTypeEnums)
     {
-      registerModel = this.registerFileBlock.getRegisterList(possibleDataType)
-              .stream()
-              .filter(register -> register.getName().equals(operand))
-              .findFirst()
-              .orElse(null);
+      registerModel = this.registerFileBlock.getRegisterList(possibleDataType).stream().filter(
+          register -> register.getName().equals(operand)).findFirst().orElse(null);
       if (registerModel != null)
       {
         break;
@@ -556,11 +553,8 @@ public class CodeArithmeticInterpreter
     
     if (registerModel == null)
     {
-      registerModel = this.registerFileBlock.getRegisterList(DataTypeEnum.kSpeculative)
-              .stream()
-              .filter(register -> register.getName().equals(operand))
-              .findFirst()
-              .orElse(null);
+      registerModel = this.registerFileBlock.getRegisterList(DataTypeEnum.kSpeculative).stream().filter(
+          register -> register.getName().equals(operand)).findFirst().orElse(null);
     }
     return registerModel != null ? registerModel.getValue() : Double.NaN;
   }// end of getValueFromOperand

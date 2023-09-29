@@ -73,7 +73,8 @@ public class InstructionRawItemModel
   @Override
   public String toString()
   {
-    return "name: " + name + ", " + "starts from bit: " + bitLow + ", " + "ends with bit: " + bitHigh + ", " + "value: " + value + '\n';
+    return "name: " + name + ", " + "starts from bit: " + bitLow + ", " + "ends with bit: " + bitHigh + ", " + "value"
+        + ": " + value + '\n';
   }// end of toString
   //------------------------------------------------------
   
@@ -119,7 +120,8 @@ public class InstructionRawItemModel
   
   /**
    * @return Value of an instruction item
-   * @brief Get value of an item, if it does not have bit string, it references on position in syntax from where to take value
+   * @brief Get value of an item, if it does not have bit string, it references on position in syntax from where to
+   * take value
    */
   public String getValue()
   {

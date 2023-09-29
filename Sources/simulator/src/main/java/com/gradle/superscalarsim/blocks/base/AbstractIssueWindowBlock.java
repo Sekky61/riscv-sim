@@ -246,7 +246,7 @@ public abstract class AbstractIssueWindowBlock implements AbstractBlock
         String                registerName = argument.getValue();
         RegisterModel         reg          = this.registerFileBlock.getRegister(registerName);
         RegisterReadinessEnum readiness    = reg.getReadiness();
-        boolean               validity     = readiness == RegisterReadinessEnum.kExecuted || readiness == RegisterReadinessEnum.kAssigned;
+        boolean validity = readiness == RegisterReadinessEnum.kExecuted || readiness == RegisterReadinessEnum.kAssigned;
         itemModelList.add(new IssueItemModel(registerName, reg.getValue(), validity));
       }
       else if (argument.getName().startsWith("imm"))

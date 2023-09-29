@@ -23,7 +23,8 @@ Opening the project for the first time:
 
 ### Formatting
 
-The file `.editorconfig` contains the formatting rules for the project.
+The file `.idea/codeStyles/codeStyleConfig.xml` contains the formatting rules
+for the project.
 The rules follow the *SC@FIT Handbook* where sensible.
 IntelliJ IDEA should automatically pick up these rules.
 

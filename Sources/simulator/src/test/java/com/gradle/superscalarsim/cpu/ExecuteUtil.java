@@ -73,5 +73,6 @@ public class ExecuteUtil
   
   static String artihmeticProgram = "addi x3 x4 5\n" + "add x2 x3 x4\n" + "add x1 x2 x3";
   
-  static String simpleLoopProgram = "addi x3 x0 5\n" + "loop:\n" + "beq x3 x0 loopEnd\n" + "subi x3 x3 1\n" + "jal x0 loop\n" + "loopEnd:";
+  static String simpleLoopProgram =
+      "addi x3 x0 5\n" + "loop:\n" + "beq x3 x0 loopEnd\n" + "subi x3 x3 1\n" + "jal " + "x0" + " loop\n" + "loopEnd:";
 }

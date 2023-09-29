@@ -41,14 +41,6 @@ public class CompileResponse
   public Integer[] asmToC;
   public String compilerError;
   
-  public static CompileResponse failure(String errorMsg)
-  {
-    CompileResponse res = new CompileResponse();
-    res.success       = false;
-    res.compilerError = errorMsg;
-    return res;
-  }
-  
   public CompileResponse()
   {
     this.success       = false;
@@ -69,5 +61,13 @@ public class CompileResponse
     this.cLines        = cLines.toArray(new Integer[0]);
     this.asmToC        = asmToC.toArray(new Integer[0]);
     this.compilerError = compilerError;
+  }
+  
+  public static CompileResponse failure(String errorMsg)
+  {
+    CompileResponse res = new CompileResponse();
+    res.success       = false;
+    res.compilerError = errorMsg;
+    return res;
   }
 }

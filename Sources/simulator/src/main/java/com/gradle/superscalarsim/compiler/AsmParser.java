@@ -117,7 +117,7 @@ public class AsmParser
   
   // List of prefixes of lines that should be removed
   static List<String> badPrefixes = new ArrayList<>(
-          Arrays.asList("#", ".loc", ".LCFI", ".Ltext", ".file", ".LFB", ".LFE", ".align", ".globl", ".type"));
+      Arrays.asList("#", ".loc", ".LCFI", ".Ltext", ".file", ".LFB", ".LFE", ".align", ".globl", ".type"));
   
   private static int parseMappingLine(String line)
   {

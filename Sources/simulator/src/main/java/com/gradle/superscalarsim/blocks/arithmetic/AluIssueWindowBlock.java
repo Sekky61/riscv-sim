@@ -111,7 +111,7 @@ public class AluIssueWindowBlock extends AbstractIssueWindowBlock
     for (AbstractFunctionUnitBlock functionUnitBlock : this.functionUnitBlockList)
     {
       if (!functionUnitBlock.isFunctionUnitEmpty() && functionUnitBlock.hasReversedDelayPassed() && functionUnitBlock.getSimCodeModel()
-              .getIssueWindowId() == this.windowId)
+                                                                                                                     .getIssueWindowId() == this.windowId)
       {
         SimCodeModel codeModel = functionUnitBlock.getSimCodeModel();
         functionUnitBlock.setSimCodeModel(null);

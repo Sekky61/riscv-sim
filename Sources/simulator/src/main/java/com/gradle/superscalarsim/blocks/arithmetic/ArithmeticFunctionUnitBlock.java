@@ -158,8 +158,8 @@ public class ArithmeticFunctionUnitBlock extends AbstractFunctionUnitBlock
       for (SimCodeModel codeModel : this.reorderBufferBlock.getReorderQueue())
       {
         if (codeModel.getFunctionUnitId() == this.functionUnitId && issueWindowBlock.isCorrectDataType(
-                codeModel.getResultDataType()) && issueWindowBlock.isCorrectInstructionType(
-                codeModel.getInstructionTypeEnum()))
+            codeModel.getResultDataType()) && issueWindowBlock.isCorrectInstructionType(
+            codeModel.getInstructionTypeEnum()))
         {
           this.resetReverseCounter();
           this.simCodeModel = codeModel;
@@ -178,7 +178,7 @@ public class ArithmeticFunctionUnitBlock extends AbstractFunctionUnitBlock
         }
       }
       if (!this.failedInstructions.isEmpty() && this.failedInstructions.peek()
-              .getFunctionUnitId() == this.functionUnitId)
+                                                                       .getFunctionUnitId() == this.functionUnitId)
       {
         this.simCodeModel = this.failedInstructions.pop();
         this.popHistoryCounter();

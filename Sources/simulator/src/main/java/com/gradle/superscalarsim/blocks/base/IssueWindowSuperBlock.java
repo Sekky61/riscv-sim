@@ -157,7 +157,8 @@ public class IssueWindowSuperBlock implements AbstractBlock
     else
     {
       int pullCount = !decodeAndDispatchBlock.shouldStall() ? this.decodeAndDispatchBlock.getAfterRenameCodeList()
-              .size() : this.decodeAndDispatchBlock.getStalledPullCount();
+                                                                                         .size() :
+          this.decodeAndDispatchBlock.getStalledPullCount();
       
       for (int i = 0; i < pullCount; i++)
       {
@@ -191,7 +192,7 @@ public class IssueWindowSuperBlock implements AbstractBlock
       returningCodeModelList.addAll(currentFoundCodeModelList);
     }
     if (returningCodeModelList.isEmpty() && !this.failedInstructions.isEmpty() && this.failedInstructions.peek()
-            .getInstructionBulkNumber() == id)
+                                                                                                         .getInstructionBulkNumber() == id)
     {
       while (!this.failedInstructions.isEmpty() && this.failedInstructions.peek().getInstructionBulkNumber() == id)
       {
@@ -214,7 +215,7 @@ public class IssueWindowSuperBlock implements AbstractBlock
     for (AbstractIssueWindowBlock issueWindow : this.issueWindowBlockList)
     {
       if (issueWindow.isCorrectInstructionType(instruction.getInstructionType()) && issueWindow.isCorrectDataType(
-              instruction.getOutputDataType()))
+          instruction.getOutputDataType()))
       {
         issueWindow.dispatchInstruction(codeModel);
         issueWindow.createArgumentValidityEntry(codeModel);

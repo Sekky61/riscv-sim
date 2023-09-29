@@ -62,12 +62,13 @@ public class PrecedingTable
     String[] allowedInstructionsArray;
     this.precedingTable   = new HashMap<>();
     this.unaryOperations  = new String[]{"++", "--", "!", "#", "<-"};
-    this.binaryOperations = new String[]{"+", "-", "*", "/", "%", "&", "|", ">>>", "<<", ">>", "<=", ">=", "==", "<", ">"};
+    this.binaryOperations = new String[]{"+", "-", "*", "/", "%", "&", "|", ">>>", "<<", ">>", "<=", ">=", "==", "<",
+        ">"};
     String[] brackets = new String[]{"(", ")"};
     allowedInstructionsArray = Stream.concat(Arrays.stream(this.unaryOperations), Arrays.stream(this.binaryOperations))
-            .toArray(String[]::new);
-    allowedInstructionsArray = Stream.concat(Arrays.stream(allowedInstructionsArray), Arrays.stream(brackets))
-            .toArray(String[]::new);
+                                     .toArray(String[]::new);
+    allowedInstructionsArray = Stream.concat(Arrays.stream(allowedInstructionsArray), Arrays.stream(brackets)).toArray(
+        String[]::new);
     this.allowedInstructions = allowedInstructionsArray;
     setUpLesserPriorityPrecedingLines();
     setUpMajorPriorityPrecedingLines();

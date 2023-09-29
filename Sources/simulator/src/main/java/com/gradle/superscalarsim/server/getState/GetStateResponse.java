@@ -31,17 +31,20 @@ import com.gradle.superscalarsim.cpu.CpuState;
 
 import java.util.List;
 
-public class GetStateResponse {
-    public CpuState state;
-    public List<String> messages;
-
-    GetStateResponse(CpuState state) {
-        this.state = state;
-        this.messages = null;
-    }
-
-    GetStateResponse(CpuState state, List<String> messages) {
-        this.state = state;
-        this.messages = messages;
-    }
+public class GetStateResponse
+{
+  public CpuState state;
+  public List<String> messages;
+  
+  GetStateResponse(CpuState state)
+  {
+    this.state    = state;
+    this.messages = null;
+  }
+  
+  GetStateResponse(CpuState state, List<String> messages)
+  {
+    this.state    = state;
+    this.messages = messages;
+  }
 }

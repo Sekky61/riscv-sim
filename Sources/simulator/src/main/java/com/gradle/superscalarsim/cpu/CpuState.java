@@ -392,7 +392,8 @@ public class CpuState implements Serializable
     // Check which buffer contains older instruction at the top
     // Null check first, if any is empty, the order does not matter
     if (loadBufferBlock.getLoadQueueFirst() == null || storeBufferBlock.getStoreQueueFirst() == null || loadBufferBlock.getLoadQueueFirst()
-            .getId() < storeBufferBlock.getStoreQueueFirst().getId())
+                                                                                                                       .getId() < storeBufferBlock.getStoreQueueFirst()
+                                                                                                                                                  .getId())
     {
       loadBufferBlock.simulate();
       storeBufferBlock.simulate();

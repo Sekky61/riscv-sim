@@ -128,14 +128,13 @@ public class UnifiedRegisterFileBlock
    * @param [in] dataType - Data type of searched register list
    *
    * @return List of registers
-   * @brief Get list of registers based on data type provided. Assumes that there is only one register file with provided data type
+   * @brief Get list of registers based on data type provided. Assumes that there is only one register file with
+   * provided data type
    */
   public final List<RegisterModel> getRegisterList(DataTypeEnum dataType)
   {
-    RegisterFileModel registerModelList = this.registerList.stream()
-            .filter(registerFileModel -> registerFileModel.getDataType() == dataType)
-            .findFirst()
-            .orElse(null);
+    RegisterFileModel registerModelList = this.registerList.stream().filter(
+        registerFileModel -> registerFileModel.getDataType() == dataType).findFirst().orElse(null);
     return registerModelList == null ? new ArrayList<>() : registerModelList.getRegisterList();
   }// end of getRegisterList
   //----------------------------------------------------------------------

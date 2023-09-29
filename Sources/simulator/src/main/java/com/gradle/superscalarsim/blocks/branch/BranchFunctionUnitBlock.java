@@ -167,8 +167,8 @@ public class BranchFunctionUnitBlock extends AbstractFunctionUnitBlock
     for (SimCodeModel codeModel : this.reorderBufferBlock.getReorderQueue())
     {
       if (codeModel.getFunctionUnitId() != this.functionUnitId || !issueWindowBlock.isCorrectDataType(
-              codeModel.getResultDataType()) || !issueWindowBlock.isCorrectInstructionType(
-              codeModel.getInstructionTypeEnum()))
+          codeModel.getResultDataType()) || !issueWindowBlock.isCorrectInstructionType(
+          codeModel.getInstructionTypeEnum()))
       {
         // Skip
         continue;
@@ -184,12 +184,9 @@ public class BranchFunctionUnitBlock extends AbstractFunctionUnitBlock
         this.popHistoryCounter();
       }
       // Restore result readiness
-      simCodeModel.getArguments()
-              .stream()
-              .filter(argument -> argument.getName().equals("rd"))
-              .findFirst()
-              .ifPresent(destinationArgument -> registerFileBlock.getRegister(destinationArgument.getValue())
-                      .setReadiness(RegisterReadinessEnum.kAllocated));
+      simCodeModel.getArguments().stream().filter(argument -> argument.getName().equals("rd")).findFirst().ifPresent(
+          destinationArgument -> registerFileBlock.getRegister(destinationArgument.getValue())
+                                                  .setReadiness(RegisterReadinessEnum.kAllocated));
       // Remove target and brcd arguments
       simCodeModel.setBranchLogicResult(false);
       simCodeModel.setBranchTargetOffset(0);

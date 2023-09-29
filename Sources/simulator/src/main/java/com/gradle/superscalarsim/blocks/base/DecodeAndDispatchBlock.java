@@ -260,9 +260,11 @@ public class DecodeAndDispatchBlock implements AbstractBlock
       // Take `fetchCount` instructions from fetch block, delete them from fetch block
       List<SimCodeModel> removeInputModel = new ArrayList<>();
       int fetchCount = Math.min((int) this.instructionFetchBlock.getFetchedCode()
-              .stream()
-              .filter(code -> !code.getInstructionName().equals("nop"))
-              .count(), this.instructionFetchBlock.getNumberOfWays() - this.afterRenameCodeList.size());
+                                                                .stream()
+                                                                .filter(
+                                                                    code -> !code.getInstructionName().equals("nop"))
+                                                                .count(),
+                                this.instructionFetchBlock.getNumberOfWays() - this.afterRenameCodeList.size());
       this.stalledPullCountStack.push(fetchCount);
       this.instructionFetchBlock.setStallFetchCount(fetchCount);
       for (int i = 0; i < fetchCount; i++)
@@ -320,10 +322,9 @@ public class DecodeAndDispatchBlock implements AbstractBlock
       removeList.add(codeModel);
       codeModel.getArguments().forEach(argument ->
                                        {
-                                         if (!codeModel.getCodeLine()
-                                                 .contains(
-                                                         argument.getValue()) && this.renameMapTableBlock.reduceReference(
-                                                 argument.getValue()))
+                                         if (!codeModel.getCodeLine().contains(
+                                             argument.getValue()) && this.renameMapTableBlock.reduceReference(
+                                             argument.getValue()))
                                          {
                                            this.renameMapTableBlock.freeMapping(argument.getValue());
                                          }
@@ -401,7 +402,8 @@ public class DecodeAndDispatchBlock implements AbstractBlock
                                         {
                                           String oldArgumentValue = argument.getValue();
                                           boolean shouldRename = !argument.getName().equals("rd") && !argument.getName()
-                                                  .equals("imm");
+                                                                                                              .equals(
+                                                                                                                  "imm");
                                           if (shouldRename)
                                           {
                                             String rename = renameMapTableBlock.getMappingForRegister(oldArgumentValue);

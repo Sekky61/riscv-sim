@@ -210,7 +210,8 @@ public class Cache
     else
     {
       //Add line replacement delay + if some line is already replacing add it's time too
-      cycleEndOfReplacement = (cycleEndOfReplacement <= currentCycle) ? currentCycle + lineReplacementDelay : cycleEndOfReplacement + lineReplacementDelay;
+      cycleEndOfReplacement = (cycleEndOfReplacement <= currentCycle) ? currentCycle + lineReplacementDelay :
+          cycleEndOfReplacement + lineReplacementDelay;
       return Math.max(0, cycleEndOfReplacement - currentCycle);
     }
   }
@@ -267,7 +268,8 @@ public class Cache
       }
     }
     //No previous access matched - this is a miss
-    cycleEndOfReplacement = (cycleEndOfReplacement <= currentCycle) ? currentCycle + lineReplacementDelay : cycleEndOfReplacement + lineReplacementDelay;
+    cycleEndOfReplacement = (cycleEndOfReplacement <= currentCycle) ? currentCycle + lineReplacementDelay :
+        cycleEndOfReplacement + lineReplacementDelay;
     return (!isStore) ? lineReplacementDelay : 0;
   }
   
@@ -382,8 +384,8 @@ public class Cache
     {
       cacheStatisticsCounter.incrementAccesses();
       this.lastAccess.add(
-              new CacheAccess(currentCycle, cycleEndOfReplacement, id, new Boolean[0], false, splittedAddress, 0,
-                              new Integer[0], new Integer[0]));
+          new CacheAccess(currentCycle, cycleEndOfReplacement, id, new Boolean[0], false, splittedAddress, 0,
+                          new Integer[0], new Integer[0]));
     }
     
     //Go through all lines - compare if tag matches
@@ -396,8 +398,8 @@ public class Cache
         cacheStatisticsCounter.incrementHits(currentCycle);
         
         replacementPolicy.updatePolicy(id, splittedAddress.getSecond(), i);
-        lastAccess.peek()
-                .addLineAccess(true, splittedAddress.getSecond() * associativity + i, splittedAddress.getThird());
+        lastAccess.peek().addLineAccess(true, splittedAddress.getSecond() * associativity + i,
+                                        splittedAddress.getThird());
         Pair<Integer, Long> tmpReturnVal = getDataFromLines(line, address, size, id, currentCycle);
         return new Pair<>(tmpReturnVal.getFirst() + loadDelay + computeRemainingDelay(true, false, currentCycle,
                                                                                       splittedAddress.getFirst(),
@@ -446,9 +448,8 @@ public class Cache
     cache[splittedAddress.getSecond()][selectedLine].setBaseAddress(baseMemoryAddress);
     
     replacementPolicy.updatePolicy(id, splittedAddress.getSecond(), selectedLine);
-    lastAccess.peek()
-            .addLineAccess(false, splittedAddress.getSecond() * associativity + selectedLine,
-                           splittedAddress.getThird());
+    lastAccess.peek().addLineAccess(false, splittedAddress.getSecond() * associativity + selectedLine,
+                                    splittedAddress.getThird());
     Pair<Integer, Long> tmpReturnVal = getDataFromLines(cache[splittedAddress.getSecond()][selectedLine], address, size,
                                                         id, currentCycle);
     return new Pair<>(tmpReturnVal.getFirst() + loadDelay + computeRemainingDelay(false, false, currentCycle,
@@ -569,8 +570,8 @@ public class Cache
         line.saveToHistory(id);
         
         replacementPolicy.updatePolicy(id, splittedAddress.getSecond(), i);
-        lastAccess.peek()
-                .addLineAccess(true, splittedAddress.getSecond() * associativity + i, splittedAddress.getThird());
+        lastAccess.peek().addLineAccess(true, splittedAddress.getSecond() * associativity + i,
+                                        splittedAddress.getThird());
         int tmpReturn = setDataToLines(line, address, data, size, id, currentCycle);
         return storeDelay + tmpReturn + computeRemainingDelay(true, true, currentCycle, splittedAddress.getFirst(),
                                                               splittedAddress.getSecond());
@@ -617,9 +618,8 @@ public class Cache
     cache[splittedAddress.getSecond()][selectedLine].setBaseAddress(baseMemoryAddress);
     
     replacementPolicy.updatePolicy(id, splittedAddress.getSecond(), selectedLine);
-    lastAccess.peek()
-            .addLineAccess(false, splittedAddress.getSecond() * associativity + selectedLine,
-                           splittedAddress.getThird());
+    lastAccess.peek().addLineAccess(false, splittedAddress.getSecond() * associativity + selectedLine,
+                                    splittedAddress.getThird());
     
     int tmpReturn = setDataToLines(cache[splittedAddress.getSecond()][selectedLine], address, data, size, id,
                                    currentCycle);

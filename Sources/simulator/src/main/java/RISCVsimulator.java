@@ -39,7 +39,8 @@ import picocli.CommandLine.Option;
 import java.io.IOException;
 import java.util.concurrent.Callable;
 
-@Command(name = "RISCVsimulator", mixinStandardHelpOptions = true, version = "RISCVsimulator 0.1", description = "RISCVsimulator")
+@Command(name = "RISCVsimulator", mixinStandardHelpOptions = true, version = "RISCVsimulator 0.1", description =
+    "RISCVsimulator")
 class SimOptions implements Callable<Integer>
 {
   

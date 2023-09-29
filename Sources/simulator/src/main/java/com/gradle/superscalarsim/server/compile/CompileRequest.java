@@ -27,14 +27,16 @@
 
 package com.gradle.superscalarsim.server.compile;
 
-public class CompileRequest {
-    /// The C code to compile
-    String code;
-    /// Should the code be optimized?
-    boolean optimize;
-
-    public CompileRequest(String code, boolean optimize) {
-        this.code = code;
-        this.optimize = optimize;
-    }
+public class CompileRequest
+{
+  /// The C code to compile
+  String code;
+  /// Should the code be optimized?
+  boolean optimize;
+  
+  public CompileRequest(String code, boolean optimize)
+  {
+    this.code     = code;
+    this.optimize = optimize;
+  }
 }

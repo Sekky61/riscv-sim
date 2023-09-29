@@ -35,34 +35,42 @@ import com.gradle.superscalarsim.server.IRequestResolver;
  * @brief Handler for the /getState endpoint
  * Accepts a CpuConfiguration and returns corresponding state
  */
-public class GetStateHandler implements IRequestResolver<GetStateRequest, GetStateResponse> {
-
-    @Override
-    public GetStateResponse resolve(GetStateRequest request) {
-        GetStateResponse response;
-        if (request == null) {
-            // Send error
-            response = new GetStateResponse(null);
-        } else {
-            // Get state
-            response = getState(request);
-        }
-        return response;
+public class GetStateHandler implements IRequestResolver<GetStateRequest, GetStateResponse>
+{
+  
+  @Override
+  public GetStateResponse resolve(GetStateRequest request)
+  {
+    GetStateResponse response;
+    if (request == null)
+    {
+      // Send error
+      response = new GetStateResponse(null);
     }
-
-    private GetStateResponse getState(GetStateRequest request) {
-        if (request.config == null) {
-            Cpu defaultCpu = new Cpu();
-            System.out.println("Providing default state");
-            return new GetStateResponse(defaultCpu.cpuState);
-        }
-        CpuConfiguration cfg = request.config;
-        CpuConfiguration.ValidationResult validationResult = cfg.validate();
-        if (!validationResult.valid) {
-            System.err.println("Provided configuration is invalid: " + validationResult.messages);
-            return new GetStateResponse(null, validationResult.messages);
-        }
-        Cpu cpu = new Cpu(request.config);
-        return new GetStateResponse(cpu.cpuState);
+    else
+    {
+      // Get state
+      response = getState(request);
     }
+    return response;
+  }
+  
+  private GetStateResponse getState(GetStateRequest request)
+  {
+    if (request.config == null)
+    {
+      Cpu defaultCpu = new Cpu();
+      System.out.println("Providing default state");
+      return new GetStateResponse(defaultCpu.cpuState);
+    }
+    CpuConfiguration                  cfg              = request.config;
+    CpuConfiguration.ValidationResult validationResult = cfg.validate();
+    if (!validationResult.valid)
+    {
+      System.err.println("Provided configuration is invalid: " + validationResult.messages);
+      return new GetStateResponse(null, validationResult.messages);
+    }
+    Cpu cpu = new Cpu(request.config);
+    return new GetStateResponse(cpu.cpuState);
+  }
 }

@@ -229,18 +229,20 @@ public class RenameMapTableBlock
   {
     if (isSpeculativeRegister(speculativeRegister))
     {
-      this.registerFileBlock.getRegisterList(DataTypeEnum.kSpeculative)
-              .stream()
-              .filter(reg -> reg.getName().equals(speculativeRegister))
-              .findFirst()
-              .ifPresent(register ->
-                         {
-                           this.registerFileBlock.getRegister(speculativeRegister)
-                                   .setReadiness(RegisterReadinessEnum.kFree);
-                           this.referenceMap.remove(register.getName());
-                           this.registerMap.remove(register.getName());
-                           this.freeList.add(register.getName());
-                         });
+      this.registerFileBlock.getRegisterList(DataTypeEnum.kSpeculative).stream().filter(
+          reg -> reg.getName().equals(speculativeRegister)).findFirst().ifPresent(register ->
+                                                                                  {
+                                                                                    this.registerFileBlock.getRegister(
+                                                                                            speculativeRegister)
+                                                                                                          .setReadiness(
+                                                                                                              RegisterReadinessEnum.kFree);
+                                                                                    this.referenceMap.remove(
+                                                                                        register.getName());
+                                                                                    this.registerMap.remove(
+                                                                                        register.getName());
+                                                                                    this.freeList.add(
+                                                                                        register.getName());
+                                                                                  });
     }
   }// end of freeMapping
   //----------------------------------------------------------------------

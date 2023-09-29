@@ -379,7 +379,8 @@ public class InitLoader
     Reader reader = Files.newBufferedReader(Paths.get("./supportedInstructions.json"));
     // read to a map
     Map<String, InstructionFunctionModel> instructions = gson.fromJson(reader,
-                                                                       new TypeToken<Map<String, InstructionFunctionModel>>()
+                                                                       new TypeToken<Map<String,
+                                                                           InstructionFunctionModel>>()
                                                                        {
                                                                        }.getType());
     // add to list

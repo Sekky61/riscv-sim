@@ -168,7 +168,7 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
         {
           InputCodeArgument destinationArgument = simCodeModel.getArgumentByName("rd");
           RegisterModel destRegister = registerFileBlock.getRegister(
-                  Objects.requireNonNull(destinationArgument).getValue());
+              Objects.requireNonNull(destinationArgument).getValue());
           destRegister.setValue(savedResult);
           destRegister.setReadiness(RegisterReadinessEnum.kExecuted);
           this.loadBufferBlock.setDestinationAvailable(simCodeModel.getId());
@@ -270,7 +270,7 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
         }
       }
       if (!this.failedInstructions.isEmpty() && this.failedInstructions.peek()
-              .getFunctionUnitId() == this.functionUnitId)
+                                                                       .getFunctionUnitId() == this.functionUnitId)
       {
         this.simCodeModel     = this.failedInstructions.pop();
         this.firstDelayPassed = this.savedFirstDelayPassed.pop();

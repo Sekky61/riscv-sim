@@ -99,11 +99,13 @@ public class CodeLoadStoreInterpreter
     InputCodeArgument offsetImmediate = parsedCode.getArgumentByName(interpretableAsParams[4]);
     
     long address = Double.valueOf(
-                    getValueFromOperand(Objects.requireNonNull(addressRegister).getValue(), instruction.getInputDataType()))
-            .longValue();
+                             getValueFromOperand(Objects.requireNonNull(addressRegister).getValue(),
+                                                 instruction.getInputDataType()))
+                         .longValue();
     long offset = Double.valueOf(
-                    getValueFromOperand(Objects.requireNonNull(offsetImmediate).getValue(), instruction.getInputDataType()))
-            .longValue();
+                            getValueFromOperand(Objects.requireNonNull(offsetImmediate).getValue(),
+                                                instruction.getInputDataType()))
+                        .longValue();
     
     return address + offset;
   }// end of interpretAddress
@@ -149,11 +151,13 @@ public class CodeLoadStoreInterpreter
     InputCodeArgument loadStoreRegister = parsedCode.getArgumentByName(interpretableAsParams[2]);
     
     long address = Double.valueOf(
-                    getValueFromOperand(Objects.requireNonNull(addressRegister).getValue(), instruction.getInputDataType()))
-            .longValue();
+                             getValueFromOperand(Objects.requireNonNull(addressRegister).getValue(),
+                                                 instruction.getInputDataType()))
+                         .longValue();
     long offset = Double.valueOf(
-                    getValueFromOperand(Objects.requireNonNull(offsetImmediate).getValue(), instruction.getInputDataType()))
-            .longValue();
+                            getValueFromOperand(Objects.requireNonNull(offsetImmediate).getValue(),
+                                                instruction.getInputDataType()))
+                        .longValue();
     
     switch (interpretableAsParams[0])
     {
@@ -166,8 +170,10 @@ public class CodeLoadStoreInterpreter
       }
       case "store" ->
       {
-        double sourceValue = Double.valueOf(getValueFromOperand(Objects.requireNonNull(loadStoreRegister).getValue(),
-                                                                instruction.getOutputDataType())).longValue();
+        double sourceValue = Double.valueOf(
+                                       getValueFromOperand(Objects.requireNonNull(loadStoreRegister).getValue(),
+                                                           instruction.getOutputDataType()))
+                                   .longValue();
         return processStoreOperation(interpretableAsParams[1], sourceValue, address, offset, parsedCode.getId(),
                                      currentCycle);
       }
@@ -211,11 +217,8 @@ public class CodeLoadStoreInterpreter
     }
     if (registerModel == null)
     {
-      registerModel = this.registerFileBlock.getRegisterList(DataTypeEnum.kSpeculative)
-              .stream()
-              .filter(register -> register.getName().equals(destination))
-              .findFirst()
-              .orElse(null);
+      registerModel = this.registerFileBlock.getRegisterList(DataTypeEnum.kSpeculative).stream().filter(
+          register -> register.getName().equals(destination)).findFirst().orElse(null);
     }
     
     byte[] bytes = new byte[numberOfBytes];
@@ -369,11 +372,8 @@ public class CodeLoadStoreInterpreter
     RegisterModel  registerModel = null;
     for (DataTypeEnum possibleDataType : dataTypeEnums)
     {
-      registerModel = this.registerFileBlock.getRegisterList(possibleDataType)
-              .stream()
-              .filter(register -> register.getName().equals(operand))
-              .findFirst()
-              .orElse(null);
+      registerModel = this.registerFileBlock.getRegisterList(possibleDataType).stream().filter(
+          register -> register.getName().equals(operand)).findFirst().orElse(null);
       if (registerModel != null)
       {
         break;
@@ -382,11 +382,8 @@ public class CodeLoadStoreInterpreter
     
     if (registerModel == null)
     {
-      registerModel = this.registerFileBlock.getRegisterList(DataTypeEnum.kSpeculative)
-              .stream()
-              .filter(register -> register.getName().equals(operand))
-              .findFirst()
-              .orElse(null);
+      registerModel = this.registerFileBlock.getRegisterList(DataTypeEnum.kSpeculative).stream().filter(
+          register -> register.getName().equals(operand)).findFirst().orElse(null);
     }
     
     return registerModel != null ? registerModel.getValue() : Double.NaN;
