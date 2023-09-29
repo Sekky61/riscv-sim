@@ -69,9 +69,10 @@ public class CodeArithmeticInterpreter
   private final UnifiedRegisterFileBlock registerFileBlock;
   
   /**
-   * @brief Constructor
    * @param [in] initLoader     - Initial loader of interpretable instructions and register files
    * @param [in] precedingTable - Preceding table for operation priorities
+   *
+   * @brief Constructor
    */
   public CodeArithmeticInterpreter(final InitLoader initLoader,
                                    final PrecedingTable precedingTable,
@@ -90,9 +91,10 @@ public class CodeArithmeticInterpreter
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Evaluates expressions divided by semicolon ';'
    * @param [in] parsedCode - Parsed instruction from code file to be interpreted
+   *
    * @return Double value based on interpreted instruction
+   * @brief Evaluates expressions divided by semicolon ';'
    */
   public double interpretInstruction(final IInputCodeModel parsedCode)
   {
@@ -110,8 +112,11 @@ public class CodeArithmeticInterpreter
       String expression = command.substring(equalIndex + 1);
       
       // Find result arg (for example rd:t0)
-      InputCodeArgument resultArg = parsedCode.getArguments().stream().filter(arg -> lValue.contains(arg.getName()))
-                                              .findFirst().orElse(null);
+      InputCodeArgument resultArg = parsedCode.getArguments()
+              .stream()
+              .filter(arg -> lValue.contains(arg.getName()))
+              .findFirst()
+              .orElse(null);
       OperandModel resultOperand = new OperandModel(lValue, resultArg);
       double result = evaluateExpression(expression, instruction.getInputDataType(), instruction.getOutputDataType(),
                                          parsedCode.getArguments());
@@ -126,12 +131,13 @@ public class CodeArithmeticInterpreter
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Evaluates one expression
    * @param [in] expression     - Expression to be interpreted
    * @param [in] inputDataType  - Data type of expression
    * @param [in] outputDataType - Data type of the result
    * @param [in] argumentList   - List of arguments provided by parsed instruction
+   *
    * @return Double value of expression
+   * @brief Evaluates one expression
    */
   private double evaluateExpression(final String expression,
                                     final DataTypeEnum inputDataType,
@@ -214,16 +220,19 @@ public class CodeArithmeticInterpreter
     
     // Overload last value on stack and return
     String resultValue = valueStack.pop();
-    InputCodeArgument resultArg = argumentList.stream().filter(arg -> resultValue.equals(arg.getName())).findFirst()
-                                              .orElse(null);
+    InputCodeArgument resultArg = argumentList.stream()
+            .filter(arg -> resultValue.equals(arg.getName()))
+            .findFirst()
+            .orElse(null);
     return getValueFromOperand(resultArg == null ? resultValue : resultArg.getValue(), outputDataType);
   }// end of evaluateExpression
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Evaluates all previously read unary operation for immediate evaluation
    * @param [in] argumentList  - List of arguments provided by parsed instruction
    * @param [in] inputDataType - Data type of the expression
+   *
+   * @brief Evaluates all previously read unary operation for immediate evaluation
    */
   private void evaluateAllUnaryOperations(final List<InputCodeArgument> argumentList, final DataTypeEnum inputDataType)
   {
@@ -237,11 +246,12 @@ public class CodeArithmeticInterpreter
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Decides what type of operation was given and prepares operators for interpretation
    * @param [in] operation     - Operation to be interpreted
    * @param [in] argumentList  - List of arguments provided by parsed instruction
    * @param [in] inputDataType - Data type of the expression
+   *
    * @return Double value of interpreted operation
+   * @brief Decides what type of operation was given and prepares operators for interpretation
    */
   private double evaluateOperation(final String operation,
                                    final List<InputCodeArgument> argumentList,
@@ -251,10 +261,14 @@ public class CodeArithmeticInterpreter
     {
       String operand2 = valueStack.pop();
       String operand1 = valueStack.empty() ? "unknown" : valueStack.pop();
-      InputCodeArgument arg2 = argumentList.stream().filter(arg -> operand2.startsWith(arg.getName())).findFirst()
-                                           .orElse(null);
-      InputCodeArgument arg1 = argumentList.stream().filter(arg -> operand1.startsWith(arg.getName())).findFirst()
-                                           .orElse(null);
+      InputCodeArgument arg2 = argumentList.stream()
+              .filter(arg -> operand2.startsWith(arg.getName()))
+              .findFirst()
+              .orElse(null);
+      InputCodeArgument arg1 = argumentList.stream()
+              .filter(arg -> operand1.startsWith(arg.getName()))
+              .findFirst()
+              .orElse(null);
       OperandModel operandModel2 = arg2 == null ? new OperandModel(operand2) : new OperandModel(operand2, arg2);
       OperandModel operandModel1 = arg1 == null ? new OperandModel(operand1) : new OperandModel(operand1, arg1);
       return processOperation(operandModel1, operandModel2, operation, inputDataType);
@@ -262,8 +276,10 @@ public class CodeArithmeticInterpreter
     else if (precedingTable.isUnaryOperation(operation))
     {
       String operand = valueStack.pop();
-      InputCodeArgument argument = argumentList.stream().filter(arg -> operand.startsWith(arg.getName())).findFirst()
-                                               .orElse(null);
+      InputCodeArgument argument = argumentList.stream()
+              .filter(arg -> operand.startsWith(arg.getName()))
+              .findFirst()
+              .orElse(null);
       OperandModel operandModel = new OperandModel(operand, argument);
       return processOperation(operandModel, null, operation, inputDataType);
     }
@@ -284,12 +300,13 @@ public class CodeArithmeticInterpreter
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Interpret operation
    * @param [in] operand1      - First operand
    * @param [in] operand2      - Second operand
    * @param [in] operator      - Operation to be interpreted
    * @param [in] inputDataType - Data type of operation
+   *
    * @return Double value of interpreted operation
+   * @brief Interpret operation
    */
   private double processOperation(@Nullable final OperandModel operand1,
                                   @Nullable final OperandModel operand2,
@@ -315,11 +332,12 @@ public class CodeArithmeticInterpreter
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Process 32-bit integer operation and keeps overflow capabilities
    * @param [in] operand1 - First operand
    * @param [in] operand2 - Second operand
    * @param [in] operator - Operation to be interpreted
+   *
    * @return Double value of 32-bit integer operation
+   * @brief Process 32-bit integer operation and keeps overflow capabilities
    */
   private double processIntOperation(final int operand1, final int operand2, final String operator)
   {
@@ -351,11 +369,12 @@ public class CodeArithmeticInterpreter
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Process 64-bit integer operation and keeps overflow capabilities
    * @param [in] operand1 - First operand
    * @param [in] operand2 - Second operand
    * @param [in] operator - Operation to be interpreted
+   *
    * @return Double value of 64-bit integer operation
+   * @brief Process 64-bit integer operation and keeps overflow capabilities
    */
   private double processLongOperation(final long operand1, final long operand2, final String operator)
   {
@@ -387,11 +406,12 @@ public class CodeArithmeticInterpreter
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Process 32-bit float operation and keeps overflow capabilities
    * @param [in] operand1 - First operand
    * @param [in] operand2 - Second operand
    * @param [in] operator - Operation to be interpreted
+   *
    * @return Double value of 32-bit float operation
+   * @brief Process 32-bit float operation and keeps overflow capabilities
    */
   private double processFloatOperation(final float operand1, final float operand2, final String operator)
   {
@@ -417,11 +437,12 @@ public class CodeArithmeticInterpreter
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Process 64-bit double operation and keeps overflow capabilities
    * @param [in] operand1 - First operand
    * @param [in] operand2 - Second operand
    * @param [in] operator - Operation to be interpreted
+   *
    * @return Double value of 64-bit double operation
+   * @brief Process 64-bit double operation and keeps overflow capabilities
    */
   private double processDoubleOperation(final double operand1, final double operand2, final String operator)
   {
@@ -447,11 +468,12 @@ public class CodeArithmeticInterpreter
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Writes bits in specified bit range
    * @param [in] operandModel  - OperandModel object of lValue
    * @param [in] newValue      - Long value of evaluated expression
    * @param [in] previousValue - Long value of previous result to be written into
+   *
    * @return Long value with written bits
+   * @brief Writes bits in specified bit range
    */
   private long writeSpecificBits(final OperandModel operandModel, final long newValue, final long previousValue)
   {
@@ -474,8 +496,10 @@ public class CodeArithmeticInterpreter
   
   /**
    * Selects bits from value
+   *
    * @param [in] operandModel - OperandModel object of the value
    * @param [in] actualValue  - Long value to select bits fromunnessesary
+   *
    * @return Long value of selected bits in operandModels range
    */
   private long selectSpecificBits(final OperandModel operandModel, final double actualValue)
@@ -491,10 +515,11 @@ public class CodeArithmeticInterpreter
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Gets value from string operand
    * @param [in] operand  - Value to be parsed, either immediate (hex or decimal) or register
    * @param [in] dataType - Result data type
+   *
    * @return Parsed double value from operand
+   * @brief Gets value from string operand
    */
   private double getValueFromOperand(String operand, DataTypeEnum dataType)
   {
@@ -518,9 +543,11 @@ public class CodeArithmeticInterpreter
     RegisterModel  registerModel = null;
     for (DataTypeEnum possibleDataType : dataTypeEnums)
     {
-      registerModel = this.registerFileBlock.getRegisterList(possibleDataType).stream()
-                                            .filter(register -> register.getName().equals(operand)).findFirst()
-                                            .orElse(null);
+      registerModel = this.registerFileBlock.getRegisterList(possibleDataType)
+              .stream()
+              .filter(register -> register.getName().equals(operand))
+              .findFirst()
+              .orElse(null);
       if (registerModel != null)
       {
         break;
@@ -529,18 +556,21 @@ public class CodeArithmeticInterpreter
     
     if (registerModel == null)
     {
-      registerModel = this.registerFileBlock.getRegisterList(DataTypeEnum.kSpeculative).stream()
-                                            .filter(register -> register.getName().equals(operand)).findFirst()
-                                            .orElse(null);
+      registerModel = this.registerFileBlock.getRegisterList(DataTypeEnum.kSpeculative)
+              .stream()
+              .filter(register -> register.getName().equals(operand))
+              .findFirst()
+              .orElse(null);
     }
     return registerModel != null ? registerModel.getValue() : Double.NaN;
   }// end of getValueFromOperand
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Get list of data types in which specified data type can fit
    * @param [in] dataType - Data type of the register
+   *
    * @return List of datatypes in which input datatype can fit
+   * @brief Get list of data types in which specified data type can fit
    */
   private DataTypeEnum[] getFitRegisterTypes(DataTypeEnum dataType)
   {
@@ -556,10 +586,11 @@ public class CodeArithmeticInterpreter
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Overload value to expected data type
    * @param [in] value    - Value to be overloaded
    * @param [in] dataType - Data type to overload value into
+   *
    * @return String of overloaded value
+   * @brief Overload value to expected data type
    */
   private String convertDoubleToDatatype(final double value, final DataTypeEnum dataType)
   {

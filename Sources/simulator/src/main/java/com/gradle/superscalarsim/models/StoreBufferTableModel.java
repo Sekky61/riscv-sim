@@ -46,9 +46,10 @@ public class StoreBufferTableModel
   private final String dataReady;
   
   /**
-   * @brief Constructor
    * @param [in] codeModel - CodeModel containing information about the simulated instruction
    * @param [in] item      - Store buffer item containing additional store buffer data
+   *
+   * @brief Constructor
    */
   public StoreBufferTableModel(SimCodeModel codeModel, StoreBufferItem item)
   {
@@ -70,8 +71,8 @@ public class StoreBufferTableModel
   //----------------------------------------------------------------------
   
   /**
-   * @brief Get code line
    * @return String code line
+   * @brief Get code line
    */
   public String getCodeLine()
   {
@@ -80,8 +81,8 @@ public class StoreBufferTableModel
   //----------------------------------------------------------------------
   
   /**
-   * @brief Get string value of the state of the store address
    * @return String value if the store value is ready
+   * @brief Get string value of the state of the store address
    */
   public String getAddressReady()
   {
@@ -90,8 +91,8 @@ public class StoreBufferTableModel
   //----------------------------------------------------------------------
   
   /**
-   * @brief Get string value if the store data are ready
    * @return String value if the store data are ready
+   * @brief Get string value if the store data are ready
    */
   public String getDataReady()
   {
@@ -100,8 +101,8 @@ public class StoreBufferTableModel
   //----------------------------------------------------------------------
   
   /**
-   * @brief Check if the address is ready
    * @return True if the address is ready, false otherwise
+   * @brief Check if the address is ready
    */
   public boolean isAddressReady()
   {
@@ -110,8 +111,8 @@ public class StoreBufferTableModel
   //----------------------------------------------------------------------
   
   /**
-   * @brief Checks if the data are ready
    * @return True if the data are ready, false otherwise
+   * @brief Checks if the data are ready
    */
   public boolean isDataReady()
   {

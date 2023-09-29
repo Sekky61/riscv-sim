@@ -61,9 +61,10 @@ public class RegisterSubloader
   //------------------------------------------------------
   
   /**
-   * @brief Reads .json file and creates RegisterFileModel object from contents of the file
    * @param [in] filePath - Path to file containing register file in json format
+   *
    * @return Register file in RegisterFileModel object
+   * @brief Reads .json file and creates RegisterFileModel object from contents of the file
    */
   public final RegisterFileModel loadRegisterFile(final String filePath)
   {
@@ -89,9 +90,10 @@ public class RegisterSubloader
   //------------------------------------------------------
   
   /**
-   * @brief Validates loaded register file model
    * @param [in] model - Validated model
+   *
    * @return True if model is correct, false otherwise
+   * @brief Validates loaded register file model
    */
   private boolean validateModel(final RegisterFileModel model)
   {
@@ -100,9 +102,10 @@ public class RegisterSubloader
   //------------------------------------------------------
   
   /**
-   * @brief Validates raw data of loaded model
    * @param [in] registerList - List of instruction format items
+   *
    * @return True if list is valid, false otherwise
+   * @brief Validates raw data of loaded model
    */
   private boolean validateRegisters(final List<RegisterModel> registerList)
   {

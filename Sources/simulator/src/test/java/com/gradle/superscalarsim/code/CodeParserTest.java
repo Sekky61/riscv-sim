@@ -34,46 +34,60 @@ public class CodeParserTest
     RegisterModel integer2 = new RegisterModel("x2", false, DataTypeEnum.kInt, 0, RegisterReadinessEnum.kAssigned);
     RegisterModel integer3 = new RegisterModel("x3", false, DataTypeEnum.kInt, 0, RegisterReadinessEnum.kAssigned);
     RegisterModel integer4 = new RegisterModel("x4", false, DataTypeEnum.kInt, 0, RegisterReadinessEnum.kAssigned);
-    RegisterFileModel integerFile = new RegisterFileModelBuilder().hasName("integer").hasDataType(DataTypeEnum.kInt)
-                                                                  .hasRegisterList(
-                                                                          Arrays.asList(integer1, integer2, integer3,
-                                                                                        integer4)).build();
+    RegisterFileModel integerFile = new RegisterFileModelBuilder().hasName("integer")
+            .hasDataType(DataTypeEnum.kInt)
+            .hasRegisterList(Arrays.asList(integer1, integer2, integer3, integer4))
+            .build();
     
     RegisterModel float1 = new RegisterModel("f1", false, DataTypeEnum.kFloat, 0, RegisterReadinessEnum.kAssigned);
     RegisterModel float2 = new RegisterModel("f2", false, DataTypeEnum.kFloat, 0, RegisterReadinessEnum.kAssigned);
     RegisterModel float3 = new RegisterModel("f3", false, DataTypeEnum.kFloat, 0, RegisterReadinessEnum.kAssigned);
     RegisterModel float4 = new RegisterModel("f4", false, DataTypeEnum.kFloat, 0, RegisterReadinessEnum.kAssigned);
-    RegisterFileModel floatFile = new RegisterFileModelBuilder().hasName("float").hasDataType(DataTypeEnum.kFloat)
-                                                                .hasRegisterList(
-                                                                        Arrays.asList(float1, float2, float3, float4))
-                                                                .build();
+    RegisterFileModel floatFile = new RegisterFileModelBuilder().hasName("float")
+            .hasDataType(DataTypeEnum.kFloat)
+            .hasRegisterList(Arrays.asList(float1, float2, float3, float4))
+            .build();
     
     Mockito.when(initLoader.getRegisterFileModelList()).thenReturn(Arrays.asList(integerFile, floatFile));
     
-    InstructionFunctionModel instructionAdd = new InstructionFunctionModelBuilder().hasName("add").hasType(
-                                                                                           InstructionTypeEnum.kArithmetic).hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
-                                                                                   .isInterpretedAs("rd=rs1+rs2;")
-                                                                                   .hasSyntax("add rd rs1 rs2").build();
-    InstructionFunctionModel instrIntToFloat = new InstructionFunctionModelBuilder().hasName("fcvt.w.s").hasType(
-                                                                                            InstructionTypeEnum.kArithmetic).hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kFloat)
-                                                                                    .isInterpretedAs("rd=rs1;")
-                                                                                    .hasSyntax("fcvt.w.s rd rs1")
-                                                                                    .build();
-    InstructionFunctionModel instructionFAdd = new InstructionFunctionModelBuilder().hasName("fadd").hasType(
-            InstructionTypeEnum.kArithmetic).hasInputDataType(DataTypeEnum.kFloat).hasOutputDataType(
-            DataTypeEnum.kFloat).isInterpretedAs("rd=rs1+rs2;").hasSyntax("fadd rd rs1 rs2").build();
-    InstructionFunctionModel instructionAddi = new InstructionFunctionModelBuilder().hasName("addi").hasType(
-                                                                                            InstructionTypeEnum.kArithmetic).hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
-                                                                                    .isInterpretedAs("rd=rs1+imm;")
-                                                                                    .hasSyntax("addi rd rs1 imm")
-                                                                                    .build();
-    InstructionFunctionModel instructionBranch = new InstructionFunctionModelBuilder().hasName("beq").hasType(
-                                                                                              InstructionTypeEnum.kJumpbranch).hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
-                                                                                      .isInterpretedAs("rs1 == rs2")
-                                                                                      .hasSyntax("beq rs1 rs2 imm")
-                                                                                      .build();
-    Mockito.when(initLoader.getInstructionFunctionModelList()).thenReturn(
-            Arrays.asList(instructionAdd, instrIntToFloat, instructionFAdd, instructionAddi, instructionBranch));
+    InstructionFunctionModel instructionAdd = new InstructionFunctionModelBuilder().hasName("add")
+            .hasType(InstructionTypeEnum.kArithmetic)
+            .hasInputDataType(DataTypeEnum.kInt)
+            .hasOutputDataType(DataTypeEnum.kInt)
+            .isInterpretedAs("rd=rs1+rs2;")
+            .hasSyntax("add rd rs1 rs2")
+            .build();
+    InstructionFunctionModel instrIntToFloat = new InstructionFunctionModelBuilder().hasName("fcvt.w.s")
+            .hasType(InstructionTypeEnum.kArithmetic)
+            .hasInputDataType(DataTypeEnum.kInt)
+            .hasOutputDataType(DataTypeEnum.kFloat)
+            .isInterpretedAs("rd=rs1;")
+            .hasSyntax("fcvt.w.s rd rs1")
+            .build();
+    InstructionFunctionModel instructionFAdd = new InstructionFunctionModelBuilder().hasName("fadd")
+            .hasType(InstructionTypeEnum.kArithmetic)
+            .hasInputDataType(DataTypeEnum.kFloat)
+            .hasOutputDataType(DataTypeEnum.kFloat)
+            .isInterpretedAs("rd=rs1+rs2;")
+            .hasSyntax("fadd rd rs1 rs2")
+            .build();
+    InstructionFunctionModel instructionAddi = new InstructionFunctionModelBuilder().hasName("addi")
+            .hasType(InstructionTypeEnum.kArithmetic)
+            .hasInputDataType(DataTypeEnum.kInt)
+            .hasOutputDataType(DataTypeEnum.kInt)
+            .isInterpretedAs("rd=rs1+imm;")
+            .hasSyntax("addi rd rs1 imm")
+            .build();
+    InstructionFunctionModel instructionBranch = new InstructionFunctionModelBuilder().hasName("beq")
+            .hasType(InstructionTypeEnum.kJumpbranch)
+            .hasInputDataType(DataTypeEnum.kInt)
+            .hasOutputDataType(DataTypeEnum.kInt)
+            .isInterpretedAs("rs1 == rs2")
+            .hasSyntax("beq rs1 rs2 imm")
+            .build();
+    Mockito.when(initLoader.getInstructionFunctionModelList())
+            .thenReturn(Arrays.asList(instructionAdd, instrIntToFloat, instructionFAdd, instructionAddi,
+                                      instructionBranch));
     
     ArrayList<InitLoader.RegisterMapping> registerAliases = new ArrayList<>();
     registerAliases.add(initLoader.new RegisterMapping("x0", "zero"));

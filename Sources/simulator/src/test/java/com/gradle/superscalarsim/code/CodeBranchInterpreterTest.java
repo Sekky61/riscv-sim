@@ -40,10 +40,10 @@ public class CodeBranchInterpreterTest
     RegisterModel integer2 = new RegisterModel("x2", false, DataTypeEnum.kInt, 25, RegisterReadinessEnum.kAssigned);
     RegisterModel integer3 = new RegisterModel("x3", false, DataTypeEnum.kInt, 6, RegisterReadinessEnum.kAssigned);
     RegisterModel integer4 = new RegisterModel("x4", false, DataTypeEnum.kInt, -2, RegisterReadinessEnum.kAssigned);
-    RegisterFileModel integerFile = new RegisterFileModelBuilder().hasName("integer").hasDataType(DataTypeEnum.kInt)
-                                                                  .hasRegisterList(
-                                                                          Arrays.asList(integer1, integer2, integer3,
-                                                                                        integer4)).build();
+    RegisterFileModel integerFile = new RegisterFileModelBuilder().hasName("integer")
+            .hasDataType(DataTypeEnum.kInt)
+            .hasRegisterList(Arrays.asList(integer1, integer2, integer3, integer4))
+            .build();
     
     Mockito.when(initLoader.getRegisterFileModelList()).thenReturn(Collections.singletonList(integerFile));
     Mockito.when(initLoader.getInstructionFunctionModelList()).thenReturn(setUpInstructions());
@@ -61,9 +61,10 @@ public class CodeBranchInterpreterTest
   {
     InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rd").hasValue("x1").build();
     InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("imm").hasValue("one").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("jal")
-                                                               .hasArguments(Arrays.asList(argument1, argument2))
-                                                               .build();
+    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader)
+            .hasInstructionName("jal")
+            .hasArguments(Arrays.asList(argument1, argument2))
+            .build();
     
     Assert.assertEquals(-5, this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 6).getAsInt());
   }
@@ -74,10 +75,10 @@ public class CodeBranchInterpreterTest
     InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x1").build();
     InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x1").build();
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("two").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("beq")
-                                                               .hasArguments(
-                                                                       Arrays.asList(argument1, argument2, argument3))
-                                                               .build();
+    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader)
+            .hasInstructionName("beq")
+            .hasArguments(Arrays.asList(argument1, argument2, argument3))
+            .build();
     
     Assert.assertEquals(-3, this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 6).getAsInt());
   }
@@ -88,10 +89,10 @@ public class CodeBranchInterpreterTest
     InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x1").build();
     InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x2").build();
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("two").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("beq")
-                                                               .hasArguments(
-                                                                       Arrays.asList(argument1, argument2, argument3))
-                                                               .build();
+    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader)
+            .hasInstructionName("beq")
+            .hasArguments(Arrays.asList(argument1, argument2, argument3))
+            .build();
     
     Assert.assertFalse(this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 6).isPresent());
   }
@@ -102,10 +103,10 @@ public class CodeBranchInterpreterTest
     InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x1").build();
     InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x2").build();
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("three").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("bne")
-                                                               .hasArguments(
-                                                                       Arrays.asList(argument1, argument2, argument3))
-                                                               .build();
+    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader)
+            .hasInstructionName("bne")
+            .hasArguments(Arrays.asList(argument1, argument2, argument3))
+            .build();
     
     Assert.assertEquals(-1, this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 6).getAsInt());
   }
@@ -116,10 +117,10 @@ public class CodeBranchInterpreterTest
     InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x1").build();
     InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x1").build();
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("three").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("bne")
-                                                               .hasArguments(
-                                                                       Arrays.asList(argument1, argument2, argument3))
-                                                               .build();
+    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader)
+            .hasInstructionName("bne")
+            .hasArguments(Arrays.asList(argument1, argument2, argument3))
+            .build();
     
     Assert.assertFalse(this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 6).isPresent());
   }
@@ -130,10 +131,10 @@ public class CodeBranchInterpreterTest
     InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x4").build();
     InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x1").build();
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("one").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("blt")
-                                                               .hasArguments(
-                                                                       Arrays.asList(argument1, argument2, argument3))
-                                                               .build();
+    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader)
+            .hasInstructionName("blt")
+            .hasArguments(Arrays.asList(argument1, argument2, argument3))
+            .build();
     
     Assert.assertEquals(-5, this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 6).getAsInt());
   }
@@ -153,10 +154,10 @@ public class CodeBranchInterpreterTest
     InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x1").build();
     InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x4").build();
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("one").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("blt")
-                                                               .hasArguments(
-                                                                       Arrays.asList(argument1, argument2, argument3))
-                                                               .build();
+    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader)
+            .hasInstructionName("blt")
+            .hasArguments(Arrays.asList(argument1, argument2, argument3))
+            .build();
     
     Assert.assertFalse(this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 6).isPresent());
   }
@@ -167,10 +168,10 @@ public class CodeBranchInterpreterTest
     InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x1").build();
     InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x4").build();
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("one").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("bltu")
-                                                               .hasArguments(
-                                                                       Arrays.asList(argument1, argument2, argument3))
-                                                               .build();
+    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader)
+            .hasInstructionName("bltu")
+            .hasArguments(Arrays.asList(argument1, argument2, argument3))
+            .build();
     
     Assert.assertEquals(-5, this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 6).getAsInt());
   }
@@ -181,10 +182,10 @@ public class CodeBranchInterpreterTest
     InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x4").build();
     InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x1").build();
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("one").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("bltu")
-                                                               .hasArguments(
-                                                                       Arrays.asList(argument1, argument2, argument3))
-                                                               .build();
+    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader)
+            .hasInstructionName("bltu")
+            .hasArguments(Arrays.asList(argument1, argument2, argument3))
+            .build();
     
     Assert.assertFalse(this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 6).isPresent());
   }
@@ -195,10 +196,10 @@ public class CodeBranchInterpreterTest
     InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x1").build();
     InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x4").build();
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("one").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("bge")
-                                                               .hasArguments(
-                                                                       Arrays.asList(argument1, argument2, argument3))
-                                                               .build();
+    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader)
+            .hasInstructionName("bge")
+            .hasArguments(Arrays.asList(argument1, argument2, argument3))
+            .build();
     
     Assert.assertEquals(-5, this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 6).getAsInt());
   }
@@ -209,10 +210,10 @@ public class CodeBranchInterpreterTest
     InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x1").build();
     InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x1").build();
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("one").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("bge")
-                                                               .hasArguments(
-                                                                       Arrays.asList(argument1, argument2, argument3))
-                                                               .build();
+    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader)
+            .hasInstructionName("bge")
+            .hasArguments(Arrays.asList(argument1, argument2, argument3))
+            .build();
     
     Assert.assertEquals(-5, this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 6).getAsInt());
   }
@@ -223,10 +224,10 @@ public class CodeBranchInterpreterTest
     InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x4").build();
     InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x1").build();
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("one").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("bge")
-                                                               .hasArguments(
-                                                                       Arrays.asList(argument1, argument2, argument3))
-                                                               .build();
+    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader)
+            .hasInstructionName("bge")
+            .hasArguments(Arrays.asList(argument1, argument2, argument3))
+            .build();
     
     Assert.assertFalse(this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 6).isPresent());
   }
@@ -237,10 +238,10 @@ public class CodeBranchInterpreterTest
     InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x4").build();
     InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x1").build();
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("one").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("bgeu")
-                                                               .hasArguments(
-                                                                       Arrays.asList(argument1, argument2, argument3))
-                                                               .build();
+    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader)
+            .hasInstructionName("bgeu")
+            .hasArguments(Arrays.asList(argument1, argument2, argument3))
+            .build();
     
     Assert.assertEquals(-5, this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 6).getAsInt());
   }
@@ -251,10 +252,10 @@ public class CodeBranchInterpreterTest
     InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x1").build();
     InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x1").build();
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("one").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("bgeu")
-                                                               .hasArguments(
-                                                                       Arrays.asList(argument1, argument2, argument3))
-                                                               .build();
+    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader)
+            .hasInstructionName("bgeu")
+            .hasArguments(Arrays.asList(argument1, argument2, argument3))
+            .build();
     
     Assert.assertEquals(-5, this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 6).getAsInt());
   }
@@ -265,10 +266,10 @@ public class CodeBranchInterpreterTest
     InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x1").build();
     InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x4").build();
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("one").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("bgeu")
-                                                               .hasArguments(
-                                                                       Arrays.asList(argument1, argument2, argument3))
-                                                               .build();
+    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader)
+            .hasInstructionName("bgeu")
+            .hasArguments(Arrays.asList(argument1, argument2, argument3))
+            .build();
     
     Assert.assertFalse(this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 6).isPresent());
   }
@@ -283,40 +284,43 @@ public class CodeBranchInterpreterTest
     // three:
     // mul x1 x3 x2
     InputCodeModel inputCodeModelLabelOne = new InputCodeModelBuilder().hasLoader(initLoader)
-                                                                       .hasInstructionName("label").hasCodeLine("one")
-                                                                       .build();
+            .hasInstructionName("label")
+            .hasCodeLine("one")
+            .build();
     
     InputCodeModel inputCodeModelLabelTwo = new InputCodeModelBuilder().hasLoader(initLoader)
-                                                                       .hasInstructionName("label").hasCodeLine("two")
-                                                                       .build();
+            .hasInstructionName("label")
+            .hasCodeLine("two")
+            .build();
     
     InputCodeModel inputCodeModelLabelThree = new InputCodeModelBuilder().hasLoader(initLoader)
-                                                                         .hasInstructionName("label")
-                                                                         .hasCodeLine("three").build();
+            .hasInstructionName("label")
+            .hasCodeLine("three")
+            .build();
     
     InputCodeArgument argumentAdd1 = new InputCodeArgumentBuilder().hasName("rd").hasValue("x1").build();
     InputCodeArgument argumentAdd2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x3").build();
     InputCodeArgument argumentAdd3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x2").build();
-    InputCodeModel inputCodeModelAdd = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("add")
-                                                                  .hasArguments(
-                                                                          Arrays.asList(argumentAdd1, argumentAdd2,
-                                                                                        argumentAdd3)).build();
+    InputCodeModel inputCodeModelAdd = new InputCodeModelBuilder().hasLoader(initLoader)
+            .hasInstructionName("add")
+            .hasArguments(Arrays.asList(argumentAdd1, argumentAdd2, argumentAdd3))
+            .build();
     
     InputCodeArgument argumentSub1 = new InputCodeArgumentBuilder().hasName("rd").hasValue("x1").build();
     InputCodeArgument argumentSub2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x3").build();
     InputCodeArgument argumentSub3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x2").build();
-    InputCodeModel inputCodeModelSub = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("sub")
-                                                                  .hasArguments(
-                                                                          Arrays.asList(argumentSub1, argumentSub2,
-                                                                                        argumentSub3)).build();
+    InputCodeModel inputCodeModelSub = new InputCodeModelBuilder().hasLoader(initLoader)
+            .hasInstructionName("sub")
+            .hasArguments(Arrays.asList(argumentSub1, argumentSub2, argumentSub3))
+            .build();
     
     InputCodeArgument argumentMul1 = new InputCodeArgumentBuilder().hasName("rd").hasValue("x1").build();
     InputCodeArgument argumentMul2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x3").build();
     InputCodeArgument argumentMul3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x2").build();
-    InputCodeModel inputCodeModelMul = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("mul")
-                                                                  .hasArguments(
-                                                                          Arrays.asList(argumentMul1, argumentMul2,
-                                                                                        argumentMul3)).build();
+    InputCodeModel inputCodeModelMul = new InputCodeModelBuilder().hasLoader(initLoader)
+            .hasInstructionName("mul")
+            .hasArguments(Arrays.asList(argumentMul1, argumentMul2, argumentMul3))
+            .build();
     
     return Arrays.asList(inputCodeModelLabelOne, inputCodeModelAdd, inputCodeModelLabelTwo, inputCodeModelSub,
                          inputCodeModelLabelThree, inputCodeModelMul);
@@ -325,56 +329,53 @@ public class CodeBranchInterpreterTest
   private List<InstructionFunctionModel> setUpInstructions()
   {
     InstructionFunctionModel instructionJal = new InstructionFunctionModelBuilder().hasName("jal")
-                                                                                   .hasInputDataType(DataTypeEnum.kInt)
-                                                                                   .hasOutputDataType(DataTypeEnum.kInt)
-                                                                                   .isInterpretedAs("jump:imm")
-                                                                                   .hasSyntax("jal rd imm").build();
+            .hasInputDataType(DataTypeEnum.kInt)
+            .hasOutputDataType(DataTypeEnum.kInt)
+            .isInterpretedAs("jump:imm")
+            .hasSyntax("jal rd imm")
+            .build();
     
     InstructionFunctionModel instructionBeq = new InstructionFunctionModelBuilder().hasName("beq")
-                                                                                   .hasInputDataType(DataTypeEnum.kInt)
-                                                                                   .hasOutputDataType(DataTypeEnum.kInt)
-                                                                                   .isInterpretedAs("signed:rs1 == rs2")
-                                                                                   .hasSyntax("beq rs1 rs2 imm")
-                                                                                   .build();
+            .hasInputDataType(DataTypeEnum.kInt)
+            .hasOutputDataType(DataTypeEnum.kInt)
+            .isInterpretedAs("signed:rs1 == rs2")
+            .hasSyntax("beq rs1 rs2 imm")
+            .build();
     
     InstructionFunctionModel instructionBne = new InstructionFunctionModelBuilder().hasName("bne")
-                                                                                   .hasInputDataType(DataTypeEnum.kInt)
-                                                                                   .hasOutputDataType(DataTypeEnum.kInt)
-                                                                                   .isInterpretedAs("signed:rs1 != rs2")
-                                                                                   .hasSyntax("bne rs1 rs2 imm")
-                                                                                   .build();
+            .hasInputDataType(DataTypeEnum.kInt)
+            .hasOutputDataType(DataTypeEnum.kInt)
+            .isInterpretedAs("signed:rs1 != rs2")
+            .hasSyntax("bne rs1 rs2 imm")
+            .build();
     
     InstructionFunctionModel instructionBlt = new InstructionFunctionModelBuilder().hasName("blt")
-                                                                                   .hasInputDataType(DataTypeEnum.kInt)
-                                                                                   .hasOutputDataType(DataTypeEnum.kInt)
-                                                                                   .isInterpretedAs("signed:rs1 < rs2")
-                                                                                   .hasSyntax("blt rs1 rs2 imm")
-                                                                                   .build();
+            .hasInputDataType(DataTypeEnum.kInt)
+            .hasOutputDataType(DataTypeEnum.kInt)
+            .isInterpretedAs("signed:rs1 < rs2")
+            .hasSyntax("blt rs1 rs2 imm")
+            .build();
     
     InstructionFunctionModel instructionBltu = new InstructionFunctionModelBuilder().hasName("bltu")
-                                                                                    .hasInputDataType(DataTypeEnum.kInt)
-                                                                                    .hasOutputDataType(
-                                                                                            DataTypeEnum.kInt)
-                                                                                    .isInterpretedAs(
-                                                                                            "unsigned:rs1 < rs2")
-                                                                                    .hasSyntax("bltu rs1 rs2 imm")
-                                                                                    .build();
+            .hasInputDataType(DataTypeEnum.kInt)
+            .hasOutputDataType(DataTypeEnum.kInt)
+            .isInterpretedAs("unsigned:rs1 < rs2")
+            .hasSyntax("bltu rs1 rs2 imm")
+            .build();
     
     InstructionFunctionModel instructionBge = new InstructionFunctionModelBuilder().hasName("bge")
-                                                                                   .hasInputDataType(DataTypeEnum.kInt)
-                                                                                   .hasOutputDataType(DataTypeEnum.kInt)
-                                                                                   .isInterpretedAs("signed:rs1 >= rs2")
-                                                                                   .hasSyntax("bge rs1 rs2 imm")
-                                                                                   .build();
+            .hasInputDataType(DataTypeEnum.kInt)
+            .hasOutputDataType(DataTypeEnum.kInt)
+            .isInterpretedAs("signed:rs1 >= rs2")
+            .hasSyntax("bge rs1 rs2 imm")
+            .build();
     
     InstructionFunctionModel instructionBgeu = new InstructionFunctionModelBuilder().hasName("bgeu")
-                                                                                    .hasInputDataType(DataTypeEnum.kInt)
-                                                                                    .hasOutputDataType(
-                                                                                            DataTypeEnum.kInt)
-                                                                                    .isInterpretedAs(
-                                                                                            "unsigned:rs1 >= rs2")
-                                                                                    .hasSyntax("bgeu rs1 rs2 imm")
-                                                                                    .build();
+            .hasInputDataType(DataTypeEnum.kInt)
+            .hasOutputDataType(DataTypeEnum.kInt)
+            .isInterpretedAs("unsigned:rs1 >= rs2")
+            .hasSyntax("bgeu rs1 rs2 imm")
+            .build();
     
     return Arrays.asList(instructionJal, instructionBeq, instructionBne, instructionBlt, instructionBltu,
                          instructionBge, instructionBgeu);

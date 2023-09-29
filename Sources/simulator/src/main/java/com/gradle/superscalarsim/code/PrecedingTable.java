@@ -65,9 +65,9 @@ public class PrecedingTable
     this.binaryOperations = new String[]{"+", "-", "*", "/", "%", "&", "|", ">>>", "<<", ">>", "<=", ">=", "==", "<", ">"};
     String[] brackets = new String[]{"(", ")"};
     allowedInstructionsArray = Stream.concat(Arrays.stream(this.unaryOperations), Arrays.stream(this.binaryOperations))
-                                     .toArray(String[]::new);
+            .toArray(String[]::new);
     allowedInstructionsArray = Stream.concat(Arrays.stream(allowedInstructionsArray), Arrays.stream(brackets))
-                                     .toArray(String[]::new);
+            .toArray(String[]::new);
     this.allowedInstructions = allowedInstructionsArray;
     setUpLesserPriorityPrecedingLines();
     setUpMajorPriorityPrecedingLines();
@@ -78,10 +78,11 @@ public class PrecedingTable
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Get evaluation priority based on provided operators
    * @param [in] stackTop      - Operator currently on top of the stack
    * @param [in] readCharacter - Currently read instruction
+   *
    * @return Priority represented by PrecedingPriorityEnum value
+   * @brief Get evaluation priority based on provided operators
    */
   public PrecedingPriorityEnum getPrecedingPriority(final String stackTop, final String readCharacter)
   {
@@ -96,9 +97,10 @@ public class PrecedingTable
   }
   
   /**
-   * @brief Checks if provided operation is allowed, meaning is in the preceding table
    * @param [in] operation - Operation to be checked
+   *
    * @return True if operation is allowed, false otherwise
+   * @brief Checks if provided operation is allowed, meaning is in the preceding table
    */
   public boolean isAllowedOperation(final String operation)
   {
@@ -107,9 +109,10 @@ public class PrecedingTable
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Checks if provided instruction is binary (takes two parameters)
    * @param [in] operation - Operation to be checked
+   *
    * @return True if operation is binary, false otherwise
+   * @brief Checks if provided instruction is binary (takes two parameters)
    */
   public boolean isBinaryOperation(final String operation)
   {
@@ -118,9 +121,10 @@ public class PrecedingTable
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Checks if provided operation is unary (takes one parameter)
    * @param [in] operation - Operation to be checked
+   *
    * @return True if operation is unary, false otherwise
+   * @brief Checks if provided operation is unary (takes one parameter)
    */
   public boolean isUnaryOperation(final String operation)
   {

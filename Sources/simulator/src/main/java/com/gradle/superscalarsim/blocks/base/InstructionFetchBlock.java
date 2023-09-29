@@ -86,6 +86,7 @@ public class InstructionFetchBlock implements AbstractBlock
    * @param [in] blockScheduleTask  - Task class, where blocks are periodically triggered by the GlobalTimer
    * @param [in] gShareUnit         - GShare unit for getting correct prediction counters
    * @param [in] branchTargetBuffer - Buffer holding information about branch instructions targets
+   *
    * @brief Constructor
    */
   public InstructionFetchBlock(SimCodeModelAllocator simCodeModelAllocator,
@@ -117,6 +118,7 @@ public class InstructionFetchBlock implements AbstractBlock
   
   /**
    * @param [in] numberOfWays - New number of fetched instructions
+   *
    * @brief Set number of fetched instructions per tick
    */
   public void setNumberOfWays(int numberOfWays)
@@ -147,6 +149,7 @@ public class InstructionFetchBlock implements AbstractBlock
   
   /**
    * @param [in] stallFlag - New boolean value of the stall flag
+   *
    * @brief Set the stall flag, that switches the IF simulation to stall mode
    */
   public void setStallFlag(boolean stallFlag)
@@ -172,6 +175,7 @@ public class InstructionFetchBlock implements AbstractBlock
   
   /**
    * @param [in] stallFetchCount - The amount of instructions that were pulled (and removed) by the decode block
+   *
    * @brief Set the amount of instructions that were pulled by the decode block
    */
   public void setStallFetchCount(int stallFetchCount)
@@ -229,7 +233,7 @@ public class InstructionFetchBlock implements AbstractBlock
       }
       this.pcCounter = newPcCounter;
     }
-    int fetchLimitLow = Math.min(pcCounter, parser.getParsedCode().size());
+    int fetchLimitLow  = Math.min(pcCounter, parser.getParsedCode().size());
     int fetchLimitHigh = Math.min(pcCounter + numberOfWays, parser.getParsedCode().size());
     this.previousPcStack.push(this.pcCounter);
     int loadedInstructions = fetchInstructions(fetchLimitLow, fetchLimitHigh);
@@ -264,6 +268,7 @@ public class InstructionFetchBlock implements AbstractBlock
   
   /**
    * @param [in] pcCounter - New value of the PC counter
+   *
    * @brief Set the PC counter value (used during branches)
    */
   public void setPcCounter(int pcCounter)
@@ -291,8 +296,8 @@ public class InstructionFetchBlock implements AbstractBlock
     this.pcCounter = !this.previousPcStack.isEmpty() ? this.previousPcStack.peek() : 0;
     
     
-    int fetchLimitLow = Math.min(pcCounter, parser.getParsedCode().size());
-    int fetchLimitHigh = Math.min(pcCounter + numberOfWays, parser.getParsedCode().size());
+    int fetchLimitLow      = Math.min(pcCounter, parser.getParsedCode().size());
+    int fetchLimitHigh     = Math.min(pcCounter + numberOfWays, parser.getParsedCode().size());
     int loadedInstructions = fetchInstructions(fetchLimitLow, fetchLimitHigh);
     this.pcCounter = this.pcCounter + loadedInstructions;
   }// end of simulateBackwards
@@ -301,6 +306,7 @@ public class InstructionFetchBlock implements AbstractBlock
   /**
    * @param [in] fetchLimitLow  - index of instruction with lowest number
    * @param [in] fetchLimitHigh - index of last instruction (exclusive range)
+   *
    * @return Number of loaded instructions. Also populates fetchVector and fetchedCode
    * @brief Fetching logic
    */
@@ -378,6 +384,7 @@ public class InstructionFetchBlock implements AbstractBlock
    * @param [in, out] codeModel      - Model to be checked
    * @param [in] programCounter - Current position of program counter
    *             Adds "pc" argument to codeModel
+   *
    * @brief Checks if provided codeLine is load/store and if yes, fills it with additional PC argument
    */
   private void checkIfLoadCodeLine(SimCodeModel codeModel, int programCounter)
@@ -392,6 +399,7 @@ public class InstructionFetchBlock implements AbstractBlock
   /**
    * @param [in, out] codeModel      - Potential branch code model
    * @param [in] programCounter - Instruction position in program
+   *
    * @return Either position of current instruction or target position of branch instruction
    * @brief Checks if instruction is branch instructions and returns correct position
    */
@@ -401,8 +409,8 @@ public class InstructionFetchBlock implements AbstractBlock
     if (codeModel.getInstructionTypeEnum() == InstructionTypeEnum.kJumpbranch)
     {
       codeModel.setSavedPc(programCounter);
-      int target = this.branchTargetBuffer.getEntryTarget(programCounter);
-      boolean prediction = this.gShareUnit.getPredictor(programCounter).getCurrentPrediction();
+      int     target        = this.branchTargetBuffer.getEntryTarget(programCounter);
+      boolean prediction    = this.gShareUnit.getPredictor(programCounter).getCurrentPrediction();
       boolean unconditional = this.branchTargetBuffer.isEntryUnconditional(programCounter);
       if (target != -1 && (prediction || unconditional))
       {

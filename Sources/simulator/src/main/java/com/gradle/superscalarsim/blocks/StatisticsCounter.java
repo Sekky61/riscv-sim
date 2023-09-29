@@ -157,8 +157,8 @@ public class StatisticsCounter
   //----------------------------------------------------------------------
   
   /**
-   * @brief Calculates CPI from values inside the class
    * @return Float value of CPI
+   * @brief Calculates CPI from values inside the class
    */
   public float calculateClocksPerInstruction()
   {
@@ -171,8 +171,8 @@ public class StatisticsCounter
   //----------------------------------------------------------------------
   
   /**
-   * @brief Calculate prediction accuracy in percent from values inside the class
    * @return Percent value of branch prediction accuracy
+   * @brief Calculate prediction accuracy in percent from values inside the class
    */
   public int calculateBranchPredictionPercentage()
   {
@@ -185,8 +185,8 @@ public class StatisticsCounter
   //----------------------------------------------------------------------
   
   /**
-   * @brief Get number of failed instructions
    * @return Number of failed instructions
+   * @brief Get number of failed instructions
    */
   public long getFailedInstructions()
   {
@@ -195,8 +195,8 @@ public class StatisticsCounter
   //----------------------------------------------------------------------
   
   /**
-   * @brief Get number of committed instructions
    * @return Number of committed instructions
+   * @brief Get number of committed instructions
    */
   public long getCommittedInstructions()
   {
@@ -205,8 +205,8 @@ public class StatisticsCounter
   //----------------------------------------------------------------------
   
   /**
-   * @brief Get all committed branch instructions
    * @return Number of committed branch instructions
+   * @brief Get all committed branch instructions
    */
   public long getAllBranches()
   {
@@ -215,8 +215,8 @@ public class StatisticsCounter
   //----------------------------------------------------------------------
   
   /**
-   * @brief Get number of clock cycles
    * @return Number of clock cycles
+   * @brief Get number of clock cycles
    */
   public long getClockCycles()
   {

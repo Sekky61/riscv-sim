@@ -133,8 +133,9 @@ public class UnifiedRegisterFileBlock
   public final List<RegisterModel> getRegisterList(DataTypeEnum dataType)
   {
     RegisterFileModel registerModelList = this.registerList.stream()
-                                                           .filter(registerFileModel -> registerFileModel.getDataType() == dataType)
-                                                           .findFirst().orElse(null);
+            .filter(registerFileModel -> registerFileModel.getDataType() == dataType)
+            .findFirst()
+            .orElse(null);
     return registerModelList == null ? new ArrayList<>() : registerModelList.getRegisterList();
   }// end of getRegisterList
   //----------------------------------------------------------------------

@@ -75,13 +75,14 @@ public class MemoryModel
   }
   
   /**
-   * @brief Sets data to memory
-   * @param address - starting byte of the access (can be misaligned)
-   * @param data - data to be stored
-   * @param size - Size of the access in bytes (1-8)
-   * @param id - Id of accessing instruction
+   * @param address      - starting byte of the access (can be misaligned)
+   * @param data         - data to be stored
+   * @param size         - Size of the access in bytes (1-8)
+   * @param id           - Id of accessing instruction
    * @param currentCycle - Cycle in which this access is happening
+   *
    * @return delay caused by this access
+   * @brief Sets data to memory
    */
   public int store(long address, long data, int size, int id, int currentCycle)
   {
@@ -107,12 +108,13 @@ public class MemoryModel
   }
   
   /**
-   * @brief Gets data from memory
-   * @param address - starting byte of the access (can be misaligned)
-   * @param size - Size of the access in bytes (1-8)
-   * @param id - Id of accessing instruction
+   * @param address      - starting byte of the access (can be misaligned)
+   * @param size         - Size of the access in bytes (1-8)
+   * @param id           - Id of accessing instruction
    * @param currentCycle - Cycle in which the access happened
+   *
    * @return Pair of delay of this access and data
+   * @brief Gets data from memory
    */
   public Pair<Integer, Long> load(long address, int size, int id, int currentCycle)
   {

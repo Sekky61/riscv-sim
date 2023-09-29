@@ -36,7 +36,7 @@ package com.gradle.superscalarsim.models;
  * @class InstructionRawItemModel
  * @brief Definition of instruction format item
  * @details Class contains definition of instruction format item, which can be later used for interpreting instruction
- *         in I-cache. Instruction has to have just one opcode item.
+ * in I-cache. Instruction has to have just one opcode item.
  */
 public class InstructionRawItemModel
 {
@@ -50,11 +50,12 @@ public class InstructionRawItemModel
   private final String value;
   
   /**
-   * @brief Constructor
    * @param [in] name    - Name of an instruction
    * @param [in] bitLow  - Value of the lowest bit of item
    * @param [in] bitHigh - Value of the highest bit of item
    * @param [in] value   - Value of an instruction item
+   *
+   * @brief Constructor
    */
   public InstructionRawItemModel(String name, int bitLow, int bitHigh, String value)
   {
@@ -66,8 +67,8 @@ public class InstructionRawItemModel
   //------------------------------------------------------
   
   /**
-   * @brief Overrides toString method with custom formating
    * @return String representation of the object
+   * @brief Overrides toString method with custom formating
    */
   @Override
   public String toString()
@@ -77,8 +78,8 @@ public class InstructionRawItemModel
   //------------------------------------------------------
   
   /**
-   * @brief Get instruction item name
    * @return Instruction item name
+   * @brief Get instruction item name
    */
   public String getName()
   {
@@ -87,8 +88,8 @@ public class InstructionRawItemModel
   //------------------------------------------------------
   
   /**
-   * @brief Get value of the lowest bit of item
    * @return Value of the lowest bit of item
+   * @brief Get value of the lowest bit of item
    */
   public int getBitLow()
   {
@@ -97,8 +98,8 @@ public class InstructionRawItemModel
   //------------------------------------------------------
   
   /**
-   * @brief Get value of the highest bit of item
    * @return Value of the highest bit of item
+   * @brief Get value of the highest bit of item
    */
   public int getBitHigh()
   {
@@ -107,8 +108,8 @@ public class InstructionRawItemModel
   //------------------------------------------------------
   
   /**
-   * @brief Get bit size of item, which is difference between bitHigh and bitLow
    * @return Bit size of item as integer value
+   * @brief Get bit size of item, which is difference between bitHigh and bitLow
    */
   public int getBitSize()
   {
@@ -117,8 +118,8 @@ public class InstructionRawItemModel
   //------------------------------------------------------
   
   /**
-   * @brief Get value of an item, if it does not have bit string, it references on position in syntax from where to take value
    * @return Value of an instruction item
+   * @brief Get value of an item, if it does not have bit string, it references on position in syntax from where to take value
    */
   public String getValue()
   {

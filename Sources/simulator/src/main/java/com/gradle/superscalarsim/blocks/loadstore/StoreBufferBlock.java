@@ -102,6 +102,7 @@ public class StoreBufferBlock implements AbstractBlock
    * @param [in] registerFileBlock      - Class containing all registers, that simulator uses
    * @param [in] initLoader             - Initial loader of interpretable instructions and register files
    * @param [in] reorderBufferBlock     - Class contains simulated implementation of Reorder buffer
+   *
    * @brief Constructor
    */
   public StoreBufferBlock(CodeLoadStoreInterpreter loadStoreInterpreter,
@@ -131,6 +132,7 @@ public class StoreBufferBlock implements AbstractBlock
   
   /**
    * @param [in] memoryAccessUnit - Memory access unit to be added
+   *
    * @brief Add memory access block to the store buffer
    */
   public void addMemoryAccessUnit(MemoryAccessUnit memoryAccessUnit)
@@ -143,6 +145,7 @@ public class StoreBufferBlock implements AbstractBlock
   
   /**
    * @param [in] loadStoreFunctionUnitList - list of new memory access units
+   *
    * @brief Adds list of memory access units to the Store buffer block
    */
   public void setAllMemoryAccessUnits(List<MemoryAccessUnit> loadStoreFunctionUnitList)
@@ -174,6 +177,7 @@ public class StoreBufferBlock implements AbstractBlock
   
   /**
    * @param [in] possibleAddition - Number of instructions to be possibly added
+   *
    * @return True if buffer would be full, false otherwise
    * @brief Checks if buffer would be full if specified number of instructions were to be added
    */
@@ -230,6 +234,7 @@ public class StoreBufferBlock implements AbstractBlock
   /**
    * @param [in] codeModelId - Id identifying specific storeMap entry
    * @param [in] address     - Store instruction address
+   *
    * @brief Set Store address
    */
   public void setAddress(int codeModelId, long address)
@@ -272,6 +277,7 @@ public class StoreBufferBlock implements AbstractBlock
   
   /**
    * @param [in] bufferSize - New store buffer size
+   *
    * @brief Set store buffer limit size
    */
   public void setBufferSize(int bufferSize)
@@ -282,6 +288,7 @@ public class StoreBufferBlock implements AbstractBlock
   
   /**
    * @param [in] codeModelId - Id identifying specific loadMap entry
+   *
    * @brief Set flag marking if the instruction is in the MA block
    */
   public void setMemoryAccessFinished(int codeModelId)
@@ -373,8 +380,7 @@ public class StoreBufferBlock implements AbstractBlock
                                                               {
                                                                 if (isBufferFull(
                                                                         1) || !this.reorderBufferBlock.getFlagsMap()
-                                                                                                      .containsKey(
-                                                                                                              codeModel.getId()))
+                                                                        .containsKey(codeModel.getId()))
                                                                 {
                                                                   return;
                                                                 }
@@ -399,7 +405,7 @@ public class StoreBufferBlock implements AbstractBlock
     this.storeMap.forEach((string, item) ->
                           {
                             RegisterReadinessEnum state = registerFileBlock.getRegister(item.getSourceRegister())
-                                                                           .getReadiness();
+                                    .getReadiness();
                             item.setSourceReady(
                                     state == RegisterReadinessEnum.kExecuted || state == RegisterReadinessEnum.kAssigned);
                           });
@@ -423,8 +429,8 @@ public class StoreBufferBlock implements AbstractBlock
       }
       
       boolean isAvailableForMA = item.getAddress() != -1 && !item.isAccessingMemory() && item.getAccessingMemoryId() == -1 && item.isSourceReady() && !reorderBufferBlock.getFlagsMap()
-                                                                                                                                                                         .get(simCodeModel.getId())
-                                                                                                                                                                         .isSpeculative();
+              .get(simCodeModel.getId())
+              .isSpeculative();
       if (isAvailableForMA)
       {
         for (SimCodeModel previousStore : this.storeQueue)
@@ -531,6 +537,7 @@ public class StoreBufferBlock implements AbstractBlock
   
   /**
    * @param [in] codeModel - Code model to be checked
+   *
    * @return True if the model is store instruction, false otherwise
    * @brief Checks if specified code model is store instruction
    */

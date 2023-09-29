@@ -39,6 +39,7 @@ public class Cpu implements Serializable
   
   /**
    * Assumes the cpuConfiguration is correct
+   *
    * @param cpuConfiguration - CPU configuration to use
    */
   public Cpu(CpuConfiguration cpuConfiguration)
@@ -48,6 +49,7 @@ public class Cpu implements Serializable
   
   /**
    * Create a CPU with a given state
+   *
    * @param cpuState - CPU state to use. Does not need to be wired up.
    */
   public Cpu(CpuState cpuState)
@@ -65,7 +67,9 @@ public class Cpu implements Serializable
   
   /**
    * Run the simulation for a given number of steps
+   *
    * @param maxSteps Maximum number of steps to run
+   *
    * @return Number of steps executed (may be less than maxSteps if simulation ended)
    */
   public int run(int maxSteps)
@@ -108,8 +112,10 @@ public class Cpu implements Serializable
     boolean pcEnd         = cpuState.instructionFetchBlock.getPcCounter() >= cpuState.codeParser.getParsedCode().size();
     boolean renameEmpty   = cpuState.decodeAndDispatchBlock.getAfterRenameCodeList().isEmpty();
     boolean fetchNotEmpty = !cpuState.instructionFetchBlock.getFetchedCode().isEmpty();
-    boolean nop           = fetchNotEmpty && cpuState.instructionFetchBlock.getFetchedCode().get(0).getInstructionName()
-                                                                           .equals("nop");
+    boolean nop = fetchNotEmpty && cpuState.instructionFetchBlock.getFetchedCode()
+            .get(0)
+            .getInstructionName()
+            .equals("nop");
     return robEmpty && pcEnd && renameEmpty && nop;
   }
   

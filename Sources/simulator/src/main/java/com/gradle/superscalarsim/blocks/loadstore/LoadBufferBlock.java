@@ -99,6 +99,7 @@ public class LoadBufferBlock implements AbstractBlock
    * @param [in] initLoader             - Initial loader of interpretable instructions and register files
    * @param [in] reorderBufferBlock     - Class contains simulated implementation of Reorder buffer
    * @param [in] instructionFetchBlock  - Class that fetches code from CodeParser
+   *
    * @brief Constructor
    */
   public LoadBufferBlock(CodeLoadStoreInterpreter loadStoreInterpreter,
@@ -133,6 +134,7 @@ public class LoadBufferBlock implements AbstractBlock
   
   /**
    * @param [in] memoryAccessUnit - Memory access unit to be added
+   *
    * @brief Add memory access block to the load buffer
    */
   public void addMemoryAccessUnit(MemoryAccessUnit memoryAccessUnit)
@@ -145,6 +147,7 @@ public class LoadBufferBlock implements AbstractBlock
   
   /**
    * @param [in] loadStoreFunctionUnitList - list of new memory access units
+   *
    * @brief Adds list of memory access units to the Load buffer block
    */
   public void setAllMemoryAccessUnits(List<MemoryAccessUnit> loadStoreFunctionUnitList)
@@ -186,6 +189,7 @@ public class LoadBufferBlock implements AbstractBlock
   
   /**
    * @param [in] bufferSize - New load buffer size
+   *
    * @brief Set load buffer limit size
    */
   public void setBufferSize(int bufferSize)
@@ -216,6 +220,7 @@ public class LoadBufferBlock implements AbstractBlock
   
   /**
    * @param [in] codeModel - Code model to be checked
+   *
    * @return True if the model is load instruction, false otherwise
    * @brief Checks if specified code model is load instruction
    */
@@ -232,6 +237,7 @@ public class LoadBufferBlock implements AbstractBlock
   
   /**
    * @param [in] possibleAddition - Number of instructions to be possibly added
+   *
    * @return True if buffer would be full, false otherwise
    * @brief Checks if buffer would be full if specified number of instructions were to be added
    */
@@ -289,6 +295,7 @@ public class LoadBufferBlock implements AbstractBlock
   /**
    * @param [in] codeModelId - Id identifying specific loadMap entry
    * @param [in] address     - Load instruction address
+   *
    * @brief Set load address
    */
   public void setAddress(int codeModelId, long address)
@@ -299,6 +306,7 @@ public class LoadBufferBlock implements AbstractBlock
   
   /**
    * @param [in] codeModelId - Id identifying specific loadMap entry
+   *
    * @brief Set flag if the destination register of the load instruction is ready to be loaded into
    */
   public void setDestinationAvailable(int codeModelId)
@@ -309,6 +317,7 @@ public class LoadBufferBlock implements AbstractBlock
   
   /**
    * @param [in] codeModelId - Id identifying specific loadMap entry
+   *
    * @brief Set flag marking if the instruction is in the MA block
    */
   public void setMemoryAccessFinished(int codeModelId)
@@ -429,8 +438,7 @@ public class LoadBufferBlock implements AbstractBlock
                                                               }
                                                               if (isBufferFull(
                                                                       1) || !this.reorderBufferBlock.getFlagsMap()
-                                                                                                    .containsKey(
-                                                                                                            codeModel.getId()))
+                                                                      .containsKey(codeModel.getId()))
                                                               {
                                                                 return;
                                                               }
@@ -490,6 +498,7 @@ public class LoadBufferBlock implements AbstractBlock
   
   /**
    * @param [in] simCodeModel - load instruction to be matched
+   *
    * @return Null if successfully matched, input if failed
    * @brief Check if load instruction can be matched with previously executed store instruction
    */
@@ -515,7 +524,7 @@ public class LoadBufferBlock implements AbstractBlock
     {
       return simCodeModel;
     }
-    RegisterModel sourceReg = registerFileBlock.getRegister(resultStoreItem.getSourceRegister());
+    RegisterModel         sourceReg   = registerFileBlock.getRegister(resultStoreItem.getSourceRegister());
     RegisterReadinessEnum resultState = sourceReg.getReadiness();
     
     boolean storeSourceReady = resultState == RegisterReadinessEnum.kExecuted || resultState == RegisterReadinessEnum.kAssigned;

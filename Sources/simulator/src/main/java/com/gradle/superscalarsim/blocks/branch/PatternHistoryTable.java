@@ -77,8 +77,9 @@ public class PatternHistoryTable
   PredictorType defaultPredictorClass;
   
   /**
-   * @brief Constructor
    * @param [in] size - Size of the PHT
+   *
+   * @brief Constructor
    */
   public PatternHistoryTable(int size)
   {
@@ -102,8 +103,8 @@ public class PatternHistoryTable
   //----------------------------------------------------------------------
   
   /**
-   * @brief Get the reallocated flag
    * @return Boolean value of the reallocated flag
+   * @brief Get the reallocated flag
    */
   public boolean isReallocated()
   {
@@ -112,8 +113,8 @@ public class PatternHistoryTable
   //----------------------------------------------------------------------
   
   /**
-   * @brief Get the whole list of the bit predictors allocated in the PHT
    * @return List of the bit predictors
+   * @brief Get the whole list of the bit predictors allocated in the PHT
    */
   public Map<Integer, IBitPredictor> getPredictorMap()
   {
@@ -122,9 +123,10 @@ public class PatternHistoryTable
   //----------------------------------------------------------------------
   
   /**
-   * @brief Initiate PHT with Zero-bit predictors
    * @param [in] size    - Size of the PHT
    * @param [in] isTaken - Initial state of the Bit predictor
+   *
+   * @brief Initiate PHT with Zero-bit predictors
    */
   public void initiateZeroBitPredictors(int size, boolean isTaken)
   {
@@ -137,9 +139,10 @@ public class PatternHistoryTable
   //----------------------------------------------------------------------
   
   /**
-   * @brief Initiate PHT with One-bit predictors
    * @param [in] size    - Size of the PHT
    * @param [in] isTaken - Initial state of the Bit predictor
+   *
+   * @brief Initiate PHT with One-bit predictors
    */
   public void initiateOneBitPredictor(int size, boolean isTaken)
   {
@@ -152,9 +155,10 @@ public class PatternHistoryTable
   //----------------------------------------------------------------------
   
   /**
-   * @brief Initiate PHT with Two-bit predictors
    * @param [in] size    - Size of the PHT
    * @param [in] isTaken - Initial state of the Bit predictor
+   *
+   * @brief Initiate PHT with Two-bit predictors
    */
   public void initiateTwoBitPredictor(int size, boolean[] initialState)
   {
@@ -167,9 +171,10 @@ public class PatternHistoryTable
   //----------------------------------------------------------------------
   
   /**
-   * @brief Get predictor on specified index
    * @param [in] index - Index of the predictor
+   *
    * @return Bit predictor
+   * @brief Get predictor on specified index
    */
   public IBitPredictor getPredictor(int index)
   {
@@ -199,8 +204,8 @@ public class PatternHistoryTable
   //----------------------------------------------------------------------
   
   /**
-   * @brief Get the value of default bit vector value
    * @return Default value of the bit vector
+   * @brief Get the value of default bit vector value
    */
   public boolean[] getDefaultTaken()
   {
@@ -209,8 +214,9 @@ public class PatternHistoryTable
   //----------------------------------------------------------------------
   
   /**
-   * @brief Sets predictor value
    * @param [in] index - Index of the predictor
+   *
+   * @brief Sets predictor value
    */
   public void setDefault(int index)
   {

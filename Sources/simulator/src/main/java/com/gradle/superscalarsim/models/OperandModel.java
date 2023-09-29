@@ -31,9 +31,9 @@ package com.gradle.superscalarsim.models;
  * @class OperandModel
  * @brief Container for operand value of interpreter
  * @details Class is a container for operand value. Its primary use is to parse value (register or immediate)
- *          and find out if it has bit array specifier (in square brackets)
- *          and save that into the class for later evaluation. Numbers in brackets should be binary divided by colon ':'
- *          or unary.
+ * and find out if it has bit array specifier (in square brackets)
+ * and save that into the class for later evaluation. Numbers in brackets should be binary divided by colon ':'
+ * or unary.
  */
 public class OperandModel
 {
@@ -45,10 +45,11 @@ public class OperandModel
   private final int bitLow;
   
   /**
-   * @brief Default constructor
    * @param [in] operandValue - Raw value of the operand
    * @param [in] bitHigh      - First number specifying end index of the array (highest number)
    * @param [in] bitLow       - Last number specifying start index of the array (lowest number)
+   *
+   * @brief Default constructor
    */
   public OperandModel(final String operandValue, final int bitHigh, final int bitLow)
   {
@@ -59,8 +60,9 @@ public class OperandModel
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Override constructor for operandValue without bit array specifier
    * @param [in] operandValue - Raw value of the operand
+   *
+   * @brief Override constructor for operandValue without bit array specifier
    */
   public OperandModel(final String operandValue)
   {
@@ -71,9 +73,10 @@ public class OperandModel
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Override constructor for parsing operandValue and bit array specifier
    * @param [in] operandValue - Unparsed tag of operand with bit array specifier
    * @param [in] argument     - Argument containing tag and the value of the operand
+   *
+   * @brief Override constructor for parsing operandValue and bit array specifier
    */
   public OperandModel(final String operandValue, final InputCodeArgument argument)
   {
@@ -95,8 +98,8 @@ public class OperandModel
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Get value of the operand
    * @return Value of the operand
+   * @brief Get value of the operand
    */
   public String getValue()
   {
@@ -105,8 +108,8 @@ public class OperandModel
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Get highest bit index of the operand
    * @return Index of the highest bit
+   * @brief Get highest bit index of the operand
    */
   public int getBitHigh()
   {
@@ -115,8 +118,8 @@ public class OperandModel
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Get lowest bit index of the operand
    * @return Index of the lowest bit
+   * @brief Get lowest bit index of the operand
    */
   public int getBitLow()
   {
@@ -125,8 +128,8 @@ public class OperandModel
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Get bit array range
    * @return Bit array range
+   * @brief Get bit array range
    */
   public int getBitRange()
   {

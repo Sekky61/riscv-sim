@@ -39,8 +39,8 @@ import com.gradle.superscalarsim.enums.InstructionTypeEnum;
  * @class InstructionFunctionModel
  * @brief Definition of instruction from instruction set
  * @details Class contains definition of instruction, which is used to interpret and show real value in I-cache and to
- *         interpret functionality of that instruction. Set (list) of instruction gives instruction set.
- *         Json file, which is used to create object of this class, follows same name structure for each variable.
+ * interpret functionality of that instruction. Set (list) of instruction gives instruction set.
+ * Json file, which is used to create object of this class, follows same name structure for each variable.
  */
 public class InstructionFunctionModel
 {
@@ -70,7 +70,6 @@ public class InstructionFunctionModel
   }
   
   /**
-   * @brief Constructor
    * @param [in] name              - Instruction name (has to unique)
    * @param [in] instructionType   - Type of the instruction
    * @param [in] inputDataType     - Data type, which is used in instruction
@@ -78,6 +77,8 @@ public class InstructionFunctionModel
    * @param [in] instructionSyntax - Instruction syntax for verification of input assembly code
    * @param [in] interpretableAs   - String of java code, which tells how to interpret instruction
    * @param [in] rawItemModelList  - List of objects, containing instruction format from 32 down to 0
+   *
+   * @brief Constructor
    */
   public InstructionFunctionModel(String name,
                                   InstructionTypeEnum instructionType,
@@ -96,8 +97,8 @@ public class InstructionFunctionModel
   //------------------------------------------------------
   
   /**
-   * @brief Overrides toString method with custom formating
    * @return String representation of the object
+   * @brief Overrides toString method with custom formating
    */
   @Override
   public String toString()
@@ -107,8 +108,8 @@ public class InstructionFunctionModel
   //------------------------------------------------------
   
   /**
-   * @brief Get name of an instruction
    * @return Instruction name
+   * @brief Get name of an instruction
    */
   public String getName()
   {
@@ -117,8 +118,8 @@ public class InstructionFunctionModel
   //------------------------------------------------------
   
   /**
-   * @brief Get type of an instruction
    * @return Instruction type
+   * @brief Get type of an instruction
    */
   public InstructionTypeEnum getInstructionType()
   {
@@ -127,8 +128,8 @@ public class InstructionFunctionModel
   //------------------------------------------------------
   
   /**
-   * @brief Get input data type of instruction
    * @return Instruction input data type
+   * @brief Get input data type of instruction
    */
   public DataTypeEnum getInputDataType()
   {
@@ -137,8 +138,8 @@ public class InstructionFunctionModel
   //------------------------------------------------------
   
   /**
-   * @brief Get output data type of instruction
    * @return Instruction output data type
+   * @brief Get output data type of instruction
    */
   public DataTypeEnum getOutputDataType()
   {
@@ -147,8 +148,8 @@ public class InstructionFunctionModel
   //------------------------------------------------------
   
   /**
-   * @brief Get syntax of an instruction for input assembly code verification
    * @return Instruction syntax
+   * @brief Get syntax of an instruction for input assembly code verification
    */
   public String getInstructionSyntax()
   {
@@ -157,8 +158,8 @@ public class InstructionFunctionModel
   //------------------------------------------------------
   
   /**
-   * @brief Get string of code for interpreting an instruction. Interpretation depends on instruction type.
    * @return String of java code
+   * @brief Get string of code for interpreting an instruction. Interpretation depends on instruction type.
    */
   public String getInterpretableAs()
   {

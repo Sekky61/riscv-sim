@@ -52,7 +52,7 @@ import java.util.Objects;
  * @class InitLoader
  * @brief Loads necessary objects for simulation
  * @details Class which loads register files and instruction set into a memory for use in simulation.\n
- *         Class shall be used as a first thing before any other work on simulation code
+ * Class shall be used as a first thing before any other work on simulation code
  */
 public class InitLoader
 {
@@ -295,8 +295,8 @@ public class InitLoader
   //------------------------------------------------------
   
   /**
-   * @brief Get loaded register files
    * @return List of register files
+   * @brief Get loaded register files
    */
   public List<RegisterFileModel> getRegisterFileModelList()
   {
@@ -309,8 +309,8 @@ public class InitLoader
   //------------------------------------------------------
   
   /**
-   * @brief Get loaded instruction set
    * @return Set of instructions in list
+   * @brief Get loaded instruction set
    */
   public List<InstructionFunctionModel> getInstructionFunctionModelList()
   {
@@ -339,8 +339,8 @@ public class InitLoader
   }
   
   /**
-   * @brief Get error message in case of load failure
    * @return Error message
+   * @brief Get error message in case of load failure
    */
   public String getErrorMessage()
   {
@@ -349,8 +349,8 @@ public class InitLoader
   //------------------------------------------------------
   
   /**
-   * @brief Calls subloader for register files and saves them into list
    * @throws NullPointerException - Thrown in case of empty directory
+   * @brief Calls subloader for register files and saves them into list
    */
   private void loadRegisters() throws NullPointerException
   {
@@ -366,8 +366,8 @@ public class InitLoader
   //------------------------------------------------------
   
   /**
-   * @brief Calls subloader for instruction set and saves it into list
    * @throws NullPointerException - Thrown in case of empty directory
+   * @brief Calls subloader for instruction set and saves it into list
    */
   private void loadInstructions() throws NullPointerException, IOException
   {

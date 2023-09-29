@@ -130,7 +130,7 @@ public class ArithmeticFunctionUnitBlock extends AbstractFunctionUnitBlock
       }
       InputCodeArgument destinationArgument = simCodeModel.getArgumentByName("rd");
       double            result              = arithmeticInterpreter.interpretInstruction(this.simCodeModel);
-      RegisterModel reg = registerFileBlock.getRegister(destinationArgument.getValue());
+      RegisterModel     reg                 = registerFileBlock.getRegister(destinationArgument.getValue());
       reg.setValue(result);
       reg.setReadiness(RegisterReadinessEnum.kExecuted);
       
@@ -178,7 +178,7 @@ public class ArithmeticFunctionUnitBlock extends AbstractFunctionUnitBlock
         }
       }
       if (!this.failedInstructions.isEmpty() && this.failedInstructions.peek()
-                                                                       .getFunctionUnitId() == this.functionUnitId)
+              .getFunctionUnitId() == this.functionUnitId)
       {
         this.simCodeModel = this.failedInstructions.pop();
         this.popHistoryCounter();

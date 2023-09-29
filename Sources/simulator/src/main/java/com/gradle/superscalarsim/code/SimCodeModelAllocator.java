@@ -37,7 +37,7 @@ import java.util.List;
  * @class SimCodeModelAllocator
  * @brief Allocates SimCodeModel objects.
  * @details This class is responsible for allocating SimCodeModel objects and keep all references to them in a list.
- *          This is to keep all simcodemodels in one place when serializing.
+ * This is to keep all simcodemodels in one place when serializing.
  */
 public class SimCodeModelAllocator
 {
@@ -55,11 +55,12 @@ public class SimCodeModelAllocator
   }
   
   /**
-   * @brief Creates SimCodeModel - wrapper for constructor on SimCodeModel
    * @param inputCodeModel
    * @param id
    * @param instructionBulkNumber
+   *
    * @return
+   * @brief Creates SimCodeModel - wrapper for constructor on SimCodeModel
    */
   public SimCodeModel createSimCodeModel(InputCodeModel inputCodeModel, int id, int instructionBulkNumber)
   {

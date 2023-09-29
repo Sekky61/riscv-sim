@@ -75,9 +75,10 @@ public class SimulatedMemory
   }
   
   /**
-   * @brief Insert byte value into memory
    * @param [in] address - Hashmap key, pointing into specific place in memory
    * @param [in] value - Value to be saved into memory (hashmap)
+   *
+   * @brief Insert byte value into memory
    */
   public void insertIntoMemory(Long address, byte value, int id)
   {
@@ -89,9 +90,10 @@ public class SimulatedMemory
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Get value from memory
    * @param [in] address - Hashmap key, pointing into specific place in memory
+   *
    * @return Value from hashmap pointed by key
+   * @brief Get value from memory
    */
   public byte getFromMemory(Long address)
   {
@@ -118,8 +120,9 @@ public class SimulatedMemory
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Revert memory to its state before store instruction specified by id
    * @param [in] id - Id of a store instruction
+   *
+   * @brief Revert memory to its state before store instruction specified by id
    */
   public void revertHistory(int id)
   {
@@ -140,9 +143,10 @@ public class SimulatedMemory
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Check if some memory space is filled with data
    * @param [in] address - Hashmap key, pointing into specific place in memory
+   *
    * @return True if key has been set in past, false otherwise
+   * @brief Check if some memory space is filled with data
    */
   public boolean isInMemory(Long address)
   {
@@ -151,8 +155,9 @@ public class SimulatedMemory
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Deletes record in memory
    * @param [in] address - Hashmap key, pointing into specific place in memory
+   *
+   * @brief Deletes record in memory
    */
   public void deleteFromMemory(Long address)
   {
@@ -164,8 +169,8 @@ public class SimulatedMemory
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Gets memory content
    * @return Map<Long, Byte> - Hasmap holding memory data
+   * @brief Gets memory content
    */
   public Map<Long, Byte> getMemoryMap()
   {

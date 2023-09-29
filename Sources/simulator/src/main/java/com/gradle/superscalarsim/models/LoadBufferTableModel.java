@@ -45,9 +45,10 @@ public class LoadBufferTableModel
   private final LoadBufferItem item;
   
   /**
-   * @brief Constructor
    * @param [in] codeModel -
    * @param [in] item      -
+   *
+   * @brief Constructor
    */
   public LoadBufferTableModel(SimCodeModel codeModel, LoadBufferItem item)
   {
@@ -73,8 +74,8 @@ public class LoadBufferTableModel
   //----------------------------------------------------------------------
   
   /**
-   * @brief Get code line of the instruction
    * @return Code line of instruction
+   * @brief Get code line of the instruction
    */
   public String getCodeLine()
   {
@@ -83,8 +84,8 @@ public class LoadBufferTableModel
   //----------------------------------------------------------------------
   
   /**
-   * @brief Get string state of the address
    * @return String value of the address
+   * @brief Get string state of the address
    */
   public String getAddressReady()
   {
@@ -93,8 +94,8 @@ public class LoadBufferTableModel
   //----------------------------------------------------------------------
   
   /**
-   * @brief Get string state of the data
    * @return String state of data
+   * @brief Get string state of the data
    */
   public String getDataReady()
   {
@@ -103,8 +104,8 @@ public class LoadBufferTableModel
   //----------------------------------------------------------------------
   
   /**
-   * @brief Check if the address is ready
    * @return True if address is ready, false otherwise
+   * @brief Check if the address is ready
    */
   public boolean isAddressReady()
   {
@@ -113,8 +114,8 @@ public class LoadBufferTableModel
   //----------------------------------------------------------------------
   
   /**
-   * @brief Check if the data are ready
    * @return True if data are ready, false otherwise
+   * @brief Check if the data are ready
    */
   public boolean isDataReady()
   {
@@ -123,8 +124,8 @@ public class LoadBufferTableModel
   //----------------------------------------------------------------------
   
   /**
-   * @brief Get load item
    * @return Load item model
+   * @brief Get load item
    */
   public LoadBufferItem getItem()
   {
@@ -133,8 +134,8 @@ public class LoadBufferTableModel
   //----------------------------------------------------------------------
   
   /**
-   * @brief Get string state of the bypassed flag
    * @return String state of the bypassed flag
+   * @brief Get string state of the bypassed flag
    */
   public String getBypassed()
   {

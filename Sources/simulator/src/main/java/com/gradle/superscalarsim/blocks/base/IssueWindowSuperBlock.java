@@ -69,6 +69,7 @@ public class IssueWindowSuperBlock implements AbstractBlock
    * @param [in] blockScheduleTask      - Task class, where blocks are periodically triggered by the GlobalTimer
    * @param [in] decodeAndDispatchBlock - Class, which simulates instruction decode and renames registers
    * @param [in] loader                 - Initial loader of interpretable instructions and register files
+   *
    * @brief Constructor
    */
   public IssueWindowSuperBlock(DecodeAndDispatchBlock decodeAndDispatchBlock, InitLoader loader)
@@ -83,6 +84,7 @@ public class IssueWindowSuperBlock implements AbstractBlock
   
   /**
    * @param [in] aluIssueWindowBlock - Specific Issue window class for all ALU FUs (processing int or long instructions)
+   *
    * @brief Injects ALU Issue window to the list
    */
   public void addAluIssueWindow(AluIssueWindowBlock aluIssueWindowBlock)
@@ -94,6 +96,7 @@ public class IssueWindowSuperBlock implements AbstractBlock
   /**
    * @param [in] fpIssueWindowBlock - Specific Issue window class for all
    *             Floating point FUs (processing float or double instructions)
+   *
    * @brief Injects Floating point Issue window to the list
    */
   public void addFpIssueWindow(FpIssueWindowBlock fpIssueWindowBlock)
@@ -105,6 +108,7 @@ public class IssueWindowSuperBlock implements AbstractBlock
   /**
    * @param [in] branchIssueWindowBlock - Specific Issue window class for all
    *             Branch FUs (processing jump and branch instructions)
+   *
    * @brief Injects Branch Issue window to the list
    */
   public void addBranchIssueWindow(BranchIssueWindowBlock branchIssueWindowBlock)
@@ -115,6 +119,7 @@ public class IssueWindowSuperBlock implements AbstractBlock
   
   /**
    * @param [in] loadStoreIssueWindowBlock - Specific Issue window class for all LoadStore FUs
+   *
    * @brief Injects LoadStore Issue window to the list
    */
   public void addLoadStoreIssueWindow(LoadStoreIssueWindowBlock loadStoreIssueWindowBlock)
@@ -152,12 +157,12 @@ public class IssueWindowSuperBlock implements AbstractBlock
     else
     {
       int pullCount = !decodeAndDispatchBlock.shouldStall() ? this.decodeAndDispatchBlock.getAfterRenameCodeList()
-                                                                                         .size() : this.decodeAndDispatchBlock.getStalledPullCount();
+              .size() : this.decodeAndDispatchBlock.getStalledPullCount();
       
       for (int i = 0; i < pullCount; i++)
       {
-        SimCodeModel codeModel = this.decodeAndDispatchBlock.getAfterRenameCodeList().get(i);
-        InstructionFunctionModel model = codeModel.getInstructionFunctionModel();
+        SimCodeModel             codeModel = this.decodeAndDispatchBlock.getAfterRenameCodeList().get(i);
+        InstructionFunctionModel model     = codeModel.getInstructionFunctionModel();
         selectCorrectIssueWindow(model, codeModel);
       }
     }
@@ -186,7 +191,7 @@ public class IssueWindowSuperBlock implements AbstractBlock
       returningCodeModelList.addAll(currentFoundCodeModelList);
     }
     if (returningCodeModelList.isEmpty() && !this.failedInstructions.isEmpty() && this.failedInstructions.peek()
-                                                                                                         .getInstructionBulkNumber() == id)
+            .getInstructionBulkNumber() == id)
     {
       while (!this.failedInstructions.isEmpty() && this.failedInstructions.peek().getInstructionBulkNumber() == id)
       {
@@ -201,6 +206,7 @@ public class IssueWindowSuperBlock implements AbstractBlock
   /**
    * @param [in] instruction - Instruction model on which Issue window is chosen
    * @param [in] codeModel   - Model representing instruction with set arguments
+   *
    * @brief Selects issue window based on instruction type and instruction data type and dispatches the instruction
    */
   private void selectCorrectIssueWindow(InstructionFunctionModel instruction, SimCodeModel codeModel)

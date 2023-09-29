@@ -48,9 +48,10 @@ public class GShareUnit
   private int size;
   
   /**
-   * @brief Constructor
    * @param [in] size                  - Size of the pattern table
    * @param [in] globalHistoryRegister - Bit array of branching history
+   *
+   * @brief Constructor
    */
   public GShareUnit(int size, GlobalHistoryRegister globalHistoryRegister)
   {
@@ -61,8 +62,8 @@ public class GShareUnit
   //----------------------------------------------------------------------
   
   /**
-   * @brief Get the current instance of the Pattern History Table
    * @return Active Pattern History Table object
+   * @brief Get the current instance of the Pattern History Table
    */
   public PatternHistoryTable getPatternHistoryTable()
   {
@@ -71,9 +72,10 @@ public class GShareUnit
   //----------------------------------------------------------------------
   
   /**
-   * @brief Get predictor from PHT
    * @param [in] programCounter - Position of the branch instruction
+   *
    * @return Predictor on the specified index
+   * @brief Get predictor from PHT
    */
   public IBitPredictor getPredictor(int programCounter)
   {
@@ -83,10 +85,11 @@ public class GShareUnit
   //----------------------------------------------------------------------
   
   /**
-   * @brief Get predictor from PHT with older GHT value
    * @param [in] programCounter - Position of the branch instruction
    * @param [in] id             - ID of the bit array history value
+   *
    * @return Predictor on the specified index
+   * @brief Get predictor from PHT with older GHT value
    */
   public IBitPredictor getPredictorFromOld(int programCounter, int id)
   {
@@ -96,8 +99,8 @@ public class GShareUnit
   //----------------------------------------------------------------------
   
   /**
-   * @brief Get GHT used by the GShare
    * @return GHT block object
+   * @brief Get GHT used by the GShare
    */
   public GlobalHistoryRegister getGlobalHistoryRegister()
   {
@@ -106,8 +109,9 @@ public class GShareUnit
   //----------------------------------------------------------------------
   
   /**
-   * @brief Set new size of the PHT
    * @param [in] size - New PHT size
+   *
+   * @brief Set new size of the PHT
    */
   public void setSize(int size)
   {

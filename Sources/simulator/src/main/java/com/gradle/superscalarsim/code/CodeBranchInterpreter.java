@@ -65,6 +65,7 @@ public class CodeBranchInterpreter
   /**
    * @param [in] codeParser - Object of the parser with parsed instructions
    * @param [in] initLoader - InitLoader object with loaded instructions and registers
+   *
    * @brief Constructor
    */
   public CodeBranchInterpreter(final CodeParser codeParser,
@@ -82,6 +83,7 @@ public class CodeBranchInterpreter
   /**
    * @param [in] parsedCode          - Parsed instruction from source file to be interpreted
    * @param [in] instructionPosition - Position of interpreted instruction in source file
+   *
    * @return OptionalInt with position of next instruction to be loaded, empty if no jump is performed
    * @brief Interprets branch or jump instruction
    */
@@ -111,7 +113,7 @@ public class CodeBranchInterpreter
         int rs1 = (int) getValueFromOperand(parsedCode.getArgumentByName("rs1").getValue(),
                                             instruction.getInputDataType());
         InputCodeArgument immArgument = parsedCode.getArgumentByName("imm");
-        int jumpOffset = rs1 + Integer.parseInt(Objects.requireNonNull(immArgument).getValue());
+        int               jumpOffset  = rs1 + Integer.parseInt(Objects.requireNonNull(immArgument).getValue());
         return OptionalInt.of(jumpOffset);
       }
       else
@@ -166,6 +168,7 @@ public class CodeBranchInterpreter
    * @param [in] parsedCode - Parsed instruction from source file to be interpreted
    * @param [in] isUnsigned - Flag telling if function should load values from registers in unsigned
    *             or signed representation
+   *
    * @return True if condition is met, false otherwise
    * @brief Interprets branch expression
    */
@@ -200,7 +203,7 @@ public class CodeBranchInterpreter
     String rightOperand = operandStringBuilder.toString();
     String operator     = operatorStringBuilder.toString();
     
-    InputCodeArgument leftOperandArgument = parsedCode.getArgumentByName(leftOperand);
+    InputCodeArgument leftOperandArgument  = parsedCode.getArgumentByName(leftOperand);
     InputCodeArgument rightOperandArgument = parsedCode.getArgumentByName(rightOperand);
     
     return evaluateExpression(Objects.requireNonNull(leftOperandArgument).getValue(),
@@ -215,6 +218,7 @@ public class CodeBranchInterpreter
    * @param [in] operator     - Operator of the condition
    * @param [in] isUnsigned   - Flag telling if function should load values from registers in unsigned
    *             or signed representation
+   *
    * @return True if condition is met, false otherwise
    * @brief Evaluate expression based on provided arguments
    */
@@ -249,6 +253,7 @@ public class CodeBranchInterpreter
   /**
    * @param [in] operand - Value to be parsed, either immediate (hex or decimal) or register
    * @param [in] dataType - Result data type
+   *
    * @return Parsed double value from operand
    * @brief Gets value from string operand
    */
@@ -269,9 +274,11 @@ public class CodeBranchInterpreter
     RegisterModel  registerModel = null;
     for (DataTypeEnum possibleDataType : dataTypeEnums)
     {
-      registerModel = this.registerFileBlock.getRegisterList(possibleDataType).stream()
-                                            .filter(register -> register.getName().equals(operand)).findFirst()
-                                            .orElse(null);
+      registerModel = this.registerFileBlock.getRegisterList(possibleDataType)
+              .stream()
+              .filter(register -> register.getName().equals(operand))
+              .findFirst()
+              .orElse(null);
       if (registerModel != null)
       {
         break;
@@ -281,9 +288,11 @@ public class CodeBranchInterpreter
     if (registerModel == null)
     {
       // Not found in register files, look in speculative register file
-      registerModel = this.registerFileBlock.getRegisterList(DataTypeEnum.kSpeculative).stream()
-                                            .filter(register -> register.getName().equals(operand)).findFirst()
-                                            .orElse(null);
+      registerModel = this.registerFileBlock.getRegisterList(DataTypeEnum.kSpeculative)
+              .stream()
+              .filter(register -> register.getName().equals(operand))
+              .findFirst()
+              .orElse(null);
     }
     
     if (registerModel == null)
@@ -297,6 +306,7 @@ public class CodeBranchInterpreter
   
   /**
    * @param [in] dataType - Data type of the register
+   *
    * @return List of datatypes in which input datatype can fit
    * @brief Get list of data types in which specified data type can fit
    */

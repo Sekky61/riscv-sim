@@ -50,8 +50,9 @@ public class LoadBufferItem
   private int memoryFailedId;
   
   /**
-   * @brief Constructor
    * @param [in] destinationRegister - Register name where the result will be stored
+   *
+   * @brief Constructor
    */
   public LoadBufferItem(String destinationRegister)
   {
@@ -67,8 +68,8 @@ public class LoadBufferItem
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Get destination register name
    * @return Name of the destination register
+   * @brief Get destination register name
    */
   public String getDestinationRegister()
   {
@@ -77,8 +78,8 @@ public class LoadBufferItem
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Is destination register ready to be saved into?
    * @return True if yes, false if no
+   * @brief Is destination register ready to be saved into?
    */
   public boolean isDestinationReady()
   {
@@ -87,8 +88,9 @@ public class LoadBufferItem
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Set if destination register is ready
    * @param [in] destinationReady - boolean value marking readiness of that register
+   *
+   * @brief Set if destination register is ready
    */
   public void setDestinationReady(boolean destinationReady)
   {
@@ -97,8 +99,8 @@ public class LoadBufferItem
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Get load address
    * @return Address from where load data
+   * @brief Get load address
    */
   public long getAddress()
   {
@@ -107,8 +109,9 @@ public class LoadBufferItem
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Set load address
    * @param [in] address - Address from where load data
+   *
+   * @brief Set load address
    */
   public void setAddress(long address)
   {
@@ -117,8 +120,9 @@ public class LoadBufferItem
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Set flag if instruction is accessing memory (MA block)
    * @param [in] isAccessingMemory - Flag marking memory access
+   *
+   * @brief Set flag if instruction is accessing memory (MA block)
    */
   public void setAccessingMemory(boolean isAccessingMemory)
   {
@@ -127,8 +131,8 @@ public class LoadBufferItem
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Is instruction in the MA block
    * @return True if yes, false if no
+   * @brief Is instruction in the MA block
    */
   public boolean isAccessingMemory()
   {
@@ -137,8 +141,8 @@ public class LoadBufferItem
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Get MA id when was instruction released
    * @return MA release id
+   * @brief Get MA id when was instruction released
    */
   public int getMemoryAccessId()
   {
@@ -147,8 +151,9 @@ public class LoadBufferItem
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Set MA id when was instruction released
    * @param [in] memoryAccessId - MA id when was instruction released
+   *
+   * @brief Set MA id when was instruction released
    */
   public void setMemoryAccessId(int memoryAccessId)
   {
@@ -157,8 +162,8 @@ public class LoadBufferItem
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Has instruction bypassed MA?
    * @return True if yes, false if no
+   * @brief Has instruction bypassed MA?
    */
   public boolean hasBypassed()
   {
@@ -167,8 +172,9 @@ public class LoadBufferItem
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Set flag if instruction bypassed MA
    * @param [in] hasBypassed - flag if instruction bypassed MA
+   *
+   * @brief Set flag if instruction bypassed MA
    */
   public void setHasBypassed(boolean hasBypassed)
   {
@@ -177,8 +183,8 @@ public class LoadBufferItem
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Get id when instruction has failed
    * @return Id when instruction has failed
+   * @brief Get id when instruction has failed
    */
   public int getMemoryFailedId()
   {
@@ -187,8 +193,9 @@ public class LoadBufferItem
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Set id when instruction has failed
    * @param [in] memoryFailedId - Id when instruction has failed
+   *
+   * @brief Set id when instruction has failed
    */
   public void setMemoryFailedId(int memoryFailedId)
   {
@@ -197,8 +204,8 @@ public class LoadBufferItem
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Get id when the load instruction got into MA from load buffer
    * @return Id of the time, when instruction got into MA
+   * @brief Get id when the load instruction got into MA from load buffer
    */
   public int getAccessingMemoryId()
   {
@@ -207,8 +214,9 @@ public class LoadBufferItem
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Set id when the load instruction got into MA from load buffer
    * @param [in] accessingMemoryId - New id when the load instruction got into MA from load buffer
+   *
+   * @brief Set id when the load instruction got into MA from load buffer
    */
   public void setAccessingMemoryId(int accessingMemoryId)
   {

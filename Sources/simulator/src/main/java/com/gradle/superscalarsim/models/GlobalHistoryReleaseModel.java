@@ -44,9 +44,10 @@ public class GlobalHistoryReleaseModel
   private final boolean[] history;
   
   /**
-   * @brief Constructor
    * @param [in] id      - Bulk id of the history
    * @param [in] history - Bit vector from GHR
+   *
+   * @brief Constructor
    */
   public GlobalHistoryReleaseModel(int id, boolean[] history)
   {
@@ -56,8 +57,8 @@ public class GlobalHistoryReleaseModel
   //----------------------------------------------------------------------
   
   /**
-   * @brief Get id of the saved history entry
    * @return Id of the history bit array (bulk id)
+   * @brief Get id of the saved history entry
    */
   public int getId()
   {
@@ -66,8 +67,8 @@ public class GlobalHistoryReleaseModel
   //----------------------------------------------------------------------
   
   /**
-   * @brief Get saved history bit array
    * @return History bit array
+   * @brief Get saved history bit array
    */
   public boolean[] getHistory()
   {

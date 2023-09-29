@@ -53,9 +53,10 @@ public class IssueItemTableModel
   private final String source2Validity;
   
   /**
-   * @brief Constructor
    * @param [in] simCodeModel       - SimCodeModel to transform into IssueItemTableModel
    * @param [in] issueItemModelList - Issue items for the simCodeModel
+   *
+   * @brief Constructor
    */
   public IssueItemTableModel(SimCodeModel simCodeModel, List<IssueItemModel> issueItemModelList)
   {
@@ -113,8 +114,8 @@ public class IssueItemTableModel
   //-----------------------------------------------------------------------------------------
   
   /**
-   * @brief Get code line
    * @return String value of the code line
+   * @brief Get code line
    */
   public String getCodeLine()
   {
@@ -123,8 +124,8 @@ public class IssueItemTableModel
   //-----------------------------------------------------------------------------------------
   
   /**
-   * @brief Get destination tag
    * @return String value of the destination tag
+   * @brief Get destination tag
    */
   public String getDestinationTag()
   {
@@ -133,8 +134,8 @@ public class IssueItemTableModel
   //-----------------------------------------------------------------------------------------
   
   /**
-   * @brief Get first source tag
    * @return First source tag
+   * @brief Get first source tag
    */
   public String getSource1Tag()
   {
@@ -143,8 +144,8 @@ public class IssueItemTableModel
   //-----------------------------------------------------------------------------------------
   
   /**
-   * @brief Get value of the first source tag
    * @return Double value of the first source tag
+   * @brief Get value of the first source tag
    */
   public double getSource1Value()
   {
@@ -153,8 +154,8 @@ public class IssueItemTableModel
   //-----------------------------------------------------------------------------------------
   
   /**
-   * @brief Get validity bit of the first source tag
    * @return Validity bit of the first source tag
+   * @brief Get validity bit of the first source tag
    */
   public String getSource1Validity()
   {
@@ -163,8 +164,8 @@ public class IssueItemTableModel
   //-----------------------------------------------------------------------------------------
   
   /**
-   * @brief Check if first source tag is valid
    * @return True if it is valid, false otherwise
+   * @brief Check if first source tag is valid
    */
   public boolean isSource1Validity()
   {
@@ -173,8 +174,8 @@ public class IssueItemTableModel
   //-----------------------------------------------------------------------------------------
   
   /**
-   * @brief Get second source tag
    * @return First source tag
+   * @brief Get second source tag
    */
   public String getSource2Tag()
   {
@@ -183,8 +184,8 @@ public class IssueItemTableModel
   //-----------------------------------------------------------------------------------------
   
   /**
-   * @brief Get value of the second source tag
    * @return Double value of the second source tag
+   * @brief Get value of the second source tag
    */
   public double getSource2Value()
   {
@@ -193,8 +194,8 @@ public class IssueItemTableModel
   //-----------------------------------------------------------------------------------------
   
   /**
-   * @brief Get validity bit of the second source tag
    * @return Validity bit of the second source tag
+   * @brief Get validity bit of the second source tag
    */
   public String getSource2Validity()
   {
@@ -203,8 +204,8 @@ public class IssueItemTableModel
   //-----------------------------------------------------------------------------------------
   
   /**
-   * @brief Check if second source tag is valid
    * @return True if it is valid, false otherwise
+   * @brief Check if second source tag is valid
    */
   public boolean isSource2Validity()
   {

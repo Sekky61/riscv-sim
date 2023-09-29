@@ -41,8 +41,9 @@ public class ReorderFlags
   private boolean isSpeculative;
   
   /**
-   * @brief Constructor
    * @param [in] isSpeculative - Is instruction speculative
+   *
+   * @brief Constructor
    */
   public ReorderFlags(boolean isSpeculative)
   {
@@ -53,8 +54,8 @@ public class ReorderFlags
   //------------------------------------------------------
   
   /**
-   * @brief Gets busy bit
    * @return Boolean value of busy bit
+   * @brief Gets busy bit
    */
   public boolean isBusy()
   {
@@ -63,8 +64,8 @@ public class ReorderFlags
   //------------------------------------------------------
   
   /**
-   * @brief Gets valid bit
    * @return Boolean value of valid bit
+   * @brief Gets valid bit
    */
   public boolean isValid()
   {
@@ -73,8 +74,8 @@ public class ReorderFlags
   //------------------------------------------------------
   
   /**
-   * @brief Gets speculative bit
    * @return Boolean value of speculative bit
+   * @brief Gets speculative bit
    */
   public boolean isSpeculative()
   {
@@ -83,8 +84,9 @@ public class ReorderFlags
   //------------------------------------------------------
   
   /**
-   * @brief Sets busy bit
    * @param [in] busy - New value of the busy bit
+   *
+   * @brief Sets busy bit
    */
   public void setBusy(boolean busy)
   {
@@ -93,8 +95,9 @@ public class ReorderFlags
   //------------------------------------------------------
   
   /**
-   * @brief Sets valid bit
    * @param [in] valid - New value of the valid bit
+   *
+   * @brief Sets valid bit
    */
   public void setValid(boolean valid)
   {
@@ -103,8 +106,9 @@ public class ReorderFlags
   //------------------------------------------------------
   
   /**
-   * @brief Sets speculative bit
    * @param [in] speculative - New value of the speculative bit
+   *
+   * @brief Sets speculative bit
    */
   public void setSpeculative(boolean speculative)
   {
@@ -113,8 +117,8 @@ public class ReorderFlags
   //------------------------------------------------------
   
   /**
-   * @brief Checks if the instruction is ready for commit based on flags
    * @return TRue if instruction is ready, false otherwise
+   * @brief Checks if the instruction is ready for commit based on flags
    */
   public boolean isReadyToBeCommitted()
   {
@@ -123,8 +127,8 @@ public class ReorderFlags
   //------------------------------------------------------
   
   /**
-   * @brief Checks if instruction has failed and can be removed
    * @return True if instruction can be removed, false otherwise
+   * @brief Checks if instruction has failed and can be removed
    */
   public boolean isReadyToBeRemoved()
   {

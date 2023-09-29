@@ -49,12 +49,13 @@ public class PreCommitModel
   private final RegisterReadinessEnum speculState;
   
   /**
-   * @brief Constructor
    * @param [in] id             - Id when was model recorded
    * @param [in] archRegister   - Architectural register to save
    * @param [in] speculRegister - Speculative register associated to architectural
    * @param [in] value          - Value of architectural before commit
    * @param [in] registerOrder  - Id specifying order between mappings to same register
+   *
+   * @brief Constructor
    */
   public PreCommitModel(int id,
                         String archRegister,
@@ -73,8 +74,8 @@ public class PreCommitModel
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Gets id when was model recorded
    * @return Recorded id
+   * @brief Gets id when was model recorded
    */
   public int getId()
   {
@@ -83,8 +84,8 @@ public class PreCommitModel
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Gets name of saved architectural register
    * @return Name of saved architectural register
+   * @brief Gets name of saved architectural register
    */
   public String getArchRegister()
   {
@@ -93,8 +94,8 @@ public class PreCommitModel
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Gets speculative register name mapped to saved architectural one
    * @return Speculative register name
+   * @brief Gets speculative register name mapped to saved architectural one
    */
   public String getSpeculRegister()
   {
@@ -103,8 +104,8 @@ public class PreCommitModel
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Gets architectural register value before commit
    * @return Architectural register value before commit
+   * @brief Gets architectural register value before commit
    */
   public double getValue()
   {
@@ -113,8 +114,8 @@ public class PreCommitModel
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Get order id
    * @return Order id
+   * @brief Get order id
    */
   public int getRegisterOrder()
   {
@@ -123,8 +124,8 @@ public class PreCommitModel
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Get Speculative register state
    * @return Speculative register state
+   * @brief Get Speculative register state
    */
   public RegisterReadinessEnum getSpeculState()
   {

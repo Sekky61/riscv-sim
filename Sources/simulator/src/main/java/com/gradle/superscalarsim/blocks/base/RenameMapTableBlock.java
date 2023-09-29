@@ -86,6 +86,23 @@ public class RenameMapTableBlock
   //----------------------------------------------------------------------
   
   /**
+   * @param [in] registerMap - Set of all registers in unified register file
+   *
+   * @brief Creates speculative registers in free list, where for each one architectural one creates one speculative
+   */
+  private void initiateFreeList(List<RegisterModel> registerModelList)
+  {
+    List<String> registerModelSubList = new ArrayList<>();
+    for (RegisterModel register : registerModelList)
+    {
+      registerModelSubList.add(register.getName());
+    }
+    
+    freeList.addAll(registerModelSubList);
+  }// end of createSpeculativeRegisters
+  //----------------------------------------------------------------------
+  
+  /**
    * @brief Clears all the active mappings
    */
   public void clear()
@@ -192,6 +209,18 @@ public class RenameMapTableBlock
   //----------------------------------------------------------------------
   
   /**
+   * @param [in] register - Name of the register to be checked
+   *
+   * @return True if register is speculative, false otherwise
+   * @brief Checks if the provided register if speculative or not
+   */
+  public boolean isSpeculativeRegister(String register)
+  {
+    return freeList.contains(register) || registerMap.containsKey(register);
+  }// end of isSpeculativeRegister
+  //----------------------------------------------------------------------
+  
+  /**
    * @param [in] speculativeRegister - Register to free
    *
    * @brief Only frees the specified register
@@ -200,20 +229,18 @@ public class RenameMapTableBlock
   {
     if (isSpeculativeRegister(speculativeRegister))
     {
-      this.registerFileBlock.getRegisterList(DataTypeEnum.kSpeculative).stream()
-                            .filter(reg -> reg.getName().equals(speculativeRegister)).findFirst().ifPresent(register ->
-                                                                                                            {
-                                                                                                              this.registerFileBlock.getRegister(
-                                                                                                                          speculativeRegister)
-                                                                                                                                    .setReadiness(
-                                                                                                                                            RegisterReadinessEnum.kFree);
-                                                                                                              this.referenceMap.remove(
-                                                                                                                      register.getName());
-                                                                                                              this.registerMap.remove(
-                                                                                                                      register.getName());
-                                                                                                              this.freeList.add(
-                                                                                                                      register.getName());
-                                                                                                            });
+      this.registerFileBlock.getRegisterList(DataTypeEnum.kSpeculative)
+              .stream()
+              .filter(reg -> reg.getName().equals(speculativeRegister))
+              .findFirst()
+              .ifPresent(register ->
+                         {
+                           this.registerFileBlock.getRegister(speculativeRegister)
+                                   .setReadiness(RegisterReadinessEnum.kFree);
+                           this.referenceMap.remove(register.getName());
+                           this.registerMap.remove(register.getName());
+                           this.freeList.add(register.getName());
+                         });
     }
   }// end of freeMapping
   //----------------------------------------------------------------------
@@ -257,35 +284,6 @@ public class RenameMapTableBlock
   //----------------------------------------------------------------------
   
   /**
-   * @param [in] registerMap - Set of all registers in unified register file
-   *
-   * @brief Creates speculative registers in free list, where for each one architectural one creates one speculative
-   */
-  private void initiateFreeList(List<RegisterModel> registerModelList)
-  {
-    List<String> registerModelSubList = new ArrayList<>();
-    for (RegisterModel register : registerModelList)
-    {
-      registerModelSubList.add(register.getName());
-    }
-    
-    freeList.addAll(registerModelSubList);
-  }// end of createSpeculativeRegisters
-  //----------------------------------------------------------------------
-  
-  /**
-   * @param [in] register - Name of the register to be checked
-   *
-   * @return True if register is speculative, false otherwise
-   * @brief Checks if the provided register if speculative or not
-   */
-  public boolean isSpeculativeRegister(String register)
-  {
-    return freeList.contains(register) || registerMap.containsKey(register);
-  }// end of isSpeculativeRegister
-  //----------------------------------------------------------------------
-  
-  /**
    * @param [in] speculativeRegister - Name of the register to transfer value from
    *
    * @brief Directly copy the value from speculative to the mapped one
@@ -295,7 +293,7 @@ public class RenameMapTableBlock
     if (isSpeculativeRegister(speculativeRegister))
     {
       RenameMapModel architecturalRegister = this.registerMap.get(speculativeRegister);
-      double value = this.registerFileBlock.getRegister(speculativeRegister).getValue();
+      double         value                 = this.registerFileBlock.getRegister(speculativeRegister).getValue();
       this.registerFileBlock.getRegister(architecturalRegister.getArchitecturalRegister()).setValue(value);
     }
   }// end of directCopyMapping

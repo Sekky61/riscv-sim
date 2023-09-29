@@ -84,6 +84,7 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
    * @param [in] storeBufferBlock     - Buffer keeping all in-flight store instructions
    * @param [in] loadStoreInterpreter - Interpreter processing load/store instructions
    * @param [in] registerFileBlock    - Class containing all registers, that simulator uses
+   *
    * @brief Constructor
    */
   public MemoryAccessUnit(ReorderBufferBlock reorderBufferBlock,
@@ -269,7 +270,7 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
         }
       }
       if (!this.failedInstructions.isEmpty() && this.failedInstructions.peek()
-                                                                       .getFunctionUnitId() == this.functionUnitId)
+              .getFunctionUnitId() == this.functionUnitId)
       {
         this.simCodeModel     = this.failedInstructions.pop();
         this.firstDelayPassed = this.savedFirstDelayPassed.pop();
@@ -300,6 +301,7 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
   
   /**
    * @param [in] simCodeModel - Possible executing model
+   *
    * @brief Removes instruction from MA block if there is one
    */
   public void tryRemoveCodeModel(SimCodeModel simCodeModel)

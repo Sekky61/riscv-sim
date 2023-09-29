@@ -34,8 +34,8 @@ package com.gradle.superscalarsim.blocks.branch;
 public interface IBitPredictor
 {
   /**
-   * @brief Get current prediction saved in predictor
    * @return True if branch should be taken, false otherwise
+   * @brief Get current prediction saved in predictor
    */
   boolean getCurrentPrediction();
   
@@ -55,8 +55,8 @@ public interface IBitPredictor
   void predictBackwards();
   
   /**
-   * @brief Returns the prediction bit vector value as a human readable string
    * @return Human readable prediction bit vector value
+   * @brief Returns the prediction bit vector value as a human readable string
    */
   String bitVectorToString();
 }

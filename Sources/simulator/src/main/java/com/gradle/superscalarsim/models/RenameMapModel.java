@@ -50,9 +50,10 @@ public class RenameMapModel implements Comparable<RenameMapModel>
   private final int order;
   
   /**
-   * @brief Constructor
    * @param [in] registerName - Name of the architectural register
    * @param [in] order        - Order id, specifying order between multiple same mapping
+   *
+   * @brief Constructor
    */
   public RenameMapModel(String registerName, int order)
   {
@@ -62,9 +63,10 @@ public class RenameMapModel implements Comparable<RenameMapModel>
   //------------------------------------------------------
   
   /**
-   * @brief Comparator function for comparing mappings with same architectural register
    * @param [in] codeModel - Model to be compared to
+   *
    * @return -1 if >, 0 if ==, < if 1
+   * @brief Comparator function for comparing mappings with same architectural register
    */
   @Override
   public int compareTo(@NotNull RenameMapModel codeModel)
@@ -74,8 +76,8 @@ public class RenameMapModel implements Comparable<RenameMapModel>
   //------------------------------------------------------
   
   /**
-   * @brief Get name of the mapped architectural register
    * @return Name of the mapped architectural register
+   * @brief Get name of the mapped architectural register
    */
   public String getArchitecturalRegister()
   {

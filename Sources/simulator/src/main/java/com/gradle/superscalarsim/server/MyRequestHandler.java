@@ -86,8 +86,9 @@ public class MyRequestHandler<T, U> implements HttpHandler
   }
   
   /**
-   * @brief Add the CORS headers to the response
    * @param exchange The HttpExchange object
+   *
+   * @brief Add the CORS headers to the response
    */
   public void addOptions(HttpServerExchange exchange)
   {
@@ -98,10 +99,11 @@ public class MyRequestHandler<T, U> implements HttpHandler
   }
   
   /**
-   * @brief Handle the request method
    * @param exchange The HttpExchange object
+   *
    * @return true if the request was handled, false otherwise
    * @throws IOException If an I/O error occurs
+   * @brief Handle the request method
    */
   public boolean handleVerb(HttpServerExchange exchange) throws IOException
   {

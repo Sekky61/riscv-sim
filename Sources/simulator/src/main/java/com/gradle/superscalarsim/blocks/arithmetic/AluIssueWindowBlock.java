@@ -67,6 +67,7 @@ public class AluIssueWindowBlock extends AbstractIssueWindowBlock
    * @param [in] loader            - Initial loader of interpretable instructions and register files
    * @param [in] registerFileBlock - Class containing all registers, that simulator uses
    * @param [in] precedingTable    - Preceding table with all allowed instructions
+   *
    * @brief Constructor
    */
   public AluIssueWindowBlock(InitLoader loader,
@@ -81,6 +82,7 @@ public class AluIssueWindowBlock extends AbstractIssueWindowBlock
   
   /**
    * @param [in] instruction - instruction to be issued
+   *
    * @return Suitable function unit
    * @brief Selects suitable function unit for certain instruction
    */
@@ -109,7 +111,7 @@ public class AluIssueWindowBlock extends AbstractIssueWindowBlock
     for (AbstractFunctionUnitBlock functionUnitBlock : this.functionUnitBlockList)
     {
       if (!functionUnitBlock.isFunctionUnitEmpty() && functionUnitBlock.hasReversedDelayPassed() && functionUnitBlock.getSimCodeModel()
-                                                                                                                     .getIssueWindowId() == this.windowId)
+              .getIssueWindowId() == this.windowId)
       {
         SimCodeModel codeModel = functionUnitBlock.getSimCodeModel();
         functionUnitBlock.setSimCodeModel(null);
@@ -132,6 +134,7 @@ public class AluIssueWindowBlock extends AbstractIssueWindowBlock
   
   /**
    * @param [in] instructionType - Type of the instruction (branch, arithmetic, eg.)
+   *
    * @return True if compatible, false otherwise
    * @brief Checks if provided instruction type is compatible with this window and its FUs
    */
@@ -144,6 +147,7 @@ public class AluIssueWindowBlock extends AbstractIssueWindowBlock
   
   /**
    * @param [in] dataType - Data type (int, float, eg.)
+   *
    * @return True if compatible, false otherwise
    * @brief Checks if provided data type is compatible with this window and its FUs
    */
@@ -169,6 +173,7 @@ public class AluIssueWindowBlock extends AbstractIssueWindowBlock
   
   /**
    * @param [in] functionUnitBlock - FU to bind with this window
+   *
    * @brief Associate function block with this window
    */
   public void setFunctionUnitBlock(ArithmeticFunctionUnitBlock functionUnitBlock)
@@ -182,6 +187,7 @@ public class AluIssueWindowBlock extends AbstractIssueWindowBlock
   /**
    * @param [in] allowedInstructions      - Array of allowed instructions by the FU
    * @param [in] interpretableInstruction - String containing all operations used to calculate instruction
+   *
    * @return True if FU instruction pool supports instruction, false otherwise
    * @brief Checks if provided instruction can be executed by any function unit
    */

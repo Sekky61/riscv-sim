@@ -51,6 +51,7 @@ public interface IInputCodeModel
   
   /**
    * @param name Name of the argument
+   *
    * @return An argument by its name
    */
   InputCodeArgument getArgumentByName(String name);
@@ -67,12 +68,14 @@ public interface IInputCodeModel
   
   /**
    * TODO: explain indexing (PC+4?)
+   *
    * @return ID of the instruction (index in the code)
    */
   int getCodeId();
   
   /**
    * Get description of the instruction
+   *
    * @return Instruction function model
    */
   InstructionFunctionModel getInstructionFunctionModel();

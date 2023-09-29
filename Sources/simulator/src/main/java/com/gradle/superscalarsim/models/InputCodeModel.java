@@ -85,6 +85,7 @@ public class InputCodeModel implements IInputCodeModel
    * @param [in] instructionTypeEnum - Type of the instruction
    * @param [in] resultDataType      - Data type of the output
    * @param [in] id                  - ID of the instruction (index in the code)
+   *
    * @brief Constructor
    */
   public InputCodeModel(InstructionFunctionModel instructionFunctionModel,
@@ -140,6 +141,7 @@ public class InputCodeModel implements IInputCodeModel
   
   /**
    * @param name Name of the argument
+   *
    * @return An argument by its name
    */
   @Override

@@ -44,9 +44,10 @@ public class CodeTableModel
   private final String codeLine;
   
   /**
-   * @brief Constructor
    * @param [in] index    - Index of the instruction in the compiled list
    * @param [in] codeLine - Code line of the instruction
+   *
+   * @brief Constructor
    */
   public CodeTableModel(int index, String codeLine)
   {
@@ -56,8 +57,8 @@ public class CodeTableModel
   //----------------------------------------------------------------------
   
   /**
-   * @brief Get index of the instruction
    * @return Index of the instruction
+   * @brief Get index of the instruction
    */
   public int getIndex()
   {
@@ -66,8 +67,8 @@ public class CodeTableModel
   //----------------------------------------------------------------------
   
   /**
-   * @brief Get code line of the instruction
    * @return String value of the code line
+   * @brief Get code line of the instruction
    */
   public String getCodeLine()
   {

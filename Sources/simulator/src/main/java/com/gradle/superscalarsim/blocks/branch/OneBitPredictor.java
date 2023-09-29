@@ -48,8 +48,9 @@ public class OneBitPredictor implements IBitPredictor
   private final boolean initialState;
   
   /**
-   * @brief Constructor
    * @param [in] isTaken - Initial value of the bit predictor
+   *
+   * @brief Constructor
    */
   public OneBitPredictor(boolean isTaken)
   {
@@ -60,8 +61,8 @@ public class OneBitPredictor implements IBitPredictor
   //----------------------------------------------------------------------
   
   /**
-   * @brief Get current prediction saved in predictor
    * @return True if branch should be taken, false otherwise
+   * @brief Get current prediction saved in predictor
    */
   @Override
   public boolean getCurrentPrediction()
@@ -103,8 +104,8 @@ public class OneBitPredictor implements IBitPredictor
   //----------------------------------------------------------------------
   
   /**
-   * @brief Returns the prediction bit vector value as a human readable string
    * @return Human readable prediction bit vector value
+   * @brief Returns the prediction bit vector value as a human readable string
    */
   @Override
   public String bitVectorToString()

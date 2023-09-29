@@ -65,11 +65,11 @@ import java.util.Objects;
 //    };
 
 /**
- * @class CpuConfiguration
  * @author Michal Majer
- *          Faculty of Information Technology
- *          Brno University of Technology
- *          xmajer21@stud.fit.vutbr.cz
+ * Faculty of Information Technology
+ * Brno University of Technology
+ * xmajer21@stud.fit.vutbr.cz
+ * @class CpuConfiguration
  * @brief Class representing the CPU configuration
  * Can be used to create a CpuState
  */

@@ -107,12 +107,13 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>
   private final List<InputCodeArgument> renamedArguments;
   
   /**
-   * @brief Constructor - not used anymore
    * @param [in] instructionFunctionModel - Instruction function model
    * @param [in] instructionName       - Name of the parsed instruction
    * @param [in] codeLine              - Unparsed line of code
    * @param [in] arguments             - Arguments of the instruction
    * @param [in] instructionBulkNumber - Id marking when was code accepted
+   *
+   * @brief Constructor - not used anymore
    */
   public SimCodeModel(InstructionFunctionModel instructionFunctionModel,
                       String instructionName,
@@ -140,6 +141,7 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>
   /**
    * @param [in] inputCodeModel - Original code model
    * @param [in] id             - Number marking when was code accepted
+   *
    * @brief Constructor which copies original InputCodeModel
    * This constructor can be used only through the SimCodeModelAllocator
    */
@@ -159,9 +161,10 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>
   //------------------------------------------------------
   
   /**
-   * @brief Comparator function for assigning to priorityQueue
    * @param [in] codeModel - Model to be compared to
+   *
    * @return -1 if <, 0 if ==, > if 1
+   * @brief Comparator function for assigning to priorityQueue
    */
   @Override
   public int compareTo(@NotNull SimCodeModel codeModel)
@@ -171,8 +174,8 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>
   //------------------------------------------------------
   
   /**
-   * @brief Gets number marking when was code processed
    * @return Integer value of bulk number
+   * @brief Gets number marking when was code processed
    */
   public int getInstructionBulkNumber()
   {
@@ -181,8 +184,8 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>
   //------------------------------------------------------
   
   /**
-   * @brief Gets renamed code line
    * @return String with renamed code line
+   * @brief Gets renamed code line
    */
   public String getRenamedCodeLine()
   {
@@ -198,8 +201,8 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>
   //------------------------------------------------------
   
   /**
-   * @brief Gets Id of the model
    * @return Id of the model
+   * @brief Gets Id of the model
    */
   public int getId()
   {
@@ -208,8 +211,8 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>
   //------------------------------------------------------
   
   /**
-   * @brief Gets accepted id to issue window
    * @return Id, when was instruction accepted to issue window, 0 if not yet processed
+   * @brief Gets accepted id to issue window
    */
   public int getIssueWindowId()
   {
@@ -218,8 +221,8 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>
   //------------------------------------------------------
   
   /**
-   * @brief Gets id of function block, which processed this instruction
    * @return Id of function block, which processed this instruction, 0 if not yet processed
+   * @brief Gets id of function block, which processed this instruction
    */
   public int getFunctionUnitId()
   {
@@ -228,8 +231,8 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>
   //------------------------------------------------------
   
   /**
-   * @brief Gets id of when was instruction's result ready
    * @return Id of when was instruction's result ready, 0 if not yet processed
+   * @brief Gets id of when was instruction's result ready
    */
   public int getReadyId()
   {
@@ -238,8 +241,8 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>
   //------------------------------------------------------
   
   /**
-   * @brief Gets id of when was instruction committed
    * @return Id of when was instruction committed, 0 if not yet processed
+   * @brief Gets id of when was instruction committed
    */
   public int getCommitId()
   {
@@ -254,8 +257,9 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>
   }
   
   /**
-   * @brief Sets accepted id to issue window
    * @param [in] windowId - Id, when was instruction accepted to issue window
+   *
+   * @brief Sets accepted id to issue window
    */
   public void setIssueWindowId(int windowId)
   {
@@ -264,8 +268,9 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>
   //------------------------------------------------------
   
   /**
-   * @brief Sets id of function block, which processed this instruction
    * @param [in] functionUnitId - Id of function block, which processed this instruction
+   *
+   * @brief Sets id of function block, which processed this instruction
    */
   public void setFunctionUnitId(int functionUnitId)
   {
@@ -274,8 +279,9 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>
   //------------------------------------------------------
   
   /**
-   * @brief Sets id of when was instruction's result ready
    * @param [in] readyId - Id of when was instruction's result ready
+   *
+   * @brief Sets id of when was instruction's result ready
    */
   public void setReadyId(int readyId)
   {
@@ -284,8 +290,9 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>
   //------------------------------------------------------
   
   /**
-   * @brief Sets id of when was instruction's result ready
    * @param [in] commitId - Id of when was instruction committed
+   *
+   * @brief Sets id of when was instruction's result ready
    */
   public void setCommitId(int commitId)
   {
@@ -294,8 +301,8 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>
   //------------------------------------------------------
   
   /**
-   * @brief Get bit value corresponding to failure due to wrong prediction
    * @return Boolean value marking failure to finish
+   * @brief Get bit value corresponding to failure due to wrong prediction
    */
   public boolean hasFailed()
   {
@@ -304,8 +311,9 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>
   //------------------------------------------------------
   
   /**
-   * @brief Set bit marking to failure due to wrong prediction
    * @param hasFailed - Has instruction failed to finish due to missprediction?
+   *
+   * @brief Set bit marking to failure due to wrong prediction
    */
   public void setHasFailed(boolean hasFailed)
   {
@@ -325,8 +333,8 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>
   }
   
   /**
-   * @brief Gets arguments of the instruction, copied so they are rewritable
    * @return Renamed arguments of the instruction
+   * @brief Gets arguments of the instruction, copied so they are rewritable
    */
   @Override
   public List<InputCodeArgument> getArguments()
@@ -336,6 +344,7 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>
   
   /**
    * @param name Name of the argument
+   *
    * @return An argument by its name
    */
   @Override

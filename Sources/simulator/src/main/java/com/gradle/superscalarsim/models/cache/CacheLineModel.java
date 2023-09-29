@@ -53,8 +53,9 @@ public class CacheLineModel
   Stack<Integer> lineIdHistory;
   
   /**
-   * @brief Constructor
    * @param lineSize - size of the line in bytes - must be multiple of 4
+   *
+   * @brief Constructor
    */
   public CacheLineModel(int lineSize, int index)
   {
@@ -70,8 +71,8 @@ public class CacheLineModel
   }
   
   /**
-   * @brief get if the line is dirty
    * @return boolean - dirty
+   * @brief get if the line is dirty
    */
   public boolean isDirty()
   {
@@ -79,8 +80,8 @@ public class CacheLineModel
   }
   
   /**
-   * @brief get if the line is valid
    * @return boolean - valid
+   * @brief get if the line is valid
    */
   public boolean isValid()
   {
@@ -88,8 +89,8 @@ public class CacheLineModel
   }
   
   /**
-   * @brief get the tag of the line
    * @return long - tag
+   * @brief get the tag of the line
    */
   public long getTag()
   {
@@ -97,10 +98,11 @@ public class CacheLineModel
   }
   
   /**
-   * @brief Get data on the index
    * @param index Index inside the line
-   * @param size Size of requested data - 1,2,4
+   * @param size  Size of requested data - 1,2,4
+   *
    * @return int - data
+   * @brief Get data on the index
    */
   public int getData(int index, int size)
   {
@@ -132,10 +134,11 @@ public class CacheLineModel
   }
   
   /**
-   * @brief Sets data on the index
    * @param index Index inside the line
-   * @param size Size of requested data - 1,2,4
-   * @param data Data to be stored
+   * @param size  Size of requested data - 1,2,4
+   * @param data  Data to be stored
+   *
+   * @brief Sets data on the index
    */
   public void setData(int index, int size, int data)
   {
@@ -172,8 +175,9 @@ public class CacheLineModel
   
   
   /**
-   * @brief Sets if this line contains valid data
    * @param valid - if line is valid
+   *
+   * @brief Sets if this line contains valid data
    */
   public void setValid(boolean valid)
   {
@@ -181,8 +185,9 @@ public class CacheLineModel
   }
   
   /**
-   * @brief Sets if this line contains dirty data
    * @param dirty - if line is dirty
+   *
+   * @brief Sets if this line contains dirty data
    */
   public void setDirty(boolean dirty)
   {
@@ -190,8 +195,9 @@ public class CacheLineModel
   }
   
   /**
-   * @brief Sets Tag of the data stored in this line
    * @param tag - Tag of the line
+   *
+   * @brief Sets Tag of the data stored in this line
    */
   public void setTag(long tag)
   {
@@ -199,8 +205,9 @@ public class CacheLineModel
   }
   
   /**
-   * @brief Saves current line to history
    * @param id - Current clock cycle
+   *
+   * @brief Saves current line to history
    */
   public void saveToHistory(int id)
   {
@@ -218,8 +225,9 @@ public class CacheLineModel
   }
   
   /**
-   * @brief Restores current line from history
    * @param id - Current clock cycle
+   *
+   * @brief Restores current line from history
    */
   public void revertHistory(int id)
   {
@@ -240,8 +248,8 @@ public class CacheLineModel
   }
   
   /**
-   * @brief Gets the whole line with stored data
    * @return int[] - array of words in cache line
+   * @brief Gets the whole line with stored data
    */
   public int[] getLine()
   {

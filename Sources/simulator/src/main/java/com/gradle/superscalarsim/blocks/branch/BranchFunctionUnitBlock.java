@@ -124,7 +124,7 @@ public class BranchFunctionUnitBlock extends AbstractFunctionUnitBlock
       int nextInstructionPosition = instructionPosition + 1;
       
       OptionalInt jumpOffset = branchInterpreter.interpretInstruction(this.simCodeModel, instructionPosition);
-      boolean jumpTaken = jumpOffset.isPresent();
+      boolean     jumpTaken  = jumpOffset.isPresent();
       // If the branch was taken or not
       this.simCodeModel.setBranchLogicResult(jumpTaken);
       // Used to fix BTB and PC in misprediction
@@ -184,9 +184,12 @@ public class BranchFunctionUnitBlock extends AbstractFunctionUnitBlock
         this.popHistoryCounter();
       }
       // Restore result readiness
-      simCodeModel.getArguments().stream().filter(argument -> argument.getName().equals("rd")).findFirst().ifPresent(
-              destinationArgument -> registerFileBlock.getRegister(destinationArgument.getValue())
-                                                      .setReadiness(RegisterReadinessEnum.kAllocated));
+      simCodeModel.getArguments()
+              .stream()
+              .filter(argument -> argument.getName().equals("rd"))
+              .findFirst()
+              .ifPresent(destinationArgument -> registerFileBlock.getRegister(destinationArgument.getValue())
+                      .setReadiness(RegisterReadinessEnum.kAllocated));
       // Remove target and brcd arguments
       simCodeModel.setBranchLogicResult(false);
       simCodeModel.setBranchTargetOffset(0);

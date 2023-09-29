@@ -73,11 +73,12 @@ public abstract class AbstractFunctionUnitBlock implements AbstractBlock
   }
   
   /**
-   * @brief Constructor
    * @param [in] blockScheduleTask  - Task class, where blocks are periodically triggered by the GlobalTimer
    * @param [in] reorderBufferBlock - Class containing simulated Reorder Buffer
    * @param [in] delay              - Delay for function unit
    * @param [in] issueWindowBlock   - Issue window block for comparing instruction and data types
+   *
+   * @brief Constructor
    */
   public AbstractFunctionUnitBlock(ReorderBufferBlock reorderBufferBlock,
                                    int delay,
@@ -108,8 +109,8 @@ public abstract class AbstractFunctionUnitBlock implements AbstractBlock
   //----------------------------------------------------------------------
   
   /**
-   * @brief Get function unit name
    * @return String representing function unit name
+   * @brief Get function unit name
    */
   public String getName()
   {
@@ -118,8 +119,9 @@ public abstract class AbstractFunctionUnitBlock implements AbstractBlock
   //----------------------------------------------------------------------
   
   /**
-   * @brief Sets the name of the function unit
    * @param [in] name - New name for the function unit
+   *
+   * @brief Sets the name of the function unit
    */
   public void setName(String name)
   {
@@ -128,8 +130,8 @@ public abstract class AbstractFunctionUnitBlock implements AbstractBlock
   //----------------------------------------------------------------------
   
   /**
-   * @brief Get currently set delay of the function unit
    * @return Integer variable representing delay of the function unit
+   * @brief Get currently set delay of the function unit
    */
   public int getDelay()
   {
@@ -156,8 +158,9 @@ public abstract class AbstractFunctionUnitBlock implements AbstractBlock
   //----------------------------------------------------------------------
   
   /**
-   * @brief Sets delay of an function unit
    * @param [in] delay - Integer, representing how many ticks does it take to generate result
+   *
+   * @brief Sets delay of an function unit
    */
   public void setDelay(int delay)
   {
@@ -166,8 +169,8 @@ public abstract class AbstractFunctionUnitBlock implements AbstractBlock
   //----------------------------------------------------------------------
   
   /**
-   * @brief Moves to counter up and checks if delay has passed
    * @return True if delay has passed, false otherwise
+   * @brief Moves to counter up and checks if delay has passed
    */
   protected boolean hasDelayPassed()
   {
@@ -177,8 +180,8 @@ public abstract class AbstractFunctionUnitBlock implements AbstractBlock
   //----------------------------------------------------------------------
   
   /**
-   * @brief Moves the counter down and checks if counter reached 0
    * @return True if counter is at 0, false otherwise
+   * @brief Moves the counter down and checks if counter reached 0
    */
   public boolean hasReversedDelayPassed()
   {
@@ -201,8 +204,8 @@ public abstract class AbstractFunctionUnitBlock implements AbstractBlock
   }
   
   /**
-   * @brief Gets currently executed instruction
    * @return Current executed instruction
+   * @brief Gets currently executed instruction
    */
   public SimCodeModel getSimCodeModel()
   {
@@ -211,8 +214,9 @@ public abstract class AbstractFunctionUnitBlock implements AbstractBlock
   //----------------------------------------------------------------------
   
   /**
-   * @brief Sets instruction to be executed
    * @param [in] decodeCodeModel - Instruction to be executed
+   *
+   * @brief Sets instruction to be executed
    */
   public void setSimCodeModel(SimCodeModel simCodeModel)
   {
@@ -221,8 +225,8 @@ public abstract class AbstractFunctionUnitBlock implements AbstractBlock
   //----------------------------------------------------------------------
   
   /**
-   * @brief Checks if function unit has no instruction, that is being executed
    * @return True if function unit is idle, false if busy
+   * @brief Checks if function unit has no instruction, that is being executed
    */
   public boolean isFunctionUnitEmpty()
   {
@@ -231,8 +235,9 @@ public abstract class AbstractFunctionUnitBlock implements AbstractBlock
   //----------------------------------------------------------------------
   
   /**
-   * @brief Sets id for this function unit
    * @param [in] functionUnitId - Id for this function unit
+   *
+   * @brief Sets id for this function unit
    */
   public void setFunctionUnitId(int functionUnitId)
   {
@@ -241,8 +246,9 @@ public abstract class AbstractFunctionUnitBlock implements AbstractBlock
   //----------------------------------------------------------------------
   
   /**
-   * @brief Sets number of function units, which share same issue window
    * @param [in] functionUnitCount - Number of function units in same issue window
+   *
+   * @brief Sets number of function units, which share same issue window
    */
   public void setFunctionUnitCount(int functionUnitCount)
   {

@@ -46,7 +46,7 @@ public class CpuAdditionBenchmark
   public Cpu constantSteps()
   {
     // 10000 iters on a load/store loop
-    Cpu cpu = new Cpu();
+    Cpu    cpu  = new Cpu();
     String code = "addi x3 x0 10000\n" + "addi x8 x0 50\n" + "sw x8 x0 16\n" + "loop:\n" + "beq x3 x0 loopEnd\n" + "lw x8 x0 16\n" + "addi x8 x8 1\n" + "sw x8 x0 16\n" + "subi x3 x3 1\n" + "jal x0 loop\n" + "loopEnd:";
     
     boolean success = cpu.loadProgram(code);
@@ -70,7 +70,7 @@ public class CpuAdditionBenchmark
   public Cpu runProgram()
   {
     // 10000 iters on a load/store loop
-    Cpu cpu = new Cpu();
+    Cpu    cpu  = new Cpu();
     String code = "addi x3 x0 10000\n" + "addi x8 x0 50\n" + "sw x8 x0 16\n" + "loop:\n" + "beq x3 x0 loopEnd\n" + "lw x8 x0 16\n" + "addi x8 x8 1\n" + "sw x8 x0 16\n" + "subi x3 x3 1\n" + "jal x0 loop\n" + "loopEnd:";
     
     boolean success = cpu.loadProgram(code);

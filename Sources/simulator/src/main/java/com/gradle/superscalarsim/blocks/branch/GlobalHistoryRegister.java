@@ -42,7 +42,7 @@ import java.util.Stack;
 /**
  * @class GlobalHistoryRegister
  * @brief Class implements interface of manipulating with the bit array holding history of branching
- *        (true if the branch was taken, false if the branch was not taken)
+ * (true if the branch was taken, false if the branch was not taken)
  */
 public class GlobalHistoryRegister
 {
@@ -56,8 +56,9 @@ public class GlobalHistoryRegister
   private int size;
   
   /**
-   * @brief Constructor
    * @param [in] size - Size of the bit array
+   *
+   * @brief Constructor
    */
   public GlobalHistoryRegister(int size)
   {
@@ -82,8 +83,8 @@ public class GlobalHistoryRegister
   //----------------------------------------------------------------------
   
   /**
-   * @brief Get register size (in bits)
    * @return Size of the GHR
+   * @brief Get register size (in bits)
    */
   public int getRegisterSize()
   {
@@ -92,8 +93,9 @@ public class GlobalHistoryRegister
   //----------------------------------------------------------------------
   
   /**
-   * @brief Resize the register to specified size (and resets it)
    * @param [in] size - New size of the register
+   *
+   * @brief Resize the register to specified size (and resets it)
    */
   public void resizeRegister(int size)
   {
@@ -104,8 +106,9 @@ public class GlobalHistoryRegister
   //----------------------------------------------------------------------
   
   /**
-   * @brief Shifts new bit value into the vector
    * @param [in] isJump - Was the branch taken or not?
+   *
+   * @brief Shifts new bit value into the vector
    */
   public void shiftValue(boolean isJump)
   {
@@ -115,9 +118,10 @@ public class GlobalHistoryRegister
   //----------------------------------------------------------------------
   
   /**
-   * @brief Shifts speculative bit value into the register while saving the old into the register
    * @param [in] id     - Bulk id the instruction
    * @param [in] isJump - Was the branch taken or not?
+   *
+   * @brief Shifts speculative bit value into the register while saving the old into the register
    */
   public void shiftSpeculativeValue(int id, boolean isJump)
   {
@@ -130,8 +134,8 @@ public class GlobalHistoryRegister
   //----------------------------------------------------------------------
   
   /**
-   * @brief Get the register value as a string of bits
    * @return String representation of the GHR
+   * @brief Get the register value as a string of bits
    */
   public String getRegisterValueAsVectorString()
   {
@@ -145,8 +149,8 @@ public class GlobalHistoryRegister
   //----------------------------------------------------------------------
   
   /**
-   * @brief Returns the bit array as integer
    * @return Integer value of the bit vector
+   * @brief Returns the bit array as integer
    */
   public int getRegisterValueAsInt()
   {
@@ -160,9 +164,10 @@ public class GlobalHistoryRegister
   //----------------------------------------------------------------------
   
   /**
-   * @brief Gets bit array as integer from history
    * @param [in] id - Id of the history bit array (bulk id)
+   *
    * @return Integer value of the bit vector
+   * @brief Gets bit array as integer from history
    */
   public int getHistoryValueAsInt(int id)
   {
@@ -181,8 +186,9 @@ public class GlobalHistoryRegister
   //----------------------------------------------------------------------
   
   /**
-   * @brief Removes history value on specified register
    * @param [in] id - Id of the history bit array (bulk id)
+   *
+   * @brief Removes history value on specified register
    */
   public void removeHistoryValue(int id)
   {
@@ -193,8 +199,9 @@ public class GlobalHistoryRegister
   //----------------------------------------------------------------------
   
   /**
-   * @brief Sets history bit array value as current value
    * @param [in] id - Id of the history bit array (bulk id)
+   *
+   * @brief Sets history bit array value as current value
    */
   public void setHistoryValueAsCurrent(int id)
   {
@@ -206,8 +213,9 @@ public class GlobalHistoryRegister
   //----------------------------------------------------------------------
   
   /**
-   * @brief Reverts value from released stack back to history map
    * @param [in] id - Id of the history bit array (code id)
+   *
+   * @brief Reverts value from released stack back to history map
    */
   public void revertToHistory(int id)
   {
@@ -220,8 +228,9 @@ public class GlobalHistoryRegister
   //----------------------------------------------------------------------
   
   /**
-   * @brief Revert value from history to main bit array
    * @param [in] id - Id of the history bit array (bulk id)
+   *
+   * @brief Revert value from history to main bit array
    */
   public void revertFromHistory(int id)
   {

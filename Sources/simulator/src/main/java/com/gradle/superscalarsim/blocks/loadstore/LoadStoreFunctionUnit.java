@@ -63,6 +63,7 @@ public class LoadStoreFunctionUnit extends AbstractFunctionUnitBlock
    * @param [in] issueWindowBlock   - Issue window block for comparing instruction and data types
    * @param [in] loadBufferBlock    - Load buffer with all load instruction entries
    * @param [in] storeBufferBlock   - Store buffer with all store instruction entries
+   *
    * @brief Constructor
    */
   public LoadStoreFunctionUnit(ReorderBufferBlock reorderBufferBlock,
@@ -160,7 +161,7 @@ public class LoadStoreFunctionUnit extends AbstractFunctionUnitBlock
         }
       }
       if (!this.failedInstructions.isEmpty() && this.failedInstructions.peek()
-                                                                       .getFunctionUnitId() == this.functionUnitId)
+              .getFunctionUnitId() == this.functionUnitId)
       {
         this.simCodeModel = this.failedInstructions.pop();
         this.popHistoryCounter();

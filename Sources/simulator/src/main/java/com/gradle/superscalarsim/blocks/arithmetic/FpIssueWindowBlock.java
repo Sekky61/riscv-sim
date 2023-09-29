@@ -62,11 +62,12 @@ public class FpIssueWindowBlock extends AbstractIssueWindowBlock
   }
   
   /**
-   * @brief Constructor
    * @param [in] blockScheduleTask - Task class, where blocks are periodically triggered by the GlobalTimer
    * @param [in] loader            - Initial loader of interpretable instructions and register files
    * @param [in] registerFileBlock - Class containing all registers, that simulator uses
    * @param [in] precedingTable    - Preceding table with all allowed instructions
+   *
+   * @brief Constructor
    */
   public FpIssueWindowBlock(InitLoader loader,
                             UnifiedRegisterFileBlock registerFileBlock,
@@ -79,9 +80,10 @@ public class FpIssueWindowBlock extends AbstractIssueWindowBlock
   //----------------------------------------------------------------------
   
   /**
-   * @brief Selects suitable function unit for certain instruction
    * @param [in] instruction - instruction to be issued
+   *
    * @return Suitable function unit
+   * @brief Selects suitable function unit for certain instruction
    */
   @Override
   public AbstractFunctionUnitBlock selectSufficientFunctionUnit(InstructionFunctionModel instruction)
@@ -108,7 +110,7 @@ public class FpIssueWindowBlock extends AbstractIssueWindowBlock
     for (AbstractFunctionUnitBlock functionUnitBlock : this.functionUnitBlockList)
     {
       if (!functionUnitBlock.isFunctionUnitEmpty() && functionUnitBlock.hasReversedDelayPassed() && functionUnitBlock.getSimCodeModel()
-                                                                                                                     .getIssueWindowId() == this.windowId)
+              .getIssueWindowId() == this.windowId)
       {
         SimCodeModel codeModel = functionUnitBlock.getSimCodeModel();
         functionUnitBlock.setSimCodeModel(null);
@@ -130,9 +132,10 @@ public class FpIssueWindowBlock extends AbstractIssueWindowBlock
   //----------------------------------------------------------------------
   
   /**
-   * @brief Checks if provided instruction type is compatible with this window and its FUs
    * @param [in] instructionType - Type of the instruction (branch, arithmetic, eg.)
+   *
    * @return True if compatible, false otherwise
+   * @brief Checks if provided instruction type is compatible with this window and its FUs
    */
   @Override
   public boolean isCorrectInstructionType(InstructionTypeEnum instructionType)
@@ -142,9 +145,10 @@ public class FpIssueWindowBlock extends AbstractIssueWindowBlock
   //----------------------------------------------------------------------
   
   /**
-   * @brief Checks if provided data type is compatible with this window and its FUs
    * @param [in] dataType - Data type (int, float, eg.)
+   *
    * @return True if compatible, false otherwise
+   * @brief Checks if provided data type is compatible with this window and its FUs
    */
   @Override
   public boolean isCorrectDataType(DataTypeEnum dataType)
@@ -167,8 +171,9 @@ public class FpIssueWindowBlock extends AbstractIssueWindowBlock
   //----------------------------------------------------------------------
   
   /**
-   * @brief Associate function block with this window
    * @param [in] functionUnitBlock - FU to bind with this window
+   *
+   * @brief Associate function block with this window
    */
   public void setFunctionUnitBlock(ArithmeticFunctionUnitBlock functionUnitBlock)
   {
@@ -179,10 +184,11 @@ public class FpIssueWindowBlock extends AbstractIssueWindowBlock
   //----------------------------------------------------------------------
   
   /**
-   * @brief Checks if provided instruction can be executed by any function unit
    * @param [in] allowedInstructions      - Array of allowed instructions by the FU
    * @param [in] interpretableInstruction - String containing all operations used to calculate instruction
+   *
    * @return True if FU instruction pool supports instruction, false otherwise
+   * @brief Checks if provided instruction can be executed by any function unit
    */
   private boolean isInstructionSupported(final String[] allowedInstructions, final String interpretableInstruction)
   {

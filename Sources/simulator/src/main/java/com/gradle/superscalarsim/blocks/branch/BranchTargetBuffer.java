@@ -57,9 +57,10 @@ public class BranchTargetBuffer
   private final Stack<BranchTargetEntryModel> previousEntries;
   
   /**
-   * @brief Constructor
    * @param [in] initLoader - InitLoader class holding information about instruction and registers
    * @param [in] size       - Size of the BTB
+   *
+   * @brief Constructor
    */
   public BranchTargetBuffer(InitLoader initLoader, int size)
   {
@@ -88,8 +89,8 @@ public class BranchTargetBuffer
   }
   
   /**
-   * @brief Get whole BTB
    * @return List of BTB entries
+   * @brief Get whole BTB
    */
   public Map<Integer, BranchTargetEntryModel> getBuffer()
   {
@@ -98,8 +99,8 @@ public class BranchTargetBuffer
   //----------------------------------------------------------------------
   
   /**
-   * @brief Get BTB buffer size
    * @return BTB buffer size
+   * @brief Get BTB buffer size
    */
   public int getBufferSize()
   {
@@ -108,8 +109,9 @@ public class BranchTargetBuffer
   //----------------------------------------------------------------------
   
   /**
-   * @brief Reallocates buffer to new size
    * @param [in] size - New size of the buffer
+   *
+   * @brief Reallocates buffer to new size
    */
   public void reallocateTargetBuffer(int size)
   {
@@ -119,11 +121,12 @@ public class BranchTargetBuffer
   //----------------------------------------------------------------------
   
   /**
-   * @brief Sets entry to BTB
    * @param [in] programCounter - Position fo the instruction in program
    * @param [in] codeModel      - Branch code model
    * @param [in] target         - Target of the branch code model
    * @param [in] commitId       - Id marking when branch instruction get committed
+   *
+   * @brief Sets entry to BTB
    */
   public void setEntry(int programCounter, IInputCodeModel codeModel, int target, int id, int commitId)
   {
@@ -138,9 +141,10 @@ public class BranchTargetBuffer
   //----------------------------------------------------------------------
   
   /**
-   * @brief Gets entry target specified by the program position
    * @param [in] programCounter - Position of the instruction in program
+   *
    * @return Target of the branch instruction
+   * @brief Gets entry target specified by the program position
    */
   public int getEntryTarget(int programCounter)
   {
@@ -154,9 +158,10 @@ public class BranchTargetBuffer
   //----------------------------------------------------------------------
   
   /**
-   * @brief Ccheck if an entry is of unconditional branch instruction
    * @param [in] programCounter - Position of the instruction in the program
+   *
    * @return True if the entry is unconditional, false otherwise
+   * @brief Ccheck if an entry is of unconditional branch instruction
    */
   public boolean isEntryUnconditional(int programCounter)
   {
@@ -166,8 +171,9 @@ public class BranchTargetBuffer
   //----------------------------------------------------------------------
   
   /**
-   * @brief Clears entry on the specified position
    * @param [in] programCounter - Position of the instruction in the program
+   *
+   * @brief Clears entry on the specified position
    */
   public void clearEntry(int programCounter)
   {
@@ -176,10 +182,11 @@ public class BranchTargetBuffer
   //----------------------------------------------------------------------
   
   /**
-   * @brief Resets entry from memory if ids are equal with the current entry
    * @param [in] programCounter - Position of the instruction in the program
    * @param [in] id         - Id from decode block marking bulk of processed instructions
    * @param [in] commitId       - Id marking when branch instruction get committed
+   *
+   * @brief Resets entry from memory if ids are equal with the current entry
    */
   public void resetEntry(int programCounter, int id, int commitId)
   {

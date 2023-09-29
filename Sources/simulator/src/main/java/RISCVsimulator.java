@@ -79,8 +79,9 @@ class SimOptions implements Callable<Integer>
 public class RISCVsimulator
 {
   /**
-   * @brief Application main
    * @param [in] args - Input arguments
+   *
+   * @brief Application main
    */
   public static void main(String[] args)
   {

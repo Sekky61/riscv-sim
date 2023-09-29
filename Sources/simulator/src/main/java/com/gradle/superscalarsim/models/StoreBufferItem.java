@@ -56,9 +56,10 @@ public class StoreBufferItem
   private int memoryFailedId;
   
   /**
-   * @brief Constructor
    * @param [in] sourceRegister - Name of the source register from where store takes the result
    * @param [in] sourceId       - Id used when getting correct store for bypassing
+   *
+   * @brief Constructor
    */
   public StoreBufferItem(String sourceRegister, int sourceId)
   {
@@ -75,8 +76,9 @@ public class StoreBufferItem
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Set flag if instruction is accessing memory (MA block)
    * @param [in] isAccessingMemory - Flag marking memory access
+   *
+   * @brief Set flag if instruction is accessing memory (MA block)
    */
   public void setAccessingMemory(boolean isAccessingMemory)
   {
@@ -85,8 +87,8 @@ public class StoreBufferItem
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Is instruction in the MA block
    * @return True if yes, false if no
+   * @brief Is instruction in the MA block
    */
   public boolean isAccessingMemory()
   {
@@ -95,8 +97,8 @@ public class StoreBufferItem
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Get MA id when was instruction released
    * @return MA release id
+   * @brief Get MA id when was instruction released
    */
   public int getMemoryAccessId()
   {
@@ -105,8 +107,9 @@ public class StoreBufferItem
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Set MA id when was instruction released
    * @param [in] memoryAccessId - MA id when was instruction released
+   *
+   * @brief Set MA id when was instruction released
    */
   public void setMemoryAccessId(int memoryAccessId)
   {
@@ -115,8 +118,8 @@ public class StoreBufferItem
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Get id when instruction has failed
    * @return Id when instruction has failed
+   * @brief Get id when instruction has failed
    */
   public int getMemoryFailedId()
   {
@@ -125,8 +128,9 @@ public class StoreBufferItem
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Set id when instruction has failed
    * @param [in] memoryFailedId - Id when instruction has failed
+   *
+   * @brief Set id when instruction has failed
    */
   public void setMemoryFailedId(int memoryFailedId)
   {
@@ -135,8 +139,8 @@ public class StoreBufferItem
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Get id when the load instruction got into MA from load buffer
    * @return Id of the time, when instruction got into MA
+   * @brief Get id when the load instruction got into MA from load buffer
    */
   public int getAccessingMemoryId()
   {
@@ -145,8 +149,9 @@ public class StoreBufferItem
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Set id when the load instruction got into MA from load buffer
    * @param [in] accessingMemoryId - New id when the load instruction got into MA from load buffer
+   *
+   * @brief Set id when the load instruction got into MA from load buffer
    */
   public void setAccessingMemoryId(int accessingMemoryId)
   {
@@ -155,8 +160,8 @@ public class StoreBufferItem
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Get name of the source register
    * @return Name of the source register
+   * @brief Get name of the source register
    */
   public String getSourceRegister()
   {
@@ -165,8 +170,8 @@ public class StoreBufferItem
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Is source register ready to be read from?
    * @return True if yes, false if no
+   * @brief Is source register ready to be read from?
    */
   public boolean isSourceReady()
   {
@@ -175,8 +180,9 @@ public class StoreBufferItem
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Sets flag if source register is ready for reading from
    * @param [in] destinationReady - Flag if source register is ready for reading from
+   *
+   * @brief Sets flag if source register is ready for reading from
    */
   public void setSourceReady(boolean destinationReady)
   {
@@ -185,8 +191,8 @@ public class StoreBufferItem
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Get store address
    * @return Store address
+   * @brief Get store address
    */
   public long getAddress()
   {
@@ -195,8 +201,9 @@ public class StoreBufferItem
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Set store address
    * @param [in] address - Address to store result into
+   *
+   * @brief Set store address
    */
   public void setAddress(long address)
   {
@@ -205,8 +212,8 @@ public class StoreBufferItem
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Get id used when getting correct store for bypassing
    * @return Id used when getting correct store for bypassing
+   * @brief Get id used when getting correct store for bypassing
    */
   public int getSourceResultId()
   {

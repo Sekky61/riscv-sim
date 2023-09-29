@@ -50,12 +50,13 @@ public class BranchTargetEntryModel
   private final int commitId;
   
   /**
-   * @brief Constructor
    * @param [in] pcTag    - PC Tag which identifies instruction
    * @param [in] isBranch - Is branch instruction conditional or unconditional
    * @param [in] target   - Target of the branch instruction
    * @param [in] bulkId   - Id from decode block marking bulk of processed instructions
    * @param [in] commitId - Id marking when branch instruction get committed
+   *
+   * @brief Constructor
    */
   public BranchTargetEntryModel(int pcTag, boolean isConditional, int target, int bulkId, int commitId)
   {
@@ -68,8 +69,8 @@ public class BranchTargetEntryModel
   //----------------------------------------------------------------------
   
   /**
-   * @brief Gets PC Tag of the entry
    * @return PC Tag
+   * @brief Gets PC Tag of the entry
    */
   public int getPcTag()
   {
@@ -78,8 +79,8 @@ public class BranchTargetEntryModel
   //----------------------------------------------------------------------
   
   /**
-   * @brief Checks if the entry is of conditional or unconditional branch instruction
    * @return True if branch instruction entry is conditional, false if unconditional
+   * @brief Checks if the entry is of conditional or unconditional branch instruction
    */
   public boolean isConditional()
   {
@@ -88,8 +89,8 @@ public class BranchTargetEntryModel
   //----------------------------------------------------------------------
   
   /**
-   * @brief Gets branch instruction entry target
    * @return Target position of the jump
+   * @brief Gets branch instruction entry target
    */
   public int getTarget()
   {
@@ -98,8 +99,8 @@ public class BranchTargetEntryModel
   //----------------------------------------------------------------------
   
   /**
-   * @brief Get id when was entry processed by decode block
    * @return Integer value of bulkId
+   * @brief Get id when was entry processed by decode block
    */
   public int getInstructionId()
   {
@@ -108,8 +109,8 @@ public class BranchTargetEntryModel
   //----------------------------------------------------------------------
   
   /**
-   * @brief Get id when was entry processed by ROB block
    * @return Integer value of commitId
+   * @brief Get id when was entry processed by ROB block
    */
   public int getCommitId()
   {

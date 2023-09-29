@@ -255,7 +255,7 @@ public class ReorderBufferBlock implements AbstractBlock
       }
       
       hasInstructionBeenProcessed = false;
-      SimCodeModel currentInstruction = this.state.reorderQueue.peek();
+      SimCodeModel currentInstruction  = this.state.reorderQueue.peek();
       ReorderFlags currentReorderFlags = this.state.flagsMap.get(currentInstruction.getId());
       
       // Check if instruction should be committed or removed because of failed speculation
@@ -349,9 +349,12 @@ public class ReorderBufferBlock implements AbstractBlock
     {
       if (currentInstruction.getReadyId() == this.state.commitId)
       {
-        currentInstruction.getArguments().stream().filter(argument -> argument.getName().equals("rd")).findFirst()
-                          .ifPresent(argument -> registerFileBlock.getRegister(argument.getValue())
-                                                                  .setReadiness(RegisterReadinessEnum.kExecuted));
+        currentInstruction.getArguments()
+                .stream()
+                .filter(argument -> argument.getName().equals("rd"))
+                .findFirst()
+                .ifPresent(argument -> registerFileBlock.getRegister(argument.getValue())
+                        .setReadiness(RegisterReadinessEnum.kExecuted));
       }
     }
     
@@ -463,7 +466,7 @@ public class ReorderBufferBlock implements AbstractBlock
       {
         return;
       }
-      String registerName = this.renameMapTableBlock.getRegisterMap().get(register).getArchitecturalRegister();
+      String        registerName  = this.renameMapTableBlock.getRegisterMap().get(register).getArchitecturalRegister();
       RegisterModel registerModel = registerFileBlock.getRegister(registerName);
       this.state.preCommitModelStack.push(
               new PreCommitModel(this.state.commitId, registerName, register, registerModel.getValue(), orderId,
@@ -483,18 +486,18 @@ public class ReorderBufferBlock implements AbstractBlock
   private void resetAssignedRegisters()
   {
     while (!this.state.preCommitModelStack.empty() && this.state.preCommitModelStack.peek()
-                                                                                    .getId() == this.state.commitId)
+            .getId() == this.state.commitId)
     {
       PreCommitModel destinationRegister = this.state.preCommitModelStack.pop();
       if (destinationRegister.getSpeculRegister().isEmpty())
       {
         this.registerFileBlock.getRegister(destinationRegister.getArchRegister())
-                              .setValue(destinationRegister.getValue());
+                .setValue(destinationRegister.getValue());
       }
       else
       {
         boolean mappingExists = this.renameMapTableBlock.getRegisterMap()
-                                                        .containsKey(destinationRegister.getSpeculRegister());
+                .containsKey(destinationRegister.getSpeculRegister());
         this.renameMapTableBlock.mapRegister(destinationRegister.getArchRegister(),
                                              destinationRegister.getSpeculRegister(),
                                              destinationRegister.getRegisterOrder());
@@ -503,11 +506,11 @@ public class ReorderBufferBlock implements AbstractBlock
         {
           double value = this.registerFileBlock.getRegister(destinationRegister.getArchRegister()).getValue();
           this.registerFileBlock.getRegister(destinationRegister.getArchRegister())
-                                .setValue(destinationRegister.getValue());
+                  .setValue(destinationRegister.getValue());
           this.registerFileBlock.getRegister(destinationRegister.getSpeculRegister()).setValue(value);
         }
         this.registerFileBlock.getRegister(destinationRegister.getSpeculRegister())
-                              .setReadiness(destinationRegister.getSpeculState());
+                .setReadiness(destinationRegister.getSpeculState());
       }
     }
   }// end of resetAssignedRegisters
@@ -608,16 +611,18 @@ public class ReorderBufferBlock implements AbstractBlock
     }
     // clear what you can
     this.decodeAndDispatchBlock.setFlush(true);
-    this.decodeAndDispatchBlock.getAfterRenameCodeList().forEach(
-            simCodeModel -> simCodeModel.getArguments().stream().filter(argument -> argument.getName().startsWith("r"))
-                                        .forEach(argument ->
-                                                 {
-                                                   saveRegisterValue(argument.getValue(), simCodeModel.getId());
-                                                   if (renameMapTableBlock.reduceReference(argument.getValue()))
-                                                   {
-                                                     renameMapTableBlock.freeMapping(argument.getValue());
-                                                   }
-                                                 }));
+    this.decodeAndDispatchBlock.getAfterRenameCodeList()
+            .forEach(simCodeModel -> simCodeModel.getArguments()
+                    .stream()
+                    .filter(argument -> argument.getName().startsWith("r"))
+                    .forEach(argument ->
+                             {
+                               saveRegisterValue(argument.getValue(), simCodeModel.getId());
+                               if (renameMapTableBlock.reduceReference(argument.getValue()))
+                               {
+                                 renameMapTableBlock.freeMapping(argument.getValue());
+                               }
+                             }));
     this.instructionFetchBlock.getFetchedCode().clear();
     
     this.state.speculativePulls = !polledInstructions.isEmpty() && this.state.flagsMap.get(
@@ -676,15 +681,17 @@ public class ReorderBufferBlock implements AbstractBlock
         instructionForRemoval.add(currentInstruction);
         this.state.flagsStack.push(this.state.flagsMap.get(currentInstruction.getId()));
         this.state.flagsMap.remove(currentInstruction.getId());
-        currentInstruction.getArguments().stream().filter(argument -> argument.getName().startsWith("r"))
-                          .forEach(argument ->
-                                   {
-                                     saveRegisterValue(argument.getValue(), currentInstruction.getId());
-                                     if (renameMapTableBlock.reduceReference(argument.getValue()))
-                                     {
-                                       renameMapTableBlock.freeMapping(argument.getValue());
-                                     }
-                                   });
+        currentInstruction.getArguments()
+                .stream()
+                .filter(argument -> argument.getName().startsWith("r"))
+                .forEach(argument ->
+                         {
+                           saveRegisterValue(argument.getValue(), currentInstruction.getId());
+                           if (renameMapTableBlock.reduceReference(argument.getValue()))
+                           {
+                             renameMapTableBlock.freeMapping(argument.getValue());
+                           }
+                         });
         this.state.releaseStack.push(currentInstruction);
         
         if (currentInstruction.getInstructionTypeEnum() == InstructionTypeEnum.kJumpbranch)

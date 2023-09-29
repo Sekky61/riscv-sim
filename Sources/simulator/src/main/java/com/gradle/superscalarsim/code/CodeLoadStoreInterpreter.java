@@ -59,9 +59,10 @@ public class CodeLoadStoreInterpreter
   private final UnifiedRegisterFileBlock registerFileBlock;
   
   /**
-   * @brief Constructor
    * @param [in] initLoader - Initial loader of interpretable instructions and register files
    * @param [in] memoryModel - Class simulating memory
+   *
+   * @brief Constructor
    */
   public CodeLoadStoreInterpreter(final InitLoader initLoader,
                                   final MemoryModel memoryModel,
@@ -98,19 +99,20 @@ public class CodeLoadStoreInterpreter
     InputCodeArgument offsetImmediate = parsedCode.getArgumentByName(interpretableAsParams[4]);
     
     long address = Double.valueOf(
-                                 getValueFromOperand(Objects.requireNonNull(addressRegister).getValue(), instruction.getInputDataType()))
-                         .longValue();
+                    getValueFromOperand(Objects.requireNonNull(addressRegister).getValue(), instruction.getInputDataType()))
+            .longValue();
     long offset = Double.valueOf(
-                                getValueFromOperand(Objects.requireNonNull(offsetImmediate).getValue(), instruction.getInputDataType()))
-                        .longValue();
+                    getValueFromOperand(Objects.requireNonNull(offsetImmediate).getValue(), instruction.getInputDataType()))
+            .longValue();
     
     return address + offset;
   }// end of interpretAddress
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Check if a provided instruction is store and if yes, revert memory operation
    * @param [in] parsedCode - Load/Store instruction
+   *
+   * @brief Check if a provided instruction is store and if yes, revert memory operation
    */
   public void revertMemoryHistory(final SimCodeModel parsedCode)
   {
@@ -127,9 +129,10 @@ public class CodeLoadStoreInterpreter
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Interprets load/store instruction from parsedCode
    * @param [in] parsedCode - code to be interpreted
+   *
    * @return Returns double value, in case of store returns stored value, in case of load returns value from memory
+   * @brief Interprets load/store instruction from parsedCode
    */
   public Pair<Integer, Double> interpretInstruction(final SimCodeModel parsedCode, int currentCycle)
   {
@@ -146,11 +149,11 @@ public class CodeLoadStoreInterpreter
     InputCodeArgument loadStoreRegister = parsedCode.getArgumentByName(interpretableAsParams[2]);
     
     long address = Double.valueOf(
-                                 getValueFromOperand(Objects.requireNonNull(addressRegister).getValue(), instruction.getInputDataType()))
-                         .longValue();
+                    getValueFromOperand(Objects.requireNonNull(addressRegister).getValue(), instruction.getInputDataType()))
+            .longValue();
     long offset = Double.valueOf(
-                                getValueFromOperand(Objects.requireNonNull(offsetImmediate).getValue(), instruction.getInputDataType()))
-                        .longValue();
+                    getValueFromOperand(Objects.requireNonNull(offsetImmediate).getValue(), instruction.getInputDataType()))
+            .longValue();
     
     switch (interpretableAsParams[0])
     {
@@ -175,13 +178,14 @@ public class CodeLoadStoreInterpreter
   
   
   /**
-   * @brief Processes load instruction
    * @param [in] size        - Size of the loaded value
    * @param [in] isUnsigned  - Flag, if result should be sign extended or zero extended
    * @param [in] destination - Destination register
    * @param [in] address     - Address pointing to value in memory
    * @param [in] offset      - Address offset
+   *
    * @return Double value from memory
+   * @brief Processes load instruction
    */
   private Pair<Integer, Double> processLoadOperation(String size,
                                                      boolean isUnsigned,
@@ -191,10 +195,10 @@ public class CodeLoadStoreInterpreter
                                                      int id,
                                                      int currentCycle)
   {
-    long effectiveAddress = address + offset;
-    int  numberOfBytes    = sizeToNumberOfBytes(size);
-    Pair<Integer, Long> loadedData = memoryModel.load(effectiveAddress, numberOfBytes, id, currentCycle);
-    double sign = isUnsigned ? 1.0 : getSign(size, loadedData.getSecond());
+    long                effectiveAddress = address + offset;
+    int                 numberOfBytes    = sizeToNumberOfBytes(size);
+    Pair<Integer, Long> loadedData       = memoryModel.load(effectiveAddress, numberOfBytes, id, currentCycle);
+    double              sign             = isUnsigned ? 1.0 : getSign(size, loadedData.getSecond());
     
     RegisterModel registerModel = null;
     for (RegisterFileModel registerFileModel : initLoader.getRegisterFileModelList())
@@ -207,9 +211,11 @@ public class CodeLoadStoreInterpreter
     }
     if (registerModel == null)
     {
-      registerModel = this.registerFileBlock.getRegisterList(DataTypeEnum.kSpeculative).stream()
-                                            .filter(register -> register.getName().equals(destination)).findFirst()
-                                            .orElse(null);
+      registerModel = this.registerFileBlock.getRegisterList(DataTypeEnum.kSpeculative)
+              .stream()
+              .filter(register -> register.getName().equals(destination))
+              .findFirst()
+              .orElse(null);
     }
     
     byte[] bytes = new byte[numberOfBytes];
@@ -237,11 +243,13 @@ public class CodeLoadStoreInterpreter
   
   /**
    * Process store instruction
+   *
    * @param [in] size        - Size of the stored value
    * @param [in] sourceValue - Value to be stored
    * @param [in] address     - Address pointing to value in memory
    * @param [in] offset      - Address offset
    * @param [in] id          - Id of a store instruction, that is being executed
+   *
    * @return Stored value in Double
    */
   private Pair<Integer, Double> processStoreOperation(String size,
@@ -296,9 +304,10 @@ public class CodeLoadStoreInterpreter
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Gets number of bytes according to size type
    * @param [in] size - String value defining how many bytes to load/store
+   *
    * @return Number of bytes to allocate
+   * @brief Gets number of bytes according to size type
    */
   private int sizeToNumberOfBytes(String size)
   {
@@ -315,10 +324,11 @@ public class CodeLoadStoreInterpreter
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Get sign of loaded value
    * @param [in] size             - String value defining how many bytes to load
    * @param [in] effectiveAddress - Address pointing to specific place in memory
+   *
    * @return Signum function value of loaded value in memory
+   * @brief Get sign of loaded value
    */
   private double getSign(String size, long data)
   {
@@ -337,10 +347,11 @@ public class CodeLoadStoreInterpreter
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Gets value from string operand
    * @param [in] operand - Value to be parsed, either immediate (hex or decimal) or register
    * @param [in] dataType - Result data type
+   *
    * @return Parsed double value from operand
+   * @brief Gets value from string operand
    */
   private double getValueFromOperand(String operand, DataTypeEnum dataType)
   {
@@ -358,9 +369,11 @@ public class CodeLoadStoreInterpreter
     RegisterModel  registerModel = null;
     for (DataTypeEnum possibleDataType : dataTypeEnums)
     {
-      registerModel = this.registerFileBlock.getRegisterList(possibleDataType).stream()
-                                            .filter(register -> register.getName().equals(operand)).findFirst()
-                                            .orElse(null);
+      registerModel = this.registerFileBlock.getRegisterList(possibleDataType)
+              .stream()
+              .filter(register -> register.getName().equals(operand))
+              .findFirst()
+              .orElse(null);
       if (registerModel != null)
       {
         break;
@@ -369,9 +382,11 @@ public class CodeLoadStoreInterpreter
     
     if (registerModel == null)
     {
-      registerModel = this.registerFileBlock.getRegisterList(DataTypeEnum.kSpeculative).stream()
-                                            .filter(register -> register.getName().equals(operand)).findFirst()
-                                            .orElse(null);
+      registerModel = this.registerFileBlock.getRegisterList(DataTypeEnum.kSpeculative)
+              .stream()
+              .filter(register -> register.getName().equals(operand))
+              .findFirst()
+              .orElse(null);
     }
     
     return registerModel != null ? registerModel.getValue() : Double.NaN;
@@ -379,9 +394,10 @@ public class CodeLoadStoreInterpreter
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Get list of data types in which specified data type can fit
    * @param [in] dataType - Data type of the register
+   *
    * @return List of datatypes in which input datatype can fit
+   * @brief Get list of data types in which specified data type can fit
    */
   private DataTypeEnum[] getFitRegisterTypes(DataTypeEnum dataType)
   {

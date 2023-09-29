@@ -50,9 +50,10 @@ public class InputCodeArgument
   private String value;
   
   /**
-   * @brief Constructor
    * @param [in] name  - Name of the argument
    * @param [in] value - Value of the argument
+   *
+   * @brief Constructor
    */
   public InputCodeArgument(final String name, final String value)
   {
@@ -62,8 +63,9 @@ public class InputCodeArgument
   //------------------------------------------------------
   
   /**
-   * @brief Copy constructor
    * @param [in] argument - Object to be copied
+   *
+   * @brief Copy constructor
    */
   public InputCodeArgument(final InputCodeArgument argument)
   {
@@ -73,8 +75,8 @@ public class InputCodeArgument
   //------------------------------------------------------
   
   /**
-   * @brief Get name of the argument
    * @return Argument name
+   * @brief Get name of the argument
    */
   public String getName()
   {
@@ -83,8 +85,9 @@ public class InputCodeArgument
   //------------------------------------------------------
   
   /**
-   * @brief Sets new name to argument
    * @param [in] name - New name for argument
+   *
+   * @brief Sets new name to argument
    */
   public void setName(final String name)
   {
@@ -93,8 +96,8 @@ public class InputCodeArgument
   //------------------------------------------------------
   
   /**
-   * @brief Get value of the argument
    * @return Argument value
+   * @brief Get value of the argument
    */
   public String getValue()
   {
@@ -103,8 +106,9 @@ public class InputCodeArgument
   //------------------------------------------------------
   
   /**
-   * @brief Sets new value of the argument
    * @param [in] value - New value of argument
+   *
+   * @brief Sets new value of the argument
    */
   public void setValue(final String value)
   {

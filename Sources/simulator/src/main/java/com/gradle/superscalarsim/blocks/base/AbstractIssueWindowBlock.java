@@ -78,6 +78,7 @@ public abstract class AbstractIssueWindowBlock implements AbstractBlock
    * @param [in] blockScheduleTask - Task class, where blocks are periodically triggered by the GlobalTimer
    * @param [in] loader            - Initial loader of interpretable instructions and register files
    * @param [in] registerFileBlock - Class containing all registers, that simulator uses
+   *
    * @brief Constructor
    */
   public AbstractIssueWindowBlock(InitLoader loader, UnifiedRegisterFileBlock registerFileBlock)
@@ -95,6 +96,7 @@ public abstract class AbstractIssueWindowBlock implements AbstractBlock
   
   /**
    * @param [in] instruction - instruction to be issued
+   *
    * @return Suitable function unit
    * @brief Selects suitable function unit for certain instruction
    */
@@ -102,6 +104,7 @@ public abstract class AbstractIssueWindowBlock implements AbstractBlock
   
   /**
    * @param [in] instructionType - Type of the instruction (branch, arithmetic, eg.)
+   *
    * @return True if compatible, false otherwise
    * @brief Checks if provided instruction type is compatible with this window and its FUs
    */
@@ -109,6 +112,7 @@ public abstract class AbstractIssueWindowBlock implements AbstractBlock
   
   /**
    * @param [in] dataType - Data type (int, float, eg.)
+   *
    * @return True if compatible, false otherwise
    * @brief Checks if provided data type is compatible with this window and its FUs
    */
@@ -131,6 +135,7 @@ public abstract class AbstractIssueWindowBlock implements AbstractBlock
   
   /**
    * @param [in] renamedCodeLine - String of the renamed code line (id)
+   *
    * @return Validity map entry
    * @brief Get validity map entry for specified instruction
    */
@@ -206,6 +211,7 @@ public abstract class AbstractIssueWindowBlock implements AbstractBlock
   
   /**
    * @param [in] windowId - Id for this window
+   *
    * @brief Sets id for this window
    */
   public void setWindowId(int windowId)
@@ -216,6 +222,7 @@ public abstract class AbstractIssueWindowBlock implements AbstractBlock
   
   /**
    * @param [in] codeModel - Instruction to be added
+   *
    * @brief Adds new instruction to window list
    */
   public void dispatchInstruction(SimCodeModel codeModel)
@@ -226,6 +233,7 @@ public abstract class AbstractIssueWindowBlock implements AbstractBlock
   
   /**
    * @param [in] codeModel - Instruction to be added to map
+   *
    * @brief Creates entry in argumentValidityMap
    */
   public void createArgumentValidityEntry(SimCodeModel codeModel)
@@ -258,6 +266,7 @@ public abstract class AbstractIssueWindowBlock implements AbstractBlock
   
   /**
    * @param [in] currentModel - Instruction to be checked
+   *
    * @return Trrue if instruction can be issued, false otherwise
    * @brief Checks if instruction is ready to be issued to FU
    */

@@ -50,9 +50,10 @@ public class ReorderBufferTableModel
   private final ReorderFlags reorderFlags;
   
   /**
-   * @brief Constructor
    * @param [in] simCodeModel - CodeModel of an instruction used in simulation
    * @param [in] reorderFlags - Reorder flags containing bit flags
+   *
+   * @brief Constructor
    */
   public ReorderBufferTableModel(SimCodeModel simCodeModel, ReorderFlags reorderFlags)
   {
@@ -78,8 +79,8 @@ public class ReorderBufferTableModel
   //----------------------------------------------------------------------------------
   
   /**
-   * @brief Get code line of this entry
    * @return String code line
+   * @brief Get code line of this entry
    */
   public String getCodeLine()
   {
@@ -88,8 +89,8 @@ public class ReorderBufferTableModel
   //----------------------------------------------------------------------------------
   
   /**
-   * @brief Get string value of the valid bit
    * @return String value of the valid bit
+   * @brief Get string value of the valid bit
    */
   public String getValidBit()
   {
@@ -98,8 +99,8 @@ public class ReorderBufferTableModel
   //----------------------------------------------------------------------------------
   
   /**
-   * @brief Get string value of the busy bit
    * @return String value of the busy bit
+   * @brief Get string value of the busy bit
    */
   public String getBusyBit()
   {
@@ -108,8 +109,8 @@ public class ReorderBufferTableModel
   //----------------------------------------------------------------------------------
   
   /**
-   * @brief Get string value of the speculative bit
    * @return String value of the speculative bit
+   * @brief Get string value of the speculative bit
    */
   public String getSpeculativeBit()
   {
@@ -118,8 +119,8 @@ public class ReorderBufferTableModel
   //----------------------------------------------------------------------------------
   
   /**
-   * @brief Get reorder buffer flags used for creating this entry
    * @return Reorder buffer flags used for creating this entry
+   * @brief Get reorder buffer flags used for creating this entry
    */
   public ReorderFlags getReorderFlags()
   {

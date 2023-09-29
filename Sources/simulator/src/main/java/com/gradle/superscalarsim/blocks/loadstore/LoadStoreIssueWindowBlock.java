@@ -62,6 +62,7 @@ public class LoadStoreIssueWindowBlock extends AbstractIssueWindowBlock
    * @param [in] blockScheduleTask - Task class, where blocks are periodically triggered by the GlobalTimer
    * @param [in] loader            - Initial loader of interpretable instructions and register files
    * @param [in] registerFileBlock - Class containing all registers, that simulator uses
+   *
    * @brief Constructor
    */
   public LoadStoreIssueWindowBlock(InitLoader loader, UnifiedRegisterFileBlock registerFileBlock)
@@ -73,6 +74,7 @@ public class LoadStoreIssueWindowBlock extends AbstractIssueWindowBlock
   
   /**
    * @param [in] instruction - instruction to be issued
+   *
    * @return Suitable function unit
    * @brief Selects suitable function unit for certain instruction
    */
@@ -100,7 +102,7 @@ public class LoadStoreIssueWindowBlock extends AbstractIssueWindowBlock
     for (AbstractFunctionUnitBlock functionUnitBlock : this.functionUnitBlockList)
     {
       if (!functionUnitBlock.isFunctionUnitEmpty() && functionUnitBlock.hasReversedDelayPassed() && functionUnitBlock.getSimCodeModel()
-                                                                                                                     .getIssueWindowId() == this.windowId)
+              .getIssueWindowId() == this.windowId)
       {
         SimCodeModel codeModel = functionUnitBlock.getSimCodeModel();
         functionUnitBlock.setSimCodeModel(null);
@@ -123,9 +125,10 @@ public class LoadStoreIssueWindowBlock extends AbstractIssueWindowBlock
   
   
   /**
-   * @brief Checks if provided instruction type is compatible with this window and its FUs
    * @param [in] instructionType - Type of the instruction (branch, arithmetic, eg.)
+   *
    * @return True if compatible, false otherwise
+   * @brief Checks if provided instruction type is compatible with this window and its FUs
    */
   @Override
   public boolean isCorrectInstructionType(InstructionTypeEnum instructionType)
@@ -136,6 +139,7 @@ public class LoadStoreIssueWindowBlock extends AbstractIssueWindowBlock
   
   /**
    * @param [in] dataType - Data type (int, float, eg.)
+   *
    * @return True if compatible, false otherwise
    * @brief Checks if provided data type is compatible with this window and its FUs
    */
@@ -162,6 +166,7 @@ public class LoadStoreIssueWindowBlock extends AbstractIssueWindowBlock
   
   /**
    * @param [in] functionUnitBlock - FU to bind with this window
+   *
    * @brief Associate function block with this window
    */
   public void setFunctionUnitBlock(LoadStoreFunctionUnit functionUnitBlock)
@@ -173,8 +178,9 @@ public class LoadStoreIssueWindowBlock extends AbstractIssueWindowBlock
   //----------------------------------------------------------------------
   
   /**
-   * @brief Adds list of function units to the Issue window
    * @param [in] loadStoreFunctionUnitList - list of new function units
+   *
+   * @brief Adds list of function units to the Issue window
    */
   public void setAllFunctionUnits(List<LoadStoreFunctionUnit> loadStoreFunctionUnitList)
   {
@@ -190,6 +196,7 @@ public class LoadStoreIssueWindowBlock extends AbstractIssueWindowBlock
   
   /**
    * Gets list of all function units associated with this window
+   *
    * @return List of function units
    */
   public List<LoadStoreFunctionUnit> getFunctionUnitBlockList()

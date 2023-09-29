@@ -48,8 +48,9 @@ public class TwoBitPredictor implements IBitPredictor
   private final boolean[] initialState;
   
   /**
-   * @brief Constructor
    * @param [in] isTaken - Initial value of the bit predictor
+   *
+   * @brief Constructor
    */
   public TwoBitPredictor(boolean isTaken)
   {
@@ -60,8 +61,9 @@ public class TwoBitPredictor implements IBitPredictor
   //----------------------------------------------------------------------
   
   /**
-   * @brief Constructor
    * @param [in] initialState - Initial bit array of the bit predictor
+   *
+   * @brief Constructor
    */
   public TwoBitPredictor(boolean[] initialState)
   {
@@ -72,8 +74,8 @@ public class TwoBitPredictor implements IBitPredictor
   //----------------------------------------------------------------------
   
   /**
-   * @brief Get current prediction saved in predictor
    * @return True if branch should be taken, false otherwise
+   * @brief Get current prediction saved in predictor
    */
   @Override
   public boolean getCurrentPrediction()
@@ -131,8 +133,8 @@ public class TwoBitPredictor implements IBitPredictor
   //----------------------------------------------------------------------
   
   /**
-   * @brief Returns the prediction bit vector value as a human readable string
    * @return Human readable prediction bit vector value
+   * @brief Returns the prediction bit vector value as a human readable string
    */
   @Override
   public String bitVectorToString()
@@ -148,8 +150,9 @@ public class TwoBitPredictor implements IBitPredictor
   //----------------------------------------------------------------------
   
   /**
-   * @brief Save history for backward prediction
    * @param [in] bitArray - Bit array to save
+   *
+   * @brief Save history for backward prediction
    */
   private void saveHistory(boolean[] bitArray)
   {

@@ -41,9 +41,10 @@ public class PatternHistoryTableViewItem
   private boolean changed;
   
   /**
-   * @brief Constructor
    * @param [in] index     - Index of the pattern history table entry
    * @param [in] bitVector - String value of the bit vector state
+   *
+   * @brief Constructor
    */
   public PatternHistoryTableViewItem(int index, String bitVector)
   {
@@ -65,8 +66,8 @@ public class PatternHistoryTableViewItem
   //----------------------------------------------------------------------
   
   /**
-   * @brief Get index of the entry
    * @return Index of the entry
+   * @brief Get index of the entry
    */
   public int getIndex()
   {
@@ -75,8 +76,8 @@ public class PatternHistoryTableViewItem
   //----------------------------------------------------------------------
   
   /**
-   * @brief Get string value of the bit vector
    * @return String value of the bit vector
+   * @brief Get string value of the bit vector
    */
   public String getBitVector()
   {
@@ -85,8 +86,8 @@ public class PatternHistoryTableViewItem
   //----------------------------------------------------------------------
   
   /**
-   * @brief Get boolean value of the changed flag
    * @return True if entry was changed, false otherwise
+   * @brief Get boolean value of the changed flag
    */
   public boolean isChanged()
   {
@@ -95,8 +96,9 @@ public class PatternHistoryTableViewItem
   //----------------------------------------------------------------------
   
   /**
-   * @brief Set changed flag
    * @param [in] changed - Changed flag, true if entry was changed, false otherwise
+   *
+   * @brief Set changed flag
    */
   public void setChanged(boolean changed)
   {
