@@ -21,6 +21,13 @@ Opening the project for the first time:
 4. Right clicking the `src/test` directory and selecting `Run 'All Tests'` should run all tests successfully
 5. Run configurations (such as `Server run`) should be loaded from the `.idea` directory
 
+### Formatting
+
+The file `.idea/codeStyles/codeStyleConfig.xml` contains the formatting rules
+for the project.
+The rules follow the *SC@FIT Handbook* where sensible.
+IntelliJ IDEA should automatically pick up these rules.
+
 ## Testing from the command line
 
 Run:

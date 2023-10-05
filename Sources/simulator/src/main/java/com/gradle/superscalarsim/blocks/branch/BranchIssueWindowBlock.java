@@ -4,10 +4,10 @@
  * Faculty of Information Technology \n
  * Brno University of Technology \n
  * xvavra20@fit.vutbr.cz
- * @author  Michal Majer
- *          Faculty of Information Technology
- *          Brno University of Technology
- *          xmajer21@stud.fit.vutbr.cz
+ * @author Michal Majer
+ * Faculty of Information Technology
+ * Brno University of Technology
+ * xmajer21@stud.fit.vutbr.cz
  * @brief File contains class for Branch Issue window
  * @date 1  March   2021 16:00 (created) \n
  * 28 April   2021 11:50 (revised)
@@ -41,8 +41,6 @@ import com.gradle.superscalarsim.loader.InitLoader;
 import com.gradle.superscalarsim.models.InstructionFunctionModel;
 import com.gradle.superscalarsim.models.SimCodeModel;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -50,122 +48,143 @@ import java.util.List;
  * @class BranchIssueWindowBlock
  * @brief Specific Issue window class for all Branch FUs (processing jump and branch instructions)
  */
-public class BranchIssueWindowBlock extends AbstractIssueWindowBlock {
-
-    /// List for all function units associated with this window
-    private List<BranchFunctionUnitBlock> functionUnitBlockList;
-
-    public BranchIssueWindowBlock() {
+public class BranchIssueWindowBlock extends AbstractIssueWindowBlock
+{
+  
+  /// List for all function units associated with this window
+  private List<BranchFunctionUnitBlock> functionUnitBlockList;
+  
+  public BranchIssueWindowBlock()
+  {
+  }
+  
+  /**
+   * @param [in] blockScheduleTask - Task class, where blocks are periodically triggered by the GlobalTimer
+   * @param [in] loader            - Initial loader of interpretable instructions and register files
+   * @param [in] registerFileBlock - Class containing all registers, that simulator uses
+   *
+   * @brief Constructor
+   */
+  public BranchIssueWindowBlock(InitLoader loader, UnifiedRegisterFileBlock registerFileBlock)
+  {
+    super(loader, registerFileBlock);
+    this.functionUnitBlockList = new ArrayList<>();
+  }// end of Constructor
+  //----------------------------------------------------------------------
+  
+  /**
+   * @param [in] instruction - instruction to be issued
+   *
+   * @return Suitable function unit
+   * @brief Selects suitable function unit for certain instruction
+   */
+  @Override
+  public AbstractFunctionUnitBlock selectSufficientFunctionUnit(InstructionFunctionModel instruction)
+  {
+    for (BranchFunctionUnitBlock functionBlock : this.functionUnitBlockList)
+    {
+      if (functionBlock.isFunctionUnitEmpty())
+      {
+        return functionBlock;
+      }
     }
-
-    /**
-     * @param [in] blockScheduleTask - Task class, where blocks are periodically triggered by the GlobalTimer
-     * @param [in] loader            - Initial loader of interpretable instructions and register files
-     * @param [in] registerFileBlock - Class containing all registers, that simulator uses
-     * @brief Constructor
-     */
-    public BranchIssueWindowBlock(InitLoader loader, UnifiedRegisterFileBlock registerFileBlock) {
-        super(loader, registerFileBlock);
-        this.functionUnitBlockList = new ArrayList<>();
-    }// end of Constructor
-    //----------------------------------------------------------------------
-
-    /**
-     * @param [in] instruction - instruction to be issued
-     * @return Suitable function unit
-     * @brief Selects suitable function unit for certain instruction
-     */
-    @Override
-    public AbstractFunctionUnitBlock selectSufficientFunctionUnit(InstructionFunctionModel instruction) {
-        for (BranchFunctionUnitBlock functionBlock : this.functionUnitBlockList) {
-            if (functionBlock.isFunctionUnitEmpty()) {
-                return functionBlock;
-            }
-        }
-        return null;
-    }// end of selectSufficientFunctionUnit
-    //----------------------------------------------------------------------
-
-    /**
-     * @brief Simulates backwards (moves instructions from FUs)
-     */
-    @Override
-    public void simulateBackwards() {
-        this.windowId = this.windowId - 1;
-        for (AbstractFunctionUnitBlock functionUnitBlock : this.functionUnitBlockList) {
-            if (!functionUnitBlock.isFunctionUnitEmpty() && functionUnitBlock.hasReversedDelayPassed() && functionUnitBlock.getSimCodeModel().getIssueWindowId() == this.windowId) {
-                SimCodeModel codeModel = functionUnitBlock.getSimCodeModel();
-                functionUnitBlock.setSimCodeModel(null);
-                codeModel.setFunctionUnitId(0);
-                this.getIssuedInstructions().add(codeModel);
-                createArgumentValidityEntry(codeModel);
-            }
-        }
-        while (!this.failedInstructions.empty() && this.failedInstructions.peek().getIssueWindowId() == this.getWindowId()) {
-            SimCodeModel codeModel = failedInstructions.pop();
-            this.getIssuedInstructions().add(codeModel);
-            this.argumentValidityMap.put(codeModel.getId(),
-                    this.failedValidityMaps.pop());
-            codeModel.setIssueWindowId(0);
-        }
-        this.getIssuedInstructions().sort(SimCodeModel::compareTo);
-        updateValidityItems();
-    }// end of simulateBackwards
-    //----------------------------------------------------------------------
-
-
-    /**
-     * @param [in] instructionType - Type of the instruction (branch, arithmetic, eg.)
-     * @return True if compatible, false otherwise
-     * @brief Checks if provided instruction type is compatible with this window and its FUs
-     */
-    @Override
-    public boolean isCorrectInstructionType(InstructionTypeEnum instructionType) {
-        return instructionType == InstructionTypeEnum.kJumpbranch;
-    }// end of isCorrectInstructionType
-    //----------------------------------------------------------------------
-
-    /**
-     * @param [in] dataType - Data type (int, float, eg.)
-     * @return True if compatible, false otherwise
-     * @brief Checks if provided data type is compatible with this window and its FUs
-     */
-    @Override
-    public boolean isCorrectDataType(DataTypeEnum dataType) {
-        return true;
-    }// end of isCorrectDataType
-    //----------------------------------------------------------------------
-
-    /**
-     * @brief Set number of FUs to FU for correct id creation
-     */
-    @Override
-    public void setFunctionUnitCountInUnits() {
-        for (BranchFunctionUnitBlock functionUnitBlock : this.functionUnitBlockList) {
-            functionUnitBlock.setFunctionUnitCount(this.functionUnitBlockList.size());
-        }
-    }// end of setFunctionUnitCountInUnits
-    //----------------------------------------------------------------------
-
-
-    /**
-     * @param [in] functionUnitBlock - FU to bind with this window
-     * @brief Associate function block with this window
-     */
-    public void setFunctionUnitBlock(BranchFunctionUnitBlock functionUnitBlock) {
-        functionUnitBlock.setFunctionUnitId(this.functionUnitBlockList.size());
-        this.functionUnitBlockList.add(functionUnitBlock);
-        this.setFunctionUnitCountInUnits();
-    }// end of setFunctionUnitBlock
-    //----------------------------------------------------------------------
-
-    /**
-     * Gets list of all function units associated with this window
-     *
-     * @return List of function units
-     */
-    public List<BranchFunctionUnitBlock> getFunctionUnitBlockList() {
-        return functionUnitBlockList;
-    }// end of getFunctionUnitBlockList
-    //----------------------------------------------------------------------
+    return null;
+  }// end of selectSufficientFunctionUnit
+  //----------------------------------------------------------------------
+  
+  /**
+   * @brief Simulates backwards (moves instructions from FUs)
+   */
+  @Override
+  public void simulateBackwards()
+  {
+    this.windowId = this.windowId - 1;
+    for (AbstractFunctionUnitBlock functionUnitBlock : this.functionUnitBlockList)
+    {
+      if (!functionUnitBlock.isFunctionUnitEmpty() && functionUnitBlock.hasReversedDelayPassed() && functionUnitBlock.getSimCodeModel()
+                                                                                                                     .getIssueWindowId() == this.windowId)
+      {
+        SimCodeModel codeModel = functionUnitBlock.getSimCodeModel();
+        functionUnitBlock.setSimCodeModel(null);
+        codeModel.setFunctionUnitId(0);
+        this.getIssuedInstructions().add(codeModel);
+        createArgumentValidityEntry(codeModel);
+      }
+    }
+    while (!this.failedInstructions.empty() && this.failedInstructions.peek().getIssueWindowId() == this.getWindowId())
+    {
+      SimCodeModel codeModel = failedInstructions.pop();
+      this.getIssuedInstructions().add(codeModel);
+      this.argumentValidityMap.put(codeModel.getId(), this.failedValidityMaps.pop());
+      codeModel.setIssueWindowId(0);
+    }
+    this.getIssuedInstructions().sort(SimCodeModel::compareTo);
+    updateValidityItems();
+  }// end of simulateBackwards
+  //----------------------------------------------------------------------
+  
+  
+  /**
+   * @param [in] instructionType - Type of the instruction (branch, arithmetic, eg.)
+   *
+   * @return True if compatible, false otherwise
+   * @brief Checks if provided instruction type is compatible with this window and its FUs
+   */
+  @Override
+  public boolean isCorrectInstructionType(InstructionTypeEnum instructionType)
+  {
+    return instructionType == InstructionTypeEnum.kJumpbranch;
+  }// end of isCorrectInstructionType
+  //----------------------------------------------------------------------
+  
+  /**
+   * @param [in] dataType - Data type (int, float, eg.)
+   *
+   * @return True if compatible, false otherwise
+   * @brief Checks if provided data type is compatible with this window and its FUs
+   */
+  @Override
+  public boolean isCorrectDataType(DataTypeEnum dataType)
+  {
+    return true;
+  }// end of isCorrectDataType
+  //----------------------------------------------------------------------
+  
+  /**
+   * @brief Set number of FUs to FU for correct id creation
+   */
+  @Override
+  public void setFunctionUnitCountInUnits()
+  {
+    for (BranchFunctionUnitBlock functionUnitBlock : this.functionUnitBlockList)
+    {
+      functionUnitBlock.setFunctionUnitCount(this.functionUnitBlockList.size());
+    }
+  }// end of setFunctionUnitCountInUnits
+  //----------------------------------------------------------------------
+  
+  
+  /**
+   * @param [in] functionUnitBlock - FU to bind with this window
+   *
+   * @brief Associate function block with this window
+   */
+  public void setFunctionUnitBlock(BranchFunctionUnitBlock functionUnitBlock)
+  {
+    functionUnitBlock.setFunctionUnitId(this.functionUnitBlockList.size());
+    this.functionUnitBlockList.add(functionUnitBlock);
+    this.setFunctionUnitCountInUnits();
+  }// end of setFunctionUnitBlock
+  //----------------------------------------------------------------------
+  
+  /**
+   * Gets list of all function units associated with this window
+   *
+   * @return List of function units
+   */
+  public List<BranchFunctionUnitBlock> getFunctionUnitBlockList()
+  {
+    return functionUnitBlockList;
+  }// end of getFunctionUnitBlockList
+  //----------------------------------------------------------------------
 }
