@@ -174,6 +174,7 @@ public class CodeParserTest
     
     Assert.assertEquals(2, this.codeParser.getErrorMessages().size());
     Assert.assertEquals(3, this.codeParser.getErrorMessages().get(0).line);
+    Assert.assertEquals(5, this.codeParser.getErrorMessages().get(1).line);
   }
   
   @Test
@@ -190,8 +191,10 @@ public class CodeParserTest
     Assert.assertFalse(codeParser.parse(code));
     Assert.assertEquals(0, codeParser.getParsedCode().size());
     Assert.assertEquals(1, codeParser.getErrorMessages().size());
-    var firstError = codeParser.getErrorMessages().get(0);
+    CodeParser.ParseError firstError = codeParser.getErrorMessages().get(0);
     Assert.assertEquals(4, firstError.line);
+    Assert.assertEquals(11, firstError.columnStart);
+    Assert.assertEquals(13, firstError.columnEnd);
   }
   
   @Test
@@ -345,5 +348,36 @@ public class CodeParserTest
     Assert.assertTrue(success);
     Assert.assertEquals(2, codeParser.getParsedCode().size());
     Assert.assertTrue(codeParser.getErrorMessages().isEmpty());
+  }
+  
+  @Test
+  public void parseCode_colonInTheMiddleOfAWord_correctlySplits()
+  {
+    String code = """
+            addi sp x3 5
+            anyt:hing  # Takes this as a label and a word 'hing'
+            beq x3 zero 0
+            """;
+    
+    boolean success = codeParser.parse(code);
+    
+    Assert.assertFalse(success);
+    Assert.assertEquals(1, codeParser.getErrorMessages().size());
+    Assert.assertEquals(2, codeParser.getErrorMessages().get(0).line);
+    Assert.assertEquals(6, codeParser.getErrorMessages().get(0).columnStart);
+    Assert.assertEquals(9, codeParser.getErrorMessages().get(0).columnEnd);
+  }
+  
+  @Test
+  public void parseCode_labelAsArgument_returnsFalse()
+  {
+    String code = """
+            addi sp L: addi sp sp 1
+            """;
+    
+    boolean success = codeParser.parse(code);
+    
+    // The parser may not recover well, so number of errors is not checked
+    Assert.assertFalse(success);
   }
 }

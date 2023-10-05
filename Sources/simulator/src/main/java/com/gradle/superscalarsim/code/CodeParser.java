@@ -176,7 +176,7 @@ public class CodeParser
       String line = lines[i].split("#", 2)[0];
       
       // Split the code to words and commas
-      Pattern pattern = Pattern.compile("[\\w\\.:\\(\\)-]+|,");
+      Pattern pattern = Pattern.compile("[\\w\\.\\(\\)-]+:?|,");
       Matcher matcher = pattern.matcher(line);
       while (matcher.find())
       {
