@@ -222,7 +222,7 @@ public class InstructionFetchBlock implements AbstractBlock
         {
           int simCodeId = newPcCounter * numberOfWays + i;
           SimCodeModel codeModel = this.simCodeModelAllocator.createSimCodeModel(
-              this.parser.getParsedCode().get(newPcCounter), simCodeId, cycleId);
+                  this.parser.getParsedCode().get(newPcCounter), simCodeId, cycleId);
           int previousNewPc = newPcCounter;
           newPcCounter = checkForBranching(codeModel, newPcCounter);
           if (previousNewPc == newPcCounter)
@@ -372,8 +372,8 @@ public class InstructionFetchBlock implements AbstractBlock
     for (int i = 0; i < fetchDifference; i++)
     {
       fetchVector.add(fetchLimitLow + nopDifference + i);
-      SimCodeModel nop = simCodeModelAllocator.createSimCodeModel(
-          new InputCodeModel(null, "nop", "nop", null, null, null, 0), 0, cycleId);
+      SimCodeModel nop = simCodeModelAllocator.createSimCodeModel(new InputCodeModel(null, "nop", null, null, null, 0),
+                                                                  0, cycleId);
       fetchedCode.add(nop);
     }
     return loadedInstructions;

@@ -55,12 +55,9 @@ public class InputCodeModel implements IInputCodeModel
    */
   private final String instructionName;
   /**
-   * @brief Original line of code
-   * Example: "addi x1, x1, 5"
-   */
-  private final String codeLine;
-  /**
    * Arguments of the instruction
+   * The order of arguments is the same as in the original code line and tests depend on this order.
+   * Labels use `labelName` as argument to store the name of the label.
    */
   private final List<InputCodeArgument> arguments;
   /**
@@ -90,7 +87,6 @@ public class InputCodeModel implements IInputCodeModel
    */
   public InputCodeModel(InstructionFunctionModel instructionFunctionModel,
                         final String instructionName,
-                        final String codeLine,
                         final List<InputCodeArgument> arguments,
                         final InstructionTypeEnum instructionTypeEnum,
                         final DataTypeEnum resultDataType,
@@ -99,7 +95,6 @@ public class InputCodeModel implements IInputCodeModel
     this.instructionFunctionModel = instructionFunctionModel;
     this.codeId                   = codeId;
     this.instructionName          = instructionName;
-    this.codeLine                 = codeLine;
     this.arguments                = arguments == null ? new ArrayList<>() : arguments;
     this.instructionTypeEnum      = instructionTypeEnum;
     this.resultDataType           = resultDataType;
@@ -115,17 +110,6 @@ public class InputCodeModel implements IInputCodeModel
   {
     return instructionName;
   }// end of getInstructionName
-  //------------------------------------------------------
-  
-  /**
-   * @return Unparsed line of code
-   * @brief Get unparsed line of code
-   */
-  @Override
-  public String getCodeLine()
-  {
-    return codeLine;
-  }// end of getCodeLine
   //------------------------------------------------------
   
   /**
@@ -193,6 +177,11 @@ public class InputCodeModel implements IInputCodeModel
   @Override
   public String toString()
   {
-    return this.getCodeLine();
+    StringBuilder genericLine = new StringBuilder(getInstructionName());
+    for (int i = 0; i < getArguments().size(); i++)
+    {
+      genericLine.append(" ").append(getArguments().get(i).getValue());
+    }
+    return genericLine.toString();
   }
 }

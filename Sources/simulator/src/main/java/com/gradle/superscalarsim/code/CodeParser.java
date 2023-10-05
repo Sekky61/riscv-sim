@@ -38,6 +38,7 @@ import com.gradle.superscalarsim.loader.InitLoader;
 import com.gradle.superscalarsim.models.*;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -251,8 +252,10 @@ public class CodeParser
         {
           // Duplicate labels are already checked in collectLabels
           int insertionIndex = this.parsedCode.size();
-          InputCodeModel inputCodeModel = new InputCodeModel(null, "label", currentToken.text(), null,
-                                                             InstructionTypeEnum.kLabel, null, insertionIndex);
+          List<InputCodeArgument> args = Collections.singletonList(
+                  new InputCodeArgument("labelName", currentToken.text()));
+          InputCodeModel inputCodeModel = new InputCodeModel(null, "label", args, InstructionTypeEnum.kLabel, null,
+                                                             insertionIndex);
           this.parsedCode.add(inputCodeModel);
           currentTokenIndex++;
           continue;
@@ -340,7 +343,7 @@ public class CodeParser
       }
       
       // Create instruction model
-      InputCodeModel inputCodeModel = new InputCodeModel(instruction, instructionName, "CODELINE", parsedArgs,
+      InputCodeModel inputCodeModel = new InputCodeModel(instruction, instructionName, parsedArgs,
                                                          instruction.getInstructionType(),
                                                          instruction.getInputDataType(), this.codeLineNumber);
       this.parsedCode.add(inputCodeModel);
@@ -559,8 +562,10 @@ public class CodeParser
    */
   public int getLabelPosition(String label)
   {
+    // Temporary until labels are done properly
     InputCodeModel labelCode = getParsedCode().stream().filter(inputCodeModel -> inputCodeModel.getInstructionName()
-            .equals("label") && inputCodeModel.getCodeLine().equals(label)).findFirst().orElse(null);
+                    .equals("label") && inputCodeModel.getArgumentByName("labelName").getValue().equals(label)).findFirst()
+            .orElse(null);
     return getParsedCode().indexOf(labelCode);
   }
   //-------------------------------------------------------------------------------------------
