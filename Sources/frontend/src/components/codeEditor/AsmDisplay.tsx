@@ -29,6 +29,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { setDiagnostics } from '@codemirror/lint';
 import { EditorView } from '@codemirror/view';
 import { useCodeMirror } from '@uiw/react-codemirror';
 import React, { useEffect, useRef } from 'react';
@@ -42,7 +43,9 @@ import { wordHover } from '@/lib/editor/wordHover';
 import {
   asmFieldTyping,
   selectAsmCode,
+  selectAsmCodeMirrorErrors,
   selectAsmMappings,
+  selectDirty,
   selectEditorMode,
 } from '@/lib/redux/compilerSlice';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
@@ -74,13 +77,14 @@ export default function AsmDisplay() {
   const dispatch = useAppDispatch();
   const asm = useAppSelector(selectAsmCode);
   const cLineMap = useAppSelector(selectAsmMappings);
-  const dirty = useAppSelector((state) => state.compiler.dirty);
+  const dirty = useAppSelector(selectDirty);
   const mode = useAppSelector(selectEditorMode);
+  const asmErrors = useAppSelector(selectAsmCodeMirrorErrors);
 
   const isEnabled = mode == 'asm';
 
   const editor = useRef<HTMLDivElement>(null);
-  const { setContainer, view } = useCodeMirror({
+  const { setContainer, view, state } = useCodeMirror({
     value: asm,
     height: '100%',
     width: '100%',
@@ -92,6 +96,15 @@ export default function AsmDisplay() {
       dispatch(asmFieldTyping(value));
     },
   });
+
+  // Update errors when cErrors change
+  useEffect(() => {
+    if (!state || !view) {
+      return;
+    }
+    const tr = setDiagnostics(state, asmErrors);
+    view.dispatch(tr);
+  }, [view, state, asmErrors]);
 
   // Update editor state when compiler data changes
   useEffect(() => {

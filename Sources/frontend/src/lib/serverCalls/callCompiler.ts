@@ -56,9 +56,12 @@ export type ErrorItem = {
   };
 };
 
+/**
+ * Finish is optional, meaning that the error is a single character
+ */
 export type ErrorSpan = {
   caret: ErrorLocation;
-  finish: ErrorLocation;
+  finish?: ErrorLocation;
 };
 
 export type ErrorLocation = {

@@ -31,6 +31,7 @@
 
 import { StreamLanguage } from '@codemirror/language';
 import { c } from '@codemirror/legacy-modes/mode/clike';
+import { setDiagnostics } from '@codemirror/lint';
 import { EditorView } from '@codemirror/view';
 import { useCodeMirror } from '@uiw/react-codemirror';
 import React, { useEffect, useRef } from 'react';
@@ -43,6 +44,7 @@ import {
 import {
   cFieldTyping,
   selectCCodeMappings,
+  selectCCodeMirrorErrors,
   selectDirty,
   selectEditorMode,
 } from '@/lib/redux/compilerSlice';
@@ -80,11 +82,12 @@ export default function CCodeInput() {
   const dirty = useAppSelector(selectDirty);
   const code = useAppSelector((state) => state.compiler.cCode);
   const mappedCLines = useAppSelector(selectCCodeMappings);
+  const cErrors = useAppSelector(selectCCodeMirrorErrors);
 
   const isEnabled = mode == 'c';
 
   const editor = useRef<HTMLDivElement>(null);
-  const { setContainer, view } = useCodeMirror({
+  const { setContainer, view, state } = useCodeMirror({
     value: code,
     height: '100%',
     width: '100%',
@@ -96,6 +99,15 @@ export default function CCodeInput() {
       dispatch(cFieldTyping(value));
     },
   });
+
+  // Update errors when cErrors change
+  useEffect(() => {
+    if (!state || !view) {
+      return;
+    }
+    const tr = setDiagnostics(state, cErrors);
+    view.dispatch(tr);
+  }, [view, state, cErrors]);
 
   // Update editor state when compiler data changes
   useEffect(() => {

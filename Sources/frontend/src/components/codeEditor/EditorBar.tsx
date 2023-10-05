@@ -77,9 +77,9 @@ export default function EditorBar({ mode }: EditorBarProps) {
       <div className='py-1 px-0.5 font-bold'>{editorName}</div>
       {errorDisplay}
       <label htmlFor={inputId}>
-        <div className='button-interactions px-2 rounded py-0.5 my-0.5'>
+        <button className='button-interactions px-2 rounded py-0.5 my-0.5'>
           Load
-        </div>
+        </button>
         <input
           type='file'
           id={inputId}
@@ -87,7 +87,9 @@ export default function EditorBar({ mode }: EditorBarProps) {
           onChange={handleFileChange}
         />
       </label>
-      <div className='button-interactions px-2 rounded py-0.5 my-0.5'>Save</div>
+      <button className='button-interactions px-2 rounded py-0.5 my-0.5'>
+        Save
+      </button>
     </div>
   );
 }

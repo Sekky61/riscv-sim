@@ -38,6 +38,7 @@ import {
 } from '@reduxjs/toolkit';
 import { notify } from 'reapop';
 
+import { transformErrors } from '@/lib/editor/transformErrors';
 import type { RootState } from '@/lib/redux/store';
 import {
   callParseAsmImpl,
@@ -203,6 +204,7 @@ export const compilerSlice = createSlice({
         // First typing, remove the mappings
         state.cLines = [];
         state.asmToC = [];
+        state.cErrors = [];
       }
       state.cDirty = true;
     },
@@ -212,6 +214,7 @@ export const compilerSlice = createSlice({
         // First typing, remove the mappings
         state.cLines = [];
         state.asmToC = [];
+        state.asmErrors = [];
       }
       state.asmDirty = true;
       state.asmManuallyEdited = true;
@@ -342,12 +345,35 @@ export const parsedInstructions = createSelector([selectAsmCode], (asm) => {
   return parsed;
 });
 
-// Split the asm code into lines (instructions)
-// Parse each instruction into its components
+// True if any of the fields is dirty
 export const selectDirty = createSelector(
   [selectCDirty, selectAsmDirty],
   (c, asm) => {
     return c || asm;
+  },
+);
+
+// Provides errors in the form expected by code mirror
+export const selectCCodeMirrorErrors = createSelector(
+  [selectCErrors, selectCCode, selectCDirty],
+  (errors, cCode, dirty) => {
+    // Errors are not displayed if the code is dirty, so skip the expensive computation
+    if (dirty) {
+      return [];
+    }
+    return transformErrors(errors, cCode);
+  },
+);
+
+// Provides errors in the form expected by code mirror
+export const selectAsmCodeMirrorErrors = createSelector(
+  [selectAsmErrors, selectAsmCode, selectAsmDirty],
+  (errors, asmCode, dirty) => {
+    // Errors are not displayed if the code is dirty, so skip the expensive computation
+    if (dirty) {
+      return [];
+    }
+    return transformErrors(errors, asmCode);
   },
 );
 
