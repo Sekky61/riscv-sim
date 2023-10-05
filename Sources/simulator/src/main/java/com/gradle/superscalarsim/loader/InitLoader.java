@@ -322,13 +322,35 @@ public class InitLoader
   }// end of getInstructionFunctionModelList
   //------------------------------------------------------
   
-  public InstructionFunctionModel getInstructionFunctionModel(String instructionName)
+  /**
+   * @param instructionName - Name of instruction
+   *
+   * @return InstructionFunctionModel object
+   * @brief Get instruction by name
+   */
+  public InstructionFunctionModel getInstructionFunctionModelByName(String instructionName)
   {
     if (instructionFunctionModelList.isEmpty())
     {
       load();
     }
     for (InstructionFunctionModel instruction : instructionFunctionModelList)
+    {
+      if (instruction.getName().equals(instructionName))
+      {
+        return instruction;
+      }
+    }
+    return null;
+  }
+  
+  public InstructionFunctionModel getInstructionFunctionModel(String instructionName)
+  {
+    if (getInstructionFunctionModelList().isEmpty())
+    {
+      load();
+    }
+    for (InstructionFunctionModel instruction : getInstructionFunctionModelList())
     {
       if (instruction.getName().equals(instructionName))
       {
@@ -379,8 +401,7 @@ public class InitLoader
     Reader reader = Files.newBufferedReader(Paths.get("./supportedInstructions.json"));
     // read to a map
     Map<String, InstructionFunctionModel> instructions = gson.fromJson(reader,
-                                                                       new TypeToken<Map<String,
-                                                                           InstructionFunctionModel>>()
+                                                                       new TypeToken<Map<String, InstructionFunctionModel>>()
                                                                        {
                                                                        }.getType());
     // add to list

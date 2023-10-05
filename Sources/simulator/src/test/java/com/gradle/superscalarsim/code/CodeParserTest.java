@@ -19,6 +19,8 @@ import org.mockito.MockitoAnnotations;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import static org.mockito.ArgumentMatchers.any;
+
 public class CodeParserTest
 {
   @Mock
@@ -63,6 +65,7 @@ public class CodeParserTest
             .hasOutputDataType(DataTypeEnum.kInt).isInterpretedAs("rs1 == rs2").hasSyntax("beq rs1 rs2 imm").build();
     Mockito.when(initLoader.getInstructionFunctionModelList()).thenReturn(
             Arrays.asList(instructionAdd, instrIntToFloat, instructionFAdd, instructionAddi, instructionBranch));
+    Mockito.when(initLoader.getInstructionFunctionModel(any())).thenCallRealMethod();
     
     ArrayList<InitLoader.RegisterMapping> registerAliases = new ArrayList<>();
     registerAliases.add(initLoader.new RegisterMapping("x0", "zero"));
@@ -157,7 +160,7 @@ public class CodeParserTest
   }
   
   @Test
-  public void parseCode_codeWithRepeatingLabels_returnTrueAndParsedCodeHasFourInstr()
+  public void parseCode_codeWithRepeatingLabels_returnFalse()
   {
     String code = """
             one:
@@ -167,15 +170,7 @@ public class CodeParserTest
             one:
             fadd f1 f2 f3
             """;
-    Assert.assertTrue(codeParser.parse(code));
-    Assert.assertEquals(4, codeParser.getParsedCode().size());
-    
-    Assert.assertEquals("label", codeParser.getParsedCode().get(0).getInstructionName());
-    Assert.assertEquals("one", codeParser.getParsedCode().get(0).getCodeLine());
-    
-    Assert.assertEquals("add", codeParser.getParsedCode().get(1).getInstructionName());
-    Assert.assertEquals("fcvt.w.s", codeParser.getParsedCode().get(2).getInstructionName());
-    Assert.assertEquals("fadd", codeParser.getParsedCode().get(3).getInstructionName());
+    Assert.assertFalse(codeParser.parse(code));
     
     Assert.assertEquals(2, this.codeParser.getErrorMessages().size());
     Assert.assertEquals(3, this.codeParser.getErrorMessages().get(0).line);
