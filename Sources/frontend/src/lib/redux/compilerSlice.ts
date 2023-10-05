@@ -270,6 +270,7 @@ export const compilerSlice = createSlice({
           // Delete mapping
           state.cLines = [];
           state.asmToC = [];
+          state.asmCode = '';
           return;
         }
         state.asmCode = action.payload.program.join('\n');
@@ -281,6 +282,11 @@ export const compilerSlice = createSlice({
       })
       .addCase(callCompiler.rejected, (state, _action) => {
         state.compileStatus = 'failed';
+        state.asmCode = '';
+        state.asmDirty = false;
+        state.asmManuallyEdited = false;
+        state.asmToC = [];
+        state.cLines = [];
       })
       .addCase(callCompiler.pending, (state, _action) => {
         state.compileStatus = 'loading';
