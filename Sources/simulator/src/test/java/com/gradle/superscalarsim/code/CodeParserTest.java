@@ -32,12 +32,13 @@ public class CodeParserTest
   public void setUp()
   {
     MockitoAnnotations.openMocks(this);
+    RegisterModel integer0 = new RegisterModel("x0", true, DataTypeEnum.kInt, 0, RegisterReadinessEnum.kAssigned);
     RegisterModel integer1 = new RegisterModel("x1", false, DataTypeEnum.kInt, 0, RegisterReadinessEnum.kAssigned);
     RegisterModel integer2 = new RegisterModel("x2", false, DataTypeEnum.kInt, 0, RegisterReadinessEnum.kAssigned);
     RegisterModel integer3 = new RegisterModel("x3", false, DataTypeEnum.kInt, 0, RegisterReadinessEnum.kAssigned);
     RegisterModel integer4 = new RegisterModel("x4", false, DataTypeEnum.kInt, 0, RegisterReadinessEnum.kAssigned);
     RegisterFileModel integerFile = new RegisterFileModelBuilder().hasName("integer").hasDataType(DataTypeEnum.kInt)
-            .hasRegisterList(Arrays.asList(integer1, integer2, integer3, integer4)).build();
+            .hasRegisterList(Arrays.asList(integer0, integer1, integer2, integer3, integer4)).build();
     
     RegisterModel float1 = new RegisterModel("f1", false, DataTypeEnum.kFloat, 0, RegisterReadinessEnum.kAssigned);
     RegisterModel float2 = new RegisterModel("f2", false, DataTypeEnum.kFloat, 0, RegisterReadinessEnum.kAssigned);
@@ -379,5 +380,19 @@ public class CodeParserTest
     
     // The parser may not recover well, so number of errors is not checked
     Assert.assertFalse(success);
+  }
+  
+  @Test
+  public void parseCode_wrongTypeAlias_returnsFalse()
+  {
+    // sp is an int register alias, using it in a float instruction should fail
+    String code = """
+            fadd f1 sp f2
+            """;
+    
+    boolean success = codeParser.parse(code);
+    
+    Assert.assertFalse(success);
+    Assert.assertEquals(1, codeParser.getErrorMessages().size());
   }
 }

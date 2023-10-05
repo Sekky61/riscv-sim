@@ -498,7 +498,20 @@ public class CodeParser
       this.addError(token, "Expected register, got : \"" + argumentValue + "\".");
       return false;
     }
+    
     // Lookup all register files and aliases, check if the register exists
+    // Assumes that the register names and aliases are unique
+    // First try to find alias
+    String registerToLookFor = argumentValue;
+    for (InitLoader.RegisterMapping alias : initLoader.getRegisterAliases())
+    {
+      if (alias.alias.equals(argumentValue))
+      {
+        // Look for this register instead of the alias
+        registerToLookFor = alias.register;
+        break;
+      }
+    }
     for (RegisterFileModel registerFileModel : initLoader.getRegisterFileModelList())
     {
       if (!checkDatatype(argumentDataType, registerFileModel.getDataType()))
@@ -506,15 +519,8 @@ public class CodeParser
         // Incorrect data type in this register file, skip
         continue;
       }
-      RegisterModel regModel = registerFileModel.getRegister(argumentValue);
-      if (regModel != null)
-      {
-        return true;
-      }
-    }
-    for (InitLoader.RegisterMapping alias : initLoader.getRegisterAliases())
-    {
-      if (alias.alias.equals(argumentValue))
+      RegisterModel reg = registerFileModel.getRegister(registerToLookFor);
+      if (reg != null)
       {
         return true;
       }
