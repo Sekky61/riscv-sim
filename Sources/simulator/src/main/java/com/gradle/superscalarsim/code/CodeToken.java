@@ -8,7 +8,7 @@ public record CodeToken(int line, int columnStart, String text, Type type)
 {
   public int columnEnd()
   {
-    return columnStart + text.length();
+    return columnStart + text.length() - 1;
   }
   
   /**

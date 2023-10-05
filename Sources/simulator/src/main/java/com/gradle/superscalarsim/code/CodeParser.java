@@ -37,6 +37,7 @@ import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.loader.InitLoader;
 import com.gradle.superscalarsim.models.*;
+import org.apache.commons.text.StringEscapeUtils;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -686,10 +687,10 @@ public class CodeParser
         // }
         ParseError e = (ParseError) o;
         output.write("\"kind\":\"");
-        output.write(e.kind);
+        output.write(StringEscapeUtils.escapeJson(e.kind));
         output.write("\",\"message\":\"");
         // This string must be escaped, otherwise it will break the JSON
-        String escapedMessage = e.message.replace("\"", "\\\"");
+        String escapedMessage = StringEscapeUtils.escapeJson(e.message);
         output.write(escapedMessage);
         output.write("\",\"locations\":{");
         output.write("\"@items\":[");
