@@ -116,9 +116,9 @@ export default function AsmDisplay() {
 
   // The ref is on an inner div so that the gray background is always after the editor
   return (
-    <div className='flex-grow overflow-hidden rounded border'>
+    <div className='flex flex-col flex-grow overflow-hidden rounded border'>
       <EditorBar mode='asm' />
-      <div className='h-full w-full relative'>
+      <div className='flex-grow relative'>
         <div className='h-full w-full relative' ref={editor} />
         {!isEnabled && (
           <div className='pointer-events-none absolute inset-0 bg-gray-100/40' />

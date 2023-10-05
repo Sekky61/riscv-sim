@@ -29,9 +29,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import clsx from 'clsx';
+import { CheckCircle, XCircle } from 'lucide-react';
 import { ChangeEvent } from 'react';
 
-import { openFile, selectEditorMode } from '@/lib/redux/compilerSlice';
+import {
+  callParseAsm,
+  openFile,
+  selectAsmErrors,
+  selectCErrors,
+  selectDirty,
+  selectEditorMode,
+} from '@/lib/redux/compilerSlice';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 
 type EditorBarProps = {
@@ -42,7 +51,7 @@ export default function EditorBar({ mode }: EditorBarProps) {
   const dispatch = useAppDispatch();
   const editorMode = useAppSelector(selectEditorMode);
   const _isActive = editorMode == mode;
-  const editorName = mode == 'c' ? 'C code' : 'ASM code';
+  const editorName = mode == 'c' ? 'C Code' : 'ASM Code';
   const inputId = 'file-input-' + mode;
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -60,9 +69,12 @@ export default function EditorBar({ mode }: EditorBarProps) {
     }
   };
 
+  const errorDisplay = mode == 'c' ? <CErrorsDisplay /> : <AsmErrorsDisplay />;
+
   return (
-    <div className='pl-3 text-sm flex gap-1 bg-[#f5f5f5]'>
+    <div className='pl-3 text-sm flex items-center gap-1 bg-[#f5f5f5]'>
       <div className='py-1 px-0.5 font-bold'>{editorName}</div>
+      {errorDisplay}
       <label htmlFor={inputId}>
         <div className='button-interactions px-2 rounded py-0.5 my-0.5'>
           Load
@@ -78,3 +90,64 @@ export default function EditorBar({ mode }: EditorBarProps) {
     </div>
   );
 }
+
+const AsmErrorsDisplay = () => {
+  const dispatch = useAppDispatch();
+  const errors = useAppSelector(selectAsmErrors);
+  const dirty = useAppSelector(selectDirty);
+  const hasErrors = errors.length > 0;
+
+  const checkAsm = () => {
+    dispatch(callParseAsm());
+  };
+
+  const boxStyle = clsx(
+    'flex items-center button-interactions px-2 rounded py-0.5 my-0.5',
+    hasErrors && !dirty && 'bg-red-500/20',
+    !hasErrors && !dirty && 'bg-green-500/20',
+  );
+
+  return (
+    <div className={boxStyle}>
+      <div className='mr-2'>
+        {hasErrors ? (
+          <XCircle
+            size={16}
+            className={dirty ? 'text-gray-600' : 'text-red-500'}
+          />
+        ) : (
+          <CheckCircle
+            size={16}
+            className={dirty ? 'text-gray-600' : 'text-green-500'}
+          />
+        )}
+      </div>
+      <button onClick={checkAsm}>Check</button>
+    </div>
+  );
+};
+
+/**
+ * A fixed width element
+ */
+const CErrorsDisplay = () => {
+  const errors = useAppSelector(selectCErrors);
+  const dirty = useAppSelector(selectDirty);
+  const hasErrors = errors.length > 0;
+
+  return (
+    <div className='mr-2'>
+      {hasErrors ? (
+        <XCircle
+          size={16}
+          className={dirty ? 'text-gray-600' : 'text-red-500'}
+        />
+      ) : (
+        <CheckCircle
+          size={16}
+          className={dirty ? 'text-gray-600' : 'text-green-500'}
+        />
+      )}
+    </div>
+  );
+};

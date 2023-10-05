@@ -128,7 +128,7 @@ function ExamplesButton() {
       onMouseLeave={() => setShowExamples(false)}
       className='relative button-shape text-center button-interactions rounded border'
     >
-      <span>Load example</span>
+      <span>Examples</span>
       <div className='absolute inset-0 flex items-center justify-end pr-1'>
         <ChevronRight
           strokeWidth={1.5}
