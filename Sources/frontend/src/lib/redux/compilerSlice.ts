@@ -39,8 +39,16 @@ import {
 import { notify } from 'reapop';
 
 import type { RootState } from '@/lib/redux/store';
+import {
+  callParseAsmImpl,
+  ParseAsmAPIResponse,
+} from '@/lib/serverCalls/callParseAsm';
 
-import { APIResponse, callCompilerImpl, ErrorItem } from '../callCompiler';
+import {
+  callCompilerImpl,
+  CompilerAPIResponse,
+  ErrorItem,
+} from '../serverCalls/callCompiler';
 
 export interface CompilerOptions {
   optimize: boolean;
@@ -72,7 +80,7 @@ interface CompilerState extends CompilerOptions {
 // Define the initial state using that type
 const initialState: CompilerState = {
   cCode:
-    'int add(int a, int b) {\n  int d = 2*a  + 2;\n  int x = d + b;\n  for(int i = 0; i < a; i++) {\n    x += b;\n  }\n  return x;\n} ',
+    'int add(int a, int b) {\n  int d = 2*a + 2;\n  int x = d + b;\n  for(int i = 0; i < a; i++) {\n    x += b;\n  }\n  return x;\n} ',
   asmCode:
     'add:\n\taddi sp,sp,-48\n\tsw s0,44(sp)\n\taddi s0,sp,48\n\tsw a0,-36(s0)\n\tsw a1,-40(s0)\n\tlw a5,-36(s0)\n\taddi a5,a5,1\n\tslli a5,a5,1\n\tsw a5,-28(s0)\n\tlw a4,-28(s0)\n\tlw a5,-40(s0)\n\tadd a5,a4,a5\n\tsw a5,-20(s0)\n.LBB2:\n\tsw zero,-24(s0)\n\tj .L2\n.L3:\n\tlw a4,-20(s0)\n\tlw a5,-40(s0)\n\tadd a5,a4,a5\n\tsw a5,-20(s0)\n\tlw a5,-24(s0)\n\taddi a5,a5,1\n\tsw a5,-24(s0)\n.L2:\n\tlw a4,-24(s0)\n\tlw a5,-36(s0)\n\tblt a4,a5,.L3\n.LBE2:\n\tlw a5,-20(s0)\n\tmv a0,a5\n\tlw s0,44(sp)\n\taddi sp,sp,48\n\tjr ra',
   cLines: [0, 1, 2, 3, 4, 5, 0, 7, 8],
@@ -90,7 +98,7 @@ const initialState: CompilerState = {
 };
 
 // Call example: dispatch(callCompiler());
-export const callCompiler = createAsyncThunk<APIResponse>(
+export const callCompiler = createAsyncThunk<CompilerAPIResponse>(
   'compiler/callCompiler',
   async (arg, { getState, dispatch }) => {
     // @ts-ignore
@@ -111,6 +119,51 @@ export const callCompiler = createAsyncThunk<APIResponse>(
           dispatch(
             notify({
               message: `Compilation failed: ${res.error}`,
+              status: 'error',
+              dismissible: true,
+              // Do not automatically dismiss
+              dismissAfter: 0,
+            }),
+          );
+        }
+        return res;
+      })
+      .catch((err) => {
+        dispatch(
+          notify({
+            message: `Compilation failed: server error`,
+            status: 'error',
+            dismissible: true,
+            dismissAfter: 2000,
+          }),
+        );
+        // Rethrow
+        throw err;
+      });
+    return response;
+  },
+);
+
+// Call example: dispatch(callParseAsm());
+export const callParseAsm = createAsyncThunk<ParseAsmAPIResponse>(
+  'compiler/callParseAsm',
+  async (arg, { getState, dispatch }) => {
+    // @ts-ignore
+    const code: string = getState().compiler.asmCode;
+    const response = await callParseAsmImpl(code)
+      .then((res) => {
+        if (res.success) {
+          dispatch(
+            notify({
+              message: 'Check successful',
+              status: 'success',
+            }),
+          );
+        } else {
+          // Show the short error message
+          dispatch(
+            notify({
+              message: `Check failed`,
               status: 'error',
               dismissible: true,
               // Do not automatically dismiss
@@ -190,16 +243,20 @@ export const compilerSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+      // /compile
       .addCase(callCompiler.fulfilled, (state, action) => {
+        state.dirty = false;
         if (!action.payload.success) {
           state.compileStatus = 'failed';
           state.cErrors = action.payload.compilerError['@items'];
+          // Delete mapping
+          state.cLines = [];
+          state.asmToC = [];
           return;
         }
         state.asmCode = action.payload.program.join('\n');
         state.compileStatus = 'success';
         state.cErrors = [];
-        state.dirty = false;
         state.asmManuallyEdited = false;
         state.cLines = action.payload.cLines;
         state.asmToC = action.payload.asmToC;
@@ -209,6 +266,21 @@ export const compilerSlice = createSlice({
       })
       .addCase(callCompiler.pending, (state, _action) => {
         state.compileStatus = 'loading';
+      })
+      // /parseAsm
+      .addCase(callParseAsm.fulfilled, (state, action) => {
+        state.dirty = false;
+        if (!action.payload.success) {
+          state.asmErrors = action.payload.errors['@items'];
+          return;
+        }
+        state.asmErrors = [];
+      })
+      .addCase(callParseAsm.rejected, (state, _action) => {
+        state.asmErrors = [];
+      })
+      .addCase(callParseAsm.pending, (state, _action) => {
+        state.asmErrors = [];
       });
   },
 });
@@ -230,6 +302,7 @@ export const selectAsmMappings = (state: RootState) => state.compiler.asmToC;
 export const selectCompileStatus = (state: RootState) =>
   state.compiler.compileStatus;
 export const selectCErrors = (state: RootState) => state.compiler.cErrors;
+export const selectAsmErrors = (state: RootState) => state.compiler.asmErrors;
 export const selectAsmCode = (state: RootState) => state.compiler.asmCode;
 export const selectOptimize = (state: RootState) => state.compiler.optimize;
 export const selectEditorMode = (state: RootState) => state.compiler.editorMode;

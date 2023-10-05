@@ -29,9 +29,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { CompilerOptions } from './redux/compilerSlice';
+import { CompilerOptions } from '../redux/compilerSlice';
 
-export type APIResponse =
+export type CompilerAPIResponse =
   | {
       '@type': string;
       success: true;
@@ -89,6 +89,6 @@ export async function callCompilerImpl(code: string, options: CompilerOptions) {
       optimize: options.optimize,
     }),
   });
-  const json: APIResponse = await response.json();
+  const json: CompilerAPIResponse = await response.json();
   return json;
 }
