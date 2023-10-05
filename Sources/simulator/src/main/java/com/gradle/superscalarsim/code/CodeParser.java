@@ -72,7 +72,7 @@ public class CodeParser
   /// Holds error messages, if any occurs, otherwise is empty
   private final List<String> errorMessages;
   /// InitLoader object with loaded instructions and registers
-  private final InitLoader initLoader;
+  private InitLoader initLoader;
   /// List of parsed instructions
   private List<InputCodeModel> parsedCode;
   /// Counter for number of lines processed
@@ -114,6 +114,13 @@ public class CodeParser
     this.errorMessages.clear();
     this.parsedCode.clear();
     this.codeLineNumber = 1;
+    
+    if (codeString == null)
+    {
+      this.errorMessages.add("Code was not provided.");
+      return false;
+    }
+    
     List<String> codeLines = Arrays.asList(codeString.split("\\r?\\n"));
     boolean      result    = true;
     codeLines.replaceAll(String::trim);
@@ -130,52 +137,6 @@ public class CodeParser
     }
     return result;
   }// end of parse
-  //-------------------------------------------------------------------------------------------
-  
-  /**
-   * @return List of parsed instructions
-   * @brief Get list of parsed instructions
-   */
-  public List<InputCodeModel> getParsedCode()
-  {
-    return parsedCode;
-  }// end of getParsedCode
-  //-------------------------------------------------------------------------------------------
-  
-  public void setParsedCode(List<InputCodeModel> parsedCode)
-  {
-    this.parsedCode = parsedCode;
-  }
-  
-  /**
-   * Get the position of the label in the code. (Assumes the label exists)
-   *
-   * @param label Label name to search for. (example: "loop")
-   *
-   * @return Position of the label in the code, or -1 if the label does not exist.
-   */
-  public int getLabelPosition(String label)
-  {
-    InputCodeModel labelCode = getParsedCode().stream()
-                                              .filter(inputCodeModel -> inputCodeModel.getInstructionName()
-                                                                                      .equals(
-                                                                                          "label") && inputCodeModel.getCodeLine()
-                                                                                                                    .equals(
-                                                                                                                        label))
-                                              .findFirst()
-                                              .orElse(null);
-    return getParsedCode().indexOf(labelCode);
-  }
-  //-------------------------------------------------------------------------------------------
-  
-  /**
-   * @return Error messages
-   * @brief Get list of error messages in case of load failure
-   */
-  public List<String> getErrorMessages()
-  {
-    return errorMessages;
-  }// end of getErrorMessage
   //-------------------------------------------------------------------------------------------
   
   /**
@@ -230,6 +191,167 @@ public class CodeParser
   //-------------------------------------------------------------------------------------------
   
   /**
+   * @return True if all labels are defined, false otherwise
+   * @brief Checks if jump instructions have defined labels in parsed code
+   */
+  private boolean areLabelsMissing()
+  {
+    this.codeLineNumber = 1;
+    for (InputCodeModel codeModel : this.parsedCode)
+    {
+      InstructionFunctionModel instruction = initLoader.getInstructionFunctionModelList().stream()
+              .filter(instr -> codeModel.getInstructionName().equals(instr.getName())).findFirst().orElse(null);
+      if (instruction != null && instruction.getInstructionType() == InstructionTypeEnum.kJumpbranch)
+      {
+        InputCodeArgument jumpBranchArgument = codeModel.getArguments().stream()
+                .filter(arg -> arg.getName().equals("imm")).findFirst().orElse(null);
+        if (jumpBranchArgument != null)
+        {
+          // Checking if jump target exists: two cases - label or literal value
+          boolean isLabelText = isLabel(jumpBranchArgument.getValue());
+          if (!isLabelText)
+          {
+            // It must be literal value
+            continue;
+          }
+          boolean labelExists = this.parsedCode.stream()
+                  .anyMatch(code -> code.getCodeLine().equals(jumpBranchArgument.getValue()));
+          if (!labelExists)
+          {
+            this.errorMessages.add(
+                    "Line " + this.codeLineNumber + ": Label \"" + jumpBranchArgument.getValue() + "\" does not exists in current scope.\n");
+            return false;
+          }
+        }
+        else
+        {
+          InputCodeArgument jumpBranchRegisterDestination = codeModel.getArguments().stream()
+                  .filter(arg -> arg.getName().equals("rs1")).findFirst().orElse(null);
+          if (jumpBranchRegisterDestination == null)
+          {
+            this.errorMessages.add("Line " + this.codeLineNumber + ": There was something wrong with the label\n");
+            return false;
+          }
+        }
+      }
+      this.codeLineNumber++;
+    }
+    return true;
+  }// end of areLabelsMissing
+  
+  /**
+   * @param [in] label - Name of the branch label, including the colon at the end
+   *
+   * @brief Inserts label inside a code as InputCodeModel
+   */
+  private void insertLabel(final String label)
+  {
+    String labelWithoutColon = label.substring(0, label.length() - 1);
+    if (this.parsedCode.stream().anyMatch(code -> code.getCodeLine().equals(labelWithoutColon)))
+    {
+      this.errorMessages.add(
+              "Line " + this.codeLineNumber + ": Warning - Label \"" + labelWithoutColon + "\" already exists in current scope, using the first instance.\n");
+      return;
+    }
+    int insertionIndex = this.parsedCode.size();
+    InputCodeModel inputCodeModel = new InputCodeModel(null, "label", labelWithoutColon, null,
+                                                       InstructionTypeEnum.kLabel, null, insertionIndex);
+    this.parsedCode.add(inputCodeModel);
+  }// end of insertLabel
+  //-------------------------------------------------------------------------------------------
+  
+  /**
+   * @param [in] codeLine - Line of code to be parsed
+   * @param [in] insertionIndex - Index of the instruction in the code
+   *
+   * @return InputCodeModel object containing parsed code of a valid instruction, or null in case of error
+   * @brief Parses instruction from code line. Must not contain label. Must not contain comment.
+   */
+  private InputCodeModel parseInstruction(final String codeLine, final int insertionIndex)
+  {
+    String cleanedCodeLine = codeLine.trim();
+    if (cleanedCodeLine.isEmpty())
+    {
+      return null;
+    }
+    
+    // Split the line to instruction name and array of arguments
+    List<String> splitCodeLine = new LinkedList<>(Arrays.asList(cleanedCodeLine.split("\\s+", 2)));
+    if (splitCodeLine.size() > 2)
+    {
+      return null;
+    }
+    String instructionName = splitCodeLine.get(0);
+    String argumentsString = splitCodeLine.get(1);
+    
+    // Split arguments
+    String[] arguments = new String[0];
+    if (argumentsString != null)
+    {
+      arguments = this.splitArgsPattern.split(argumentsString);
+    }
+    
+    // Instruction validation -> instruction exists
+    InstructionFunctionModel instDescription = initLoader.getInstructionFunctionModelList().stream()
+            .filter(instr -> instructionName.equals(instr.getName())).findFirst().orElse(null);
+    if (instDescription == null)
+    {
+      // Add error
+      this.errorMessages.add(
+              "Line " + this.codeLineNumber + ": Error - unknown instruction '" + instructionName + "'\n");
+      return null;
+    }
+    
+    // Check the arguments based on the description
+    List<String> splitSyntax = new LinkedList<>(Arrays.asList(instDescription.getInstructionSyntax().split(" ")));
+    splitSyntax.remove(0);
+    int expectedNumOfArgs = splitSyntax.size();
+    
+    if (arguments.length != expectedNumOfArgs)
+    {
+      this.errorMessages.add(
+              "Line " + this.codeLineNumber + ": Error - instruction '" + instructionName + "' expected " + expectedNumOfArgs + " arguments, got " + arguments.length + "\n");
+      return null;
+    }
+    
+    List<InputCodeArgument> parsedArgs = new ArrayList<>();
+    // Add key:value pairs (for example rd: x0)
+    for (int i = 0; i < arguments.length; i++)
+    {
+      parsedArgs.add(new InputCodeArgument(splitSyntax.get(i), arguments[i]));
+    }
+    
+    InputCodeModel instruction = new InputCodeModel(instDescription, instructionName, cleanedCodeLine, parsedArgs,
+                                                    instDescription.getInstructionType(),
+                                                    instDescription.getOutputDataType(), insertionIndex);
+    
+    // Now validate (semantics)
+    if (!validateCodeModel(instruction))
+    {
+      return null;
+    }
+    
+    return instruction;
+  }// end of processCodeLine
+  //-------------------------------------------------------------------------------------------
+  
+  /**
+   * @param argValue - The argument value to be checked (e.g. "loop", "26")
+   *
+   * @return true if the argument is a label, false otherwise
+   * @brief Checks if the argument is a label
+   */
+  private boolean isLabel(String argValue)
+  {
+    if (isNumeralLiteral(argValue))
+    {
+      return false;
+    }
+    return this.parsedLabelPattern.matcher(argValue).matches();
+  }
+  //-------------------------------------------------------------------------------------------
+  
+  /**
    * @param [in,out] codeModel - Parsed code model
    *
    * @return True, in case of valid instruction and its arguments, otherwise false
@@ -254,8 +376,7 @@ public class CodeParser
     if (syntaxArgumentSize != codeModelArgumentSize)
     {
       this.errorMessages.add(
-          "Line " + this.codeLineNumber + ": Invalid number of arguments. Expected: " + syntaxArgumentSize + ", got: "
-              + codeModelArgumentSize + ".\n");
+              "Line " + this.codeLineNumber + ": Invalid number of arguments. Expected: " + syntaxArgumentSize + ", got: " + codeModelArgumentSize + ".\n");
       return false;
     }
     
@@ -263,8 +384,7 @@ public class CodeParser
     for (int i = 0; i < codeModel.getArguments().size(); i++)
     {
       DataTypeEnum instructionDataType = isLValue(splitSyntax.get(i), instruction.getInterpretableAs(),
-                                                  instruction.getInstructionType()) ?
-          instruction.getOutputDataType() : instruction.getInputDataType();
+                                                  instruction.getInstructionType()) ? instruction.getOutputDataType() : instruction.getInputDataType();
       // "isLValue" is true only for the first argument of the instruction
       boolean isArgumentValid = validateArgument(codeModel.getArguments().get(i), instruction.getInstructionType(),
                                                  instructionDataType, i == 0);
@@ -275,6 +395,12 @@ public class CodeParser
     }
     return true;
   }// end of validateCodeModel
+  //-------------------------------------------------------------------------------------------
+  
+  private boolean isNumeralLiteral(String argValue)
+  {
+    return this.hexadecimalPattern.matcher(argValue).matches() || this.decimalPattern.matcher(argValue).matches();
+  }
   //-------------------------------------------------------------------------------------------
   
   /**
@@ -366,7 +492,7 @@ public class CodeParser
     else if (!isDirectValue)
     {
       this.errorMessages.add(
-          "Line " + this.codeLineNumber + ": Expecting immediate value, got :" + argumentValue + ".\n");
+              "Line " + this.codeLineNumber + ": Expecting immediate value, got :" + argumentValue + ".\n");
       return false;
     }
     return true;
@@ -419,7 +545,7 @@ public class CodeParser
       }
     }
     this.errorMessages.add(
-        "Line " + this.codeLineNumber + ": Argument \"" + argumentValue + "\" is not a register " + "nor value.\n");
+            "Line " + this.codeLineNumber + ": Argument \"" + argumentValue + "\" is not a register nor value.\n");
     return false;
   }// end of checkRegisterArgument
   //-------------------------------------------------------------------------------------------
@@ -445,169 +571,41 @@ public class CodeParser
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @param [in] codeLine - Line of code to be parsed
-   * @param [in] insertionIndex - Index of the instruction in the code
+   * Get the position of the label in the code. (Assumes the label exists)
    *
-   * @return InputCodeModel object containing parsed code of a valid instruction, or null in case of error
-   * @brief Parses instruction from code line. Must not contain label. Must not contain comment.
+   * @param label Label name to search for. (example: "loop")
+   *
+   * @return Position of the label in the code, or -1 if the label does not exist.
    */
-  private InputCodeModel parseInstruction(final String codeLine, final int insertionIndex)
+  public int getLabelPosition(String label)
   {
-    String cleanedCodeLine = codeLine.trim();
-    if (cleanedCodeLine.isEmpty())
-    {
-      return null;
-    }
-    
-    // Split the line to instruction name and array of arguments
-    List<String> splitCodeLine = new LinkedList<>(Arrays.asList(cleanedCodeLine.split("\\s+", 2)));
-    if (splitCodeLine.size() > 2)
-    {
-      return null;
-    }
-    String instructionName = splitCodeLine.get(0);
-    String argumentsString = splitCodeLine.get(1);
-    
-    // Split arguments
-    String[] arguments = new String[0];
-    if (argumentsString != null)
-    {
-      arguments = this.splitArgsPattern.split(argumentsString);
-    }
-    
-    // Instruction validation -> instruction exists
-    InstructionFunctionModel instDescription = initLoader.getInstructionFunctionModelList().stream().filter(
-        instr -> instructionName.equals(instr.getName())).findFirst().orElse(null);
-    if (instDescription == null)
-    {
-      // Add error
-      this.errorMessages.add(
-          "Line " + this.codeLineNumber + ": Error - unknown instruction '" + instructionName + "'\n");
-      return null;
-    }
-    
-    // Check the arguments based on the description
-    List<String> splitSyntax = new LinkedList<>(Arrays.asList(instDescription.getInstructionSyntax().split(" ")));
-    splitSyntax.remove(0);
-    int expectedNumOfArgs = splitSyntax.size();
-    
-    if (arguments.length != expectedNumOfArgs)
-    {
-      this.errorMessages.add(
-          "Line " + this.codeLineNumber + ": Error - instruction '" + instructionName + "' " + "expected " + expectedNumOfArgs + " arguments, got " + arguments.length + "\n");
-      return null;
-    }
-    
-    List<InputCodeArgument> parsedArgs = new ArrayList<>();
-    // Add key:value pairs (for example rd: x0)
-    for (int i = 0; i < arguments.length; i++)
-    {
-      parsedArgs.add(new InputCodeArgument(splitSyntax.get(i), arguments[i]));
-    }
-    
-    InputCodeModel instruction = new InputCodeModel(instDescription, instructionName, cleanedCodeLine, parsedArgs,
-                                                    instDescription.getInstructionType(),
-                                                    instDescription.getOutputDataType(), insertionIndex);
-    
-    // Now validate (semantics)
-    if (!validateCodeModel(instruction))
-    {
-      return null;
-    }
-    
-    return instruction;
-  }// end of processCodeLine
+    InputCodeModel labelCode = getParsedCode().stream().filter(inputCodeModel -> inputCodeModel.getInstructionName()
+            .equals("label") && inputCodeModel.getCodeLine().equals(label)).findFirst().orElse(null);
+    return getParsedCode().indexOf(labelCode);
+  }
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @param [in] label - Name of the branch label, including the colon at the end
-   *
-   * @brief Inserts label inside a code as InputCodeModel
+   * @return List of parsed instructions
+   * @brief Get list of parsed instructions
    */
-  private void insertLabel(final String label)
+  public List<InputCodeModel> getParsedCode()
   {
-    String labelWithoutColon = label.substring(0, label.length() - 1);
-    if (this.parsedCode.stream().anyMatch(code -> code.getCodeLine().equals(labelWithoutColon)))
-    {
-      this.errorMessages.add(
-          "Line " + this.codeLineNumber + ": Warning - Label \"" + labelWithoutColon + "\" already" + " exists in " + "current scope, using the first instance.\n");
-      return;
-    }
-    int insertionIndex = this.parsedCode.size();
-    InputCodeModel inputCodeModel = new InputCodeModel(null, "label", labelWithoutColon, null,
-                                                       InstructionTypeEnum.kLabel, null, insertionIndex);
-    this.parsedCode.add(inputCodeModel);
-  }// end of insertLabel
-  //-------------------------------------------------------------------------------------------
+    return parsedCode;
+  }// end of getParsedCode
   
-  /**
-   * @return True if all labels are defined, false otherwise
-   * @brief Checks if jump instructions have defined labels in parsed code
-   */
-  private boolean areLabelsMissing()
+  public void setParsedCode(List<InputCodeModel> parsedCode)
   {
-    this.codeLineNumber = 1;
-    for (InputCodeModel codeModel : this.parsedCode)
-    {
-      InstructionFunctionModel instruction = initLoader.getInstructionFunctionModelList().stream().filter(
-          instr -> codeModel.getInstructionName().equals(instr.getName())).findFirst().orElse(null);
-      if (instruction != null && instruction.getInstructionType() == InstructionTypeEnum.kJumpbranch)
-      {
-        InputCodeArgument jumpBranchArgument = codeModel.getArguments().stream().filter(
-            arg -> arg.getName().equals("imm")).findFirst().orElse(null);
-        if (jumpBranchArgument != null)
-        {
-          // Checking if jump target exists: two cases - label or literal value
-          boolean isLabelText = isLabel(jumpBranchArgument.getValue());
-          if (!isLabelText)
-          {
-            // It must be literal value
-            continue;
-          }
-          boolean labelExists = this.parsedCode.stream().anyMatch(
-              code -> code.getCodeLine().equals(jumpBranchArgument.getValue()));
-          if (!labelExists)
-          {
-            this.errorMessages.add(
-                "Line " + this.codeLineNumber + ": Label \"" + jumpBranchArgument.getValue() + "\"" + " does not " +
-                    "exists in current scope.\n");
-            return false;
-          }
-        }
-        else
-        {
-          InputCodeArgument jumpBranchRegisterDestination = codeModel.getArguments().stream().filter(
-              arg -> arg.getName().equals("rs1")).findFirst().orElse(null);
-          if (jumpBranchRegisterDestination == null)
-          {
-            this.errorMessages.add("Line " + this.codeLineNumber + ": There was something wrong with the label\n");
-            return false;
-          }
-        }
-      }
-      this.codeLineNumber++;
-    }
-    return true;
-  }// end of areLabelsMissing
-  
-  private boolean isNumeralLiteral(String argValue)
-  {
-    return this.hexadecimalPattern.matcher(argValue).matches() || this.decimalPattern.matcher(argValue).matches();
+    this.parsedCode = parsedCode;
   }
   
   /**
-   * @param argValue - The argument value to be checked (e.g. "loop", "26")
-   *
-   * @return true if the argument is a label, false otherwise
-   * @brief Checks if the argument is a label
+   * @return Error messages
+   * @brief Get list of error messages in case of load failure
    */
-  private boolean isLabel(String argValue)
+  public List<String> getErrorMessages()
   {
-    if (isNumeralLiteral(argValue))
-    {
-      return false;
-    }
-    return this.parsedLabelPattern.matcher(argValue).matches();
-  }
+    return errorMessages;
+  }// end of getErrorMessage
   
 }
