@@ -92,7 +92,7 @@ export const callCompiler = createAsyncThunk<APIResponse>(
   'compiler/callCompiler',
   async (arg, { getState, dispatch }) => {
     // @ts-ignore
-    const code: string = getState().compiler.c_code;
+    const code: string = getState().compiler.cCode;
     // @ts-ignore
     const options: CompilerState = getState().compiler;
     const response = await callCompilerImpl(code, options)
