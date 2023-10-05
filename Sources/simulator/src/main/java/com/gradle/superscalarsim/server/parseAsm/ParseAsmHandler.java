@@ -28,6 +28,7 @@
 package com.gradle.superscalarsim.server.parseAsm;
 
 import com.gradle.superscalarsim.code.CodeParser;
+import com.gradle.superscalarsim.code.ParseError;
 import com.gradle.superscalarsim.loader.InitLoader;
 import com.gradle.superscalarsim.server.IRequestResolver;
 
@@ -49,7 +50,7 @@ public class ParseAsmHandler implements IRequestResolver<ParseAsmRequest, ParseA
     {
       // Send error
       response = new ParseAsmResponse(false, Collections.singletonList(
-              new CodeParser.ParseError("error", "Wrong request format. Expected JSON with 'code' object field")));
+              new ParseError("error", "Wrong request format. Expected JSON with 'code' object field")));
     }
     else
     {

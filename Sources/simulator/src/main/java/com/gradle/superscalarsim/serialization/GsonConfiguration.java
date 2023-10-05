@@ -31,7 +31,7 @@ package com.gradle.superscalarsim.serialization;
 import com.cedarsoftware.util.io.JsonWriter;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.gradle.superscalarsim.code.CodeParser;
+import com.gradle.superscalarsim.code.ParseError;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -52,7 +52,7 @@ public class GsonConfiguration
   public static Map<String, Object> getJsonWriterOptions()
   {
     Map<Class, JsonWriter.JsonClassWriterEx> javaIoWriters = new HashMap<>();
-    javaIoWriters.put(CodeParser.ParseError.class, new CodeParser.ParseError.CustomParseErrorWriter());
+    javaIoWriters.put(ParseError.class, new ParseError.CustomParseErrorWriter());
     
     Map<String, Object> javaIoOptions = new HashMap<>();
     javaIoOptions.put(CUSTOM_WRITER_MAP, javaIoWriters);

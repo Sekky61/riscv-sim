@@ -28,6 +28,7 @@
 package com.gradle.superscalarsim.server.getState;
 
 import com.gradle.superscalarsim.code.CodeParser;
+import com.gradle.superscalarsim.code.ParseError;
 import com.gradle.superscalarsim.cpu.Cpu;
 import com.gradle.superscalarsim.cpu.CpuConfiguration;
 import com.gradle.superscalarsim.cpu.CpuState;
@@ -85,9 +86,9 @@ public class GetStateHandler implements IRequestResolver<GetStateRequest, GetSta
     CodeParser codeParser   = new CodeParser(loader);
     boolean    parseSuccess = codeParser.parse(request.program);
     // Create response
-    CpuState                    state        = null;
-    List<CodeParser.ParseError> codeErrors   = null;
-    List<String>                configErrors = null;
+    CpuState         state        = null;
+    List<ParseError> codeErrors   = null;
+    List<String>     configErrors = null;
     if (!validationResult.valid)
     {
       System.err.println("Provided configuration is invalid: " + validationResult.messages);

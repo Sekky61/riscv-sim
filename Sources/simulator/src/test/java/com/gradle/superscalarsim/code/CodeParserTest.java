@@ -191,7 +191,7 @@ public class CodeParserTest
     Assert.assertFalse(codeParser.parse(code));
     Assert.assertEquals(0, codeParser.getParsedCode().size());
     Assert.assertEquals(1, codeParser.getErrorMessages().size());
-    CodeParser.ParseError firstError = codeParser.getErrorMessages().get(0);
+    ParseError firstError = codeParser.getErrorMessages().get(0);
     Assert.assertEquals(4, firstError.line);
     Assert.assertEquals(11, firstError.columnStart);
     Assert.assertEquals(13, firstError.columnEnd);

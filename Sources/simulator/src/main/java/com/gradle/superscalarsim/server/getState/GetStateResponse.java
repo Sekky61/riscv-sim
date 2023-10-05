@@ -27,7 +27,7 @@
 
 package com.gradle.superscalarsim.server.getState;
 
-import com.gradle.superscalarsim.code.CodeParser;
+import com.gradle.superscalarsim.code.ParseError;
 import com.gradle.superscalarsim.cpu.CpuState;
 
 import java.util.List;
@@ -41,7 +41,7 @@ public class GetStateResponse
   /**
    * @brief List of errors concerning code validation
    */
-  public List<CodeParser.ParseError> codeErrors;
+  public List<ParseError> codeErrors;
   public CpuState state;
   
   GetStateResponse(CpuState state)
@@ -51,7 +51,7 @@ public class GetStateResponse
     this.codeErrors   = null;
   }
   
-  GetStateResponse(CpuState state, List<String> configErrors, List<CodeParser.ParseError> codeErrors)
+  GetStateResponse(CpuState state, List<String> configErrors, List<ParseError> codeErrors)
   {
     this.state        = state;
     this.configErrors = configErrors;

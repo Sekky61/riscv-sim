@@ -27,7 +27,7 @@
 
 package com.gradle.superscalarsim.server.parseAsm;
 
-import com.gradle.superscalarsim.code.CodeParser;
+import com.gradle.superscalarsim.code.ParseError;
 
 import java.util.List;
 
@@ -40,7 +40,7 @@ public class ParseAsmResponse
   /**
    * @brief Error messages from the compiler
    */
-  public List<CodeParser.ParseError> errors;
+  public List<ParseError> errors;
   
   public ParseAsmResponse()
   {
@@ -48,7 +48,7 @@ public class ParseAsmResponse
     this.errors  = null;
   }
   
-  public ParseAsmResponse(boolean success, List<CodeParser.ParseError> errors)
+  public ParseAsmResponse(boolean success, List<ParseError> errors)
   {
     this.success = success;
     this.errors  = errors;

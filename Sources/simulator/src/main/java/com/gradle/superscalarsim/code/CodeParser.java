@@ -32,18 +32,13 @@
  */
 package com.gradle.superscalarsim.code;
 
-import com.cedarsoftware.util.io.JsonWriter;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.loader.InitLoader;
 import com.gradle.superscalarsim.models.*;
-import org.apache.commons.text.StringEscapeUtils;
 
-import java.io.IOException;
-import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -449,7 +444,6 @@ public class CodeParser
         boolean isLabel = this.parsedLabelPattern.matcher(argumentValue).matches();
         if (!isLabel)
         {
-          
           this.addError(token, "Expecting immediate value or label, got : \"" + argumentValue + "\".");
           return false;
         }
@@ -544,22 +538,6 @@ public class CodeParser
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @param argValue - The argument value to be checked (e.g. "loop", "26")
-   *
-   * @return true if the argument is a label, false otherwise
-   * @brief Checks if the argument is a label
-   */
-  private boolean isLabel(String argValue)
-  {
-    if (isNumeralLiteral(argValue))
-    {
-      return false;
-    }
-    return this.parsedLabelPattern.matcher(argValue).matches();
-  }
-  //-------------------------------------------------------------------------------------------
-  
-  /**
    * Get the position of the label in the code. (Assumes the label exists)
    *
    * @param label Label name to search for. (example: "loop")
@@ -598,114 +576,4 @@ public class CodeParser
     return errorMessages;
   }// end of getErrorMessage
   
-  /**
-   * Assumes an error is associated with a single location and a single line;
-   *
-   * @brief A class to hold a single error message
-   */
-  public static class ParseError
-  {
-    /**
-     * @brief Error kind - 'warning' or 'error'
-     */
-    public String kind;
-    /**
-     * Double quotes are escaped, otherwise it would break the JSON. So single quotes are preferred.
-     *
-     * @brief Error message - a verbose description of the error
-     */
-    public String message;
-    /**
-     * @brief The 1-based row index of the error
-     */
-    public int line;
-    /**
-     * @brief The 1-based column index of the start of the error
-     */
-    public int columnStart;
-    /**
-     * @brief The 1-based column index of the end of the error
-     */
-    public int columnEnd;
-    
-    /**
-     * @param kind    - 'warning' or 'error'
-     * @param message - a verbose description of the error
-     *
-     * @brief Constructor for ParseError without location
-     */
-    public ParseError(String kind, String message)
-    {
-      this.kind    = kind;
-      this.message = message;
-      this.line    = -1;
-    }
-    
-    /**
-     * @param kind      - 'warning' or 'error'
-     * @param message   - a verbose description of the error
-     * @param locations - The locations in the file.
-     *
-     * @brief Constructor for ParseError with location
-     */
-    public ParseError(String kind, String message, int line, int columnStart, int columnEnd)
-    {
-      this.kind        = kind;
-      this.message     = message;
-      this.line        = line;
-      this.columnStart = columnStart;
-      this.columnEnd   = columnEnd;
-    }
-    
-    /**
-     * The JSON serializes the object as a subset of the GCC error format.
-     * One difference compared to GCC is that GCC serializes file indexes as floats.
-     *
-     * @brief a custom JSON serializer to mimic the GCC error format
-     */
-    public static class CustomParseErrorWriter implements JsonWriter.JsonClassWriterEx
-    {
-      public void write(Object o, boolean showType, Writer output, Map<String, Object> args) throws IOException
-      {
-        // Simplified JSON representation of the error:
-        //
-        // {
-        //   "kind": "error",
-        //   "message": "msg",
-        //   "locations": {
-        //     "@items": [
-        //       "finish": {
-        //         "display-column": 15,
-        //         "line": 2,
-        //       },
-        //       "caret": {
-        //         "display-column": 14,
-        //         "line": 2,
-        //       },
-        //     ]
-        //   },
-        // }
-        ParseError e = (ParseError) o;
-        output.write("\"kind\":\"");
-        output.write(StringEscapeUtils.escapeJson(e.kind));
-        output.write("\",\"message\":\"");
-        // This string must be escaped, otherwise it will break the JSON
-        String escapedMessage = StringEscapeUtils.escapeJson(e.message);
-        output.write(escapedMessage);
-        output.write("\",\"locations\":{");
-        output.write("\"@items\":[");
-        output.write("{\"finish\":{\"display-column\":");
-        output.write(Integer.toString(e.columnEnd));
-        output.write(",\"line\":");
-        output.write(Integer.toString(e.line));
-        output.write("},");
-        output.write("\"caret\":{\"display-column\":");
-        output.write(Integer.toString(e.columnStart));
-        output.write(",\"line\":");
-        output.write(Integer.toString(e.line));
-        output.write("}}");
-        output.write("]}");
-      }
-    }
-  }
 }
