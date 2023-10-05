@@ -40,7 +40,7 @@ import { notify } from 'reapop';
 
 import type { RootState } from '@/lib/redux/store';
 
-import { APIResponse, callCompilerImpl } from '../callCompiler';
+import { APIResponse, callCompilerImpl, ErrorItem } from '../callCompiler';
 
 export interface CompilerOptions {
   optimize: boolean;
@@ -65,7 +65,8 @@ interface CompilerState extends CompilerOptions {
   // True if the c_code or asm code has been changed since the last call to the compiler
   dirty: boolean;
   asmManuallyEdited: boolean;
-  compilerError?: string;
+  cErrors: Array<ErrorItem>;
+  asmErrors: Array<ErrorItem>;
 }
 
 // Define the initial state using that type
@@ -84,7 +85,8 @@ const initialState: CompilerState = {
   optimize: false,
   editorMode: 'c',
   asmManuallyEdited: false,
-  compilerError: undefined,
+  cErrors: [],
+  asmErrors: [],
 };
 
 // Call example: dispatch(callCompiler());
@@ -105,9 +107,10 @@ export const callCompiler = createAsyncThunk<APIResponse>(
             }),
           );
         } else {
+          // Show the short error message
           dispatch(
             notify({
-              message: `Compilation failed: ${res.compilerError}`,
+              message: `Compilation failed: ${res.error}`,
               status: 'error',
               dismissible: true,
               // Do not automatically dismiss
@@ -190,12 +193,12 @@ export const compilerSlice = createSlice({
       .addCase(callCompiler.fulfilled, (state, action) => {
         if (!action.payload.success) {
           state.compileStatus = 'failed';
-          state.compilerError = action.payload.compilerError;
+          state.cErrors = action.payload.compilerError['@items'];
           return;
         }
         state.asmCode = action.payload.program.join('\n');
         state.compileStatus = 'success';
-        state.compilerError = undefined;
+        state.cErrors = [];
         state.dirty = false;
         state.asmManuallyEdited = false;
         state.cLines = action.payload.cLines;
@@ -226,8 +229,7 @@ export const selectCCodeMappings = (state: RootState) => state.compiler.cLines;
 export const selectAsmMappings = (state: RootState) => state.compiler.asmToC;
 export const selectCompileStatus = (state: RootState) =>
   state.compiler.compileStatus;
-export const selectCompilerError = (state: RootState) =>
-  state.compiler.compilerError;
+export const selectCErrors = (state: RootState) => state.compiler.cErrors;
 export const selectAsmCode = (state: RootState) => state.compiler.asmCode;
 export const selectOptimize = (state: RootState) => state.compiler.optimize;
 export const selectEditorMode = (state: RootState) => state.compiler.editorMode;

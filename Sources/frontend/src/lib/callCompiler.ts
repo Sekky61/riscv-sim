@@ -42,8 +42,29 @@ export type APIResponse =
   | {
       '@type': string;
       success: false;
-      compilerError?: string;
+      error: string;
+      compilerError: {
+        '@items': Array<ErrorItem>;
+      };
     };
+
+export type ErrorItem = {
+  kind: 'error' | 'warning';
+  message: string;
+  locations: {
+    '@items': Array<ErrorSpan>;
+  };
+};
+
+export type ErrorSpan = {
+  caret: ErrorLocation;
+  finish: ErrorLocation;
+};
+
+export type ErrorLocation = {
+  line: number;
+  'display-column': number;
+};
 
 export async function callCompilerImpl(code: string, options: CompilerOptions) {
   // fetch from :8000/compile
