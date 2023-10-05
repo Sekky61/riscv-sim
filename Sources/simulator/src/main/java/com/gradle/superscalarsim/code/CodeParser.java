@@ -96,10 +96,6 @@ public class CodeParser
    * The strings are without the colon at the end.
    */
   private List<String> labels;
-  /**
-   * Counter for number of lines processed. A 1-based index.
-   */
-  private int codeLineNumber;
   
   /**
    * @param [in] initLoader - InitLoader object with loaded instructions and registers
@@ -110,7 +106,6 @@ public class CodeParser
   {
     this.initLoader         = initLoader;
     this.errorMessages      = new ArrayList<>();
-    this.codeLineNumber     = 1;
     this.parsedCode         = new ArrayList<>();
     this.labels             = new ArrayList<>();
     this.decimalPattern     = Pattern.compile("-?\\d+(\\.\\d+)?");
@@ -134,7 +129,6 @@ public class CodeParser
     this.errorMessages.clear();
     this.parsedCode.clear();
     this.labels.clear();
-    this.codeLineNumber = 1;
     
     if (codeString == null)
     {
@@ -343,9 +337,10 @@ public class CodeParser
       }
       
       // Create instruction model
+      int codeIndex = this.parsedCode.size();
       InputCodeModel inputCodeModel = new InputCodeModel(instruction, instructionName, parsedArgs,
                                                          instruction.getInstructionType(),
-                                                         instruction.getInputDataType(), this.codeLineNumber);
+                                                         instruction.getInputDataType(), codeIndex);
       this.parsedCode.add(inputCodeModel);
       
       // Peek at the next token. If it exists, it must be a newline
