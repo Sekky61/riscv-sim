@@ -40,14 +40,14 @@ import com.gradle.superscalarsim.server.IRequestResolver;
 public class CompileHandler implements IRequestResolver<CompileRequest, CompileResponse>
 {
   
-  
   public CompileResponse resolve(CompileRequest request)
   {
+    
     CompileResponse response;
     if (request == null || request.code == null)
     {
       // Send error
-      response = CompileResponse.failure("Wrong request format. Expected JSON with 'code' object field");
+      response = CompileResponse.failure("Wrong request format. Expected JSON with 'code' object field", null);
     }
     else
     {
@@ -56,13 +56,13 @@ public class CompileHandler implements IRequestResolver<CompileRequest, CompileR
       if (!res.success)
       {
         System.err.println("Failed to compile code");
-        response = CompileResponse.failure(res.error);
+        response = CompileResponse.failure("GCC returned an error", res.compilerErrors);
       }
       else
       {
         int             cCodeLen = request.code.split("\n").length;
         CompiledProgram program  = AsmParser.parse(res.code, cCodeLen);
-        response = new CompileResponse(true, program.program, program.cLines, program.asmToC, null);
+        response = new CompileResponse(true, program.program, program.cLines, program.asmToC, null, null);
       }
     }
     

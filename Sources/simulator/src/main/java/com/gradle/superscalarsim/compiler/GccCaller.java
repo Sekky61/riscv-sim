@@ -27,7 +27,17 @@
 
 package com.gradle.superscalarsim.compiler;
 
+import com.google.gson.Gson;
+import com.google.gson.internal.LinkedTreeMap;
+import com.google.gson.reflect.TypeToken;
+import com.gradle.superscalarsim.serialization.GsonConfiguration;
+
+import java.lang.reflect.Array;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @brief Class to call GCC
@@ -35,39 +45,6 @@ import java.util.List;
 public class GccCaller
 {
   static String compilerPath = "/usr/bin/riscv64-linux-gnu-gcc";
-  
-  // /usr/bin/riscv64-linux-gnu-gcc -xc -O0 -march=rv32imfd -mabi=ilp32d -o /dev/stdout -S -g -fverbose-asm
-  // -fcf-protection=none -fno-stack-protector -fno-asynchronous-unwind-tables -fno-dwarf2-cfi-asm -nostdlib -xc -
-  static List<String> getCommand(boolean optimize)
-  {
-    return List.of(compilerPath, "-xc", "-O" + (optimize ? "2" : "0"), "-march=rv32imfd", "-mabi=ilp32d", "-o",
-                   "/dev" + "/stdout", "-S", "-g", "-fverbose-asm", "-fcf-protection=none", "-fno-stack-protector",
-                   "-fno" + "-asynchronous" + "-unwind-tables", "-fno-dwarf2-cfi-asm", "-nostdlib", "-xc", "-");
-  }
-  
-  public static class CompileResult
-  {
-    public boolean success;
-    public String code;
-    public String error;
-    
-    private CompileResult(boolean success, String code, String error)
-    {
-      this.success = success;
-      this.code    = code;
-      this.error   = error;
-    }
-    
-    public static CompileResult success(String code)
-    {
-      return new CompileResult(true, code, null);
-    }
-    
-    public static CompileResult failure(String error)
-    {
-      return new CompileResult(false, null, error);
-    }
-  }
   
   public static CompileResult compile(String code, boolean optimize)
   {
@@ -85,7 +62,7 @@ public class GccCaller
     }
     catch (Exception e)
     {
-      return CompileResult.failure("Error starting GCC");
+      return CompileResult.failure("Error starting GCC", null);
     }
     // Write the code to the process
     try
@@ -95,7 +72,7 @@ public class GccCaller
     }
     catch (Exception e)
     {
-      return CompileResult.failure("Error writing to GCC");
+      return CompileResult.failure("Error writing to GCC", null);
     }
     // Read the output
     String output = null;
@@ -105,7 +82,7 @@ public class GccCaller
     }
     catch (Exception e)
     {
-      return CompileResult.failure("Error reading from GCC");
+      return CompileResult.failure("Error reading from GCC", null);
     }
     // Wait for the process to finish
     try
@@ -114,29 +91,66 @@ public class GccCaller
     }
     catch (Exception e)
     {
-      return CompileResult.failure("Error waiting for GCC");
+      return CompileResult.failure("Error waiting for GCC", null);
     }
     // Read the exit value
     int exitValue = p.exitValue();
     if (exitValue != 0)
     {
       // Take error from stderr
-      String error = null;
+      List<Map<String, Object>> error = null;
       try
       {
-        error = new String(p.getErrorStream().readAllBytes());
+        String error_string = new String(p.getErrorStream().readAllBytes());
+        // error should be a JSON string. Parse it to an object
+        Gson gson = GsonConfiguration.getGson();
+        Type gccErrorType = new TypeToken<ArrayList<LinkedTreeMap<String, Object>>>()
+        {
+        }.getType();
+        error = gson.fromJson(error_string, gccErrorType);
         System.err.println("Error from GCC: " + error);
       }
       catch (Exception e)
       {
-        return CompileResult.failure("GCC returned non-zero exit value: " + exitValue);
+        return CompileResult.failure("GCC returned non-zero exit value: " + exitValue, null);
       }
-      if (error.isEmpty())
-      {
-        error = "GCC returned non-zero exit value: " + exitValue;
-      }
-      return CompileResult.failure(error);
+      return CompileResult.failure("GCC returned non-zero exit value: " + exitValue, error);
     }
     return CompileResult.success(output);
+  }
+  
+  // /usr/bin/riscv64-linux-gnu-gcc -xc -O0 -march=rv32imfd -mabi=ilp32d -o /dev/stdout -S -g -fverbose-asm -fcf-protection=none -fno-stack-protector -fno-asynchronous-unwind-tables -fno-dwarf2-cfi-asm -nostdlib -xc -
+  static List<String> getCommand(boolean optimize)
+  {
+    return List.of(compilerPath, "-xc", "-O" + (optimize ? "2" : "0"), "-march=rv32imfd", "-mabi=ilp32d", "-o",
+                   "/dev/stdout", "-S", "-g", "-fverbose-asm", "-fcf-protection=none", "-fno-stack-protector",
+                   "-fno-asynchronous-unwind-tables", "-fno-dwarf2-cfi-asm", "-nostdlib", "-fdiagnostics-format=json",
+                   "-xc", "-");
+  }
+  
+  public static class CompileResult
+  {
+    public boolean success;
+    public String code;
+    public String error;
+    public List<Map<String, Object>> compilerErrors;
+    
+    private CompileResult(boolean success, String code, String error, List<Map<String, Object>> compilerErrors)
+    {
+      this.success        = success;
+      this.code           = code;
+      this.error          = error;
+      this.compilerErrors = compilerErrors;
+    }
+    
+    public static CompileResult success(String code)
+    {
+      return new CompileResult(true, code, null, null);
+    }
+    
+    public static CompileResult failure(String error, List<Map<String, Object>> compilerErrors)
+    {
+      return new CompileResult(false, null, error, compilerErrors);
+    }
   }
 }

@@ -27,7 +27,10 @@
 
 package com.gradle.superscalarsim.server.compile;
 
+import com.cedarsoftware.util.io.JsonWriter;
+
 import java.util.List;
+import java.util.Map;
 
 public class CompileResponse
 {
@@ -39,7 +42,8 @@ public class CompileResponse
   /// Mapping from ASM lines to C lines
   /// The length of this list is the same as the length of the program
   public Integer[] asmToC;
-  public String compilerError;
+  public String error;
+  public List<Map<String, Object>> compilerError;
   
   public CompileResponse()
   {
@@ -54,20 +58,22 @@ public class CompileResponse
                          List<String> program,
                          List<Integer> cLines,
                          List<Integer> asmToC,
-                         String compilerError)
+                         String error,
+                         List<Map<String, Object>> compilerError)
   {
     this.success       = success;
     this.program       = program.toArray(new String[0]);
     this.cLines        = cLines.toArray(new Integer[0]);
     this.asmToC        = asmToC.toArray(new Integer[0]);
+    this.error         = error;
     this.compilerError = compilerError;
   }
   
-  public static CompileResponse failure(String errorMsg)
+  public static CompileResponse failure(String error, List<Map<String, Object>> compilerError)
   {
     CompileResponse res = new CompileResponse();
     res.success       = false;
-    res.compilerError = errorMsg;
+    res.compilerError = compilerError;
     return res;
   }
 }
