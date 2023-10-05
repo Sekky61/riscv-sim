@@ -30,15 +30,16 @@
  */
 
 import clsx from 'clsx';
-import { CheckCircle, XCircle } from 'lucide-react';
+import { CheckCircle, Circle, XCircle } from 'lucide-react';
 import { ChangeEvent } from 'react';
 
 import {
   callParseAsm,
   openFile,
+  selectAsmDirty,
   selectAsmErrors,
+  selectCDirty,
   selectCErrors,
-  selectDirty,
   selectEditorMode,
 } from '@/lib/redux/compilerSlice';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
@@ -94,7 +95,7 @@ export default function EditorBar({ mode }: EditorBarProps) {
 const AsmErrorsDisplay = () => {
   const dispatch = useAppDispatch();
   const errors = useAppSelector(selectAsmErrors);
-  const dirty = useAppSelector(selectDirty);
+  const dirty = useAppSelector(selectAsmDirty);
   const hasErrors = errors.length > 0;
 
   const checkAsm = () => {
@@ -102,29 +103,44 @@ const AsmErrorsDisplay = () => {
   };
 
   const boxStyle = clsx(
-    'flex items-center button-interactions px-2 rounded py-0.5 my-0.5',
-    hasErrors && !dirty && 'bg-red-500/20',
-    !hasErrors && !dirty && 'bg-green-500/20',
+    'flex items-center px-2 rounded py-0.5 my-0.5',
+    dirty && 'button-interactions',
+    hasErrors &&
+      !dirty &&
+      'bg-red-500/20 hover:bg-red-500/30 active:bg-red-500/40',
+    !hasErrors &&
+      !dirty &&
+      'bg-green-500/20 hover:bg-green-500/30 active:bg-green-500/40',
   );
 
+  let iconType: 'circle' | 'tick' | 'x';
+  if (dirty) {
+    iconType = 'circle';
+  } else if (hasErrors) {
+    iconType = 'x';
+  } else {
+    iconType = 'tick';
+  }
+
   return (
-    <div className={boxStyle}>
+    <button className={boxStyle} onClick={checkAsm}>
       <div className='mr-2'>
-        {hasErrors ? (
-          <XCircle
-            size={16}
-            className={dirty ? 'text-gray-600' : 'text-red-500'}
-          />
-        ) : (
-          <CheckCircle
-            size={16}
-            className={dirty ? 'text-gray-600' : 'text-green-500'}
-          />
-        )}
+        <StatusIcon type={iconType} />
       </div>
-      <button onClick={checkAsm}>Check</button>
-    </div>
+      Check
+    </button>
   );
+};
+
+const StatusIcon = ({ type }: { type: 'circle' | 'tick' | 'x' }) => {
+  switch (type) {
+    case 'circle':
+      return <Circle size={16} />;
+    case 'tick':
+      return <CheckCircle size={16} className='text-green-500' />;
+    case 'x':
+      return <XCircle size={16} className='text-red-500' />;
+  }
 };
 
 /**
@@ -132,22 +148,21 @@ const AsmErrorsDisplay = () => {
  */
 const CErrorsDisplay = () => {
   const errors = useAppSelector(selectCErrors);
-  const dirty = useAppSelector(selectDirty);
+  const dirty = useAppSelector(selectCDirty);
   const hasErrors = errors.length > 0;
+
+  let iconType: 'circle' | 'tick' | 'x';
+  if (dirty) {
+    iconType = 'circle';
+  } else if (hasErrors) {
+    iconType = 'x';
+  } else {
+    iconType = 'tick';
+  }
 
   return (
     <div className='mr-2'>
-      {hasErrors ? (
-        <XCircle
-          size={16}
-          className={dirty ? 'text-gray-600' : 'text-red-500'}
-        />
-      ) : (
-        <CheckCircle
-          size={16}
-          className={dirty ? 'text-gray-600' : 'text-green-500'}
-        />
-      )}
+      <StatusIcon type={iconType} />
     </div>
   );
 };

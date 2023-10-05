@@ -71,7 +71,8 @@ interface CompilerState extends CompilerOptions {
   // Editor options
   editorMode: 'c' | 'asm';
   // True if the c_code or asm code has been changed since the last call to the compiler
-  dirty: boolean;
+  cDirty: boolean;
+  asmDirty: boolean;
   asmManuallyEdited: boolean;
   cErrors: Array<ErrorItem>;
   asmErrors: Array<ErrorItem>;
@@ -88,7 +89,8 @@ const initialState: CompilerState = {
     0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 5, 5, 5, 5, 4, 4,
     4, 4, 4, 4, 4, 4, 7, 8, 8, 8, 8,
   ],
-  dirty: false,
+  cDirty: false,
+  asmDirty: false,
   compileStatus: 'idle',
   optimize: false,
   editorMode: 'c',
@@ -197,11 +199,21 @@ export const compilerSlice = createSlice({
     // Use the PayloadAction type to declare the contents of `action.payload`
     cFieldTyping: (state, action: PayloadAction<string>) => {
       state.cCode = action.payload;
-      state.dirty = true;
+      if (state.cDirty === false) {
+        // First typing, remove the mappings
+        state.cLines = [];
+        state.asmToC = [];
+      }
+      state.cDirty = true;
     },
     asmFieldTyping: (state, action: PayloadAction<string>) => {
       state.asmCode = action.payload;
-      state.dirty = true;
+      if (state.asmDirty === false) {
+        // First typing, remove the mappings
+        state.cLines = [];
+        state.asmToC = [];
+      }
+      state.asmDirty = true;
       state.asmManuallyEdited = true;
     },
     setCCode: (state, action: PayloadAction<string>) => {
@@ -222,7 +234,8 @@ export const compilerSlice = createSlice({
       state.cLines = [];
       state.asmToC = [];
       state.editorMode = action.payload.type;
-      state.dirty = false;
+      state.cDirty = false;
+      state.asmDirty = false;
     },
     openFile: (
       state,
@@ -238,14 +251,16 @@ export const compilerSlice = createSlice({
       state.cLines = [];
       state.asmToC = [];
       state.editorMode = action.payload.type;
-      state.dirty = false;
+      state.cDirty = false;
+      state.asmDirty = false;
     },
   },
   extraReducers: (builder) => {
     builder
       // /compile
       .addCase(callCompiler.fulfilled, (state, action) => {
-        state.dirty = false;
+        state.cDirty = false;
+        state.asmDirty = false;
         if (!action.payload.success) {
           state.compileStatus = 'failed';
           state.cErrors = action.payload.compilerError['@items'];
@@ -269,7 +284,7 @@ export const compilerSlice = createSlice({
       })
       // /parseAsm
       .addCase(callParseAsm.fulfilled, (state, action) => {
-        state.dirty = false;
+        state.asmDirty = false;
         if (!action.payload.success) {
           state.asmErrors = action.payload.errors['@items'];
           return;
@@ -277,9 +292,6 @@ export const compilerSlice = createSlice({
         state.asmErrors = [];
       })
       .addCase(callParseAsm.rejected, (state, _action) => {
-        state.asmErrors = [];
-      })
-      .addCase(callParseAsm.pending, (state, _action) => {
         state.asmErrors = [];
       });
   },
@@ -306,7 +318,8 @@ export const selectAsmErrors = (state: RootState) => state.compiler.asmErrors;
 export const selectAsmCode = (state: RootState) => state.compiler.asmCode;
 export const selectOptimize = (state: RootState) => state.compiler.optimize;
 export const selectEditorMode = (state: RootState) => state.compiler.editorMode;
-export const selectDirty = (state: RootState) => state.compiler.dirty;
+export const selectCDirty = (state: RootState) => state.compiler.cDirty;
+export const selectAsmDirty = (state: RootState) => state.compiler.asmDirty;
 export const selectAsmManuallyEdited = (state: RootState) =>
   state.compiler.asmManuallyEdited;
 
@@ -328,5 +341,14 @@ export const parsedInstructions = createSelector([selectAsmCode], (asm) => {
   });
   return parsed;
 });
+
+// Split the asm code into lines (instructions)
+// Parse each instruction into its components
+export const selectDirty = createSelector(
+  [selectCDirty, selectAsmDirty],
+  (c, asm) => {
+    return c || asm;
+  },
+);
 
 export default compilerSlice.reducer;
