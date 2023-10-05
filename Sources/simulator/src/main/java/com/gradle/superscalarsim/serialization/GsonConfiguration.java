@@ -28,8 +28,15 @@
 
 package com.gradle.superscalarsim.serialization;
 
+import com.cedarsoftware.util.io.JsonWriter;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.gradle.superscalarsim.code.CodeParser;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import static com.cedarsoftware.util.io.JsonWriter.CUSTOM_WRITER_MAP;
 
 /**
  * @brief Provider for Gson instance configured with custom (de)serializers
@@ -38,6 +45,20 @@ public class GsonConfiguration
 {
   
   // TODO: Use JsonWriter with TYPE_NAME_MAP for shorter types
+  
+  /**
+   * @return Instance of options for JsonWriter (JavaIo library)
+   */
+  public static Map<String, Object> getJsonWriterOptions()
+  {
+    Map<Class, JsonWriter.JsonClassWriterEx> javaIoWriters = new HashMap<>();
+    javaIoWriters.put(CodeParser.ParseError.class, new CodeParser.ParseError.CustomParseErrorWriter());
+    
+    Map<String, Object> javaIoOptions = new HashMap<>();
+    javaIoOptions.put(CUSTOM_WRITER_MAP, javaIoWriters);
+    
+    return javaIoOptions;
+  }
   
   public static Gson getGson()
   {

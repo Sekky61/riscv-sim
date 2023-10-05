@@ -32,15 +32,15 @@
  */
 package com.gradle.superscalarsim.code;
 
+import com.cedarsoftware.util.io.JsonWriter;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.loader.InitLoader;
 import com.gradle.superscalarsim.models.*;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
+import java.io.IOException;
+import java.io.Writer;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -69,13 +69,20 @@ public class CodeParser
   private final transient Pattern parsedLabelPattern;
   /// Pattern for matching comments
   private final transient Pattern commentPattern;
-  /// Holds error messages, if any occurs, otherwise is empty
-  private final List<String> errorMessages;
+  /**
+   * Error messages from parsing ASM code.
+   * TODO: Remove from the instance, return it from parse instead.
+   *
+   * @brief List of error messages
+   */
+  private final List<ParseError> errorMessages;
   /// InitLoader object with loaded instructions and registers
   private InitLoader initLoader;
   /// List of parsed instructions
   private List<InputCodeModel> parsedCode;
-  /// Counter for number of lines processed
+  /**
+   * Counter for number of lines processed. A 1-based index.
+   */
   private int codeLineNumber;
   
   /**
@@ -101,7 +108,6 @@ public class CodeParser
     // Hashtag and everything after it until end (must be applied to a line)
     this.commentPattern = Pattern.compile("#.*$");
   }// end of Constructor
-  //-------------------------------------------------------------------------------------------
   
   /**
    * @param [in] codeString - String holding unparsed code
@@ -117,7 +123,7 @@ public class CodeParser
     
     if (codeString == null)
     {
-      this.errorMessages.add("Code was not provided.");
+      this.errorMessages.add(new ParseError("error", "Code was not provided."));
       return false;
     }
     
@@ -137,7 +143,6 @@ public class CodeParser
     }
     return result;
   }// end of parse
-  //-------------------------------------------------------------------------------------------
   
   /**
    * @param [in] codeLine - Line with code
@@ -218,8 +223,8 @@ public class CodeParser
                   .anyMatch(code -> code.getCodeLine().equals(jumpBranchArgument.getValue()));
           if (!labelExists)
           {
-            this.errorMessages.add(
-                    "Line " + this.codeLineNumber + ": Label \"" + jumpBranchArgument.getValue() + "\" does not exists in current scope.\n");
+            this.addError(this.codeLineNumber, 1, 1,
+                          "Label \"" + jumpBranchArgument.getValue() + "\" does not exists in current scope.");
             return false;
           }
         }
@@ -229,7 +234,7 @@ public class CodeParser
                   .filter(arg -> arg.getName().equals("rs1")).findFirst().orElse(null);
           if (jumpBranchRegisterDestination == null)
           {
-            this.errorMessages.add("Line " + this.codeLineNumber + ": There was something wrong with the label\n");
+            this.addError(this.codeLineNumber, 1, 1, "There was something wrong with the label.");
             return false;
           }
         }
@@ -238,6 +243,7 @@ public class CodeParser
     }
     return true;
   }// end of areLabelsMissing
+  //-------------------------------------------------------------------------------------------
   
   /**
    * @param [in] label - Name of the branch label, including the colon at the end
@@ -249,8 +255,8 @@ public class CodeParser
     String labelWithoutColon = label.substring(0, label.length() - 1);
     if (this.parsedCode.stream().anyMatch(code -> code.getCodeLine().equals(labelWithoutColon)))
     {
-      this.errorMessages.add(
-              "Line " + this.codeLineNumber + ": Warning - Label \"" + labelWithoutColon + "\" already exists in current scope, using the first instance.\n");
+      // TODO: Make this a hard error
+      this.addError(this.codeLineNumber, 1, 1, "Label \"" + labelWithoutColon + "\" already exists in current scope.");
       return;
     }
     int insertionIndex = this.parsedCode.size();
@@ -297,8 +303,7 @@ public class CodeParser
     if (instDescription == null)
     {
       // Add error
-      this.errorMessages.add(
-              "Line " + this.codeLineNumber + ": Error - unknown instruction '" + instructionName + "'\n");
+      this.addError(this.codeLineNumber, 1, 1, "Instruction \"" + instructionName + "\" does not exists.");
       return null;
     }
     
@@ -309,8 +314,8 @@ public class CodeParser
     
     if (arguments.length != expectedNumOfArgs)
     {
-      this.errorMessages.add(
-              "Line " + this.codeLineNumber + ": Error - instruction '" + instructionName + "' expected " + expectedNumOfArgs + " arguments, got " + arguments.length + "\n");
+      this.addError(this.codeLineNumber, 1, 1,
+                    "Instruction \"" + instructionName + "\" expected " + expectedNumOfArgs + " arguments, got " + arguments.length + ".");
       return null;
     }
     
@@ -333,7 +338,6 @@ public class CodeParser
     
     return instruction;
   }// end of processCodeLine
-  //-------------------------------------------------------------------------------------------
   
   /**
    * @param argValue - The argument value to be checked (e.g. "loop", "26")
@@ -352,6 +356,20 @@ public class CodeParser
   //-------------------------------------------------------------------------------------------
   
   /**
+   * @param lineNumber - Line number of the error
+   * @param spanStart  - Start of the error span (column)
+   * @param spanEnd    - End of the error span (column)
+   * @param message    - Error message
+   *
+   * @brief Adds a single-line error message to the list of errors
+   */
+  private void addError(int lineNumber, int spanStart, int spanEnd, String message)
+  {
+    this.errorMessages.add(new ParseError("error", message, lineNumber, spanStart, spanEnd));
+  }
+  //-------------------------------------------------------------------------------------------
+  
+  /**
    * @param [in,out] codeModel - Parsed code model
    *
    * @return True, in case of valid instruction and its arguments, otherwise false
@@ -363,7 +381,8 @@ public class CodeParser
     InstructionFunctionModel instruction = codeModel.getInstructionFunctionModel();
     if (instruction == null)
     {
-      this.errorMessages.add("Line " + this.codeLineNumber + ": Instruction does not exists.\n");
+      this.addError(this.codeLineNumber, 1, 1,
+                    "Instruction \"" + codeModel.getInstructionName() + "\" does not exists.");
       return false;
     }
     
@@ -375,8 +394,8 @@ public class CodeParser
     
     if (syntaxArgumentSize != codeModelArgumentSize)
     {
-      this.errorMessages.add(
-              "Line " + this.codeLineNumber + ": Invalid number of arguments. Expected: " + syntaxArgumentSize + ", got: " + codeModelArgumentSize + ".\n");
+      this.addError(this.codeLineNumber, 1, 1,
+                    "Instruction \"" + codeModel.getInstructionName() + "\" expected " + syntaxArgumentSize + " arguments, got " + codeModelArgumentSize + ".");
       return false;
     }
     
@@ -486,13 +505,12 @@ public class CodeParser
   {
     if (isLValue)
     {
-      this.errorMessages.add("Line " + this.codeLineNumber + ": LValue cannot be immediate value.\n");
+      this.addError(this.codeLineNumber, 1, 1, "LValue cannot be immediate value.");
       return false;
     }
     else if (!isDirectValue)
     {
-      this.errorMessages.add(
-              "Line " + this.codeLineNumber + ": Expecting immediate value, got :" + argumentValue + ".\n");
+      this.addError(this.codeLineNumber, 1, 1, "Expecting immediate value, got : \"" + argumentValue + "\".");
       return false;
     }
     return true;
@@ -515,12 +533,12 @@ public class CodeParser
   {
     if (isDirectValue && isLValue)
     {
-      this.errorMessages.add("Line " + this.codeLineNumber + ": LValue cannot be immediate value.\n");
+      this.addError(this.codeLineNumber, 1, 1, "LValue cannot be immediate value.");
       return false;
     }
     if (isDirectValue)
     {
-      this.errorMessages.add("Line " + this.codeLineNumber + ": Expecting register, got :" + argumentValue + ".\n");
+      this.addError(this.codeLineNumber, 1, 1, "Expected register, got : \"" + argumentValue + "\".");
       return false;
     }
     // Lookup all register files and aliases, check if the register exists
@@ -544,8 +562,7 @@ public class CodeParser
         return true;
       }
     }
-    this.errorMessages.add(
-            "Line " + this.codeLineNumber + ": Argument \"" + argumentValue + "\" is not a register nor value.\n");
+    this.addError(this.codeLineNumber, 1, 1, "Argument \"" + argumentValue + "\" is not a register nor a value.");
     return false;
   }// end of checkRegisterArgument
   //-------------------------------------------------------------------------------------------
@@ -593,6 +610,7 @@ public class CodeParser
   {
     return parsedCode;
   }// end of getParsedCode
+  //-------------------------------------------------------------------------------------------
   
   public void setParsedCode(List<InputCodeModel> parsedCode)
   {
@@ -603,9 +621,119 @@ public class CodeParser
    * @return Error messages
    * @brief Get list of error messages in case of load failure
    */
-  public List<String> getErrorMessages()
+  public List<ParseError> getErrorMessages()
   {
     return errorMessages;
   }// end of getErrorMessage
   
+  /**
+   * Assumes an error is associated with a single location and a single line;
+   *
+   * @brief A class to hold a single error message
+   */
+  public static class ParseError
+  {
+    /**
+     * @brief Error kind - 'warning' or 'error'
+     */
+    public String kind;
+    /**
+     * Double quotes are escaped, otherwise it would break the JSON. So single quotes are preferred.
+     *
+     * @brief Error message - a verbose description of the error
+     */
+    public String message;
+    /**
+     * @brief The 1-based row index of the error
+     */
+    public int line;
+    /**
+     * @brief The 1-based column index of the start of the error
+     */
+    public int columnStart;
+    /**
+     * @brief The 1-based column index of the end of the error
+     */
+    public int columnEnd;
+    
+    /**
+     * @param kind    - 'warning' or 'error'
+     * @param message - a verbose description of the error
+     *
+     * @brief Constructor for ParseError without location
+     */
+    public ParseError(String kind, String message)
+    {
+      this.kind    = kind;
+      this.message = message;
+      this.line    = -1;
+    }
+    
+    /**
+     * @param kind      - 'warning' or 'error'
+     * @param message   - a verbose description of the error
+     * @param locations - The locations in the file.
+     *
+     * @brief Constructor for ParseError with location
+     */
+    public ParseError(String kind, String message, int line, int columnStart, int columnEnd)
+    {
+      this.kind        = kind;
+      this.message     = message;
+      this.line        = line;
+      this.columnStart = columnStart;
+      this.columnEnd   = columnEnd;
+    }
+    
+    /**
+     * The JSON serializes the object as a subset of the GCC error format.
+     * One difference compared to GCC is that GCC serializes file indexes as floats.
+     *
+     * @brief a custom JSON serializer to mimic the GCC error format
+     */
+    public static class CustomParseErrorWriter implements JsonWriter.JsonClassWriterEx
+    {
+      public void write(Object o, boolean showType, Writer output, Map<String, Object> args) throws IOException
+      {
+        // Simplified JSON representation of the error:
+        //
+        // {
+        //   "kind": "error",
+        //   "message": "msg",
+        //   "locations": {
+        //     "@items": [
+        //       "finish": {
+        //         "display-column": 15,
+        //         "line": 2,
+        //       },
+        //       "caret": {
+        //         "display-column": 14,
+        //         "line": 2,
+        //       },
+        //     ]
+        //   },
+        // }
+        ParseError e = (ParseError) o;
+        output.write("\"kind\":\"");
+        output.write(e.kind);
+        output.write("\",\"message\":\"");
+        // This string must be escaped, otherwise it will break the JSON
+        String escapedMessage = e.message.replace("\"", "\\\"");
+        output.write(escapedMessage);
+        output.write("\",\"locations\":{");
+        output.write("\"@items\":[");
+        output.write("{\"finish\":{\"display-column\":");
+        output.write(Integer.toString(e.columnEnd));
+        output.write(",\"line\":");
+        output.write(Integer.toString(e.line));
+        output.write("},");
+        output.write("\"caret\":{\"display-column\":");
+        output.write(Integer.toString(e.columnStart));
+        output.write(",\"line\":");
+        output.write(Integer.toString(e.line));
+        output.write("}}");
+        output.write("]}");
+      }
+    }
+  }
 }

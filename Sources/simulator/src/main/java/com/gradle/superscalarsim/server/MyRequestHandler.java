@@ -29,6 +29,7 @@ package com.gradle.superscalarsim.server;
 
 import com.cedarsoftware.util.io.JsonReader;
 import com.cedarsoftware.util.io.JsonWriter;
+import com.gradle.superscalarsim.serialization.GsonConfiguration;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.Headers;
@@ -81,7 +82,7 @@ public class MyRequestHandler<T, U> implements HttpHandler
     U response       = resolver.resolve(compileRequest);
     
     // Serialize
-    String out = JsonWriter.objectToJson(response);
+    String out = JsonWriter.objectToJson(response, GsonConfiguration.getJsonWriterOptions());
     exchange.getResponseSender().send(out);
   }
   

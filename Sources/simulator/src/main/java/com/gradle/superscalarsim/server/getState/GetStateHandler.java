@@ -85,9 +85,9 @@ public class GetStateHandler implements IRequestResolver<GetStateRequest, GetSta
     CodeParser codeParser   = new CodeParser(loader);
     boolean    parseSuccess = codeParser.parse(request.program);
     // Create response
-    CpuState     state        = null;
-    List<String> codeErrors   = null;
-    List<String> configErrors = null;
+    CpuState                    state        = null;
+    List<CodeParser.ParseError> codeErrors   = null;
+    List<String>                configErrors = null;
     if (!validationResult.valid)
     {
       System.err.println("Provided configuration is invalid: " + validationResult.messages);
