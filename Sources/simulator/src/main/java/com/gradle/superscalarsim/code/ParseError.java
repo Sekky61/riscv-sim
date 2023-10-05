@@ -9,7 +9,7 @@
  * @section Licence
  * This file is part of the Superscalar simulator app
  * <p>
- * Copyright (C) 2020  Jan Vavra
+ * Copyright (C) 2023 Michal Majer
  * <p>
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by

@@ -51,22 +51,30 @@ import java.util.regex.Pattern;
  */
 public class CodeParser
 {
-  /// Pattern for matching hexadecimal values in argument
+  /**
+   * Pattern for matching hexadecimal values in argument
+   */
   private final transient Pattern hexadecimalPattern;
-  /// Pattern for matching decimal values in argument
+  /**
+   * Pattern for matching decimal values in argument
+   */
   private final transient Pattern decimalPattern;
-  /// Pattern for matching register tags in instructionSyntax value of instruction
+  /**
+   * Pattern for matching register tags in instructionSyntax value of instruction
+   */
   private final transient Pattern registerPattern;
-  /// Pattern for splitting instruction arguments
+  /**
+   * Pattern for splitting instruction arguments
+   */
   private final transient Pattern splitArgsPattern;
-  /// Pattern for matching immediate tags in instructionSyntax value of instruction
+  /**
+   * Pattern for matching immediate tags in instructionSyntax value of instruction
+   */
   private final transient Pattern immediatePattern;
-  /// Pattern for matching labels in code
+  /**
+   * Pattern for matching labels in code
+   */
   private final transient Pattern labelPattern;
-  /// Pattern for matching labels in code
-  private final transient Pattern parsedLabelPattern;
-  /// Pattern for matching comments
-  private final transient Pattern commentPattern;
   /**
    * Error messages from parsing ASM code.
    * TODO: Remove from the instance, return it from parse instead.
@@ -74,7 +82,9 @@ public class CodeParser
    * @brief List of error messages
    */
   private final List<ParseError> errorMessages;
-  /// InitLoader object with loaded instructions and registers
+  /**
+   * InitLoader object with loaded instructions and registers
+   */
   private InitLoader initLoader;
   /**
    * List of parsed instructions
@@ -109,10 +119,7 @@ public class CodeParser
     this.splitArgsPattern = Pattern.compile("\\s*[,\\s]\\s*");
     this.immediatePattern = Pattern.compile("imm\\d*");
     // Anything with a colon at the end
-    this.labelPattern       = Pattern.compile("^[a-zA-Z0-9\\.]+:");
-    this.parsedLabelPattern = Pattern.compile("^[a-zA-Z0-9]+$");
-    // Hashtag and everything after it until end (must be applied to a line)
-    this.commentPattern = Pattern.compile("#.*$");
+    this.labelPattern = Pattern.compile("^[a-zA-Z0-9\\.]+:");
   }// end of Constructor
   
   /**
@@ -267,7 +274,6 @@ public class CodeParser
       // One instruction - the switch above ensures that this token is a word
       String                   instructionName = currentToken.text();
       InstructionFunctionModel instruction     = initLoader.getInstructionFunctionModel(instructionName);
-      currentTokenIndex++;
       
       if (instruction == null)
       {
@@ -288,45 +294,45 @@ public class CodeParser
         String paramType = splitSyntax[i + 1];
         
         // Load token if exists
+        currentTokenIndex++;
         if (currentTokenIndex >= tokens.size())
         {
           addError(currentToken, "Expected argument, got end of file.");
           continue outer;
         }
-        CodeToken nextToken = tokens.get(currentTokenIndex);
-        currentTokenIndex++;
+        currentToken = tokens.get(currentTokenIndex);
         
         // first skip over comma, unless this is the first argument
-        if (nextToken.type() == CodeToken.Type.COMMA)
+        if (currentToken.type() == CodeToken.Type.COMMA)
         {
           if (i == 0)
           {
             addError(currentToken, "Comma not allowed between instruction name and first argument.");
             // Recover - do not do anything
           }
+          currentTokenIndex++;
           if (currentTokenIndex >= tokens.size())
           {
             addError(currentToken, "Expected argument, got end of file.");
             continue outer;
           }
-          nextToken = tokens.get(currentTokenIndex);
-          currentTokenIndex++;
+          currentToken = tokens.get(currentTokenIndex);
         }
         
         // Check if the token is a word
-        if (nextToken.type() != CodeToken.Type.WORD)
+        if (currentToken.type() != CodeToken.Type.WORD)
         {
-          addError(currentToken, "Expected argument, got " + nextToken.text() + ".");
+          addError(currentToken, "Expected argument, got " + currentToken.text() + ".");
           // Recover - skip to the next newline
           currentTokenIndex = findNextNewline(tokens, currentTokenIndex);
-          continue;
+          continue outer;
         }
         
-        InputCodeArgument arg                 = new InputCodeArgument(paramType, nextToken.text());
+        InputCodeArgument arg                 = new InputCodeArgument(paramType, currentToken.text());
         boolean           isLValue            = paramType.equals("rd");
         DataTypeEnum      instructionDataType = isLValue ? instruction.getOutputDataType() : instruction.getInputDataType();
         boolean valid = validateArgument(arg, instruction.getInstructionType(), instructionDataType, isLValue,
-                                         nextToken);
+                                         currentToken);
         if (valid)
         {
           parsedArgs.add(arg);
@@ -338,6 +344,20 @@ public class CodeParser
                                                          instruction.getInstructionType(),
                                                          instruction.getInputDataType(), this.codeLineNumber);
       this.parsedCode.add(inputCodeModel);
+      
+      // Peek at the next token. If it exists, it must be a newline
+      currentTokenIndex++;
+      if (currentTokenIndex < tokens.size())
+      {
+        currentToken = tokens.get(currentTokenIndex);
+        if (currentToken.type() != CodeToken.Type.NEWLINE)
+        {
+          addError(currentToken, "Expected newline, got " + currentToken.text() + ".");
+          // Recover - skip to the next newline
+          currentTokenIndex = findNextNewline(tokens, currentTokenIndex);
+          continue;
+        }
+      }
     }
   }
   
@@ -436,31 +456,18 @@ public class CodeParser
       return false;
     }
     
-    if (!isDirectValue)
+    if (!isDirectValue && !isBranch)
     {
-      // If we are in branch, it could be a label
-      if (isBranch)
-      {
-        boolean isLabel = this.parsedLabelPattern.matcher(argumentValue).matches();
-        if (!isLabel)
-        {
-          this.addError(token, "Expecting immediate value or label, got : \"" + argumentValue + "\".");
-          return false;
-        }
-        // Check if label exists
-        if (!this.labels.contains(argumentValue))
-        {
-          this.addError(token, "Label \"" + argumentValue + "\" does not exist.");
-          return false;
-        }
-        // Label is valid
-      }
-      else
-      {
-        this.addError(token, "Expecting immediate value, got : \"" + argumentValue + "\".");
-        
-      }
+      this.addError(token, "Expecting immediate value, got : \"" + argumentValue + "\".");
+      return false;
     }
+    
+    if (!isDirectValue && !this.labels.contains(argumentValue))
+    {
+      this.addError(token, "Label \"" + argumentValue + "\" does not exist.");
+      return false;
+    }
+    
     return true;
   }// end of checkImmediateArgument
   //-------------------------------------------------------------------------------------------
