@@ -235,7 +235,7 @@ public class CodeParserTest
   {
     String code = """
             add x1 x2 x3
-            someRandomInstruction f3 x1
+            someRandomInstruction f3 x1 # a comment here
             fadd f1 f2 f3
             """;
     
@@ -250,7 +250,7 @@ public class CodeParserTest
   public void parseCode_lValueIsDecimal_returnsFalseAndErrorMessageIsSet()
   {
     String code = """
-            add x1 x2 x3
+            add x1, x2, x3 # commas allowed
             fcvt.w.s f3 x1
             fadd 20 f2 f3
             """;

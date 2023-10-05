@@ -121,6 +121,7 @@ public class CodeParser
     this.parsedCode.clear();
     this.codeLineNumber = 1;
     
+    
     if (codeString == null)
     {
       this.errorMessages.add(new ParseError("error", "Code was not provided."));
@@ -128,14 +129,17 @@ public class CodeParser
     }
     
     List<String> codeLines = Arrays.asList(codeString.split("\\r?\\n"));
-    boolean      result    = true;
     codeLines.replaceAll(String::trim);
+    boolean result = true;
     
+    // Per line parsing
     for (String codeLine : codeLines)
     {
       result = parseLine(codeLine) && result;
       this.codeLineNumber++;
     }
+    
+    // Second pass - check if all labels are defined
     result = areLabelsMissing() && result;
     if (!result)
     {
@@ -143,6 +147,53 @@ public class CodeParser
     }
     return result;
   }// end of parse
+  
+  /**
+   * Code tokenizer - produces a list of words, commas, labels and newlines.
+   *
+   * @param code Code to tokenize
+   *
+   * @return List of tokens
+   */
+  public List<CodeToken> tokenize(final String code)
+  {
+    List<CodeToken> tokens = new ArrayList<>();
+    // Split lines
+    String[] lines = code.split("\n");
+    // 1-based line index
+    
+    for (int i = 0; i < lines.length; i++)
+    {
+      int currentLineIndex = i + 1;
+      
+      // Remove comments
+      String line = lines[i].split("#", 2)[0];
+      
+      // Split the code to words and commas
+      Pattern pattern = Pattern.compile("[\\w\\.:\\(\\)-]+|,");
+      Matcher matcher = pattern.matcher(line);
+      while (matcher.find())
+      {
+        String token = matcher.group();
+        int    col   = matcher.start() + 1;
+        if (token.equals(","))
+        {
+          tokens.add(new CodeToken(currentLineIndex, col, token, CodeToken.Type.COMMA));
+        }
+        else if (labelPattern.matcher(token).matches())
+        {
+          tokens.add(new CodeToken(currentLineIndex, col, token, CodeToken.Type.LABEL));
+        }
+        else
+        {
+          tokens.add(new CodeToken(currentLineIndex, col, token, CodeToken.Type.WORD));
+        }
+      }
+      tokens.add(new CodeToken(currentLineIndex, 1, "\n", CodeToken.Type.NEWLINE));
+    }
+    
+    return tokens;
+  }
   
   /**
    * @param [in] codeLine - Line with code
