@@ -29,7 +29,6 @@ package com.gradle.superscalarsim.cpu;
 
 import com.cedarsoftware.util.io.JsonReader;
 import com.cedarsoftware.util.io.JsonWriter;
-import com.google.gson.Gson;
 import com.gradle.superscalarsim.blocks.CacheStatisticsCounter;
 import com.gradle.superscalarsim.blocks.StatisticsCounter;
 import com.gradle.superscalarsim.blocks.arithmetic.AluIssueWindowBlock;
@@ -362,8 +361,6 @@ public class CpuState implements Serializable
     CpuState myObject = (CpuState) obj;
     
     // Compare:
-    Gson gson = GsonConfiguration.getGson();
-    
     String meJson    = JsonWriter.objectToJson(this, GsonConfiguration.getJsonWriterOptions());
     String otherJson = JsonWriter.objectToJson(myObject, GsonConfiguration.getJsonWriterOptions());
     

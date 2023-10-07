@@ -30,6 +30,7 @@ package com.gradle.superscalarsim.cpu;
 
 import com.cedarsoftware.util.io.JsonReader;
 import com.cedarsoftware.util.io.JsonWriter;
+import com.gradle.superscalarsim.serialization.GsonConfiguration;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -183,12 +184,18 @@ public class SerializationTest
             jal x0 loop
             loopEnd:""";
     Cpu cpu = new Cpu(cfg);
-    cpu.simulateState(0);
+    cpu.simulateState(200);
     
     // Exercise
     CpuState stateCopy = cpu.cpuState.deepCopy();
     
+    String meJson    = JsonWriter.objectToJson(cpu.cpuState, GsonConfiguration.getJsonWriterOptions());
+    String otherJson = JsonWriter.objectToJson(stateCopy, GsonConfiguration.getJsonWriterOptions());
+    
+    String meJsonPretty    = JsonWriter.formatJson(meJson);
+    String otherJsonPretty = JsonWriter.formatJson(otherJson);
+    
     // Assert
-    Assert.assertEquals(cpu.cpuState, stateCopy);
+    Assert.assertEquals(meJsonPretty, otherJsonPretty);
   }
 }

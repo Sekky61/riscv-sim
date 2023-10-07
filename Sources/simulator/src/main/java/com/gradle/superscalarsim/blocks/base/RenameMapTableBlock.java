@@ -38,9 +38,9 @@ import com.gradle.superscalarsim.models.RegisterModel;
 import com.gradle.superscalarsim.models.RenameMapModel;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * @class RenameMapTableBlock
@@ -72,8 +72,8 @@ public class RenameMapTableBlock
   public RenameMapTableBlock()
   {
     this.freeList          = new ArrayList<>();
-    this.registerMap       = new HashMap<>();
-    this.referenceMap      = new HashMap<>();
+    this.registerMap       = new TreeMap<>();
+    this.referenceMap      = new TreeMap<>();
     this.registerFileBlock = null;
   }
   
@@ -84,9 +84,10 @@ public class RenameMapTableBlock
    */
   public RenameMapTableBlock(UnifiedRegisterFileBlock registerFileBlock)
   {
-    this.freeList          = new ArrayList<>();
-    this.registerMap       = new HashMap<>();
-    this.referenceMap      = new HashMap<>();
+    this.freeList = new ArrayList<>();
+    // TreeMaps to keep the order of keys - important for comparing serialized forms
+    this.registerMap       = new TreeMap<>();
+    this.referenceMap      = new TreeMap<>();
     this.registerFileBlock = registerFileBlock;
     
     initiateFreeList(registerFileBlock.getRegisterList(DataTypeEnum.kSpeculative));

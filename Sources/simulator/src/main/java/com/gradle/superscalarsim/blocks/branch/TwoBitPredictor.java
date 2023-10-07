@@ -45,6 +45,14 @@ public class TwoBitPredictor implements IBitPredictor
   private boolean[] state;
   
   /**
+   * @brief (De)serialize constructor
+   */
+  public TwoBitPredictor()
+  {
+    this.state = new boolean[]{false, false};
+  }
+  
+  /**
    * @param [in] initialState - Initial bit array of the bit predictor
    *
    * @brief Constructor
