@@ -46,13 +46,22 @@ import java.util.Stack;
  */
 public class GlobalHistoryRegister
 {
-  /// Bit array
+  /**
+   * @brief Bit array
+   * Index 0 is the newest bit
+   */
   private boolean[] shiftRegister;
-  /// History of bit arrays for later indexing to GShare or for bit array repair
+  /**
+   * History of bit arrays for later indexing to GShare or for bit array repair
+   */
   private final Map<Integer, boolean[]> history;
-  /// Stack of released histories used for backward simulation
+  /**
+   * Stack of released histories used for backward simulation
+   */
   private final Stack<GlobalHistoryReleaseModel> releasedHistories;
-  /// Size (in bits) of the GHR
+  /**
+   * Size (in bits) of the GHR
+   */
   private int size;
   
   /**
@@ -150,7 +159,7 @@ public class GlobalHistoryRegister
   
   /**
    * @return Integer value of the bit vector
-   * @brief Returns the bit array as integer
+   * @brief Returns the bit array as integer.
    */
   public int getRegisterValueAsInt()
   {
@@ -199,7 +208,7 @@ public class GlobalHistoryRegister
   //----------------------------------------------------------------------
   
   /**
-   * @param [in] id - Id of the history bit array (bulk id)
+   * @param id Id of the history bit array (bulk id)
    *
    * @brief Sets history bit array value as current value
    */

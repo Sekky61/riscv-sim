@@ -87,6 +87,18 @@ public class RegisterModel
   //------------------------------------------------------
   
   /**
+   * Copy constructor
+   */
+  public RegisterModel(RegisterModel register)
+  {
+    this.name       = register.name;
+    this.isConstant = register.isConstant;
+    this.dataType   = register.dataType;
+    this.value      = register.value;
+    this.readiness  = register.readiness;
+  }// end of Copy constructor
+  
+  /**
    * @return String representation of the object
    * @brief Overrides toString method with custom formating
    */

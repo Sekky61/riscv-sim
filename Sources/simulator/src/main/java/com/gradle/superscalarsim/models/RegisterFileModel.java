@@ -34,6 +34,7 @@ package com.gradle.superscalarsim.models;
 
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -74,14 +75,28 @@ public class RegisterFileModel
   //------------------------------------------------------
   
   /**
+   * Copy constructor
+   */
+  public RegisterFileModel(RegisterFileModel registerFile)
+  {
+    this.name     = registerFile.name;
+    this.dataType = registerFile.dataType;
+    // Copy registers (deep copy)
+    this.registerList = new ArrayList<>();
+    for (RegisterModel register : registerFile.registerList)
+    {
+      this.registerList.add(new RegisterModel(register));
+    }
+  }// end of Copy constructor
+  
+  /**
    * @return String representation of the object
    * @brief Overrides toString method with custom formating
    */
   @Override
   public String toString()
   {
-    return "Register file: " + name + '\n' + "data type: " + dataType + '\n' + "registers: " + '\n' +
-        "------------------------------------" + '\n' + registerList + "------------------------------------" + '\n';
+    return "Register file: " + name + '\n' + "data type: " + dataType + '\n' + "registers: " + '\n' + "------------------------------------" + '\n' + registerList + "------------------------------------" + '\n';
   }// end of toString
   //------------------------------------------------------
   
