@@ -31,12 +31,18 @@ import com.gradle.superscalarsim.cpu.CpuState;
 
 public class SimulationResponse
 {
-  public int executed_steps;
+  /**
+   * Delta of the executed steps
+   */
+  public int executedSteps;
+  /**
+   * State of the CPU at the requested tick, or at the end of the simulation, whichever comes first
+   */
   public CpuState state;
   
   SimulationResponse(CpuState state, int executed_steps)
   {
-    this.executed_steps = executed_steps;
-    this.state          = state;
+    this.executedSteps = executed_steps;
+    this.state         = state;
   }
 }

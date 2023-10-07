@@ -28,40 +28,51 @@
 package com.gradle.superscalarsim.server.simulation;
 
 import com.gradle.superscalarsim.cpu.Cpu;
+import com.gradle.superscalarsim.cpu.CpuConfiguration;
 import com.gradle.superscalarsim.server.IRequestResolver;
 
 /**
  * Handler for /simulation requests
- * Gets a CpuState and a number of steps to run and returns the resulting CpuState
+ * Gets a Configuration and a tick and returns the state of the cpu at that tick
+ * - For better performance, a state can be provided
  * - For backwards simulation, TODO
- * - For Getting initial state from a configuration, see
+ * - For getting initial state from a configuration, see
  * {@link com.gradle.superscalarsim.server.getState.GetStateHandler}
  */
 public class SimulationHandler implements IRequestResolver<SimulationRequest, SimulationResponse>
 {
-  
   @Override
   public SimulationResponse resolve(SimulationRequest request)
   {
-    
     SimulationResponse response;
-    if (request == null || request.state == null)
+    if (request == null || request.config == null)
     {
       // Send error
       response = new SimulationResponse(null, 0);
     }
     else
     {
-      // Run simulation
-      response = runSimulation(request);
+      // Check configuration, it may be used
+      CpuConfiguration.ValidationResult errors = request.config.validate();
+      if (errors.valid)
+      {
+        // Run simulation
+        response = runSimulation(request);
+      }
+      else
+      {
+        response = new SimulationResponse(null, 0);
+      }
     }
     return response;
   }
   
   private SimulationResponse runSimulation(SimulationRequest request)
   {
-    Cpu cpu         = new Cpu(request.state);
-    int actualSteps = cpu.run(request.steps);
+    Cpu cpu        = new Cpu(request.config, request.state);
+    int tickBefore = request.state == null ? 0 : request.state.tick;
+    cpu.simulateState(request.tick);
+    int actualSteps = cpu.cpuState.tick - tickBefore;
     return new SimulationResponse(cpu.cpuState, actualSteps);
   }
 }
