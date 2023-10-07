@@ -27,6 +27,8 @@
 
 package com.gradle.superscalarsim.cpu;
 
+import com.gradle.superscalarsim.loader.InitLoader;
+
 import java.io.Serializable;
 
 /**
@@ -46,6 +48,11 @@ public class Cpu implements Serializable
   public CpuState cpuState;
   
   /**
+   * @brief Loader for initial values - registers, instruction descriptions
+   */
+  public InitLoader initLoader;
+  
+  /**
    * Assumes the cpuConfiguration is correct
    *
    * @param cpuConfiguration CPU configuration to use
@@ -53,6 +60,7 @@ public class Cpu implements Serializable
   public Cpu(CpuConfiguration cpuConfiguration, CpuState cpuState)
   {
     this.configuration = cpuConfiguration;
+    this.initLoader    = new InitLoader();
     this.cpuState      = cpuState;
   }
   
@@ -64,7 +72,8 @@ public class Cpu implements Serializable
   public Cpu(CpuConfiguration cpuConfiguration)
   {
     this.configuration = cpuConfiguration;
-    this.cpuState      = new CpuState(cpuConfiguration);
+    this.initLoader    = new InitLoader();
+    this.cpuState      = new CpuState(cpuConfiguration, this.initLoader);
   }
   
   /**
@@ -73,7 +82,8 @@ public class Cpu implements Serializable
   public Cpu()
   {
     this.configuration = CpuConfiguration.getDefaultConfiguration();
-    this.cpuState      = new CpuState(this.configuration);
+    this.initLoader    = new InitLoader();
+    this.cpuState      = new CpuState(this.configuration, this.initLoader);
   }
   
   /**
@@ -92,6 +102,32 @@ public class Cpu implements Serializable
       steps++;
     }
     return steps;
+  }
+  
+  public boolean simEnded()
+  {
+    boolean robEmpty      = cpuState.reorderBufferBlock.getReorderQueue().isEmpty();
+    boolean pcEnd         = cpuState.instructionFetchBlock.getPcCounter() >= cpuState.codeParser.getParsedCode().size();
+    boolean renameEmpty   = cpuState.decodeAndDispatchBlock.getAfterRenameCodeList().isEmpty();
+    boolean fetchNotEmpty = !cpuState.instructionFetchBlock.getFetchedCode().isEmpty();
+    boolean nop = fetchNotEmpty && cpuState.instructionFetchBlock.getFetchedCode().get(0).getInstructionName()
+            .equals("nop");
+    return robEmpty && pcEnd && renameEmpty && nop;
+  }
+  
+  /**
+   * @brief Calls all blocks and tell them to update their values (triggered by GlobalTimer)
+   * Runs ROB at the end again
+   */
+  public void step()
+  {
+    this.cpuState.step();
+  }// end of step
+  //-------------------------------------------------------------------------------------------
+  
+  public void stepBack()
+  {
+    simulateState(this.cpuState.tick - 1);
   }
   
   /**
@@ -115,27 +151,12 @@ public class Cpu implements Serializable
     else
     {
       // Backward
-      this.cpuState = new CpuState(this.configuration);
+      this.cpuState = new CpuState(this.configuration, this.initLoader);
       while (!simEnded() && this.cpuState.tick < targetTick)
       {
         step();
       }
     }
-  }
-  
-  /**
-   * @brief Calls all blocks and tell them to update their values (triggered by GlobalTimer)
-   * Runs ROB at the end again
-   */
-  public void step()
-  {
-    this.cpuState.step();
-  }// end of step
-  //-------------------------------------------------------------------------------------------
-  
-  public void stepBack()
-  {
-    simulateState(this.cpuState.tick - 1);
   }
   
   public void execute()
@@ -144,17 +165,6 @@ public class Cpu implements Serializable
     {
       step();
     }
-  }
-  
-  public boolean simEnded()
-  {
-    boolean robEmpty      = cpuState.reorderBufferBlock.getReorderQueue().isEmpty();
-    boolean pcEnd         = cpuState.instructionFetchBlock.getPcCounter() >= cpuState.codeParser.getParsedCode().size();
-    boolean renameEmpty   = cpuState.decodeAndDispatchBlock.getAfterRenameCodeList().isEmpty();
-    boolean fetchNotEmpty = !cpuState.instructionFetchBlock.getFetchedCode().isEmpty();
-    boolean nop = fetchNotEmpty && cpuState.instructionFetchBlock.getFetchedCode().get(0).getInstructionName()
-            .equals("nop");
-    return robEmpty && pcEnd && renameEmpty && nop;
   }
   
   // Load a program into the CPU. Needs to be build() first.
@@ -166,7 +176,7 @@ public class Cpu implements Serializable
   public void setDefaultState()
   {
     this.configuration = CpuConfiguration.getDefaultConfiguration();
-    this.cpuState      = new CpuState(this.configuration);
+    this.cpuState      = new CpuState(this.configuration, this.initLoader);
   }
 }
 

@@ -58,7 +58,9 @@ public class CpuState implements Serializable
 {
   public int tick;
   
-  // TODO: move to Cpu so it can be mocked. Also, this is not really state.
+  /**
+   * Warning: this must be a reference to the same loader as in Cpu
+   */
   public InitLoader initLoader;
   public CodeParser codeParser;
   public List<SimCodeModel> simCodeModels;
@@ -120,10 +122,12 @@ public class CpuState implements Serializable
   public CpuState()
   {
     // Empty constructor for serialization
+    
   }
   
-  public CpuState(CpuConfiguration config)
+  public CpuState(CpuConfiguration config, InitLoader initLoader)
   {
+    this.initLoader = initLoader;
     this.initState(config);
   }
   
@@ -134,7 +138,6 @@ public class CpuState implements Serializable
   {
     this.tick = 0;
     
-    this.initLoader = new InitLoader();
     this.codeParser = new CodeParser(initLoader);
     this.codeParser.parse(config.code);
     
