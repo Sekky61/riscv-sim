@@ -56,7 +56,9 @@ import java.util.Objects;
  */
 public class CpuState implements Serializable
 {
+  public int tick;
   
+  // TODO: move to Cpu so it can be mocked. Also, this is not really state.
   public InitLoader initLoader;
   public CodeParser codeParser;
   public List<SimCodeModel> simCodeModels;
@@ -126,22 +128,15 @@ public class CpuState implements Serializable
   }
   
   /**
-   * @brief Initialize the CPU state - the default state of the CPU.
-   */
-  public void initState()
-  {
-    initState(CpuConfiguration.getDefaultConfiguration());
-  }
-  
-  /**
    * @brief Initialize the CPU state - given the configuration.
    */
   public void initState(CpuConfiguration config)
   {
+    this.tick = 0;
     
     this.initLoader = new InitLoader();
     this.codeParser = new CodeParser(initLoader);
-    
+    this.codeParser.parse(config.code);
     
     simCodeModelAllocator = new SimCodeModelAllocator();
     // Must reference outside list
@@ -392,8 +387,7 @@ public class CpuState implements Serializable
     // Check which buffer contains older instruction at the top
     // Null check first, if any is empty, the order does not matter
     if (loadBufferBlock.getLoadQueueFirst() == null || storeBufferBlock.getStoreQueueFirst() == null || loadBufferBlock.getLoadQueueFirst()
-                                                                                                                       .getId() < storeBufferBlock.getStoreQueueFirst()
-                                                                                                                                                  .getId())
+            .getId() < storeBufferBlock.getStoreQueueFirst().getId())
     {
       loadBufferBlock.simulate();
       storeBufferBlock.simulate();
@@ -415,6 +409,8 @@ public class CpuState implements Serializable
     reorderBufferBlock.bumpCommitID();
     // Stats
     statisticsCounter.incrementClockCycles();
+    
+    this.tick++;
   }// end of run
   
   public void stepBack()
