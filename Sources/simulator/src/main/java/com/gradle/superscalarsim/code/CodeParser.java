@@ -38,7 +38,6 @@ import com.gradle.superscalarsim.loader.InitLoader;
 import com.gradle.superscalarsim.models.*;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -245,9 +244,9 @@ public class CodeParser
         case LABEL ->
         {
           // Duplicate labels are already checked in collectLabels
-          int insertionIndex = this.parsedCode.size();
-          List<InputCodeArgument> args = Collections.singletonList(
-                  new InputCodeArgument("labelName", currentToken.text()));
+          int                     insertionIndex = this.parsedCode.size();
+          List<InputCodeArgument> args           = new ArrayList<>();
+          args.add(new InputCodeArgument("labelName", currentToken.text()));
           InputCodeModel inputCodeModel = new InputCodeModel(null, "label", args, InstructionTypeEnum.kLabel, null,
                                                              insertionIndex);
           this.parsedCode.add(inputCodeModel);

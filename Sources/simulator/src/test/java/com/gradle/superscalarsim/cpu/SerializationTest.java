@@ -143,4 +143,52 @@ public class SerializationTest
     Assert.assertEquals(1, cpuSer.cpuState.statisticsCounter.getCommittedInstructions());
     Assert.assertEquals(5, cpuSer.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(), 0.5);
   }
+  
+  /**
+   * There was a bug in serialization of labels
+   */
+  @Test
+  public void cpuState_label_serialization()
+  {
+    CpuConfiguration cfg = CpuConfiguration.getDefaultConfiguration();
+    cfg.code = """
+            addi x3 x0 10000
+            loop:
+            """;
+    
+    Cpu cpu = new Cpu(cfg);
+    cpu.simulateState(0);
+    
+    // Exercise
+    CpuState stateCopy = cpu.cpuState.deepCopy();
+    
+    // Assert
+    Assert.assertEquals(cpu.cpuState, stateCopy);
+  }
+  
+  @Test
+  public void cpuState_afterTicks_deepcopy_theSame()
+  {
+    CpuConfiguration cfg = CpuConfiguration.getDefaultConfiguration();
+    cfg.code = """
+            addi x3 x0 10000
+            addi x8 x0 50
+            sw x8 x0 16
+            loop:
+            beq x3 x0 loopEnd
+            lw x8 x0 16
+            addi x8 x8 1
+            sw x8 x0 16
+            subi x3 x3 1
+            jal x0 loop
+            loopEnd:""";
+    Cpu cpu = new Cpu(cfg);
+    cpu.simulateState(0);
+    
+    // Exercise
+    CpuState stateCopy = cpu.cpuState.deepCopy();
+    
+    // Assert
+    Assert.assertEquals(cpu.cpuState, stateCopy);
+  }
 }
