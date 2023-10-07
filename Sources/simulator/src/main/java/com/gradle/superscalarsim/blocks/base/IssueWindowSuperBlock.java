@@ -37,13 +37,11 @@ import com.gradle.superscalarsim.blocks.arithmetic.AluIssueWindowBlock;
 import com.gradle.superscalarsim.blocks.arithmetic.FpIssueWindowBlock;
 import com.gradle.superscalarsim.blocks.branch.BranchIssueWindowBlock;
 import com.gradle.superscalarsim.blocks.loadstore.LoadStoreIssueWindowBlock;
-import com.gradle.superscalarsim.loader.InitLoader;
 import com.gradle.superscalarsim.models.InstructionFunctionModel;
 import com.gradle.superscalarsim.models.SimCodeModel;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Stack;
 
 /**
  * @class IssueWindowSuperBlock
@@ -51,18 +49,13 @@ import java.util.Stack;
  */
 public class IssueWindowSuperBlock implements AbstractBlock
 {
-  /// List of failed instructions that were to be pulled from decode
-  private final Stack<SimCodeModel> failedInstructions;
   /// Class, which simulates instruction decode and renames registers
   private DecodeAndDispatchBlock decodeAndDispatchBlock;
   /// List of all issue windows
   private List<AbstractIssueWindowBlock> issueWindowBlockList;
-  /// Initial loader of interpretable instructions and register files
-  private InitLoader loader;
   
   public IssueWindowSuperBlock()
   {
-    failedInstructions = new Stack<>();
   }
   
   /**
@@ -72,12 +65,10 @@ public class IssueWindowSuperBlock implements AbstractBlock
    *
    * @brief Constructor
    */
-  public IssueWindowSuperBlock(DecodeAndDispatchBlock decodeAndDispatchBlock, InitLoader loader)
+  public IssueWindowSuperBlock(DecodeAndDispatchBlock decodeAndDispatchBlock)
   {
     this.decodeAndDispatchBlock = decodeAndDispatchBlock;
     this.issueWindowBlockList   = new ArrayList<>();
-    this.loader                 = loader;
-    this.failedInstructions     = new Stack<>();
     
   }// end of Constructor
   //----------------------------------------------------------------------
@@ -134,7 +125,6 @@ public class IssueWindowSuperBlock implements AbstractBlock
   @Override
   public void reset()
   {
-    this.failedInstructions.clear();
   }// end of reset
   //----------------------------------------------------------------------
   
@@ -146,10 +136,6 @@ public class IssueWindowSuperBlock implements AbstractBlock
   {
     if (decodeAndDispatchBlock.shouldFlush())
     {
-      for (int i = 0; i < this.decodeAndDispatchBlock.getAfterRenameCodeList().size(); i++)
-      {
-        this.failedInstructions.push(this.decodeAndDispatchBlock.getAfterRenameCodeList().get(i));
-      }
       this.decodeAndDispatchBlock.getAfterRenameCodeList().clear();
       this.decodeAndDispatchBlock.getBeforeRenameCodeList().clear();
       this.decodeAndDispatchBlock.setFlush(false);

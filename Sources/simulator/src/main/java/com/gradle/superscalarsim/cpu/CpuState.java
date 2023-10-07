@@ -200,7 +200,7 @@ public class CpuState implements Serializable
     this.gShareUnit = new GShareUnit(1024, this.globalHistoryRegister);
     this.gShareUnit.setPatternHistoryTable(patternHistoryTable);
     
-    this.branchTargetBuffer = new BranchTargetBuffer(initLoader, config.btbSize);
+    this.branchTargetBuffer = new BranchTargetBuffer(config.btbSize);
     
     this.simulatedMemory = new SimulatedMemory();
     
@@ -231,13 +231,13 @@ public class CpuState implements Serializable
     
     this.decodeAndDispatchBlock = new DecodeAndDispatchBlock(simCodeModelAllocator, instructionFetchBlock,
                                                              renameMapTableBlock, globalHistoryRegister,
-                                                             branchTargetBuffer, codeParser, initLoader);
+                                                             branchTargetBuffer, codeParser);
     this.reorderBufferBlock     = new ReorderBufferBlock(unifiedRegisterFileBlock, renameMapTableBlock,
                                                          decodeAndDispatchBlock, gShareUnit, branchTargetBuffer,
                                                          instructionFetchBlock, statisticsCounter, reorderBufferState);
-    this.issueWindowSuperBlock  = new IssueWindowSuperBlock(decodeAndDispatchBlock, initLoader);
-    this.arithmeticInterpreter  = new CodeArithmeticInterpreter(initLoader, precedingTable, unifiedRegisterFileBlock);
-    this.branchInterpreter      = new CodeBranchInterpreter(codeParser, initLoader, unifiedRegisterFileBlock);
+    this.issueWindowSuperBlock  = new IssueWindowSuperBlock(decodeAndDispatchBlock);
+    this.arithmeticInterpreter  = new CodeArithmeticInterpreter(precedingTable, unifiedRegisterFileBlock);
+    this.branchInterpreter      = new CodeBranchInterpreter(codeParser, unifiedRegisterFileBlock);
     
     this.storeBufferBlock = new StoreBufferBlock(loadStoreInterpreter, decodeAndDispatchBlock, unifiedRegisterFileBlock,
                                                  initLoader, reorderBufferBlock);

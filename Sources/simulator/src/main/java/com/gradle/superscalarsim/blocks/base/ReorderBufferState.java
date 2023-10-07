@@ -27,11 +27,13 @@
 
 package com.gradle.superscalarsim.blocks.base;
 
-import com.gradle.superscalarsim.models.PreCommitModel;
 import com.gradle.superscalarsim.models.ReorderFlags;
 import com.gradle.superscalarsim.models.SimCodeModel;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.PriorityQueue;
+import java.util.Queue;
 
 /**
  * @class ReorderBufferState
@@ -44,20 +46,6 @@ public class ReorderBufferState
   public final Queue<SimCodeModel> reorderQueue;
   /// Flags for each entry in queue
   public final Map<Integer, ReorderFlags> flagsMap;
-  
-  /**
-   * Stack of committed and released instructions
-   * Used for backwards simulation
-   */
-  public final Stack<SimCodeModel> releaseStack;
-  /// Stack for register mappings and values before committing
-  public final Stack<PreCommitModel> preCommitModelStack;
-  /**
-   * Stack of flags associated with instruction
-   * Pushed when instruction is commited
-   * Used for backwards simulation
-   */
-  public final Stack<ReorderFlags> flagsStack;
   /// Numerical limit, how many instruction can be committed in one tick
   public int commitLimit;
   /// Id counter for Ids, when was instruction committed/ready
@@ -69,11 +57,8 @@ public class ReorderBufferState
   
   public ReorderBufferState()
   {
-    this.reorderQueue        = new PriorityQueue<>();
-    this.flagsMap            = new HashMap<>();
-    this.releaseStack        = new Stack<>();
-    this.preCommitModelStack = new Stack<>();
-    this.flagsStack          = new Stack<>();
+    this.reorderQueue = new PriorityQueue<>();
+    this.flagsMap     = new HashMap<>();
     
     this.commitId         = 0;
     this.speculativePulls = false;

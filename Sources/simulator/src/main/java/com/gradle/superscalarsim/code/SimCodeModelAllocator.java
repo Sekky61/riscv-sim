@@ -41,7 +41,9 @@ import java.util.List;
  */
 public class SimCodeModelAllocator
 {
-  
+  /**
+   * @brief List of all SimCodeModel objects
+   */
   private List<SimCodeModel> simCodeModels;
   
   public SimCodeModelAllocator()

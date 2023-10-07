@@ -50,13 +50,8 @@ public interface IBitPredictor
   void downTheProbability();
   
   /**
-   * @brief Predicts backwards based on saved history
-   */
-  void predictBackwards();
-  
-  /**
-   * @return Human readable prediction bit vector value
-   * @brief Returns the prediction bit vector value as a human readable string
+   * @return Human-readable prediction bit vector value
+   * @brief Returns the prediction bit vector value as a human-readable string
    */
   String bitVectorToString();
 }

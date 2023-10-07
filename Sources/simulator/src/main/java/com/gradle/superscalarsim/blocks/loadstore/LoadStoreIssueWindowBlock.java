@@ -66,7 +66,7 @@ public class LoadStoreIssueWindowBlock extends AbstractIssueWindowBlock
    */
   public LoadStoreIssueWindowBlock(InitLoader loader, UnifiedRegisterFileBlock registerFileBlock)
   {
-    super(loader, registerFileBlock);
+    super(registerFileBlock);
     this.functionUnitBlockList = new ArrayList<>();
   }// end of Constructor
   //----------------------------------------------------------------------

@@ -32,8 +32,6 @@
  */
 package com.gradle.superscalarsim.blocks.branch;
 
-import java.util.Stack;
-
 /**
  * @class OneBitPredictor
  * @brief Class containing implementation of the One-bit predictor
@@ -42,8 +40,6 @@ public class OneBitPredictor implements IBitPredictor
 {
   /// Bit array of current prediction
   private final boolean[] state;
-  /// Stack of previous history values
-  private final Stack<Boolean> history;
   /// Initial state of the predictor
   private final boolean initialState;
   
@@ -55,7 +51,6 @@ public class OneBitPredictor implements IBitPredictor
   public OneBitPredictor(boolean isTaken)
   {
     this.state        = new boolean[]{isTaken};
-    this.history      = new Stack<>();
     this.initialState = isTaken;
   }// end of Constructor
   //----------------------------------------------------------------------
@@ -77,7 +72,6 @@ public class OneBitPredictor implements IBitPredictor
   @Override
   public void upTheProbability()
   {
-    savePreviousState();
     this.state[0] = true;
   }// end of upTheProbability
   //----------------------------------------------------------------------
@@ -88,19 +82,8 @@ public class OneBitPredictor implements IBitPredictor
   @Override
   public void downTheProbability()
   {
-    savePreviousState();
     this.state[0] = false;
   }// end of downTheProbability
-  //----------------------------------------------------------------------
-  
-  /**
-   * @brief Predicts backwards based on saved history
-   */
-  @Override
-  public void predictBackwards()
-  {
-    this.state[0] = !this.history.isEmpty() ? this.history.pop() : initialState;
-  }// end of predictBackwards
   //----------------------------------------------------------------------
   
   /**
@@ -112,14 +95,5 @@ public class OneBitPredictor implements IBitPredictor
   {
     return state[0] ? "Taken" : "Not Taken";
   }// end of bitVectorToString
-  //----------------------------------------------------------------------
-  
-  /**
-   * @brief Save history for backward prediction
-   */
-  private void savePreviousState()
-  {
-    this.history.push(this.state[0]);
-  }// end of savePreviousState
   //----------------------------------------------------------------------
 }

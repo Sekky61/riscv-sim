@@ -155,20 +155,6 @@ public class SimulatedMemory
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @param [in] address - Hashmap key, pointing into specific place in memory
-   *
-   * @brief Deletes record in memory
-   */
-  public void deleteFromMemory(Long address)
-  {
-    if (this.isInMemory(address))
-    {
-      this.memoryMap.remove(address);
-    }
-  }// end of deleteFromMemory
-  //-------------------------------------------------------------------------------------------
-  
-  /**
    * @return Map<Long, Byte> - Hasmap holding memory data
    * @brief Gets memory content
    */

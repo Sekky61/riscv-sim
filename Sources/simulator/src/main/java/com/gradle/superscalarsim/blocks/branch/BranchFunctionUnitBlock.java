@@ -103,7 +103,6 @@ public class BranchFunctionUnitBlock extends AbstractFunctionUnitBlock
     {
       hasDelayPassed();
       this.simCodeModel.setFunctionUnitId(this.functionUnitId);
-      this.failedInstructions.push(this.simCodeModel);
       this.simCodeModel = null;
       this.zeroTheCounter();
     }

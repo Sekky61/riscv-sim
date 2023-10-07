@@ -72,7 +72,7 @@ public class FpIssueWindowBlock extends AbstractIssueWindowBlock
                             UnifiedRegisterFileBlock registerFileBlock,
                             PrecedingTable precedingTable)
   {
-    super(loader, registerFileBlock);
+    super(registerFileBlock);
     this.functionUnitBlockList = new ArrayList<>();
     this.precedingTable        = precedingTable;
   }// end of Constructor

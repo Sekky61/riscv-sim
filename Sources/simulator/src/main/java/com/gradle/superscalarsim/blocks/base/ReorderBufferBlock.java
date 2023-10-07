@@ -41,7 +41,10 @@ import com.gradle.superscalarsim.blocks.loadstore.LoadBufferBlock;
 import com.gradle.superscalarsim.blocks.loadstore.StoreBufferBlock;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
-import com.gradle.superscalarsim.models.*;
+import com.gradle.superscalarsim.models.InputCodeArgument;
+import com.gradle.superscalarsim.models.RegisterModel;
+import com.gradle.superscalarsim.models.ReorderFlags;
+import com.gradle.superscalarsim.models.SimCodeModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -81,7 +84,6 @@ public class ReorderBufferBlock implements AbstractBlock
   
   public ReorderBufferBlock()
   {
-  
   }
   
   /**
@@ -117,48 +119,6 @@ public class ReorderBufferBlock implements AbstractBlock
     
     this.state = state;
   }// end of Constructor
-  //----------------------------------------------------------------------
-  
-  /**
-   * @return Integer value representing the limit buffer size
-   * @brief Gets a limit of how many instructions can be stored inside the ROB
-   */
-  public int getBufferSize()
-  {
-    return this.state.bufferSize;
-  }// end of getBufferSize
-  //----------------------------------------------------------------------
-  
-  /**
-   * @param [in] bufferSize - new buffer size limit
-   *
-   * @brief Sets limit on how many instructions can be stored inside the ROB
-   */
-  public void setBufferSize(int bufferSize)
-  {
-    this.state.bufferSize = bufferSize;
-  }// end of setBufferSize
-  //----------------------------------------------------------------------
-  
-  /**
-   * @return Integer value representing the commit limit
-   * @brief Gets a limit of how many instructions can be committed in one cycle
-   */
-  public int getCommitLimit()
-  {
-    return state.commitLimit;
-  }// end of setLoadBufferBlock
-  //----------------------------------------------------------------------
-  
-  /**
-   * @param [in] commitLimit - New commit limit
-   *
-   * @brief Sets limit on how many instructions should be commited in one tick
-   */
-  public void setCommitLimit(int commitLimit)
-  {
-    this.state.commitLimit = commitLimit;
-  }// end of setCommitLimit
   //----------------------------------------------------------------------
   
   /**
@@ -232,13 +192,10 @@ public class ReorderBufferBlock implements AbstractBlock
         hasInstructionBeenProcessed = true;
         commitCount++;
         this.state.reorderQueue.poll();
-        this.state.flagsStack.push(this.state.flagsMap.get(currentInstruction.getId()));
         this.state.flagsMap.remove(currentInstruction.getId());
         
         processCommittableInstruction(currentInstruction);
         currentInstruction.setCommitId(this.state.commitId);
-        // Save instruction to release stack, for possible later backward simulation
-        this.state.releaseStack.push(currentInstruction);
       }
       
     }
@@ -260,9 +217,6 @@ public class ReorderBufferBlock implements AbstractBlock
   {
     this.state.reorderQueue.clear();
     this.state.flagsMap.clear();
-    this.state.releaseStack.clear();
-    this.state.preCommitModelStack.clear();
-    this.state.flagsStack.clear();
     
     this.state.commitId         = 0;
     this.state.speculativePulls = false;
@@ -271,76 +225,6 @@ public class ReorderBufferBlock implements AbstractBlock
     gShareUnit.getPatternHistoryTable().reset();
     branchTargetBuffer.reset();
   }// end of reset
-  
-  /**
-   * @brief Checks top of the register stack and resets value and mapping if commit ids are equal
-   */
-  private void resetAssignedRegisters()
-  {
-    while (!this.state.preCommitModelStack.empty() && this.state.preCommitModelStack.peek()
-            .getId() == this.state.commitId)
-    {
-      PreCommitModel destinationRegister = this.state.preCommitModelStack.pop();
-      if (destinationRegister.getSpeculRegister().isEmpty())
-      {
-        this.registerFileBlock.getRegister(destinationRegister.getArchRegister())
-                .setValue(destinationRegister.getValue());
-      }
-      else
-      {
-        boolean mappingExists = this.renameMapTableBlock.getRegisterMap()
-                .containsKey(destinationRegister.getSpeculRegister());
-        this.renameMapTableBlock.mapRegister(destinationRegister.getArchRegister(),
-                                             destinationRegister.getSpeculRegister(),
-                                             destinationRegister.getRegisterOrder());
-        
-        if (!mappingExists)
-        {
-          double value = this.registerFileBlock.getRegister(destinationRegister.getArchRegister()).getValue();
-          this.registerFileBlock.getRegister(destinationRegister.getArchRegister())
-                  .setValue(destinationRegister.getValue());
-          this.registerFileBlock.getRegister(destinationRegister.getSpeculRegister()).setValue(value);
-        }
-        this.registerFileBlock.getRegister(destinationRegister.getSpeculRegister())
-                .setReadiness(destinationRegister.getSpeculState());
-      }
-    }
-  }// end of resetAssignedRegisters
-  //----------------------------------------------------------------------
-  
-  /**
-   * @param [in] codeModelId - Id marking flagEntry to omit
-   *
-   * @brief Set all flag entries to speculative except the specified one
-   */
-  private void resetSpeculativeFlags(int codeModelId)
-  {
-    this.state.flagsMap.forEach((integer, reorderFlags) -> reorderFlags.setSpeculative(integer != codeModelId));
-  }// end of resetSpeculativeFlags
-  //----------------------------------------------------------------------
-  
-  /**
-   * @brief Removes instructions, which are currently in decode block
-   */
-  private void removeInstructionsInDecodeBlock()
-  {
-    for (SimCodeModel instruction : this.decodeAndDispatchBlock.getAfterRenameCodeList())
-    {
-      this.state.reorderQueue.remove(instruction);
-      this.getFlagsMap().remove(instruction.getId());
-    }
-  }// end of removeInstructionsInDecodeBlock
-  //----------------------------------------------------------------------
-  
-  /**
-   * @return Map of ROB flags
-   * @brief Get the map of flags
-   */
-  public Map<Integer, ReorderFlags> getFlagsMap()
-  {
-    return state.flagsMap;
-  }// end of getFlagsMap
-  //----------------------------------------------------------------------
   
   /**
    * @param [in] codeModel - Code model of committable instruction
@@ -395,16 +279,12 @@ public class ReorderBufferBlock implements AbstractBlock
     if (destinationArgument != null)
     {
       //Save the value of architectural register in case of backward simulation
-      saveRegisterValue(renameMapTableBlock.getMapping(destinationArgument.getValue()), codeModel.getId());
       renameMapTableBlock.directCopyMapping(destinationArgument.getValue());
     }
     
     // Save the value of temporary registers for backward simulation
     codeModel.getArguments().stream().filter(argument -> argument.getName().startsWith("r")).forEach(argument ->
                                                                                                      {
-                                                                                                       saveRegisterValue(
-                                                                                                               argument.getValue(),
-                                                                                                               codeModel.getId());
                                                                                                        if (renameMapTableBlock.reduceReference(
                                                                                                                argument.getValue()))
                                                                                                        {
@@ -429,18 +309,15 @@ public class ReorderBufferBlock implements AbstractBlock
         statisticsCounter.incrementFailedInstructions();
         currentInstruction.setCommitId(this.state.commitId);
         instructionForRemoval.add(currentInstruction);
-        this.state.flagsStack.push(this.state.flagsMap.get(currentInstruction.getId()));
         this.state.flagsMap.remove(currentInstruction.getId());
         currentInstruction.getArguments().stream().filter(argument -> argument.getName().startsWith("r"))
                 .forEach(argument ->
                          {
-                           saveRegisterValue(argument.getValue(), currentInstruction.getId());
                            if (renameMapTableBlock.reduceReference(argument.getValue()))
                            {
                              renameMapTableBlock.freeMapping(argument.getValue());
                            }
                          });
-        this.state.releaseStack.push(currentInstruction);
         
         if (currentInstruction.getInstructionTypeEnum() == InstructionTypeEnum.kJumpbranch)
         {
@@ -526,7 +403,6 @@ public class ReorderBufferBlock implements AbstractBlock
             simCodeModel -> simCodeModel.getArguments().stream().filter(argument -> argument.getName().startsWith("r"))
                     .forEach(argument ->
                              {
-                               saveRegisterValue(argument.getValue(), simCodeModel.getId());
                                if (renameMapTableBlock.reduceReference(argument.getValue()))
                                {
                                  renameMapTableBlock.freeMapping(argument.getValue());
@@ -538,35 +414,6 @@ public class ReorderBufferBlock implements AbstractBlock
             polledInstructions.get(polledInstructions.size() - 1).getId()).isSpeculative();
     this.state.reorderQueue.addAll(polledInstructions);
   }// end of invalidateInstructions
-  //----------------------------------------------------------------------
-  
-  /**
-   * @param [in] register - Speculative register to save
-   *
-   * @brief Save register value, its mapping and state for possible later backward simulation
-   */
-  private void saveRegisterValue(final String register, final int orderId)
-  {
-    if (this.renameMapTableBlock.isSpeculativeRegister(register))
-    {
-      // Workaround for the same register being freed from invalidation in reorder buffer
-      // and invalidation from fetch buffer
-      if (!this.renameMapTableBlock.getRegisterMap().containsKey(register))
-      {
-        return;
-      }
-      String        registerName  = this.renameMapTableBlock.getRegisterMap().get(register).getArchitecturalRegister();
-      RegisterModel registerModel = registerFileBlock.getRegister(registerName);
-      this.state.preCommitModelStack.push(
-              new PreCommitModel(this.state.commitId, registerName, register, registerModel.getValue(), orderId,
-                                 registerModel.getReadiness()));
-    }
-    else
-    {
-      double value = this.registerFileBlock.getRegister(register).getValue();
-      this.state.preCommitModelStack.push(new PreCommitModel(this.state.commitId, register, "", value, orderId, null));
-    }
-  }// end of saveRegisterValue
   //----------------------------------------------------------------------
   
   /**
@@ -603,6 +450,16 @@ public class ReorderBufferBlock implements AbstractBlock
   {
     return this.state.bufferSize < (this.state.reorderQueue.size() + possibleAddition);
   }// end of isBufferFull
+  //----------------------------------------------------------------------
+  
+  /**
+   * @return Map of ROB flags
+   * @brief Get the map of flags
+   */
+  public Map<Integer, ReorderFlags> getFlagsMap()
+  {
+    return state.flagsMap;
+  }// end of getFlagsMap
   //----------------------------------------------------------------------
   
   public void bumpCommitID()

@@ -84,16 +84,6 @@ public class ZeroBitPredictor implements IBitPredictor
   //----------------------------------------------------------------------
   
   /**
-   * @brief Predicts backwards based on saved history
-   */
-  @Override
-  public void predictBackwards()
-  {
-    //do nothing
-  }// end of predictBackwards
-  //----------------------------------------------------------------------
-  
-  /**
    * @return Human readable prediction bit vector value
    * @brief Returns the prediction bit vector value as a human readable string
    */

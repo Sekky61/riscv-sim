@@ -30,7 +30,6 @@ import com.gradle.superscalarsim.models.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Stack;
 
 /**
  * @class CacheStatisticsCounter
@@ -46,9 +45,6 @@ public class CacheStatisticsCounter
   private int misses;
   /// Counter for correctly predicted branching instructions
   private int totalDelay;
-  
-  /// History of delay for backward simulation
-  private Stack<Integer> delayHistory;
   
   ///List of data for line chart with delays, clockXdelay
   private transient List<Pair<Integer, Float>> delayList;
@@ -79,7 +75,6 @@ public class CacheStatisticsCounter
     this.last4accesses = 0;
     delayList          = new ArrayList<>();
     hitMissList        = new ArrayList<>();
-    delayHistory       = new Stack<>();
   }// end of resetCounters
   //----------------------------------------------------------------------
   
@@ -130,18 +125,7 @@ public class CacheStatisticsCounter
   public void incrementTotalDelay(int cycle, int delay)
   {
     delayList.add(new Pair<>(cycle, (float) delay));
-    delayHistory.add(delay);
     totalDelay += delay;
-  }
-  
-  public void decrementTotalDelay()
-  {
-    if (!delayList.isEmpty())
-    {
-      totalDelay -= delayHistory.peek();
-      delayList.remove(delayList.size() - 1);
-      delayHistory.pop();
-    }
   }
   
   public long getAccesses()

@@ -32,13 +32,11 @@
  */
 package com.gradle.superscalarsim.blocks.branch;
 
-import com.gradle.superscalarsim.loader.InitLoader;
 import com.gradle.superscalarsim.models.BranchTargetEntryModel;
 import com.gradle.superscalarsim.models.IInputCodeModel;
 import com.gradle.superscalarsim.models.InstructionFunctionModel;
 
 import java.util.Map;
-import java.util.Stack;
 import java.util.TreeMap;
 
 /**
@@ -51,61 +49,18 @@ public class BranchTargetBuffer
   private final Map<Integer, BranchTargetEntryModel> buffer;
   /// Size of the buffer
   private int size;
-  /// InitLoader class holding information about instruction and registers
-  private final InitLoader initLoader;
-  /// Stack holding history of all rewritten entries
-  private final Stack<BranchTargetEntryModel> previousEntries;
   
   /**
-   * @param [in] initLoader - InitLoader class holding information about instruction and registers
-   * @param [in] size       - Size of the BTB
+   * @param size Size of the BTB
    *
    * @brief Constructor
    */
-  public BranchTargetBuffer(InitLoader initLoader, int size)
+  public BranchTargetBuffer(int size)
   {
-    this.initLoader = initLoader;
     // TreeMap is used to have sorted keys - display in GUI
-    this.buffer          = new TreeMap<>();
-    this.previousEntries = new Stack<>();
+    this.buffer = new TreeMap<>();
     reallocateTargetBuffer(size);
   }// end of Constructor
-  //----------------------------------------------------------------------
-  
-  /**
-   * @brief Resets the BTB
-   */
-  public void reset()
-  {
-    this.buffer.clear();
-    this.previousEntries.clear();
-    reallocateTargetBuffer(size);
-  }// end of reset
-  //----------------------------------------------------------------------
-  
-  BranchTargetEntryModel getBranchEntry(int programCounter)
-  {
-    return this.buffer.getOrDefault(programCounter % this.size, new BranchTargetEntryModel(-1, false, -1, -1, -1));
-  }
-  
-  /**
-   * @return List of BTB entries
-   * @brief Get whole BTB
-   */
-  public Map<Integer, BranchTargetEntryModel> getBuffer()
-  {
-    return buffer;
-  }// end of getBuffer
-  //----------------------------------------------------------------------
-  
-  /**
-   * @return BTB buffer size
-   * @brief Get BTB buffer size
-   */
-  public int getBufferSize()
-  {
-    return size;
-  }// end of getBufferSize
   //----------------------------------------------------------------------
   
   /**
@@ -118,6 +73,25 @@ public class BranchTargetBuffer
     this.size = size;
     this.buffer.clear();
   }// end of reallocateTargetBuffer
+  //----------------------------------------------------------------------
+  
+  /**
+   * @brief Resets the BTB
+   */
+  public void reset()
+  {
+    this.buffer.clear();
+    reallocateTargetBuffer(size);
+  }// end of reset
+  
+  /**
+   * @return List of BTB entries
+   * @brief Get whole BTB
+   */
+  public Map<Integer, BranchTargetEntryModel> getBuffer()
+  {
+    return buffer;
+  }// end of getBuffer
   //----------------------------------------------------------------------
   
   /**
@@ -135,9 +109,14 @@ public class BranchTargetBuffer
                                                                    instruction != null && !instruction.isUnconditionalJump(),
                                                                    target, id, commitId);
     
-    this.previousEntries.push(getBranchEntry(programCounter));
     this.buffer.put(programCounter % this.size, entryModel);
   }// end of setEntry
+  //----------------------------------------------------------------------
+  
+  BranchTargetEntryModel getBranchEntry(int programCounter)
+  {
+    return this.buffer.getOrDefault(programCounter % this.size, new BranchTargetEntryModel(-1, false, -1, -1, -1));
+  }
   //----------------------------------------------------------------------
   
   /**
@@ -168,34 +147,5 @@ public class BranchTargetBuffer
     BranchTargetEntryModel entryModel = getBranchEntry(programCounter);
     return entryModel.getPcTag() == programCounter && !entryModel.isConditional();
   }// end of isEntryUnconditional
-  //----------------------------------------------------------------------
-  
-  /**
-   * @param [in] programCounter - Position of the instruction in the program
-   *
-   * @brief Clears entry on the specified position
-   */
-  public void clearEntry(int programCounter)
-  {
-    this.buffer.remove(programCounter % this.size);
-  }// end of clearEntry
-  //----------------------------------------------------------------------
-  
-  /**
-   * @param [in] programCounter - Position of the instruction in the program
-   * @param [in] id         - Id from decode block marking bulk of processed instructions
-   * @param [in] commitId       - Id marking when branch instruction get committed
-   *
-   * @brief Resets entry from memory if ids are equal with the current entry
-   */
-  public void resetEntry(int programCounter, int id, int commitId)
-  {
-    BranchTargetEntryModel entryModel = getBranchEntry(programCounter);
-    if (entryModel.getInstructionId() == id && entryModel.getCommitId() == commitId)
-    {
-      entryModel = this.previousEntries.pop();
-      this.buffer.put(programCounter % this.size, entryModel);
-    }
-  }// end of resetEntry
   //----------------------------------------------------------------------
 }

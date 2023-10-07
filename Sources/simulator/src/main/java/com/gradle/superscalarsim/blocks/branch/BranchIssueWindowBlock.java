@@ -66,7 +66,7 @@ public class BranchIssueWindowBlock extends AbstractIssueWindowBlock
    */
   public BranchIssueWindowBlock(InitLoader loader, UnifiedRegisterFileBlock registerFileBlock)
   {
-    super(loader, registerFileBlock);
+    super(registerFileBlock);
     this.functionUnitBlockList = new ArrayList<>();
   }// end of Constructor
   //----------------------------------------------------------------------

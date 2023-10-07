@@ -122,7 +122,8 @@ public class MemoryModel
     if (cache != null)
     {
       com.gradle.superscalarsim.models.Pair<Integer, Long> returnValx = cache.getData(address, size, id, currentCycle);
-      Pair<Integer, Long> returnVal = new Pair<>(returnValx.getFirst(), returnValx.getSecond());
+      Pair<Integer, Long>                                  returnVal  = new Pair<>(returnValx.getFirst(),
+                                                                                   returnValx.getSecond());
       this.lastAccess.setData(returnVal.getSecond());
       cacheStatisticsCounter.incrementTotalDelay(currentCycle, returnVal.getFirst());
       return returnVal;
@@ -152,21 +153,6 @@ public class MemoryModel
     else
     {
       memory.reset();
-    }
-  }
-  
-  /**
-   * @brief Revert history associated with current id
-   */
-  public void revertHistory(int id)
-  {
-    if (cache != null)
-    {
-      cache.revertHistory(id);
-    }
-    else
-    {
-      memory.revertHistory(id);
     }
   }
   

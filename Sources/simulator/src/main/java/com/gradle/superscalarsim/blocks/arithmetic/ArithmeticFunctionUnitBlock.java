@@ -111,7 +111,6 @@ public class ArithmeticFunctionUnitBlock extends AbstractFunctionUnitBlock
     {
       hasDelayPassed();
       this.simCodeModel.setFunctionUnitId(this.functionUnitId);
-      this.failedInstructions.push(this.simCodeModel);
       this.simCodeModel = null;
       this.zeroTheCounter();
     }

@@ -68,7 +68,10 @@ public class InstructionFetchBlock implements AbstractBlock
   /// PC counter
   private int pcCounter;
   
-  /// Stack of previous PCs for backward simulation
+  /**
+   * Stack of previous PCs for backward simulation
+   * TODO: Can be deleted?
+   */
   private final Stack<Integer> previousPcStack;
   /// List of PC counter values indicating, which instructions were fetched
   private final List<Integer> fetchVector;
@@ -110,11 +113,6 @@ public class InstructionFetchBlock implements AbstractBlock
     this.cycleId         = -1;
   }// end of Constructor
   //----------------------------------------------------------------------
-  
-  public Stack<Integer> getPreviousPcStack()
-  {
-    return previousPcStack;
-  }
   
   /**
    * @param [in] numberOfWays - New number of fetched instructions

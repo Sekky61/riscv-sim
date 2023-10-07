@@ -120,7 +120,6 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
     {
       hasDelayPassed();
       this.simCodeModel.setFunctionUnitId(this.functionUnitId);
-      this.failedInstructions.push(this.simCodeModel);
       this.simCodeModel = null;
       this.zeroTheCounter();
       
@@ -223,7 +222,6 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
     {
       hasDelayPassed();
       this.simCodeModel.setFunctionUnitId(this.functionUnitId - 1);
-      this.failedInstructions.push(this.simCodeModel);
       this.simCodeModel = null;
       this.zeroTheCounter();
       
