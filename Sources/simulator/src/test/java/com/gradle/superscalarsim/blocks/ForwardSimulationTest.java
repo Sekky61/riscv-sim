@@ -141,8 +141,8 @@ public class ForwardSimulationTest
     cpuCfg.fUnits[8] = new CpuConfiguration.FUnit(9, "Branch", 3, new String[]{});
     cpuCfg.fUnits[9] = new CpuConfiguration.FUnit(10, "Memory", 1, new String[]{});
     
-    CpuState cpuState = new CpuState(cpuCfg);
-    this.cpu = new Cpu(cpuState);
+    this.cpu = new Cpu(cpuCfg);
+    CpuState cpuState = this.cpu.cpuState;
     
     this.codeParser                = cpuState.codeParser;
     this.statisticsCounter         = cpuState.statisticsCounter;
