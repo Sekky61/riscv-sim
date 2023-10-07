@@ -45,7 +45,11 @@ public class SimulationRequest
    */
   CpuConfiguration config;
   /**
-   * The state to start the simulation from
+   * The state to start the simulation from. Can be null
+   *
+   * @details Including this field is simply a performance optimization.
+   * If the state is not provided, it will be first calculated from the configuration,
+   * then simulated to the desired {@link #tick}
    */
   CpuState state;
 }

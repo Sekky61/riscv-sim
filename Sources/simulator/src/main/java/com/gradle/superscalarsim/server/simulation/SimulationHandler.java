@@ -32,10 +32,10 @@ import com.gradle.superscalarsim.cpu.CpuConfiguration;
 import com.gradle.superscalarsim.server.IRequestResolver;
 
 /**
- * Handler for /simulation requests
+ * @brief Handler for /simulation requests
  * Gets a Configuration and a tick and returns the state of the cpu at that tick
  * - For better performance, a state can be provided
- * - For backwards simulation, TODO
+ * - For backwards simulation, pass a tick lower than the current tick
  * - For getting initial state from a configuration, see
  * {@link com.gradle.superscalarsim.server.getState.GetStateHandler}
  */
@@ -45,7 +45,7 @@ public class SimulationHandler implements IRequestResolver<SimulationRequest, Si
   public SimulationResponse resolve(SimulationRequest request)
   {
     SimulationResponse response;
-    if (request == null || request.config == null)
+    if (request == null || request.config == null || request.tick < 0)
     {
       // Send error
       response = new SimulationResponse(null, 0);
@@ -67,10 +67,25 @@ public class SimulationHandler implements IRequestResolver<SimulationRequest, Si
     return response;
   }
   
+  /**
+   * @param request Request with the configuration and tick, optionally with the state
+   *
+   * @return Response with the state and the number of steps simulated
+   * @brief Run the simulation
+   */
   private SimulationResponse runSimulation(SimulationRequest request)
   {
-    Cpu cpu        = new Cpu(request.config, request.state);
-    int tickBefore = request.state == null ? 0 : request.state.tick;
+    // If state is not provided, simulate from the beginning
+    Cpu cpu;
+    if (request.state == null)
+    {
+      cpu = new Cpu(request.config);
+    }
+    else
+    {
+      cpu = new Cpu(request.config, request.state);
+    }
+    int tickBefore = cpu.cpuState.tick;
     cpu.simulateState(request.tick);
     int actualSteps = cpu.cpuState.tick - tickBefore;
     return new SimulationResponse(cpu.cpuState, actualSteps);
