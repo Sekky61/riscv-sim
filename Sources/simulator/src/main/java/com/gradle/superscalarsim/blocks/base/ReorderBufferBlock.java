@@ -261,6 +261,7 @@ public class ReorderBufferBlock implements AbstractBlock
         invalidateInstructions(this.state.reorderQueue.peek());
         
         GlobalHistoryRegister activeRegister = gShareUnit.getGlobalHistoryRegister();
+        // This also removes the value from the history stack
         activeRegister.setHistoryValueAsCurrent(codeModel.getId());
         activeRegister.shiftValue(false);
         

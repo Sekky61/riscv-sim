@@ -49,9 +49,13 @@ import java.util.List;
  */
 public class IssueWindowSuperBlock implements AbstractBlock
 {
-  /// Class, which simulates instruction decode and renames registers
+  /**
+   * Class, which simulates instruction decode and renames registers.
+   */
   private DecodeAndDispatchBlock decodeAndDispatchBlock;
-  /// List of all issue windows
+  /**
+   * List of all issue windows.
+   */
   private List<AbstractIssueWindowBlock> issueWindowBlockList;
   
   public IssueWindowSuperBlock()
@@ -135,6 +139,7 @@ public class IssueWindowSuperBlock implements AbstractBlock
   public void simulate()
   {
     // TODO: move to decode block
+    // TODO: places like this, where simcodemodels are deleted, leave behind history of GlobalHistoryRegister
     if (decodeAndDispatchBlock.shouldFlush())
     {
       this.decodeAndDispatchBlock.getAfterRenameCodeList().forEach(codeModel -> codeModel.setFinished(true));

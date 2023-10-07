@@ -44,12 +44,14 @@ import java.util.Map;
 public class GlobalHistoryRegister
 {
   /**
-   * @brief Bit array
-   * Index 0 is the newest bit
+   * @brief Bit array.
+   * Index 0 is the newest bit. New value is written for every decoded branch instruction.
    */
   private final boolean[] shiftRegister;
   /**
-   * History of bit arrays for later indexing to GShare or for bit array repair
+   * History of bit arrays for later indexing to GShare or for bit array repair.
+   * Key is the id of an instruction.
+   * Value is the bit array shiftRegister.
    */
   private final Map<Integer, boolean[]> history;
   /**

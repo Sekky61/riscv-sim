@@ -92,8 +92,8 @@ public class GShareUnit
   //----------------------------------------------------------------------
   
   /**
-   * @param [in] programCounter - Position of the branch instruction
-   * @param [in] id             - ID of the bit array history value
+   * @param programCounter Position of the branch instruction
+   * @param id             ID of the bit array history value
    *
    * @return Predictor on the specified index
    * @brief Get predictor from PHT with older GHT value

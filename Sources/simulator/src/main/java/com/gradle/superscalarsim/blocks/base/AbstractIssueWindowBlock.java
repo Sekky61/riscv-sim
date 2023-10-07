@@ -49,15 +49,23 @@ import java.util.Map;
  */
 public abstract class AbstractIssueWindowBlock implements AbstractBlock
 {
-  /// List of all instructions dispatched to this window
+  /**
+   * List of all instructions dispatched to this window
+   */
   private final List<SimCodeModel> issuedInstructions;
   
-  /// Map of readiness of each instruction in window
+  /**
+   * Map of readiness of each instruction in window.
+   */
   protected final Map<Integer, List<IssueItemModel>> argumentValidityMap;
-  /// Class containing all registers, that simulator uses
+  /**
+   * Class containing all registers, that simulator uses
+   */
   private UnifiedRegisterFileBlock registerFileBlock;
   
-  /// Id counter specifying which issue window did the instruction took
+  /**
+   * ID counter specifying which issue window did the instruction took
+   */
   protected int windowId;
   
   public AbstractIssueWindowBlock()
@@ -167,10 +175,11 @@ public abstract class AbstractIssueWindowBlock implements AbstractBlock
       
       if (functionUnitBlock == null || functionUnitBlock.getSimCodeModel() != null)
       {
+        // Currently no compatible FU is free
         continue;
       }
       
-      // Instruction is ready for execution and there is free FU -> issue instruction
+      // Instruction is ready for execution and there is a free FU -> issue the instruction
       currentModel.setIssueWindowId(this.windowId);
       functionUnitBlock.resetCounter();
       functionUnitBlock.setSimCodeModel(currentModel);

@@ -95,19 +95,19 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>
    */
   private int savedPc;
   /**
-   * Prediction made by branch predictor at the time of fetching
-   * Used for branch instructions
+   * Prediction made by branch predictor at the time of fetching.
+   * Used for branch instructions.
    */
   private boolean branchPredicted;
   /**
-   * Result of the branch computation
-   * Used to check for mispredictions
-   * True means branch was taken
+   * Result of the branch computation.
+   * Used to check for mispredictions.
+   * True means branch was taken.
    */
   private boolean branchLogicResult;
   /**
-   * Target of the branch instruction (offset from the savedPc)
-   * Used to fix BTB and PC in misprediction
+   * Target of the branch instruction (offset from the savedPc).
+   * Used to fix BTB and PC in misprediction.
    */
   private int branchTargetOffset;
   
