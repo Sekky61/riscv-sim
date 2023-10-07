@@ -51,6 +51,8 @@ public class GsonConfiguration
    */
   public static Map<String, Object> getJsonWriterOptions()
   {
+    // TODO: use TYPE_NAME_MAP
+    // https://github.com/jdereg/json-io/blob/master/user-guide.md
     Map<Class, JsonWriter.JsonClassWriterEx> javaIoWriters = new HashMap<>();
     javaIoWriters.put(ParseError.class, new ParseError.CustomParseErrorWriter());
     

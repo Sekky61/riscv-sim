@@ -41,7 +41,6 @@ import com.gradle.superscalarsim.blocks.loadstore.*;
 import com.gradle.superscalarsim.code.*;
 import com.gradle.superscalarsim.enums.cache.ReplacementPoliciesEnum;
 import com.gradle.superscalarsim.loader.InitLoader;
-import com.gradle.superscalarsim.models.SimCodeModel;
 import com.gradle.superscalarsim.serialization.GsonConfiguration;
 
 import java.io.Serializable;
@@ -63,7 +62,6 @@ public class CpuState implements Serializable
    */
   public InitLoader initLoader;
   public CodeParser codeParser;
-  public List<SimCodeModel> simCodeModels;
   public SimCodeModelAllocator simCodeModelAllocator;
   
   public ReorderBufferState reorderBufferState;
@@ -142,9 +140,6 @@ public class CpuState implements Serializable
     this.codeParser.parse(config.code);
     
     simCodeModelAllocator = new SimCodeModelAllocator();
-    // Must reference outside list
-    simCodeModels = new ArrayList<>();
-    simCodeModelAllocator.setSimCodeModels(simCodeModels);
     
     this.reorderBufferState        = new ReorderBufferState();
     reorderBufferState.bufferSize  = config.robSize;
@@ -337,12 +332,12 @@ public class CpuState implements Serializable
   
   public String serialize()
   {
-    return JsonWriter.objectToJson(this);
+    return JsonWriter.objectToJson(this, GsonConfiguration.getJsonWriterOptions());
   }
   
   public static CpuState deserialize(String json)
   {
-    CpuState state = (CpuState) JsonReader.jsonToJava(json);
+    CpuState state = (CpuState) JsonReader.jsonToJava(json, GsonConfiguration.getJsonWriterOptions());
     return state;
   }
   
@@ -369,8 +364,8 @@ public class CpuState implements Serializable
     // Compare:
     Gson gson = GsonConfiguration.getGson();
     
-    String meJson    = JsonWriter.objectToJson(this);
-    String otherJson = JsonWriter.objectToJson(myObject);
+    String meJson    = JsonWriter.objectToJson(this, GsonConfiguration.getJsonWriterOptions());
+    String otherJson = JsonWriter.objectToJson(myObject, GsonConfiguration.getJsonWriterOptions());
     
     return meJson.equals(otherJson);
   }
@@ -416,5 +411,8 @@ public class CpuState implements Serializable
     statisticsCounter.incrementClockCycles();
     
     this.tick++;
+    
+    // Clean up
+    simCodeModelAllocator.deleteOldReferences();
   }// end of run
 }

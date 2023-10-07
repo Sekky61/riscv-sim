@@ -225,6 +225,7 @@ public class DecodeAndDispatchBlock implements AbstractBlock
       this.afterRenameCodeList.removeAll(removeModel);
       
       // Take `fetchCount` instructions from fetch block, delete them from fetch block
+      // TODO: is fetchCount correct given that it is configurable?
       List<SimCodeModel> removeInputModel = new ArrayList<>();
       int fetchCount = Math.min((int) this.instructionFetchBlock.getFetchedCode().stream()
                                         .filter(code -> !code.getInstructionName().equals("nop")).count(),
@@ -247,14 +248,21 @@ public class DecodeAndDispatchBlock implements AbstractBlock
     }
     
     // Filter out nops and labels
-    this.beforeRenameCodeList.removeIf(code -> code.getInstructionName().equals("nop"));
-    this.beforeRenameCodeList.removeIf(code -> code.getInstructionName().equals("label"));
+    for (int i = this.beforeRenameCodeList.size() - 1; i >= 0; i--)
+    {
+      SimCodeModel codeModel = this.beforeRenameCodeList.get(i);
+      if (codeModel.getInstructionName().equals("nop") || codeModel.getInstructionName().equals("label"))
+      {
+        codeModel.setFinished(true);
+        this.beforeRenameCodeList.remove(i);
+      }
+    }
     
     checkForBranchInstructions();
     for (SimCodeModel simCodeModel : this.beforeRenameCodeList)
     {
       renameSourceRegisters(simCodeModel);
-      // Not sure this does anything
+      // Not sure if this does anything
       renameDestinationRegister(simCodeModel);
       this.afterRenameCodeList.add(simCodeModel);
     }

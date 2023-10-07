@@ -30,7 +30,7 @@ package com.gradle.superscalarsim.code;
 import com.gradle.superscalarsim.models.InputCodeModel;
 import com.gradle.superscalarsim.models.SimCodeModel;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -48,18 +48,24 @@ public class SimCodeModelAllocator
   
   public SimCodeModelAllocator()
   {
-    simCodeModels = new ArrayList<>();
-  }
-  
-  public void setSimCodeModels(List<SimCodeModel> simCodeModels)
-  {
-    this.simCodeModels = simCodeModels;
+    // Linked list is used because of fast removal of old references
+    simCodeModels = new LinkedList<>();
   }
   
   /**
-   * @param inputCodeModel
-   * @param id
-   * @param instructionBulkNumber
+   * @brief Deletes unnecessarily held references to SimCodeModel objects
+   * @details This method deletes all references to SimCodeModel objects that
+   * have been commited or have failed.
+   */
+  public void deleteOldReferences()
+  {
+    simCodeModels.removeIf(SimCodeModel::isFinished);
+  }
+  
+  /**
+   * @param inputCodeModel        InputCodeModel object
+   * @param id                    ID of the SimCodeModel
+   * @param instructionBulkNumber Number of instruction bulk
    *
    * @return
    * @brief Creates SimCodeModel - wrapper for constructor on SimCodeModel

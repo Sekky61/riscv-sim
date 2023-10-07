@@ -51,23 +51,14 @@ import java.util.Stack;
  */
 public class InstructionFetchBlock implements AbstractBlock
 {
-  /// Class containing parsed code
-  public CodeParser parser;
   /// Allocator for allocating new SimCodeModels
   private final SimCodeModelAllocator simCodeModelAllocator;
   /// List for storing fetched code
   private final List<SimCodeModel> fetchedCode;
-  
   /// GShare unit for getting correct prediction counters
   private final GShareUnit gShareUnit;
   /// Buffer holding information about branch instructions targets
   private final BranchTargetBuffer branchTargetBuffer;
-  
-  /// Marks the maximum number of instructions fetched in one tick
-  private int numberOfWays;
-  /// PC counter
-  private int pcCounter;
-  
   /**
    * Stack of previous PCs for backward simulation
    * TODO: Can be deleted?
@@ -75,6 +66,12 @@ public class InstructionFetchBlock implements AbstractBlock
   private final Stack<Integer> previousPcStack;
   /// List of PC counter values indicating, which instructions were fetched
   private final List<Integer> fetchVector;
+  /// Class containing parsed code
+  public CodeParser parser;
+  /// Marks the maximum number of instructions fetched in one tick
+  private int numberOfWays;
+  /// PC counter
+  private int pcCounter;
   /// Flag indicating that decode block was stalled and IF should behave accordingly
   private boolean stallFlag;
   /// Number indicating how many instructions were pulled from IF by the decode block
@@ -115,6 +112,16 @@ public class InstructionFetchBlock implements AbstractBlock
   //----------------------------------------------------------------------
   
   /**
+   * @return Number of ways
+   * @brief Gets number of ways
+   */
+  public int getNumberOfWays()
+  {
+    return numberOfWays;
+  }// end of getNumberOfWays
+  //----------------------------------------------------------------------
+  
+  /**
    * @param [in] numberOfWays - New number of fetched instructions
    *
    * @brief Set number of fetched instructions per tick
@@ -123,16 +130,6 @@ public class InstructionFetchBlock implements AbstractBlock
   {
     this.numberOfWays = numberOfWays;
   }// end of setNumberOfWays
-  //----------------------------------------------------------------------
-  
-  /**
-   * @return Number of ways
-   * @brief Gets number of ways
-   */
-  public int getNumberOfWays()
-  {
-    return numberOfWays;
-  }// end of getNumberOfWays
   //----------------------------------------------------------------------
   
   /**
@@ -145,6 +142,12 @@ public class InstructionFetchBlock implements AbstractBlock
   }// end of getFetchVector
   //----------------------------------------------------------------------
   
+  public boolean getStallFlag()
+  {
+    return this.stallFlag;
+  }
+  //----------------------------------------------------------------------
+  
   /**
    * @param [in] stallFlag - New boolean value of the stall flag
    *
@@ -154,21 +157,10 @@ public class InstructionFetchBlock implements AbstractBlock
   {
     this.stallFlag = stallFlag;
   }// end of setStallFlag
-  //----------------------------------------------------------------------
-  
-  public boolean getStallFlag()
-  {
-    return this.stallFlag;
-  }
   
   public int getStallFetchCount()
   {
     return this.stallFetchCount;
-  }
-  
-  public int getLastPC()
-  {
-    return this.lastPC;
   }
   
   /**
@@ -180,22 +172,11 @@ public class InstructionFetchBlock implements AbstractBlock
   {
     this.stallFetchCount = stallFetchCount;
   }// end of setStallFetchCount
-  //----------------------------------------------------------------------
   
-  /**
-   * @brief Resets the all the lists/stacks/variables in the instruction fetch block
-   */
-  @Override
-  public void reset()
+  public int getLastPC()
   {
-    this.fetchedCode.clear();
-    this.previousPcStack.clear();
-    this.fetchVector.clear();
-    this.stallFlag       = false;
-    this.pcCounter       = 0;
-    this.stallFetchCount = 0;
-    this.lastPC          = 0;
-  }// end of reset
+    return this.lastPC;
+  }
   //----------------------------------------------------------------------
   
   /**
@@ -218,18 +199,22 @@ public class InstructionFetchBlock implements AbstractBlock
         newPcCounter = this.previousPcStack.empty() ? 0 : this.previousPcStack.peek();
         for (int i = 0; i < stallFetchCount; i++)
         {
-          int simCodeId = newPcCounter * numberOfWays + i;
-          SimCodeModel codeModel = this.simCodeModelAllocator.createSimCodeModel(
-                  this.parser.getParsedCode().get(newPcCounter), simCodeId, cycleId);
-          int previousNewPc = newPcCounter;
-          newPcCounter = checkForBranching(codeModel, newPcCounter);
-          if (previousNewPc == newPcCounter)
+          boolean branchPredicted = isBranchingPredicted(newPcCounter);
+          if (branchPredicted)
           {
+            newPcCounter = this.branchTargetBuffer.getEntryTarget(newPcCounter);
+          }
+          else
+          {
+            // No jump, just increment PC
             newPcCounter++;
           }
         }
       }
       this.pcCounter = newPcCounter;
+      
+      // All fetched instructions are about to be flushed, so they are marked as finished
+      this.fetchedCode.forEach(codeModel -> codeModel.setFinished(true));
     }
     int fetchLimitLow  = Math.min(pcCounter, parser.getParsedCode().size());
     int fetchLimitHigh = Math.min(pcCounter + numberOfWays, parser.getParsedCode().size());
@@ -243,36 +228,55 @@ public class InstructionFetchBlock implements AbstractBlock
   //----------------------------------------------------------------------
   
   /**
-   * Get fetched instructions
-   *
-   * @return Fetched instructions
+   * @brief Resets the all the lists/stacks/variables in the instruction fetch block
    */
-  public List<SimCodeModel> getFetchedCode()
+  @Override
+  public void reset()
   {
-    return fetchedCode;
-  }// end of getFetchedCode
+    this.fetchedCode.clear();
+    this.previousPcStack.clear();
+    this.fetchVector.clear();
+    this.stallFlag       = false;
+    this.pcCounter       = 0;
+    this.stallFetchCount = 0;
+    this.lastPC          = 0;
+  }// end of reset
   //----------------------------------------------------------------------
   
   /**
-   * Gets current PC counter value
+   * @param codeModel      Potential branch code model
+   * @param programCounter Instruction position in program
    *
-   * @return PC counter value
+   * @return Either position of current instruction or target position of branch instruction
+   * @brief Checks if instruction is branch instructions and returns correct position
    */
-  public int getPcCounter()
+  private int checkForBranching(SimCodeModel codeModel, int programCounter)
   {
-    return pcCounter;
-  }// end of getCodeLine
+    int result = programCounter;
+    if (codeModel.getInstructionTypeEnum() == InstructionTypeEnum.kJumpbranch)
+    {
+      codeModel.setSavedPc(programCounter);
+      boolean branchPredicted = isBranchingPredicted(programCounter);
+      if (branchPredicted)
+      {
+        result = this.branchTargetBuffer.getEntryTarget(programCounter);
+      }
+      codeModel.setBranchPredicted(branchPredicted);
+    }
+    return result;
+  }// end of checkForBranching
   //----------------------------------------------------------------------
   
   /**
-   * @param [in] pcCounter - New value of the PC counter
-   *
-   * @brief Set the PC counter value (used during branches)
+   * @return True if branch was predicted
    */
-  public void setPcCounter(int pcCounter)
+  private boolean isBranchingPredicted(int pc)
   {
-    this.pcCounter = pcCounter;
-  }// end of setPcCounter
+    int     target        = this.branchTargetBuffer.getEntryTarget(pc);
+    boolean prediction    = this.gShareUnit.getPredictor(pc).getCurrentPrediction();
+    boolean unconditional = this.branchTargetBuffer.isEntryUnconditional(pc);
+    return target != -1 && (prediction || unconditional);
+  }
   //----------------------------------------------------------------------
   
   /**
@@ -316,6 +320,7 @@ public class InstructionFetchBlock implements AbstractBlock
         // Why does fetch know the instruction type?
         if (branchCount > 0 && isJumpBranch)
         {
+          codeModel.setFinished(true);
           break;
         }
         
@@ -369,32 +374,34 @@ public class InstructionFetchBlock implements AbstractBlock
   //----------------------------------------------------------------------
   
   /**
-   * @param [in, out] codeModel      - Potential branch code model
-   * @param [in] programCounter - Instruction position in program
+   * Get fetched instructions
    *
-   * @return Either position of current instruction or target position of branch instruction
-   * @brief Checks if instruction is branch instructions and returns correct position
+   * @return Fetched instructions
    */
-  private int checkForBranching(SimCodeModel codeModel, int programCounter)
+  public List<SimCodeModel> getFetchedCode()
   {
-    int result = programCounter;
-    if (codeModel.getInstructionTypeEnum() == InstructionTypeEnum.kJumpbranch)
-    {
-      codeModel.setSavedPc(programCounter);
-      int     target        = this.branchTargetBuffer.getEntryTarget(programCounter);
-      boolean prediction    = this.gShareUnit.getPredictor(programCounter).getCurrentPrediction();
-      boolean unconditional = this.branchTargetBuffer.isEntryUnconditional(programCounter);
-      if (target != -1 && (prediction || unconditional))
-      {
-        result = target;
-        codeModel.setBranchPredicted(true);
-      }
-      else
-      {
-        codeModel.setBranchPredicted(false);
-      }
-    }
-    return result;
-  }// end of checkForBranching
+    return fetchedCode;
+  }// end of getFetchedCode
   //----------------------------------------------------------------------
+  
+  /**
+   * Gets current PC counter value
+   *
+   * @return PC counter value
+   */
+  public int getPcCounter()
+  {
+    return pcCounter;
+  }// end of getCodeLine
+  //----------------------------------------------------------------------
+  
+  /**
+   * @param [in] pcCounter - New value of the PC counter
+   *
+   * @brief Set the PC counter value (used during branches)
+   */
+  public void setPcCounter(int pcCounter)
+  {
+    this.pcCounter = pcCounter;
+  }// end of setPcCounter
 }

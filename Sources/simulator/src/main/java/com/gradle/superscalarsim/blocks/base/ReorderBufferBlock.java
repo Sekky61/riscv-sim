@@ -155,6 +155,7 @@ public class ReorderBufferBlock implements AbstractBlock
     // First check if any instruction is ready for committing and set their register to assigned
     for (SimCodeModel currentInstruction : this.state.reorderQueue)
     {
+      assert !currentInstruction.getInstructionName().equals("nop");
       ReorderFlags currentReorderFlags = this.state.flagsMap.get(currentInstruction.getId());
       if (currentReorderFlags.isReadyToBeCommitted())
       {
@@ -191,11 +192,14 @@ public class ReorderBufferBlock implements AbstractBlock
         statisticsCounter.incrementCommittedInstructions();
         hasInstructionBeenProcessed = true;
         commitCount++;
+        // Delete instruction from ROB
         this.state.reorderQueue.poll();
         this.state.flagsMap.remove(currentInstruction.getId());
         
         processCommittableInstruction(currentInstruction);
         currentInstruction.setCommitId(this.state.commitId);
+        // Instruction can also be removed from allocator
+        currentInstruction.setFinished(true);
       }
       
     }
@@ -309,6 +313,7 @@ public class ReorderBufferBlock implements AbstractBlock
         statisticsCounter.incrementFailedInstructions();
         currentInstruction.setCommitId(this.state.commitId);
         instructionForRemoval.add(currentInstruction);
+        currentInstruction.setFinished(true);
         this.state.flagsMap.remove(currentInstruction.getId());
         currentInstruction.getArguments().stream().filter(argument -> argument.getName().startsWith("r"))
                 .forEach(argument ->
@@ -399,6 +404,7 @@ public class ReorderBufferBlock implements AbstractBlock
     }
     // clear what you can
     this.decodeAndDispatchBlock.setFlush(true);
+    // TODO: move to fetch and decode block
     this.decodeAndDispatchBlock.getAfterRenameCodeList().forEach(
             simCodeModel -> simCodeModel.getArguments().stream().filter(argument -> argument.getName().startsWith("r"))
                     .forEach(argument ->
@@ -408,6 +414,11 @@ public class ReorderBufferBlock implements AbstractBlock
                                  renameMapTableBlock.freeMapping(argument.getValue());
                                }
                              }));
+    
+    for (SimCodeModel simCode : this.instructionFetchBlock.getFetchedCode())
+    {
+      simCode.setFinished(true);
+    }
     this.instructionFetchBlock.getFetchedCode().clear();
     
     this.state.speculativePulls = !polledInstructions.isEmpty() && this.state.flagsMap.get(

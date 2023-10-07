@@ -134,9 +134,12 @@ public class IssueWindowSuperBlock implements AbstractBlock
   @Override
   public void simulate()
   {
+    // TODO: move to decode block
     if (decodeAndDispatchBlock.shouldFlush())
     {
+      this.decodeAndDispatchBlock.getAfterRenameCodeList().forEach(codeModel -> codeModel.setFinished(true));
       this.decodeAndDispatchBlock.getAfterRenameCodeList().clear();
+      this.decodeAndDispatchBlock.getBeforeRenameCodeList().forEach(codeModel -> codeModel.setFinished(true));
       this.decodeAndDispatchBlock.getBeforeRenameCodeList().clear();
       this.decodeAndDispatchBlock.setFlush(false);
     }
