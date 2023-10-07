@@ -40,7 +40,6 @@ import com.gradle.superscalarsim.code.CodeBranchInterpreter;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.models.InputCodeArgument;
 import com.gradle.superscalarsim.models.RegisterModel;
-import com.gradle.superscalarsim.models.SimCodeModel;
 
 import java.util.OptionalInt;
 
@@ -150,57 +149,5 @@ public class BranchFunctionUnitBlock extends AbstractFunctionUnitBlock
       this.functionUnitId += this.functionUnitCount;
     }
   }// end of simulate
-  //----------------------------------------------------------------------
-  
-  /**
-   * @brief Simulates backwards (resets flags and waits until un-execution of instruction)
-   */
-  @Override
-  public void simulateBackwards()
-  {
-    if (!isFunctionUnitEmpty())
-    {
-      return;
-    }
-    
-    this.functionUnitId -= this.functionUnitCount;
-    for (SimCodeModel codeModel : this.reorderBufferBlock.getReorderQueue())
-    {
-      if (codeModel.getFunctionUnitId() != this.functionUnitId || !issueWindowBlock.isCorrectDataType(
-          codeModel.getResultDataType()) || !issueWindowBlock.isCorrectInstructionType(
-          codeModel.getInstructionTypeEnum()))
-      {
-        // Skip
-        continue;
-      }
-      
-      // Put `codeModel` back to this unit
-      this.resetReverseCounter();
-      reorderBufferBlock.getFlagsMap().get(codeModel.getId()).setBusy(true);
-      this.simCodeModel = codeModel;
-      if (!this.failedInstructions.isEmpty() && this.simCodeModel == this.failedInstructions.peek())
-      {
-        this.failedInstructions.pop();
-        this.popHistoryCounter();
-      }
-      // Restore result readiness
-      simCodeModel.getArguments().stream().filter(argument -> argument.getName().equals("rd")).findFirst().ifPresent(
-          destinationArgument -> registerFileBlock.getRegister(destinationArgument.getValue())
-                                                  .setReadiness(RegisterReadinessEnum.kAllocated));
-      // Remove target and brcd arguments
-      simCodeModel.setBranchLogicResult(false);
-      simCodeModel.setBranchTargetOffset(0);
-      
-      return;
-    }
-    
-    // Not found in ROB, check failed instructions
-    if (!this.failedInstructions.isEmpty() && this.failedInstructions.peek().getFunctionUnitId() == this.functionUnitId)
-    {
-      // Put failed `codeModel` back to this unit
-      this.simCodeModel = this.failedInstructions.pop();
-      this.popHistoryCounter();
-    }
-  }// end of simulateBackwards
   //----------------------------------------------------------------------
 }

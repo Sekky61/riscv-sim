@@ -122,40 +122,6 @@ public class InstructionFetchBlockTest
   }
   
   @Test
-  public void instructionFetchSimulateBackwardsThreeWay_threeInstructionsSimulateThriceThenBack_returnCorrectValues()
-  {
-    InputCodeModel       ins1         = new InputCodeModelBuilder().hasInstructionName("ins1").build();
-    InputCodeModel       ins2         = new InputCodeModelBuilder().hasInstructionName("ins2").build();
-    InputCodeModel       ins3         = new InputCodeModelBuilder().hasInstructionName("ins3").build();
-    List<InputCodeModel> instructions = Arrays.asList(ins1, ins2, ins3);
-    Mockito.when(codeParser.getParsedCode()).thenReturn(instructions);
-    this.instructionFetchBlock.simulate();
-    this.instructionFetchBlock.simulate();
-    this.instructionFetchBlock.simulate();
-    
-    Assert.assertEquals(3, this.instructionFetchBlock.getPcCounter());
-    
-    this.instructionFetchBlock.simulateBackwards();
-    
-    Assert.assertEquals(3, this.instructionFetchBlock.getPcCounter());
-    Assert.assertEquals("nop", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
-    Assert.assertEquals("nop", this.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
-    Assert.assertEquals("nop", this.instructionFetchBlock.getFetchedCode().get(2).getInstructionName());
-    
-    this.instructionFetchBlock.simulateBackwards();
-    
-    Assert.assertEquals(3, this.instructionFetchBlock.getPcCounter());
-    Assert.assertEquals("ins1", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
-    Assert.assertEquals("ins2", this.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
-    Assert.assertEquals("ins3", this.instructionFetchBlock.getFetchedCode().get(2).getInstructionName());
-    
-    this.instructionFetchBlock.simulateBackwards();
-    
-    Assert.assertEquals(0, this.instructionFetchBlock.getPcCounter());
-    Assert.assertEquals(0, this.instructionFetchBlock.getFetchedCode().size());
-  }
-  
-  @Test
   public void instructionFetchPropertyChange_threeInstructions_callsSimulateAndReturnsThreeInstructions()
   {
     InputCodeModel       ins1         = new InputCodeModelBuilder().hasInstructionName("ins1").build();

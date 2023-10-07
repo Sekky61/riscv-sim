@@ -38,7 +38,10 @@ import com.gradle.superscalarsim.blocks.base.ReorderBufferBlock;
 import com.gradle.superscalarsim.blocks.base.UnifiedRegisterFileBlock;
 import com.gradle.superscalarsim.code.CodeLoadStoreInterpreter;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
-import com.gradle.superscalarsim.models.*;
+import com.gradle.superscalarsim.models.InputCodeArgument;
+import com.gradle.superscalarsim.models.Pair;
+import com.gradle.superscalarsim.models.RegisterModel;
+import com.gradle.superscalarsim.models.SimCodeModel;
 
 import java.util.Objects;
 import java.util.Stack;
@@ -168,7 +171,7 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
         {
           InputCodeArgument destinationArgument = simCodeModel.getArgumentByName("rd");
           RegisterModel destRegister = registerFileBlock.getRegister(
-              Objects.requireNonNull(destinationArgument).getValue());
+                  Objects.requireNonNull(destinationArgument).getValue());
           destRegister.setValue(savedResult);
           destRegister.setReadiness(RegisterReadinessEnum.kExecuted);
           this.loadBufferBlock.setDestinationAvailable(simCodeModel.getId());
@@ -188,96 +191,6 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
       this.functionUnitId += this.functionUnitCount;
     }
   }// end of simulate
-  //----------------------------------------------------------------------
-  
-  /**
-   * @brief Simulates backwards (resets flags and waits until un-execution of instruction)
-   */
-  @Override
-  public void simulateBackwards()
-  {
-    cycleCount--;
-    reduceCounter();
-    if (!isFunctionUnitEmpty())
-    {
-      if (hasReversedDelayPassed() && firstDelayPassed)
-      {
-        setDelay(baseDelay);
-        firstDelayPassed = false;
-        resetReverseCounter();
-        loadStoreInterpreter.revertMemoryHistory(this.simCodeModel);
-        savedDelays.pop();
-      }
-    }
-    else
-    {
-      this.functionUnitId -= this.functionUnitCount;
-      for (SimCodeModel codeModel : this.loadBufferBlock.getLoadQueue())
-      {
-        LoadBufferItem item = this.loadBufferBlock.getLoadMap().get(codeModel.getId());
-        if (item.getMemoryAccessId() == this.functionUnitId && !item.hasBypassed())
-        {
-          this.reorderBufferBlock.getFlagsMap().get(codeModel.getId()).setBusy(true);
-          if (savedDelays.peek() == 0)
-          {
-            this.setDelay(baseDelay);
-            firstDelayPassed = false;
-            loadStoreInterpreter.revertMemoryHistory(codeModel);
-            savedDelays.pop();
-          }
-          else
-          {
-            firstDelayPassed = true;
-            this.setDelay(savedDelays.peek());
-          }
-          this.resetReverseCounter();
-          this.simCodeModel = codeModel;
-          if (!this.failedInstructions.isEmpty() && this.simCodeModel == this.failedInstructions.peek())
-          {
-            this.failedInstructions.pop();
-            this.popHistoryCounter();
-          }
-          item.setDestinationReady(false);
-          return;
-        }
-      }
-      for (SimCodeModel codeModel : this.storeBufferBlock.getStoreQueue())
-      {
-        StoreBufferItem item = this.storeBufferBlock.getStoreMap().get(codeModel.getId());
-        if (item.getMemoryAccessId() == this.functionUnitId)
-        {
-          this.reorderBufferBlock.getFlagsMap().get(codeModel.getId()).setBusy(true);
-          if (savedDelays.peek() == 0)
-          {
-            this.setDelay(baseDelay);
-            firstDelayPassed = false;
-            loadStoreInterpreter.revertMemoryHistory(codeModel);
-            savedDelays.pop();
-          }
-          else
-          {
-            firstDelayPassed = true;
-            this.setDelay(savedDelays.peek());
-          }
-          this.resetReverseCounter();
-          this.simCodeModel = codeModel;
-          if (!this.failedInstructions.isEmpty() && this.simCodeModel == this.failedInstructions.peek())
-          {
-            this.failedInstructions.pop();
-            this.popHistoryCounter();
-          }
-          return;
-        }
-      }
-      if (!this.failedInstructions.isEmpty() && this.failedInstructions.peek()
-                                                                       .getFunctionUnitId() == this.functionUnitId)
-      {
-        this.simCodeModel     = this.failedInstructions.pop();
-        this.firstDelayPassed = this.savedFirstDelayPassed.pop();
-        this.popHistoryCounter();
-      }
-    }
-  }// end of simulateBackwards
   //----------------------------------------------------------------------
   
   /**

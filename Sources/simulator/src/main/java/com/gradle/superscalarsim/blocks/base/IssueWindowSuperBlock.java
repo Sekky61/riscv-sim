@@ -157,8 +157,7 @@ public class IssueWindowSuperBlock implements AbstractBlock
     else
     {
       int pullCount = !decodeAndDispatchBlock.shouldStall() ? this.decodeAndDispatchBlock.getAfterRenameCodeList()
-                                                                                         .size() :
-          this.decodeAndDispatchBlock.getStalledPullCount();
+              .size() : this.decodeAndDispatchBlock.getStalledPullCount();
       
       for (int i = 0; i < pullCount; i++)
       {
@@ -168,40 +167,6 @@ public class IssueWindowSuperBlock implements AbstractBlock
       }
     }
   }// end of simulate
-  //----------------------------------------------------------------------
-  
-  /**
-   * Simulate backwards (pulls instructions from Issue windows to decode)
-   */
-  @Override
-  public void simulateBackwards()
-  {
-    int                id                     = this.decodeAndDispatchBlock.getCurrentStepId();
-    List<SimCodeModel> returningCodeModelList = new ArrayList<>();
-    for (AbstractIssueWindowBlock issueWindowBlock : this.issueWindowBlockList)
-    {
-      List<SimCodeModel> currentFoundCodeModelList = new ArrayList<>();
-      issueWindowBlock.getIssuedInstructions().forEach(decodeCodeModel ->
-                                                       {
-                                                         if (decodeCodeModel.getInstructionBulkNumber() == id)
-                                                         {
-                                                           currentFoundCodeModelList.add(decodeCodeModel);
-                                                         }
-                                                       });
-      issueWindowBlock.getIssuedInstructions().removeAll(currentFoundCodeModelList);
-      returningCodeModelList.addAll(currentFoundCodeModelList);
-    }
-    if (returningCodeModelList.isEmpty() && !this.failedInstructions.isEmpty() && this.failedInstructions.peek()
-                                                                                                         .getInstructionBulkNumber() == id)
-    {
-      while (!this.failedInstructions.isEmpty() && this.failedInstructions.peek().getInstructionBulkNumber() == id)
-      {
-        returningCodeModelList.add(this.failedInstructions.pop());
-      }
-    }
-    this.decodeAndDispatchBlock.getAfterRenameCodeList().addAll(returningCodeModelList);
-    this.decodeAndDispatchBlock.getAfterRenameCodeList().sort(SimCodeModel::compareTo);
-  }// end of simulateBackwards
   //----------------------------------------------------------------------
   
   /**
@@ -215,7 +180,7 @@ public class IssueWindowSuperBlock implements AbstractBlock
     for (AbstractIssueWindowBlock issueWindow : this.issueWindowBlockList)
     {
       if (issueWindow.isCorrectInstructionType(instruction.getInstructionType()) && issueWindow.isCorrectDataType(
-          instruction.getOutputDataType()))
+              instruction.getOutputDataType()))
       {
         issueWindow.dispatchInstruction(codeModel);
         issueWindow.createArgumentValidityEntry(codeModel);

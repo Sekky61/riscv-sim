@@ -36,7 +36,6 @@ import com.gradle.superscalarsim.blocks.base.AbstractFunctionUnitBlock;
 import com.gradle.superscalarsim.blocks.base.AbstractIssueWindowBlock;
 import com.gradle.superscalarsim.blocks.base.ReorderBufferBlock;
 import com.gradle.superscalarsim.code.CodeLoadStoreInterpreter;
-import com.gradle.superscalarsim.models.SimCodeModel;
 
 /**
  * @class ArithmeticFunctionUnitBlock
@@ -124,49 +123,5 @@ public class LoadStoreFunctionUnit extends AbstractFunctionUnitBlock
       this.functionUnitId += this.functionUnitCount;
     }
   }// end of simulate
-  //----------------------------------------------------------------------
-  
-  /**
-   * @brief Simulates backwards (resets flags and waits until un-execution of instruction)
-   */
-  @Override
-  public void simulateBackwards()
-  {
-    if (isFunctionUnitEmpty())
-    {
-      this.functionUnitId -= this.functionUnitCount;
-      for (SimCodeModel codeModel : this.reorderBufferBlock.getReorderQueue())
-      {
-        if (codeModel.getFunctionUnitId() == this.functionUnitId && issueWindowBlock.isCorrectDataType(
-            codeModel.getResultDataType()) && issueWindowBlock.isCorrectInstructionType(
-            codeModel.getInstructionTypeEnum()))
-        {
-          this.resetReverseCounter();
-          this.simCodeModel = codeModel;
-          if (!this.failedInstructions.isEmpty() && this.simCodeModel == this.failedInstructions.peek())
-          {
-            this.failedInstructions.pop();
-            this.popHistoryCounter();
-          }
-          if (this.loadBufferBlock.getLoadMap().containsKey(codeModel.getId()))
-          {
-            this.loadBufferBlock.getLoadMap().get(codeModel.getId()).setAddress(-1);
-          }
-          else if (this.storeBufferBlock.getStoreMap().containsKey(codeModel.getId()))
-          {
-            this.storeBufferBlock.getStoreMap().get(codeModel.getId()).setAddress(-1);
-          }
-          reorderBufferBlock.getFlagsMap().get(codeModel.getId()).setBusy(true);
-          return;
-        }
-      }
-      if (!this.failedInstructions.isEmpty() && this.failedInstructions.peek()
-                                                                       .getFunctionUnitId() == this.functionUnitId)
-      {
-        this.simCodeModel = this.failedInstructions.pop();
-        this.popHistoryCounter();
-      }
-    }
-  }// end of simulateBackwards
   //----------------------------------------------------------------------
 }

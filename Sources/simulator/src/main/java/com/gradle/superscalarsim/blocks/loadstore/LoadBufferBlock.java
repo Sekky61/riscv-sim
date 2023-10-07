@@ -272,27 +272,6 @@ public class LoadBufferBlock implements AbstractBlock
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Reverse Simulation of Load buffer
-   */
-  @Override
-  public void simulateBackwards()
-  {
-    this.possibleNewEntries = 0;
-    this.commitId           = this.commitId == 0 ? 0 : this.commitId - 1;
-    while (!this.releaseStack.isEmpty() && this.releaseStack.peek().getCommitId() == this.commitId)
-    {
-      SimCodeModel codeModel = this.releaseStack.pop();
-      this.loadQueue.add(codeModel);
-      this.loadMap.put(codeModel.getId(), this.flagsStack.pop());
-    }
-    resetPcIfFailure();
-    removeInstructionsInDecodeBlock();
-    revertAllBypasses();
-    pullFromMA();
-  }// end of simulateBackwards
-  //-------------------------------------------------------------------------------------------
-  
-  /**
    * @param [in] codeModelId - Id identifying specific loadMap entry
    * @param [in] address     - Load instruction address
    *
@@ -409,8 +388,8 @@ public class LoadBufferBlock implements AbstractBlock
     for (AbstractFunctionUnitBlock memoryAccessUnit : this.memoryAccessUnitList)
     {
       if (!memoryAccessUnit.isFunctionUnitEmpty() && memoryAccessUnit.hasReversedDelayPassed() && this.loadMap.containsKey(
-          memoryAccessUnit.getSimCodeModel().getId()) && this.loadMap.get(memoryAccessUnit.getSimCodeModel().getId())
-                                                                     .getAccessingMemoryId() == this.commitId)
+              memoryAccessUnit.getSimCodeModel().getId()) && this.loadMap.get(
+              memoryAccessUnit.getSimCodeModel().getId()).getAccessingMemoryId() == this.commitId)
       {
         SimCodeModel codeModel = memoryAccessUnit.getSimCodeModel();
         memoryAccessUnit.setSimCodeModel(null);
@@ -437,18 +416,17 @@ public class LoadBufferBlock implements AbstractBlock
                                                                 return;
                                                               }
                                                               if (isBufferFull(
-                                                                  1) || !this.reorderBufferBlock.getFlagsMap()
-                                                                                                .containsKey(
-                                                                                                    codeModel.getId()))
+                                                                      1) || !this.reorderBufferBlock.getFlagsMap()
+                                                                      .containsKey(codeModel.getId()))
                                                               {
                                                                 return;
                                                               }
                                                               this.loadQueue.add(codeModel);
                                                               // Create entry in the Load Buffer
                                                               InputCodeArgument argument = codeModel.getArgumentByName(
-                                                                  "rd");
+                                                                      "rd");
                                                               this.loadMap.put(codeModel.getId(), new LoadBufferItem(
-                                                                  Objects.requireNonNull(argument).getValue()));
+                                                                      Objects.requireNonNull(argument).getValue()));
                                                               
                                                             });
   }// end of pullLoadInstructionsFromDecode
@@ -462,8 +440,8 @@ public class LoadBufferBlock implements AbstractBlock
     SimCodeModel codeModel = null;
     for (SimCodeModel simCodeModel : this.loadQueue)
     {
-      LoadBufferItem item = this.loadMap.get(simCodeModel.getId());
-      boolean isAvailableForMA = item.getAddress() != -1 && !item.isAccessingMemory() && !item.isDestinationReady();
+      LoadBufferItem item             = this.loadMap.get(simCodeModel.getId());
+      boolean        isAvailableForMA = item.getAddress() != -1 && !item.isAccessingMemory() && !item.isDestinationReady();
       
       if (isAvailableForMA)
       {
@@ -516,8 +494,7 @@ public class LoadBufferBlock implements AbstractBlock
     {
       if (loadItem.getAddress() == storeItem.getAddress() && simCodeModel.getId() > storeItem.getSourceResultId())
       {
-        boolean isNewItemBetter =
-            resultStoreItem == null || (storeItem.getSourceResultId() < resultStoreItem.getSourceResultId() && storeItem.getAddress() == loadItem.getAddress());
+        boolean isNewItemBetter = resultStoreItem == null || (storeItem.getSourceResultId() < resultStoreItem.getSourceResultId() && storeItem.getAddress() == loadItem.getAddress());
         resultStoreItem = isNewItemBetter ? storeItem : resultStoreItem;
       }
     }
@@ -529,8 +506,7 @@ public class LoadBufferBlock implements AbstractBlock
     RegisterModel         sourceReg   = registerFileBlock.getRegister(resultStoreItem.getSourceRegister());
     RegisterReadinessEnum resultState = sourceReg.getReadiness();
     
-    boolean storeSourceReady =
-        resultState == RegisterReadinessEnum.kExecuted || resultState == RegisterReadinessEnum.kAssigned;
+    boolean storeSourceReady = resultState == RegisterReadinessEnum.kExecuted || resultState == RegisterReadinessEnum.kAssigned;
     if (!storeSourceReady)
     {
       // Cannot speculatively load, the value is not computed yet

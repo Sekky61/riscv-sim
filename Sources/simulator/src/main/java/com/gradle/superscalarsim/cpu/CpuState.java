@@ -415,30 +415,4 @@ public class CpuState implements Serializable
     
     this.tick++;
   }// end of run
-  
-  public void stepBack()
-  {
-    decodeAndDispatchBlock.simulateBackwards();
-    issueWindowSuperBlock.simulateBackwards();
-    reorderBufferBlock.simulateBackwards();
-    // run all AbstractIssueWindowBlock blocks
-    aluIssueWindowBlock.simulateBackwards();
-    fpIssueWindowBlock.simulateBackwards();
-    branchIssueWindowBlock.simulateBackwards();
-    loadStoreIssueWindowBlock.simulateBackwards();
-    
-    storeBufferBlock.simulateBackwards();
-    loadBufferBlock.simulateBackwards();
-    // Run all FUs
-    arithmeticFunctionUnitBlocks.forEach(ArithmeticFunctionUnitBlock::simulateBackwards);
-    fpFunctionUnitBlocks.forEach(ArithmeticFunctionUnitBlock::simulateBackwards);
-    branchFunctionUnitBlocks.forEach(BranchFunctionUnitBlock::simulateBackwards);
-    loadStoreFunctionUnits.forEach(LoadStoreFunctionUnit::simulateBackwards);
-    memoryAccessUnits.forEach(MemoryAccessUnit::simulateBackwards);
-    instructionFetchBlock.simulateBackwards();
-    
-    this.statisticsCounter.decrementClockCycles();
-  }
-  //-------------------------------------------------------------------------------------------
-  
 }

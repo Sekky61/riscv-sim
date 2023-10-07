@@ -282,50 +282,6 @@ public class DecodeAndDispatchBlock implements AbstractBlock
   //----------------------------------------------------------------------
   
   /**
-   * @brief Simulates backwards (unmaps speculative registers)
-   */
-  @Override
-  public void simulateBackwards()
-  {
-    int removeCount = this.afterRenameCodeList.size();
-    if (!this.stallIdStack.empty() && getCurrentStepId() == this.stallIdStack.peek())
-    {
-      this.stallIdStack.pop();
-      removeCount = this.stalledPullCountStack.pop();
-    }
-    lowerStepId();
-    int                removeLowerBound = this.afterRenameCodeList.size() - removeCount;
-    List<SimCodeModel> removeList       = new ArrayList<>();
-    for (int i = this.afterRenameCodeList.size() - 1; i >= removeLowerBound; i--)
-    {
-      SimCodeModel codeModel = this.afterRenameCodeList.get(i);
-      removeList.add(codeModel);
-      codeModel.getArguments().forEach(argument ->
-                                       {
-                                         boolean match = codeModel.getOriginalArguments().stream()
-                                                 .map(InputCodeArgument::getValue)
-                                                 .anyMatch(argVal -> argument.getValue().equals(argVal));
-                                         if (!match && this.renameMapTableBlock.reduceReference(argument.getValue()))
-                                         {
-                                           this.renameMapTableBlock.freeMapping(argument.getValue());
-                                         }
-                                       });
-      if (codeModel.getInstructionTypeEnum() == InstructionTypeEnum.kJumpbranch)
-      {
-        int savedPc = codeModel.getSavedPc();
-        branchTargetBuffer.resetEntry(savedPc, codeModel.getId(), -1);
-        globalHistoryRegister.revertFromHistory(codeModel.getId());
-      }
-    }
-    this.afterRenameCodeList.removeAll(removeList);
-    for (SimCodeModel simCodeModel : this.afterRenameCodeList)
-    {
-      simCodeModel.setInstructionBulkNumber(getCurrentStepId());
-    }
-  }// end of simulateBackwards
-  //----------------------------------------------------------------------
-  
-  /**
    * @brief Resets the all the lists/stacks/variables in the decode block
    */
   @Override

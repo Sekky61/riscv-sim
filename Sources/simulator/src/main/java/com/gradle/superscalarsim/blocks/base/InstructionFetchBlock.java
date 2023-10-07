@@ -278,32 +278,6 @@ public class InstructionFetchBlock implements AbstractBlock
   //----------------------------------------------------------------------
   
   /**
-   * @brief Simulates backwards (fetches instructions until 0 is reached)
-   */
-  @Override
-  public void simulateBackwards()
-  {
-    this.cycleId--;
-    int stackValue = !this.previousPcStack.isEmpty() ? this.previousPcStack.pop() : 0;
-    if (stackValue == 0 && this.previousPcStack.isEmpty())
-    {
-      fetchedCode.clear();
-      fetchVector.clear();
-      this.pcCounter = 0;
-      return;
-    }
-    
-    this.pcCounter = !this.previousPcStack.isEmpty() ? this.previousPcStack.peek() : 0;
-    
-    
-    int fetchLimitLow      = Math.min(pcCounter, parser.getParsedCode().size());
-    int fetchLimitHigh     = Math.min(pcCounter + numberOfWays, parser.getParsedCode().size());
-    int loadedInstructions = fetchInstructions(fetchLimitLow, fetchLimitHigh);
-    this.pcCounter = this.pcCounter + loadedInstructions;
-  }// end of simulateBackwards
-  //----------------------------------------------------------------------
-  
-  /**
    * @param [in] fetchLimitLow  - index of instruction with lowest number
    * @param [in] fetchLimitHigh - index of last instruction (exclusive range)
    *

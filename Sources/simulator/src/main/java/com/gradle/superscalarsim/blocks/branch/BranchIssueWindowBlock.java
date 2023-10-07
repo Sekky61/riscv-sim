@@ -39,7 +39,6 @@ import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.loader.InitLoader;
 import com.gradle.superscalarsim.models.InstructionFunctionModel;
-import com.gradle.superscalarsim.models.SimCodeModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -91,38 +90,6 @@ public class BranchIssueWindowBlock extends AbstractIssueWindowBlock
     return null;
   }// end of selectSufficientFunctionUnit
   //----------------------------------------------------------------------
-  
-  /**
-   * @brief Simulates backwards (moves instructions from FUs)
-   */
-  @Override
-  public void simulateBackwards()
-  {
-    this.windowId = this.windowId - 1;
-    for (AbstractFunctionUnitBlock functionUnitBlock : this.functionUnitBlockList)
-    {
-      if (!functionUnitBlock.isFunctionUnitEmpty() && functionUnitBlock.hasReversedDelayPassed() && functionUnitBlock.getSimCodeModel()
-                                                                                                                     .getIssueWindowId() == this.windowId)
-      {
-        SimCodeModel codeModel = functionUnitBlock.getSimCodeModel();
-        functionUnitBlock.setSimCodeModel(null);
-        codeModel.setFunctionUnitId(0);
-        this.getIssuedInstructions().add(codeModel);
-        createArgumentValidityEntry(codeModel);
-      }
-    }
-    while (!this.failedInstructions.empty() && this.failedInstructions.peek().getIssueWindowId() == this.getWindowId())
-    {
-      SimCodeModel codeModel = failedInstructions.pop();
-      this.getIssuedInstructions().add(codeModel);
-      this.argumentValidityMap.put(codeModel.getId(), this.failedValidityMaps.pop());
-      codeModel.setIssueWindowId(0);
-    }
-    this.getIssuedInstructions().sort(SimCodeModel::compareTo);
-    updateValidityItems();
-  }// end of simulateBackwards
-  //----------------------------------------------------------------------
-  
   
   /**
    * @param [in] instructionType - Type of the instruction (branch, arithmetic, eg.)
