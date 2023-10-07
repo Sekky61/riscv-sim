@@ -159,50 +159,20 @@ public class CpuState implements Serializable
     this.renameMapTableBlock      = new RenameMapTableBlock(unifiedRegisterFileBlock);
     
     this.globalHistoryRegister = new GlobalHistoryRegister(10);
-    this.patternHistoryTable   = new PatternHistoryTable(config.phtSize);
     PatternHistoryTable.PredictorType predictorType = switch (config.predictorType)
     {
+      case "0bit" -> PatternHistoryTable.PredictorType.ZERO_BIT_PREDICTOR;
       case "1bit" -> PatternHistoryTable.PredictorType.ONE_BIT_PREDICTOR;
       case "2bit" -> PatternHistoryTable.PredictorType.TWO_BIT_PREDICTOR;
       default -> throw new IllegalStateException("Unexpected value for predictor type: " + config.predictorType);
     };
-    patternHistoryTable.setDefaultPredictorClass(predictorType);
     
-    boolean[] defaultTaken;
-    if (config.predictorType.equals("0bit") || config.predictorType.equals("1bit"))
-    {
-      if (!Objects.equals(config.predictorDefault, "Taken") && !Objects.equals(config.predictorDefault, "Not Taken"))
-      {
-        throw new IllegalStateException("Unexpected value for 0bit/1bit predictor: " + config.predictorDefault);
-      }
-      boolean take = config.predictorDefault.equals("taken");
-      defaultTaken = new boolean[]{take};
-    }
-    else if (config.predictorType.equals("2bit"))
-    {
-      defaultTaken = switch (config.predictorDefault)
-      {
-        case "Strongly Not Taken" -> new boolean[]{false, false};
-        case "Weakly Not Taken" -> new boolean[]{true, false};
-        case "Weakly Taken" -> new boolean[]{false, true};
-        case "Strongly Taken" -> new boolean[]{true, true};
-        default -> throw new IllegalStateException("Unexpected value for 2bit predictor: " + config.predictorDefault);
-      };
-    }
-    else
-    {
-      throw new IllegalStateException("Unexpected predictor type: " + config.predictorType);
-    }
+    boolean[] defaultTaken = getDefaultTaken(config);
     
-    defaultTaken[0] = config.predictorDefault == "taken";
-    patternHistoryTable.setDefaultTaken(defaultTaken);
-    
-    this.gShareUnit = new GShareUnit(1024, this.globalHistoryRegister);
-    this.gShareUnit.setPatternHistoryTable(patternHistoryTable);
-    
-    this.branchTargetBuffer = new BranchTargetBuffer(config.btbSize);
-    
-    this.simulatedMemory = new SimulatedMemory();
+    this.patternHistoryTable = new PatternHistoryTable(config.phtSize, defaultTaken, predictorType);
+    this.gShareUnit          = new GShareUnit(1024, this.globalHistoryRegister, this.patternHistoryTable);
+    this.branchTargetBuffer  = new BranchTargetBuffer(config.btbSize);
+    this.simulatedMemory     = new SimulatedMemory();
     
     ReplacementPoliciesEnum replacementPoliciesEnum = switch (config.cacheReplacement)
     {
@@ -320,6 +290,39 @@ public class CpuState implements Serializable
         default -> throw new IllegalStateException("Unexpected FU type: " + fu.fuType);
       }
     }
+  }
+  
+  /**
+   * @param config The configuration
+   *
+   * @brief Get the default state for the predictor from the configuration
+   */
+  private static boolean[] getDefaultTaken(CpuConfiguration config)
+  {
+    boolean[] defaultTaken;
+    if (config.predictorType.equals("0bit") || config.predictorType.equals("1bit"))
+    {
+      if (!Objects.equals(config.predictorDefault, "Taken") && !Objects.equals(config.predictorDefault, "Not Taken"))
+      {
+        throw new IllegalStateException("Unexpected value for 0bit/1bit predictor: " + config.predictorDefault);
+      }
+      boolean take = config.predictorDefault.equals("taken");
+      defaultTaken = new boolean[]{take};
+    }
+    else
+    {
+      assert config.predictorType.equals("2bit");
+      defaultTaken = switch (config.predictorDefault)
+      {
+        case "Strongly Not Taken" -> new boolean[]{false, false};
+        case "Weakly Not Taken" -> new boolean[]{true, false};
+        case "Weakly Taken" -> new boolean[]{false, true};
+        case "Strongly Taken" -> new boolean[]{true, true};
+        default -> throw new IllegalStateException("Unexpected value for 2bit predictor: " + config.predictorDefault);
+      };
+    }
+    defaultTaken[0] = config.predictorDefault.equals("taken");
+    return defaultTaken;
   }
   
   /**

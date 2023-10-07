@@ -33,13 +33,17 @@
 package com.gradle.superscalarsim.blocks.branch;
 
 /**
+ * The zero bit predictor always predicts the value set in initialization
+ *
  * @class ZeroBitPredictor
  * @brief Class containing implementation of the Zero-bit predictor
  */
 public class ZeroBitPredictor implements IBitPredictor
 {
-  /// Bit array of current prediction
-  private final boolean[] state;
+  /**
+   * State - a bit array
+   */
+  private boolean[] state;
   
   /**
    * @param [in] isTaken - Initial value of the bit predictor

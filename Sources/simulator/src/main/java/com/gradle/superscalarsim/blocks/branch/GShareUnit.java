@@ -39,12 +39,19 @@ package com.gradle.superscalarsim.blocks.branch;
 public class GShareUnit
 {
   
-  /// Table with all bit predictors
+  /**
+   * Table with all bit predictors
+   */
   private PatternHistoryTable patternHistoryTable;
   
-  /// Bit array of branching history
+  /**
+   * Bit array of branching history
+   * TODO: What is the meaning of this?
+   */
   private GlobalHistoryRegister globalHistoryRegister;
-  /// Size of the pattern table
+  /**
+   * Size of the pattern table
+   */
   private int size;
   
   /**
@@ -53,9 +60,9 @@ public class GShareUnit
    *
    * @brief Constructor
    */
-  public GShareUnit(int size, GlobalHistoryRegister globalHistoryRegister)
+  public GShareUnit(int size, GlobalHistoryRegister globalHistoryRegister, PatternHistoryTable patternHistoryTable)
   {
-    this.patternHistoryTable   = new PatternHistoryTable(size);
+    this.patternHistoryTable   = patternHistoryTable;
     this.globalHistoryRegister = globalHistoryRegister;
     this.size                  = size;
   }// end of Constructor
@@ -106,28 +113,6 @@ public class GShareUnit
   {
     return globalHistoryRegister;
   }// end of getGlobalHistoryRegister
-  //----------------------------------------------------------------------
-  
-  /**
-   * @param [in] size - New PHT size
-   *
-   * @brief Set new size of the PHT
-   */
-  public void setSize(int size)
-  {
-    this.size                = size;
-    this.patternHistoryTable = new PatternHistoryTable(size);
-  }// end of setSize
-  
-  public void setGlobalHistoryRegister(GlobalHistoryRegister globalHistoryRegister)
-  {
-    this.globalHistoryRegister = globalHistoryRegister;
-  }
-  
-  public void setPatternHistoryTable(PatternHistoryTable patternHistoryTable)
-  {
-    this.patternHistoryTable = patternHistoryTable;
-  }
   
   //----------------------------------------------------------------------
 }

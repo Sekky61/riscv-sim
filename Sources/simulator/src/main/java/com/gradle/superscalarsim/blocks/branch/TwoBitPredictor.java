@@ -38,10 +38,11 @@ package com.gradle.superscalarsim.blocks.branch;
  */
 public class TwoBitPredictor implements IBitPredictor
 {
-  /// Bit array of current prediction
-  private final boolean[] state;
-  /// Initial state of the predictor
-  private final boolean[] initialState;
+  /**
+   * State - a bit array
+   * The second bit decides whether the branch should be taken or not
+   */
+  private boolean[] state;
   
   /**
    * @param [in] initialState - Initial bit array of the bit predictor
@@ -50,8 +51,7 @@ public class TwoBitPredictor implements IBitPredictor
    */
   public TwoBitPredictor(boolean[] initialState)
   {
-    this.state        = new boolean[]{initialState[0], initialState[1]};
-    this.initialState = new boolean[]{initialState[0], initialState[1]};
+    this.state = new boolean[]{initialState[0], initialState[1]};
   }// end of Constructor
   //----------------------------------------------------------------------
   

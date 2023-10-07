@@ -38,10 +38,18 @@ package com.gradle.superscalarsim.blocks.branch;
  */
 public class OneBitPredictor implements IBitPredictor
 {
-  /// Bit array of current prediction
-  private final boolean[] state;
-  /// Initial state of the predictor
-  private final boolean initialState;
+  /**
+   * State - a bit array
+   */
+  private boolean[] state;
+  
+  /**
+   * @brief Constructor for (de)serialization
+   */
+  public OneBitPredictor()
+  {
+  
+  }
   
   /**
    * @param [in] isTaken - Initial value of the bit predictor
@@ -50,8 +58,7 @@ public class OneBitPredictor implements IBitPredictor
    */
   public OneBitPredictor(boolean isTaken)
   {
-    this.state        = new boolean[]{isTaken};
-    this.initialState = isTaken;
+    this.state = new boolean[]{isTaken};
   }// end of Constructor
   //----------------------------------------------------------------------
   
