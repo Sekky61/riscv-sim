@@ -42,6 +42,10 @@ public class GetStateResponse
    * @brief List of errors concerning code validation
    */
   public List<ParseError> codeErrors;
+  /**
+   * @brief State of the CPU
+   * Returned even if there are errors in the code
+   */
   public CpuState state;
   
   GetStateResponse(CpuState state)

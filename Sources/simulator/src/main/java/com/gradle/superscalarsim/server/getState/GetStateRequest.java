@@ -36,10 +36,4 @@ public class GetStateRequest
    * @brief Configuration of the CPU
    */
   CpuConfiguration config;
-  
-  /**
-   * @brief Risc-V ASM Code to be loaded into the CPU
-   * If null, request will fail
-   */
-  String program;
 }
