@@ -32,18 +32,32 @@ import java.util.Map;
 
 public class CompileResponse
 {
+  /**
+   * @brief Whether the compilation was successful
+   */
   public boolean success;
-  /// The RISC-V assembly code
-  public String[] program;
-  /// Indexes of C lines that have corresponding assembly code
+  
+  /**
+   * The RISC-V assembly code
+   */
+  public String program;
+  
+  /**
+   * Indexes of C lines that have corresponding assembly code
+   */
   public Integer[] cLines;
-  /// Mapping from ASM lines to C lines
-  /// The length of this list is the same as the length of the program
+  
+  /**
+   * Mapping from ASM lines to C lines.
+   * The length of this list is the same as the length of the program
+   */
   public Integer[] asmToC;
+  
   /**
    * @brief A general, short error message
    */
   public String error;
+  
   /**
    * @brief A detailed list of compiler errors
    */
@@ -59,14 +73,14 @@ public class CompileResponse
   }
   
   public CompileResponse(boolean success,
-                         List<String> program,
+                         String program,
                          List<Integer> cLines,
                          List<Integer> asmToC,
                          String error,
                          List<Map<String, Object>> compilerError)
   {
     this.success       = success;
-    this.program       = program.toArray(new String[0]);
+    this.program       = program;
     this.cLines        = cLines.toArray(new Integer[0]);
     this.asmToC        = asmToC.toArray(new Integer[0]);
     this.error         = error;
