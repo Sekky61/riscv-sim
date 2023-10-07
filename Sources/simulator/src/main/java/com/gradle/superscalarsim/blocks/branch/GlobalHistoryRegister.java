@@ -47,7 +47,7 @@ public class GlobalHistoryRegister
    * @brief Bit array
    * Index 0 is the newest bit
    */
-  private boolean[] shiftRegister;
+  private final boolean[] shiftRegister;
   /**
    * History of bit arrays for later indexing to GShare or for bit array repair
    */
@@ -55,7 +55,7 @@ public class GlobalHistoryRegister
   /**
    * Size (in bits) of the GHR
    */
-  private int size;
+  private final int size;
   
   /**
    * @param [in] size - Size of the bit array

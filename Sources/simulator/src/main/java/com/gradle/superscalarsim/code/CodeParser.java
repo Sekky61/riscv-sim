@@ -86,7 +86,7 @@ public class CodeParser
   /**
    * InitLoader object with loaded instructions and registers
    */
-  private InitLoader initLoader;
+  private final InitLoader initLoader;
   /**
    * List of parsed instructions
    */

@@ -44,7 +44,7 @@ public class PatternHistoryTable
   /// List of predictors
   private final Map<Integer, IBitPredictor> predictorMap;
   /// Size of the PHT
-  private int size;
+  private final int size;
   /// Default state of the predictors
   private boolean[] defaultTaken;
   

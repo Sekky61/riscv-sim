@@ -33,14 +33,12 @@
 package com.gradle.superscalarsim.blocks.loadstore;
 
 import com.gradle.superscalarsim.blocks.AbstractBlock;
-import com.gradle.superscalarsim.blocks.base.AbstractFunctionUnitBlock;
 import com.gradle.superscalarsim.blocks.base.DecodeAndDispatchBlock;
 import com.gradle.superscalarsim.blocks.base.ReorderBufferBlock;
 import com.gradle.superscalarsim.blocks.base.UnifiedRegisterFileBlock;
 import com.gradle.superscalarsim.code.CodeLoadStoreInterpreter;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
-import com.gradle.superscalarsim.loader.InitLoader;
 import com.gradle.superscalarsim.models.InputCodeArgument;
 import com.gradle.superscalarsim.models.InstructionFunctionModel;
 import com.gradle.superscalarsim.models.SimCodeModel;
@@ -58,22 +56,16 @@ public class StoreBufferBlock implements AbstractBlock
   private final Queue<SimCodeModel> storeQueue;
   /// Map with additional infos for specific store instructions
   private final Map<Integer, StoreBufferItem> storeMap;
-  /// Stack to save released additional instruction info
-  private final Stack<StoreBufferItem> flagsStack;
-  /// Stack to save released instructions
-  private final Stack<SimCodeModel> releaseStack;
-  /// Counter, which is used to calculate if buffer can hold instructions pulled into ROB
-  public int possibleNewEntries;
   /// List holding all allocated memory access units
   private final List<MemoryAccessUnit> memoryAccessUnitList;
+  /// Counter, which is used to calculate if buffer can hold instructions pulled into ROB
+  public int possibleNewEntries;
   /// Interpreter for processing load store instructions
   private CodeLoadStoreInterpreter loadStoreInterpreter;
   /// Class, which simulates instruction decode and renames registers
   private DecodeAndDispatchBlock decodeAndDispatchBlock;
   /// Class containing all registers, that simulator uses
   private UnifiedRegisterFileBlock registerFileBlock;
-  /// Initial loader of interpretable instructions and register files
-  private InitLoader initLoader;
   /// Class contains simulated implementation of Reorder buffer
   private ReorderBufferBlock reorderBufferBlock;
   /// Store Buffer size
@@ -86,10 +78,8 @@ public class StoreBufferBlock implements AbstractBlock
     this.bufferSize = 64;
     this.commitId   = 0;
     
-    this.storeQueue   = new PriorityQueue<>();
-    this.storeMap     = new LinkedHashMap<>();
-    this.releaseStack = new Stack<>();
-    this.flagsStack   = new Stack<>();
+    this.storeQueue = new PriorityQueue<>();
+    this.storeMap   = new LinkedHashMap<>();
     
     this.memoryAccessUnitList = new ArrayList<>();
   }// end of Constructor
@@ -108,21 +98,17 @@ public class StoreBufferBlock implements AbstractBlock
   public StoreBufferBlock(CodeLoadStoreInterpreter loadStoreInterpreter,
                           DecodeAndDispatchBlock decodeAndDispatchBlock,
                           UnifiedRegisterFileBlock registerFileBlock,
-                          InitLoader initLoader,
                           ReorderBufferBlock reorderBufferBlock)
   {
     this.loadStoreInterpreter   = loadStoreInterpreter;
     this.decodeAndDispatchBlock = decodeAndDispatchBlock;
     this.registerFileBlock      = registerFileBlock;
-    this.initLoader             = initLoader;
     this.reorderBufferBlock     = reorderBufferBlock;
     this.bufferSize             = 64;
     this.commitId               = 0;
     
-    this.storeQueue   = new PriorityQueue<>();
-    this.storeMap     = new LinkedHashMap<>();
-    this.releaseStack = new Stack<>();
-    this.flagsStack   = new Stack<>();
+    this.storeQueue = new PriorityQueue<>();
+    this.storeMap   = new LinkedHashMap<>();
     
     this.memoryAccessUnitList = new ArrayList<>();
     
@@ -144,6 +130,18 @@ public class StoreBufferBlock implements AbstractBlock
   //-------------------------------------------------------------------------------------------
   
   /**
+   * @brief Set number of MAs to MA for correct id creation
+   */
+  private void setFunctionUnitCountInUnits()
+  {
+    for (MemoryAccessUnit memoryAccessUnit : this.memoryAccessUnitList)
+    {
+      memoryAccessUnit.setFunctionUnitCount(this.memoryAccessUnitList.size());
+    }
+  }// end of setFunctionUnitCountInUnits
+  //-------------------------------------------------------------------------------------------
+  
+  /**
    * @param [in] loadStoreFunctionUnitList - list of new memory access units
    *
    * @brief Adds list of memory access units to the Store buffer block
@@ -158,33 +156,6 @@ public class StoreBufferBlock implements AbstractBlock
     this.memoryAccessUnitList.addAll(loadStoreFunctionUnitList);
     this.setFunctionUnitCountInUnits();
   }// end of setAllMemoryAccessUnits
-  //-------------------------------------------------------------------------------------------
-  
-  /**
-   * @brief Resets the all the lists/stacks/variables in the store buffer
-   */
-  @Override
-  public void reset()
-  {
-    this.commitId = 0;
-    this.storeQueue.clear();
-    this.storeMap.clear();
-    this.releaseStack.clear();
-    this.flagsStack.clear();
-    this.loadStoreInterpreter.resetMemory();
-  }// end of reset
-  //-------------------------------------------------------------------------------------------
-  
-  /**
-   * @param [in] possibleAddition - Number of instructions to be possibly added
-   *
-   * @return True if buffer would be full, false otherwise
-   * @brief Checks if buffer would be full if specified number of instructions were to be added
-   */
-  public boolean isBufferFull(int possibleAddition)
-  {
-    return this.bufferSize < (this.storeQueue.size() + possibleAddition + this.possibleNewEntries);
-  }// end of isBufferFull
   //-------------------------------------------------------------------------------------------
   
   /**
@@ -212,141 +183,16 @@ public class StoreBufferBlock implements AbstractBlock
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @param [in] codeModelId - Id identifying specific storeMap entry
-   * @param [in] address     - Store instruction address
-   *
-   * @brief Set Store address
+   * @brief Resets the all the lists/stacks/variables in the store buffer
    */
-  public void setAddress(int codeModelId, long address)
+  @Override
+  public void reset()
   {
-    this.storeMap.get(codeModelId).setAddress(address);
-  }// end of setAddress
-  //-------------------------------------------------------------------------------------------
-  
-  /**
-   * @return Store buffer queue
-   * @brief Get whole Store buffer queue
-   */
-  public Queue<SimCodeModel> getStoreQueue()
-  {
-    return storeQueue;
-  }// end of getStoreQueue
-  //-------------------------------------------------------------------------------------------
-  
-  /**
-   * @brief Set number of MAs to MA for correct id creation
-   */
-  private void setFunctionUnitCountInUnits()
-  {
-    for (MemoryAccessUnit memoryAccessUnit : this.memoryAccessUnitList)
-    {
-      memoryAccessUnit.setFunctionUnitCount(this.memoryAccessUnitList.size());
-    }
-  }// end of setFunctionUnitCountInUnits
-  //----------------------------------------------------------------------
-  
-  /**
-   * @return Store buffer limit size
-   * @brief Get Store buffer limit size
-   */
-  public int getBufferSize()
-  {
-    return bufferSize;
-  }// end of getBufferSize
-  //-------------------------------------------------------------------------------------------
-  
-  /**
-   * @param [in] bufferSize - New store buffer size
-   *
-   * @brief Set store buffer limit size
-   */
-  public void setBufferSize(int bufferSize)
-  {
-    this.bufferSize = bufferSize;
-  }// end of setBufferSize
-  //-------------------------------------------------------------------------------------------
-  
-  /**
-   * @param [in] codeModelId - Id identifying specific loadMap entry
-   *
-   * @brief Set flag marking if the instruction is in the MA block
-   */
-  public void setMemoryAccessFinished(int codeModelId)
-  {
-    this.storeMap.get(codeModelId).setAccessingMemory(false);
-  }// end of setMemoryAccessFinished
-  //-------------------------------------------------------------------------------------------
-  
-  /**
-   * @return First instruction in queue
-   * @brief Get first instruction in queue
-   */
-  public SimCodeModel getStoreQueueFirst()
-  {
-    return storeQueue.peek();
-  }// end of getStoreQueueFirst
-  //-------------------------------------------------------------------------------------------
-  
-  /**
-   * @brief Release store instruction on top of the queue and commits it
-   */
-  public void releaseStoreFirst()
-  {
-    if (!this.storeQueue.isEmpty())
-    {
-      SimCodeModel codeModel = storeQueue.poll();
-      this.releaseStack.add(codeModel);
-      this.flagsStack.add(this.storeMap.get(codeModel.getId()));
-      
-      this.storeMap.remove(codeModel.getId());
-    }
-    else
-    {
-      throw new RuntimeException("Release store when store queue is empty");
-    }
-  }// end of releaseStoreFirst
-  //-------------------------------------------------------------------------------------------
-  
-  /**
-   * @return Queue size
-   * @brief Get store queue size
-   */
-  public int getQueueSize()
-  {
-    return this.storeQueue.size();
-  }// end of getQueueSize
-  //-------------------------------------------------------------------------------------------
-  
-  /**
-   * @return Store map
-   * @brief Get whole store map
-   */
-  public Map<Integer, StoreBufferItem> getStoreMap()
-  {
-    return storeMap;
-  }// end of getStoreMap
-  //-------------------------------------------------------------------------------------------
-  
-  /**
-   * @brief Pull all viable load instructions from MA
-   */
-  private void pullFromMA()
-  {
-    for (AbstractFunctionUnitBlock memoryAccessUnit : this.memoryAccessUnitList)
-    {
-      if (!memoryAccessUnit.isFunctionUnitEmpty() && memoryAccessUnit.hasReversedDelayPassed() && this.storeMap.containsKey(
-              memoryAccessUnit.getSimCodeModel().getId()) && this.storeMap.get(
-              memoryAccessUnit.getSimCodeModel().getId()).getAccessingMemoryId() == this.commitId)
-      {
-        SimCodeModel codeModel = memoryAccessUnit.getSimCodeModel();
-        memoryAccessUnit.setSimCodeModel(null);
-        StoreBufferItem item = this.storeMap.get(codeModel.getId());
-        item.setMemoryAccessId(-1);
-        item.setAccessingMemoryId(-1);
-        item.setAccessingMemory(false);
-      }
-    }
-  }// end of pullFromMA
+    this.commitId = 0;
+    this.storeQueue.clear();
+    this.storeMap.clear();
+    this.loadStoreInterpreter.resetMemory();
+  }// end of reset
   //-------------------------------------------------------------------------------------------
   
   /**
@@ -378,6 +224,28 @@ public class StoreBufferBlock implements AbstractBlock
   //-------------------------------------------------------------------------------------------
   
   /**
+   * @brief Removes all invalid store instructions from buffer
+   */
+  private void removeInvalidInstructions()
+  {
+    List<SimCodeModel> removedInstructions = new ArrayList<>();
+    for (SimCodeModel simCodeModel : this.storeQueue)
+    {
+      if (simCodeModel.hasFailed())
+      {
+        removedInstructions.add(simCodeModel);
+        if (this.storeMap.get(simCodeModel.getId()).isAccessingMemory())
+        {
+          this.memoryAccessUnitList.forEach(ma -> ma.tryRemoveCodeModel(simCodeModel));
+        }
+        this.storeMap.remove(simCodeModel.getId());
+      }
+    }
+    this.storeQueue.removeAll(removedInstructions);
+  }// end of removeInvalidInstructions
+  //-------------------------------------------------------------------------------------------
+  
+  /**
    * @brief Checks if store source registers are ready and if yes then marks them
    */
   private void updateMapValues()
@@ -390,7 +258,7 @@ public class StoreBufferBlock implements AbstractBlock
                                     state == RegisterReadinessEnum.kExecuted || state == RegisterReadinessEnum.kAssigned);
                           });
   }// end of updateMapValues
-  //-------------------------------------------------------------------------------------------
+  //----------------------------------------------------------------------
   
   /**
    * @brief Selects store instructions for MA block
@@ -459,62 +327,6 @@ public class StoreBufferBlock implements AbstractBlock
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Removes all invalid store instructions from buffer
-   */
-  private void removeInvalidInstructions()
-  {
-    List<SimCodeModel> removedInstructions = new ArrayList<>();
-    for (SimCodeModel simCodeModel : this.storeQueue)
-    {
-      if (simCodeModel.hasFailed())
-      {
-        removedInstructions.add(simCodeModel);
-        this.releaseStack.add(simCodeModel);
-        this.flagsStack.add(this.storeMap.get(simCodeModel.getId()));
-        if (this.storeMap.get(simCodeModel.getId()).isAccessingMemory())
-        {
-          this.memoryAccessUnitList.forEach(ma -> ma.tryRemoveCodeModel(simCodeModel));
-        }
-        this.storeMap.remove(simCodeModel.getId());
-      }
-    }
-    this.storeQueue.removeAll(removedInstructions);
-  }// end of removeInvalidInstructions
-  
-  /**
-   * @return List of store map values
-   * @brief Get all store map values as list
-   */
-  List<StoreBufferItem> getStoreMapAsList()
-  {
-    return new ArrayList<>(this.storeMap.values());
-  }// end of updateMapValues
-  //-------------------------------------------------------------------------------------------
-  
-  /**
-   * @brief Removes instructions, which this.possibleNewEntries = 0;are currently in decode block
-   */
-  private void removeInstructionsInDecodeBlock()
-  {
-    for (SimCodeModel instruction : this.decodeAndDispatchBlock.getAfterRenameCodeList())
-    {
-      this.storeQueue.remove(instruction);
-      this.storeMap.remove(instruction.getId());
-    }
-  }// end of removeInstructionsInDecodeBlock
-  //----------------------------------------------------------------------
-  
-  /**
-   * @return List of memory access unit blocks
-   * @brief Get list of memory access units
-   */
-  public List<MemoryAccessUnit> getMemoryAccessBlockList()
-  {
-    return this.memoryAccessUnitList;
-  }// end of getMemoryAccessBlockList
-  //-------------------------------------------------------------------------------------------
-  
-  /**
    * @param [in] codeModel - Code model to be checked
    *
    * @return True if the model is store instruction, false otherwise
@@ -531,5 +343,137 @@ public class StoreBufferBlock implements AbstractBlock
     return instruction != null && instruction.getInterpretableAs().startsWith("store");
     
   }// end of isInstructionStore
+  //-------------------------------------------------------------------------------------------
+  
+  /**
+   * @param [in] possibleAddition - Number of instructions to be possibly added
+   *
+   * @return True if buffer would be full, false otherwise
+   * @brief Checks if buffer would be full if specified number of instructions were to be added
+   */
+  public boolean isBufferFull(int possibleAddition)
+  {
+    return this.bufferSize < (this.storeQueue.size() + possibleAddition + this.possibleNewEntries);
+  }// end of isBufferFull
+  //-------------------------------------------------------------------------------------------
+  
+  /**
+   * @param [in] codeModelId - Id identifying specific storeMap entry
+   * @param [in] address     - Store instruction address
+   *
+   * @brief Set Store address
+   */
+  public void setAddress(int codeModelId, long address)
+  {
+    this.storeMap.get(codeModelId).setAddress(address);
+  }// end of setAddress
+  //-------------------------------------------------------------------------------------------
+  
+  /**
+   * @return Store buffer queue
+   * @brief Get whole Store buffer queue
+   */
+  public Queue<SimCodeModel> getStoreQueue()
+  {
+    return storeQueue;
+  }// end of getStoreQueue
+  //-------------------------------------------------------------------------------------------
+  
+  /**
+   * @return Store buffer limit size
+   * @brief Get Store buffer limit size
+   */
+  public int getBufferSize()
+  {
+    return bufferSize;
+  }// end of getBufferSize
+  //-------------------------------------------------------------------------------------------
+  
+  /**
+   * @param [in] bufferSize - New store buffer size
+   *
+   * @brief Set store buffer limit size
+   */
+  public void setBufferSize(int bufferSize)
+  {
+    this.bufferSize = bufferSize;
+  }// end of setBufferSize
+  //-------------------------------------------------------------------------------------------
+  
+  /**
+   * @param [in] codeModelId - Id identifying specific loadMap entry
+   *
+   * @brief Set flag marking if the instruction is in the MA block
+   */
+  public void setMemoryAccessFinished(int codeModelId)
+  {
+    this.storeMap.get(codeModelId).setAccessingMemory(false);
+  }// end of setMemoryAccessFinished
+  //-------------------------------------------------------------------------------------------
+  
+  /**
+   * @return First instruction in queue
+   * @brief Get first instruction in queue
+   */
+  public SimCodeModel getStoreQueueFirst()
+  {
+    return storeQueue.peek();
+  }// end of getStoreQueueFirst
+  //-------------------------------------------------------------------------------------------
+  
+  /**
+   * @brief Release store instruction on top of the queue and commits it
+   */
+  public void releaseStoreFirst()
+  {
+    if (!this.storeQueue.isEmpty())
+    {
+      SimCodeModel codeModel = storeQueue.poll();
+      this.storeMap.remove(codeModel.getId());
+    }
+    else
+    {
+      throw new RuntimeException("Release store when store queue is empty");
+    }
+  }// end of releaseStoreFirst
+  //-------------------------------------------------------------------------------------------
+  
+  /**
+   * @return Queue size
+   * @brief Get store queue size
+   */
+  public int getQueueSize()
+  {
+    return this.storeQueue.size();
+  }// end of getQueueSize
+  
+  /**
+   * @return Store map
+   * @brief Get whole store map
+   */
+  public Map<Integer, StoreBufferItem> getStoreMap()
+  {
+    return storeMap;
+  }// end of getStoreMap
+  //-------------------------------------------------------------------------------------------
+  
+  /**
+   * @return List of store map values
+   * @brief Get all store map values as list
+   */
+  List<StoreBufferItem> getStoreMapAsList()
+  {
+    return new ArrayList<>(this.storeMap.values());
+  }// end of updateMapValues
+  //-------------------------------------------------------------------------------------------
+  
+  /**
+   * @return List of memory access unit blocks
+   * @brief Get list of memory access units
+   */
+  public List<MemoryAccessUnit> getMemoryAccessBlockList()
+  {
+    return this.memoryAccessUnitList;
+  }// end of getMemoryAccessBlockList
   //----------------------------------------------------------------------
 }

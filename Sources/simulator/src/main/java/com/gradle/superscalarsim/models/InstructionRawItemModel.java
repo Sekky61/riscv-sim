@@ -73,8 +73,7 @@ public class InstructionRawItemModel
   @Override
   public String toString()
   {
-    return "name: " + name + ", " + "starts from bit: " + bitLow + ", " + "ends with bit: " + bitHigh + ", " + "value"
-        + ": " + value + '\n';
+    return "name: " + name + ", " + "starts from bit: " + bitLow + ", " + "ends with bit: " + bitHigh + ", " + "value" + ": " + value + '\n';
   }// end of toString
   //------------------------------------------------------
   

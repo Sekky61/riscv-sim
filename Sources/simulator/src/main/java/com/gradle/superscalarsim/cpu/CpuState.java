@@ -240,12 +240,11 @@ public class CpuState implements Serializable
     this.branchInterpreter      = new CodeBranchInterpreter(codeParser, unifiedRegisterFileBlock);
     
     this.storeBufferBlock = new StoreBufferBlock(loadStoreInterpreter, decodeAndDispatchBlock, unifiedRegisterFileBlock,
-                                                 initLoader, reorderBufferBlock);
+                                                 reorderBufferBlock);
     storeBufferBlock.setBufferSize(config.sbSize);
     
-    this.loadBufferBlock = new LoadBufferBlock(loadStoreInterpreter, storeBufferBlock, decodeAndDispatchBlock,
-                                               unifiedRegisterFileBlock, initLoader, reorderBufferBlock,
-                                               instructionFetchBlock);
+    this.loadBufferBlock = new LoadBufferBlock(storeBufferBlock, decodeAndDispatchBlock, unifiedRegisterFileBlock,
+                                               reorderBufferBlock, instructionFetchBlock);
     loadBufferBlock.setBufferSize(config.lbSize);
     
     // FUs
@@ -253,7 +252,7 @@ public class CpuState implements Serializable
     this.aluIssueWindowBlock       = new AluIssueWindowBlock(initLoader, unifiedRegisterFileBlock, precedingTable);
     this.branchIssueWindowBlock    = new BranchIssueWindowBlock(initLoader, unifiedRegisterFileBlock);
     this.fpIssueWindowBlock        = new FpIssueWindowBlock(initLoader, unifiedRegisterFileBlock, precedingTable);
-    this.loadStoreIssueWindowBlock = new LoadStoreIssueWindowBlock(initLoader, unifiedRegisterFileBlock);
+    this.loadStoreIssueWindowBlock = new LoadStoreIssueWindowBlock(unifiedRegisterFileBlock);
     
     this.issueWindowSuperBlock.addAluIssueWindow(aluIssueWindowBlock);
     this.issueWindowSuperBlock.addFpIssueWindow(fpIssueWindowBlock);

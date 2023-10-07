@@ -44,7 +44,6 @@ import com.gradle.superscalarsim.models.RegisterModel;
 import com.gradle.superscalarsim.models.SimCodeModel;
 
 import java.util.Objects;
-import java.util.Stack;
 
 /**
  * @class MemoryAccessUnit
@@ -70,23 +69,18 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
   /// settings for first delay
   private int baseDelay;
   
-  private Stack<Integer> savedDelays;
-  
-  private Stack<Boolean> savedFirstDelayPassed;
-  
   public MemoryAccessUnit()
   {
   }
   
   /**
-   * @param [in] blockScheduleTask    - Task class, where blocks are periodically triggered by the GlobalTimer
-   * @param [in] reorderBufferBlock   - Class containing simulated Reorder Buffer
-   * @param [in] delay                - Delay for function unit
-   * @param [in] issueWindowBlock     - Issue window block for comparing instruction and data types
-   * @param [in] loadBufferBlock      - Buffer keeping all in-flight load instructions
-   * @param [in] storeBufferBlock     - Buffer keeping all in-flight store instructions
-   * @param [in] loadStoreInterpreter - Interpreter processing load/store instructions
-   * @param [in] registerFileBlock    - Class containing all registers, that simulator uses
+   * @param reorderBufferBlock   Class containing simulated Reorder Buffer
+   * @param delay                Delay for function unit
+   * @param issueWindowBlock     Issue window block for comparing instruction and data types
+   * @param loadBufferBlock      Buffer keeping all in-flight load instructions
+   * @param storeBufferBlock     Buffer keeping all in-flight store instructions
+   * @param loadStoreInterpreter Interpreter processing load/store instructions
+   * @param registerFileBlock    Class containing all registers, that simulator uses
    *
    * @brief Constructor
    */
@@ -99,13 +93,11 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
                           UnifiedRegisterFileBlock registerFileBlock)
   {
     super(reorderBufferBlock, delay, issueWindowBlock);
-    this.loadBufferBlock       = loadBufferBlock;
-    this.storeBufferBlock      = storeBufferBlock;
-    this.loadStoreInterpreter  = loadStoreInterpreter;
-    this.registerFileBlock     = registerFileBlock;
-    this.baseDelay             = delay;
-    this.savedDelays           = new Stack<>();
-    this.savedFirstDelayPassed = new Stack<>();
+    this.loadBufferBlock      = loadBufferBlock;
+    this.storeBufferBlock     = storeBufferBlock;
+    this.loadStoreInterpreter = loadStoreInterpreter;
+    this.registerFileBlock    = registerFileBlock;
+    this.baseDelay            = delay;
   }// end of Constructor
   //----------------------------------------------------------------------
   
@@ -123,7 +115,6 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
       this.simCodeModel = null;
       this.zeroTheCounter();
       
-      this.savedFirstDelayPassed.add(this.firstDelayPassed);
       this.setDelay(baseDelay);
       this.firstDelayPassed = false;
     }
@@ -151,7 +142,6 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
         Pair<Integer, Double> result = loadStoreInterpreter.interpretInstruction(this.simCodeModel, cycleCount);
         savedResult = result.getSecond();
         
-        this.savedDelays.add(result.getFirst());
         //Set delay for memory response
         this.setDelay(result.getFirst());
         this.resetCounter();
@@ -192,6 +182,15 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
   }// end of simulate
   //----------------------------------------------------------------------
   
+  @Override
+  public void reset()
+  {
+    super.reset();
+    firstDelayPassed = false;
+    cycleCount       = 0;
+    this.setDelay(baseDelay);
+  }
+  
   /**
    * @return True if counter is at 0 or less, false otherwise
    * @brief Checks if counter reached 0
@@ -201,15 +200,6 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
   {
     return getCounter() <= 0;
   }// end of hasReversedDelayPassed
-  
-  @Override
-  public void reset()
-  {
-    super.reset();
-    firstDelayPassed = false;
-    cycleCount       = 0;
-    this.setDelay(baseDelay);
-  }
   
   /**
    * @param [in] simCodeModel - Possible executing model
@@ -225,7 +215,6 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
       this.simCodeModel = null;
       this.zeroTheCounter();
       
-      this.savedFirstDelayPassed.add(this.firstDelayPassed);
       this.setDelay(baseDelay);
       this.firstDelayPassed = false;
     }

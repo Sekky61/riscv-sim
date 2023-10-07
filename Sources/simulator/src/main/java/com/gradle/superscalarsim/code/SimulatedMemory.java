@@ -32,11 +32,8 @@
  */
 package com.gradle.superscalarsim.code;
 
-import com.gradle.superscalarsim.models.Pair;
-
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Stack;
 
 /**
  * @class SimulatedMemory
@@ -47,32 +44,14 @@ public class SimulatedMemory
   /// Hash map with stored values, serves as memory
   private final Map<Long, Byte> memoryMap;
   
-  /// History stack of all previous memory values
-  private final Stack<Pair<Long, Byte>> memoryHistory;
-  
-  /// History stack of all store instruction ids
-  private final Stack<Integer> memoryHistoryIdStack;
-  
   /**
    * @brief Constructor
    */
   public SimulatedMemory()
   {
-    this.memoryMap            = new HashMap<>();
-    this.memoryHistory        = new Stack<>();
-    this.memoryHistoryIdStack = new Stack<>();
+    this.memoryMap = new HashMap<>();
   }// end of Constructor
   //-------------------------------------------------------------------------------------------
-  
-  public Stack<Pair<Long, Byte>> getMemoryHistory()
-  {
-    return memoryHistory;
-  }
-  
-  public Stack<Integer> getMemoryHistoryIdStack()
-  {
-    return memoryHistoryIdStack;
-  }
   
   /**
    * @param [in] address - Hashmap key, pointing into specific place in memory
@@ -82,9 +61,6 @@ public class SimulatedMemory
    */
   public void insertIntoMemory(Long address, byte value, int id)
   {
-    Byte history = this.memoryMap.getOrDefault(address, null);
-    this.memoryHistory.push(new Pair<>(address, history));
-    this.memoryHistoryIdStack.push(id);
     this.memoryMap.put(address, value);
   }// end of insertIntoMemory
   //-------------------------------------------------------------------------------------------
@@ -109,40 +85,6 @@ public class SimulatedMemory
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Resets memory to its initial state
-   */
-  public void reset()
-  {
-    this.memoryMap.clear();
-    this.memoryHistory.clear();
-    this.memoryHistoryIdStack.clear();
-  }// end of reset
-  //-------------------------------------------------------------------------------------------
-  
-  /**
-   * @param [in] id - Id of a store instruction
-   *
-   * @brief Revert memory to its state before store instruction specified by id
-   */
-  public void revertHistory(int id)
-  {
-    while (!this.memoryHistoryIdStack.isEmpty() && this.memoryHistoryIdStack.peek() == id)
-    {
-      this.memoryHistoryIdStack.pop();
-      Pair<Long, Byte> historyValue = this.memoryHistory.pop();
-      if (historyValue.getSecond() == null)
-      {
-        this.memoryMap.remove(historyValue.getFirst());
-      }
-      else
-      {
-        this.memoryMap.put(historyValue.getFirst(), historyValue.getSecond());
-      }
-    }
-  }// end of revertHistory
-  //-------------------------------------------------------------------------------------------
-  
-  /**
    * @param [in] address - Hashmap key, pointing into specific place in memory
    *
    * @return True if key has been set in past, false otherwise
@@ -152,6 +94,15 @@ public class SimulatedMemory
   {
     return this.memoryMap.containsKey(address);
   }// end of isInMemory
+  //-------------------------------------------------------------------------------------------
+  
+  /**
+   * @brief Resets memory to its initial state
+   */
+  public void reset()
+  {
+    this.memoryMap.clear();
+  }// end of reset
   //-------------------------------------------------------------------------------------------
   
   /**

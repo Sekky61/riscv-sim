@@ -80,7 +80,7 @@ public class GShareUnit
   public IBitPredictor getPredictor(int programCounter)
   {
     return this.patternHistoryTable.getPredictor(
-        (programCounter % size) ^ globalHistoryRegister.getRegisterValueAsInt());
+            (programCounter % size) ^ globalHistoryRegister.getRegisterValueAsInt());
   }// end of getPredictor
   //----------------------------------------------------------------------
   
@@ -94,7 +94,7 @@ public class GShareUnit
   public IBitPredictor getPredictorFromOld(int programCounter, int id)
   {
     return this.patternHistoryTable.getPredictor(
-        (programCounter % size) ^ globalHistoryRegister.getHistoryValueAsInt(id));
+            (programCounter % size) ^ globalHistoryRegister.getHistoryValueAsInt(id));
   }// end of getPredictorFromOld
   //----------------------------------------------------------------------
   
