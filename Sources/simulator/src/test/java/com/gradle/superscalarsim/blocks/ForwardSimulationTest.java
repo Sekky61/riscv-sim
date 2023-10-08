@@ -25,10 +25,7 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 public class ForwardSimulationTest
 {
@@ -193,6 +190,61 @@ public class ForwardSimulationTest
   ///////////////////////////////////////////////////////////
   ///                 Arithmetic Tests                    ///
   ///////////////////////////////////////////////////////////
+  
+  private List<InstructionFunctionModel> setUpInstructions()
+  {
+    InstructionFunctionModel instructionAdd = new InstructionFunctionModelBuilder().hasName("add")
+            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
+            .hasType(InstructionTypeEnum.kArithmetic).isInterpretedAs("rd=rs1+rs2;").hasSyntax("add rd rs1 rs2")
+            .build();
+    
+    InstructionFunctionModel instructionSub = new InstructionFunctionModelBuilder().hasName("sub")
+            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
+            .hasType(InstructionTypeEnum.kArithmetic).isInterpretedAs("rd=rs1-rs2;").hasSyntax("sub rd rs1 rs2")
+            .build();
+    
+    InstructionFunctionModel instructionAddi = new InstructionFunctionModelBuilder().hasName("addi")
+            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
+            .hasType(InstructionTypeEnum.kArithmetic).isInterpretedAs("rd=rs1+imm;").hasSyntax("addi rd rs1 imm")
+            .build();
+    
+    InstructionFunctionModel instructionSubi = new InstructionFunctionModelBuilder().hasName("subi")
+            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
+            .hasType(InstructionTypeEnum.kArithmetic).isInterpretedAs("rd=rs1-imm;").hasSyntax("subi rd rs1 imm")
+            .build();
+    
+    InstructionFunctionModel instructionFAdd = new InstructionFunctionModelBuilder().hasName("fadd")
+            .hasInputDataType(DataTypeEnum.kFloat).hasOutputDataType(DataTypeEnum.kFloat)
+            .hasType(InstructionTypeEnum.kArithmetic).isInterpretedAs("rd=rs1+rs2;").hasSyntax("add rd rs1 rs2")
+            .build();
+    
+    InstructionFunctionModel instructionFSub = new InstructionFunctionModelBuilder().hasName("fsub")
+            .hasInputDataType(DataTypeEnum.kFloat).hasOutputDataType(DataTypeEnum.kFloat)
+            .hasType(InstructionTypeEnum.kArithmetic).isInterpretedAs("rd=rs1-rs2;").hasSyntax("sub rd rs1 rs2")
+            .build();
+    
+    InstructionFunctionModel instructionJal = new InstructionFunctionModelBuilder().hasName("jal")
+            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
+            .hasType(InstructionTypeEnum.kJumpbranch).isInterpretedAs("jump:imm").hasSyntax("jal rd imm").build();
+    
+    InstructionFunctionModel instructionBeq = new InstructionFunctionModelBuilder().hasName("beq")
+            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
+            .hasType(InstructionTypeEnum.kJumpbranch).isInterpretedAs("signed:rs1 == rs2").hasSyntax("beq rs1 rs2 imm")
+            .build();
+    
+    InstructionFunctionModel instructionLoadWord = new InstructionFunctionModelBuilder().hasName("lw")
+            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
+            .hasType(InstructionTypeEnum.kLoadstore).isInterpretedAs("load " + "word:signed rd rs1 imm")
+            .hasSyntax("lw rd rs1 imm").build();
+    
+    InstructionFunctionModel instructionStoreWord = new InstructionFunctionModelBuilder().hasName("sw")
+            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
+            .hasType(InstructionTypeEnum.kLoadstore).isInterpretedAs("store " + "word" + " " + "rs2 rs1 imm")
+            .hasSyntax("sw rs2 rs1 imm").build();
+    
+    return Arrays.asList(instructionAdd, instructionSub, instructionFAdd, instructionFSub, instructionJal,
+                         instructionBeq, instructionSubi, instructionAddi, instructionLoadWord, instructionStoreWord);
+  }
   
   @Test
   public void simulate_oneIntInstruction_finishesAfterSevenTicks()
@@ -816,6 +868,10 @@ public class ForwardSimulationTest
     Assert.assertEquals(36.77, this.unifiedRegisterFileBlock.getRegister("f1").getValue(), 0.01);
   }
   
+  ///////////////////////////////////////////////////////////
+  ///                 Branch Tests                        ///
+  ///////////////////////////////////////////////////////////
+  
   @Test
   public void simulate_floatOneRawConflict_usesFullPotentialOfTheProcessor()
   {
@@ -969,10 +1025,6 @@ public class ForwardSimulationTest
     Assert.assertEquals(18.5, this.unifiedRegisterFileBlock.getRegister("f1").getValue(), 0.01);
   }
   
-  ///////////////////////////////////////////////////////////
-  ///                 Branch Tests                        ///
-  ///////////////////////////////////////////////////////////
-  
   @Test
   public void simulate_jumpFromLabelToLabel_recordToBTB()
   {
@@ -992,46 +1044,31 @@ public class ForwardSimulationTest
             .hasInstructionFunctionModel(this.initLoader.getInstructionFunctionModel("jal")).hasInstructionName("jal")
             .hasCodeLine("jal x0 lab3").hasInstructionTypeEnum(InstructionTypeEnum.kJumpbranch)
             .hasArguments(Arrays.asList(argumentJmp1, argumentJmp2)).build();
-    InputCodeModel label1 = new InputCodeModelBuilder().hasLoader(initLoader)
-            .hasInstructionFunctionModel(this.initLoader.getInstructionFunctionModel("label"))
-            .hasInstructionName("label").hasCodeLine("lab1").hasInstructionTypeEnum(InstructionTypeEnum.kLabel)
-            .hasArguments(Arrays.asList(argumentJmp3, argumentJmp4)).build();
     InputCodeModel ins2 = new InputCodeModelBuilder().hasLoader(initLoader)
             .hasInstructionFunctionModel(this.initLoader.getInstructionFunctionModel("jal")).hasInstructionName("jal")
             .hasCodeLine("jal x0 labFinal").hasInstructionTypeEnum(InstructionTypeEnum.kJumpbranch)
-            .hasArguments(Arrays.asList(argumentJmp3, argumentJmp4)).build();
-    InputCodeModel label2 = new InputCodeModelBuilder().hasLoader(initLoader)
-            .hasInstructionFunctionModel(this.initLoader.getInstructionFunctionModel("label"))
-            .hasInstructionName("label").hasCodeLine("lab2").hasInstructionTypeEnum(InstructionTypeEnum.kLabel)
             .hasArguments(Arrays.asList(argumentJmp3, argumentJmp4)).build();
     InputCodeModel ins3 = new InputCodeModelBuilder().hasLoader(initLoader)
             .hasInstructionFunctionModel(this.initLoader.getInstructionFunctionModel("jal")).hasInstructionName("jal")
             .hasCodeLine("jal x0 lab1").hasInstructionTypeEnum(InstructionTypeEnum.kJumpbranch)
             .hasArguments(Arrays.asList(argumentJmp5, argumentJmp6)).build();
-    InputCodeModel label3 = new InputCodeModelBuilder().hasLoader(initLoader)
-            .hasInstructionFunctionModel(this.initLoader.getInstructionFunctionModel("label"))
-            .hasInstructionName("label").hasCodeLine("lab3").hasInstructionTypeEnum(InstructionTypeEnum.kLabel)
-            .hasArguments(Arrays.asList(argumentJmp3, argumentJmp4)).build();
     InputCodeModel ins4 = new InputCodeModelBuilder().hasLoader(initLoader)
             .hasInstructionFunctionModel(this.initLoader.getInstructionFunctionModel("jal")).hasInstructionName("jal")
             .hasCodeLine("jal x0 lab2").hasInstructionTypeEnum(InstructionTypeEnum.kJumpbranch)
             .hasArguments(Arrays.asList(argumentJmp7, argumentJmp8)).build();
-    InputCodeModel label4 = new InputCodeModelBuilder().hasLoader(initLoader)
-            .hasInstructionFunctionModel(this.initLoader.getInstructionFunctionModel("label"))
-            .hasInstructionName("label").hasCodeLine("labFinal").hasInstructionTypeEnum(InstructionTypeEnum.kLabel)
-            .hasArguments(Arrays.asList(argumentJmp3, argumentJmp4)).build();
     
-    List<InputCodeModel> instructions = Arrays.asList(ins1, label1, ins2, label2, ins3, label3, ins4, label4);
+    List<InputCodeModel> instructions = Arrays.asList(ins1, ins2, ins3, ins4);
     codeParser.setParsedCode(instructions);
+    codeParser.setLabels(Map.of("lab1", 1, "lab2", 2, "lab3", 3, "labFinal", 4));
     
     this.cpu.step();
     Assert.assertEquals("jal", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
-    Assert.assertEquals("label", this.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
+    Assert.assertEquals("nop", this.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
     Assert.assertEquals("nop", this.instructionFetchBlock.getFetchedCode().get(2).getInstructionName());
     
     this.cpu.step();
     Assert.assertEquals("jal", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
-    Assert.assertEquals("label", this.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
+    Assert.assertEquals("nop", this.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
     Assert.assertEquals("nop", this.instructionFetchBlock.getFetchedCode().get(2).getInstructionName());
     Assert.assertEquals(1, this.decodeAndDispatchBlock.getAfterRenameCodeList().size());
     Assert.assertEquals("jal tg0 lab3",
@@ -1040,7 +1077,7 @@ public class ForwardSimulationTest
     
     this.cpu.step();
     Assert.assertEquals("jal", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
-    Assert.assertEquals("label", this.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
+    Assert.assertEquals("nop", this.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
     Assert.assertEquals("nop", this.instructionFetchBlock.getFetchedCode().get(2).getInstructionName());
     Assert.assertEquals(1, this.decodeAndDispatchBlock.getAfterRenameCodeList().size());
     Assert.assertEquals("jal tg1 lab2",
@@ -1052,7 +1089,7 @@ public class ForwardSimulationTest
     
     this.cpu.step();
     Assert.assertEquals("jal", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
-    Assert.assertEquals("label", this.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
+    Assert.assertEquals("nop", this.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
     Assert.assertEquals("nop", this.instructionFetchBlock.getFetchedCode().get(2).getInstructionName());
     Assert.assertEquals(1, this.decodeAndDispatchBlock.getAfterRenameCodeList().size());
     Assert.assertEquals("jal tg2 lab1",
@@ -1102,7 +1139,7 @@ public class ForwardSimulationTest
     Assert.assertEquals("jal tg2 lab1", this.branchFunctionUnitBlock1.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("jal tg3 labFinal", this.branchFunctionUnitBlock2.getSimCodeModel().getRenamedCodeLine());
     Assert.assertTrue(this.reorderBufferBlock.getFlagsMap().get(3).isReadyToBeCommitted());
-    Assert.assertEquals(6, this.branchTargetBuffer.getEntryTarget(0));
+    Assert.assertEquals(3, this.branchTargetBuffer.getEntryTarget(0));
     Assert.assertTrue(this.branchTargetBuffer.isEntryUnconditional(0));
     Assert.assertEquals(-1, this.globalHistoryRegister.getHistoryValueAsInt(0));
     
@@ -1110,8 +1147,8 @@ public class ForwardSimulationTest
     Assert.assertEquals(2, this.reorderBufferBlock.getReorderQueue().size());
     Assert.assertEquals("jal tg2 lab1", this.branchFunctionUnitBlock1.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("jal tg3 labFinal", this.branchFunctionUnitBlock2.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertEquals(4, this.branchTargetBuffer.getEntryTarget(6));
-    Assert.assertTrue(this.branchTargetBuffer.isEntryUnconditional(6));
+    Assert.assertEquals(2, this.branchTargetBuffer.getEntryTarget(3));
+    Assert.assertTrue(this.branchTargetBuffer.isEntryUnconditional(3));
     Assert.assertEquals(-1, this.globalHistoryRegister.getHistoryValueAsInt(3));
     
     this.cpu.step();
@@ -1125,13 +1162,13 @@ public class ForwardSimulationTest
     Assert.assertNull(this.branchFunctionUnitBlock1.getSimCodeModel());
     Assert.assertNull(this.branchFunctionUnitBlock2.getSimCodeModel());
     Assert.assertTrue(this.reorderBufferBlock.getFlagsMap().get(9).isReadyToBeCommitted());
-    Assert.assertEquals(2, this.branchTargetBuffer.getEntryTarget(4));
-    Assert.assertTrue(this.branchTargetBuffer.isEntryUnconditional(4));
+    Assert.assertEquals(1, this.branchTargetBuffer.getEntryTarget(2));
+    Assert.assertTrue(this.branchTargetBuffer.isEntryUnconditional(2));
     Assert.assertEquals(-1, this.globalHistoryRegister.getHistoryValueAsInt(6));
     
     this.cpu.step();
     Assert.assertEquals(0, this.reorderBufferBlock.getReorderQueue().size());
-    Assert.assertEquals(8, this.branchTargetBuffer.getEntryTarget(2));
+    Assert.assertEquals(4, this.branchTargetBuffer.getEntryTarget(1));
     Assert.assertTrue(this.branchTargetBuffer.isEntryUnconditional(2));
     Assert.assertEquals(-1, this.globalHistoryRegister.getHistoryValueAsInt(9));
     Assert.assertEquals(0, this.unifiedRegisterFileBlock.getRegister("x0").getValue(), 0.01);
@@ -1152,6 +1189,8 @@ public class ForwardSimulationTest
     InputCodeArgument argumentJmp7 = new InputCodeArgumentBuilder().hasName("rd").hasValue("x0").build();
     InputCodeArgument argumentJmp8 = new InputCodeArgumentBuilder().hasName("imm").hasValue("loop").build();
     
+    // InputCodeModel[=\s\w\.\(\"\)]+\.hasInstructionName\(\"label\"\)[\s\w\.\(\"\)\,]+;
+    
     // Program:
     //
     // loop:
@@ -1159,9 +1198,7 @@ public class ForwardSimulationTest
     // subi x3 x3 1
     // jal x0 loop        # keeps saving 3 to x0
     // loopEnd:
-    InputCodeModel label1 = new InputCodeModelBuilder().hasLoader(initLoader)
-            .hasInstructionFunctionModel(this.initLoader.getInstructionFunctionModel("label"))
-            .hasInstructionName("label").hasCodeLine("loop").hasInstructionTypeEnum(InstructionTypeEnum.kLabel).build();
+    
     InputCodeModel ins1 = new InputCodeModelBuilder().hasLoader(initLoader)
             .hasInstructionFunctionModel(this.initLoader.getInstructionFunctionModel("beq")).hasInstructionName("beq")
             .hasCodeLine("beq x3 x0 loopEnd").hasInstructionTypeEnum(InstructionTypeEnum.kJumpbranch)
@@ -1174,27 +1211,25 @@ public class ForwardSimulationTest
             .hasInstructionFunctionModel(this.initLoader.getInstructionFunctionModel("jal")).hasInstructionName("jal")
             .hasCodeLine("jal x0 loop").hasInstructionTypeEnum(InstructionTypeEnum.kJumpbranch)
             .hasArguments(Arrays.asList(argumentJmp7, argumentJmp8)).build();
-    InputCodeModel label2 = new InputCodeModelBuilder().hasLoader(initLoader)
-            .hasInstructionFunctionModel(this.initLoader.getInstructionFunctionModel("label"))
-            .hasInstructionName("label").hasCodeLine("loopEnd").hasInstructionTypeEnum(InstructionTypeEnum.kLabel)
-            .build();
     
-    List<InputCodeModel> instructions = Arrays.asList(label1, ins1, ins2, ins3, label2);
+    List<InputCodeModel> instructions = Arrays.asList(ins1, ins2, ins3);
     codeParser.setParsedCode(instructions);
+    codeParser.setLabels(Map.of("loop", 0, "loopEnd", 3));
     
     // First fetch (3)
     this.cpu.step();
-    Assert.assertEquals("label", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
+    Assert.assertEquals("beq", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
     // Prediction is not to take the branch (default value of predictor)
-    Assert.assertEquals("beq", this.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
-    Assert.assertEquals("subi", this.instructionFetchBlock.getFetchedCode().get(2).getInstructionName());
+    Assert.assertEquals("subi", this.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
+    Assert.assertEquals("nop", this.instructionFetchBlock.getFetchedCode().get(2).getInstructionName());
     Assert.assertEquals(0, this.unifiedRegisterFileBlock.getRegister("x0").getValue(), 0.01);
     Assert.assertEquals(6, this.unifiedRegisterFileBlock.getRegister("x3").getValue(), 0.01);
     
     this.cpu.step();
     // Second fetch
+    // jal has ID 3 - ids are not continuous, but reflect the order of fetch, counting nops
     Assert.assertEquals("jal", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
-    Assert.assertEquals("label", this.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
+    Assert.assertEquals("nop", this.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
     Assert.assertEquals("nop", this.instructionFetchBlock.getFetchedCode().get(2).getInstructionName());
     // First decode
     Assert.assertEquals("beq x3 x0 loopEnd",
@@ -1216,6 +1251,10 @@ public class ForwardSimulationTest
     // subi got to the ALU issue window
     Assert.assertEquals("subi tg0 x3 1", this.aluIssueWindowBlock.getIssuedInstructions().get(0).getRenamedCodeLine());
     Assert.assertEquals(0, this.unifiedRegisterFileBlock.getRegister("x0").getValue(), 0.01);
+    // ROB - first two instructions are in the ROB, not ready
+    Assert.assertEquals(2, this.reorderBufferBlock.getReorderQueue().size());
+    Assert.assertFalse(this.reorderBufferBlock.getFlagsMap().get(0).isReadyToBeCommitted());
+    Assert.assertFalse(this.reorderBufferBlock.getFlagsMap().get(1).isReadyToBeCommitted());
     
     this.cpu.step();
     Assert.assertEquals("jal", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
@@ -1272,9 +1311,9 @@ public class ForwardSimulationTest
     Assert.assertEquals("beq tg0 x0 loopEnd", this.branchFunctionUnitBlock1.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("subi tg2 tg0 1", this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
     // beq (id 1), subi (id 2) and jal (id 3) are ready
-    Assert.assertTrue(this.reorderBufferBlock.getFlagsMap().get(1).isReadyToBeCommitted());
-    Assert.assertFalse(this.reorderBufferBlock.getFlagsMap().get(2).isReadyToBeCommitted());
-    Assert.assertFalse(this.reorderBufferBlock.getFlagsMap().get(3).isReadyToBeCommitted());
+    Assert.assertTrue(this.reorderBufferBlock.getFlagsMap().get(0).isReadyToBeCommitted());
+    Assert.assertFalse(this.reorderBufferBlock.getFlagsMap().get(1).isReadyToBeCommitted());
+    Assert.assertFalse(this.reorderBufferBlock.getFlagsMap().get(3).isReadyToBeCommitted()); // jal
     Assert.assertEquals(0, this.unifiedRegisterFileBlock.getRegister("x0").getValue(), 0.01);
     
     this.cpu.step();
@@ -1441,21 +1480,14 @@ public class ForwardSimulationTest
             .hasInstructionFunctionModel(this.initLoader.getInstructionFunctionModel("jal")).hasInstructionName("jal")
             .hasCodeLine("jal x0 labelFin").hasInstructionTypeEnum(InstructionTypeEnum.kJumpbranch)
             .hasArguments(Arrays.asList(argumentJmp4, argumentJmp5)).build();
-    InputCodeModel label1 = new InputCodeModelBuilder().hasLoader(initLoader)
-            .hasInstructionFunctionModel(this.initLoader.getInstructionFunctionModel("label"))
-            .hasInstructionName("label").hasCodeLine("labelIf").hasInstructionTypeEnum(InstructionTypeEnum.kLabel)
-            .build();
     InputCodeModel ins4 = new InputCodeModelBuilder().hasLoader(initLoader)
             .hasInstructionFunctionModel(this.initLoader.getInstructionFunctionModel("addi")).hasInstructionName("addi")
             .hasCodeLine("addi x1 x1 10").hasInstructionTypeEnum(InstructionTypeEnum.kArithmetic)
             .hasArguments(Arrays.asList(argumentAdd1, argumentAdd2, argumentAdd3)).build();
-    InputCodeModel label2 = new InputCodeModelBuilder().hasLoader(initLoader)
-            .hasInstructionFunctionModel(this.initLoader.getInstructionFunctionModel("label"))
-            .hasInstructionName("label").hasCodeLine("labelFin").hasInstructionTypeEnum(InstructionTypeEnum.kLabel)
-            .build();
     
-    List<InputCodeModel> instructions = Arrays.asList(ins1, ins2, ins3, label1, ins4, label2);
+    List<InputCodeModel> instructions = Arrays.asList(ins1, ins2, ins3, ins4);
     codeParser.setParsedCode(instructions);
+    codeParser.setLabels(Map.of("labelIf", 3, "labelFin", 4));
     
     // First fetch
     this.cpu.step();
@@ -1467,10 +1499,10 @@ public class ForwardSimulationTest
     
     // Second fetch
     this.cpu.step();
-    Assert.assertEquals(5, this.instructionFetchBlock.getPcCounter());
+    Assert.assertEquals(4, this.instructionFetchBlock.getPcCounter());
     Assert.assertEquals("jal", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
-    Assert.assertEquals("label", this.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
-    Assert.assertEquals("addi", this.instructionFetchBlock.getFetchedCode().get(2).getInstructionName());
+    Assert.assertEquals("addi", this.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
+    Assert.assertEquals("nop", this.instructionFetchBlock.getFetchedCode().get(2).getInstructionName());
     // Decode has the first 2 fetched (nop is filtered)
     Assert.assertEquals("beq x5 x0 labelIf",
                         this.decodeAndDispatchBlock.getAfterRenameCodeList().get(0).getRenamedCodeLine());
@@ -1479,7 +1511,7 @@ public class ForwardSimulationTest
     
     this.cpu.step();
     // PC started as 5, but jal is unconditional jump, it gets evaluated in decode, sets PC to 6
-    Assert.assertEquals(6, this.instructionFetchBlock.getPcCounter());
+    Assert.assertEquals(4, this.instructionFetchBlock.getPcCounter());
     // So nothing is fetched
     Assert.assertEquals("nop", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
     // Decode has just the jal, the addi was discarded
@@ -1522,7 +1554,7 @@ public class ForwardSimulationTest
     Assert.assertNull(this.branchFunctionUnitBlock2.getSimCodeModel());
     Assert.assertTrue(this.reorderBufferBlock.getReorderQueue().isEmpty());
     Assert.assertEquals("addi", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
-    Assert.assertEquals("label", this.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
+    Assert.assertEquals("nop", this.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
     Assert.assertEquals("nop", this.instructionFetchBlock.getFetchedCode().get(2).getInstructionName());
     
     this.cpu.step();
@@ -1546,6 +1578,11 @@ public class ForwardSimulationTest
     Assert.assertEquals(10, this.unifiedRegisterFileBlock.getRegister("x1").getValue(), 0.01);
     Assert.assertEquals(0, this.globalHistoryRegister.getRegisterValueAsInt());
   }
+  
+  
+  ///////////////////////////////////////////////////////////
+  ///                 Load/Store Tests                    ///
+  ///////////////////////////////////////////////////////////
   
   @Test
   public void simulate_ifElse_executeElseFragment()
@@ -1576,16 +1613,13 @@ public class ForwardSimulationTest
     InputCodeModel ins3 = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("jal")
             .hasCodeLine("jal x0 labelFin").hasInstructionTypeEnum(InstructionTypeEnum.kJumpbranch)
             .hasArguments(Arrays.asList(argumentJmp4, argumentJmp5)).build();
-    InputCodeModel label1 = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("label")
-            .hasCodeLine("labelIf").hasInstructionTypeEnum(InstructionTypeEnum.kLabel).build();
     InputCodeModel ins4 = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("addi")
             .hasCodeLine("addi x1 x1 10").hasInstructionTypeEnum(InstructionTypeEnum.kArithmetic)
             .hasArguments(Arrays.asList(argumentAdd1, argumentAdd2, argumentAdd3)).build();
-    InputCodeModel label2 = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("label")
-            .hasCodeLine("labelFin").hasInstructionTypeEnum(InstructionTypeEnum.kLabel).build();
     
-    List<InputCodeModel> instructions = Arrays.asList(ins1, ins2, ins3, label1, ins4, label2);
+    List<InputCodeModel> instructions = Arrays.asList(ins1, ins2, ins3, ins4);
     codeParser.setParsedCode(instructions);
+    codeParser.setLabels(Map.of("labelIf", 3, "labelFin", 4));
     // Code:
     //
     // beq x3 x0 labelIf
@@ -1605,8 +1639,8 @@ public class ForwardSimulationTest
     this.cpu.step();
     // another 3 fetches, 2 from last one moved to decode
     Assert.assertEquals("jal", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
-    Assert.assertEquals("label", this.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
-    Assert.assertEquals("addi", this.instructionFetchBlock.getFetchedCode().get(2).getInstructionName());
+    Assert.assertEquals("addi", this.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
+    Assert.assertEquals("nop", this.instructionFetchBlock.getFetchedCode().get(2).getInstructionName());
     Assert.assertEquals("beq x3 x0 labelIf",
                         this.decodeAndDispatchBlock.getAfterRenameCodeList().get(0).getRenamedCodeLine());
     Assert.assertEquals("subi tg0 x1 10",
@@ -1651,11 +1685,6 @@ public class ForwardSimulationTest
     this.cpu.step();
     Assert.assertEquals(1, this.globalHistoryRegister.getRegisterValueAsInt());
   }
-  
-  
-  ///////////////////////////////////////////////////////////
-  ///                 Load/Store Tests                    ///
-  ///////////////////////////////////////////////////////////
   
   @Test
   public void simulate_oneStore_savesIntInMemory()
@@ -1723,7 +1752,6 @@ public class ForwardSimulationTest
     Assert.assertEquals(6, loadStoreInterpreter.interpretInstruction(new SimCodeModel(loadCodeModel, -1, -1), 0)
             .getSecond(), 0.01);
   }
-  
   
   @Test
   public void simulate_oneLoad_loadsIntInMemory()
@@ -2175,60 +2203,5 @@ public class ForwardSimulationTest
     Assert.assertEquals(0, this.loadBufferBlock.getQueueSize());
     Assert.assertEquals(0, this.storeBufferBlock.getQueueSize());
     Assert.assertEquals(1, this.unifiedRegisterFileBlock.getRegister("x1").getValue(), 0.01);
-  }
-  
-  private List<InstructionFunctionModel> setUpInstructions()
-  {
-    InstructionFunctionModel instructionAdd = new InstructionFunctionModelBuilder().hasName("add")
-            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
-            .hasType(InstructionTypeEnum.kArithmetic).isInterpretedAs("rd=rs1+rs2;").hasSyntax("add rd rs1 rs2")
-            .build();
-    
-    InstructionFunctionModel instructionSub = new InstructionFunctionModelBuilder().hasName("sub")
-            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
-            .hasType(InstructionTypeEnum.kArithmetic).isInterpretedAs("rd=rs1-rs2;").hasSyntax("sub rd rs1 rs2")
-            .build();
-    
-    InstructionFunctionModel instructionAddi = new InstructionFunctionModelBuilder().hasName("addi")
-            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
-            .hasType(InstructionTypeEnum.kArithmetic).isInterpretedAs("rd=rs1+imm;").hasSyntax("addi rd rs1 imm")
-            .build();
-    
-    InstructionFunctionModel instructionSubi = new InstructionFunctionModelBuilder().hasName("subi")
-            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
-            .hasType(InstructionTypeEnum.kArithmetic).isInterpretedAs("rd=rs1-imm;").hasSyntax("subi rd rs1 imm")
-            .build();
-    
-    InstructionFunctionModel instructionFAdd = new InstructionFunctionModelBuilder().hasName("fadd")
-            .hasInputDataType(DataTypeEnum.kFloat).hasOutputDataType(DataTypeEnum.kFloat)
-            .hasType(InstructionTypeEnum.kArithmetic).isInterpretedAs("rd=rs1+rs2;").hasSyntax("add rd rs1 rs2")
-            .build();
-    
-    InstructionFunctionModel instructionFSub = new InstructionFunctionModelBuilder().hasName("fsub")
-            .hasInputDataType(DataTypeEnum.kFloat).hasOutputDataType(DataTypeEnum.kFloat)
-            .hasType(InstructionTypeEnum.kArithmetic).isInterpretedAs("rd=rs1-rs2;").hasSyntax("sub rd rs1 rs2")
-            .build();
-    
-    InstructionFunctionModel instructionJal = new InstructionFunctionModelBuilder().hasName("jal")
-            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
-            .hasType(InstructionTypeEnum.kJumpbranch).isInterpretedAs("jump:imm").hasSyntax("jal rd imm").build();
-    
-    InstructionFunctionModel instructionBeq = new InstructionFunctionModelBuilder().hasName("beq")
-            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
-            .hasType(InstructionTypeEnum.kJumpbranch).isInterpretedAs("signed:rs1 == rs2").hasSyntax("beq rs1 rs2 imm")
-            .build();
-    
-    InstructionFunctionModel instructionLoadWord = new InstructionFunctionModelBuilder().hasName("lw")
-            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
-            .hasType(InstructionTypeEnum.kLoadstore).isInterpretedAs("load " + "word:signed rd rs1 imm")
-            .hasSyntax("lw rd rs1 imm").build();
-    
-    InstructionFunctionModel instructionStoreWord = new InstructionFunctionModelBuilder().hasName("sw")
-            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
-            .hasType(InstructionTypeEnum.kLoadstore).isInterpretedAs("store " + "word" + " " + "rs2 rs1 imm")
-            .hasSyntax("sw rs2 rs1 imm").build();
-    
-    return Arrays.asList(instructionAdd, instructionSub, instructionFAdd, instructionFSub, instructionJal,
-                         instructionBeq, instructionSubi, instructionAddi, instructionLoadWord, instructionStoreWord);
   }
 }

@@ -19,15 +19,14 @@ import org.mockito.MockitoAnnotations;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-
-import static org.mockito.ArgumentMatchers.any;
+import java.util.Map;
 
 public class CodeBranchInterpreterTest
 {
   
   @Mock
   private InitLoader initLoader;
-  @Mock
+  
   private CodeParser codeParser;
   
   private CodeBranchInterpreter codeBranchInterpreter;
@@ -47,238 +46,12 @@ public class CodeBranchInterpreterTest
     Mockito.when(initLoader.getInstructionFunctionModelList()).thenReturn(setUpInstructions());
     
     List<InputCodeModel> inputCodeModels = setUpParsedCode();
-    Mockito.when(codeParser.getParsedCode()).thenReturn(inputCodeModels);
-    Mockito.when(codeParser.getLabelPosition(any())).thenCallRealMethod();
+    var                  labels          = setUpLabels();
+    codeParser = new CodeParser(initLoader);
+    codeParser.setLabels(labels);
+    codeParser.setParsedCode(inputCodeModels);
     
     this.codeBranchInterpreter = new CodeBranchInterpreter(codeParser, new UnifiedRegisterFileBlock(initLoader));
-  }
-  
-  @Test
-  public void unconditionalJump_interpret_returnsJumpDifference()
-  {
-    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rd").hasValue("x1").build();
-    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("imm").hasValue("one").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("jal")
-            .hasArguments(Arrays.asList(argument1, argument2)).build();
-    
-    Assert.assertEquals(-5, this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 6).getAsInt());
-  }
-  
-  @Test
-  public void conditionalJumpEqual_conditionTrue_returnsJumpDifference()
-  {
-    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x1").build();
-    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x1").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("two").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("beq")
-            .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    
-    Assert.assertEquals(-3, this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 6).getAsInt());
-  }
-  
-  @Test
-  public void conditionalJumpEqual_conditionFalse_returnsOne()
-  {
-    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x1").build();
-    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x2").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("two").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("beq")
-            .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    
-    Assert.assertFalse(this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 6).isPresent());
-  }
-  
-  @Test
-  public void conditionalJumpNotEqual_conditionTrue_returnsJumpDifference()
-  {
-    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x1").build();
-    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x2").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("three").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("bne")
-            .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    
-    Assert.assertEquals(-1, this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 6).getAsInt());
-  }
-  
-  @Test
-  public void conditionalJumpNotEqual_conditionFalse_returnsOne()
-  {
-    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x1").build();
-    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x1").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("three").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("bne")
-            .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    
-    Assert.assertFalse(this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 6).isPresent());
-  }
-  
-  @Test
-  public void conditionalJumpLessThan_conditionTrue_returnsJumpDifference()
-  {
-    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x4").build();
-    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x1").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("one").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("blt")
-            .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    
-    Assert.assertEquals(-5, this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 6).getAsInt());
-  }
-  
-  @Test
-  public void conditionalJumpLessThan_conditionFalse_returnsOne()
-  {
-    // (The code)
-    // one:
-    // add x1 x3 x2
-    // two:
-    // sub x1 x3 x2
-    // three:
-    // mul x1 x3 x2
-    //
-    // blt x1 x4 one
-    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x1").build();
-    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x4").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("one").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("blt")
-            .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    
-    Assert.assertFalse(this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 6).isPresent());
-  }
-  
-  @Test
-  public void conditionalJumpLessThanUnsigned_conditionTrue_returnsJumpDifference()
-  {
-    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x1").build();
-    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x4").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("one").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("bltu")
-            .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    
-    Assert.assertEquals(-5, this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 6).getAsInt());
-  }
-  
-  @Test
-  public void conditionalJumpLessThanUnsigned_conditionFalse_returnsOne()
-  {
-    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x4").build();
-    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x1").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("one").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("bltu")
-            .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    
-    Assert.assertFalse(this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 6).isPresent());
-  }
-  
-  @Test
-  public void conditionalJumpGreaterOrEqual_conditionGreaterTrue_returnsJumpDifference()
-  {
-    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x1").build();
-    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x4").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("one").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("bge")
-            .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    
-    Assert.assertEquals(-5, this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 6).getAsInt());
-  }
-  
-  @Test
-  public void conditionalJumpGreaterOrEqual_conditionEqualTrue_returnsJumpDifference()
-  {
-    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x1").build();
-    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x1").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("one").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("bge")
-            .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    
-    Assert.assertEquals(-5, this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 6).getAsInt());
-  }
-  
-  @Test
-  public void conditionalJumpGreaterOrEqual_conditionFalse_returnsOne()
-  {
-    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x4").build();
-    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x1").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("one").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("bge")
-            .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    
-    Assert.assertFalse(this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 6).isPresent());
-  }
-  
-  @Test
-  public void conditionalJumpGreaterOrEqualUnsigned_conditionGreaterTrue_returnsJumpDifference()
-  {
-    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x4").build();
-    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x1").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("one").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("bgeu")
-            .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    
-    Assert.assertEquals(-5, this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 6).getAsInt());
-  }
-  
-  @Test
-  public void conditionalJumpGreaterOrEqualUnsigned_conditionEqualTrue_returnsJumpDifference()
-  {
-    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x1").build();
-    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x1").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("one").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("bgeu")
-            .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    
-    Assert.assertEquals(-5, this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 6).getAsInt());
-  }
-  
-  @Test
-  public void conditionalJumpGreaterOrEqualUnsigned_conditionFalse_returnsOne()
-  {
-    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x1").build();
-    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x4").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("one").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("bgeu")
-            .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    
-    Assert.assertFalse(this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 6).isPresent());
-  }
-  
-  
-  private List<InputCodeModel> setUpParsedCode()
-  {
-    // one:
-    // add x1 x3 x2
-    // two:
-    // sub x1 x3 x2
-    // three:
-    // mul x1 x3 x2
-    InputCodeModel inputCodeModelLabelOne = new InputCodeModelBuilder().hasLoader(initLoader)
-            .hasInstructionName("label").hasCodeLine("one").build();
-    
-    InputCodeModel inputCodeModelLabelTwo = new InputCodeModelBuilder().hasLoader(initLoader)
-            .hasInstructionName("label").hasCodeLine("two").build();
-    
-    InputCodeModel inputCodeModelLabelThree = new InputCodeModelBuilder().hasLoader(initLoader)
-            .hasInstructionName("label").hasCodeLine("three").build();
-    
-    InputCodeArgument argumentAdd1 = new InputCodeArgumentBuilder().hasName("rd").hasValue("x1").build();
-    InputCodeArgument argumentAdd2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x3").build();
-    InputCodeArgument argumentAdd3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x2").build();
-    InputCodeModel inputCodeModelAdd = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("add")
-            .hasArguments(Arrays.asList(argumentAdd1, argumentAdd2, argumentAdd3)).build();
-    
-    InputCodeArgument argumentSub1 = new InputCodeArgumentBuilder().hasName("rd").hasValue("x1").build();
-    InputCodeArgument argumentSub2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x3").build();
-    InputCodeArgument argumentSub3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x2").build();
-    InputCodeModel inputCodeModelSub = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("sub")
-            .hasArguments(Arrays.asList(argumentSub1, argumentSub2, argumentSub3)).build();
-    
-    InputCodeArgument argumentMul1 = new InputCodeArgumentBuilder().hasName("rd").hasValue("x1").build();
-    InputCodeArgument argumentMul2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x3").build();
-    InputCodeArgument argumentMul3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x2").build();
-    InputCodeModel inputCodeModelMul = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("mul")
-            .hasArguments(Arrays.asList(argumentMul1, argumentMul2, argumentMul3)).build();
-    
-    return Arrays.asList(inputCodeModelLabelOne, inputCodeModelAdd, inputCodeModelLabelTwo, inputCodeModelSub,
-                         inputCodeModelLabelThree, inputCodeModelMul);
   }
   
   private List<InstructionFunctionModel> setUpInstructions()
@@ -313,5 +86,239 @@ public class CodeBranchInterpreterTest
     
     return Arrays.asList(instructionJal, instructionBeq, instructionBne, instructionBlt, instructionBltu,
                          instructionBge, instructionBgeu);
+  }
+  
+  private List<InputCodeModel> setUpParsedCode()
+  {
+    // one:
+    // add x1 x3 x2
+    // two:
+    // sub x1 x3 x2
+    // three:
+    // mul x1 x3 x2
+    
+    InputCodeArgument argumentAdd1 = new InputCodeArgumentBuilder().hasName("rd").hasValue("x1").build();
+    InputCodeArgument argumentAdd2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x3").build();
+    InputCodeArgument argumentAdd3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x2").build();
+    InputCodeModel inputCodeModelAdd = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("add")
+            .hasArguments(Arrays.asList(argumentAdd1, argumentAdd2, argumentAdd3)).build();
+    
+    InputCodeArgument argumentSub1 = new InputCodeArgumentBuilder().hasName("rd").hasValue("x1").build();
+    InputCodeArgument argumentSub2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x3").build();
+    InputCodeArgument argumentSub3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x2").build();
+    InputCodeModel inputCodeModelSub = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("sub")
+            .hasArguments(Arrays.asList(argumentSub1, argumentSub2, argumentSub3)).build();
+    
+    InputCodeArgument argumentMul1 = new InputCodeArgumentBuilder().hasName("rd").hasValue("x1").build();
+    InputCodeArgument argumentMul2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x3").build();
+    InputCodeArgument argumentMul3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x2").build();
+    InputCodeModel inputCodeModelMul = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("mul")
+            .hasArguments(Arrays.asList(argumentMul1, argumentMul2, argumentMul3)).build();
+    
+    return Arrays.asList(inputCodeModelAdd, inputCodeModelSub, inputCodeModelMul);
+  }
+  
+  private Map<String, Integer> setUpLabels()
+  {
+    return Map.of("one", 0, "two", 1, "three", 2);
+  }
+  
+  @Test
+  public void unconditionalJump_interpret_returnsJumpDifference()
+  {
+    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rd").hasValue("x1").build();
+    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("imm").hasValue("one").build();
+    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("jal")
+            .hasArguments(Arrays.asList(argument1, argument2)).build();
+    
+    Assert.assertEquals(-3, this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 3).getAsInt());
+  }
+  
+  @Test
+  public void conditionalJumpEqual_conditionTrue_returnsJumpDifference()
+  {
+    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x1").build();
+    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x1").build();
+    InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("two").build();
+    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("beq")
+            .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
+    
+    // Should jump to the label "two" which is at index 1
+    Assert.assertEquals(-2, this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 3).getAsInt());
+  }
+  
+  @Test
+  public void conditionalJumpEqual_conditionFalse_returnsOne()
+  {
+    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x1").build();
+    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x2").build();
+    InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("two").build();
+    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("beq")
+            .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
+    
+    // Should not jump
+    Assert.assertFalse(this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 3).isPresent());
+  }
+  
+  @Test
+  public void conditionalJumpNotEqual_conditionTrue_returnsJumpDifference()
+  {
+    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x1").build();
+    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x2").build();
+    InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("three").build();
+    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("bne")
+            .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
+    
+    // Should jump to the label "three" which is at index 2
+    Assert.assertEquals(-1, this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 3).getAsInt());
+  }
+  
+  @Test
+  public void conditionalJumpNotEqual_conditionFalse_returnsOne()
+  {
+    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x1").build();
+    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x1").build();
+    InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("three").build();
+    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("bne")
+            .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
+    
+    Assert.assertFalse(this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 3).isPresent());
+  }
+  
+  @Test
+  public void conditionalJumpLessThan_conditionTrue_returnsJumpDifference()
+  {
+    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x4").build();
+    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x1").build();
+    InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("one").build();
+    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("blt")
+            .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
+    
+    // Should jump to the label "one" which is at index 0
+    Assert.assertEquals(-3, this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 3).getAsInt());
+  }
+  
+  @Test
+  public void conditionalJumpLessThan_conditionFalse_returnsOne()
+  {
+    // (The code)
+    // one:
+    // add x1 x3 x2
+    // two:
+    // sub x1 x3 x2
+    // three:
+    // mul x1 x3 x2
+    //
+    // blt x1 x4 one
+    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x1").build();
+    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x4").build();
+    InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("one").build();
+    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("blt")
+            .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
+    
+    Assert.assertFalse(this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 3).isPresent());
+  }
+  
+  @Test
+  public void conditionalJumpLessThanUnsigned_conditionTrue_returnsJumpDifference()
+  {
+    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x1").build();
+    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x4").build();
+    InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("one").build();
+    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("bltu")
+            .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
+    
+    // Should jump to the label "one" which is at index 0
+    Assert.assertEquals(-3, this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 3).getAsInt());
+  }
+  
+  @Test
+  public void conditionalJumpLessThanUnsigned_conditionFalse_returnsOne()
+  {
+    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x4").build();
+    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x1").build();
+    InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("one").build();
+    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("bltu")
+            .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
+    
+    // Should not jump
+    Assert.assertFalse(this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 3).isPresent());
+  }
+  
+  @Test
+  public void conditionalJumpGreaterOrEqual_conditionGreaterTrue_returnsJumpDifference()
+  {
+    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x1").build();
+    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x4").build();
+    InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("one").build();
+    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("bge")
+            .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
+    
+    // Should jump to the label "one" which is at index 0
+    Assert.assertEquals(-3, this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 3).getAsInt());
+  }
+  
+  @Test
+  public void conditionalJumpGreaterOrEqual_conditionEqualTrue_returnsJumpDifference()
+  {
+    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x1").build();
+    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x1").build();
+    InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("one").build();
+    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("bge")
+            .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
+    
+    // Should jump to the label "one" which is at index 0
+    Assert.assertEquals(-3, this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 3).getAsInt());
+  }
+  
+  @Test
+  public void conditionalJumpGreaterOrEqual_conditionFalse_returnsOne()
+  {
+    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x4").build();
+    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x1").build();
+    InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("one").build();
+    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("bge")
+            .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
+    
+    Assert.assertFalse(this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 3).isPresent());
+  }
+  
+  @Test
+  public void conditionalJumpGreaterOrEqualUnsigned_conditionGreaterTrue_returnsJumpDifference()
+  {
+    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x4").build();
+    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x1").build();
+    InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("one").build();
+    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("bgeu")
+            .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
+    
+    // Should jump to the label "one" which is at index 0
+    Assert.assertEquals(-3, this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 3).getAsInt());
+  }
+  
+  @Test
+  public void conditionalJumpGreaterOrEqualUnsigned_conditionEqualTrue_returnsJumpDifference()
+  {
+    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x1").build();
+    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x1").build();
+    InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("one").build();
+    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("bgeu")
+            .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
+    
+    // Should jump to the label "one" which is at index 0
+    Assert.assertEquals(-3, this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 3).getAsInt());
+  }
+  
+  @Test
+  public void conditionalJumpGreaterOrEqualUnsigned_conditionFalse_returnsOne()
+  {
+    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x1").build();
+    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x4").build();
+    InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("one").build();
+    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("bgeu")
+            .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
+    
+    // Should not jump
+    Assert.assertFalse(this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 3).isPresent());
   }
 }
