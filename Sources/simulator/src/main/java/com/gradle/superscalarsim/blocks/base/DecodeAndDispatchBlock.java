@@ -434,7 +434,7 @@ public class DecodeAndDispatchBlock implements AbstractBlock
       return codeModel.getSavedPc() + Integer.parseInt(immediateArgument.getValue());
     }
     // Jump after label
-    return labelOffset + 1;
+    return labelOffset;
   }// end of calculateRealBranchAddress
   //----------------------------------------------------------------------
   

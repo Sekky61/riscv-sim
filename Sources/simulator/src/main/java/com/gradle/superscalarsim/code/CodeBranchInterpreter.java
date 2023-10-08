@@ -143,7 +143,7 @@ public class CodeBranchInterpreter
       else
       {
         // Label found
-        return OptionalInt.of(labelPosition - instructionPosition + 1);
+        return OptionalInt.of(labelPosition - instructionPosition);
       }
     }
     else
