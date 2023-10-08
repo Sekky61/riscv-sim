@@ -4,6 +4,7 @@ import com.gradle.superscalarsim.cpu.Cpu;
 import com.gradle.superscalarsim.cpu.CpuConfiguration;
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 /**
  * Testing if the backward simulation is equal to the forward simulation
@@ -75,5 +76,26 @@ public class BackwardSimulationEqualityTest
     
     // Assert they are equal
     Assert.assertEquals(cpu.cpuState, cpu2.cpuState);
+  }
+  
+  /**
+   * Test that the cpu does not step when requesting the initial state
+   */
+  @Test
+  public void test_requesting_initialState()
+  {
+    CpuConfiguration cfg = CpuConfiguration.getDefaultConfiguration();
+    cfg.code = """
+            addi x3 x0 10
+            subi x3 x3 1""";
+    Cpu cpu = new Cpu(cfg);
+    cpu.simulateState(4);
+    
+    // Exercise
+    Cpu cpuSpy = Mockito.spy(new Cpu(cfg, cpu.cpuState));
+    cpuSpy.simulateState(0);
+    
+    // Assert that zero simulation steps were called
+    Mockito.verify(cpuSpy, Mockito.never()).step();
   }
 }

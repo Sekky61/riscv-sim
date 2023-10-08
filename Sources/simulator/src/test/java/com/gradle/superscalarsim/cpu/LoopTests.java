@@ -44,7 +44,7 @@ public class LoopTests
   public void LoopInstructionRenamingTest()
   {
     Cpu     cpu     = new Cpu();
-    boolean success = cpu.loadProgram(ExecuteUtil.simpleLoopProgram);
+    boolean success = cpu.loadProgram(ExecuteUtil.getLoopProgram(5));
     Assert.assertTrue(success);
     // Obtain original value of inputcodemodels
     List<InputCodeModel> parsedCode = cpu.cpuState.codeParser.getParsedCode();
