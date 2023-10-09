@@ -217,10 +217,6 @@ public class DecodeAndDispatchBlock implements AbstractBlock
         {
           removeModel.add(codeModel);
         }
-        else
-        {
-          codeModel.setInstructionBulkNumber(decodeId);
-        }
       }
       this.afterRenameCodeList.removeAll(removeModel);
       

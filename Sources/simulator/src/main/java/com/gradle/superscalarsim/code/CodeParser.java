@@ -102,6 +102,13 @@ public class CodeParser
   private Map<String, Integer> labels;
   
   /**
+   * Nop instruction is instantiated once and reused, to have all SimCodeModel objects point to the same object.
+   *
+   * @brief Nop instruction
+   */
+  private final InputCodeModel nop;
+  
+  /**
    * @param [in] initLoader - InitLoader object with loaded instructions and registers
    *
    * @brief Constructor
@@ -120,6 +127,7 @@ public class CodeParser
     this.immediatePattern = Pattern.compile("imm\\d*");
     // Anything with a colon at the end
     this.labelPattern = Pattern.compile("^[a-zA-Z0-9\\.]+:");
+    this.nop          = new InputCodeModel(null, "nop", new ArrayList<>(), null, null, 0);
   }// end of Constructor
   
   /**
@@ -553,7 +561,7 @@ public class CodeParser
   //-------------------------------------------------------------------------------------------
   
   /**
-   * Get the position of the label in the code. (Assumes the label exists)
+   * Get the position of the label in the memory. (Assumes the label exists and instructions are 4 bytes long)
    *
    * @param label Label name to search for. (example: "loop")
    *
@@ -561,7 +569,12 @@ public class CodeParser
    */
   public int getLabelPosition(String label)
   {
-    return labels.getOrDefault(label, -1);
+    Integer index = labels.get(label);
+    if (index == null)
+    {
+      return -1;
+    }
+    return index * 4;
   }
   //-------------------------------------------------------------------------------------------
   
@@ -581,6 +594,25 @@ public class CodeParser
   }
   
   /**
+   * Get instruction at the given PC. Assumes an instruction is 4 bytes long.
+   *
+   * @param pc Program counter.
+   *
+   * @return Instruction at the given PC, or a nop if the PC is out of range.
+   */
+  public InputCodeModel getInstructionAt(int pc)
+  {
+    assert pc % 4 == 0;
+    int index = pc / 4;
+    // getParsedCode so it is mockable
+    if (index < 0 || index >= getParsedCode().size())
+    {
+      return this.nop;
+    }
+    return getParsedCode().get(index);
+  }
+  
+  /**
    * @return Error messages
    * @brief Get list of error messages in case of load failure
    */
@@ -592,5 +624,10 @@ public class CodeParser
   public void setLabels(Map<String, Integer> labels)
   {
     this.labels = labels;
+  }
+  
+  public InputCodeModel getNop()
+  {
+    return nop;
   }
 }

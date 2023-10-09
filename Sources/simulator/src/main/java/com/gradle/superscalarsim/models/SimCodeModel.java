@@ -201,12 +201,6 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>
   }// end of getId
   //------------------------------------------------------
   
-  public void setInstructionBulkNumber(int instructionBulkNumber)
-  {
-    this.instructionBulkNumber = instructionBulkNumber;
-  }
-  //------------------------------------------------------
-  
   /**
    * @return Id, when was instruction accepted to issue window, 0 if not yet processed
    * @brief Gets accepted id to issue window

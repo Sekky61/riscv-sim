@@ -149,9 +149,6 @@ public class ReorderBufferBlock implements AbstractBlock
   @Override
   public void simulate()
   {
-    boolean hasInstructionBeenProcessed;
-    int     commitCount = 0;
-    
     // First check if any instruction is ready for committing and set their register to assigned
     for (SimCodeModel currentInstruction : this.state.reorderQueue)
     {
@@ -175,35 +172,29 @@ public class ReorderBufferBlock implements AbstractBlock
     
     // Next, go through queue and commit all instructions you can
     // until you reach un-committable instruction, or you reach limit
-    do
+    int commitCount = 0;
+    while (commitCount < this.state.commitLimit && !this.state.reorderQueue.isEmpty())
     {
-      if (this.state.reorderQueue.isEmpty())
+      SimCodeModel currentInstruction  = this.state.reorderQueue.peek();
+      ReorderFlags currentReorderFlags = this.state.flagsMap.get(currentInstruction.getId());
+      
+      if (!currentReorderFlags.isReadyToBeCommitted())
       {
         break;
       }
       
-      hasInstructionBeenProcessed = false;
-      SimCodeModel currentInstruction  = this.state.reorderQueue.peek();
-      ReorderFlags currentReorderFlags = this.state.flagsMap.get(currentInstruction.getId());
-      
       // Check if instruction should be committed or removed because of failed speculation
-      if (currentReorderFlags.isReadyToBeCommitted())
-      {
-        statisticsCounter.incrementCommittedInstructions();
-        hasInstructionBeenProcessed = true;
-        commitCount++;
-        // Delete instruction from ROB
-        this.state.reorderQueue.poll();
-        this.state.flagsMap.remove(currentInstruction.getId());
-        
-        processCommittableInstruction(currentInstruction);
-        currentInstruction.setCommitId(this.state.commitId);
-        // Instruction can also be removed from allocator
-        currentInstruction.setFinished(true);
-      }
+      statisticsCounter.incrementCommittedInstructions();
+      commitCount++;
+      // Delete instruction from ROB
+      this.state.reorderQueue.poll();
+      this.state.flagsMap.remove(currentInstruction.getId());
       
+      processCommittableInstruction(currentInstruction);
+      currentInstruction.setCommitId(this.state.commitId);
+      // Instruction can also be removed from allocator
+      currentInstruction.setFinished(true);
     }
-    while (hasInstructionBeenProcessed && commitCount < this.state.commitLimit);
     // End commit stage
     
     // Check all instructions if after commit some can be removed, remove them in other units
@@ -231,7 +222,9 @@ public class ReorderBufferBlock implements AbstractBlock
   }// end of reset
   
   /**
-   * @param [in] codeModel - Code model of committable instruction
+   * Writes into architectural register, updates statistics
+   *
+   * @param codeModel Code model of committable instruction
    *
    * @brief Process instruction that is ready to be committed
    */
@@ -250,6 +243,7 @@ public class ReorderBufferBlock implements AbstractBlock
         statisticsCounter.incrementCorrectlyPredictedBranches();
         this.gShareUnit.getPredictorFromOld(pc, codeModel.getId()).upTheProbability();
         this.gShareUnit.getGlobalHistoryRegister().removeHistoryValue(codeModel.getId());
+        // Update committable status of subsequent instructions
         validateInstructions();
       }
       else
@@ -270,6 +264,7 @@ public class ReorderBufferBlock implements AbstractBlock
     }
     else if (codeModel.getInstructionTypeEnum() == InstructionTypeEnum.kLoadstore)
     {
+      // Release load/store buffer entry
       if (loadBufferBlock.getQueueSize() > 0 && loadBufferBlock.getLoadQueueFirst() == codeModel)
       {
         loadBufferBlock.releaseLoadFirst();
@@ -279,24 +274,26 @@ public class ReorderBufferBlock implements AbstractBlock
         storeBufferBlock.releaseStoreFirst();
       }
     }
-    //Store destination register into architectural
+    
+    // Store destination register into architectural
     InputCodeArgument destinationArgument = codeModel.getArgumentByName("rd");
     if (destinationArgument != null)
     {
-      //Save the value of architectural register in case of backward simulation
       renameMapTableBlock.directCopyMapping(destinationArgument.getValue());
     }
     
-    // Save the value of temporary registers for backward simulation
-    codeModel.getArguments().stream().filter(argument -> argument.getName().startsWith("r")).forEach(argument ->
-                                                                                                     {
-                                                                                                       if (renameMapTableBlock.reduceReference(
-                                                                                                               argument.getValue()))
-                                                                                                       {
-                                                                                                         renameMapTableBlock.freeMapping(
-                                                                                                                 argument.getValue());
-                                                                                                       }
-                                                                                                     });
+    // Notify rename map table that register has fewer references
+    for (InputCodeArgument argument : codeModel.getArguments())
+    {
+      if (!argument.getName().startsWith("r"))
+      {
+        continue;
+      }
+      if (renameMapTableBlock.reduceReference(argument.getValue()))
+      {
+        renameMapTableBlock.freeMapping(argument.getValue());
+      }
+    }
   }// end of processCommittableInstruction
   //----------------------------------------------------------------------
   

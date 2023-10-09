@@ -223,4 +223,9 @@ public class StatisticsCounter
     return clockCycles;
   }// end of getAllBranches
   //----------------------------------------------------------------------
+  
+  public long getCorrectlyPredictedBranches()
+  {
+    return correctlyPredictedBranches;
+  }
 }
