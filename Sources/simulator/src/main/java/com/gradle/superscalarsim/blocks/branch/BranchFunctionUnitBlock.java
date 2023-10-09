@@ -119,7 +119,7 @@ public class BranchFunctionUnitBlock extends AbstractFunctionUnitBlock
         this.simCodeModel.setFunctionUnitId(this.functionUnitId);
       }
       int instructionPosition     = this.simCodeModel.getSavedPc();
-      int nextInstructionPosition = instructionPosition + 1;
+      int nextInstructionPosition = instructionPosition + 4;
       
       OptionalInt jumpOffset = branchInterpreter.interpretInstruction(this.simCodeModel, instructionPosition);
       boolean     jumpTaken  = jumpOffset.isPresent();

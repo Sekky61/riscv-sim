@@ -118,8 +118,8 @@ public class CodeParserTest
     Assert.assertEquals("fadd", codeParser.getParsedCode().get(2).getInstructionName());
     
     Assert.assertEquals(0, codeParser.getLabelPosition("one"));
-    Assert.assertEquals(1, codeParser.getLabelPosition("two"));
-    Assert.assertEquals(2, codeParser.getLabelPosition("three"));
+    Assert.assertEquals(4, codeParser.getLabelPosition("two"));
+    Assert.assertEquals(8, codeParser.getLabelPosition("three"));
   }
   
   @Test
@@ -142,8 +142,8 @@ public class CodeParserTest
     Assert.assertEquals("fadd", codeParser.getParsedCode().get(2).getInstructionName());
     
     Assert.assertEquals(0, codeParser.getLabelPosition("one"));
-    Assert.assertEquals(1, codeParser.getLabelPosition("two"));
-    Assert.assertEquals(2, codeParser.getLabelPosition("three"));
+    Assert.assertEquals(4, codeParser.getLabelPosition("two"));
+    Assert.assertEquals(8, codeParser.getLabelPosition("three"));
   }
   
   @Test

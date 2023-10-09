@@ -3,28 +3,24 @@ package com.gradle.superscalarsim.blocks;
 import com.gradle.superscalarsim.blocks.base.InstructionFetchBlock;
 import com.gradle.superscalarsim.blocks.branch.BranchTargetBuffer;
 import com.gradle.superscalarsim.blocks.branch.GShareUnit;
+import com.gradle.superscalarsim.blocks.branch.GlobalHistoryRegister;
+import com.gradle.superscalarsim.blocks.branch.PatternHistoryTable;
 import com.gradle.superscalarsim.builders.InputCodeModelBuilder;
 import com.gradle.superscalarsim.code.CodeParser;
 import com.gradle.superscalarsim.code.SimCodeModelAllocator;
+import com.gradle.superscalarsim.loader.InitLoader;
 import com.gradle.superscalarsim.models.InputCodeModel;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 public class InstructionFetchBlockTest
 {
-  @Mock
   CodeParser codeParser;
-  @Mock
   BranchTargetBuffer branchTargetBuffer;
-  @Mock
   GShareUnit gShareUnit;
   
   private InstructionFetchBlock instructionFetchBlock;
@@ -32,19 +28,25 @@ public class InstructionFetchBlockTest
   @Before
   public void setUp()
   {
-    MockitoAnnotations.openMocks(this);
-    this.instructionFetchBlock = new InstructionFetchBlock(new SimCodeModelAllocator(), codeParser, gShareUnit,
-                                                           branchTargetBuffer);
+    InitLoader initLoader = new InitLoader();
+    this.codeParser         = new CodeParser(initLoader);
+    this.branchTargetBuffer = new BranchTargetBuffer(1000);
+    this.gShareUnit         = new GShareUnit(1, new GlobalHistoryRegister(1000),
+                                             new PatternHistoryTable(10, new boolean[]{true, false},
+                                                                     PatternHistoryTable.PredictorType.TWO_BIT_PREDICTOR));
+    SimCodeModelAllocator simCodeModelAllocator = new SimCodeModelAllocator();
+    this.instructionFetchBlock = new InstructionFetchBlock(simCodeModelAllocator, this.codeParser, this.gShareUnit,
+                                                           this.branchTargetBuffer);
   }
   
   @Test
   public void instructionFetchSimulateThreeWay_emptyCode_returnsThreeNops()
   {
-    Mockito.when(codeParser.getParsedCode()).thenReturn(new ArrayList<>());
+    codeParser.setParsedCode(Arrays.asList());
     
     this.instructionFetchBlock.simulate();
     
-    Assert.assertEquals(0, this.instructionFetchBlock.getPcCounter());
+    Assert.assertEquals(12, this.instructionFetchBlock.getPcCounter());
     Assert.assertEquals("nop", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
     Assert.assertEquals("nop", this.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
     Assert.assertEquals("nop", this.instructionFetchBlock.getFetchedCode().get(2).getInstructionName());
@@ -57,11 +59,11 @@ public class InstructionFetchBlockTest
     InputCodeModel       ins2         = new InputCodeModelBuilder().hasInstructionName("ins2").build();
     InputCodeModel       ins3         = new InputCodeModelBuilder().hasInstructionName("ins3").build();
     List<InputCodeModel> instructions = Arrays.asList(ins1, ins2, ins3);
-    Mockito.when(codeParser.getParsedCode()).thenReturn(instructions);
+    codeParser.setParsedCode(instructions);
     
     this.instructionFetchBlock.simulate();
     
-    Assert.assertEquals(3, this.instructionFetchBlock.getPcCounter());
+    Assert.assertEquals(12, this.instructionFetchBlock.getPcCounter());
     Assert.assertEquals("ins1", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
     Assert.assertEquals("ins2", this.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
     Assert.assertEquals("ins3", this.instructionFetchBlock.getFetchedCode().get(2).getInstructionName());
@@ -73,11 +75,11 @@ public class InstructionFetchBlockTest
     InputCodeModel       ins1         = new InputCodeModelBuilder().hasInstructionName("ins1").build();
     InputCodeModel       ins2         = new InputCodeModelBuilder().hasInstructionName("ins2").build();
     List<InputCodeModel> instructions = Arrays.asList(ins1, ins2);
-    Mockito.when(codeParser.getParsedCode()).thenReturn(instructions);
+    codeParser.setParsedCode(instructions);
     
     this.instructionFetchBlock.simulate();
     
-    Assert.assertEquals(2, this.instructionFetchBlock.getPcCounter());
+    Assert.assertEquals(12, this.instructionFetchBlock.getPcCounter());
     Assert.assertEquals("ins1", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
     Assert.assertEquals("ins2", this.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
     Assert.assertEquals("nop", this.instructionFetchBlock.getFetchedCode().get(2).getInstructionName());
@@ -90,12 +92,12 @@ public class InstructionFetchBlockTest
     InputCodeModel       ins2         = new InputCodeModelBuilder().hasInstructionName("ins2").build();
     InputCodeModel       ins3         = new InputCodeModelBuilder().hasInstructionName("ins3").build();
     List<InputCodeModel> instructions = Arrays.asList(ins1, ins2, ins3);
-    Mockito.when(codeParser.getParsedCode()).thenReturn(instructions);
+    codeParser.setParsedCode(instructions);
     
     this.instructionFetchBlock.setNumberOfWays(5);
     this.instructionFetchBlock.simulate();
     
-    Assert.assertEquals(3, this.instructionFetchBlock.getPcCounter());
+    Assert.assertEquals(5 * 4, this.instructionFetchBlock.getPcCounter());
     Assert.assertEquals("ins1", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
     Assert.assertEquals("ins2", this.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
     Assert.assertEquals("ins3", this.instructionFetchBlock.getFetchedCode().get(2).getInstructionName());
@@ -110,12 +112,12 @@ public class InstructionFetchBlockTest
     InputCodeModel       ins2         = new InputCodeModelBuilder().hasInstructionName("ins2").build();
     InputCodeModel       ins3         = new InputCodeModelBuilder().hasInstructionName("ins3").build();
     List<InputCodeModel> instructions = Arrays.asList(ins1, ins2, ins3);
-    Mockito.when(codeParser.getParsedCode()).thenReturn(instructions);
+    codeParser.setParsedCode(instructions);
     
     this.instructionFetchBlock.simulate();
     this.instructionFetchBlock.simulate();
     
-    Assert.assertEquals(3, this.instructionFetchBlock.getPcCounter());
+    Assert.assertEquals(24, this.instructionFetchBlock.getPcCounter());
     Assert.assertEquals("nop", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
     Assert.assertEquals("nop", this.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
     Assert.assertEquals("nop", this.instructionFetchBlock.getFetchedCode().get(2).getInstructionName());
@@ -128,13 +130,14 @@ public class InstructionFetchBlockTest
     InputCodeModel       ins2         = new InputCodeModelBuilder().hasInstructionName("ins2").build();
     InputCodeModel       ins3         = new InputCodeModelBuilder().hasInstructionName("ins3").build();
     List<InputCodeModel> instructions = Arrays.asList(ins1, ins2, ins3);
-    Mockito.when(codeParser.getParsedCode()).thenReturn(instructions);
+    codeParser.setParsedCode(instructions);
+    
     Assert.assertEquals(0, this.instructionFetchBlock.getPcCounter());
     Assert.assertEquals(0, this.instructionFetchBlock.getFetchedCode().size());
     
     this.instructionFetchBlock.simulate();
     
-    Assert.assertEquals(3, this.instructionFetchBlock.getPcCounter());
+    Assert.assertEquals(12, this.instructionFetchBlock.getPcCounter());
     Assert.assertEquals("ins1", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
     Assert.assertEquals("ins2", this.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
     Assert.assertEquals("ins3", this.instructionFetchBlock.getFetchedCode().get(2).getInstructionName());

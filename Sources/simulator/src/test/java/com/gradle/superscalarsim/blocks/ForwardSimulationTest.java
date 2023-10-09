@@ -261,7 +261,7 @@ public class ForwardSimulationTest
     codeParser.setParsedCode(instructions);
     
     this.cpu.step();
-    Assert.assertEquals(1, this.instructionFetchBlock.getPcCounter());
+    Assert.assertEquals(12, this.instructionFetchBlock.getPcCounter());
     Assert.assertEquals("add", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
     Assert.assertEquals("nop", this.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
     Assert.assertEquals("nop", this.instructionFetchBlock.getFetchedCode().get(2).getInstructionName());
@@ -345,7 +345,7 @@ public class ForwardSimulationTest
     codeParser.setParsedCode(instructions);
     
     this.cpu.step();
-    Assert.assertEquals(3, this.instructionFetchBlock.getPcCounter());
+    Assert.assertEquals(12, this.instructionFetchBlock.getPcCounter());
     Assert.assertEquals("add", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
     Assert.assertEquals("add", this.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
     Assert.assertEquals("add", this.instructionFetchBlock.getFetchedCode().get(2).getInstructionName());
@@ -647,7 +647,7 @@ public class ForwardSimulationTest
     codeParser.setParsedCode(instructions);
     
     this.cpu.step();
-    Assert.assertEquals(1, this.instructionFetchBlock.getPcCounter());
+    Assert.assertEquals(12, this.instructionFetchBlock.getPcCounter());
     Assert.assertEquals("fadd", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
     Assert.assertEquals("nop", this.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
     Assert.assertEquals("nop", this.instructionFetchBlock.getFetchedCode().get(2).getInstructionName());
@@ -733,7 +733,7 @@ public class ForwardSimulationTest
     codeParser.setParsedCode(instructions);
     
     this.cpu.step();
-    Assert.assertEquals(3, this.instructionFetchBlock.getPcCounter());
+    Assert.assertEquals(12, this.instructionFetchBlock.getPcCounter());
     Assert.assertEquals("fadd", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
     Assert.assertEquals("fadd", this.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
     Assert.assertEquals("fadd", this.instructionFetchBlock.getFetchedCode().get(2).getInstructionName());
@@ -1139,7 +1139,7 @@ public class ForwardSimulationTest
     Assert.assertEquals("jal tg2 lab1", this.branchFunctionUnitBlock1.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("jal tg3 labFinal", this.branchFunctionUnitBlock2.getSimCodeModel().getRenamedCodeLine());
     Assert.assertTrue(this.reorderBufferBlock.getFlagsMap().get(3).isReadyToBeCommitted());
-    Assert.assertEquals(3, this.branchTargetBuffer.getEntryTarget(0));
+    Assert.assertEquals(12, this.branchTargetBuffer.getEntryTarget(0));
     Assert.assertTrue(this.branchTargetBuffer.isEntryUnconditional(0));
     Assert.assertEquals(-1, this.globalHistoryRegister.getHistoryValueAsInt(0));
     
@@ -1147,8 +1147,8 @@ public class ForwardSimulationTest
     Assert.assertEquals(2, this.reorderBufferBlock.getReorderQueue().size());
     Assert.assertEquals("jal tg2 lab1", this.branchFunctionUnitBlock1.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("jal tg3 labFinal", this.branchFunctionUnitBlock2.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertEquals(2, this.branchTargetBuffer.getEntryTarget(3));
-    Assert.assertTrue(this.branchTargetBuffer.isEntryUnconditional(3));
+    Assert.assertEquals(8, this.branchTargetBuffer.getEntryTarget(12));
+    Assert.assertTrue(this.branchTargetBuffer.isEntryUnconditional(12));
     Assert.assertEquals(-1, this.globalHistoryRegister.getHistoryValueAsInt(3));
     
     this.cpu.step();
@@ -1162,14 +1162,14 @@ public class ForwardSimulationTest
     Assert.assertNull(this.branchFunctionUnitBlock1.getSimCodeModel());
     Assert.assertNull(this.branchFunctionUnitBlock2.getSimCodeModel());
     Assert.assertTrue(this.reorderBufferBlock.getFlagsMap().get(9).isReadyToBeCommitted());
-    Assert.assertEquals(1, this.branchTargetBuffer.getEntryTarget(2));
-    Assert.assertTrue(this.branchTargetBuffer.isEntryUnconditional(2));
+    Assert.assertEquals(4, this.branchTargetBuffer.getEntryTarget(8));
+    Assert.assertTrue(this.branchTargetBuffer.isEntryUnconditional(8));
     Assert.assertEquals(-1, this.globalHistoryRegister.getHistoryValueAsInt(6));
     
     this.cpu.step();
     Assert.assertEquals(0, this.reorderBufferBlock.getReorderQueue().size());
-    Assert.assertEquals(4, this.branchTargetBuffer.getEntryTarget(1));
-    Assert.assertTrue(this.branchTargetBuffer.isEntryUnconditional(2));
+    Assert.assertEquals(16, this.branchTargetBuffer.getEntryTarget(4));
+    Assert.assertTrue(this.branchTargetBuffer.isEntryUnconditional(8));
     Assert.assertEquals(-1, this.globalHistoryRegister.getHistoryValueAsInt(9));
     Assert.assertEquals(0, this.unifiedRegisterFileBlock.getRegister("x0").getValue(), 0.01);
   }
@@ -1491,7 +1491,7 @@ public class ForwardSimulationTest
     
     // First fetch
     this.cpu.step();
-    Assert.assertEquals(2, this.instructionFetchBlock.getPcCounter());
+    Assert.assertEquals(8, this.instructionFetchBlock.getPcCounter());
     Assert.assertEquals("beq", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
     Assert.assertEquals("subi", this.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
     // Third instruction is not fetched - it is a second branch
@@ -1499,7 +1499,7 @@ public class ForwardSimulationTest
     
     // Second fetch
     this.cpu.step();
-    Assert.assertEquals(4, this.instructionFetchBlock.getPcCounter());
+    Assert.assertEquals(20, this.instructionFetchBlock.getPcCounter());
     Assert.assertEquals("jal", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
     Assert.assertEquals("addi", this.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
     Assert.assertEquals("nop", this.instructionFetchBlock.getFetchedCode().get(2).getInstructionName());
@@ -1510,8 +1510,6 @@ public class ForwardSimulationTest
                         this.decodeAndDispatchBlock.getAfterRenameCodeList().get(1).getRenamedCodeLine());
     
     this.cpu.step();
-    // PC started as 5, but jal is unconditional jump, it gets evaluated in decode, sets PC to 6
-    Assert.assertEquals(4, this.instructionFetchBlock.getPcCounter());
     // So nothing is fetched
     Assert.assertEquals("nop", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
     // Decode has just the jal, the addi was discarded

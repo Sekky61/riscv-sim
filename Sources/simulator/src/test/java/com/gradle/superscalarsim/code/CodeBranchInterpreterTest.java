@@ -131,7 +131,7 @@ public class CodeBranchInterpreterTest
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("jal")
             .hasArguments(Arrays.asList(argument1, argument2)).build();
     
-    Assert.assertEquals(-3, this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 3).getAsInt());
+    Assert.assertEquals(-3 * 4, this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 3 * 4).getAsInt());
   }
   
   @Test
@@ -144,7 +144,7 @@ public class CodeBranchInterpreterTest
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
     // Should jump to the label "two" which is at index 1
-    Assert.assertEquals(-2, this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 3).getAsInt());
+    Assert.assertEquals(-2 * 4, this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 3 * 4).getAsInt());
   }
   
   @Test
@@ -170,7 +170,7 @@ public class CodeBranchInterpreterTest
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
     // Should jump to the label "three" which is at index 2
-    Assert.assertEquals(-1, this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 3).getAsInt());
+    Assert.assertEquals(-1 * 4, this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 3 * 4).getAsInt());
   }
   
   @Test
@@ -195,7 +195,7 @@ public class CodeBranchInterpreterTest
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
     // Should jump to the label "one" which is at index 0
-    Assert.assertEquals(-3, this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 3).getAsInt());
+    Assert.assertEquals(-3 * 4, this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 3 * 4).getAsInt());
   }
   
   @Test
@@ -229,7 +229,7 @@ public class CodeBranchInterpreterTest
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
     // Should jump to the label "one" which is at index 0
-    Assert.assertEquals(-3, this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 3).getAsInt());
+    Assert.assertEquals(-3 * 4, this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 3 * 4).getAsInt());
   }
   
   @Test
@@ -255,7 +255,7 @@ public class CodeBranchInterpreterTest
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
     // Should jump to the label "one" which is at index 0
-    Assert.assertEquals(-3, this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 3).getAsInt());
+    Assert.assertEquals(-3 * 4, this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 3 * 4).getAsInt());
   }
   
   @Test
@@ -268,7 +268,7 @@ public class CodeBranchInterpreterTest
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
     // Should jump to the label "one" which is at index 0
-    Assert.assertEquals(-3, this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 3).getAsInt());
+    Assert.assertEquals(-3 * 4, this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 3 * 4).getAsInt());
   }
   
   @Test
@@ -293,7 +293,7 @@ public class CodeBranchInterpreterTest
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
     // Should jump to the label "one" which is at index 0
-    Assert.assertEquals(-3, this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 3).getAsInt());
+    Assert.assertEquals(-3 * 4, this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 3 * 4).getAsInt());
   }
   
   @Test
@@ -306,7 +306,7 @@ public class CodeBranchInterpreterTest
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
     // Should jump to the label "one" which is at index 0
-    Assert.assertEquals(-3, this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 3).getAsInt());
+    Assert.assertEquals(-3 * 4, this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 3 * 4).getAsInt());
   }
   
   @Test

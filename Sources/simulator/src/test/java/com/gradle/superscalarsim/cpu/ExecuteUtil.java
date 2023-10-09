@@ -71,7 +71,10 @@ public class ExecuteUtil
     return cpu;
   }
   
-  static String artihmeticProgram = "addi x3 x4 5\n" + "add x2 x3 x4\n" + "add x1 x2 x3";
+  static String artihmeticProgram = """
+          addi x3 x4 5
+          add x2 x3 x4
+          add x1 x2 x3""";
   
   /**
    * @param loopCount How many times to loop

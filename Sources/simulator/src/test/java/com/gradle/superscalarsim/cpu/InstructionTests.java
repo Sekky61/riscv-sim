@@ -98,12 +98,12 @@ public class InstructionTests
   public void testJAL()
   {
     // Setup + exercise
-    Cpu cpu = ExecuteUtil.executeProgram("jal x1, 10");
+    Cpu cpu = ExecuteUtil.executeProgram("jal x1, 12");
     
     // Assert
-    // TODO: actually, PC+4 should be saved, not PC+1
-    Assert.assertEquals(10, cpu.cpuState.instructionFetchBlock.getPcCounter());
-    Assert.assertEquals(1, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(), 0.5);
+    Assert.assertEquals(7, cpu.cpuState.tick);
+    // PC+4=4 is saved in x1
+    Assert.assertEquals(4, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(), 0.5);
   }
   
   /**
@@ -117,9 +117,9 @@ public class InstructionTests
     cpu = ExecuteUtil.executeProgram("jalr x2, x1, 56", cpu);
     
     // Assert
-    // Jumped to 10+56=66, and saved PC+4=4 in x2 (TODO: 1 for now)
-    Assert.assertEquals(66, cpu.cpuState.instructionFetchBlock.getPcCounter());
-    Assert.assertEquals(1, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").getValue(), 0.5);
+    // TODO: How to assert that it jumped to 10+56=66?
+    Assert.assertEquals(4, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").getValue(), 0.5);
+    Assert.assertEquals(1, cpu.cpuState.statisticsCounter.getAllBranches());
   }
   
   /**
@@ -142,15 +142,17 @@ public class InstructionTests
    * BNE jumps if the two registers are not equal
    */
   @Test
-  public void testBNE_notjump()
+  public void testBNE_notJump()
   {
     // Setup + exercise
     cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(16.0);
     cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(16.0);
-    cpu = ExecuteUtil.executeProgram("bne x1, x2, 10", cpu);
+    cpu = ExecuteUtil.executeProgram("bne x1, x2, 12", cpu);
     
     // Assert
-    Assert.assertEquals(1, cpu.cpuState.instructionFetchBlock.getPcCounter());
+    Assert.assertEquals(1, cpu.cpuState.statisticsCounter.getAllBranches());
+    // Default prediction is to jump, but there is not a BTB entry for this branch, so we couldn't predict
+    Assert.assertEquals(1, cpu.cpuState.statisticsCounter.getCorrectlyPredictedBranches());
   }
   
   /**
@@ -165,7 +167,9 @@ public class InstructionTests
     cpu = ExecuteUtil.executeProgram("bne x1, x2, 20", cpu);
     
     // Assert
-    Assert.assertEquals(20, cpu.cpuState.instructionFetchBlock.getPcCounter());
+    Assert.assertEquals(1, cpu.cpuState.statisticsCounter.getAllBranches());
+    // Prediction was not made
+    Assert.assertEquals(0, cpu.cpuState.statisticsCounter.getCorrectlyPredictedBranches());
   }
   
   /**

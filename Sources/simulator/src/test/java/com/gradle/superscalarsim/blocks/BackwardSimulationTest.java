@@ -91,7 +91,7 @@ public class BackwardSimulationTest
                         this.cpu.cpuState.unifiedRegisterFileBlock.getRegister("tg0").getReadiness());
     
     this.cpu.stepBack();
-    Assert.assertEquals(1, this.cpu.cpuState.instructionFetchBlock.getPcCounter());
+    Assert.assertEquals(12, this.cpu.cpuState.instructionFetchBlock.getPcCounter());
     Assert.assertEquals("add", this.cpu.cpuState.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
     Assert.assertEquals("nop", this.cpu.cpuState.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
     Assert.assertEquals("nop", this.cpu.cpuState.instructionFetchBlock.getFetchedCode().get(2).getInstructionName());
@@ -394,7 +394,7 @@ public class BackwardSimulationTest
                         this.cpu.cpuState.unifiedRegisterFileBlock.getRegister("tg2").getReadiness());
     
     this.cpu.stepBack();
-    Assert.assertEquals(3, this.cpu.cpuState.instructionFetchBlock.getPcCounter());
+    Assert.assertEquals(12, this.cpu.cpuState.instructionFetchBlock.getPcCounter());
     Assert.assertEquals("add", this.cpu.cpuState.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
     Assert.assertEquals("add", this.cpu.cpuState.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
     Assert.assertEquals("add", this.cpu.cpuState.instructionFetchBlock.getFetchedCode().get(2).getInstructionName());
@@ -640,7 +640,7 @@ public class BackwardSimulationTest
                         this.cpu.cpuState.unifiedRegisterFileBlock.getRegister("tg0").getReadiness());
     
     this.cpu.stepBack();
-    Assert.assertEquals(1, this.cpu.cpuState.instructionFetchBlock.getPcCounter());
+    Assert.assertEquals(12, this.cpu.cpuState.instructionFetchBlock.getPcCounter());
     Assert.assertEquals("fadd", this.cpu.cpuState.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
     Assert.assertEquals("nop", this.cpu.cpuState.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
     Assert.assertEquals("nop", this.cpu.cpuState.instructionFetchBlock.getFetchedCode().get(2).getInstructionName());
@@ -812,7 +812,7 @@ public class BackwardSimulationTest
                         this.cpu.cpuState.unifiedRegisterFileBlock.getRegister("tg2").getReadiness());
     
     this.cpu.stepBack();
-    Assert.assertEquals(3, this.cpu.cpuState.instructionFetchBlock.getPcCounter());
+    Assert.assertEquals(12, this.cpu.cpuState.instructionFetchBlock.getPcCounter());
     Assert.assertEquals("fadd", this.cpu.cpuState.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
     Assert.assertEquals("fadd", this.cpu.cpuState.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
     Assert.assertEquals("fadd", this.cpu.cpuState.instructionFetchBlock.getFetchedCode().get(2).getInstructionName());
@@ -1009,8 +1009,8 @@ public class BackwardSimulationTest
     this.cpu.step();
     this.cpu.step();
     Assert.assertEquals(0, this.cpu.cpuState.reorderBufferBlock.getReorderQueue().size());
-    Assert.assertEquals(4, this.cpu.cpuState.branchTargetBuffer.getEntryTarget(1));
-    Assert.assertTrue(this.cpu.cpuState.branchTargetBuffer.isEntryUnconditional(2));
+    Assert.assertEquals(16, this.cpu.cpuState.branchTargetBuffer.getEntryTarget(4));
+    Assert.assertTrue(this.cpu.cpuState.branchTargetBuffer.isEntryUnconditional(8));
     Assert.assertEquals(-1, this.cpu.cpuState.globalHistoryRegister.getHistoryValueAsInt(9));
     Assert.assertEquals(0, this.cpu.cpuState.unifiedRegisterFileBlock.getRegister("x0").getValue(), 0.01);
     
@@ -1371,7 +1371,7 @@ public class BackwardSimulationTest
     
     this.cpu.stepBack();
     Assert.assertEquals("jal", this.cpu.cpuState.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
-    Assert.assertEquals("label", this.cpu.cpuState.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
+    Assert.assertEquals("nop", this.cpu.cpuState.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
     Assert.assertEquals("nop", this.cpu.cpuState.instructionFetchBlock.getFetchedCode().get(2).getInstructionName());
     Assert.assertEquals("beq x3 x0 loopEnd",
                         this.cpu.cpuState.decodeAndDispatchBlock.getAfterRenameCodeList().get(0).getRenamedCodeLine());
@@ -1380,9 +1380,9 @@ public class BackwardSimulationTest
     Assert.assertEquals(0, this.cpu.cpuState.unifiedRegisterFileBlock.getRegister("x0").getValue(), 0.01);
     
     this.cpu.stepBack();
-    Assert.assertEquals("label", this.cpu.cpuState.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
-    Assert.assertEquals("beq", this.cpu.cpuState.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
-    Assert.assertEquals("subi", this.cpu.cpuState.instructionFetchBlock.getFetchedCode().get(2).getInstructionName());
+    Assert.assertEquals("beq", this.cpu.cpuState.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
+    Assert.assertEquals("subi", this.cpu.cpuState.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
+    Assert.assertEquals("nop", this.cpu.cpuState.instructionFetchBlock.getFetchedCode().get(2).getInstructionName());
     Assert.assertEquals(0, this.cpu.cpuState.unifiedRegisterFileBlock.getRegister("x0").getValue(), 0.01);
     Assert.assertEquals(0, this.cpu.cpuState.reorderBufferBlock.getReorderQueue().size());
   }
@@ -1441,7 +1441,7 @@ public class BackwardSimulationTest
     Assert.assertNull(getBranchFunctionUnitBlock2(cpu).getSimCodeModel());
     Assert.assertTrue(this.cpu.cpuState.reorderBufferBlock.getReorderQueue().isEmpty());
     Assert.assertEquals("addi", this.cpu.cpuState.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
-    Assert.assertEquals("label", this.cpu.cpuState.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
+    Assert.assertEquals("nop", this.cpu.cpuState.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
     Assert.assertEquals("nop", this.cpu.cpuState.instructionFetchBlock.getFetchedCode().get(2).getInstructionName());
     
     this.cpu.stepBack();
@@ -1479,8 +1479,8 @@ public class BackwardSimulationTest
     
     this.cpu.stepBack();
     Assert.assertEquals("jal", this.cpu.cpuState.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
-    Assert.assertEquals("label", this.cpu.cpuState.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
-    Assert.assertEquals("addi", this.cpu.cpuState.instructionFetchBlock.getFetchedCode().get(2).getInstructionName());
+    Assert.assertEquals("addi", this.cpu.cpuState.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
+    Assert.assertEquals("nop", this.cpu.cpuState.instructionFetchBlock.getFetchedCode().get(2).getInstructionName());
     Assert.assertEquals("beq x5 x0 labelIf",
                         this.cpu.cpuState.decodeAndDispatchBlock.getAfterRenameCodeList().get(0).getRenamedCodeLine());
     Assert.assertEquals("subi tg0 x1 10",
