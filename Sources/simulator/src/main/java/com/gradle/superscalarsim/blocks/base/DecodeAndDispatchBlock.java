@@ -416,6 +416,7 @@ public class DecodeAndDispatchBlock implements AbstractBlock
   private int calculateRealBranchAddress(final SimCodeModel codeModel)
   {
     // TODO: jalr instruction bases offset on register value, can we handle that?
+    // TODO: also jr instruction
     // Or, should it fall through and be caught later as bad prediction?
     InputCodeArgument immediateArgument = codeModel.getArgumentByName("imm");
     if (immediateArgument == null)

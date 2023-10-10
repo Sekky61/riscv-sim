@@ -614,5 +614,45 @@
     "instructionType": "kJumpbranch",
     "instructionSyntax": "bleu rs1 rs2 imm",
     "interpretableAs": "unsigned:imm:rs1 <= rs2"
+  },
+  "j": {
+    "name": "j",
+    "inputDataType": "kInt",
+    "outputDataType": "kInt",
+    "instructionType": "kJumpbranch",
+    "instructionSyntax": "j imm",
+    "interpretableAs": "unsigned:imm:true"
+  },
+  "jr": {
+    "name": "jr",
+    "inputDataType": "kInt",
+    "outputDataType": "kInt",
+    "instructionType": "kJumpbranch",
+    "instructionSyntax": "jr rs1",
+    "interpretableAs": "unsigned:rs1:true"
+  },
+  "ret": {
+    "name": "ret",
+    "inputDataType": "kInt",
+    "outputDataType": "kInt",
+    "instructionType": "kJumpbranch",
+    "instructionSyntax": "ret",
+    "interpretableAs": "unsigned:x1+imm:true"
+  },
+  "call": {
+    "name": "call",
+    "inputDataType": "kInt",
+    "outputDataType": "kInt",
+    "instructionType": "kJumpbranch",
+    "instructionSyntax": "call imm",
+    "interpretableAs": "unsigned:imm:true"
+  },
+  "tail": {
+    "name": "tail",
+    "inputDataType": "kInt",
+    "outputDataType": "kInt",
+    "instructionType": "kJumpbranch",
+    "instructionSyntax": "tail imm",
+    "interpretableAs": "unsigned:x6+imm:true"
   }
 }

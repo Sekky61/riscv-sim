@@ -833,4 +833,78 @@ public class InstructionTests
     // Assert
     Assert.assertEquals(0, cpu.cpuState.statisticsCounter.getTakenBranches());
   }
+  
+  /**
+   * J jumps to the immediate
+   */
+  @Test
+  public void testJ()
+  {
+    // Setup + exercise
+    cpu = ExecuteUtil.executeProgram("j 200", cpu);
+    
+    // Assert
+    Assert.assertTrue(cpu.cpuState.instructionFetchBlock.getPcCounter() > 200);
+    Assert.assertEquals(1, cpu.cpuState.statisticsCounter.getTakenBranches());
+  }
+  
+  /**
+   * JR jumps to the address in the register
+   */
+  @Test
+  public void testJR()
+  {
+    // Setup + exercise
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(200.0);
+    cpu = ExecuteUtil.executeProgram("jr x1", cpu);
+    
+    // Assert
+    Assert.assertTrue(cpu.cpuState.instructionFetchBlock.getPcCounter() > 200);
+    Assert.assertEquals(1, cpu.cpuState.statisticsCounter.getTakenBranches());
+  }
+  
+  /**
+   * RET jumps to the address in the x1 register
+   */
+  @Test
+  public void testRET()
+  {
+    // Setup + exercise
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(200.0);
+    cpu = ExecuteUtil.executeProgram("ret", cpu);
+    
+    // Assert
+    Assert.assertTrue(cpu.cpuState.instructionFetchBlock.getPcCounter() > 200);
+    Assert.assertEquals(1, cpu.cpuState.statisticsCounter.getTakenBranches());
+  }
+  
+  /**
+   * CALL jumps to the immediate and saves the return address in the x1 register
+   */
+  @Test
+  public void testCALL()
+  {
+    // Setup + exercise
+    cpu = ExecuteUtil.executeProgram("call 200", cpu);
+    
+    // Assert
+    Assert.assertTrue(cpu.cpuState.instructionFetchBlock.getPcCounter() > 200);
+    Assert.assertEquals(1, cpu.cpuState.statisticsCounter.getTakenBranches());
+    Assert.assertEquals(4, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(), 0.5);
+  }
+  
+  /**
+   * TAIL jumps to the immediate. It changes  x6 to _part_of the address.
+   * This is subtle behavior, that I would not expect to be used in practice, so it is not implemented.
+   */
+  @Test
+  public void testTAIL()
+  {
+    // Setup + exercise
+    cpu = ExecuteUtil.executeProgram("tail 200", cpu);
+    
+    // Assert
+    Assert.assertTrue(cpu.cpuState.instructionFetchBlock.getPcCounter() > 200);
+    Assert.assertEquals(1, cpu.cpuState.statisticsCounter.getTakenBranches());
+  }
 }
