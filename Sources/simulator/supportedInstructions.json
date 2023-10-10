@@ -446,5 +446,21 @@
     "instructionType": "kArithmetic",
     "instructionSyntax": "sltiu rd rs1 imm",
     "interpretableAs": "rd=rs1<uimm;"
+  },
+  "ori": {
+    "name": "ori",
+    "inputDataType": "kInt",
+    "outputDataType": "kInt",
+    "instructionType": "kArithmetic",
+    "instructionSyntax": "ori rd rs1 imm",
+    "interpretableAs": "rd=rs1|imm;"
+  },
+  "andi": {
+    "name": "andi",
+    "inputDataType": "kInt",
+    "outputDataType": "kInt",
+    "instructionType": "kArithmetic",
+    "instructionSyntax": "andi rd rs1 imm",
+    "interpretableAs": "rd=rs1&imm;"
   }
 }

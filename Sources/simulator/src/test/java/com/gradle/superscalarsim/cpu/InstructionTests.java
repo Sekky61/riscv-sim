@@ -333,6 +333,36 @@ public class InstructionTests
   }
   
   /**
+   * ANDI performs bitwise AND on the register and the immediate
+   */
+  @Test
+  public void testANDI()
+  {
+    // Setup + exercise
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(2.0);
+    cpu = ExecuteUtil.executeProgram("andi x2, x1, 5", cpu);
+    
+    // Assert
+    // 10 AND 101 = 0
+    Assert.assertEquals(0, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").getValue(), 0.5);
+  }
+  
+  /**
+   * ORI performs bitwise OR on the register and the immediate
+   */
+  @Test
+  public void testORI()
+  {
+    // Setup + exercise
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(9.0);
+    cpu = ExecuteUtil.executeProgram("ori x2, x1, 5", cpu);
+    
+    // Assert
+    // 1001 OR 101 = 1101
+    Assert.assertEquals(13, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").getValue(), 0.5);
+  }
+  
+  /**
    * BNE jumps if the two registers are not equal
    */
   @Test
