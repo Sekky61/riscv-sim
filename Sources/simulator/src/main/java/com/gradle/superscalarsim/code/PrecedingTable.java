@@ -40,6 +40,8 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 /**
+ * A 'singleton' class for preceding table
+ *
  * @class PrecedingTable
  * @brief Shows priorities of instructions for interpretation
  */
@@ -55,9 +57,11 @@ public class PrecedingTable
   private final String[] binaryOperations;
   
   /**
-   * @brief Constructor (injectable by dagger)
+   * Private, only one instance of this class is allowed
+   *
+   * @brief Constructor
    */
-  public PrecedingTable()
+  private PrecedingTable()
   {
     String[] allowedInstructionsArray;
     this.precedingTable   = new HashMap<>();
@@ -75,61 +79,6 @@ public class PrecedingTable
     setUpStartingPriorityPrecedingLines();
     setUpUnaryPriorityPrecedingLines();
   }// end of Constructor
-  //-------------------------------------------------------------------------------------------
-  
-  /**
-   * @param [in] stackTop      - Operator currently on top of the stack
-   * @param [in] readCharacter - Currently read instruction
-   *
-   * @return Priority represented by PrecedingPriorityEnum value
-   * @brief Get evaluation priority based on provided operators
-   */
-  public PrecedingPriorityEnum getPrecedingPriority(final String stackTop, final String readCharacter)
-  {
-    return this.precedingTable.get(stackTop).get(readCharacter);
-  }// end of getPrecedingPriority
-  //-------------------------------------------------------------------------------------------
-  
-  
-  public String[] getAllowedInstructions()
-  {
-    return allowedInstructions;
-  }
-  
-  /**
-   * @param [in] operation - Operation to be checked
-   *
-   * @return True if operation is allowed, false otherwise
-   * @brief Checks if provided operation is allowed, meaning is in the preceding table
-   */
-  public boolean isAllowedOperation(final String operation)
-  {
-    return Arrays.stream(this.allowedInstructions).anyMatch(op -> op.contains(operation));
-  }// end of isAllowedOperation
-  //-------------------------------------------------------------------------------------------
-  
-  /**
-   * @param [in] operation - Operation to be checked
-   *
-   * @return True if operation is binary, false otherwise
-   * @brief Checks if provided instruction is binary (takes two parameters)
-   */
-  public boolean isBinaryOperation(final String operation)
-  {
-    return Arrays.asList(this.binaryOperations).contains(operation);
-  }// end of isBinaryOperation
-  //-------------------------------------------------------------------------------------------
-  
-  /**
-   * @param [in] operation - Operation to be checked
-   *
-   * @return True if operation is unary, false otherwise
-   * @brief Checks if provided operation is unary (takes one parameter)
-   */
-  public boolean isUnaryOperation(final String operation)
-  {
-    return Arrays.asList(this.unaryOperations).contains(operation);
-  }// end of isUnaryOperation
   //-------------------------------------------------------------------------------------------
   
   /**
@@ -161,7 +110,6 @@ public class PrecedingTable
     this.precedingTable.put("&", lesserPriority);
     this.precedingTable.put("|", lesserPriority);
   }// end of setUpLesserPriorityPrecedingLines
-  //-------------------------------------------------------------------------------------------
   
   /**
    * @brief Sets up priorities for operation with major priority (left associative)
@@ -199,7 +147,6 @@ public class PrecedingTable
     this.precedingTable.put(">=", majorPriority);
     this.precedingTable.put(">", majorPriority);
   }// end of setUpMajorPriorityPrecedingLines
-  //-------------------------------------------------------------------------------------------
   
   /**
    * @brief Sets up priorities for brackets '(' and ')'
@@ -281,7 +228,6 @@ public class PrecedingTable
     startingPriority.put(">", PrecedingPriorityEnum.kPush);
     this.precedingTable.put("$", startingPriority);
   }// end of setUpStartingPriorityPrecedingLines
-  //-------------------------------------------------------------------------------------------
   
   /**
    * @brief Sets up priorities for unary operations
@@ -308,5 +254,72 @@ public class PrecedingTable
     this.precedingTable.put("#", unaryPriority);
     this.precedingTable.put("<-", unaryPriority);
   }// end of setUpUnaryPriorityPrecedingLines
+  //-------------------------------------------------------------------------------------------
+  
+  public static PrecedingTable getInstance()
+  {
+    return PrecedingTableHolder.INSTANCE;
+  }
+  //-------------------------------------------------------------------------------------------
+  
+  /**
+   * @param [in] stackTop      - Operator currently on top of the stack
+   * @param [in] readCharacter - Currently read instruction
+   *
+   * @return Priority represented by PrecedingPriorityEnum value
+   * @brief Get evaluation priority based on provided operators
+   */
+  public PrecedingPriorityEnum getPrecedingPriority(final String stackTop, final String readCharacter)
+  {
+    return this.precedingTable.get(stackTop).get(readCharacter);
+  }// end of getPrecedingPriority
+  //-------------------------------------------------------------------------------------------
+  
+  public String[] getAllowedInstructions()
+  {
+    return allowedInstructions;
+  }
+  //-------------------------------------------------------------------------------------------
+  
+  /**
+   * @param [in] operation - Operation to be checked
+   *
+   * @return True if operation is allowed, false otherwise
+   * @brief Checks if provided operation is allowed, meaning is in the preceding table
+   */
+  public boolean isAllowedOperation(final String operation)
+  {
+    return Arrays.stream(this.allowedInstructions).anyMatch(op -> op.contains(operation));
+  }// end of isAllowedOperation
+  //-------------------------------------------------------------------------------------------
+  
+  /**
+   * @param [in] operation - Operation to be checked
+   *
+   * @return True if operation is binary, false otherwise
+   * @brief Checks if provided instruction is binary (takes two parameters)
+   */
+  public boolean isBinaryOperation(final String operation)
+  {
+    return Arrays.asList(this.binaryOperations).contains(operation);
+  }// end of isBinaryOperation
+  //-------------------------------------------------------------------------------------------
+  
+  /**
+   * @param [in] operation - Operation to be checked
+   *
+   * @return True if operation is unary, false otherwise
+   * @brief Checks if provided operation is unary (takes one parameter)
+   */
+  public boolean isUnaryOperation(final String operation)
+  {
+    return Arrays.asList(this.unaryOperations).contains(operation);
+  }// end of isUnaryOperation
+  //-------------------------------------------------------------------------------------------
+  
+  private static class PrecedingTableHolder
+  {
+    private static final PrecedingTable INSTANCE = new PrecedingTable();
+  }
   //-------------------------------------------------------------------------------------------
 }

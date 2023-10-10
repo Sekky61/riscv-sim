@@ -37,7 +37,6 @@ import com.gradle.superscalarsim.blocks.base.AbstractIssueWindowBlock;
 import com.gradle.superscalarsim.blocks.base.UnifiedRegisterFileBlock;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
-import com.gradle.superscalarsim.loader.InitLoader;
 import com.gradle.superscalarsim.models.InstructionFunctionModel;
 
 import java.util.ArrayList;
@@ -64,7 +63,7 @@ public class BranchIssueWindowBlock extends AbstractIssueWindowBlock
    *
    * @brief Constructor
    */
-  public BranchIssueWindowBlock(InitLoader loader, UnifiedRegisterFileBlock registerFileBlock)
+  public BranchIssueWindowBlock(UnifiedRegisterFileBlock registerFileBlock)
   {
     super(registerFileBlock);
     this.functionUnitBlockList = new ArrayList<>();

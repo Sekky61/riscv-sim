@@ -42,8 +42,7 @@ public class CodeArithmeticInterpreterFloatTest
     Mockito.when(initLoader.getRegisterFileModelList()).thenReturn(Collections.singletonList(floatFile));
     Mockito.when(initLoader.getInstructionFunctionModelList()).thenReturn(setUpInstructions());
     
-    this.codeArithmeticInterpreter = new CodeArithmeticInterpreter(new PrecedingTable(),
-                                                                   new UnifiedRegisterFileBlock(initLoader));
+    this.codeArithmeticInterpreter = new CodeArithmeticInterpreter(new UnifiedRegisterFileBlock(initLoader));
   }
   
   @Test

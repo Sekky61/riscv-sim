@@ -79,8 +79,6 @@ public class CodeArithmeticInterpreter
   private transient final Pattern hexadecimalPattern;
   /// Pattern for matching decimal values in argument
   private transient final Pattern decimalPattern;
-  /// Preceding table object
-  private final PrecedingTable precedingTable;
   /// Stack used by interpreter to store operations with less priority
   private final Stack<String> operationStack;
   /// Stack to store values loaded from expression from left to right
@@ -92,17 +90,15 @@ public class CodeArithmeticInterpreter
   private double temporaryValue;
   
   /**
-   * @param [in] precedingTable - Preceding table for operation priorities
+   * @param [in] PrecedingTable.getInstance() - Preceding table for operation priorities
    *
    * @brief Constructor
    */
-  public CodeArithmeticInterpreter(final PrecedingTable precedingTable,
-                                   final UnifiedRegisterFileBlock registerFileBlock)
+  public CodeArithmeticInterpreter(final UnifiedRegisterFileBlock registerFileBlock)
   {
     this.registerFileBlock  = registerFileBlock;
     this.decimalPattern     = Pattern.compile("-?\\d+(\\.\\d+)?");
     this.hexadecimalPattern = Pattern.compile("0x\\p{XDigit}+");
-    this.precedingTable     = precedingTable;
     this.operationStack     = new Stack<>();
     this.valueStack         = new Stack<>();
     this.temporaryTag       = "";
@@ -174,7 +170,7 @@ public class CodeArithmeticInterpreter
     for (char character : expressionCharArray)
     {
       // Current char is part of allowed operation
-      if (this.precedingTable.isAllowedOperation(operatorStringBuilder.toString() + character))
+      if (PrecedingTable.getInstance().getInstance().isAllowedOperation(operatorStringBuilder.toString() + character))
       {
         if (!valueStringBuilder.isEmpty())
         {
@@ -188,7 +184,7 @@ public class CodeArithmeticInterpreter
       {
         String operation = operatorStringBuilder.toString();
         operatorStringBuilder.setLength(0);
-        if (this.precedingTable.isAllowedOperation(String.valueOf(character)))
+        if (PrecedingTable.getInstance().getInstance().isAllowedOperation(String.valueOf(character)))
         {
           operatorStringBuilder.append(character);
         }
@@ -197,7 +193,8 @@ public class CodeArithmeticInterpreter
           valueStringBuilder.append(character);
         }
         evaluateAllUnaryOperations(argumentList, inputDataType);
-        PrecedingPriorityEnum priority = this.precedingTable.getPrecedingPriority(operationStack.peek(), operation);
+        PrecedingPriorityEnum priority = PrecedingTable.getInstance().getInstance()
+                .getPrecedingPriority(operationStack.peek(), operation);
         switch (priority)
         {
           case kError:
@@ -251,7 +248,7 @@ public class CodeArithmeticInterpreter
    */
   private void evaluateAllUnaryOperations(final List<InputCodeArgument> argumentList, final DataTypeEnum inputDataType)
   {
-    while (this.precedingTable.isUnaryOperation(operationStack.peek()))
+    while (PrecedingTable.getInstance().getInstance().isUnaryOperation(operationStack.peek()))
     {
       String stackOperation = operationStack.pop();
       double result         = evaluateOperation(stackOperation, argumentList, inputDataType);
@@ -272,7 +269,7 @@ public class CodeArithmeticInterpreter
                                    final List<InputCodeArgument> argumentList,
                                    final DataTypeEnum inputDataType)
   {
-    if (precedingTable.isBinaryOperation(operation))
+    if (PrecedingTable.getInstance().isBinaryOperation(operation))
     {
       String operand2 = valueStack.pop();
       String operand1 = valueStack.empty() ? "unknown" : valueStack.pop();
@@ -284,7 +281,7 @@ public class CodeArithmeticInterpreter
       OperandModel operandModel1 = arg1 == null ? new OperandModel(operand1) : new OperandModel(operand1, arg1);
       return processOperation(operandModel1, operandModel2, operation, inputDataType);
     }
-    else if (precedingTable.isUnaryOperation(operation))
+    else if (PrecedingTable.getInstance().isUnaryOperation(operation))
     {
       String operand = valueStack.pop();
       InputCodeArgument argument = argumentList.stream().filter(arg -> operand.startsWith(arg.getName())).findFirst()

@@ -37,7 +37,6 @@ public class ForwardSimulationTest
   @Mock
   CodeParser codeParser;
   private SimCodeModelAllocator simCodeModelAllocator;
-  private PrecedingTable precedingTable;
   private StatisticsCounter statisticsCounter;
   
   private InstructionFetchBlock instructionFetchBlock;
@@ -143,7 +142,6 @@ public class ForwardSimulationTest
     
     this.codeParser                = cpuState.codeParser;
     this.statisticsCounter         = cpuState.statisticsCounter;
-    this.precedingTable            = cpuState.precedingTable;
     this.unifiedRegisterFileBlock  = cpuState.unifiedRegisterFileBlock;
     this.renameMapTableBlock       = cpuState.renameMapTableBlock;
     this.globalHistoryRegister     = cpuState.globalHistoryRegister;

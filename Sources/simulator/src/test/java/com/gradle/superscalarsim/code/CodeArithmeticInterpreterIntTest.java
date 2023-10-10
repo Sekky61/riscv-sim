@@ -41,8 +41,7 @@ public class CodeArithmeticInterpreterIntTest
     Mockito.when(initLoader.getRegisterFileModelList()).thenReturn(Collections.singletonList(integerFile));
     Mockito.when(initLoader.getInstructionFunctionModelList()).thenReturn(setUpInstructions());
     
-    this.codeArithmeticInterpreter = new CodeArithmeticInterpreter(new PrecedingTable(),
-                                                                   new UnifiedRegisterFileBlock(initLoader));
+    this.codeArithmeticInterpreter = new CodeArithmeticInterpreter(new UnifiedRegisterFileBlock(initLoader));
   }
   
   @Test

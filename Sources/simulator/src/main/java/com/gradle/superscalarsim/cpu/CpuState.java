@@ -67,7 +67,6 @@ public class CpuState implements Serializable
   
   // Housekeeping
   
-  public PrecedingTable precedingTable;
   public StatisticsCounter statisticsCounter;
   public CacheStatisticsCounter cacheStatisticsCounter;
   
@@ -147,8 +146,6 @@ public class CpuState implements Serializable
     this.statisticsCounter      = new StatisticsCounter();
     this.cacheStatisticsCounter = new CacheStatisticsCounter();
     
-    this.precedingTable = new PrecedingTable();
-    
     this.unifiedRegisterFileBlock = new UnifiedRegisterFileBlock(initLoader);
     this.renameMapTableBlock      = new RenameMapTableBlock(unifiedRegisterFileBlock);
     
@@ -200,7 +197,7 @@ public class CpuState implements Serializable
                                                          decodeAndDispatchBlock, gShareUnit, branchTargetBuffer,
                                                          instructionFetchBlock, statisticsCounter, reorderBufferState);
     this.issueWindowSuperBlock  = new IssueWindowSuperBlock(decodeAndDispatchBlock);
-    this.arithmeticInterpreter  = new CodeArithmeticInterpreter(precedingTable, unifiedRegisterFileBlock);
+    this.arithmeticInterpreter  = new CodeArithmeticInterpreter(unifiedRegisterFileBlock);
     this.branchInterpreter      = new CodeBranchInterpreter(codeParser, unifiedRegisterFileBlock);
     
     this.storeBufferBlock = new StoreBufferBlock(loadStoreInterpreter, decodeAndDispatchBlock, unifiedRegisterFileBlock,
@@ -213,9 +210,9 @@ public class CpuState implements Serializable
     
     // FUs
     
-    this.aluIssueWindowBlock       = new AluIssueWindowBlock(initLoader, unifiedRegisterFileBlock, precedingTable);
-    this.branchIssueWindowBlock    = new BranchIssueWindowBlock(initLoader, unifiedRegisterFileBlock);
-    this.fpIssueWindowBlock        = new FpIssueWindowBlock(initLoader, unifiedRegisterFileBlock, precedingTable);
+    this.aluIssueWindowBlock       = new AluIssueWindowBlock(unifiedRegisterFileBlock);
+    this.branchIssueWindowBlock    = new BranchIssueWindowBlock(unifiedRegisterFileBlock);
+    this.fpIssueWindowBlock        = new FpIssueWindowBlock(unifiedRegisterFileBlock);
     this.loadStoreIssueWindowBlock = new LoadStoreIssueWindowBlock(unifiedRegisterFileBlock);
     
     this.issueWindowSuperBlock.addAluIssueWindow(aluIssueWindowBlock);
