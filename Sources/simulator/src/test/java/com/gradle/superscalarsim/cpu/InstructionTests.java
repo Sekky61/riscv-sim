@@ -264,6 +264,75 @@ public class InstructionTests
   }
   
   /**
+   * SLT sets the destination register to 1 if the first register is less than the second, 0 otherwise.
+   * Signed operation.
+   */
+  @Test
+  public void testSLT()
+  {
+    // Setup + exercise
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(8.0);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(5.0);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x3").setValue(-3.0);
+    cpu = ExecuteUtil.executeProgram("slt x4, x3, x2\n" + "slt x5, x2, x3", cpu);
+    
+    // Assert
+    Assert.assertEquals(1, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x4").getValue(), 0.5);
+    Assert.assertEquals(0, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x5").getValue(), 0.5);
+  }
+  
+  /**
+   * SLTI sets the destination register to 1 if the first register is less than the immediate, 0 otherwise.
+   * Signed operation.
+   */
+  @Test
+  public void testSLTI()
+  {
+    // Setup + exercise
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(8.0);
+    cpu = ExecuteUtil.executeProgram("slti x2, x1, 9\n" + "slti x3, x1, 8", cpu);
+    
+    // Assert
+    Assert.assertEquals(1, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").getValue(), 0.5);
+    Assert.assertEquals(0, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x3").getValue(), 0.5);
+  }
+  
+  /**
+   * SLTU sets the destination register to 1 if the first register is less than the second, 0 otherwise.
+   * Unsigned operation.
+   */
+  @Test
+  public void testSLTU()
+  {
+    // Setup + exercise
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(8.0);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(5.0);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x3").setValue(-3.0);
+    cpu = ExecuteUtil.executeProgram("sltu x4, x3, x2\n" + "sltu x5, x2, x3", cpu);
+    
+    // Assert
+    Assert.assertEquals(0, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x4").getValue(), 0.5);
+    Assert.assertEquals(1, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x5").getValue(), 0.5);
+  }
+  
+  /**
+   * SLTIU sets the destination register to 1 if the first register is less than the immediate, 0 otherwise.
+   * Unsigned operation.
+   */
+  @Test
+  public void testSLTIU()
+  {
+    // Setup + exercise
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(8.0);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x4").setValue(-1.0);
+    cpu = ExecuteUtil.executeProgram("sltiu x2, x1, 9\n" + "sltiu x3, x4, 8", cpu);
+    
+    // Assert
+    Assert.assertEquals(1, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").getValue(), 0.5);
+    Assert.assertEquals(0, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x3").getValue(), 0.5);
+  }
+  
+  /**
    * BNE jumps if the two registers are not equal
    */
   @Test

@@ -414,5 +414,37 @@
     "outputDataType": "kInt",
     "instructionSyntax": "sra rd rs1 rs2",
     "interpretableAs": "rd=rs1>>rs2;"
+  },
+  "slt": {
+    "name": "slt",
+    "inputDataType": "kInt",
+    "outputDataType": "kInt",
+    "instructionType": "kArithmetic",
+    "instructionSyntax": "slt rd rs1 rs2",
+    "interpretableAs": "rd=rs1<rs2;"
+  },
+  "slti": {
+    "name": "slti",
+    "inputDataType": "kInt",
+    "outputDataType": "kInt",
+    "instructionType": "kArithmetic",
+    "instructionSyntax": "slt rd rs1 imm",
+    "interpretableAs": "rd=rs1<imm;"
+  },
+  "sltu": {
+    "name": "sltu",
+    "inputDataType": "kInt",
+    "outputDataType": "kInt",
+    "instructionType": "kArithmetic",
+    "instructionSyntax": "sltu rd rs1 rs2",
+    "interpretableAs": "rd=rs1<urs2;"
+  },
+  "sltiu": {
+    "name": "sltiu",
+    "inputDataType": "kInt",
+    "outputDataType": "kInt",
+    "instructionType": "kArithmetic",
+    "instructionSyntax": "sltiu rd rs1 imm",
+    "interpretableAs": "rd=rs1<uimm;"
   }
 }
