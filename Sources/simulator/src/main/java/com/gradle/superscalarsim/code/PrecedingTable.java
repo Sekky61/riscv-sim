@@ -40,7 +40,7 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 /**
- * A 'singleton' class for preceding table
+ * A 'singleton' class for preceding table. Operations are documented in {@link CodeArithmeticInterpreter}
  *
  * @class PrecedingTable
  * @brief Shows priorities of instructions for interpretation
@@ -66,7 +66,7 @@ public class PrecedingTable
     String[] allowedInstructionsArray;
     this.precedingTable   = new HashMap<>();
     this.unaryOperations  = new String[]{"++", "--", "!", "#", "<-"};
-    this.binaryOperations = new String[]{"+", "-", "*", "/", "%", "&", "|", "^", ">>>", "<<", ">>", "<=", ">=", "==", "<", ">"};
+    this.binaryOperations = new String[]{"+", "-", "*", "/", "%", "&", "|", "^", ">>>", "<<", ">>", "<=", ">=", "==", "<", ">", "<=u", ">=u", "<u", ">u"};
     String[] brackets = new String[]{"(", ")"};
     allowedInstructionsArray = Stream.concat(Arrays.stream(this.unaryOperations), Arrays.stream(this.binaryOperations))
             .toArray(String[]::new);
@@ -99,6 +99,10 @@ public class PrecedingTable
     lesserPriority.put("|", PrecedingPriorityEnum.kEvaluate);
     lesserPriority.put("^", PrecedingPriorityEnum.kEvaluate);
     lesserPriority.put("<", PrecedingPriorityEnum.kEvaluate);
+    lesserPriority.put("<=u", PrecedingPriorityEnum.kEvaluate);
+    lesserPriority.put(">=u", PrecedingPriorityEnum.kEvaluate);
+    lesserPriority.put("<u", PrecedingPriorityEnum.kEvaluate);
+    lesserPriority.put(">u", PrecedingPriorityEnum.kEvaluate);
     lesserPriority.put("<=", PrecedingPriorityEnum.kEvaluate);
     lesserPriority.put("==", PrecedingPriorityEnum.kEvaluate);
     lesserPriority.put(">=", PrecedingPriorityEnum.kEvaluate);
@@ -128,6 +132,10 @@ public class PrecedingTable
     majorPriority.put("&", PrecedingPriorityEnum.kEvaluate);
     majorPriority.put("|", PrecedingPriorityEnum.kEvaluate);
     majorPriority.put("^", PrecedingPriorityEnum.kEvaluate);
+    majorPriority.put("<=u", PrecedingPriorityEnum.kEvaluate);
+    majorPriority.put(">=u", PrecedingPriorityEnum.kEvaluate);
+    majorPriority.put("<u", PrecedingPriorityEnum.kEvaluate);
+    majorPriority.put(">u", PrecedingPriorityEnum.kEvaluate);
     majorPriority.put("<", PrecedingPriorityEnum.kEvaluate);
     majorPriority.put("<=", PrecedingPriorityEnum.kEvaluate);
     majorPriority.put("==", PrecedingPriorityEnum.kEvaluate);
@@ -166,6 +174,10 @@ public class PrecedingTable
     leftBracketsPriority.put("|", PrecedingPriorityEnum.kPush);
     leftBracketsPriority.put("^", PrecedingPriorityEnum.kPush);
     leftBracketsPriority.put("(", PrecedingPriorityEnum.kPush);
+    leftBracketsPriority.put("<=u", PrecedingPriorityEnum.kPush);
+    leftBracketsPriority.put(">=u", PrecedingPriorityEnum.kPush);
+    leftBracketsPriority.put("<u", PrecedingPriorityEnum.kPush);
+    leftBracketsPriority.put(">u", PrecedingPriorityEnum.kPush);
     leftBracketsPriority.put("<", PrecedingPriorityEnum.kPush);
     leftBracketsPriority.put("<=", PrecedingPriorityEnum.kPush);
     leftBracketsPriority.put("==", PrecedingPriorityEnum.kPush);
@@ -187,6 +199,10 @@ public class PrecedingTable
     rightBracketsPriority.put("|", PrecedingPriorityEnum.kEvaluate);
     rightBracketsPriority.put("^", PrecedingPriorityEnum.kEvaluate);
     rightBracketsPriority.put("(", PrecedingPriorityEnum.kError);
+    rightBracketsPriority.put("<=u", PrecedingPriorityEnum.kEvaluate);
+    rightBracketsPriority.put(">=u", PrecedingPriorityEnum.kEvaluate);
+    rightBracketsPriority.put("<u", PrecedingPriorityEnum.kEvaluate);
+    rightBracketsPriority.put(">u", PrecedingPriorityEnum.kEvaluate);
     rightBracketsPriority.put("<", PrecedingPriorityEnum.kEvaluate);
     rightBracketsPriority.put("<=", PrecedingPriorityEnum.kEvaluate);
     rightBracketsPriority.put("==", PrecedingPriorityEnum.kEvaluate);
@@ -221,6 +237,10 @@ public class PrecedingTable
     startingPriority.put("#", PrecedingPriorityEnum.kPush);
     startingPriority.put("<-", PrecedingPriorityEnum.kPush);
     startingPriority.put("!", PrecedingPriorityEnum.kPush);
+    startingPriority.put("<=u", PrecedingPriorityEnum.kPush);
+    startingPriority.put(">=u", PrecedingPriorityEnum.kPush);
+    startingPriority.put("<u", PrecedingPriorityEnum.kPush);
+    startingPriority.put(">u", PrecedingPriorityEnum.kPush);
     startingPriority.put("<", PrecedingPriorityEnum.kPush);
     startingPriority.put("<=", PrecedingPriorityEnum.kPush);
     startingPriority.put("==", PrecedingPriorityEnum.kPush);

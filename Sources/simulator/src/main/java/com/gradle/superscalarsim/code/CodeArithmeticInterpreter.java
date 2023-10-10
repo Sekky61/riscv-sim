@@ -62,10 +62,14 @@ import java.util.regex.Pattern;
  *   <li>'--' - Decrement</li>
  *   <li>'#' - Square root</li>
  *   <li>'!' - Bitwise NOT</li>
- *   <li>'>' - Greater than</li>
+ *   <li>'>' - Greater than signed</li>
+ *   <li>'>u' - Greater than unsigned</li>
  *   <li>'>=' - Greater than or equal</li>
+ *   <li>'>=u' - Greater than or equal unsigned</li>
  *   <li>'<' - Less than</li>
+ *   <li>'<u' - Less than unsigned</li>
  *   <li>'<=' - Less than or equal</li>
+ *   <li>'<=u' - Less than or equal unsigned</li>
  *   <li>'==' - Equal</li>
  *   <li>'!=' - Not equal</li>
  * </ul>
@@ -369,6 +373,11 @@ public class CodeArithmeticInterpreter
       case ">=" -> operand1 >= operand2 ? 1.0 : 0.0;
       case "<" -> operand1 < operand2 ? 1.0 : 0.0;
       case "<=" -> operand1 <= operand2 ? 1.0 : 0.0;
+      // compareUnsigned returns positive number when first operand is greater than second
+      case ">u" -> Integer.compareUnsigned(operand1, operand2) > 0 ? 1.0 : 0.0;
+      case ">=u" -> Integer.compareUnsigned(operand1, operand2) >= 0 ? 1.0 : 0.0;
+      case "<u" -> Integer.compareUnsigned(operand1, operand2) < 0 ? 1.0 : 0.0;
+      case "<=u" -> Integer.compareUnsigned(operand1, operand2) <= 0 ? 1.0 : 0.0;
       case "==" -> operand1 == operand2 ? 1.0 : 0.0;
       default -> Double.NaN;
     };
@@ -408,6 +417,11 @@ public class CodeArithmeticInterpreter
       case "<" -> operand1 < operand2 ? 1.0 : 0.0;
       case "<=" -> operand1 <= operand2 ? 1.0 : 0.0;
       case "==" -> operand1 == operand2 ? 1.0 : 0.0;
+      // compareUnsigned returns positive number when first operand is greater than second
+      case ">u" -> Long.compareUnsigned(operand1, operand2) > 0 ? 1.0 : 0.0;
+      case ">=u" -> Long.compareUnsigned(operand1, operand2) >= 0 ? 1.0 : 0.0;
+      case "<u" -> Long.compareUnsigned(operand1, operand2) < 0 ? 1.0 : 0.0;
+      case "<=u" -> Long.compareUnsigned(operand1, operand2) <= 0 ? 1.0 : 0.0;
       default -> Double.NaN;
     };
   }// end of processLongOperation
@@ -439,6 +453,7 @@ public class CodeArithmeticInterpreter
       case "<" -> operand1 < operand2 ? 1.0 : 0.0;
       case "<=" -> operand1 <= operand2 ? 1.0 : 0.0;
       case "==" -> operand1 == operand2 ? 1.0 : 0.0;
+      // No support for unsigned comparison
       default -> Double.NaN;
     };
   }// end of processFloatOperation
@@ -470,6 +485,7 @@ public class CodeArithmeticInterpreter
       case "<" -> operand1 < operand2 ? 1.0 : 0.0;
       case "<=" -> operand1 <= operand2 ? 1.0 : 0.0;
       case "==" -> operand1 == operand2 ? 1.0 : 0.0;
+      // No support for unsigned comparison
       default -> Double.NaN;
     };
   }// end of processDoubleOperation
