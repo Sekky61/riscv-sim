@@ -428,7 +428,7 @@
     "inputDataType": "kInt",
     "outputDataType": "kInt",
     "instructionType": "kArithmetic",
-    "instructionSyntax": "slt rd rs1 imm",
+    "instructionSyntax": "slti rd rs1 imm",
     "interpretableAs": "rd=rs1<imm;"
   },
   "sltu": {
@@ -462,5 +462,21 @@
     "instructionType": "kArithmetic",
     "instructionSyntax": "andi rd rs1 imm",
     "interpretableAs": "rd=rs1&imm;"
+  },
+  "lui": {
+    "name": "lui",
+    "instructionType": "kArithmetic",
+    "inputDataType": "kInt",
+    "outputDataType": "kInt",
+    "instructionSyntax": "lui rd imm",
+    "interpretableAs": "rd=imm<<12;"
+  },
+  "auipc": {
+    "name": "auipc",
+    "instructionType": "kArithmetic",
+    "inputDataType": "kInt",
+    "outputDataType": "kInt",
+    "instructionSyntax": "auipc rd imm",
+    "interpretableAs": "rd=pc+imm<<12;"
   }
 }

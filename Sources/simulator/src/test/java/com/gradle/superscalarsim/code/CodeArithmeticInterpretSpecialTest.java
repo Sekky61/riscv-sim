@@ -58,7 +58,8 @@ public class CodeArithmeticInterpretSpecialTest
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader)
             .hasInstructionName("multipleLines")
             .hasArguments(Arrays.asList(argument1, argument2, argument3, argument4, argument5, argument6)).build();
-    Assert.assertEquals(2, this.codeArithmeticInterpreter.interpretInstruction(inputCodeModel), 0.01);
+    SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
+    Assert.assertEquals(2, this.codeArithmeticInterpreter.interpretInstruction(codeModel), 0.01);
   }
   
   @Test
@@ -73,7 +74,8 @@ public class CodeArithmeticInterpretSpecialTest
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader)
             .hasInstructionName("multipleBrackets")
             .hasArguments(Arrays.asList(argument1, argument2, argument3, argument4, argument5, argument6)).build();
-    Assert.assertEquals(15, this.codeArithmeticInterpreter.interpretInstruction(inputCodeModel), 0.01);
+    SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
+    Assert.assertEquals(15, this.codeArithmeticInterpreter.interpretInstruction(codeModel), 0.01);
   }
   
   @Test
@@ -85,7 +87,8 @@ public class CodeArithmeticInterpretSpecialTest
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader)
             .hasInstructionName("multipleInstructions").hasArguments(Arrays.asList(argument1, argument2, argument3))
             .build();
-    Assert.assertEquals(154, this.codeArithmeticInterpreter.interpretInstruction(inputCodeModel), 0.01);
+    SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
+    Assert.assertEquals(154, this.codeArithmeticInterpreter.interpretInstruction(codeModel), 0.01);
   }
   
   @Test
@@ -97,7 +100,8 @@ public class CodeArithmeticInterpretSpecialTest
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader)
             .hasInstructionName("bitArrayOperation").hasArguments(Arrays.asList(argument1, argument2, argument3))
             .build();
-    Assert.assertEquals(7, this.codeArithmeticInterpreter.interpretInstruction(inputCodeModel), 0.01);
+    SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
+    Assert.assertEquals(7, this.codeArithmeticInterpreter.interpretInstruction(codeModel), 0.01);
   }
   
   @Test
@@ -106,14 +110,16 @@ public class CodeArithmeticInterpretSpecialTest
     InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rd").hasValue("x1").build();
     InputCodeModel inputCodeModel1 = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("set31")
             .hasArguments(Collections.singletonList(argument1)).build();
+    SimCodeModel codeModel = new SimCodeModel(inputCodeModel1, 0, 0);
     
-    Assert.assertEquals(31, this.codeArithmeticInterpreter.interpretInstruction(inputCodeModel1), 0.01);
+    Assert.assertEquals(31, this.codeArithmeticInterpreter.interpretInstruction(codeModel), 0.01);
     
     InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rd").hasValue("x1").build();
     InputCodeModel inputCodeModel2 = new InputCodeModelBuilder().hasLoader(initLoader)
             .hasInstructionName("setZeroes3to1").hasArguments(Collections.singletonList(argument2)).build();
+    SimCodeModel codeModel2 = new SimCodeModel(inputCodeModel2, 0, 0);
     
-    Assert.assertEquals(17, this.codeArithmeticInterpreter.interpretInstruction(inputCodeModel2), 0.01);
+    Assert.assertEquals(17, this.codeArithmeticInterpreter.interpretInstruction(codeModel2), 0.01);
   }
   
   private List<InstructionFunctionModel> setUpInstructions()

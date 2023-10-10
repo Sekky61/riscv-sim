@@ -121,8 +121,9 @@ public class CodeArithmeticInterpreterConstraintsTest
     InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x2").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("intInc")
             .hasArguments(Arrays.asList(argument1, argument2)).build();
+    SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
-    Assert.assertEquals(Integer.MIN_VALUE, this.codeArithmeticInterpreter.interpretInstruction(inputCodeModel), 0.0001);
+    Assert.assertEquals(Integer.MIN_VALUE, this.codeArithmeticInterpreter.interpretInstruction(codeModel), 0.0001);
   }
   
   @Test
@@ -132,8 +133,9 @@ public class CodeArithmeticInterpreterConstraintsTest
     InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x3").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("intDec")
             .hasArguments(Arrays.asList(argument1, argument2)).build();
+    SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
-    Assert.assertEquals(Integer.MAX_VALUE, this.codeArithmeticInterpreter.interpretInstruction(inputCodeModel), 0.0001);
+    Assert.assertEquals(Integer.MAX_VALUE, this.codeArithmeticInterpreter.interpretInstruction(codeModel), 0.0001);
   }
   
   @Test
@@ -143,7 +145,9 @@ public class CodeArithmeticInterpreterConstraintsTest
     InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("l2").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("longInc")
             .hasArguments(Arrays.asList(argument1, argument2)).build();
-    Assert.assertEquals(Long.MIN_VALUE, this.codeArithmeticInterpreter.interpretInstruction(inputCodeModel), 0.0001);
+    SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
+    
+    Assert.assertEquals(Long.MIN_VALUE, this.codeArithmeticInterpreter.interpretInstruction(codeModel), 0.0001);
   }
   
   @Test
@@ -153,8 +157,9 @@ public class CodeArithmeticInterpreterConstraintsTest
     InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("l3").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("longDec")
             .hasArguments(Arrays.asList(argument1, argument2)).build();
+    SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
-    Assert.assertEquals(Long.MAX_VALUE, this.codeArithmeticInterpreter.interpretInstruction(inputCodeModel), 0.0001);
+    Assert.assertEquals(Long.MAX_VALUE, this.codeArithmeticInterpreter.interpretInstruction(codeModel), 0.0001);
   }
   
   @Test
@@ -164,7 +169,9 @@ public class CodeArithmeticInterpreterConstraintsTest
     InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("f2").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("floatInc")
             .hasArguments(Arrays.asList(argument1, argument2)).build();
-    Assert.assertEquals(Float.NaN, this.codeArithmeticInterpreter.interpretInstruction(inputCodeModel), 0.0001);
+    SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
+    
+    Assert.assertEquals(Float.NaN, this.codeArithmeticInterpreter.interpretInstruction(codeModel), 0.0001);
   }
   
   @Test
@@ -174,8 +181,9 @@ public class CodeArithmeticInterpreterConstraintsTest
     InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("f3").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("floatDec")
             .hasArguments(Arrays.asList(argument1, argument2)).build();
+    SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
-    Assert.assertEquals(-1, this.codeArithmeticInterpreter.interpretInstruction(inputCodeModel), 0.0001);
+    Assert.assertEquals(-1, this.codeArithmeticInterpreter.interpretInstruction(codeModel), 0.0001);
   }
   
   @Test
@@ -185,7 +193,9 @@ public class CodeArithmeticInterpreterConstraintsTest
     InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("f2").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("floatInc")
             .hasArguments(Arrays.asList(argument1, argument2)).build();
-    Assert.assertEquals(Double.NaN, this.codeArithmeticInterpreter.interpretInstruction(inputCodeModel), 0.0001);
+    SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
+    
+    Assert.assertEquals(Double.NaN, this.codeArithmeticInterpreter.interpretInstruction(codeModel), 0.0001);
   }
   
   @Test
@@ -195,8 +205,9 @@ public class CodeArithmeticInterpreterConstraintsTest
     InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("f3").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("floatDec")
             .hasArguments(Arrays.asList(argument1, argument2)).build();
+    SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
-    Assert.assertEquals(-1, this.codeArithmeticInterpreter.interpretInstruction(inputCodeModel), 0.0001);
+    Assert.assertEquals(-1, this.codeArithmeticInterpreter.interpretInstruction(codeModel), 0.0001);
   }
   
   @Test
@@ -207,7 +218,8 @@ public class CodeArithmeticInterpreterConstraintsTest
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x1").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("div")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
+    SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
-    Assert.assertEquals(Double.NaN, this.codeArithmeticInterpreter.interpretInstruction(inputCodeModel), 0.0001);
+    Assert.assertEquals(Double.NaN, this.codeArithmeticInterpreter.interpretInstruction(codeModel), 0.0001);
   }
 }

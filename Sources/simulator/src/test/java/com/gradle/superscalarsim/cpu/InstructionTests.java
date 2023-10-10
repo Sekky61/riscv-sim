@@ -363,6 +363,53 @@ public class InstructionTests
   }
   
   /**
+   * LUI loads the immediate into the upper 20 bits of the register. Fills the lower 12 bits with 0s.
+   */
+  @Test
+  public void testLUI()
+  {
+    // Setup + exercise
+    // 0b1100_0000_0000_0000_0001 == 0xC001
+    cpu = ExecuteUtil.executeProgram("lui x1, 0xC001");
+    
+    // Assert
+    // TODO: converting to doubles loses precision, so the value is not exactly 0xC0010000
+    // Suggested fix: do not convert everything to doubles, but interpret byte arrays as ints or floats
+    Assert.assertEquals(0b11000000000000000001_000000000000,
+                        cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(), 0.5);
+  }
+  
+  /**
+   * LUI loads the immediate into the upper 20 bits of the register. Fills the lower 12 bits with 0s.
+   */
+  @Test
+  public void testLUI_simple()
+  {
+    // Setup + exercise
+    // 0b1100_0000_0000_0000_0001 == 0xC001
+    cpu = ExecuteUtil.executeProgram("lui x1, 1");
+    
+    // Assert
+    Assert.assertEquals(0b00000000000000000001_000000000000,
+                        cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(), 0.5);
+  }
+  
+  /**
+   * AUIPC adds the shifted immediate to the PC and stores the result in the register.
+   */
+  @Test
+  public void testAUIPC()
+  {
+    // Setup + exercise
+    // PC is 0 here, 4 on the second instruction
+    cpu = ExecuteUtil.executeProgram("auipc x1, 0xaa\n" + "auipc x2, 0x1");
+    
+    // Assert
+    Assert.assertEquals(0xaa000, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(), 0.5);
+    Assert.assertEquals(0x1004, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").getValue(), 0.5);
+  }
+  
+  /**
    * BNE jumps if the two registers are not equal
    */
   @Test

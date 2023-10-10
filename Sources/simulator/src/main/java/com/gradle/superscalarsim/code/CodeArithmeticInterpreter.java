@@ -111,14 +111,14 @@ public class CodeArithmeticInterpreter
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @param [in] parsedCode - Parsed instruction from code file to be interpreted
+   * @param simCodeModel Executed instruction
    *
    * @return Double value based on interpreted instruction
    * @brief Evaluates expressions divided by semicolon ';'
    */
-  public double interpretInstruction(final IInputCodeModel parsedCode)
+  public double interpretInstruction(final SimCodeModel simCodeModel)
   {
-    final InstructionFunctionModel instruction = parsedCode.getInstructionFunctionModel();
+    final InstructionFunctionModel instruction = simCodeModel.getInstructionFunctionModel();
     if (instruction == null)
     {
       return Double.NaN;
@@ -131,12 +131,17 @@ public class CodeArithmeticInterpreter
       String lValue     = command.substring(0, equalIndex);
       String expression = command.substring(equalIndex + 1);
       
+      // Dirty fix: if expression contains pc, replace it with PC
+      // TODO: A proper refactor
+      
+      expression = expression.replace("pc", Integer.toString(simCodeModel.getSavedPc()));
+      
       // Find result arg (for example rd:t0)
-      InputCodeArgument resultArg = parsedCode.getArguments().stream().filter(arg -> lValue.contains(arg.getName()))
+      InputCodeArgument resultArg = simCodeModel.getArguments().stream().filter(arg -> lValue.contains(arg.getName()))
               .findFirst().orElse(null);
       OperandModel resultOperand = new OperandModel(lValue, resultArg);
       double result = evaluateExpression(expression, instruction.getInputDataType(), instruction.getOutputDataType(),
-                                         parsedCode.getArguments());
+                                         simCodeModel.getArguments());
       
       this.temporaryTag   = resultOperand.getValue();
       this.temporaryValue = resultOperand.getBitHigh() == -1 ? result : writeSpecificBits(resultOperand, (long) result,
@@ -174,7 +179,7 @@ public class CodeArithmeticInterpreter
     for (char character : expressionCharArray)
     {
       // Current char is part of allowed operation
-      if (PrecedingTable.getInstance().getInstance().isAllowedOperation(operatorStringBuilder.toString() + character))
+      if (PrecedingTable.getInstance().isAllowedOperation(operatorStringBuilder.toString() + character))
       {
         if (!valueStringBuilder.isEmpty())
         {
@@ -188,7 +193,7 @@ public class CodeArithmeticInterpreter
       {
         String operation = operatorStringBuilder.toString();
         operatorStringBuilder.setLength(0);
-        if (PrecedingTable.getInstance().getInstance().isAllowedOperation(String.valueOf(character)))
+        if (PrecedingTable.getInstance().isAllowedOperation(String.valueOf(character)))
         {
           operatorStringBuilder.append(character);
         }
@@ -197,7 +202,7 @@ public class CodeArithmeticInterpreter
           valueStringBuilder.append(character);
         }
         evaluateAllUnaryOperations(argumentList, inputDataType);
-        PrecedingPriorityEnum priority = PrecedingTable.getInstance().getInstance()
+        PrecedingPriorityEnum priority = PrecedingTable.getInstance()
                 .getPrecedingPriority(operationStack.peek(), operation);
         switch (priority)
         {
@@ -252,7 +257,7 @@ public class CodeArithmeticInterpreter
    */
   private void evaluateAllUnaryOperations(final List<InputCodeArgument> argumentList, final DataTypeEnum inputDataType)
   {
-    while (PrecedingTable.getInstance().getInstance().isUnaryOperation(operationStack.peek()))
+    while (PrecedingTable.getInstance().isUnaryOperation(operationStack.peek()))
     {
       String stackOperation = operationStack.pop();
       double result         = evaluateOperation(stackOperation, argumentList, inputDataType);
@@ -563,6 +568,7 @@ public class CodeArithmeticInterpreter
       return temporaryValue;
     }
     
+    // If value is register
     DataTypeEnum[] dataTypeEnums = getFitRegisterTypes(dataType);
     RegisterModel  registerModel = null;
     for (DataTypeEnum possibleDataType : dataTypeEnums)
@@ -580,6 +586,7 @@ public class CodeArithmeticInterpreter
       registerModel = this.registerFileBlock.getRegisterList(DataTypeEnum.kSpeculative).stream()
               .filter(register -> register.getName().equals(operand)).findFirst().orElse(null);
     }
+    
     return registerModel != null ? registerModel.getValue() : Double.NaN;
   }// end of getValueFromOperand
   //-------------------------------------------------------------------------------------------
