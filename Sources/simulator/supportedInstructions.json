@@ -494,5 +494,45 @@
     "outputDataType": "kInt",
     "instructionSyntax": "mv rd rs1",
     "interpretableAs": "rd=rs1;"
+  },
+  "neg": {
+    "name": "neg",
+    "instructionType": "kArithmetic",
+    "inputDataType": "kInt",
+    "outputDataType": "kInt",
+    "instructionSyntax": "neg rd rs1",
+    "interpretableAs": "rd=-rs1;"
+  },
+  "seqz": {
+    "name": "seqz",
+    "inputDataType": "kInt",
+    "outputDataType": "kInt",
+    "instructionType": "kArithmetic",
+    "instructionSyntax": "seqz rd rs1",
+    "interpretableAs": "rd=rs1==0;"
+  },
+  "snez": {
+    "name": "snez",
+    "inputDataType": "kInt",
+    "outputDataType": "kInt",
+    "instructionType": "kArithmetic",
+    "instructionSyntax": "snez rd rs1",
+    "interpretableAs": "rd=rs1>u0;"
+  },
+  "sltz": {
+    "name": "sltz",
+    "inputDataType": "kInt",
+    "outputDataType": "kInt",
+    "instructionType": "kArithmetic",
+    "instructionSyntax": "sltz rd rs1",
+    "interpretableAs": "rd=rs1<0;"
+  },
+  "sgtz": {
+    "name": "sgtz",
+    "inputDataType": "kInt",
+    "outputDataType": "kInt",
+    "instructionType": "kArithmetic",
+    "instructionSyntax": "sgtz rd rs1",
+    "interpretableAs": "rd=rs1>0;"
   }
 }

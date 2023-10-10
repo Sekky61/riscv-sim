@@ -439,6 +439,91 @@ public class InstructionTests
   }
   
   /**
+   * NEG negates the value (technically two's complement).
+   * This is a pseudo-instruction.
+   */
+  @Test
+  public void testNEG()
+  {
+    // Setup + exercise
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(55);
+    cpu = ExecuteUtil.executeProgram("neg x1, x1", cpu);
+    
+    // Assert
+    Assert.assertEquals(-55, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(), 0.5);
+  }
+  
+  /**
+   * SEQZ sets the register to 1 if the register is 0, 0 otherwise.
+   * This is a pseudo-instruction.
+   */
+  @Test
+  public void testSEQZ()
+  {
+    // Setup + exercise
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(0);
+    cpu = ExecuteUtil.executeProgram("seqz x2, x1", cpu);
+    
+    // Assert
+    Assert.assertEquals(1, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").getValue(), 0.5);
+  }
+  
+  /**
+   * SNEZ sets the register to 1 if the register is not 0, 0 otherwise.
+   * This is a pseudo-instruction.
+   */
+  @Test
+  public void testSNEZ()
+  {
+    // Setup + exercise
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(0);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x5").setValue(-6);
+    cpu = ExecuteUtil.executeProgram("snez x2, x1\n" + "snez x3, x5", cpu);
+    
+    // Assert
+    Assert.assertEquals(0, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").getValue(), 0.5);
+    Assert.assertEquals(1, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x3").getValue(), 0.5);
+  }
+  
+  /**
+   * SLTZ sets the register to 1 if the register is less than 0, 0 otherwise.
+   * Signed operation, pseudo-instruction.
+   */
+  @Test
+  public void testSLTZ()
+  {
+    // Setup + exercise
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(2);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x5").setValue(-6);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x6").setValue(0);
+    cpu = ExecuteUtil.executeProgram("sltz x2, x1\n" + "sltz x3, x5\n" + "sltz x4, x6", cpu);
+    
+    // Assert
+    Assert.assertEquals(0, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").getValue(), 0.5);
+    Assert.assertEquals(1, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x3").getValue(), 0.5);
+    Assert.assertEquals(0, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x4").getValue(), 0.5);
+  }
+  
+  /**
+   * SGTZ sets the register to 1 if the register is greater than 0, 0 otherwise.
+   * Signed operation, pseudo-instruction.
+   */
+  @Test
+  public void testSGTZ()
+  {
+    // Setup + exercise
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(2);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x5").setValue(-6);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x6").setValue(0);
+    cpu = ExecuteUtil.executeProgram("sgtz x2, x1\n" + "sgtz x3, x5\n" + "sgtz x4, x6", cpu);
+    
+    // Assert
+    Assert.assertEquals(1, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").getValue(), 0.5);
+    Assert.assertEquals(0, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x3").getValue(), 0.5);
+    Assert.assertEquals(0, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x4").getValue(), 0.5);
+  }
+  
+  /**
    * BNE jumps if the two registers are not equal
    */
   @Test

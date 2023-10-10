@@ -250,8 +250,8 @@ public class CodeArithmeticInterpreter
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @param [in] argumentList  - List of arguments provided by parsed instruction
-   * @param [in] inputDataType - Data type of the expression
+   * @param argumentList  List of arguments provided by parsed instruction
+   * @param inputDataType Data type of the expression
    *
    * @brief Evaluates all previously read unary operation for immediate evaluation
    */
