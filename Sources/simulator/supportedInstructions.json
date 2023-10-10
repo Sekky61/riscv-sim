@@ -117,7 +117,7 @@
     "inputDataType": "kInt",
     "outputDataType": "kInt",
     "instructionSyntax": "srli rd rs1 imm",
-    "interpretableAs": "rd=rs1>>imm;"
+    "interpretableAs": "rd=rs1>>>imm;"
   },
   "fmul": {
     "name": "fmul",
@@ -221,7 +221,7 @@
     "inputDataType": "kInt",
     "outputDataType": "kInt",
     "instructionSyntax": "srai rd rs1 imm",
-    "interpretableAs": "rd=rs1>>>imm;"
+    "interpretableAs": "rd=rs1>>imm;"
   },
   "or": {
     "name": "or",
@@ -390,5 +390,29 @@
     "instructionType": "kArithmetic",
     "instructionSyntax": "xori rd rs1 imm",
     "interpretableAs": "rd=rs1^imm;"
+  },
+  "sll": {
+    "name": "sll",
+    "instructionType": "kArithmetic",
+    "inputDataType": "kInt",
+    "outputDataType": "kInt",
+    "instructionSyntax": "sll rd rs1 rs2",
+    "interpretableAs": "rd=rs1<<rs2;"
+  },
+  "srl": {
+    "name": "srl",
+    "instructionType": "kArithmetic",
+    "inputDataType": "kInt",
+    "outputDataType": "kInt",
+    "instructionSyntax": "srl rd rs1 rs2",
+    "interpretableAs": "rd=rs1>>>rs2;"
+  },
+  "sra": {
+    "name": "sra",
+    "instructionType": "kArithmetic",
+    "inputDataType": "kInt",
+    "outputDataType": "kInt",
+    "instructionSyntax": "sra rd rs1 rs2",
+    "interpretableAs": "rd=rs1>>rs2;"
   }
 }

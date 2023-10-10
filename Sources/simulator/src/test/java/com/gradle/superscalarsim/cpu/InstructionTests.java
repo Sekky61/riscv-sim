@@ -154,6 +154,116 @@ public class InstructionTests
   }
   
   /**
+   * SLL shifts the register left by the value of the second register
+   */
+  @Test
+  public void testSLL()
+  {
+    // Setup + exercise
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(1.0);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x10").setValue(2.0);
+    cpu = ExecuteUtil.executeProgram("sll x2, x1, x10", cpu);
+    
+    // Assert
+    // 0001 << 2 = 0100
+    Assert.assertEquals(4, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").getValue(), 0.5);
+  }
+  
+  /**
+   * SLLI shifts the register left by the immediate
+   */
+  @Test
+  public void testSLLI()
+  {
+    // Setup + exercise
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(1.0);
+    cpu = ExecuteUtil.executeProgram("slli x2, x1, 2", cpu);
+    
+    // Assert
+    // 0001 << 2 = 0100
+    Assert.assertEquals(4, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").getValue(), 0.5);
+  }
+  
+  /**
+   * SRL shifts the register right by the value of the second register
+   */
+  @Test
+  public void testSRL()
+  {
+    // Setup + exercise
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(8.0);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x9").setValue(2.0);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x10").setValue(2.0);
+    cpu = ExecuteUtil.executeProgram("srl x2, x1, x10\n" + "srl x3, x9, x10", cpu);
+    
+    // Assert
+    // 1000 >> 2 = 0010
+    Assert.assertEquals(2, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").getValue(), 0.5);
+    // 0010 >> 2 = 0000
+    Assert.assertEquals(0, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x3").getValue(), 0.5);
+  }
+  
+  /**
+   * SRLI shifts the register right by the immediate.
+   * Shift is logical - the sign bit is not preserved.
+   */
+  @Test
+  public void testSRLI()
+  {
+    // Setup + exercise
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(9.0);
+    int x5 = 0b11111111111111111111111111000000;
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x5").setValue((double) x5);
+    cpu = ExecuteUtil.executeProgram("srli x2, x1, 2\nsrli x3, x5, 3", cpu);
+    
+    // Assert
+    // 1001 >> 2 = 0010
+    Assert.assertEquals(2, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").getValue(), 0.5);
+    Assert.assertEquals(0b00011111111111111111111111111000,
+                        cpu.cpuState.unifiedRegisterFileBlock.getRegister("x3").getValue(), 0.5);
+  }
+  
+  /**
+   * SRA shifts the register right by the value of the second register.
+   * The sign bit is preserved.
+   */
+  @Test
+  public void testSRA()
+  {
+    // Setup + exercise
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(8.0);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x9").setValue(-1.0);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x10").setValue(2.0);
+    cpu = ExecuteUtil.executeProgram("sra x2, x1, x10\n" + "sra x3, x9, x10", cpu);
+    
+    // Assert
+    // 1000 >> 2 = 1110
+    Assert.assertEquals(2, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").getValue(), 0.5);
+    // 111...111 >> 2 = 111...111
+    Assert.assertEquals(-1, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x3").getValue(), 0.5);
+  }
+  
+  /**
+   * SRAI shifts the register right by the immediate.
+   * Shift is arithmetic - the sign bit is preserved.
+   */
+  @Test
+  public void testSRAI()
+  {
+    // Setup + exercise
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(9.0);
+    int x5 = 0b11111111111111111111111111000000;
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x5").setValue((double) x5);
+    cpu = ExecuteUtil.executeProgram("srai x2, x1, 2\nsrai x3, x5, 3", cpu);
+    
+    // Assert
+    // 1001 >> 2 = 1110
+    Assert.assertEquals(2, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").getValue(), 0.5);
+    Assert.assertEquals(0b11111111111111111111111111111000,
+                        cpu.cpuState.unifiedRegisterFileBlock.getRegister("x3").getValue(), 0.5);
+  }
+  
+  /**
    * BNE jumps if the two registers are not equal
    */
   @Test
