@@ -200,6 +200,16 @@ public class CodeBranchInterpreter
     InputCodeArgument leftOperandArgument  = parsedCode.getArgumentByName(leftOperand);
     InputCodeArgument rightOperandArgument = parsedCode.getArgumentByName(rightOperand);
     
+    // If any of operands is not found, it may be an immediate value
+    if (leftOperandArgument == null)
+    {
+      leftOperandArgument = new InputCodeArgument(leftOperand, leftOperand);
+    }
+    if (rightOperandArgument == null)
+    {
+      rightOperandArgument = new InputCodeArgument(rightOperand, rightOperand);
+    }
+    
     return evaluateExpression(Objects.requireNonNull(leftOperandArgument).getValue(),
                               Objects.requireNonNull(rightOperandArgument).getValue(), operator, isUnsigned,
                               inputDataType);

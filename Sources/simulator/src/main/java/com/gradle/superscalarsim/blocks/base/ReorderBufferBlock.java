@@ -237,6 +237,11 @@ public class ReorderBufferBlock implements AbstractBlock
       int     pc                  = codeModel.getSavedPc();
       
       statisticsCounter.incrementAllBranches();
+      if (branchActuallyTaken)
+      {
+        statisticsCounter.incrementTakenBranches();
+      }
+      
       if (prediction == branchActuallyTaken)
       {
         // Correct prediction

@@ -45,6 +45,11 @@ public class StatisticsCounter
   private long allBranches;
   
   /**
+   * @brief Number of taken branches
+   */
+  private long takenBranches;
+  
+  /**
    * @brief Constructor
    */
   public StatisticsCounter()
@@ -63,6 +68,7 @@ public class StatisticsCounter
     this.failedInstructions         = 0;
     this.correctlyPredictedBranches = 0;
     this.allBranches                = 0;
+    this.takenBranches              = 0;
   }// end of resetCounters
   //----------------------------------------------------------------------
   
@@ -74,6 +80,14 @@ public class StatisticsCounter
     this.committedInstructions++;
   }// end of incrementCommittedInstructions
   //----------------------------------------------------------------------
+  
+  /**
+   * @brief Increments number of taken branches
+   */
+  public void incrementTakenBranches()
+  {
+    this.takenBranches++;
+  }
   
   /**
    * @brief Increments number of simulate() calls
@@ -227,5 +241,10 @@ public class StatisticsCounter
   public long getCorrectlyPredictedBranches()
   {
     return correctlyPredictedBranches;
+  }
+  
+  public long getTakenBranches()
+  {
+    return takenBranches;
   }
 }
