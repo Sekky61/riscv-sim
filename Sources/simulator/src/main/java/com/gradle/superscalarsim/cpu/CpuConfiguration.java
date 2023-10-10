@@ -131,14 +131,14 @@ public class CpuConfiguration implements Serializable
     config.fUnits[0].id         = 0;
     config.fUnits[0].fuType     = "FX";
     config.fUnits[0].latency    = 2;
-    config.fUnits[0].operations = new String[]{"++", "--", "!", "#", "<-", "+", "-", "*", "/", "%", "&", "|", ">>>", "<<", ">>", "<=", ">=", "==", "<", ">", "(", ")"};
+    config.fUnits[0].operations = new String[]{"++", "--", "!", "#", "<-", "+", "-", "*", "/", "%", "&", "|", "^", ">>>", "<<", ">>", "<=", ">=", "==", "<", ">", "(", ")"};
     
     // FP with all ops
     config.fUnits[1]            = new FUnit();
     config.fUnits[1].id         = 1;
     config.fUnits[1].fuType     = "FP";
     config.fUnits[1].latency    = 2;
-    config.fUnits[1].operations = new String[]{"++", "--", "!", "#", "<-", "+", "-", "*", "/", "%", "&", "|", ">>>", "<<", ">>", "<=", ">=", "==", "<", ">", "(", ")"};
+    config.fUnits[1].operations = new String[]{"++", "--", "!", "#", "<-", "+", "-", "*", "/", "%", "&", "|", "^", ">>>", "<<", ">>", "<=", ">=", "==", "<", ">", "(", ")"};
     
     // L/S
     config.fUnits[2]         = new FUnit();

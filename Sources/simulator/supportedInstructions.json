@@ -374,5 +374,21 @@
     "outputDataType": "kInt",
     "instructionSyntax": "mul rd rs1 rs2",
     "interpretableAs": "rd=rs1*rs2;"
+  },
+  "xor": {
+    "name": "xor",
+    "instructionType": "kArithmetic",
+    "inputDataType": "kInt",
+    "outputDataType": "kInt",
+    "instructionSyntax": "xor rd rs1 rs2",
+    "interpretableAs": "rd=rs1^rs2;"
+  },
+  "xori": {
+    "name": "xori",
+    "inputDataType": "kInt",
+    "outputDataType": "kInt",
+    "instructionType": "kArithmetic",
+    "instructionSyntax": "xori rd rs1 imm",
+    "interpretableAs": "rd=rs1^imm;"
   }
 }

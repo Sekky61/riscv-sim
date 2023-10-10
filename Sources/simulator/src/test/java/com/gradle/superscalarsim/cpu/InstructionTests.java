@@ -139,6 +139,21 @@ public class InstructionTests
   }
   
   /**
+   * XORI performs bitwise XOR on the register and the immediate
+   */
+  @Test
+  public void testXORI()
+  {
+    // Setup + exercise
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(32.0);
+    cpu = ExecuteUtil.executeProgram("xori x2, x1, 5", cpu);
+    
+    // Assert
+    // 100000 XOR 101 = 100101
+    Assert.assertEquals(32 + 5, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").getValue(), 0.5);
+  }
+  
+  /**
    * BNE jumps if the two registers are not equal
    */
   @Test

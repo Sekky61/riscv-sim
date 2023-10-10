@@ -54,6 +54,7 @@ import java.util.regex.Pattern;
  *   <li>'/' - Division</li>
  *   <li>'&' - Bitwise AND</li>
  *   <li>'|' - Bitwise OR</li>
+ *   <li>'^' - Bitwise XOR</li>
  *   <li>'<<' - Bitwise left shift</li>
  *   <li>'>>' - Bitwise right shift</li>
  *   <li>'>>>' - Bitwise unsigned right shift</li>
@@ -359,6 +360,7 @@ public class CodeArithmeticInterpreter
       case "/" -> operand2 != 0 ? operand1 / operand2 : Double.NaN;
       case "&" -> operand1 & operand2;
       case "|" -> operand1 | operand2;
+      case "^" -> operand1 ^ operand2;
       case "<<" -> operand1 << operand2;
       case ">>" -> operand1 >> operand2;
       case ">>>" -> operand1 >>> operand2;
@@ -396,6 +398,7 @@ public class CodeArithmeticInterpreter
       case "/" -> operand2 != 0 ? operand1 / operand2 : Double.NaN;
       case "&" -> operand1 & operand2;
       case "|" -> operand1 | operand2;
+      case "^" -> operand1 ^ operand2;
       case "<<" -> operand1 << operand2;
       case ">>" -> operand1 >> operand2;
       case ">>>" -> operand1 >>> operand2;

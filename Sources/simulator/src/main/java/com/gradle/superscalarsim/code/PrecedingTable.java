@@ -62,7 +62,7 @@ public class PrecedingTable
     String[] allowedInstructionsArray;
     this.precedingTable   = new HashMap<>();
     this.unaryOperations  = new String[]{"++", "--", "!", "#", "<-"};
-    this.binaryOperations = new String[]{"+", "-", "*", "/", "%", "&", "|", ">>>", "<<", ">>", "<=", ">=", "==", "<", ">"};
+    this.binaryOperations = new String[]{"+", "-", "*", "/", "%", "&", "|", "^", ">>>", "<<", ">>", "<=", ">=", "==", "<", ">"};
     String[] brackets = new String[]{"(", ")"};
     allowedInstructionsArray = Stream.concat(Arrays.stream(this.unaryOperations), Arrays.stream(this.binaryOperations))
             .toArray(String[]::new);
@@ -148,6 +148,7 @@ public class PrecedingTable
     lesserPriority.put(">>>", PrecedingPriorityEnum.kPush);
     lesserPriority.put("&", PrecedingPriorityEnum.kEvaluate);
     lesserPriority.put("|", PrecedingPriorityEnum.kEvaluate);
+    lesserPriority.put("^", PrecedingPriorityEnum.kEvaluate);
     lesserPriority.put("<", PrecedingPriorityEnum.kEvaluate);
     lesserPriority.put("<=", PrecedingPriorityEnum.kEvaluate);
     lesserPriority.put("==", PrecedingPriorityEnum.kEvaluate);
@@ -178,6 +179,7 @@ public class PrecedingTable
     majorPriority.put(">>>", PrecedingPriorityEnum.kEvaluate);
     majorPriority.put("&", PrecedingPriorityEnum.kEvaluate);
     majorPriority.put("|", PrecedingPriorityEnum.kEvaluate);
+    majorPriority.put("^", PrecedingPriorityEnum.kEvaluate);
     majorPriority.put("<", PrecedingPriorityEnum.kEvaluate);
     majorPriority.put("<=", PrecedingPriorityEnum.kEvaluate);
     majorPriority.put("==", PrecedingPriorityEnum.kEvaluate);
@@ -215,6 +217,7 @@ public class PrecedingTable
     leftBracketsPriority.put(">>>", PrecedingPriorityEnum.kPush);
     leftBracketsPriority.put("&", PrecedingPriorityEnum.kPush);
     leftBracketsPriority.put("|", PrecedingPriorityEnum.kPush);
+    leftBracketsPriority.put("^", PrecedingPriorityEnum.kPush);
     leftBracketsPriority.put("(", PrecedingPriorityEnum.kPush);
     leftBracketsPriority.put("<", PrecedingPriorityEnum.kPush);
     leftBracketsPriority.put("<=", PrecedingPriorityEnum.kPush);
@@ -235,6 +238,7 @@ public class PrecedingTable
     rightBracketsPriority.put(">>>", PrecedingPriorityEnum.kEvaluate);
     rightBracketsPriority.put("&", PrecedingPriorityEnum.kEvaluate);
     rightBracketsPriority.put("|", PrecedingPriorityEnum.kEvaluate);
+    rightBracketsPriority.put("^", PrecedingPriorityEnum.kEvaluate);
     rightBracketsPriority.put("(", PrecedingPriorityEnum.kError);
     rightBracketsPriority.put("<", PrecedingPriorityEnum.kEvaluate);
     rightBracketsPriority.put("<=", PrecedingPriorityEnum.kEvaluate);
@@ -262,6 +266,7 @@ public class PrecedingTable
     startingPriority.put(">>>", PrecedingPriorityEnum.kPush);
     startingPriority.put("&", PrecedingPriorityEnum.kPush);
     startingPriority.put("|", PrecedingPriorityEnum.kPush);
+    startingPriority.put("^", PrecedingPriorityEnum.kPush);
     startingPriority.put("(", PrecedingPriorityEnum.kPush);
     startingPriority.put(")", PrecedingPriorityEnum.kPush);
     startingPriority.put("++", PrecedingPriorityEnum.kPush);
@@ -294,6 +299,7 @@ public class PrecedingTable
     unaryPriority.put(">>>", PrecedingPriorityEnum.kPush);
     unaryPriority.put("&", PrecedingPriorityEnum.kPush);
     unaryPriority.put("|", PrecedingPriorityEnum.kPush);
+    unaryPriority.put("^", PrecedingPriorityEnum.kPush);
     unaryPriority.put("(", PrecedingPriorityEnum.kPush);
     unaryPriority.put(")", PrecedingPriorityEnum.kPush);
     this.precedingTable.put("++", unaryPriority);
