@@ -48,6 +48,31 @@ export const otherUnits = ['L/S', 'Branch', 'Memory'] as const;
 export const fuTypes = [...arithmeticUnits, ...otherUnits] as const;
 export type FuTypes = (typeof fuTypes)[number];
 
+/**
+ * <ul>
+ *   <li>'+' - Addition</li>
+ *   <li>'-' - Subtraction</li>
+ *   <li>'*' - Multiplication</li>
+ *   <li>'<-' - Selecting first operand</li>
+ *   <li>'%' - Modulo</li>
+ *   <li>'/' - Division</li>
+ *   <li>'&' - Bitwise AND</li>
+ *   <li>'|' - Bitwise OR</li>
+ *   <li>'<<' - Bitwise left shift</li>
+ *   <li>'>>' - Bitwise right shift</li>
+ *   <li>'>>>' - Bitwise unsigned right shift</li>
+ *   <li>'++' - Increment</li>
+ *   <li>'--' - Decrement</li>
+ *   <li>'#' - Square root</li>
+ *   <li>'!' - Bitwise NOT</li>
+ *   <li>'>' - Greater than</li>
+ *   <li>'>=' - Greater than or equal</li>
+ *   <li>'<' - Less than</li>
+ *   <li>'<=' - Less than or equal</li>
+ *   <li>'==' - Equal</li>
+ *   <li>'!=' - Not equal</li>
+ * </ul>
+ */
 export const fuOps = [
   '+',
   '-',

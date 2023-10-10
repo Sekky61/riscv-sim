@@ -44,6 +44,31 @@ import java.util.Stack;
 import java.util.regex.Pattern;
 
 /**
+ * Operations:
+ * <ul>
+ *   <li>'+' - Addition</li>
+ *   <li>'-' - Subtraction</li>
+ *   <li>'*' - Multiplication</li>
+ *   <li>'<-' - Selecting first operand</li>
+ *   <li>'%' - Modulo</li>
+ *   <li>'/' - Division</li>
+ *   <li>'&' - Bitwise AND</li>
+ *   <li>'|' - Bitwise OR</li>
+ *   <li>'<<' - Bitwise left shift</li>
+ *   <li>'>>' - Bitwise right shift</li>
+ *   <li>'>>>' - Bitwise unsigned right shift</li>
+ *   <li>'++' - Increment</li>
+ *   <li>'--' - Decrement</li>
+ *   <li>'#' - Square root</li>
+ *   <li>'!' - Bitwise NOT</li>
+ *   <li>'>' - Greater than</li>
+ *   <li>'>=' - Greater than or equal</li>
+ *   <li>'<' - Less than</li>
+ *   <li>'<=' - Less than or equal</li>
+ *   <li>'==' - Equal</li>
+ *   <li>'!=' - Not equal</li>
+ * </ul>
+ *
  * @class CodeInterpreter
  * @brief Interprets instruction provided in InputCodeModel class
  */
@@ -315,9 +340,9 @@ public class CodeArithmeticInterpreter
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @param [in] operand1 - First operand
-   * @param [in] operand2 - Second operand
-   * @param [in] operator - Operation to be interpreted
+   * @param operand1 First operand
+   * @param operand2 Second operand
+   * @param operator Operation to be interpreted
    *
    * @return Double value of 32-bit integer operation
    * @brief Process 32-bit integer operation and keeps overflow capabilities
