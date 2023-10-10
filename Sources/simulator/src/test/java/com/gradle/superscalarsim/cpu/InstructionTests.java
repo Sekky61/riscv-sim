@@ -370,7 +370,7 @@ public class InstructionTests
   {
     // Setup + exercise
     // 0b1100_0000_0000_0000_0001 == 0xC001
-    cpu = ExecuteUtil.executeProgram("lui x1, 0xC001");
+    cpu = ExecuteUtil.executeProgram("lui x1, 0xC001", cpu);
     
     // Assert
     // TODO: converting to doubles loses precision, so the value is not exactly 0xC0010000
@@ -387,7 +387,7 @@ public class InstructionTests
   {
     // Setup + exercise
     // 0b1100_0000_0000_0000_0001 == 0xC001
-    cpu = ExecuteUtil.executeProgram("lui x1, 1");
+    cpu = ExecuteUtil.executeProgram("lui x1, 1", cpu);
     
     // Assert
     Assert.assertEquals(0b00000000000000000001_000000000000,
@@ -402,11 +402,40 @@ public class InstructionTests
   {
     // Setup + exercise
     // PC is 0 here, 4 on the second instruction
-    cpu = ExecuteUtil.executeProgram("auipc x1, 0xaa\n" + "auipc x2, 0x1");
+    cpu = ExecuteUtil.executeProgram("auipc x1, 0xaa\n" + "auipc x2, 0x1", cpu);
     
     // Assert
     Assert.assertEquals(0xaa000, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(), 0.5);
     Assert.assertEquals(0x1004, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").getValue(), 0.5);
+  }
+  
+  /**
+   * LI loads the immediate into the register.
+   * This is a pseudo-instruction.
+   */
+  @Test
+  public void testLI()
+  {
+    // Setup + exercise
+    cpu = ExecuteUtil.executeProgram("li x1, 0xaa", cpu);
+    
+    // Assert
+    Assert.assertEquals(0xaa, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(), 0.5);
+  }
+  
+  /**
+   * MV moves the value of the second register into the first register.
+   * This is a pseudo-instruction.
+   */
+  @Test
+  public void testMV()
+  {
+    // Setup + exercise
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(55);
+    cpu = ExecuteUtil.executeProgram("mv x1, x2", cpu);
+    
+    // Assert
+    Assert.assertEquals(55, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(), 0.5);
   }
   
   /**
