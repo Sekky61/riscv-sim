@@ -5,7 +5,7 @@
     "outputDataType": "kInt",
     "instructionType": "kJumpbranch",
     "instructionSyntax": "jalr rd rs1 imm",
-    "interpretableAs": "jump:rs1+imm"
+    "interpretableAs": "signed:rs1+imm:true"
   },
   "bne": {
     "name": "bne",
@@ -13,7 +13,7 @@
     "outputDataType": "kInt",
     "instructionType": "kJumpbranch",
     "instructionSyntax": "bne rs1 rs2 imm",
-    "interpretableAs": "signed:rs1 != rs2"
+    "interpretableAs": "signed:imm:rs1 != rs2"
   },
   "add": {
     "name": "add",
@@ -53,7 +53,7 @@
     "outputDataType": "kInt",
     "instructionType": "kJumpbranch",
     "instructionSyntax": "beq rs1 rs2 imm",
-    "interpretableAs": "signed:rs1 == rs2"
+    "interpretableAs": "signed:imm:rs1 == rs2"
   },
   "dec": {
     "name": "dec",
@@ -77,7 +77,7 @@
     "outputDataType": "kInt",
     "instructionType": "kJumpbranch",
     "instructionSyntax": "bge rs1 rs2 imm",
-    "interpretableAs": "signed:rs1 >= rs2"
+    "interpretableAs": "signed:imm:rs1 >= rs2"
   },
   "nop": {
     "name": "nop",
@@ -109,7 +109,7 @@
     "outputDataType": "kInt",
     "instructionType": "kJumpbranch",
     "instructionSyntax": "jal rd imm",
-    "interpretableAs": "jump:imm"
+    "interpretableAs": "signed:imm:true"
   },
   "srli": {
     "name": "srli",
@@ -133,7 +133,7 @@
     "outputDataType": "kInt",
     "instructionType": "kJumpbranch",
     "instructionSyntax": "blt rs1 rs2 imm",
-    "interpretableAs": "signed:rs1 < rs2"
+    "interpretableAs": "signed:imm:rs1 < rs2"
   },
   "bltu": {
     "name": "bltu",
@@ -141,7 +141,7 @@
     "outputDataType": "kInt",
     "instructionType": "kJumpbranch",
     "instructionSyntax": "bltu rs1 rs2 imm",
-    "interpretableAs": "unsigned:rs1 < rs2"
+    "interpretableAs": "unsigned:imm:rs1 < rs2"
   },
   "fcvt.s.l": {
     "name": "fcvt.s.l",
@@ -349,7 +349,7 @@
     "outputDataType": "kInt",
     "instructionType": "kJumpbranch",
     "instructionSyntax": "bgeu rs1 rs2 imm",
-    "interpretableAs": "unsigned:rs1 >= rs2"
+    "interpretableAs": "unsigned:imm:rs1 >= rs2"
   },
   "fld": {
     "name": "fld",
@@ -541,7 +541,7 @@
     "outputDataType": "kInt",
     "instructionType": "kJumpbranch",
     "instructionSyntax": "beqz rs1 imm",
-    "interpretableAs": "signed:rs1 == 0"
+    "interpretableAs": "signed:imm:rs1 == 0"
   },
   "bnez": {
     "name": "bnez",
@@ -549,7 +549,7 @@
     "outputDataType": "kInt",
     "instructionType": "kJumpbranch",
     "instructionSyntax": "bnez rs1 imm",
-    "interpretableAs": "signed:rs1 != 0"
+    "interpretableAs": "signed:imm:rs1 != 0"
   },
   "blez": {
     "name": "blez",
@@ -557,7 +557,7 @@
     "outputDataType": "kInt",
     "instructionType": "kJumpbranch",
     "instructionSyntax": "blez rs1 imm",
-    "interpretableAs": "signed:rs1 <= 0"
+    "interpretableAs": "signed:imm:rs1 <= 0"
   },
   "bgez": {
     "name": "bgez",
@@ -565,7 +565,7 @@
     "outputDataType": "kInt",
     "instructionType": "kJumpbranch",
     "instructionSyntax": "bgez rs1 imm",
-    "interpretableAs": "signed:rs1 >= 0"
+    "interpretableAs": "signed:imm:rs1 >= 0"
   },
   "bltz": {
     "name": "bltz",
@@ -573,7 +573,7 @@
     "outputDataType": "kInt",
     "instructionType": "kJumpbranch",
     "instructionSyntax": "bltz rs1 imm",
-    "interpretableAs": "signed:rs1 < 0"
+    "interpretableAs": "signed:imm:rs1 < 0"
   },
   "bgtz": {
     "name": "bgtz",
@@ -581,7 +581,7 @@
     "outputDataType": "kInt",
     "instructionType": "kJumpbranch",
     "instructionSyntax": "bgtz rs1 imm",
-    "interpretableAs": "signed:rs1 > 0"
+    "interpretableAs": "signed:imm:rs1 > 0"
   },
   "bgt": {
     "name": "bgt",
@@ -589,7 +589,7 @@
     "outputDataType": "kInt",
     "instructionType": "kJumpbranch",
     "instructionSyntax": "bgt rs1 rs2 imm",
-    "interpretableAs": "signed:rs1 > rs2"
+    "interpretableAs": "signed:imm:rs1 > rs2"
   },
   "ble": {
     "name": "ble",
@@ -597,7 +597,7 @@
     "outputDataType": "kInt",
     "instructionType": "kJumpbranch",
     "instructionSyntax": "ble rs1 rs2 imm",
-    "interpretableAs": "signed:rs1 <= rs2"
+    "interpretableAs": "signed:imm:rs1 <= rs2"
   },
   "bgtu": {
     "name": "bgtu",
@@ -605,7 +605,7 @@
     "outputDataType": "kInt",
     "instructionType": "kJumpbranch",
     "instructionSyntax": "bgtu rs1 rs2 imm",
-    "interpretableAs": "unsigned:rs1 > rs2"
+    "interpretableAs": "unsigned:imm:rs1 > rs2"
   },
   "bleu": {
     "name": "bleu",
@@ -613,6 +613,6 @@
     "outputDataType": "kInt",
     "instructionType": "kJumpbranch",
     "instructionSyntax": "bleu rs1 rs2 imm",
-    "interpretableAs": "unsigned:rs1 <= rs2"
+    "interpretableAs": "unsigned:imm:rs1 <= rs2"
   }
 }

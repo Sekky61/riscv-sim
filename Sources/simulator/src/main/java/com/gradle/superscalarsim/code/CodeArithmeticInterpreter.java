@@ -161,10 +161,10 @@ public class CodeArithmeticInterpreter
    * @return Double value of expression
    * @brief Evaluates one expression
    */
-  private double evaluateExpression(final String expression,
-                                    final DataTypeEnum inputDataType,
-                                    final DataTypeEnum outputDataType,
-                                    final List<InputCodeArgument> argumentList)
+  public double evaluateExpression(final String expression,
+                                   final DataTypeEnum inputDataType,
+                                   final DataTypeEnum outputDataType,
+                                   final List<InputCodeArgument> argumentList)
   {
     // Clear stacks for new expression
     operationStack.clear();

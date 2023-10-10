@@ -741,4 +741,96 @@ public class InstructionTests
     // Assert
     Assert.assertEquals(1, cpu.cpuState.statisticsCounter.getTakenBranches());
   }
+  
+  /**
+   * BNE jumps if the first register is not equal to the second
+   */
+  @Test
+  public void testBNE()
+  {
+    // Setup + exercise
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(1.0);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(0.0);
+    cpu = ExecuteUtil.executeProgram("bne x1, x2, 4", cpu);
+    
+    // Assert
+    Assert.assertEquals(1, cpu.cpuState.statisticsCounter.getTakenBranches());
+  }
+  
+  /**
+   * BEQ jumps if the first register is equal to the second
+   */
+  @Test
+  public void testBEQ()
+  {
+    // Setup + exercise
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(0.0);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(0.0);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x3").setValue(6.0);
+    cpu = ExecuteUtil.executeProgram("beq x1, x2, 4\n" + "beq x1, x3, 8", cpu);
+    
+    // Assert
+    Assert.assertEquals(1, cpu.cpuState.statisticsCounter.getTakenBranches());
+  }
+  
+  /**
+   * BGE jumps if the first register is greater than or equal to the second
+   */
+  @Test
+  public void testBGE()
+  {
+    // Setup + exercise
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(2.0);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(1.0);
+    cpu = ExecuteUtil.executeProgram("bge x1, x2, 4", cpu);
+    
+    // Assert
+    Assert.assertEquals(1, cpu.cpuState.statisticsCounter.getTakenBranches());
+  }
+  
+  /**
+   * BLT jumps if the first register is less than the second
+   */
+  @Test
+  public void testBLT()
+  {
+    // Setup + exercise
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(-10.0);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(2.0);
+    cpu = ExecuteUtil.executeProgram("blt x1, x2, 4", cpu);
+    
+    // Assert
+    Assert.assertEquals(1, cpu.cpuState.statisticsCounter.getTakenBranches());
+  }
+  
+  /**
+   * BLTU jumps if the first register is less than the second.
+   */
+  @Test
+  public void testBLTU()
+  {
+    // Setup + exercise
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(10.0);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(-2.0);
+    cpu = ExecuteUtil.executeProgram("bltu x1, x2, 4", cpu);
+    
+    // Assert
+    Assert.assertEquals(1, cpu.cpuState.statisticsCounter.getTakenBranches());
+  }
+  
+  /**
+   * BGEU jumps if the first register is greater than or equal to the second.
+   */
+  @Test
+  public void testBGEU()
+  {
+    // Setup + exercise
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(1.0);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(2.0);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x3").setValue(-1.0);
+    cpu = ExecuteUtil.executeProgram("bgeu x1, x2, 4\n" + "bgeu x1, x3, 8", cpu);
+    
+    // Assert
+    Assert.assertEquals(0, cpu.cpuState.statisticsCounter.getTakenBranches());
+  }
 }

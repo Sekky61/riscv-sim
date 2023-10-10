@@ -172,6 +172,6 @@ public class InstructionFunctionModel
    */
   public boolean isUnconditionalJump()
   {
-    return interpretableAs.startsWith("jump");
+    return interpretableAs.endsWith("true");
   }// end of isUnconditionalJump
 }

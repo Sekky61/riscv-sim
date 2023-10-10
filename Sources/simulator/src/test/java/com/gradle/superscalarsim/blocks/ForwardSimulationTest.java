@@ -223,12 +223,13 @@ public class ForwardSimulationTest
     
     InstructionFunctionModel instructionJal = new InstructionFunctionModelBuilder().hasName("jal")
             .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
-            .hasType(InstructionTypeEnum.kJumpbranch).isInterpretedAs("jump:imm").hasSyntax("jal rd imm").build();
+            .hasType(InstructionTypeEnum.kJumpbranch).isInterpretedAs("unsigned:imm:true").hasSyntax("jal rd imm")
+            .build();
     
     InstructionFunctionModel instructionBeq = new InstructionFunctionModelBuilder().hasName("beq")
             .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
-            .hasType(InstructionTypeEnum.kJumpbranch).isInterpretedAs("signed:rs1 == rs2").hasSyntax("beq rs1 rs2 imm")
-            .build();
+            .hasType(InstructionTypeEnum.kJumpbranch).isInterpretedAs("signed:imm:rs1 == rs2")
+            .hasSyntax("beq rs1 rs2 imm").build();
     
     InstructionFunctionModel instructionLoadWord = new InstructionFunctionModelBuilder().hasName("lw")
             .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)

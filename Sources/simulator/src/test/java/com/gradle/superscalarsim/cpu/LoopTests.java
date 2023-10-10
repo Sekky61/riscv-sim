@@ -60,9 +60,9 @@ public class LoopTests
       steps++;
     }
     
-    // Assert
-    Assert.assertEquals(28, steps);
     // Assert that the original input code models are not changed
     Assert.assertEquals(parsedCode, parsedCodeCopy);
+    // Assert
+    Assert.assertEquals(28, steps);
   }
 }

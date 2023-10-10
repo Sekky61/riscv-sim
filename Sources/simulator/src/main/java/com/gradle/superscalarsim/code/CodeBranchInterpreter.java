@@ -58,6 +58,7 @@ public class CodeBranchInterpreter
   /// Array of allowed operations
   private final char[] allowedOperators = {'<', '>', '=', '!'};
   private final UnifiedRegisterFileBlock registerFileBlock;
+  private CodeArithmeticInterpreter codeArithmeticInterpreter;
   
   /**
    * @param [in] codeParser - Object of the parser with parsed instructions
@@ -65,18 +66,25 @@ public class CodeBranchInterpreter
    *
    * @brief Constructor
    */
-  public CodeBranchInterpreter(final CodeParser codeParser, final UnifiedRegisterFileBlock registerFileBlock)
+  public CodeBranchInterpreter(final CodeParser codeParser,
+                               final UnifiedRegisterFileBlock registerFileBlock,
+                               CodeArithmeticInterpreter codeArithmeticInterpreter)
   {
-    this.registerFileBlock  = registerFileBlock;
-    this.decimalPattern     = Pattern.compile("-?\\d+(\\.\\d+)?");
-    this.hexadecimalPattern = Pattern.compile("0x\\p{XDigit}+");
-    this.codeParser         = codeParser;
+    this.registerFileBlock         = registerFileBlock;
+    this.decimalPattern            = Pattern.compile("-?\\d+(\\.\\d+)?");
+    this.hexadecimalPattern        = Pattern.compile("0x\\p{XDigit}+");
+    this.codeParser                = codeParser;
+    this.codeArithmeticInterpreter = codeArithmeticInterpreter;
   }// end of Constructor
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @param [in] parsedCode          - Parsed instruction from source file to be interpreted
-   * @param [in] instructionPosition - Position of interpreted instruction in source file
+   * The interpreted branch code has the following format: "sign:offset:true" for unconditional jump,
+   * "sign:offset:condition" for conditional jump. The sign is either "signed" or "unsigned" and controls the sign of the offset. The
+   * offset is an expression referencing registers, immediate (also label) and also fixed registers (x1).
+   *
+   * @param parsedCode          Parsed instruction from source file to be interpreted
+   * @param instructionPosition Position of interpreted instruction in source file
    *
    * @return OptionalInt with position of next instruction to be loaded, empty if no jump is performed
    * @brief Interprets branch or jump instruction
@@ -86,82 +94,56 @@ public class CodeBranchInterpreter
     final InstructionFunctionModel instruction = parsedCode.getInstructionFunctionModel();
     
     String[] splitInterpretableAs = instruction.getInterpretableAs().split(":");
-    if (splitInterpretableAs.length != 2)
+    if (splitInterpretableAs.length != 3)
     {
       throw new IllegalArgumentException(
               "InterpretableAs in instruction " + instruction.getName() + " is not valid: " + instruction.getInterpretableAs());
     }
-    // Do not jump if condition is not met
+    boolean isUnsigned    = splitInterpretableAs[0].equals("unsigned");
+    String  offsetExpr    = splitInterpretableAs[1];
+    String  conditionExpr = splitInterpretableAs[2];
     
-    // First part of interpretableAs is type (jump, (un)signed condition)
-    if (splitInterpretableAs[0].startsWith("jump"))
+    boolean isUnconditional = conditionExpr.equals("true");
+    if (!isUnconditional)
     {
-      // Unconditional. Calculate jump offset
-      String jumpExpr = splitInterpretableAs[1];
-      if (jumpExpr.equals("imm"))
-      {
-        // Skip to the jumping
-      }
-      else if (jumpExpr.equals("rs1+imm"))
-      {
-        int rs1 = (int) getValueFromOperand(parsedCode.getArgumentByName("rs1").getValue(),
-                                            instruction.getInputDataType());
-        InputCodeArgument immArgument = parsedCode.getArgumentByName("imm");
-        int               jumpOffset  = rs1 + Integer.parseInt(Objects.requireNonNull(immArgument).getValue());
-        return OptionalInt.of(jumpOffset);
-      }
-      else
-      {
-        throw new IllegalArgumentException("InterpretableAs in instruction " + instruction.getName() + " is not valid");
-      }
-    }
-    else
-    {
-      // example: signed:rs1 != rs2
-      boolean isUnsigned = splitInterpretableAs[0].equals("unsigned");
-      boolean expr = interpretExpression(splitInterpretableAs[1], parsedCode, isUnsigned,
-                                         instruction.getInputDataType());
-      if (!expr)
+      // Check if condition is met
+      boolean jumpCondition = interpretExpression(conditionExpr, parsedCode, isUnsigned,
+                                                  instruction.getInputDataType());
+      if (!jumpCondition)
       {
         // Do not jump, load another instruction in sequence
         return OptionalInt.empty();
       }
     }
     
-    // Do jump
+    // We know that we have to jump, calculate jump offset
     
+    // Label case
     InputCodeArgument labelArgument = parsedCode.getArgumentByName("imm");
-    if (labelArgument != null)
+    if (offsetExpr.equals("imm") && labelArgument != null)
     {
-      //The instruction uses label as jump target offset
       int labelPosition = codeParser.getLabelPosition(labelArgument.getValue());
-      if (labelPosition == -1)
-      {
-        // Literal value (no such label found)
-        return OptionalInt.of(Integer.parseInt(labelArgument.getValue()));
-      }
-      else
+      if (labelPosition != -1)
       {
         // Label found
         return OptionalInt.of(labelPosition - instructionPosition);
       }
     }
-    else
-    {
-      //The instructions uses register as jump target offset
-      InputCodeArgument jumpArgument = parsedCode.getArgumentByName("rs1");
-      int returnPosition = (int) getValueFromOperand(Objects.requireNonNull(jumpArgument).getValue(),
-                                                     instruction.getInputDataType());
-      return OptionalInt.of(returnPosition - instructionPosition + 1);
-    }
+    
+    // Expression case
+    int offset = (int) codeArithmeticInterpreter.evaluateExpression(offsetExpr, DataTypeEnum.kInt, DataTypeEnum.kInt,
+                                                                    parsedCode.getArguments());
+    
+    return OptionalInt.of(instructionPosition + offset);
+    
   }// end of interpretInstruction
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @param [in] expression - Expression to interpret
-   * @param [in] parsedCode - Parsed instruction from source file to be interpreted
-   * @param [in] isUnsigned - Flag telling if function should load values from registers in unsigned
-   *             or signed representation
+   * @param expression Expression to interpret
+   * @param parsedCode Parsed instruction from source file to be interpreted
+   * @param isUnsigned Flag telling if function should load values from registers in unsigned
+   *                   or signed representation
    *
    * @return True if condition is met, false otherwise
    * @brief Interprets branch expression
