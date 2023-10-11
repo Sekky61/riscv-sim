@@ -35,7 +35,7 @@ public class ForwardSimulationTest
   @Mock
   InitLoader initLoader;
   @Mock
-  CodeParser codeParser;
+  InstructionMemoryBlock instructionMemoryBlock;
   private SimCodeModelAllocator simCodeModelAllocator;
   private StatisticsCounter statisticsCounter;
   
@@ -140,7 +140,7 @@ public class ForwardSimulationTest
     this.cpu = new Cpu(cpuCfg);
     CpuState cpuState = this.cpu.cpuState;
     
-    this.codeParser                = cpuState.codeParser;
+    this.instructionMemoryBlock    = cpuState.instructionMemoryBlock;
     this.statisticsCounter         = cpuState.statisticsCounter;
     this.unifiedRegisterFileBlock  = cpuState.unifiedRegisterFileBlock;
     this.renameMapTableBlock       = cpuState.renameMapTableBlock;
@@ -257,7 +257,7 @@ public class ForwardSimulationTest
             .hasCodeLine("add x1 x2 x3").hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     List<InputCodeModel> instructions = Collections.singletonList(ins1);
     
-    codeParser.setParsedCode(instructions);
+    instructionMemoryBlock.setParsedCode(instructions);
     
     this.cpu.step();
     Assert.assertEquals(12, this.instructionFetchBlock.getPcCounter());
@@ -341,7 +341,7 @@ public class ForwardSimulationTest
             .hasInstructionFunctionModel(this.initLoader.getInstructionFunctionModel("add")).hasInstructionName("add")
             .hasCodeLine("add x1 x2 x3").hasArguments(Arrays.asList(argumentMul1, argumentMul2, argumentMul3)).build();
     List<InputCodeModel> instructions = Arrays.asList(ins1, ins2, ins3);
-    codeParser.setParsedCode(instructions);
+    instructionMemoryBlock.setParsedCode(instructions);
     
     this.cpu.step();
     Assert.assertEquals(12, this.instructionFetchBlock.getPcCounter());
@@ -513,7 +513,7 @@ public class ForwardSimulationTest
             .hasCodeLine("add x4 x4 x3").hasArguments(Arrays.asList(argumentAdd21, argumentAdd22, argumentAdd23))
             .build();
     List<InputCodeModel> instructions = Arrays.asList(ins1, ins2, ins3, ins4);
-    codeParser.setParsedCode(instructions);
+    instructionMemoryBlock.setParsedCode(instructions);
     
     this.cpu.step();
     Assert.assertEquals("sub", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
@@ -643,7 +643,7 @@ public class ForwardSimulationTest
             .hasInstructionFunctionModel(this.initLoader.getInstructionFunctionModel("fadd")).hasInstructionName("fadd")
             .hasCodeLine("fadd f1 f2 f3").hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     List<InputCodeModel> instructions = Collections.singletonList(ins1);
-    codeParser.setParsedCode(instructions);
+    instructionMemoryBlock.setParsedCode(instructions);
     
     this.cpu.step();
     Assert.assertEquals(12, this.instructionFetchBlock.getPcCounter());
@@ -729,7 +729,7 @@ public class ForwardSimulationTest
             .hasInstructionFunctionModel(this.initLoader.getInstructionFunctionModel("fadd")).hasInstructionName("fadd")
             .hasCodeLine("fadd f1 f2 f3").hasArguments(Arrays.asList(argumentMul1, argumentMul2, argumentMul3)).build();
     List<InputCodeModel> instructions = Arrays.asList(ins1, ins2, ins3);
-    codeParser.setParsedCode(instructions);
+    instructionMemoryBlock.setParsedCode(instructions);
     
     this.cpu.step();
     Assert.assertEquals(12, this.instructionFetchBlock.getPcCounter());
@@ -905,7 +905,7 @@ public class ForwardSimulationTest
             .hasCodeLine("fadd f4 f4 f3").hasArguments(Arrays.asList(argumentAdd21, argumentAdd22, argumentAdd23))
             .build();
     List<InputCodeModel> instructions = Arrays.asList(ins1, ins2, ins3, ins4);
-    codeParser.setParsedCode(instructions);
+    instructionMemoryBlock.setParsedCode(instructions);
     
     this.cpu.step();
     Assert.assertEquals("fsub", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
@@ -1057,8 +1057,8 @@ public class ForwardSimulationTest
             .hasArguments(Arrays.asList(argumentJmp7, argumentJmp8)).build();
     
     List<InputCodeModel> instructions = Arrays.asList(ins1, ins2, ins3, ins4);
-    codeParser.setParsedCode(instructions);
-    codeParser.setLabels(Map.of("lab1", 1, "lab2", 2, "lab3", 3, "labFinal", 4));
+    instructionMemoryBlock.setParsedCode(instructions);
+    instructionMemoryBlock.setLabels(Map.of("lab1", 1, "lab2", 2, "lab3", 3, "labFinal", 4));
     
     this.cpu.step();
     Assert.assertEquals("jal", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
@@ -1212,8 +1212,8 @@ public class ForwardSimulationTest
             .hasArguments(Arrays.asList(argumentJmp7, argumentJmp8)).build();
     
     List<InputCodeModel> instructions = Arrays.asList(ins1, ins2, ins3);
-    codeParser.setParsedCode(instructions);
-    codeParser.setLabels(Map.of("loop", 0, "loopEnd", 3));
+    instructionMemoryBlock.setParsedCode(instructions);
+    instructionMemoryBlock.setLabels(Map.of("loop", 0, "loopEnd", 3));
     
     // First fetch (3)
     this.cpu.step();
@@ -1485,8 +1485,8 @@ public class ForwardSimulationTest
             .hasArguments(Arrays.asList(argumentAdd1, argumentAdd2, argumentAdd3)).build();
     
     List<InputCodeModel> instructions = Arrays.asList(ins1, ins2, ins3, ins4);
-    codeParser.setParsedCode(instructions);
-    codeParser.setLabels(Map.of("labelIf", 3, "labelFin", 4));
+    instructionMemoryBlock.setParsedCode(instructions);
+    instructionMemoryBlock.setLabels(Map.of("labelIf", 3, "labelFin", 4));
     
     // First fetch
     this.cpu.step();
@@ -1615,8 +1615,8 @@ public class ForwardSimulationTest
             .hasArguments(Arrays.asList(argumentAdd1, argumentAdd2, argumentAdd3)).build();
     
     List<InputCodeModel> instructions = Arrays.asList(ins1, ins2, ins3, ins4);
-    codeParser.setParsedCode(instructions);
-    codeParser.setLabels(Map.of("labelIf", 3, "labelFin", 4));
+    instructionMemoryBlock.setParsedCode(instructions);
+    instructionMemoryBlock.setLabels(Map.of("labelIf", 3, "labelFin", 4));
     // Code:
     //
     // beq x3 x0 labelIf
@@ -1706,7 +1706,7 @@ public class ForwardSimulationTest
     // Code:
     // sw x3 x2 0 (store 6 in memory)
     List<InputCodeModel> instructions = Collections.singletonList(storeCodeModel);
-    codeParser.setParsedCode(instructions);
+    instructionMemoryBlock.setParsedCode(instructions);
     
     this.cpu.step();
     Assert.assertEquals("sw", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
@@ -1762,7 +1762,7 @@ public class ForwardSimulationTest
             .build();
     
     List<InputCodeModel> instructions = Collections.singletonList(loadCodeModel);
-    codeParser.setParsedCode(instructions);
+    instructionMemoryBlock.setParsedCode(instructions);
     
     this.cpu.step();
     Assert.assertEquals("lw", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
@@ -1841,7 +1841,7 @@ public class ForwardSimulationTest
             .build();
     
     List<InputCodeModel> instructions = Arrays.asList(subiCodeModel, storeCodeModel, loadCodeModel);
-    codeParser.setParsedCode(instructions);
+    instructionMemoryBlock.setParsedCode(instructions);
     
     this.cpu.step();
     Assert.assertEquals("subi", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
@@ -1943,7 +1943,7 @@ public class ForwardSimulationTest
     // sw x3 x2 0 - store 6 to address x2 (25)
     // lw x1 x2 0 - load from address x2
     List<InputCodeModel> instructions = Arrays.asList(subiCodeModel, storeCodeModel, loadCodeModel);
-    codeParser.setParsedCode(instructions);
+    instructionMemoryBlock.setParsedCode(instructions);
     
     this.cpu.step();
     // Fetch all three instructions
@@ -2086,7 +2086,7 @@ public class ForwardSimulationTest
     // sw x3 x2 0   # x3 (1) is stored to memory [25+0]
     // lw x1 x2 0   # x1: 0 -> 1
     List<InputCodeModel> instructions = Arrays.asList(subiCodeModel, storeCodeModel, loadCodeModel);
-    codeParser.setParsedCode(instructions);
+    instructionMemoryBlock.setParsedCode(instructions);
     this.memoryAccessUnit.setDelay(3);
     this.memoryAccessUnit.setBaseDelay(3);
     

@@ -88,7 +88,7 @@ public class GetStateHandler implements IRequestResolver<GetStateRequest, GetSta
     {
       Cpu cpu = new Cpu(cfg);
       state = cpu.cpuState;
-      List<ParseError> e = cpu.cpuState.codeParser.getErrorMessages();
+      List<ParseError> e = cpu.cpuState.instructionMemoryBlock.getErrorMessages();
       if (e != null && !e.isEmpty())
       {
         codeErrors = e;

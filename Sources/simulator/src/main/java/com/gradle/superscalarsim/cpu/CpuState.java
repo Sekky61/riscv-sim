@@ -60,7 +60,7 @@ public class CpuState implements Serializable
    * Warning: this must be a reference to the same loader as in Cpu
    */
   public InitLoader initLoader;
-  public CodeParser codeParser;
+  public InstructionMemoryBlock instructionMemoryBlock;
   public SimCodeModelAllocator simCodeModelAllocator;
   
   public ReorderBufferState reorderBufferState;
@@ -134,8 +134,8 @@ public class CpuState implements Serializable
   {
     this.tick = 0;
     
-    this.codeParser = new CodeParser(initLoader);
-    this.codeParser.parse(config.code);
+    this.instructionMemoryBlock = new InstructionMemoryBlock(initLoader);
+    this.instructionMemoryBlock.parse(config.code);
     
     simCodeModelAllocator = new SimCodeModelAllocator();
     
@@ -186,19 +186,19 @@ public class CpuState implements Serializable
     this.memoryModel          = new MemoryModel(cache, cacheStatisticsCounter);
     this.loadStoreInterpreter = new CodeLoadStoreInterpreter(initLoader, memoryModel, unifiedRegisterFileBlock);
     
-    this.instructionFetchBlock = new InstructionFetchBlock(simCodeModelAllocator, codeParser, gShareUnit,
+    this.instructionFetchBlock = new InstructionFetchBlock(simCodeModelAllocator, instructionMemoryBlock, gShareUnit,
                                                            branchTargetBuffer);
     instructionFetchBlock.setNumberOfWays(config.fetchWidth);
     
     this.decodeAndDispatchBlock = new DecodeAndDispatchBlock(simCodeModelAllocator, instructionFetchBlock,
                                                              renameMapTableBlock, globalHistoryRegister,
-                                                             branchTargetBuffer, codeParser);
+                                                             branchTargetBuffer, instructionMemoryBlock);
     this.reorderBufferBlock     = new ReorderBufferBlock(unifiedRegisterFileBlock, renameMapTableBlock,
                                                          decodeAndDispatchBlock, gShareUnit, branchTargetBuffer,
                                                          instructionFetchBlock, statisticsCounter, reorderBufferState);
     this.issueWindowSuperBlock  = new IssueWindowSuperBlock(decodeAndDispatchBlock);
     this.arithmeticInterpreter  = new CodeArithmeticInterpreter(unifiedRegisterFileBlock);
-    this.branchInterpreter      = new CodeBranchInterpreter(codeParser, unifiedRegisterFileBlock,
+    this.branchInterpreter      = new CodeBranchInterpreter(instructionMemoryBlock, unifiedRegisterFileBlock,
                                                             arithmeticInterpreter);
     
     this.storeBufferBlock = new StoreBufferBlock(loadStoreInterpreter, decodeAndDispatchBlock, unifiedRegisterFileBlock,

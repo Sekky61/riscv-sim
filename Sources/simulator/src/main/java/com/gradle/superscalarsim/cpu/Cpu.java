@@ -107,7 +107,8 @@ public class Cpu implements Serializable
   public boolean simEnded()
   {
     boolean robEmpty      = cpuState.reorderBufferBlock.getReorderQueue().isEmpty();
-    boolean pcEnd         = cpuState.instructionFetchBlock.getPcCounter() >= cpuState.codeParser.getParsedCode().size();
+    boolean pcEnd         = cpuState.instructionFetchBlock.getPcCounter() >= cpuState.instructionMemoryBlock.getParsedCode()
+            .size();
     boolean renameEmpty   = cpuState.decodeAndDispatchBlock.getAfterRenameCodeList().isEmpty();
     boolean fetchNotEmpty = !cpuState.instructionFetchBlock.getFetchedCode().isEmpty();
     boolean nop = fetchNotEmpty && cpuState.instructionFetchBlock.getFetchedCode().get(0).getInstructionName()
@@ -170,7 +171,7 @@ public class Cpu implements Serializable
   // Load a program into the CPU. Needs to be build() first.
   public boolean loadProgram(String code)
   {
-    return cpuState.codeParser.parse(code);
+    return cpuState.instructionMemoryBlock.parse(code);
   }
   
   public void setDefaultState()

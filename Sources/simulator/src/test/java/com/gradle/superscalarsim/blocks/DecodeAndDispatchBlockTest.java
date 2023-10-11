@@ -1,15 +1,11 @@
 package com.gradle.superscalarsim.blocks;
 
-import com.gradle.superscalarsim.blocks.base.DecodeAndDispatchBlock;
-import com.gradle.superscalarsim.blocks.base.InstructionFetchBlock;
-import com.gradle.superscalarsim.blocks.base.RenameMapTableBlock;
-import com.gradle.superscalarsim.blocks.base.UnifiedRegisterFileBlock;
+import com.gradle.superscalarsim.blocks.base.*;
 import com.gradle.superscalarsim.blocks.branch.BranchTargetBuffer;
 import com.gradle.superscalarsim.blocks.branch.GlobalHistoryRegister;
 import com.gradle.superscalarsim.builders.InputCodeArgumentBuilder;
 import com.gradle.superscalarsim.builders.InputCodeModelBuilder;
 import com.gradle.superscalarsim.builders.RegisterFileModelBuilder;
-import com.gradle.superscalarsim.code.CodeParser;
 import com.gradle.superscalarsim.code.SimCodeModelAllocator;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
@@ -36,7 +32,7 @@ public class DecodeAndDispatchBlockTest
   @Mock
   private GlobalHistoryRegister globalHistoryRegister;
   @Mock
-  private CodeParser codeParser;
+  private InstructionMemoryBlock instructionMemoryBlock;
   @Mock
   private InitLoader initLoader;
   
@@ -70,7 +66,7 @@ public class DecodeAndDispatchBlockTest
     SimCodeModelAllocator simCodeModelAllocator = new SimCodeModelAllocator();
     decodeAndDispatchBlock = new DecodeAndDispatchBlock(simCodeModelAllocator, instructionFetchBlock,
                                                         renameMapTableBlock, globalHistoryRegister, branchTargetBuffer,
-                                                        codeParser);
+                                                        instructionMemoryBlock);
   }
   
   @Test

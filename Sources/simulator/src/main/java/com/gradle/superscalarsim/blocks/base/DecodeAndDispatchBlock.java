@@ -35,7 +35,6 @@ package com.gradle.superscalarsim.blocks.base;
 import com.gradle.superscalarsim.blocks.AbstractBlock;
 import com.gradle.superscalarsim.blocks.branch.BranchTargetBuffer;
 import com.gradle.superscalarsim.blocks.branch.GlobalHistoryRegister;
-import com.gradle.superscalarsim.code.CodeParser;
 import com.gradle.superscalarsim.code.SimCodeModelAllocator;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.models.InputCodeArgument;
@@ -64,7 +63,7 @@ public class DecodeAndDispatchBlock implements AbstractBlock
   /// Buffer holding information about branch instructions targets
   private final BranchTargetBuffer branchTargetBuffer;
   /// Parser holding parsed instructions
-  private final CodeParser codeParser;
+  private final InstructionMemoryBlock instructionMemoryBlock;
   /// Counter giving out ids for instructions in order to correctly simulate backwards
   private int idCounter;
   /// Boolean flag indicating if the decode block should be flushed
@@ -92,7 +91,7 @@ public class DecodeAndDispatchBlock implements AbstractBlock
                                 RenameMapTableBlock renameMapTableBlock,
                                 GlobalHistoryRegister globalHistoryRegister,
                                 BranchTargetBuffer branchTargetBuffer,
-                                CodeParser codeParser)
+                                InstructionMemoryBlock codeParser)
   {
     this.instructionFetchBlock = instructionFetchBlock;
     this.renameMapTableBlock   = renameMapTableBlock;
@@ -103,9 +102,9 @@ public class DecodeAndDispatchBlock implements AbstractBlock
     this.stallFlag            = false;
     this.stalledPullCount     = 0;
     
-    this.globalHistoryRegister = globalHistoryRegister;
-    this.branchTargetBuffer    = branchTargetBuffer;
-    this.codeParser            = codeParser;
+    this.globalHistoryRegister  = globalHistoryRegister;
+    this.branchTargetBuffer     = branchTargetBuffer;
+    this.instructionMemoryBlock = codeParser;
   }// end of Constructor
   //----------------------------------------------------------------------
   
@@ -424,7 +423,7 @@ public class DecodeAndDispatchBlock implements AbstractBlock
       throw new RuntimeException("Branch instruction does not have immediate argument");
     }
     // If there is label, get its position
-    int labelOffset = codeParser.getLabelPosition(immediateArgument.getValue());
+    int labelOffset = instructionMemoryBlock.getLabelPosition(immediateArgument.getValue());
     if (labelOffset == -1)
     {
       // No label found -- this must be a relative jump (imm is relative to current pc)

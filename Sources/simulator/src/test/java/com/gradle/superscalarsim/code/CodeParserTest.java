@@ -1,5 +1,6 @@
 package com.gradle.superscalarsim.code;
 
+import com.gradle.superscalarsim.blocks.base.InstructionMemoryBlock;
 import com.gradle.superscalarsim.builders.InstructionFunctionModelBuilder;
 import com.gradle.superscalarsim.builders.RegisterFileModelBuilder;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
@@ -26,7 +27,7 @@ public class CodeParserTest
   @Mock
   private InitLoader initLoader;
   
-  private CodeParser codeParser;
+  private InstructionMemoryBlock instructionMemoryBlock;
   
   @Before
   public void setUp()
@@ -73,7 +74,7 @@ public class CodeParserTest
     registerAliases.add(initLoader.new RegisterMapping("x2", "sp"));
     Mockito.when(initLoader.getRegisterAliases()).thenReturn(registerAliases);
     
-    this.codeParser = new CodeParser(this.initLoader);
+    this.instructionMemoryBlock = new InstructionMemoryBlock(this.initLoader);
   }
   
   @Test
@@ -84,21 +85,21 @@ public class CodeParserTest
             fcvt.w.s f3 x1
             fadd f1 f2 f3
             """;
-    Assert.assertTrue(codeParser.parse(code));
-    Assert.assertEquals(3, codeParser.getParsedCode().size());
-    Assert.assertTrue(codeParser.getErrorMessages().isEmpty());
+    Assert.assertTrue(instructionMemoryBlock.parse(code));
+    Assert.assertEquals(3, instructionMemoryBlock.getParsedCode().size());
+    Assert.assertTrue(instructionMemoryBlock.getErrorMessages().isEmpty());
     
-    Assert.assertEquals("add", codeParser.getParsedCode().get(0).getInstructionName());
-    Assert.assertEquals("fcvt.w.s", codeParser.getParsedCode().get(1).getInstructionName());
-    Assert.assertEquals("fadd", codeParser.getParsedCode().get(2).getInstructionName());
+    Assert.assertEquals("add", instructionMemoryBlock.getParsedCode().get(0).getInstructionName());
+    Assert.assertEquals("fcvt.w.s", instructionMemoryBlock.getParsedCode().get(1).getInstructionName());
+    Assert.assertEquals("fadd", instructionMemoryBlock.getParsedCode().get(2).getInstructionName());
     
-    Assert.assertEquals("rd", codeParser.getParsedCode().get(0).getArguments().get(0).getName());
-    Assert.assertEquals("rs1", codeParser.getParsedCode().get(0).getArguments().get(1).getName());
-    Assert.assertEquals("rs2", codeParser.getParsedCode().get(0).getArguments().get(2).getName());
+    Assert.assertEquals("rd", instructionMemoryBlock.getParsedCode().get(0).getArguments().get(0).getName());
+    Assert.assertEquals("rs1", instructionMemoryBlock.getParsedCode().get(0).getArguments().get(1).getName());
+    Assert.assertEquals("rs2", instructionMemoryBlock.getParsedCode().get(0).getArguments().get(2).getName());
     
-    Assert.assertEquals("x1", codeParser.getParsedCode().get(0).getArguments().get(0).getValue());
-    Assert.assertEquals("x2", codeParser.getParsedCode().get(0).getArguments().get(1).getValue());
-    Assert.assertEquals("x3", codeParser.getParsedCode().get(0).getArguments().get(2).getValue());
+    Assert.assertEquals("x1", instructionMemoryBlock.getParsedCode().get(0).getArguments().get(0).getValue());
+    Assert.assertEquals("x2", instructionMemoryBlock.getParsedCode().get(0).getArguments().get(1).getValue());
+    Assert.assertEquals("x3", instructionMemoryBlock.getParsedCode().get(0).getArguments().get(2).getValue());
   }
   
   @Test
@@ -109,17 +110,17 @@ public class CodeParserTest
             two:   fcvt.w.s f3 x1
             three: fadd f1 f2 f3
             """;
-    Assert.assertTrue(codeParser.parse(code));
-    Assert.assertEquals(3, codeParser.getParsedCode().size());
-    Assert.assertTrue(codeParser.getErrorMessages().isEmpty());
+    Assert.assertTrue(instructionMemoryBlock.parse(code));
+    Assert.assertEquals(3, instructionMemoryBlock.getParsedCode().size());
+    Assert.assertTrue(instructionMemoryBlock.getErrorMessages().isEmpty());
     
-    Assert.assertEquals("add", codeParser.getParsedCode().get(0).getInstructionName());
-    Assert.assertEquals("fcvt.w.s", codeParser.getParsedCode().get(1).getInstructionName());
-    Assert.assertEquals("fadd", codeParser.getParsedCode().get(2).getInstructionName());
+    Assert.assertEquals("add", instructionMemoryBlock.getParsedCode().get(0).getInstructionName());
+    Assert.assertEquals("fcvt.w.s", instructionMemoryBlock.getParsedCode().get(1).getInstructionName());
+    Assert.assertEquals("fadd", instructionMemoryBlock.getParsedCode().get(2).getInstructionName());
     
-    Assert.assertEquals(0, codeParser.getLabelPosition("one"));
-    Assert.assertEquals(4, codeParser.getLabelPosition("two"));
-    Assert.assertEquals(8, codeParser.getLabelPosition("three"));
+    Assert.assertEquals(0, instructionMemoryBlock.getLabelPosition("one"));
+    Assert.assertEquals(4, instructionMemoryBlock.getLabelPosition("two"));
+    Assert.assertEquals(8, instructionMemoryBlock.getLabelPosition("three"));
   }
   
   @Test
@@ -133,17 +134,17 @@ public class CodeParserTest
             three:
             fadd f1 f2 f3
             """;
-    Assert.assertTrue(codeParser.parse(code));
-    Assert.assertEquals(3, codeParser.getParsedCode().size());
-    Assert.assertTrue(codeParser.getErrorMessages().isEmpty());
+    Assert.assertTrue(instructionMemoryBlock.parse(code));
+    Assert.assertEquals(3, instructionMemoryBlock.getParsedCode().size());
+    Assert.assertTrue(instructionMemoryBlock.getErrorMessages().isEmpty());
     
-    Assert.assertEquals("add", codeParser.getParsedCode().get(0).getInstructionName());
-    Assert.assertEquals("fcvt.w.s", codeParser.getParsedCode().get(1).getInstructionName());
-    Assert.assertEquals("fadd", codeParser.getParsedCode().get(2).getInstructionName());
+    Assert.assertEquals("add", instructionMemoryBlock.getParsedCode().get(0).getInstructionName());
+    Assert.assertEquals("fcvt.w.s", instructionMemoryBlock.getParsedCode().get(1).getInstructionName());
+    Assert.assertEquals("fadd", instructionMemoryBlock.getParsedCode().get(2).getInstructionName());
     
-    Assert.assertEquals(0, codeParser.getLabelPosition("one"));
-    Assert.assertEquals(4, codeParser.getLabelPosition("two"));
-    Assert.assertEquals(8, codeParser.getLabelPosition("three"));
+    Assert.assertEquals(0, instructionMemoryBlock.getLabelPosition("one"));
+    Assert.assertEquals(4, instructionMemoryBlock.getLabelPosition("two"));
+    Assert.assertEquals(8, instructionMemoryBlock.getLabelPosition("three"));
   }
   
   @Test
@@ -157,11 +158,11 @@ public class CodeParserTest
             one:
             fadd f1 f2 f3
             """;
-    Assert.assertFalse(codeParser.parse(code));
+    Assert.assertFalse(instructionMemoryBlock.parse(code));
     
-    Assert.assertEquals(2, this.codeParser.getErrorMessages().size());
-    Assert.assertEquals(3, this.codeParser.getErrorMessages().get(0).line);
-    Assert.assertEquals(5, this.codeParser.getErrorMessages().get(1).line);
+    Assert.assertEquals(2, this.instructionMemoryBlock.getErrorMessages().size());
+    Assert.assertEquals(3, this.instructionMemoryBlock.getErrorMessages().get(0).line);
+    Assert.assertEquals(5, this.instructionMemoryBlock.getErrorMessages().get(1).line);
   }
   
   @Test
@@ -175,10 +176,10 @@ public class CodeParserTest
             fadd f1 f2 f3
             """;
     
-    Assert.assertFalse(codeParser.parse(code));
-    Assert.assertEquals(0, codeParser.getParsedCode().size());
-    Assert.assertEquals(1, codeParser.getErrorMessages().size());
-    ParseError firstError = codeParser.getErrorMessages().get(0);
+    Assert.assertFalse(instructionMemoryBlock.parse(code));
+    Assert.assertEquals(0, instructionMemoryBlock.getParsedCode().size());
+    Assert.assertEquals(1, instructionMemoryBlock.getErrorMessages().size());
+    ParseError firstError = instructionMemoryBlock.getErrorMessages().get(0);
     Assert.assertEquals(4, firstError.line);
     Assert.assertEquals(11, firstError.columnStart);
     Assert.assertEquals(13, firstError.columnEnd);
@@ -192,11 +193,11 @@ public class CodeParserTest
             two: three: add x1 x2 x3
             """;
     
-    Assert.assertTrue(codeParser.parse(code));
-    Assert.assertEquals(1, codeParser.getParsedCode().size());
-    Assert.assertEquals(0, codeParser.getLabelPosition("one"));
-    Assert.assertEquals(0, codeParser.getLabelPosition("two"));
-    Assert.assertEquals(0, codeParser.getLabelPosition("three"));
+    Assert.assertTrue(instructionMemoryBlock.parse(code));
+    Assert.assertEquals(1, instructionMemoryBlock.getParsedCode().size());
+    Assert.assertEquals(0, instructionMemoryBlock.getLabelPosition("one"));
+    Assert.assertEquals(0, instructionMemoryBlock.getLabelPosition("two"));
+    Assert.assertEquals(0, instructionMemoryBlock.getLabelPosition("three"));
   }
   
   @Test
@@ -208,10 +209,10 @@ public class CodeParserTest
             fadd f1 f2 f3
             """;
     
-    Assert.assertFalse(codeParser.parse(code));
-    Assert.assertEquals(0, codeParser.getParsedCode().size());
+    Assert.assertFalse(instructionMemoryBlock.parse(code));
+    Assert.assertEquals(0, instructionMemoryBlock.getParsedCode().size());
     
-    Assert.assertEquals(1, codeParser.getErrorMessages().size());
+    Assert.assertEquals(1, instructionMemoryBlock.getErrorMessages().size());
   }
   
   @Test
@@ -223,11 +224,11 @@ public class CodeParserTest
             fadd f1 f2 f3
             """;
     
-    Assert.assertFalse(codeParser.parse(code));
-    Assert.assertEquals(0, codeParser.getParsedCode().size());
+    Assert.assertFalse(instructionMemoryBlock.parse(code));
+    Assert.assertEquals(0, instructionMemoryBlock.getParsedCode().size());
     
-    Assert.assertEquals(1, codeParser.getErrorMessages().size());
-    Assert.assertEquals(2, codeParser.getErrorMessages().get(0).line);
+    Assert.assertEquals(1, instructionMemoryBlock.getErrorMessages().size());
+    Assert.assertEquals(2, instructionMemoryBlock.getErrorMessages().get(0).line);
   }
   
   @Test
@@ -239,11 +240,11 @@ public class CodeParserTest
             fadd f1 f2 f3
             """;
     
-    Assert.assertFalse(codeParser.parse(code));
-    Assert.assertEquals(0, codeParser.getParsedCode().size());
+    Assert.assertFalse(instructionMemoryBlock.parse(code));
+    Assert.assertEquals(0, instructionMemoryBlock.getParsedCode().size());
     
-    Assert.assertEquals(1, codeParser.getErrorMessages().size());
-    Assert.assertEquals(2, codeParser.getErrorMessages().get(0).line);
+    Assert.assertEquals(1, instructionMemoryBlock.getErrorMessages().size());
+    Assert.assertEquals(2, instructionMemoryBlock.getErrorMessages().get(0).line);
   }
   
   @Test
@@ -255,11 +256,11 @@ public class CodeParserTest
             fadd 20 f2 f3
             """;
     
-    Assert.assertFalse(codeParser.parse(code));
-    Assert.assertEquals(0, codeParser.getParsedCode().size());
+    Assert.assertFalse(instructionMemoryBlock.parse(code));
+    Assert.assertEquals(0, instructionMemoryBlock.getParsedCode().size());
     
-    Assert.assertEquals(1, codeParser.getErrorMessages().size());
-    Assert.assertEquals(3, codeParser.getErrorMessages().get(0).line);
+    Assert.assertEquals(1, instructionMemoryBlock.getErrorMessages().size());
+    Assert.assertEquals(3, instructionMemoryBlock.getErrorMessages().get(0).line);
   }
   
   @Test
@@ -271,10 +272,10 @@ public class CodeParserTest
             fadd 0x20 f2 f3
             """;
     
-    Assert.assertFalse(codeParser.parse(code));
-    Assert.assertEquals(0, codeParser.getParsedCode().size());
+    Assert.assertFalse(instructionMemoryBlock.parse(code));
+    Assert.assertEquals(0, instructionMemoryBlock.getParsedCode().size());
     
-    Assert.assertEquals(1, codeParser.getErrorMessages().size());
+    Assert.assertEquals(1, instructionMemoryBlock.getErrorMessages().size());
   }
   
   @Test
@@ -286,10 +287,10 @@ public class CodeParserTest
             fadd f1 f2 f3
             """;
     
-    Assert.assertFalse(codeParser.parse(code));
-    Assert.assertEquals(0, codeParser.getParsedCode().size());
+    Assert.assertFalse(instructionMemoryBlock.parse(code));
+    Assert.assertEquals(0, instructionMemoryBlock.getParsedCode().size());
     
-    Assert.assertEquals(1, codeParser.getErrorMessages().size());
+    Assert.assertEquals(1, instructionMemoryBlock.getErrorMessages().size());
   }
   
   @Test
@@ -301,10 +302,10 @@ public class CodeParserTest
             fadd f1 f2 f3
             """;
     
-    Assert.assertFalse(codeParser.parse(code));
-    Assert.assertEquals(0, codeParser.getParsedCode().size());
+    Assert.assertFalse(instructionMemoryBlock.parse(code));
+    Assert.assertEquals(0, instructionMemoryBlock.getParsedCode().size());
     
-    Assert.assertEquals(1, codeParser.getErrorMessages().size());
+    Assert.assertEquals(1, instructionMemoryBlock.getErrorMessages().size());
   }
   
   @Test
@@ -316,10 +317,10 @@ public class CodeParserTest
             fadd f1 f2 f3
             """;
     
-    Assert.assertFalse(codeParser.parse(code));
-    Assert.assertEquals(0, codeParser.getParsedCode().size());
+    Assert.assertFalse(instructionMemoryBlock.parse(code));
+    Assert.assertEquals(0, instructionMemoryBlock.getParsedCode().size());
     
-    Assert.assertEquals(1, codeParser.getErrorMessages().size());
+    Assert.assertEquals(1, instructionMemoryBlock.getErrorMessages().size());
   }
   
   @Test
@@ -331,10 +332,10 @@ public class CodeParserTest
             fadd 0x01 f2 f3
             """;
     
-    Assert.assertFalse(codeParser.parse(code));
-    Assert.assertEquals(0, codeParser.getParsedCode().size());
+    Assert.assertFalse(instructionMemoryBlock.parse(code));
+    Assert.assertEquals(0, instructionMemoryBlock.getParsedCode().size());
     
-    Assert.assertEquals(3, codeParser.getErrorMessages().size());
+    Assert.assertEquals(3, instructionMemoryBlock.getErrorMessages().size());
   }
   
   @Test
@@ -345,11 +346,11 @@ public class CodeParserTest
             beq x3 zero 0
             """;
     
-    boolean success = codeParser.parse(code);
+    boolean success = instructionMemoryBlock.parse(code);
     
     Assert.assertTrue(success);
-    Assert.assertEquals(2, codeParser.getParsedCode().size());
-    Assert.assertTrue(codeParser.getErrorMessages().isEmpty());
+    Assert.assertEquals(2, instructionMemoryBlock.getParsedCode().size());
+    Assert.assertTrue(instructionMemoryBlock.getErrorMessages().isEmpty());
   }
   
   @Test
@@ -361,13 +362,13 @@ public class CodeParserTest
             beq x3 zero 0
             """;
     
-    boolean success = codeParser.parse(code);
+    boolean success = instructionMemoryBlock.parse(code);
     
     Assert.assertFalse(success);
-    Assert.assertEquals(1, codeParser.getErrorMessages().size());
-    Assert.assertEquals(2, codeParser.getErrorMessages().get(0).line);
-    Assert.assertEquals(6, codeParser.getErrorMessages().get(0).columnStart);
-    Assert.assertEquals(9, codeParser.getErrorMessages().get(0).columnEnd);
+    Assert.assertEquals(1, instructionMemoryBlock.getErrorMessages().size());
+    Assert.assertEquals(2, instructionMemoryBlock.getErrorMessages().get(0).line);
+    Assert.assertEquals(6, instructionMemoryBlock.getErrorMessages().get(0).columnStart);
+    Assert.assertEquals(9, instructionMemoryBlock.getErrorMessages().get(0).columnEnd);
   }
   
   @Test
@@ -377,7 +378,7 @@ public class CodeParserTest
             addi sp L: addi sp sp 1
             """;
     
-    boolean success = codeParser.parse(code);
+    boolean success = instructionMemoryBlock.parse(code);
     
     // The parser may not recover well, so number of errors is not checked
     Assert.assertFalse(success);
@@ -391,9 +392,9 @@ public class CodeParserTest
             fadd f1 sp f2
             """;
     
-    boolean success = codeParser.parse(code);
+    boolean success = instructionMemoryBlock.parse(code);
     
     Assert.assertFalse(success);
-    Assert.assertEquals(1, codeParser.getErrorMessages().size());
+    Assert.assertEquals(1, instructionMemoryBlock.getErrorMessages().size());
   }
 }

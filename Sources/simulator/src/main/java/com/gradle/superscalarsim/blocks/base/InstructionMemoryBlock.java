@@ -30,8 +30,10 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.gradle.superscalarsim.code;
+package com.gradle.superscalarsim.blocks.base;
 
+import com.gradle.superscalarsim.code.CodeToken;
+import com.gradle.superscalarsim.code.ParseError;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.loader.InitLoader;
@@ -51,7 +53,7 @@ import java.util.regex.Pattern;
  * by InitLoader. Class also verifies parsed code and in case of failure, error message will be provided with
  * line number and cause.
  */
-public class CodeParser
+public class InstructionMemoryBlock
 {
   /**
    * Pattern for matching hexadecimal values in argument
@@ -113,7 +115,7 @@ public class CodeParser
    *
    * @brief Constructor
    */
-  public CodeParser(final InitLoader initLoader)
+  public InstructionMemoryBlock(final InitLoader initLoader)
   {
     this.initLoader         = initLoader;
     this.errorMessages      = new ArrayList<>();

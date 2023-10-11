@@ -32,6 +32,7 @@
  */
 package com.gradle.superscalarsim.code;
 
+import com.gradle.superscalarsim.blocks.base.InstructionMemoryBlock;
 import com.gradle.superscalarsim.blocks.base.UnifiedRegisterFileBlock;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.models.IInputCodeModel;
@@ -54,7 +55,7 @@ public class CodeBranchInterpreter
   /// Pattern for matching decimal values in argument
   private transient final Pattern decimalPattern;
   /// Object of the parser with parsed instructions
-  private final CodeParser codeParser;
+  private final InstructionMemoryBlock instructionMemoryBlock;
   /// Array of allowed operations
   private final char[] allowedOperators = {'<', '>', '=', '!'};
   private final UnifiedRegisterFileBlock registerFileBlock;
@@ -66,14 +67,14 @@ public class CodeBranchInterpreter
    *
    * @brief Constructor
    */
-  public CodeBranchInterpreter(final CodeParser codeParser,
+  public CodeBranchInterpreter(final InstructionMemoryBlock codeParser,
                                final UnifiedRegisterFileBlock registerFileBlock,
                                CodeArithmeticInterpreter codeArithmeticInterpreter)
   {
     this.registerFileBlock         = registerFileBlock;
     this.decimalPattern            = Pattern.compile("-?\\d+(\\.\\d+)?");
     this.hexadecimalPattern        = Pattern.compile("0x\\p{XDigit}+");
-    this.codeParser                = codeParser;
+    this.instructionMemoryBlock    = codeParser;
     this.codeArithmeticInterpreter = codeArithmeticInterpreter;
   }// end of Constructor
   //-------------------------------------------------------------------------------------------
@@ -122,7 +123,7 @@ public class CodeBranchInterpreter
     InputCodeArgument labelArgument = parsedCode.getArgumentByName("imm");
     if (offsetExpr.equals("imm") && labelArgument != null)
     {
-      int labelPosition = codeParser.getLabelPosition(labelArgument.getValue());
+      int labelPosition = instructionMemoryBlock.getLabelPosition(labelArgument.getValue());
       if (labelPosition != -1)
       {
         // Label found

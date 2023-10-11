@@ -47,7 +47,7 @@ public class LoopTests
     boolean success = cpu.loadProgram(ExecuteUtil.getLoopProgram(5));
     Assert.assertTrue(success);
     // Obtain original value of inputcodemodels
-    List<InputCodeModel> parsedCode = cpu.cpuState.codeParser.getParsedCode();
+    List<InputCodeModel> parsedCode = cpu.cpuState.instructionMemoryBlock.getParsedCode();
     // Copy the list
     List<InputCodeModel> parsedCodeCopy = List.copyOf(parsedCode);
     

@@ -1,5 +1,6 @@
 package com.gradle.superscalarsim.code;
 
+import com.gradle.superscalarsim.blocks.base.InstructionMemoryBlock;
 import com.gradle.superscalarsim.blocks.base.UnifiedRegisterFileBlock;
 import com.gradle.superscalarsim.builders.InputCodeArgumentBuilder;
 import com.gradle.superscalarsim.builders.InputCodeModelBuilder;
@@ -19,7 +20,7 @@ public class CodeBranchInterpreterTest
   
   private InitLoader initLoader;
   
-  private CodeParser codeParser;
+  private InstructionMemoryBlock instructionMemoryBlock;
   
   private CodeBranchInterpreter codeBranchInterpreter;
   
@@ -29,9 +30,9 @@ public class CodeBranchInterpreterTest
     this.initLoader = new InitLoader();
     List<InputCodeModel> inputCodeModels = setUpParsedCode();
     var                  labels          = setUpLabels();
-    codeParser = new CodeParser(initLoader);
-    codeParser.setLabels(labels);
-    codeParser.setParsedCode(inputCodeModels);
+    instructionMemoryBlock = new InstructionMemoryBlock(initLoader);
+    instructionMemoryBlock.setLabels(labels);
+    instructionMemoryBlock.setParsedCode(inputCodeModels);
     
     UnifiedRegisterFileBlock unifiedRegisterFileBlock = new UnifiedRegisterFileBlock(initLoader);
     unifiedRegisterFileBlock.getRegister("x1").setValue(0);
@@ -39,7 +40,7 @@ public class CodeBranchInterpreterTest
     unifiedRegisterFileBlock.getRegister("x3").setValue(6);
     unifiedRegisterFileBlock.getRegister("x4").setValue(-2);
     
-    this.codeBranchInterpreter = new CodeBranchInterpreter(codeParser, unifiedRegisterFileBlock,
+    this.codeBranchInterpreter = new CodeBranchInterpreter(instructionMemoryBlock, unifiedRegisterFileBlock,
                                                            new CodeArithmeticInterpreter(unifiedRegisterFileBlock));
   }
   
