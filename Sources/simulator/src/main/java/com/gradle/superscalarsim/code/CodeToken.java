@@ -22,6 +22,6 @@ public record CodeToken(int line, int columnStart, String text, Type type)
   
   public enum Type
   {
-    WORD, LABEL, NEWLINE, COMMA
+    SYMBOL, L_PAREN, R_PAREN, PLUS, MINUS, DOT, COLON, COMMA, NEWLINE, COMMENT, EOF, STRING, NUMBER
   }
 }
