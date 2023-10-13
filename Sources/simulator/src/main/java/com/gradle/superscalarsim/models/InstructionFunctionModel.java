@@ -177,6 +177,11 @@ public class InstructionFunctionModel
   }// end of getArguments
   //------------------------------------------------------
   
+  public boolean hasDefaultArguments()
+  {
+    return arguments.stream().anyMatch(argument -> argument.defaultValue != null);
+  }
+  
   /**
    * @return String of java code
    * @brief Get string of code for interpreting an instruction. Interpretation depends on instruction type.

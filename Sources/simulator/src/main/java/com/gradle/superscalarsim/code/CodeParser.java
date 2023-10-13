@@ -263,15 +263,12 @@ public class CodeParser
     }
     else
     {
-      boolean skip = parseInstruction();
+      parseInstruction();
       
-      if (skip)
+      // Skip to the next line
+      while (!currentToken.type().equals(CodeToken.Type.NEWLINE) && !currentToken.type().equals(CodeToken.Type.EOF))
       {
-        // Skip to the next line
-        while (!currentToken.type().equals(CodeToken.Type.NEWLINE) && !currentToken.type().equals(CodeToken.Type.EOF))
-        {
-          nextToken();
-        }
+        nextToken();
       }
     }
   }
@@ -302,40 +299,105 @@ public class CodeParser
   }
   
   /**
-   * @return True if token stream should be skipped to the newline, false otherwise
    * @brief Parse instruction. Current token is a symbol with the name of the instruction.
    */
-  private boolean parseInstruction()
+  private void parseInstruction()
   {
     assert currentToken.type().equals(CodeToken.Type.SYMBOL);
     
-    CodeToken instructionNameToken = currentToken;
-    String    instructionName      = instructionNameToken.text();
+    CodeToken                instructionNameToken = currentToken;
+    String                   instructionName      = instructionNameToken.text();
+    InstructionFunctionModel instructionModel     = getInstructionFunctionModel(instructionName);
     
     // Check if instruction is valid
-    InstructionFunctionModel instructionModel = getInstructionFunctionModel(instructionName);
     if (instructionModel == null)
     {
       addError(currentToken, "Unknown instruction '" + instructionName + "'");
-      return true;
+      return;
     }
     
     // Consume instruction name
     nextToken();
     
-    // Arguments
-    // Split the argument string by: "(", ")", ",", while keeping the delimiters
-    List<InstructionFunctionModel.Argument> arguments = instructionModel.getArguments();
+    // Collect arguments
+    List<CodeToken> collectedArgs = collectInstructionArgs();
+    if (collectedArgs == null)
+    {
+      return;
+    }
     
-    boolean hasDefaultArgs    = arguments.stream().anyMatch(arg -> arg.defaultValue() != null);
-    int     expectedArgsCount = arguments.size();
+    // Collect args, fill with defaults if needed
+    Map<String, CodeToken> args               = new HashMap<>();
+    int                    numArguments       = collectedArgs.size();
+    int                    collectedArgsIndex = 0;
+    boolean useDefaultArgs = numArguments < instructionModel.getArguments()
+            .size() && instructionModel.hasDefaultArguments();
+    for (InstructionFunctionModel.Argument argument : instructionModel.getArguments())
+    {
+      String  key        = argument.name();
+      boolean hasDefault = argument.defaultValue() != null;
+      if (useDefaultArgs && hasDefault)
+      {
+        // Use default argument
+        args.put(key, new CodeToken(0, 0, argument.defaultValue(), CodeToken.Type.EOF));
+      }
+      else if (collectedArgsIndex < collectedArgs.size())
+      {
+        // Use collected argument
+        args.put(key, collectedArgs.get(collectedArgsIndex));
+        collectedArgsIndex++;
+      }
+      else
+      {
+        // Missing argument
+        addError(instructionNameToken, "Missing argument " + argument.name());
+        return;
+      }
+    }
     
-    // Collect arguments. We do not know the number of them yet
+    if (collectedArgsIndex < collectedArgs.size())
+    {
+      // Not all arguments were used
+      addError(instructionNameToken, "Too many arguments");
+      return;
+    }
+    
+    // Validate arguments
+    List<InputCodeArgument> codeArguments = new ArrayList<>();
+    for (Map.Entry<String, CodeToken> entry : args.entrySet())
+    {
+      String            argumentName        = entry.getKey();
+      CodeToken         argumentToken       = entry.getValue();
+      InputCodeArgument inputCodeArgument   = new InputCodeArgument(argumentName, argumentToken.text());
+      boolean           isLValue            = argumentName.equals("rd");
+      DataTypeEnum      instructionDataType = isLValue ? instructionModel.getOutputDataType() : instructionModel.getInputDataType();
+      boolean isValid = validateArgument(inputCodeArgument, instructionModel.getInstructionType(), instructionDataType,
+                                         isLValue, argumentToken);
+      if (isValid)
+      {
+        codeArguments.add(inputCodeArgument);
+      }
+    }
+    
+    InputCodeModel inputCodeModel = new InputCodeModel(instructionModel, codeArguments, instructions.size());
+    instructions.add(inputCodeModel);
+  }
+  
+  private InstructionFunctionModel getInstructionFunctionModel(String instructionName)
+  {
+    return instructionModels.get(instructionName);
+  }
+  
+  /**
+   * @return List of tokens representing arguments, null in case of error
+   * @brief Collects arguments of an instruction from the token stream
+   */
+  private List<CodeToken> collectInstructionArgs()
+  {
     // TODO: bugs like: addi x1(x2(x3
-    List<CodeToken> collectedArgs     = new ArrayList<>();
     boolean         openParen         = false;
     boolean         expectingArgState = true;
-    
+    List<CodeToken> collectedArgs     = new ArrayList<>();
     while (true)
     {
       // instructions with parentheses can also be written with commas
@@ -378,77 +440,11 @@ public class CodeParser
       {
         // Give up, next line
         addError(currentToken, "Expected comma or parenthesis, got " + currentToken.type());
-        return true;
+        return null;
       }
       nextToken();
     }
-    
-    // Do we have enough args?
-    
-    int                    numArguments   = collectedArgs.size();
-    boolean                useDefaultArgs = numArguments < expectedArgsCount && hasDefaultArgs;
-    Map<String, CodeToken> args           = new HashMap<>();
-    
-    int collectedArgsIndex = 0;
-    for (int i = 0; i < expectedArgsCount; i++)
-    {
-      InstructionFunctionModel.Argument argument   = arguments.get(i);
-      boolean                           hasDefault = argument.defaultValue() != null;
-      String                            key        = argument.name();
-      if (useDefaultArgs && hasDefault)
-      {
-        // Use default argument
-        args.put(key, new CodeToken(0, 0, argument.defaultValue(), CodeToken.Type.EOF));
-      }
-      else if (collectedArgsIndex < collectedArgs.size())
-      {
-        // Use collected argument
-        args.put(key, collectedArgs.get(collectedArgsIndex));
-        collectedArgsIndex++;
-      }
-      else
-      {
-        // Missing argument
-        addError(instructionNameToken, "Missing argument " + argument.name());
-        return true;
-      }
-    }
-    
-    // All arguments filled, but did we use all provided?
-    if (collectedArgsIndex < collectedArgs.size())
-    {
-      addError(instructionNameToken, "Too many arguments");
-      return true;
-    }
-    
-    List<InputCodeArgument> codeArguments = new ArrayList<>();
-    for (Map.Entry<String, CodeToken> entry : args.entrySet())
-    {
-      String    argumentName  = entry.getKey();
-      CodeToken argumentToken = entry.getValue();
-      // Validate, add to arguments
-      InputCodeArgument inputCodeArgument = new InputCodeArgument(argumentName, argumentToken.text());
-      
-      // Check if the argument is valid
-      boolean      isLValue            = argumentName.equals("rd");
-      DataTypeEnum instructionDataType = isLValue ? instructionModel.getOutputDataType() : instructionModel.getInputDataType();
-      boolean isValid = validateArgument(inputCodeArgument, instructionModel.getInstructionType(), instructionDataType,
-                                         isLValue, argumentToken);
-      
-      if (isValid)
-      {
-        codeArguments.add(inputCodeArgument);
-      }
-    }
-    
-    InputCodeModel inputCodeModel = new InputCodeModel(instructionModel, codeArguments, instructions.size());
-    instructions.add(inputCodeModel);
-    return false;
-  }
-  
-  private InstructionFunctionModel getInstructionFunctionModel(String instructionName)
-  {
-    return instructionModels.get(instructionName);
+    return collectedArgs;
   }
   
   /**
@@ -493,7 +489,7 @@ public class CodeParser
   
   /**
    * @param argumentValue Value of an argument in string format
-   * @param isLValue      True, if the currently verified argument lvalue, false otherwise
+   * @param isLValue      True, if the currently verified argument lvalue (destination), false otherwise
    * @param isDirectValue True, if argument is decimal or hexadecimal , false otherwise
    * @param isBranch      True, if instruction is branch/jump, false otherwise
    * @param token         Token of the argument, for error reporting
@@ -603,28 +599,6 @@ public class CodeParser
       case kSpeculative -> false;
     };
   }// end of checkDatatype
-  //-------------------------------------------------------------------------------------------
-  
-  /**
-   * @param tokenType Expected token type
-   *
-   * @return True if the token type matches, false otherwise
-   * @brief Match token type.
-   */
-  private boolean match(CodeToken.Type tokenType)
-  {
-    if (currentToken.type().equals(tokenType))
-    {
-      nextToken();
-      return true;
-    }
-    else
-    {
-      // TODO: pretty tokenType.toString()
-      addError(currentToken, "Expected " + tokenType.toString() + ", got " + currentToken.type());
-      return false;
-    }
-  }
   //-------------------------------------------------------------------------------------------
   
   /**
