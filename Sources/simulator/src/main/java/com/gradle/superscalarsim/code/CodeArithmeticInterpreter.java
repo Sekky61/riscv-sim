@@ -368,7 +368,18 @@ public class CodeArithmeticInterpreter
       case "|" -> operand1 | operand2;
       case "^" -> operand1 ^ operand2;
       case "<<" -> operand1 << operand2;
-      case ">>" -> operand1 >> operand2;
+      case ">>" ->
+      {
+        if (operand2 >= 32)
+        {
+          // Handle shift right by >32
+          yield operand1 < 0 ? -1.0 : 0.0;
+        }
+        else
+        {
+          yield operand1 >> operand2;
+        }
+      }
       case ">>>" -> operand1 >>> operand2;
       case "++" -> operand1 + 1;
       case "--" -> operand1 - 1;

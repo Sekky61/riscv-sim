@@ -1019,4 +1019,84 @@ public class InstructionTests
     Assert.assertTrue(cpu.cpuState.instructionFetchBlock.getPcCounter() > 200);
     Assert.assertEquals(1, cpu.cpuState.statisticsCounter.getTakenBranches());
   }
+  
+  /**
+   * MUL multiplies the two signed registers and stores the result (lower 32 bits) in the destination register
+   */
+  @Test
+  public void testMUL()
+  {
+    // Setup + exercise
+    cpuConfig.code = "mul x1, x2, x3\n" + "mul x4, x5, x6";
+    Cpu cpu = new Cpu(cpuConfig);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(2);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x3").setValue(3);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x5").setValue(4);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x6").setValue(-5);
+    cpu.execute();
+    
+    // Assert
+    Assert.assertEquals(6, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(), 0.5);
+    Assert.assertEquals(-20, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x4").getValue(), 0.5);
+  }
+  
+  /**
+   * MULH multiplies the two signed registers and stores the result (upper 32 bits) in the destination register
+   */
+  @Test
+  public void testMULH()
+  {
+    // Setup + exercise
+    cpuConfig.code = "mulh x1, x2, x3\n" + "mulh x4, x5, x6";
+    Cpu cpu = new Cpu(cpuConfig);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(-2);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x3").setValue(3);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x5").setValue(Integer.MAX_VALUE);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x6").setValue(4);
+    cpu.execute();
+    
+    // Assert
+    Assert.assertEquals(-1, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(), 0.5);
+    Assert.assertEquals(2, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x4").getValue(), 0.5);
+  }
+  
+  /**
+   * MULHU multiplies the two unsigned registers and stores the result (upper 32 bits) in the destination register
+   */
+  @Test
+  public void testMULHU()
+  {
+    // Setup + exercise
+    cpuConfig.code = "mulhu x1, x2, x3\n" + "mulhu x4, x5, x6";
+    Cpu cpu = new Cpu(cpuConfig);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(8);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x3").setValue(3);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x5").setValue(Integer.MAX_VALUE);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x6").setValue(4);
+    cpu.execute();
+    
+    // Assert
+    Assert.assertEquals(0, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(), 0.5);
+    Assert.assertEquals(2, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x4").getValue(), 0.5);
+  }
+  
+  /**
+   * MULHSU multiplies the first signed and second unsigned registers and stores the result (upper 32 bits) in the
+   * destination register
+   */
+  @Test
+  public void testMULHSU()
+  {
+    // Setup + exercise
+    cpuConfig.code = "mulhsu x1, x2, x3\n" + "mulhsu x4, x5, x6";
+    Cpu cpu = new Cpu(cpuConfig);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(-2);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x3").setValue(3);
+    //TODO; better test
+    cpu.execute();
+    
+    // Assert
+    Assert.assertEquals(-1, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(), 0.5);
+    Assert.assertEquals(2, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x4").getValue(), 0.5);
+  }
 }

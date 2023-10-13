@@ -654,5 +654,29 @@
     "instructionType": "kJumpbranch",
     "arguments": "imm",
     "interpretableAs": "unsigned:x6+imm:true"
+  },
+  "mulh": {
+    "name": "mulh",
+    "instructionType": "kArithmetic",
+    "inputDataType": "kInt",
+    "outputDataType": "kInt",
+    "arguments": "rd,rs1,rs2",
+    "interpretableAs": "rd=rs1*rs2;"
+  },
+  "mulhu": {
+    "name": "mulhu",
+    "instructionType": "kArithmetic",
+    "inputDataType": "kInt",
+    "outputDataType": "kInt",
+    "arguments": "rd,rs1,rs2",
+    "interpretableAs": "rd=rs1*rs2;"
+  },
+  "mulhsu": {
+    "name": "mulhsu",
+    "instructionType": "kArithmetic",
+    "inputDataType": "kInt",
+    "outputDataType": "kInt",
+    "arguments": "rd,rs1,rs2",
+    "interpretableAs": "rd=rs1*rs2;"
   }
 }
