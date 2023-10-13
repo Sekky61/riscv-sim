@@ -43,11 +43,12 @@ public class LoopTests
   @Test
   public void LoopInstructionRenamingTest()
   {
-    Cpu     cpu     = new Cpu();
-    boolean success = cpu.loadProgram(ExecuteUtil.getLoopProgram(5));
-    Assert.assertTrue(success);
+    CpuConfiguration cpuConfiguration = CpuConfiguration.getDefaultConfiguration();
+    cpuConfiguration.code = ExecuteUtil.getLoopProgram(5);
+    Cpu cpu = new Cpu(cpuConfiguration);
+    
     // Obtain original value of inputcodemodels
-    List<InputCodeModel> parsedCode = cpu.cpuState.instructionMemoryBlock.getParsedCode();
+    List<InputCodeModel> parsedCode = cpu.cpuState.instructionMemoryBlock.getCode();
     // Copy the list
     List<InputCodeModel> parsedCodeCopy = List.copyOf(parsedCode);
     
@@ -63,6 +64,7 @@ public class LoopTests
     // Assert that the original input code models are not changed
     Assert.assertEquals(parsedCode, parsedCodeCopy);
     // Assert
+    // TODO: manually check
     Assert.assertEquals(28, steps);
   }
 }

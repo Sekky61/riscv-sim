@@ -17,7 +17,9 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import java.util.Arrays;
-import java.util.List;
+import java.util.Map;
+
+import static org.mockito.ArgumentMatchers.any;
 
 public class CodeArithmeticInterpreterConstraintsTest
 {
@@ -65,53 +67,55 @@ public class CodeArithmeticInterpreterConstraintsTest
     
     Mockito.when(initLoader.getRegisterFileModelList())
             .thenReturn(Arrays.asList(integerFile, longFile, floatFile, doubleFile));
-    Mockito.when(initLoader.getInstructionFunctionModelList()).thenReturn(setUpInstructions());
-    
+    Mockito.when(initLoader.getInstructionFunctionModels()).thenReturn(setUpInstructions());
+    Mockito.when(initLoader.getInstructionFunctionModel(any())).thenCallRealMethod();
     
     this.codeArithmeticInterpreter = new CodeArithmeticInterpreter(new UnifiedRegisterFileBlock(initLoader));
   }
   
-  private List<InstructionFunctionModel> setUpInstructions()
+  private Map<String, InstructionFunctionModel> setUpInstructions()
   {
     InstructionFunctionModel instructionIntInc = new InstructionFunctionModelBuilder().hasName("intInc")
             .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt).isInterpretedAs("rd=++rs1")
-            .hasSyntax("intInc rd rs1").build();
+            .hasArguments("rd,rs1").build();
     
     InstructionFunctionModel instructionIntDec = new InstructionFunctionModelBuilder().hasName("intDec")
             .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt).isInterpretedAs("rd=--rs1")
-            .hasSyntax("intDec rd rs1").build();
+            .hasArguments("rd,rs1").build();
     
     InstructionFunctionModel instructionLongInc = new InstructionFunctionModelBuilder().hasName("longInc")
             .hasInputDataType(DataTypeEnum.kLong).hasOutputDataType(DataTypeEnum.kLong).isInterpretedAs("rd=++rs1")
-            .hasSyntax("longInc rd rs1").build();
+            .hasArguments("rd,rs1").build();
     
     InstructionFunctionModel instructionLongDec = new InstructionFunctionModelBuilder().hasName("longDec")
             .hasInputDataType(DataTypeEnum.kLong).hasOutputDataType(DataTypeEnum.kLong).isInterpretedAs("rd=--rs1")
-            .hasSyntax("longDec rd rs1").build();
+            .hasArguments("rd,rs1").build();
     
     InstructionFunctionModel instructionFloatInc = new InstructionFunctionModelBuilder().hasName("floatInc")
             .hasInputDataType(DataTypeEnum.kFloat).hasOutputDataType(DataTypeEnum.kFloat).isInterpretedAs("rd=++rs1")
-            .hasSyntax("floatInc rd rs1").build();
+            .hasArguments("rd,rs1").build();
     
     InstructionFunctionModel instructionFloatDec = new InstructionFunctionModelBuilder().hasName("floatDec")
             .hasInputDataType(DataTypeEnum.kFloat).hasOutputDataType(DataTypeEnum.kFloat).isInterpretedAs("rd=--rs1")
-            .hasSyntax("floatDec rd rs1").build();
+            .hasArguments("rd,rs1").build();
     
     InstructionFunctionModel instructionDoubleInc = new InstructionFunctionModelBuilder().hasName("doubleInc")
             .hasInputDataType(DataTypeEnum.kDouble).hasOutputDataType(DataTypeEnum.kDouble).isInterpretedAs("rd=++rs1")
-            .hasSyntax("doubleInc rd rs1").build();
+            .hasArguments("rd,rs1").build();
     
     InstructionFunctionModel instructionDoubleDec = new InstructionFunctionModelBuilder().hasName("doubleDec")
             .hasInputDataType(DataTypeEnum.kDouble).hasOutputDataType(DataTypeEnum.kDouble).isInterpretedAs("rd=--rs1")
-            .hasSyntax("doubleDec rd rs1").build();
+            .hasArguments("rd,rs1").build();
     
     InstructionFunctionModel instructionIntDiv = new InstructionFunctionModelBuilder().hasName("div")
             .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt).isInterpretedAs("rd=rs1/rs2;")
-            .hasSyntax("div rd rs1 rs2").build();
+            .hasArguments("rd,rs1,rs2").build();
     
-    return Arrays.asList(instructionIntInc, instructionIntDec, instructionLongInc, instructionLongDec,
-                         instructionFloatInc, instructionFloatDec, instructionDoubleInc, instructionDoubleDec,
-                         instructionIntDiv);
+    return Map.ofEntries(Map.entry("intInc", instructionIntInc), Map.entry("intDec", instructionIntDec),
+                         Map.entry("longInc", instructionLongInc), Map.entry("longDec", instructionLongDec),
+                         Map.entry("floatInc", instructionFloatInc), Map.entry("floatDec", instructionFloatDec),
+                         Map.entry("doubleInc", instructionDoubleInc), Map.entry("doubleDec", instructionDoubleDec),
+                         Map.entry("div", instructionIntDiv));
   }
   
   @Test

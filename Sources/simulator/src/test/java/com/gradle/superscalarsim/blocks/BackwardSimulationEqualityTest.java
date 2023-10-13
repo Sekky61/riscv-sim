@@ -16,11 +16,11 @@ public class BackwardSimulationEqualityTest
   {
     CpuConfiguration cfg = CpuConfiguration.getDefaultConfiguration();
     cfg.code = """
-            addi x3 x0 5
+            addi x3, x0, 5
             loop:
-            beq x3 x0 loopEnd
-            subi x3 x3 1
-            jal x0 loop
+            beq x3, x0, loopEnd
+            subi x3, x3, 1
+            jal x0, loop
             loopEnd:""";
     Cpu cpu  = new Cpu(cfg);
     Cpu cpu2 = new Cpu(cfg);
@@ -51,12 +51,12 @@ public class BackwardSimulationEqualityTest
     cfg.fetchWidth = 1;
     cfg.robSize    = 1;
     cfg.code       = """
-            addi x3 x0 10
+            addi x3, x0, 10
             loop:
-            beq x3 x0 loopEnd
-            subi x3 x3 1
-            addi x4 x4 100
-            jal x0 loop
+            beq x3, x0, loopEnd
+            subi x3, x3, 1
+            addi x4, x4, 100
+            jal x0, loop
             loopEnd:""";
     Cpu cpu  = new Cpu(cfg);
     Cpu cpu2 = new Cpu(cfg);
@@ -86,8 +86,8 @@ public class BackwardSimulationEqualityTest
   {
     CpuConfiguration cfg = CpuConfiguration.getDefaultConfiguration();
     cfg.code = """
-            addi x3 x0 10
-            subi x3 x3 1""";
+            addi x3, x0, 10
+            subi x3, x3, 1""";
     Cpu cpu = new Cpu(cfg);
     cpu.simulateState(4);
     

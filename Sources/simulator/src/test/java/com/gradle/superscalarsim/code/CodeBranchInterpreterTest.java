@@ -30,9 +30,7 @@ public class CodeBranchInterpreterTest
     this.initLoader = new InitLoader();
     List<InputCodeModel> inputCodeModels = setUpParsedCode();
     var                  labels          = setUpLabels();
-    instructionMemoryBlock = new InstructionMemoryBlock(initLoader);
-    instructionMemoryBlock.setLabels(labels);
-    instructionMemoryBlock.setParsedCode(inputCodeModels);
+    instructionMemoryBlock = new InstructionMemoryBlock(inputCodeModels, labels);
     
     UnifiedRegisterFileBlock unifiedRegisterFileBlock = new UnifiedRegisterFileBlock(initLoader);
     unifiedRegisterFileBlock.getRegister("x1").setValue(0);

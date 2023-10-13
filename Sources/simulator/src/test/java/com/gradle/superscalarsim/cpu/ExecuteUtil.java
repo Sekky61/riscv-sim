@@ -30,51 +30,10 @@ package com.gradle.superscalarsim.cpu;
 public class ExecuteUtil
 {
   
-  // Setup CPU with a single instruction
-  static Cpu executeProgram(String instruction)
-  {
-    Cpu cpu = new Cpu();
-    return executeProgram(instruction, cpu);
-  }
-  
-  /**
-   * Fully execute a program
-   *
-   * @param instruction - Program to execute
-   * @param cpu         - CPU to use. Will be modified.
-   *
-   * @return The passed in CPU, with the program executed. Does not copy the CPU.
-   */
-  static Cpu executeProgram(String instruction, Cpu cpu)
-  {
-    boolean success = cpu.loadProgram(instruction);
-    if (!success)
-    {
-      throw new RuntimeException("Failed to load program");
-    }
-    cpu.execute();
-    return cpu;
-  }
-  
-  // Setup CPU with a single instruction
-  static Cpu executeProgramSerdeEveryStep(String instruction)
-  {
-    Cpu cpu = new Cpu();
-    
-    while (!cpu.simEnded())
-    {
-      cpu.step();
-      String json = cpu.cpuState.serialize();
-      cpu.cpuState = CpuState.deserialize(json);
-    }
-    
-    return cpu;
-  }
-  
   static String artihmeticProgram = """
-          addi x3 x4 5
-          add x2 x3 x4
-          add x1 x2 x3""";
+          addi x3, x4, 5
+          add x2, x3, x4
+          add x1, x2, x3""";
   
   /**
    * @param loopCount How many times to loop
@@ -84,6 +43,6 @@ public class ExecuteUtil
    */
   static String getLoopProgram(int loopCount)
   {
-    return "addi x3 x0 " + loopCount + "\n" + "loop:\n" + "beq x3 x0 loopEnd\n" + "subi x3 x3 1\n" + "jal x0 loop\n" + "loopEnd:";
+    return "addi x3, x0, " + loopCount + "\n" + "loop:\n" + "beq x3, x0, loopEnd\n" + "subi x3, x3, 1\n" + "jal x0, loop\n" + "loopEnd:";
   }
 }

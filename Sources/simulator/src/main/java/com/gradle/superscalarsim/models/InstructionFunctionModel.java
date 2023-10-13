@@ -44,16 +44,33 @@ import com.gradle.superscalarsim.enums.InstructionTypeEnum;
  */
 public class InstructionFunctionModel
 {
-  /// Name of instruction
+  /**
+   * Name of the instruction
+   */
   private final String name;
-  /// Data type on which instruction operates
+  
+  /**
+   * Data type on which instruction operates
+   */
   private final DataTypeEnum inputDataType;
-  /// Data type of output register/memory
+  
+  /**
+   * Data type of output register/memory
+   */
   private final DataTypeEnum outputDataType;
-  /// Type of the instruction
+  
+  /**
+   * Type of the instruction (arithmetic, load/store, branch)
+   */
   private final InstructionTypeEnum instructionType;
-  /// Syntax of instruction for validation
-  private final String instructionSyntax;
+  
+  /**
+   * Syntax of instruction arguments for parsing and validation.
+   * Can include colon and dot-split default values. All or none default values must be used.
+   * Examples: "rd,rs1,rs2", "rs2,imm(rs1)", "rd,rs1,imm:x1..0" - imm does not need to be specified, default value is zero.
+   */
+  private final String arguments;
+  
   /**
    * @brief Codified interpretation of instruction
    */
@@ -61,12 +78,12 @@ public class InstructionFunctionModel
   
   public InstructionFunctionModel()
   {
-    this.name              = "";
-    this.inputDataType     = DataTypeEnum.kInt;
-    this.outputDataType    = DataTypeEnum.kInt;
-    this.instructionType   = InstructionTypeEnum.kArithmetic;
-    this.instructionSyntax = "";
-    this.interpretableAs   = "";
+    this.name            = "";
+    this.inputDataType   = DataTypeEnum.kInt;
+    this.outputDataType  = DataTypeEnum.kInt;
+    this.instructionType = InstructionTypeEnum.kArithmetic;
+    this.arguments       = "";
+    this.interpretableAs = "";
   }
   
   /**
@@ -84,15 +101,15 @@ public class InstructionFunctionModel
                                   InstructionTypeEnum instructionType,
                                   String inputDataType,
                                   String outputDataType,
-                                  String instructionSyntax,
+                                  String arguments,
                                   String interpretableAs)
   {
-    this.name              = name;
-    this.inputDataType     = DataTypeEnum.valueOf(inputDataType);
-    this.outputDataType    = DataTypeEnum.valueOf(outputDataType);
-    this.instructionType   = instructionType;
-    this.instructionSyntax = instructionSyntax;
-    this.interpretableAs   = interpretableAs;
+    this.name            = name;
+    this.inputDataType   = DataTypeEnum.valueOf(inputDataType);
+    this.outputDataType  = DataTypeEnum.valueOf(outputDataType);
+    this.instructionType = instructionType;
+    this.arguments       = arguments;
+    this.interpretableAs = interpretableAs;
   }// end of Constructor
   //------------------------------------------------------
   
@@ -103,7 +120,7 @@ public class InstructionFunctionModel
   @Override
   public String toString()
   {
-    return "Instruction: " + name + '\n' + "instruction type " + instructionType + '\n' + "input data type: " + inputDataType + '\n' + "output data type: " + outputDataType + '\n' + "syntax: " + instructionSyntax + '\n' + "interpretable as: " + interpretableAs + '\n';
+    return "Instruction: " + name + " " + arguments + " (" + interpretableAs + ")";
   }// end of toString
   //------------------------------------------------------
   
@@ -151,11 +168,16 @@ public class InstructionFunctionModel
    * @return Instruction syntax
    * @brief Get syntax of an instruction for input assembly code verification
    */
-  public String getInstructionSyntax()
+  public String getArguments()
   {
-    return instructionSyntax;
+    return arguments;
   }// end of getInstructionSyntax
   //------------------------------------------------------
+  
+  public String[] getArgumentsSplit()
+  {
+    return arguments.split(":")[0].split("(?=[(),])|(?<=[(),])");
+  }
   
   /**
    * @return String of java code

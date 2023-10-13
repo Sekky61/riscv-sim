@@ -18,7 +18,9 @@ import org.mockito.MockitoAnnotations;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
+import java.util.Map;
+
+import static org.mockito.ArgumentMatchers.any;
 
 public class CodeArithmeticInterpreterFloatTest
 {
@@ -40,7 +42,8 @@ public class CodeArithmeticInterpreterFloatTest
             .hasRegisterList(Arrays.asList(float1, float2, float3, float4)).build();
     
     Mockito.when(initLoader.getRegisterFileModelList()).thenReturn(Collections.singletonList(floatFile));
-    Mockito.when(initLoader.getInstructionFunctionModelList()).thenReturn(setUpInstructions());
+    Mockito.when(initLoader.getInstructionFunctionModels()).thenReturn(setUpInstructions());
+    Mockito.when(initLoader.getInstructionFunctionModel(any())).thenCallRealMethod();
     
     this.codeArithmeticInterpreter = new CodeArithmeticInterpreter(new UnifiedRegisterFileBlock(initLoader));
   }
@@ -316,54 +319,57 @@ public class CodeArithmeticInterpreterFloatTest
     Assert.assertEquals(1.0, this.codeArithmeticInterpreter.interpretInstruction(codeModel), 0.0001);
   }
   
-  private List<InstructionFunctionModel> setUpInstructions()
+  private Map<String, InstructionFunctionModel> setUpInstructions()
   {
     InstructionFunctionModel instructionFAdd = new InstructionFunctionModelBuilder().hasName("fadd")
             .hasInputDataType(DataTypeEnum.kFloat).hasOutputDataType(DataTypeEnum.kFloat).isInterpretedAs("rd=rs1+rs2;")
-            .hasSyntax("fadd rd rs1 rs2").build();
+            .hasArguments("rd,rs1,rs2").build();
     
     InstructionFunctionModel instructionFSub = new InstructionFunctionModelBuilder().hasName("fsub")
             .hasInputDataType(DataTypeEnum.kFloat).hasOutputDataType(DataTypeEnum.kFloat).isInterpretedAs("rd=rs1-rs2;")
-            .hasSyntax("fsub rd rs1 rs2").build();
+            .hasArguments("rd,rs1,rs2").build();
     
     InstructionFunctionModel instructionFMul = new InstructionFunctionModelBuilder().hasName("fmul")
             .hasInputDataType(DataTypeEnum.kFloat).hasOutputDataType(DataTypeEnum.kFloat).isInterpretedAs("rd=rs1*rs2;")
-            .hasSyntax("fmul rd rs1 rs2").build();
+            .hasArguments("rd,rs1,rs2").build();
     
     InstructionFunctionModel instructionFDiv = new InstructionFunctionModelBuilder().hasName("fdiv")
             .hasInputDataType(DataTypeEnum.kFloat).hasOutputDataType(DataTypeEnum.kFloat).isInterpretedAs("rd=rs1/rs2;")
-            .hasSyntax("fmul rd rs1 rs2").build();
+            .hasArguments("rd,rs1,rs2").build();
     
     InstructionFunctionModel instructionFInc = new InstructionFunctionModelBuilder().hasName("finc")
             .hasInputDataType(DataTypeEnum.kFloat).hasOutputDataType(DataTypeEnum.kFloat).isInterpretedAs("rd=++rs1;")
-            .hasSyntax("finc rd rs1").build();
+            .hasArguments("rd,rs1").build();
     
     InstructionFunctionModel instructionFDec = new InstructionFunctionModelBuilder().hasName("fdec")
             .hasInputDataType(DataTypeEnum.kFloat).hasOutputDataType(DataTypeEnum.kFloat).isInterpretedAs("rd=--rs1;")
-            .hasSyntax("fdec rd rs1").build();
+            .hasArguments("rd,rs1").build();
     
     InstructionFunctionModel instructionFCmpLt = new InstructionFunctionModelBuilder().hasName("fcmplt")
             .hasInputDataType(DataTypeEnum.kFloat).hasOutputDataType(DataTypeEnum.kFloat).isInterpretedAs("rd=rs1<rs2;")
-            .hasSyntax("fcmplt rd rs1 rs2").build();
+            .hasArguments("rd,rs1,rs2").build();
     
     InstructionFunctionModel instructionFCmpLe = new InstructionFunctionModelBuilder().hasName("fcmple")
             .hasInputDataType(DataTypeEnum.kFloat).hasOutputDataType(DataTypeEnum.kFloat)
-            .isInterpretedAs("rd=rs1<=rs2;").hasSyntax("fcmple rd rs1 rs2").build();
+            .isInterpretedAs("rd=rs1<=rs2;").hasArguments("rd,rs1,rs2").build();
     
     InstructionFunctionModel instructionFCmpEq = new InstructionFunctionModelBuilder().hasName("fcmpeq")
             .hasInputDataType(DataTypeEnum.kFloat).hasOutputDataType(DataTypeEnum.kFloat)
-            .isInterpretedAs("rd=rs1==rs2;").hasSyntax("fcmpeq rd rs1 rs2").build();
+            .isInterpretedAs("rd=rs1==rs2;").hasArguments("rd,rs1,rs2").build();
     
     InstructionFunctionModel instructionFCmpGe = new InstructionFunctionModelBuilder().hasName("fcmpge")
             .hasInputDataType(DataTypeEnum.kFloat).hasOutputDataType(DataTypeEnum.kFloat)
-            .isInterpretedAs("rd=rs1>=rs2;").hasSyntax("fcmpge rd rs1 rs2").build();
+            .isInterpretedAs("rd=rs1>=rs2;").hasArguments("rd,rs1,rs2").build();
     
     InstructionFunctionModel instructionFCmpGt = new InstructionFunctionModelBuilder().hasName("fcmpgt")
             .hasInputDataType(DataTypeEnum.kFloat).hasOutputDataType(DataTypeEnum.kFloat).isInterpretedAs("rd=rs1>rs2;")
-            .hasSyntax("fcmpgt rd rs1 rs2").build();
+            .hasArguments("rd,rs1,rs2").build();
     
-    return Arrays.asList(instructionFAdd, instructionFSub, instructionFMul, instructionFDiv, instructionFInc,
-                         instructionFDec, instructionFCmpLt, instructionFCmpLe, instructionFCmpEq, instructionFCmpGe,
-                         instructionFCmpGt);
+    return Map.ofEntries(Map.entry("fadd", instructionFAdd), Map.entry("fsub", instructionFSub),
+                         Map.entry("fmul", instructionFMul), Map.entry("fdiv", instructionFDiv),
+                         Map.entry("finc", instructionFInc), Map.entry("fdec", instructionFDec),
+                         Map.entry("fcmplt", instructionFCmpLt), Map.entry("fcmple", instructionFCmpLe),
+                         Map.entry("fcmpeq", instructionFCmpEq), Map.entry("fcmpge", instructionFCmpGe),
+                         Map.entry("fcmpgt", instructionFCmpGt));
   }
 }

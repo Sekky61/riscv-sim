@@ -42,10 +42,9 @@ public class SerializationTest
   public void afterStepSerDeStaysSameTest()
   {
     // Setup cpu and do 5 steps
-    Cpu cpu = new Cpu();
-    cpu.setDefaultState();
-    boolean success = cpu.loadProgram(ExecuteUtil.artihmeticProgram);
-    Assert.assertTrue(success);
+    CpuConfiguration cpuConfig = CpuConfiguration.getDefaultConfiguration();
+    cpuConfig.code = ExecuteUtil.artihmeticProgram;
+    Cpu cpu = new Cpu(cpuConfig);
     
     for (int i = 0; i < 5; i++)
     {
@@ -66,15 +65,10 @@ public class SerializationTest
   public void serDeHasNoEffectOnBehavior()
   {
     // Setup cpu
-    Cpu cpu = new Cpu();
-    cpu.setDefaultState();
-    boolean success = cpu.loadProgram(ExecuteUtil.artihmeticProgram);
-    Assert.assertTrue(success);
-    Cpu cpu2 = new Cpu();
-    cpu2.setDefaultState();
-    cpu2.loadProgram(ExecuteUtil.artihmeticProgram);
-    boolean success2 = cpu2.loadProgram(ExecuteUtil.artihmeticProgram);
-    Assert.assertTrue(success2);
+    CpuConfiguration cpuConfig = CpuConfiguration.getDefaultConfiguration();
+    cpuConfig.code = ExecuteUtil.artihmeticProgram;
+    Cpu cpu  = new Cpu(cpuConfig);
+    Cpu cpu2 = new Cpu(cpuConfig);
     
     // Exercise - step both cpus, serialize and deserialize one of them repeatedly
     for (int i = 0; i < 10; i++)
@@ -112,15 +106,10 @@ public class SerializationTest
   @Test
   public void additionTest()
   {
-    //Cpu cpu = ExecuteUtil.executeProgramSerdeEveryStep("addi x1, x1, 5");
-    
-    Cpu     cpu     = new Cpu();
-    boolean success = cpu.loadProgram("addi x1, x1, 5");
-    Assert.assertTrue(success);
-    
-    Cpu     cpuSer   = new Cpu();
-    boolean success2 = cpuSer.loadProgram("addi x1, x1, 5");
-    Assert.assertTrue(success2);
+    CpuConfiguration cpuConfig = CpuConfiguration.getDefaultConfiguration();
+    cpuConfig.code = "addi x1, x1, 5";
+    Cpu cpu    = new Cpu(cpuConfig);
+    Cpu cpuSer = new Cpu(cpuConfig);
     
     while (!cpu.simEnded())
     {
@@ -154,7 +143,7 @@ public class SerializationTest
   {
     CpuConfiguration cfg = CpuConfiguration.getDefaultConfiguration();
     cfg.code = """
-            addi x3 x0 10000
+            addi x3, x0, 10000
             loop:
             """;
     
@@ -173,16 +162,16 @@ public class SerializationTest
   {
     CpuConfiguration cfg = CpuConfiguration.getDefaultConfiguration();
     cfg.code = """
-            addi x3 x0 10000
-            addi x8 x0 50
-            sw x8 x0 16
+            addi x3, x0, 10000
+            addi x8, x0, 50
+            sw x8, 16(x0)
             loop:
-            beq x3 x0 loopEnd
-            lw x8 x0 16
-            addi x8 x8 1
-            sw x8 x0 16
-            subi x3 x3 1
-            jal x0 loop
+            beq x3, x0, loopEnd
+            lw x8, 16(x0)
+            addi x8, x8, 1
+            sw x8, 16(x0)
+            subi x3, x3, 1
+            jal x0, loop
             loopEnd:""";
     Cpu cpu = new Cpu(cfg);
     cpu.simulateState(200);
@@ -205,16 +194,16 @@ public class SerializationTest
   {
     CpuConfiguration cfg = CpuConfiguration.getDefaultConfiguration();
     cfg.code = """
-            addi x3 x0 10000
-            addi x8 x0 50
-            sw x8 x0 16
+            addi x3, x0, 10000
+            addi x8, x0, 50
+            sw x8,16(x0)
             loop:
-            beq x3 x0 loopEnd
-            lw x8 x0 16
-            addi x8 x8 1
-            sw x8 x0 16
-            subi x3 x3 1
-            jal x0 loop
+            beq x3, x0, loopEnd
+            lw x8,16(x0)
+            addi x8, x8, 1
+            sw x8,16(x0)
+            subi x3, x3, 1
+            jal x0, loop
             loopEnd:""";
     Cpu cpu = new Cpu(cfg);
     cpu.simulateState(50);

@@ -18,7 +18,9 @@ import org.mockito.MockitoAnnotations;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
+import java.util.Map;
+
+import static org.mockito.ArgumentMatchers.any;
 
 public class CodeArithmeticInterpreterIntTest
 {
@@ -39,9 +41,100 @@ public class CodeArithmeticInterpreterIntTest
             .hasRegisterList(Arrays.asList(integer1, integer2, integer3, integer4)).build();
     
     Mockito.when(initLoader.getRegisterFileModelList()).thenReturn(Collections.singletonList(integerFile));
-    Mockito.when(initLoader.getInstructionFunctionModelList()).thenReturn(setUpInstructions());
+    Mockito.when(initLoader.getInstructionFunctionModels()).thenReturn(setUpInstructions());
+    Mockito.when(initLoader.getInstructionFunctionModel(any())).thenCallRealMethod();
     
     this.codeArithmeticInterpreter = new CodeArithmeticInterpreter(new UnifiedRegisterFileBlock(initLoader));
+  }
+  
+  private Map<String, InstructionFunctionModel> setUpInstructions()
+  {
+    InstructionFunctionModel instructionAdd = new InstructionFunctionModelBuilder().hasName("add")
+            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt).isInterpretedAs("rd=rs1+rs2;")
+            .hasArguments("rd,rs1,rs2").build();
+    
+    InstructionFunctionModel instructionSub = new InstructionFunctionModelBuilder().hasName("sub")
+            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt).isInterpretedAs("rd=rs1-rs2;")
+            .hasArguments("rd,rs1,rs2").build();
+    
+    InstructionFunctionModel instructionMul = new InstructionFunctionModelBuilder().hasName("mul")
+            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt).isInterpretedAs("rd=rs1*rs2;")
+            .hasArguments("rd,rs1,rs2").build();
+    
+    InstructionFunctionModel instructionIntDiv = new InstructionFunctionModelBuilder().hasName("div")
+            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt).isInterpretedAs("rd=rs1/rs2;")
+            .hasArguments("rd,rs1,rs2").build();
+    
+    InstructionFunctionModel instructionShiftLeft = new InstructionFunctionModelBuilder().hasName("shiftLeft")
+            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
+            .isInterpretedAs("rd=rs1" + "<<rs2;").hasArguments("rd,rs1,rs2").build();
+    
+    InstructionFunctionModel instructionShiftRight = new InstructionFunctionModelBuilder().hasName("shiftRight")
+            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
+            .isInterpretedAs("rd=rs1" + ">>rs2;").hasArguments("rd,rs1,rs2").build();
+    
+    InstructionFunctionModel instructionLogShiftRight = new InstructionFunctionModelBuilder().hasName("shiftRightLog")
+            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
+            .isInterpretedAs("rd=rs1" + ">>>rs2;").hasArguments("rd,rs1,rs2").build();
+    
+    InstructionFunctionModel instructionMulAdd = new InstructionFunctionModelBuilder().hasName("mulAdd")
+            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
+            .isInterpretedAs("rd=rs1*" + "(rs1+rs2)").hasArguments("rd,rs1,rs2").build();
+    
+    InstructionFunctionModel instructionAddMul = new InstructionFunctionModelBuilder().hasName("addMul")
+            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
+            .isInterpretedAs("rd=rs1+" + "(rs1*rs2)").hasArguments("rd,rs1,rs2").build();
+    
+    InstructionFunctionModel instructionAnd = new InstructionFunctionModelBuilder().hasName("and")
+            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt).isInterpretedAs("rd=rs1&rs2")
+            .hasArguments("rd,rs1,rs2").build();
+    
+    InstructionFunctionModel instructionOr = new InstructionFunctionModelBuilder().hasName("or")
+            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt).isInterpretedAs("rd=rs1|rs2")
+            .hasArguments("rd,rs1,rs2").build();
+    
+    InstructionFunctionModel instructionNot = new InstructionFunctionModelBuilder().hasName("not")
+            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt).isInterpretedAs("rd=!rs1")
+            .hasArguments("not rd rs1").build();
+    
+    InstructionFunctionModel instructionInc = new InstructionFunctionModelBuilder().hasName("inc")
+            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt).isInterpretedAs("rd=++rs1")
+            .hasArguments("inc rd rs1").build();
+    
+    InstructionFunctionModel instructionDec = new InstructionFunctionModelBuilder().hasName("dec")
+            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt).isInterpretedAs("rd=--rs1")
+            .hasArguments("dec rd rs1").build();
+    
+    InstructionFunctionModel instructionCmpLt = new InstructionFunctionModelBuilder().hasName("cmpLt")
+            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt).isInterpretedAs("rd=rs1<rs2")
+            .hasArguments("rd,rs1,rs2").build();
+    
+    InstructionFunctionModel instructionCmpLe = new InstructionFunctionModelBuilder().hasName("cmpLe")
+            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt).isInterpretedAs("rd=rs1<=rs2")
+            .hasArguments("rd,rs1,rs2").build();
+    
+    InstructionFunctionModel instructionCmpEq = new InstructionFunctionModelBuilder().hasName("cmpEq")
+            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt).isInterpretedAs("rd=rs1==rs2")
+            .hasArguments("rd,rs1,rs2").build();
+    
+    InstructionFunctionModel instructionCmpGt = new InstructionFunctionModelBuilder().hasName("cmpGt")
+            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt).isInterpretedAs("rd=rs1>rs2")
+            .hasArguments("rd,rs1,rs2").build();
+    
+    InstructionFunctionModel instructionCmpGe = new InstructionFunctionModelBuilder().hasName("cmpGe")
+            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt).isInterpretedAs("rd=rs1>=rs2")
+            .hasArguments("rd,rs1,rs2").build();
+    
+    return Map.ofEntries(Map.entry("add", instructionAdd), Map.entry("sub", instructionSub),
+                         Map.entry("mul", instructionMul), Map.entry("div", instructionIntDiv),
+                         Map.entry("shiftLeft", instructionShiftLeft), Map.entry("shiftRight", instructionShiftRight),
+                         Map.entry("shiftRightLog", instructionLogShiftRight), Map.entry("mulAdd", instructionMulAdd),
+                         Map.entry("addMul", instructionAddMul), Map.entry("and", instructionAnd),
+                         Map.entry("or", instructionOr), Map.entry("not", instructionNot),
+                         Map.entry("inc", instructionInc), Map.entry("dec", instructionDec),
+                         Map.entry("cmpLt", instructionCmpLt), Map.entry("cmpLe", instructionCmpLe),
+                         Map.entry("cmpEq", instructionCmpEq), Map.entry("cmpGt", instructionCmpGt),
+                         Map.entry("cmpGe", instructionCmpGe));
   }
   
   @Test
@@ -399,89 +492,5 @@ public class CodeArithmeticInterpreterIntTest
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
     Assert.assertEquals(1, this.codeArithmeticInterpreter.interpretInstruction(codeModel), 0.0001);
-  }
-  
-  private List<InstructionFunctionModel> setUpInstructions()
-  {
-    InstructionFunctionModel instructionAdd = new InstructionFunctionModelBuilder().hasName("add")
-            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt).isInterpretedAs("rd=rs1+rs2;")
-            .hasSyntax("add rd rs1 rs2").build();
-    
-    InstructionFunctionModel instructionSub = new InstructionFunctionModelBuilder().hasName("sub")
-            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt).isInterpretedAs("rd=rs1-rs2;")
-            .hasSyntax("sub rd rs1 rs2").build();
-    
-    InstructionFunctionModel instructionMul = new InstructionFunctionModelBuilder().hasName("mul")
-            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt).isInterpretedAs("rd=rs1*rs2;")
-            .hasSyntax("mul rd rs1 rs2").build();
-    
-    InstructionFunctionModel instructionIntDiv = new InstructionFunctionModelBuilder().hasName("div")
-            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt).isInterpretedAs("rd=rs1/rs2;")
-            .hasSyntax("div rd rs1 rs2").build();
-    
-    InstructionFunctionModel instructionShiftLeft = new InstructionFunctionModelBuilder().hasName("shiftLeft")
-            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
-            .isInterpretedAs("rd=rs1" + "<<rs2;").hasSyntax("shiftLeft rd " + "rs1" + " rs2").build();
-    
-    InstructionFunctionModel instructionShiftRight = new InstructionFunctionModelBuilder().hasName("shiftRight")
-            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
-            .isInterpretedAs("rd=rs1" + ">>rs2;").hasSyntax("shiftRight rd " + "rs1" + " rs2").build();
-    
-    InstructionFunctionModel instructionLogShiftRight = new InstructionFunctionModelBuilder().hasName("shiftRightLog")
-            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
-            .isInterpretedAs("rd=rs1" + ">>>rs2;").hasSyntax("shiftRight " + "rd " + "rs1 rs2").build();
-    
-    InstructionFunctionModel instructionMulAdd = new InstructionFunctionModelBuilder().hasName("mulAdd")
-            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
-            .isInterpretedAs("rd=rs1*" + "(rs1+rs2)").hasSyntax("mulAdd rd rs1 rs2").build();
-    
-    InstructionFunctionModel instructionAddMul = new InstructionFunctionModelBuilder().hasName("addMul")
-            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
-            .isInterpretedAs("rd=rs1+" + "(rs1*rs2)").hasSyntax("addMul rd rs1 rs2").build();
-    
-    InstructionFunctionModel instructionAnd = new InstructionFunctionModelBuilder().hasName("and")
-            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt).isInterpretedAs("rd=rs1&rs2")
-            .hasSyntax("and rd rs1 rs2").build();
-    
-    InstructionFunctionModel instructionOr = new InstructionFunctionModelBuilder().hasName("or")
-            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt).isInterpretedAs("rd=rs1|rs2")
-            .hasSyntax("and rd rs1 rs2").build();
-    
-    InstructionFunctionModel instructionNot = new InstructionFunctionModelBuilder().hasName("not")
-            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt).isInterpretedAs("rd=!rs1")
-            .hasSyntax("not rd rs1").build();
-    
-    InstructionFunctionModel instructionInc = new InstructionFunctionModelBuilder().hasName("inc")
-            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt).isInterpretedAs("rd=++rs1")
-            .hasSyntax("inc rd rs1").build();
-    
-    InstructionFunctionModel instructionDec = new InstructionFunctionModelBuilder().hasName("dec")
-            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt).isInterpretedAs("rd=--rs1")
-            .hasSyntax("dec rd rs1").build();
-    
-    InstructionFunctionModel instructionCmpLt = new InstructionFunctionModelBuilder().hasName("cmpLt")
-            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt).isInterpretedAs("rd=rs1<rs2")
-            .hasSyntax("cmpLt rd rs1 rs2").build();
-    
-    InstructionFunctionModel instructionCmpLe = new InstructionFunctionModelBuilder().hasName("cmpLe")
-            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt).isInterpretedAs("rd=rs1<=rs2")
-            .hasSyntax("cmpLe rd rs1 rs2").build();
-    
-    InstructionFunctionModel instructionCmpEq = new InstructionFunctionModelBuilder().hasName("cmpEq")
-            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt).isInterpretedAs("rd=rs1==rs2")
-            .hasSyntax("cmpEq rd rs1 rs2").build();
-    
-    InstructionFunctionModel instructionCmpGt = new InstructionFunctionModelBuilder().hasName("cmpGt")
-            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt).isInterpretedAs("rd=rs1>rs2")
-            .hasSyntax("cmpGt rd rs1 rs2").build();
-    
-    InstructionFunctionModel instructionCmpGe = new InstructionFunctionModelBuilder().hasName("cmpGe")
-            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt).isInterpretedAs("rd=rs1>=rs2")
-            .hasSyntax("cmpGe rd rs1 rs2").build();
-    
-    return Arrays.asList(instructionAdd, instructionSub, instructionMul, instructionIntDiv, instructionShiftLeft,
-                         instructionShiftRight, instructionLogShiftRight, instructionMulAdd, instructionAddMul,
-                         instructionAnd, instructionOr, instructionNot, instructionInc, instructionDec,
-                         instructionCmpLt, instructionCmpLe, instructionCmpEq, instructionCmpGe, instructionCmpGt);
   }
 }

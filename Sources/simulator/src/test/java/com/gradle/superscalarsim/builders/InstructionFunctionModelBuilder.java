@@ -10,17 +10,17 @@ public class InstructionFunctionModelBuilder
   private InstructionTypeEnum instructionType;
   private DataTypeEnum inputDataType;
   private DataTypeEnum outputDataType;
-  private String instructionSyntax;
+  private String arguments;
   private String interpretableAs;
   
   public InstructionFunctionModelBuilder()
   {
-    this.name              = "";
-    this.instructionType   = null;
-    this.inputDataType     = null;
-    this.outputDataType    = null;
-    this.instructionSyntax = "";
-    this.interpretableAs   = "";
+    this.name            = "";
+    this.instructionType = null;
+    this.inputDataType   = null;
+    this.outputDataType  = null;
+    this.arguments       = "";
+    this.interpretableAs = "";
   }
   
   public InstructionFunctionModelBuilder hasName(String name)
@@ -47,9 +47,9 @@ public class InstructionFunctionModelBuilder
     return this;
   }
   
-  public InstructionFunctionModelBuilder hasSyntax(String instructionSyntax)
+  public InstructionFunctionModelBuilder hasArguments(String arguments)
   {
-    this.instructionSyntax = instructionSyntax;
+    this.arguments = arguments;
     return this;
   }
   
@@ -62,6 +62,6 @@ public class InstructionFunctionModelBuilder
   public InstructionFunctionModel build()
   {
     return new InstructionFunctionModel(this.name, this.instructionType, this.inputDataType.toString(),
-                                        this.outputDataType.toString(), this.instructionSyntax, this.interpretableAs);
+                                        this.outputDataType.toString(), this.arguments, this.interpretableAs);
   }
 }

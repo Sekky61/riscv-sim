@@ -64,7 +64,7 @@ public class RegisterSubloaderTest
     loader.setRegisterAliasesFilePath("testFiles/registerAliases.json");
     
     // Exercise
-    loader.load();
+    loader.loadFromConfigFiles();
     
     //Assert
     Assert.assertEquals("x0", loader.getRegisterAliases().get(0).register);

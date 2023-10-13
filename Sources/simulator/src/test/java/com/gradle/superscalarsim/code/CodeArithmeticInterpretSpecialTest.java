@@ -18,7 +18,9 @@ import org.mockito.MockitoAnnotations;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
+import java.util.Map;
+
+import static org.mockito.ArgumentMatchers.any;
 
 public class CodeArithmeticInterpretSpecialTest
 {
@@ -41,7 +43,8 @@ public class CodeArithmeticInterpretSpecialTest
             .hasRegisterList(Arrays.asList(integer1, integer2, integer3, integer4, integer5, integer6)).build();
     
     Mockito.when(initLoader.getRegisterFileModelList()).thenReturn(Collections.singletonList(integerFile));
-    Mockito.when(initLoader.getInstructionFunctionModelList()).thenReturn(setUpInstructions());
+    Mockito.when(initLoader.getInstructionFunctionModels()).thenReturn(setUpInstructions());
+    Mockito.when(initLoader.getInstructionFunctionModel(any())).thenCallRealMethod();
     
     this.codeArithmeticInterpreter = new CodeArithmeticInterpreter(new UnifiedRegisterFileBlock(initLoader));
   }
@@ -122,37 +125,39 @@ public class CodeArithmeticInterpretSpecialTest
     Assert.assertEquals(17, this.codeArithmeticInterpreter.interpretInstruction(codeModel2), 0.01);
   }
   
-  private List<InstructionFunctionModel> setUpInstructions()
+  private Map<String, InstructionFunctionModel> setUpInstructions()
   {
     InstructionFunctionModel instructionMultipleLines = new InstructionFunctionModelBuilder().hasName("multipleLines")
             .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
-            .isInterpretedAs("rd=rs1" + "+rs2;" + "rd=rd-rs3;" + "rd=rd*rs4;" + "rd=rd/rs5;")
-            .hasSyntax("multipleLines rd " + "rs1 rs2 rs3 rs4" + " rs5").build();
+            .isInterpretedAs("rd=rs1+rs2;rd=rd-rs3;rd=rd*rs4;rd=rd/rs5;").hasArguments("rd,rs1,rs2,rs3,rs4,rs5")
+            .build();
     
     InstructionFunctionModel instructionMultipleBrackets = new InstructionFunctionModelBuilder().hasName(
                     "multipleBrackets").hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
-            .isInterpretedAs("rd" + "=rs1+(rs2-(rs3*" + "(rs4/rs5)));")
-            .hasSyntax("multipleBrackets" + " rd rs1 " + "rs2 " + "rs3" + " rs4 rs5").build();
+            .isInterpretedAs("rd=rs1+(rs2-(rs3*(rs4/rs5)));").hasArguments("rd,rs1,rs2,rs3,rs4,rs5").build();
     
     InstructionFunctionModel instructionMultipleInstructions = new InstructionFunctionModelBuilder().hasName(
                     "multipleInstructions").hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
-            .isInterpretedAs("rd=rs1*rs2" + "+rs1/rs2;").hasSyntax("multipleInstructions rd rs1 rs2").build();
+            .isInterpretedAs("rd=rs1*rs2+rs1/rs2;").hasArguments("rd,rs1,rs2").build();
     
     InstructionFunctionModel instructionArrayOperations = new InstructionFunctionModelBuilder().hasName(
                     "bitArrayOperation").hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
-            .isInterpretedAs("rd[2" + ":0]=rs1[3:0" + "]|rs2" + "[3:0];").hasSyntax("bitArrayOperation" + " rd rs1 rs2")
-            .build();
+            .isInterpretedAs("rd[2:0]=rs1[3:0]|rs2[3:0];").hasArguments("rd,rs1,rs2").build();
     
     InstructionFunctionModel instructionSet31 = new InstructionFunctionModelBuilder().hasName("set31")
             .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt).isInterpretedAs("rd=31")
-            .hasSyntax("set31 rd").build();
+            .hasArguments("set31 rd").build();
     
     InstructionFunctionModel instructionSetZeroesOnIndexFrom3to1 = new InstructionFunctionModelBuilder().hasName(
                     "setZeroes3to1").hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
-            .isInterpretedAs("rd[3:1]=0").hasSyntax("setZeroes3to1 rd").build();
+            .isInterpretedAs("rd[3:1]=0").hasArguments("rd").build();
     
     
-    return Arrays.asList(instructionMultipleLines, instructionMultipleBrackets, instructionMultipleInstructions,
-                         instructionArrayOperations, instructionSet31, instructionSetZeroesOnIndexFrom3to1);
+    return Map.ofEntries(Map.entry("multipleLines", instructionMultipleLines),
+                         Map.entry("multipleBrackets", instructionMultipleBrackets),
+                         Map.entry("multipleInstructions", instructionMultipleInstructions),
+                         Map.entry("bitArrayOperation", instructionArrayOperations),
+                         Map.entry("set31", instructionSet31),
+                         Map.entry("setZeroes3to1", instructionSetZeroesOnIndexFrom3to1));
   }
 }

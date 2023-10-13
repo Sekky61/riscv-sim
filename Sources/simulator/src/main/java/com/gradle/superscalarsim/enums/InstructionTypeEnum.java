@@ -33,6 +33,5 @@ public enum InstructionTypeEnum
 {
   kArithmetic,   ///< Instruction is arithmetic
   kLoadstore,    ///< Instruction does load/store operation
-  kJumpbranch,   ///< Instruction does un/conditional jump in code
-  kLabel         ///< Instruction is jump label
+  kJumpbranch   ///< Instruction does un/conditional jump in code
 }
