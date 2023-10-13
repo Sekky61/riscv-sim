@@ -351,14 +351,27 @@ public class CodeParser
     }
     
     // Collect arguments. We do not know the number of them yet
+    // TODO: bugs like: addi x1(x2(x3
     List<CodeToken> collectedArgs = new ArrayList<>();
+    boolean         openParen     = false;
     for (String argument : argumentTokens)
     {
+      // instructions with parentheses can also be written with commas
+      // example: flw rd,imm(rs1) also flw rd,imm,rs1
       boolean keepGoing = switch (argument)
       {
-        case "(" -> match(CodeToken.Type.L_PAREN);
-        case ")" -> match(CodeToken.Type.R_PAREN);
-        case "," ->
+        case ")" ->
+        {
+          if (openParen)
+          {
+            yield match(CodeToken.Type.R_PAREN);
+          }
+          else
+          {
+            yield false;
+          }
+        }
+        case "(", "," ->
         {
           if (hasDefaultArgs)
           {
@@ -368,7 +381,17 @@ public class CodeParser
               yield false;
             }
           }
-          yield match(CodeToken.Type.COMMA);
+          boolean isParen = currentToken.type().equals(CodeToken.Type.L_PAREN);
+          boolean isComma = currentToken.type().equals(CodeToken.Type.COMMA);
+          if (isParen)
+          {
+            openParen = true;
+          }
+          if (isParen || isComma)
+          {
+            nextToken();
+          }
+          yield isParen || isComma;
         }
         default ->
         {

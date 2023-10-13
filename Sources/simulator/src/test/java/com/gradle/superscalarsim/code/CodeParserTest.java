@@ -240,8 +240,7 @@ public class CodeParserTest
     
     Assert.assertFalse(codeParser.success());
     Assert.assertEquals(0, codeParser.getInstructions().size());
-    
-    Assert.assertEquals(2, codeParser.getErrorMessages().size());
+    Assert.assertEquals(1, codeParser.getErrorMessages().size());
   }
   
   @Test
