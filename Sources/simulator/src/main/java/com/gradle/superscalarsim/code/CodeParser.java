@@ -32,7 +32,10 @@ import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.loader.InitLoader;
 import com.gradle.superscalarsim.models.*;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 /**
@@ -322,90 +325,62 @@ public class CodeParser
     
     // Arguments
     // Split the argument string by: "(", ")", ",", while keeping the delimiters
-    String[] argumentTokens = instructionModel.getArgumentsSplit();
+    List<InstructionFunctionModel.Argument> arguments = instructionModel.getArguments();
     
-    String[] argumentsSplit = instructionModel.getArguments().split(":");
-    boolean  hasDefaultArgs = argumentsSplit.length > 1;
-    String   defaultArgs    = hasDefaultArgs ? argumentsSplit[1] : null;
-    
-    int          expectedArgsCount = 0;
-    List<String> allArgumentNames  = new ArrayList<>();
-    for (String arg : argumentTokens)
-    {
-      if (arg.equals("(") || arg.equals(")") || arg.equals(","))
-      {
-        continue;
-      }
-      expectedArgsCount++;
-      allArgumentNames.add(arg);
-    }
-    
-    // Collect nonempty
-    List<String> defaultArguments = null;
-    if (hasDefaultArgs)
-    {
-      // limit of -1 to keep empty strings
-      String[] defaultArgsSplit = defaultArgs.split("\\.", -1);
-      assert defaultArgsSplit.length == expectedArgsCount;
-      defaultArguments = new ArrayList<>(Arrays.asList(defaultArgsSplit));
-    }
+    boolean hasDefaultArgs    = arguments.stream().anyMatch(arg -> arg.defaultValue() != null);
+    int     expectedArgsCount = arguments.size();
     
     // Collect arguments. We do not know the number of them yet
     // TODO: bugs like: addi x1(x2(x3
-    List<CodeToken> collectedArgs = new ArrayList<>();
-    boolean         openParen     = false;
-    for (String argument : argumentTokens)
+    List<CodeToken> collectedArgs     = new ArrayList<>();
+    boolean         openParen         = false;
+    boolean         expectingArgState = true;
+    
+    while (true)
     {
       // instructions with parentheses can also be written with commas
       // example: flw rd,imm(rs1) also flw rd,imm,rs1
-      boolean keepGoing = switch (argument)
-      {
-        case ")" ->
-        {
-          if (openParen)
-          {
-            yield match(CodeToken.Type.R_PAREN);
-          }
-          else
-          {
-            yield false;
-          }
-        }
-        case "(", "," ->
-        {
-          if (hasDefaultArgs)
-          {
-            // If it has default arguments, the line may end early
-            if (currentToken.type().equals(CodeToken.Type.NEWLINE) || currentToken.type().equals(CodeToken.Type.EOF))
-            {
-              yield false;
-            }
-          }
-          boolean isParen = currentToken.type().equals(CodeToken.Type.L_PAREN);
-          boolean isComma = currentToken.type().equals(CodeToken.Type.COMMA);
-          if (isParen)
-          {
-            openParen = true;
-          }
-          if (isParen || isComma)
-          {
-            nextToken();
-          }
-          yield isParen || isComma;
-        }
-        default ->
-        {
-          // Argument
-          collectedArgs.add(currentToken);
-          nextToken();
-          yield true;
-        }
-      };
       
-      if (!keepGoing)
+      if (expectingArgState)
+      {
+        collectedArgs.add(currentToken);
+        nextToken();
+        expectingArgState = false; // Now a comma
+        continue;
+      }
+      
+      // Not expecting argument
+      
+      boolean isComma      = currentToken.type().equals(CodeToken.Type.COMMA);
+      boolean isParen      = currentToken.type().equals(CodeToken.Type.L_PAREN);
+      boolean isCloseParen = currentToken.type().equals(CodeToken.Type.R_PAREN);
+      boolean isEnd = currentToken.type().equals(CodeToken.Type.NEWLINE) || currentToken.type()
+              .equals(CodeToken.Type.EOF) || currentToken.type().equals(CodeToken.Type.COMMENT);
+      
+      if (isEnd)
       {
         break;
       }
+      
+      if (openParen && isCloseParen)
+      {
+        openParen = false;
+      }
+      else if (isComma || isParen)
+      {
+        expectingArgState = true;
+        if (isParen)
+        {
+          openParen = true;
+        }
+      }
+      else
+      {
+        // Give up, next line
+        addError(currentToken, "Expected comma or parenthesis, got " + currentToken.type());
+        return true;
+      }
+      nextToken();
     }
     
     // Do we have enough args?
@@ -417,12 +392,13 @@ public class CodeParser
     int collectedArgsIndex = 0;
     for (int i = 0; i < expectedArgsCount; i++)
     {
-      boolean hasDefault = defaultArguments != null && !defaultArguments.get(i).isEmpty();
-      String  key        = allArgumentNames.get(i);
+      InstructionFunctionModel.Argument argument   = arguments.get(i);
+      boolean                           hasDefault = argument.defaultValue() != null;
+      String                            key        = argument.name();
       if (useDefaultArgs && hasDefault)
       {
         // Use default argument
-        args.put(key, new CodeToken(0, 0, defaultArguments.get(i), CodeToken.Type.EOF));
+        args.put(key, new CodeToken(0, 0, argument.defaultValue(), CodeToken.Type.EOF));
       }
       else if (collectedArgsIndex < collectedArgs.size())
       {
@@ -433,7 +409,7 @@ public class CodeParser
       else
       {
         // Missing argument
-        addError(instructionNameToken, "Missing argument " + allArgumentNames.get(i));
+        addError(instructionNameToken, "Missing argument " + argument.name());
         return true;
       }
     }
@@ -445,7 +421,7 @@ public class CodeParser
       return true;
     }
     
-    List<InputCodeArgument> arguments = new ArrayList<>();
+    List<InputCodeArgument> codeArguments = new ArrayList<>();
     for (Map.Entry<String, CodeToken> entry : args.entrySet())
     {
       String    argumentName  = entry.getKey();
@@ -461,11 +437,11 @@ public class CodeParser
       
       if (isValid)
       {
-        arguments.add(inputCodeArgument);
+        codeArguments.add(inputCodeArgument);
       }
     }
     
-    InputCodeModel inputCodeModel = new InputCodeModel(instructionModel, arguments, instructions.size());
+    InputCodeModel inputCodeModel = new InputCodeModel(instructionModel, codeArguments, instructions.size());
     instructions.add(inputCodeModel);
     return false;
   }
@@ -473,27 +449,6 @@ public class CodeParser
   private InstructionFunctionModel getInstructionFunctionModel(String instructionName)
   {
     return instructionModels.get(instructionName);
-  }
-  
-  /**
-   * @param tokenType Expected token type
-   *
-   * @return True if the token type matches, false otherwise
-   * @brief Match token type.
-   */
-  private boolean match(CodeToken.Type tokenType)
-  {
-    if (currentToken.type().equals(tokenType))
-    {
-      nextToken();
-      return true;
-    }
-    else
-    {
-      // TODO: pretty tokenType.toString()
-      addError(currentToken, "Expected " + tokenType.toString() + ", got " + currentToken.type());
-      return false;
-    }
   }
   
   /**
@@ -571,7 +526,6 @@ public class CodeParser
     
     return true;
   }// end of checkImmediateArgument
-  //-------------------------------------------------------------------------------------------
   
   /**
    * @param argumentValue    Value of an argument in string format
@@ -649,6 +603,28 @@ public class CodeParser
       case kSpeculative -> false;
     };
   }// end of checkDatatype
+  //-------------------------------------------------------------------------------------------
+  
+  /**
+   * @param tokenType Expected token type
+   *
+   * @return True if the token type matches, false otherwise
+   * @brief Match token type.
+   */
+  private boolean match(CodeToken.Type tokenType)
+  {
+    if (currentToken.type().equals(tokenType))
+    {
+      nextToken();
+      return true;
+    }
+    else
+    {
+      // TODO: pretty tokenType.toString()
+      addError(currentToken, "Expected " + tokenType.toString() + ", got " + currentToken.type());
+      return false;
+    }
+  }
   //-------------------------------------------------------------------------------------------
   
   /**

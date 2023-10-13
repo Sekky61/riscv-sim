@@ -35,6 +35,9 @@ package com.gradle.superscalarsim.models;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * @class InstructionFunctionModel
  * @brief Definition of instruction from instruction set
@@ -69,7 +72,7 @@ public class InstructionFunctionModel
    * Can include colon and dot-split default values. All or none default values must be used.
    * Examples: "rd,rs1,rs2", "rs2,imm(rs1)", "rd,rs1,imm:x1..0" - imm does not need to be specified, default value is zero.
    */
-  private final String arguments;
+  private final List<Argument> arguments;
   
   /**
    * @brief Codified interpretation of instruction
@@ -82,7 +85,7 @@ public class InstructionFunctionModel
     this.inputDataType   = DataTypeEnum.kInt;
     this.outputDataType  = DataTypeEnum.kInt;
     this.instructionType = InstructionTypeEnum.kArithmetic;
-    this.arguments       = "";
+    this.arguments       = new ArrayList<>();
     this.interpretableAs = "";
   }
   
@@ -101,7 +104,7 @@ public class InstructionFunctionModel
                                   InstructionTypeEnum instructionType,
                                   String inputDataType,
                                   String outputDataType,
-                                  String arguments,
+                                  List<Argument> arguments,
                                   String interpretableAs)
   {
     this.name            = name;
@@ -165,19 +168,14 @@ public class InstructionFunctionModel
   //------------------------------------------------------
   
   /**
-   * @return Instruction syntax
-   * @brief Get syntax of an instruction for input assembly code verification
+   * @return Instruction arguments
+   * @brief Get instruction arguments, used for parsing and validation
    */
-  public String getArguments()
+  public List<Argument> getArguments()
   {
     return arguments;
-  }// end of getInstructionSyntax
+  }// end of getArguments
   //------------------------------------------------------
-  
-  public String[] getArgumentsSplit()
-  {
-    return arguments.split(":")[0].split("(?=[(),])|(?<=[(),])");
-  }
   
   /**
    * @return String of java code
@@ -196,4 +194,46 @@ public class InstructionFunctionModel
   {
     return interpretableAs.endsWith("true");
   }// end of isUnconditionalJump
+  
+  /**
+   * @param name         Name of the argument (example: "rd")
+   * @param type         Data type of the argument (example: "kInt")
+   * @param defaultValue Default value of the argument (example: "0" or null)
+   *
+   * @brief Could be a record, but is not because of serialization issues
+   */
+  public static class Argument
+  {
+    private final String name;
+    private final DataTypeEnum type;
+    private final String defaultValue;
+    
+    public Argument(String name, DataTypeEnum type, String defaultValue)
+    {
+      this.name         = name;
+      this.type         = type;
+      this.defaultValue = defaultValue;
+    }
+    
+    public String name()
+    {
+      return name;
+    }
+    
+    public DataTypeEnum type()
+    {
+      return type;
+    }
+    
+    public String defaultValue()
+    {
+      return defaultValue;
+    }
+    
+    @Override
+    public String toString()
+    {
+      return name + ":" + type + (defaultValue != null ? ":" + defaultValue : "");
+    }
+  }
 }

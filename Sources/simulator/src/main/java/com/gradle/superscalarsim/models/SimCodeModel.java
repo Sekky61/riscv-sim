@@ -367,29 +367,32 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>
   {
     StringBuilder genericLine = new StringBuilder(getInstructionName());
     genericLine.append(" ");
-    String[] args = inputCodeModel.getInstructionFunctionModel().getArgumentsSplit();
-    for (String arg : args)
+    List<InstructionFunctionModel.Argument> args = inputCodeModel.getInstructionFunctionModel().getArguments();
+    for (int i = 0; i < args.size(); i++)
     {
-      if (arg.equals(",") || arg.equals(" ") || arg.equals("(") || arg.equals(")"))
+      boolean wrapInParens = inputCodeModel.getInstructionFunctionModel().getInstructionType()
+              .equals(InstructionTypeEnum.kLoadstore) && i == args.size() - 1;
+      if (i != 0)
       {
-        genericLine.append(arg);
-        continue;
+        if (wrapInParens)
+        {
+          genericLine.append("(");
+        }
+        else
+        {
+          genericLine.append(",");
+        }
       }
-      
-      // Remove "="
-      if (arg.contains("="))
-      {
-        arg = arg.split("=")[0];
-      }
-      
-      InputCodeArgument renamedArg = getArgumentByName(arg);
+      InstructionFunctionModel.Argument arg        = args.get(i);
+      InputCodeArgument                 renamedArg = getArgumentByName(arg.name());
       if (renamedArg == null)
       {
-        genericLine.append(arg);
+        throw new RuntimeException("Argument " + arg.name() + " not found in " + this);
       }
-      else
+      genericLine.append(renamedArg.getValue());
+      if (wrapInParens)
       {
-        genericLine.append(renamedArg.getValue());
+        genericLine.append(")");
       }
     }
     return genericLine.toString();

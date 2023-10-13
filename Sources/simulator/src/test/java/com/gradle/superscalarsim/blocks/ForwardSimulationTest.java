@@ -22,7 +22,6 @@ import com.gradle.superscalarsim.models.*;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.*;
@@ -32,9 +31,8 @@ public class ForwardSimulationTest
   // Use this to step the sim
   Cpu cpu;
   
-  @Mock
   InitLoader initLoader;
-  @Mock
+  
   InstructionMemoryBlock instructionMemoryBlock;
   private SimCodeModelAllocator simCodeModelAllocator;
   private StatisticsCounter statisticsCounter;
@@ -176,10 +174,9 @@ public class ForwardSimulationTest
     this.branchFunctionUnitBlock1 = cpuState.branchFunctionUnitBlocks.get(0);
     this.branchFunctionUnitBlock2 = cpuState.branchFunctionUnitBlocks.get(1);
     
-    // Patch initloader, unifiedRegisterFileBlock, codeParser
     this.initLoader = cpuState.initLoader;
+    // Load predefined register files
     this.initLoader.setRegisterFileModelList(Arrays.asList(integerFile, floatFile));
-    this.initLoader.setInstructionFunctionModels(setUpInstructions());
     
     // This adds the reg files, but also creates speculative registers!
     this.unifiedRegisterFileBlock.setRegisterList(new ArrayList<>());

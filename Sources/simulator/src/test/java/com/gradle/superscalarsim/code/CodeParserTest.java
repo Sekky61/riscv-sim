@@ -1,19 +1,9 @@
 package com.gradle.superscalarsim.code;
 
-import com.gradle.superscalarsim.builders.InstructionFunctionModelBuilder;
-import com.gradle.superscalarsim.builders.RegisterFileModelBuilder;
-import com.gradle.superscalarsim.enums.DataTypeEnum;
-import com.gradle.superscalarsim.enums.InstructionTypeEnum;
-import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.loader.InitLoader;
-import com.gradle.superscalarsim.models.InstructionFunctionModel;
-import com.gradle.superscalarsim.models.RegisterFileModel;
-import com.gradle.superscalarsim.models.RegisterModel;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.util.*;
 
 public class CodeParserTest
 {
@@ -22,63 +12,8 @@ public class CodeParserTest
   @Before
   public void setUp()
   {
-    RegisterModel integer0 = new RegisterModel("x0", true, DataTypeEnum.kInt, 0, RegisterReadinessEnum.kAssigned);
-    RegisterModel integer1 = new RegisterModel("x1", false, DataTypeEnum.kInt, 0, RegisterReadinessEnum.kAssigned);
-    RegisterModel integer2 = new RegisterModel("x2", false, DataTypeEnum.kInt, 0, RegisterReadinessEnum.kAssigned);
-    RegisterModel integer3 = new RegisterModel("x3", false, DataTypeEnum.kInt, 0, RegisterReadinessEnum.kAssigned);
-    RegisterModel integer4 = new RegisterModel("x4", false, DataTypeEnum.kInt, 0, RegisterReadinessEnum.kAssigned);
-    RegisterFileModel integerFile = new RegisterFileModelBuilder().hasName("integer").hasDataType(DataTypeEnum.kInt)
-            .hasRegisterList(Arrays.asList(integer0, integer1, integer2, integer3, integer4)).build();
-    
-    RegisterModel float1 = new RegisterModel("f1", false, DataTypeEnum.kFloat, 0, RegisterReadinessEnum.kAssigned);
-    RegisterModel float2 = new RegisterModel("f2", false, DataTypeEnum.kFloat, 0, RegisterReadinessEnum.kAssigned);
-    RegisterModel float3 = new RegisterModel("f3", false, DataTypeEnum.kFloat, 0, RegisterReadinessEnum.kAssigned);
-    RegisterModel float4 = new RegisterModel("f4", false, DataTypeEnum.kFloat, 0, RegisterReadinessEnum.kAssigned);
-    RegisterFileModel floatFile = new RegisterFileModelBuilder().hasName("float").hasDataType(DataTypeEnum.kFloat)
-            .hasRegisterList(Arrays.asList(float1, float2, float3, float4)).build();
-    
-    List<RegisterFileModel> registerFileModelList = new ArrayList<>();
-    registerFileModelList.add(integerFile);
-    registerFileModelList.add(floatFile);
-    
-    InstructionFunctionModel instructionAdd = new InstructionFunctionModelBuilder().hasName("add")
-            .hasType(InstructionTypeEnum.kArithmetic).hasInputDataType(DataTypeEnum.kInt)
-            .hasOutputDataType(DataTypeEnum.kInt).isInterpretedAs("rd=rs1+rs2;").hasArguments("rd,rs1,rs2").build();
-    InstructionFunctionModel instrIntToFloat = new InstructionFunctionModelBuilder().hasName("fcvt.w.s")
-            .hasType(InstructionTypeEnum.kArithmetic).hasInputDataType(DataTypeEnum.kInt)
-            .hasOutputDataType(DataTypeEnum.kFloat).isInterpretedAs("rd=rs1;").hasArguments("rd,rs1").build();
-    InstructionFunctionModel instructionFAdd = new InstructionFunctionModelBuilder().hasName("fadd")
-            .hasType(InstructionTypeEnum.kArithmetic).hasInputDataType(DataTypeEnum.kFloat)
-            .hasOutputDataType(DataTypeEnum.kFloat).isInterpretedAs("rd=rs1+rs2;").hasArguments("rd,rs1,rs2").build();
-    InstructionFunctionModel instructionAddi = new InstructionFunctionModelBuilder().hasName("addi")
-            .hasType(InstructionTypeEnum.kArithmetic).hasInputDataType(DataTypeEnum.kInt)
-            .hasOutputDataType(DataTypeEnum.kInt).isInterpretedAs("rd=rs1+imm;").hasArguments("rd,rs1,imm").build();
-    InstructionFunctionModel instructionBranch = new InstructionFunctionModelBuilder().hasName("beq")
-            .hasType(InstructionTypeEnum.kJumpbranch).hasInputDataType(DataTypeEnum.kInt)
-            .hasOutputDataType(DataTypeEnum.kInt).isInterpretedAs("rs1 == rs2").hasArguments("rs1,rs2,imm").build();
-    InstructionFunctionModel instructionStore = new InstructionFunctionModelBuilder().hasName("sw")
-            .hasType(InstructionTypeEnum.kLoadstore).hasInputDataType(DataTypeEnum.kInt)
-            .hasOutputDataType(DataTypeEnum.kInt).isInterpretedAs("store word rs2 rs1 imm").hasArguments("rs2,imm(rs1)")
-            .build();
-    InstructionFunctionModel instructionJarl = new InstructionFunctionModelBuilder().hasName("jalr")
-            .hasType(InstructionTypeEnum.kJumpbranch).hasInputDataType(DataTypeEnum.kInt)
-            .hasOutputDataType(DataTypeEnum.kInt).isInterpretedAs("signed:rs1+imm:true")
-            .hasArguments("rd,rs1,imm:x1..0").build();
-    
-    Map<String, InstructionFunctionModel> insModels = new TreeMap<>();
-    insModels.put("add", instructionAdd);
-    insModels.put("fcvt.w.s", instrIntToFloat);
-    insModels.put("fadd", instructionFAdd);
-    insModels.put("addi", instructionAddi);
-    insModels.put("beq", instructionBranch);
-    insModels.put("sw", instructionStore);
-    insModels.put("jalr", instructionJarl);
-    
-    ArrayList<InitLoader.RegisterMapping> registerAliases = new ArrayList<>();
-    registerAliases.add(new InitLoader.RegisterMapping("x0", "zero"));
-    registerAliases.add(new InitLoader.RegisterMapping("x2", "sp"));
-    
-    this.codeParser = new CodeParser(insModels, registerFileModelList, registerAliases);
+    InitLoader initLoader = new InitLoader();
+    this.codeParser = new CodeParser(initLoader);
   }
   
   @Test
@@ -102,7 +37,7 @@ public class CodeParserTest
   {
     String code = """
             add x1, x2, x3
-            fcvt.w.s f3, x1
+            fcvt.w.s x1, f3
             fadd f1, f2, f3
             """;
     codeParser.parseCode(code);
@@ -126,7 +61,7 @@ public class CodeParserTest
   {
     String code = """
             one:   add x1, x2, x3
-            two:   fcvt.w.s f3, x1
+            two:   fcvt.w.s x1, f3
             three: fadd f1, f2, f3
             """;
     codeParser.parseCode(code);
@@ -152,7 +87,7 @@ public class CodeParserTest
             one:
             add x1, x2, x3
             two:
-            fcvt.w.s f3, x1
+            fcvt.w.s x1, f3
             three:
             fadd f1, f2, f3
             """;
@@ -178,7 +113,7 @@ public class CodeParserTest
             one:
             add x1, x2, x3
             one:
-            fcvt.w.s f3, x1
+            fcvt.w.s x1, f3
             one:
             fadd f1, f2, f3
             """;
@@ -197,7 +132,7 @@ public class CodeParserTest
     String code = """
             one:
             add x1, x2, x3
-            fcvt.w.s f3, x1
+            fcvt.w.s x1, f3
             beq x1, x2, two
             fadd f1, f2, f3
             """;
@@ -233,7 +168,7 @@ public class CodeParserTest
   {
     String code = """
             add x1, x2
-            fcvt.w.s f3, x1
+            fcvt.w.s x1, f3
             fadd f1, f2, f3
             """;
     codeParser.parseCode(code);
@@ -282,7 +217,7 @@ public class CodeParserTest
   {
     String code = """
             add x1, x2, x3 # commas required
-            fcvt.w.s f3, x1
+            fcvt.w.s x1, f3
             fadd 20, f2, f3
             """;
     codeParser.parseCode(code);
@@ -299,7 +234,7 @@ public class CodeParserTest
   {
     String code = """
             add x1, x2, x3
-            fcvt.w.s f3, x1
+            fcvt.w.s x1, f3
             fadd 0x20, f2, f3
             """;
     codeParser.parseCode(code);
@@ -315,7 +250,7 @@ public class CodeParserTest
   {
     String code = """
             add x1, value, x2
-            fcvt.w.s f3, x1
+            fcvt.w.s x1, f3
             fadd f1, f2, f3
             """;
     codeParser.parseCode(code);
@@ -331,7 +266,7 @@ public class CodeParserTest
   {
     String code = """
             add x1, x2, 0x01
-            fcvt.w.s f3, x1
+            fcvt.w.s x1, f3
             fadd f1, f2, f3
             """;
     codeParser.parseCode(code);
@@ -347,7 +282,7 @@ public class CodeParserTest
   {
     String code = """
             addi x1, x2, x3
-            fcvt.w.s f3, x1
+            fcvt.w.s x1, f3
             fadd f1, f2, f3
             """;
     codeParser.parseCode(code);
@@ -362,7 +297,7 @@ public class CodeParserTest
   {
     String code = """
             addi x1, x2, x3
-            fcvt.w.s f3, x1, x2
+            fcvt.w.s x1, f3, x2
             fadd 0x01, f2, f3
             """;
     codeParser.parseCode(code);

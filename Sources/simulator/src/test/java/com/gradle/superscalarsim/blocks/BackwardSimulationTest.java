@@ -164,10 +164,9 @@ public class BackwardSimulationTest
     this.cpu = new Cpu(cpuCfg);
     CpuState cpuState = this.cpu.cpuState;
     
-    // Patch initloader, unifiedRegisterFileBlock
-    this.initLoader = this.cpu.initLoader;
+    this.initLoader = cpuState.initLoader;
+    // Load predefined register files
     this.initLoader.setRegisterFileModelList(Arrays.asList(integerFile, floatFile));
-    this.initLoader.setInstructionFunctionModels(setUpInstructions());
     
     // This adds the reg files, but also creates speculative registers!
     this.cpu.cpuState.unifiedRegisterFileBlock.setRegisterList(new ArrayList<>());
