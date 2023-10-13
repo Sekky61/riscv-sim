@@ -27,9 +27,6 @@
 
 package com.gradle.superscalarsim.code;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Inspired by <a href="https://github.com/AZHenley/riscv-parser">riscv-parser</a>
  *
@@ -69,15 +66,119 @@ public class Lexer
    */
   public Lexer(String code)
   {
-    if (code == null || code.isEmpty())
+    if (code == null)
     {
       throw new IllegalArgumentException("Code cannot be empty");
+    }
+    if (code.isEmpty())
+    {
+      this.ch = '\0';
+    }
+    else
+    {
+      this.ch = code.charAt(0);
     }
     this.code   = code;
     this.line   = 1;
     this.column = 1;
     this.index  = 0;
-    this.ch     = code.charAt(0);
+  }
+  
+  /**
+   * @return Next token
+   * @brief Produce next token
+   */
+  public CodeToken nextToken()
+  {
+    skipSpaces();
+    
+    int line        = this.line;
+    int columnStart = this.column;
+    
+    switch (ch)
+    {
+      case '\0' ->
+      {
+        return new CodeToken(line, columnStart, "", CodeToken.Type.EOF);
+      }
+      case '\n' ->
+      {
+        nextChar();
+        while (isSpace() || ch == '\n')
+        {
+          nextChar();
+        }
+        return new CodeToken(line, columnStart, "\n", CodeToken.Type.NEWLINE);
+      }
+      case '(' ->
+      {
+        nextChar();
+        return new CodeToken(line, columnStart, "(", CodeToken.Type.L_PAREN);
+      }
+      case ')' ->
+      {
+        nextChar();
+        return new CodeToken(line, columnStart, ")", CodeToken.Type.R_PAREN);
+      }
+      case ',' ->
+      {
+        nextChar();
+        return new CodeToken(line, columnStart, ",", CodeToken.Type.COMMA);
+      }
+      case ':' ->
+      {
+        nextChar();
+        return new CodeToken(line, columnStart, ":", CodeToken.Type.COLON);
+      }
+      case '#' ->
+      {
+        nextChar();
+        StringBuilder comment = new StringBuilder();
+        while (ch != '\n')
+        {
+          comment.append(ch);
+          nextChar();
+        }
+        return new CodeToken(line, columnStart, comment.toString(), CodeToken.Type.COMMENT);
+      }
+      default ->
+      {
+        // Symbol
+        // String case
+        if (ch == '"')
+        {
+          nextChar();
+          StringBuilder symbol = new StringBuilder();
+          while (ch != '"')
+          {
+            symbol.append(ch);
+            nextChar();
+          }
+          nextChar();
+          return new CodeToken(line, columnStart, symbol.toString(), CodeToken.Type.STRING);
+        }
+        
+        // General case
+        StringBuilder symbol = new StringBuilder();
+        while (!isSpace() && !isNewLine() && ch != '(' && ch != ')' && ch != ',' && ch != ':' && ch != '#' && ch != '\0')
+        {
+          symbol.append(ch);
+          nextChar();
+        }
+        return new CodeToken(line, columnStart, symbol.toString(), CodeToken.Type.SYMBOL);
+      }
+    }
+  }
+  
+  /**
+   * @brief Skip spaces
+   */
+  private void skipSpaces()
+  {
+    while (isSpace())
+    {
+      nextChar();
+    }
   }
   
   /**
@@ -102,175 +203,24 @@ public class Lexer
     }
   }
   
-  /**
-   * @return List of tokens
-   * @brief Tokenize the whole code
-   */
-  public List<CodeToken> tokenize()
-  {
-    List<CodeToken> tokens = new ArrayList<>();
-    
-    CodeToken token = nextToken();
-    while (token.type() != CodeToken.Type.EOF)
-    {
-      tokens.add(token);
-      token = nextToken();
-    }
-    
-    return tokens;
-  }
-  
-  /**
-   * @return Next token
-   * @brief Produce next token
-   */
-  public CodeToken nextToken()
-  {
-    skipSpaces();
-    
-    switch (ch)
-    {
-      case '\0' ->
-      {
-        return new CodeToken(line, column, "", CodeToken.Type.EOF);
-      }
-      case '\n' ->
-      {
-        nextChar();
-        while (isSpace() || ch == '\n')
-        {
-          nextChar();
-        }
-        return new CodeToken(line, column, "\n", CodeToken.Type.NEWLINE);
-      }
-      case '+' ->
-      {
-        nextChar();
-        return new CodeToken(line, column, "+", CodeToken.Type.PLUS);
-      }
-      case '-' ->
-      {
-        nextChar();
-        return new CodeToken(line, column, "-", CodeToken.Type.MINUS);
-      }
-      case '(' ->
-      {
-        nextChar();
-        return new CodeToken(line, column, "(", CodeToken.Type.L_PAREN);
-      }
-      case ')' ->
-      {
-        nextChar();
-        return new CodeToken(line, column, ")", CodeToken.Type.R_PAREN);
-      }
-      case '.' ->
-      {
-        nextChar();
-        return new CodeToken(line, column, ".", CodeToken.Type.DOT);
-      }
-      case ',' ->
-      {
-        nextChar();
-        return new CodeToken(line, column, ",", CodeToken.Type.COMMA);
-      }
-      case ':' ->
-      {
-        nextChar();
-        return new CodeToken(line, column, ":", CodeToken.Type.COLON);
-      }
-      case '#' ->
-      {
-        nextChar();
-        StringBuilder comment = new StringBuilder();
-        while (ch != '\n')
-        {
-          comment.append(ch);
-          nextChar();
-        }
-        return new CodeToken(line, column, comment.toString(), CodeToken.Type.COMMENT);
-      }
-      default ->
-      {
-        // Symbol
-        // String case
-        if (ch == '"')
-        {
-          nextChar();
-          StringBuilder symbol = new StringBuilder();
-          while (ch != '"')
-          {
-            symbol.append(ch);
-            nextChar();
-          }
-          nextChar();
-          return new CodeToken(line, column, symbol.toString(), CodeToken.Type.STRING);
-        }
-        
-        // Number case
-        // Hex number case
-        if (ch == '0')
-        {
-          nextChar();
-          if (ch == 'x' || ch == 'X')
-          {
-            nextChar();
-            StringBuilder number = new StringBuilder("0x");
-            while (isHexDigit())
-            {
-              number.append(ch);
-              nextChar();
-            }
-            return new CodeToken(line, column, number.toString(), CodeToken.Type.NUMBER);
-          }
-        }
-        // Dec number case
-        if (isDecDigit())
-        {
-          StringBuilder number = new StringBuilder();
-          while (isDecDigit())
-          {
-            number.append(ch);
-            nextChar();
-          }
-          return new CodeToken(line, column, number.toString(), CodeToken.Type.NUMBER);
-        }
-        
-        // General case
-        StringBuilder symbol = new StringBuilder();
-        while (isAlpha() || isDecDigit() || isPunct())
-        {
-          symbol.append(ch);
-          nextChar();
-        }
-        return new CodeToken(line, column, symbol.toString(), CodeToken.Type.SYMBOL);
-      }
-    }
-  }
-  
-  /**
-   * @brief Skip spaces
-   */
-  private void skipSpaces()
-  {
-    while (isSpace())
-    {
-      nextChar();
-    }
-  }
-  
   private boolean isSpace()
   {
     return ch == ' ' || ch == '\t';
   }
   
-  private boolean isDecDigit()
+  private boolean isNewLine()
   {
-    return Character.isDigit(ch);
+    return ch == '\n';
   }
   
   private boolean isHexDigit()
   {
     return isDecDigit() || (ch >= 'a' && ch <= 'f') || (ch >= 'A' && ch <= 'F');
+  }
+  
+  private boolean isDecDigit()
+  {
+    return Character.isDigit(ch);
   }
   
   private boolean isPunct()
