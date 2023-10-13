@@ -366,9 +366,31 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>
   public String getRenamedCodeLine()
   {
     StringBuilder genericLine = new StringBuilder(getInstructionName());
-    for (int i = 0; i < getArguments().size(); i++)
+    genericLine.append(" ");
+    String[] args = inputCodeModel.getInstructionFunctionModel().getArgumentsSplit();
+    for (String arg : args)
     {
-      genericLine.append(" ").append(getArguments().get(i).getValue());
+      if (arg.equals(",") || arg.equals(" ") || arg.equals("(") || arg.equals(")"))
+      {
+        genericLine.append(arg);
+        continue;
+      }
+      
+      // Remove "="
+      if (arg.contains("="))
+      {
+        arg = arg.split("=")[0];
+      }
+      
+      InputCodeArgument renamedArg = getArgumentByName(arg);
+      if (renamedArg == null)
+      {
+        genericLine.append(arg);
+      }
+      else
+      {
+        genericLine.append(renamedArg.getValue());
+      }
     }
     return genericLine.toString();
   }// end of getRenamedCodeLine

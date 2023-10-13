@@ -27,7 +27,7 @@
 
 package com.gradle.superscalarsim.server.parseAsm;
 
-import com.gradle.superscalarsim.blocks.base.InstructionMemoryBlock;
+import com.gradle.superscalarsim.code.CodeParser;
 import com.gradle.superscalarsim.code.ParseError;
 import com.gradle.superscalarsim.loader.InitLoader;
 import com.gradle.superscalarsim.server.IRequestResolver;
@@ -55,12 +55,12 @@ public class ParseAsmHandler implements IRequestResolver<ParseAsmRequest, ParseA
     else
     {
       // Parse the code
-      InitLoader             loader = new InitLoader();
-      InstructionMemoryBlock parser = new InstructionMemoryBlock(loader);
+      InitLoader loader = new InitLoader();
+      CodeParser parser = new CodeParser(loader);
       
-      boolean success = parser.parse(request.code);
+      parser.parseCode(request.code);
       
-      if (success)
+      if (parser.success())
       {
         // Return success
         response = new ParseAsmResponse(true, null);

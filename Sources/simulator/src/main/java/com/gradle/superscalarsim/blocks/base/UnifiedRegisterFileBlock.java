@@ -178,7 +178,7 @@ public class UnifiedRegisterFileBlock
   {
     this.registerList.clear();
     this.registerMap.clear();
-    initLoader.load();
+    initLoader.loadFromConfigFiles();
     loadRegisters(initLoader.getRegisterFileModelList());
   }// end of refreshRegisters
   //----------------------------------------------------------------------

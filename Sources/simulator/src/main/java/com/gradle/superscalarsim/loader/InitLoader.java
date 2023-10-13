@@ -34,7 +34,6 @@ package com.gradle.superscalarsim.loader;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.gradle.superscalarsim.enums.cache.ReplacementPoliciesEnum;
 import com.gradle.superscalarsim.models.InstructionFunctionModel;
 import com.gradle.superscalarsim.models.RegisterFileModel;
 
@@ -43,27 +42,33 @@ import java.io.IOException;
 import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * @class InitLoader
  * @brief Loads necessary objects for simulation
- * @details Class which loads register files and instruction set into a memory for use in simulation.\n
- * Class shall be used as a first thing before any other work on simulation code
+ * @details Class which loads register files and instruction set. It also provides methods for accessing loaded data.
  */
 public class InitLoader
 {
-  /// Holds loaded register files
+  /**
+   * Holds loaded register files
+   */
   private List<RegisterFileModel> registerFileModelList;
-  /// Holds loaded ISA for interpreting values and action by simulation code
-  private List<InstructionFunctionModel> instructionFunctionModelList;
-  /// Name of directory with register files
-  private String registerFileDir;
   
-  /// Path to file with instructions definitions
+  /**
+   * Holds loaded ISA for interpreting values and action by simulation code
+   */
+  private Map<String, InstructionFunctionModel> instructionFunctionModels;
+  
+  /**
+   * Path to the directory with register files
+   */
+  private String registerFileDirPath;
+  
+  /**
+   * Path to file with instructions definitions
+   */
   private String instructionsFilePath;
   
   /**
@@ -79,189 +84,45 @@ public class InitLoader
    */
   private List<RegisterMapping> registerAliases;
   
-  /// Holds error message, if any occurs, otherwise is empty
+  /**
+   * Holds error message, if any occurs, otherwise is empty
+   */
   private String errorMessage;
-  
-  /// size of cache in lines
-  private int cacheSize;
-  /// size of cache line
-  private int cacheLineSize;
-  /// cache associativity
-  private int associativity;
-  /// replacement policy used by cache
-  private ReplacementPoliciesEnum replacementPolicy;
-  /// Should the cache be used or directly memory?
-  private boolean useCache;
-  /// Is the cache set to writeback or writethrough
-  private boolean cacheWriteback;
-  private boolean cacheAddRemainingDelayToStore;
-  private int cacheStoreDelay;
-  private int cacheLoadDelay;
-  private int cacheLineReplacementDelay;
-  
-  public class RegisterMapping
-  {
-    public String register;
-    public String alias;
-    
-    public RegisterMapping(String register, String alias)
-    {
-      this.register = register;
-      this.alias    = alias;
-    }
-  }
   
   /**
    * @brief Constructor
    */
   public InitLoader()
   {
-    this.registerFileModelList        = new ArrayList<>();
-    this.instructionFunctionModelList = new ArrayList<>();
+    this.registerFileModelList     = new ArrayList<>();
+    this.instructionFunctionModels = new TreeMap<>();
     
-    this.registerFileDir         = "./registers/";
+    this.registerFileDirPath     = "./registers/";
     this.instructionsFilePath    = "./supportedInstructions.json";
     this.registerAliasesFilePath = "./registerAliases.json";
     
     this.errorMessage = "";
-    
-    this.cacheSize                     = 16;
-    this.cacheLineSize                 = 32;
-    this.associativity                 = 2;
-    this.replacementPolicy             = ReplacementPoliciesEnum.LRU;
-    this.useCache                      = true;
-    this.cacheWriteback                = true;
-    this.cacheAddRemainingDelayToStore = false;
-    this.cacheStoreDelay               = 0;
-    this.cacheLoadDelay                = 1;
-    this.cacheLineReplacementDelay     = 10;
+    this.loadFromConfigFiles();
   }// end of Constructor
-  //------------------------------------------------------
   
-  public String getInstructionsFilePath()
+  /**
+   * @return List of register files
+   * @brief Get loaded register files
+   */
+  public List<RegisterFileModel> getRegisterFileModelList()
   {
-    return instructionsFilePath;
-  }
+    return registerFileModelList;
+  }// end of getRegisterFileModelList
   
-  public void setInstructionsFilePath(String instructionsFilePath)
+  public void setRegisterFileModelList(List<RegisterFileModel> registerFileModelList)
   {
-    this.instructionsFilePath = instructionsFilePath;
-  }
-  
-  public String getRegisterFileDir()
-  {
-    return registerFileDir;
-  }
-  
-  public void setRegisterFileDir(String registerFileDir)
-  {
-    this.registerFileDir = registerFileDir;
-  }
-  
-  public void setAssociativity(int associativity)
-  {
-    this.associativity = associativity;
-  }
-  
-  public void setCacheLineSize(int cacheLineSize)
-  {
-    this.cacheLineSize = cacheLineSize;
-  }
-  
-  public void setCacheSize(int cacheSize)
-  {
-    this.cacheSize = cacheSize;
-  }
-  
-  public void setUseCache(boolean useCache)
-  {
-    this.useCache = useCache;
-  }
-  
-  public void setCacheWriteback(boolean cacheWriteback)
-  {
-    this.cacheWriteback = cacheWriteback;
-  }
-  
-  public void setReplacementPolicy(ReplacementPoliciesEnum replacementPolicy)
-  {
-    this.replacementPolicy = replacementPolicy;
-  }
-  
-  public void setCacheAddRemainingDelayToStore(boolean remainingDelay)
-  {
-    cacheAddRemainingDelayToStore = remainingDelay;
-  }
-  
-  public void setStoreDelay(int storeDelay)
-  {
-    this.cacheStoreDelay = storeDelay;
-  }
-  
-  public void setLoadDelay(int loadDelay)
-  {
-    this.cacheLoadDelay = loadDelay;
-  }
-  
-  public void setLineReplacementDelay(int lineReplacementDelay)
-  {
-    this.cacheLineReplacementDelay = lineReplacementDelay;
-  }
-  
-  public int getAssociativity()
-  {
-    return associativity;
-  }
-  
-  public int getCacheLineSize()
-  {
-    return cacheLineSize;
-  }
-  
-  public int getCacheSize()
-  {
-    return cacheSize;
-  }
-  
-  public boolean getUseCache()
-  {
-    return useCache;
-  }
-  
-  public boolean getCacheWriteback()
-  {
-    return cacheWriteback;
-  }
-  
-  public ReplacementPoliciesEnum getReplacementPolicy()
-  {
-    return replacementPolicy;
-  }
-  
-  public boolean getCacheAddRemainingDelayToStore()
-  {
-    return cacheAddRemainingDelayToStore;
-  }
-  
-  public int getCacheStoreDelay()
-  {
-    return cacheStoreDelay;
-  }
-  
-  public int getCacheLoadDelay()
-  {
-    return cacheLoadDelay;
-  }
-  
-  public int getCacheLineReplacementDelay()
-  {
-    return cacheLineReplacementDelay;
+    this.registerFileModelList = registerFileModelList;
   }
   
   /**
-   * @brief Calls appropriate subloaders and loads lists
+   * @brief Calls appropriate subloaders and loads lists from files. The alternative is to set the data using setters.
    */
-  public void load()
+  public void loadFromConfigFiles()
   {
     try
     {
@@ -274,6 +135,45 @@ public class InitLoader
       handleNullPointerException();
     }
   }// end of load
+  //------------------------------------------------------
+  
+  /**
+   * @throws NullPointerException Thrown in case of empty directory
+   * @brief Calls subloader for register files and saves them into list
+   */
+  private void loadRegisters() throws NullPointerException
+  {
+    this.registerFileModelList.clear();
+    final File              registerFolder = new File(this.registerFileDirPath);
+    final RegisterSubloader subloader      = new RegisterSubloader();
+    
+    for (final File file : Objects.requireNonNull(registerFolder.listFiles()))
+    {
+      this.registerFileModelList.add(subloader.loadRegisterFile(file.getAbsolutePath()));
+    }
+  }// end of loadRegisters
+  //------------------------------------------------------
+  
+  /**
+   * @throws NullPointerException Thrown in case of empty directory
+   * @brief Calls subloader for instruction set and saves it into list
+   */
+  private void loadInstructions() throws NullPointerException, IOException
+  {
+    // All instructions are in a single .json file.
+    // The structure is a single object with keys being the instruction names and
+    // values being the InstructionFunctionModel objects.
+    
+    Gson   gson   = new Gson();
+    Reader reader = Files.newBufferedReader(Paths.get(instructionsFilePath));
+    // read to a map
+    Map<String, InstructionFunctionModel> instructions = gson.fromJson(reader,
+                                                                       new TypeToken<Map<String, InstructionFunctionModel>>()
+                                                                       {
+                                                                       }.getType());
+    // add to list
+    this.instructionFunctionModels = instructions;
+  }// end of loadInstructions
   
   private void loadAliases()
   {
@@ -292,122 +192,6 @@ public class InitLoader
     {
     }.getType());
   }
-  //------------------------------------------------------
-  
-  /**
-   * @return List of register files
-   * @brief Get loaded register files
-   */
-  public List<RegisterFileModel> getRegisterFileModelList()
-  {
-    if (registerFileModelList.isEmpty())
-    {
-      load();
-    }
-    return registerFileModelList;
-  }// end of getRegisterFileModelList
-  //------------------------------------------------------
-  
-  /**
-   * @return Set of instructions in list
-   * @brief Get loaded instruction set
-   */
-  public List<InstructionFunctionModel> getInstructionFunctionModelList()
-  {
-    if (instructionFunctionModelList.isEmpty())
-    {
-      load();
-    }
-    return instructionFunctionModelList;
-  }// end of getInstructionFunctionModelList
-  //------------------------------------------------------
-  
-  /**
-   * @param instructionName - Name of instruction
-   *
-   * @return InstructionFunctionModel object
-   * @brief Get instruction by name
-   */
-  public InstructionFunctionModel getInstructionFunctionModelByName(String instructionName)
-  {
-    if (instructionFunctionModelList.isEmpty())
-    {
-      load();
-    }
-    for (InstructionFunctionModel instruction : instructionFunctionModelList)
-    {
-      if (instruction.getName().equals(instructionName))
-      {
-        return instruction;
-      }
-    }
-    return null;
-  }
-  
-  public InstructionFunctionModel getInstructionFunctionModel(String instructionName)
-  {
-    if (getInstructionFunctionModelList().isEmpty())
-    {
-      load();
-    }
-    for (InstructionFunctionModel instruction : getInstructionFunctionModelList())
-    {
-      if (instruction.getName().equals(instructionName))
-      {
-        return instruction;
-      }
-    }
-    return null;
-  }
-  
-  /**
-   * @return Error message
-   * @brief Get error message in case of load failure
-   */
-  public String getErrorMessage()
-  {
-    return errorMessage;
-  }// end of getErrorMessage
-  //------------------------------------------------------
-  
-  /**
-   * @throws NullPointerException - Thrown in case of empty directory
-   * @brief Calls subloader for register files and saves them into list
-   */
-  private void loadRegisters() throws NullPointerException
-  {
-    this.registerFileModelList.clear();
-    final File              registerFolder = new File(this.registerFileDir);
-    final RegisterSubloader subloader      = new RegisterSubloader();
-    
-    for (final File file : Objects.requireNonNull(registerFolder.listFiles()))
-    {
-      this.registerFileModelList.add(subloader.loadRegisterFile(file.getAbsolutePath()));
-    }
-  }// end of loadRegisters
-  //------------------------------------------------------
-  
-  /**
-   * @throws NullPointerException - Thrown in case of empty directory
-   * @brief Calls subloader for instruction set and saves it into list
-   */
-  private void loadInstructions() throws NullPointerException, IOException
-  {
-    // All instructions are in a single .json file.
-    // The structure is a single object with keys being the instruction names and
-    // values being the InstructionFunctionModel objects.
-    
-    Gson   gson   = new Gson();
-    Reader reader = Files.newBufferedReader(Paths.get("./supportedInstructions.json"));
-    // read to a map
-    Map<String, InstructionFunctionModel> instructions = gson.fromJson(reader,
-                                                                       new TypeToken<Map<String, InstructionFunctionModel>>()
-                                                                       {
-                                                                       }.getType());
-    // add to list
-    this.instructionFunctionModelList.addAll(instructions.values());
-  }// end of loadInstructions
-  //------------------------------------------------------
   
   /**
    * @brief Sets error message in case of NullPointerException and prints it into stderr
@@ -426,15 +210,35 @@ public class InitLoader
   }// end of handleNullPointerException
   //------------------------------------------------------
   
-  public void setRegisterFileModelList(List<RegisterFileModel> registerFileModelList)
+  public InstructionFunctionModel getInstructionFunctionModel(String instructionName)
   {
-    this.registerFileModelList = registerFileModelList;
+    return getInstructionFunctionModels().get(instructionName);
+  }
+  //------------------------------------------------------
+  
+  /**
+   * @return Set of instructions in list
+   * @brief Get loaded instruction set
+   */
+  public Map<String, InstructionFunctionModel> getInstructionFunctionModels()
+  {
+    return instructionFunctionModels;
+  }// end of getInstructionFunctionModelList
+  //------------------------------------------------------
+  
+  public void setInstructionFunctionModels(Map<String, InstructionFunctionModel> instructionFunctionModels)
+  {
+    this.instructionFunctionModels = instructionFunctionModels;
   }
   
-  public void setInstructionFunctionModelList(List<InstructionFunctionModel> instructionFunctionModelList)
+  /**
+   * @return Error message
+   * @brief Get error message in case of load failure
+   */
+  public String getErrorMessage()
   {
-    this.instructionFunctionModelList = instructionFunctionModelList;
-  }
+    return errorMessage;
+  }// end of getErrorMessage
   
   /**
    * @brief Get register aliases
@@ -451,5 +255,17 @@ public class InitLoader
   public void setRegisterAliasesFilePath(String registerAliasesFilePath)
   {
     this.registerAliasesFilePath = registerAliasesFilePath;
+  }
+  
+  public static class RegisterMapping
+  {
+    public String register;
+    public String alias;
+    
+    public RegisterMapping(String register, String alias)
+    {
+      this.register = register;
+      this.alias    = alias;
+    }
   }
 }

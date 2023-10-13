@@ -77,7 +77,7 @@ public class GetStateHandler implements IRequestResolver<GetStateRequest, GetSta
     {
       cfg = request.config;
     }
-    // Validate configuration
+    // Validate configuration, including code
     CpuConfiguration.ValidationResult validationResult = cfg.validate();
     // Create response
     CpuState         state        = null;
@@ -86,18 +86,15 @@ public class GetStateHandler implements IRequestResolver<GetStateRequest, GetSta
     
     if (validationResult.valid)
     {
+      // Initialize CPU, assumes valid configuration
       Cpu cpu = new Cpu(cfg);
       state = cpu.cpuState;
-      List<ParseError> e = cpu.cpuState.instructionMemoryBlock.getErrorMessages();
-      if (e != null && !e.isEmpty())
-      {
-        codeErrors = e;
-      }
     }
     else
     {
       System.err.println("Provided configuration is invalid: " + validationResult.messages);
       configErrors = validationResult.messages;
+      codeErrors   = validationResult.codeErrors;
     }
     return new GetStateResponse(state, configErrors, codeErrors);
   }

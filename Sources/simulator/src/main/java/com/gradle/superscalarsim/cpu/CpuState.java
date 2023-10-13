@@ -134,8 +134,16 @@ public class CpuState implements Serializable
   {
     this.tick = 0;
     
-    this.instructionMemoryBlock = new InstructionMemoryBlock(initLoader);
-    this.instructionMemoryBlock.parse(config.code);
+    // Parse code
+    CodeParser codeParser = new CodeParser(initLoader);
+    codeParser.parseCode(config.code);
+    
+    if (!codeParser.success())
+    {
+      throw new IllegalStateException("Code parsing failed: " + codeParser.getErrorMessages());
+    }
+    
+    this.instructionMemoryBlock = new InstructionMemoryBlock(codeParser.getInstructions(), codeParser.getLabels());
     
     simCodeModelAllocator = new SimCodeModelAllocator();
     

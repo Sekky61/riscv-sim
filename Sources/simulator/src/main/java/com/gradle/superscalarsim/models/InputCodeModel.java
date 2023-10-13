@@ -75,6 +75,21 @@ public class InputCodeModel implements IInputCodeModel
    */
   private final InstructionFunctionModel instructionFunctionModel;
   
+  
+  public InputCodeModel(InstructionFunctionModel instructionFunctionModel,
+                        final List<InputCodeArgument> arguments,
+                        int codeId)
+  {
+    // TODO: delete fields that are duplicate of instructionFunctionModel
+    this.instructionFunctionModel = instructionFunctionModel;
+    this.codeId                   = codeId;
+    this.instructionName          = instructionFunctionModel.getName();
+    this.arguments                = arguments == null ? new ArrayList<>() : arguments;
+    this.instructionTypeEnum      = instructionFunctionModel.getInstructionType();
+    this.resultDataType           = instructionFunctionModel.getOutputDataType();
+  }// end of Constructor
+  //------------------------------------------------------
+  
   /**
    * @param [in] instructionName     - Name of the parsed instruction
    * @param [in] codeLine            - Unparsed line of code
