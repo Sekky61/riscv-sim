@@ -8,7 +8,6 @@ import com.gradle.superscalarsim.blocks.branch.*;
 import com.gradle.superscalarsim.blocks.loadstore.*;
 import com.gradle.superscalarsim.builders.InputCodeArgumentBuilder;
 import com.gradle.superscalarsim.builders.InputCodeModelBuilder;
-import com.gradle.superscalarsim.builders.InstructionFunctionModelBuilder;
 import com.gradle.superscalarsim.builders.RegisterFileModelBuilder;
 import com.gradle.superscalarsim.code.*;
 import com.gradle.superscalarsim.cpu.Cpu;
@@ -20,7 +19,6 @@ import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.loader.InitLoader;
 import com.gradle.superscalarsim.models.InputCodeArgument;
 import com.gradle.superscalarsim.models.InputCodeModel;
-import com.gradle.superscalarsim.models.InstructionFunctionModel;
 import com.gradle.superscalarsim.models.SimCodeModel;
 import com.gradle.superscalarsim.models.register.RegisterFileModel;
 import com.gradle.superscalarsim.models.register.RegisterModel;
@@ -192,65 +190,6 @@ public class ForwardSimulationTest
   ///                 Arithmetic Tests                    ///
   ///////////////////////////////////////////////////////////
   
-  private Map<String, InstructionFunctionModel> setUpInstructions()
-  {
-    InstructionFunctionModel instructionAdd = new InstructionFunctionModelBuilder().hasName("add")
-            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
-            .hasType(InstructionTypeEnum.kArithmetic).isInterpretedAs("rd=rs1+rs2;").hasArguments("rd,rs1,rs2").build();
-    
-    InstructionFunctionModel instructionSub = new InstructionFunctionModelBuilder().hasName("sub")
-            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
-            .hasType(InstructionTypeEnum.kArithmetic).isInterpretedAs("rd=rs1-rs2;").hasArguments("rd,rs1,rs2").build();
-    
-    InstructionFunctionModel instructionAddi = new InstructionFunctionModelBuilder().hasName("addi")
-            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
-            .hasType(InstructionTypeEnum.kArithmetic).isInterpretedAs("rd=rs1+imm;").hasArguments("rd,rs1,imm").build();
-    
-    InstructionFunctionModel instructionSubi = new InstructionFunctionModelBuilder().hasName("subi")
-            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
-            .hasType(InstructionTypeEnum.kArithmetic).isInterpretedAs("rd=rs1-imm;").hasArguments("rd,rs1,imm").build();
-    
-    InstructionFunctionModel instructionFAdd = new InstructionFunctionModelBuilder().hasName("fadd")
-            .hasInputDataType(DataTypeEnum.kFloat).hasOutputDataType(DataTypeEnum.kFloat)
-            .hasType(InstructionTypeEnum.kArithmetic).isInterpretedAs("rd=rs1+rs2;").hasArguments("rd,rs1,rs2").build();
-    
-    InstructionFunctionModel instructionFSub = new InstructionFunctionModelBuilder().hasName("fsub")
-            .hasInputDataType(DataTypeEnum.kFloat).hasOutputDataType(DataTypeEnum.kFloat)
-            .hasType(InstructionTypeEnum.kArithmetic).isInterpretedAs("rd=rs1-rs2;").hasArguments("rd,rs1,rs2").build();
-    
-    InstructionFunctionModel instructionJal = new InstructionFunctionModelBuilder().hasName("jal")
-            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
-            .hasType(InstructionTypeEnum.kJumpbranch).isInterpretedAs("unsigned:imm:true").hasArguments("rd,imm:x1.")
-            .build();
-    
-    InstructionFunctionModel instructionBeq = new InstructionFunctionModelBuilder().hasName("beq")
-            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
-            .hasType(InstructionTypeEnum.kJumpbranch).isInterpretedAs("signed:imm:rs1 == rs2")
-            .hasArguments("rs1,rs2,imm").build();
-    
-    InstructionFunctionModel instructionLoadWord = new InstructionFunctionModelBuilder().hasName("lw")
-            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
-            .hasType(InstructionTypeEnum.kLoadstore).isInterpretedAs("load word:signed rd rs1 imm")
-            .hasArguments("rd,imm(rs1)").build();
-    
-    InstructionFunctionModel instructionStoreWord = new InstructionFunctionModelBuilder().hasName("sw")
-            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
-            .hasType(InstructionTypeEnum.kLoadstore).isInterpretedAs("store word rs2 rs1 imm")
-            .hasArguments("rs2,imm(rs1)").build();
-    
-    Map<String, InstructionFunctionModel> instructions = Map.ofEntries(Map.entry("add", instructionAdd),
-                                                                       Map.entry("sub", instructionSub),
-                                                                       Map.entry("addi", instructionAddi),
-                                                                       Map.entry("subi", instructionSubi),
-                                                                       Map.entry("fadd", instructionFAdd),
-                                                                       Map.entry("fsub", instructionFSub),
-                                                                       Map.entry("jal", instructionJal),
-                                                                       Map.entry("beq", instructionBeq),
-                                                                       Map.entry("lw", instructionLoadWord),
-                                                                       Map.entry("sw", instructionStoreWord));
-    return instructions;
-  }
-  
   @Test
   public void simulate_oneIntInstruction_finishesAfterSevenTicks()
   {
@@ -317,7 +256,7 @@ public class ForwardSimulationTest
     this.cpu.step();
     Assert.assertTrue(this.reorderBufferBlock.getReorderQueue().isEmpty());
     Assert.assertTrue(this.reorderBufferBlock.getFlagsMap().isEmpty());
-    Assert.assertEquals(31, unifiedRegisterFileBlock.getRegister("x1").getValue(), 0.01);
+    Assert.assertEquals(31, (int) unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt), 0.01);
     Assert.assertEquals(RegisterReadinessEnum.kFree, this.unifiedRegisterFileBlock.getRegister("tg0").getReadiness());
   }
   
@@ -480,9 +419,9 @@ public class ForwardSimulationTest
     Assert.assertEquals(RegisterReadinessEnum.kFree, this.unifiedRegisterFileBlock.getRegister("tg0").getReadiness());
     Assert.assertEquals(RegisterReadinessEnum.kFree, this.unifiedRegisterFileBlock.getRegister("tg1").getReadiness());
     Assert.assertEquals(RegisterReadinessEnum.kFree, this.unifiedRegisterFileBlock.getRegister("tg2").getReadiness());
-    Assert.assertEquals(-2, this.unifiedRegisterFileBlock.getRegister("x3").getValue(), 0.01);
-    Assert.assertEquals(-4, this.unifiedRegisterFileBlock.getRegister("x2").getValue(), 0.01);
-    Assert.assertEquals(-6, this.unifiedRegisterFileBlock.getRegister("x1").getValue(), 0.01);
+    Assert.assertEquals(-2, (int) this.unifiedRegisterFileBlock.getRegister("x3").getValue(DataTypeEnum.kInt), 0.01);
+    Assert.assertEquals(-4, (int) this.unifiedRegisterFileBlock.getRegister("x2").getValue(DataTypeEnum.kInt), 0.01);
+    Assert.assertEquals(-6, (int) this.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt), 0.01);
   }
   
   @Test
@@ -597,7 +536,7 @@ public class ForwardSimulationTest
     Assert.assertTrue(this.reorderBufferBlock.getFlagsMap().get(1).isReadyToBeCommitted());
     Assert.assertEquals("add tg3,x4,x3", this.addSecondFunctionBlock.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("add tg2,tg1,x3", this.addFunctionBlock.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertEquals(4, this.unifiedRegisterFileBlock.getRegister("tg1").getValue(), 0.01);
+    Assert.assertEquals(4, (int) this.unifiedRegisterFileBlock.getRegister("tg1").getValue(DataTypeEnum.kInt), 0.01);
     Assert.assertEquals(RegisterReadinessEnum.kAllocated,
                         this.unifiedRegisterFileBlock.getRegister("tg3").getReadiness());
     Assert.assertEquals(RegisterReadinessEnum.kAllocated,
@@ -611,8 +550,8 @@ public class ForwardSimulationTest
     Assert.assertEquals(2, this.reorderBufferBlock.getReorderQueue().size());
     Assert.assertTrue(this.reorderBufferBlock.getFlagsMap().get(3).isReadyToBeCommitted());
     Assert.assertEquals("add tg2,tg1,x3", this.addFunctionBlock.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertEquals(-2, this.unifiedRegisterFileBlock.getRegister("x5").getValue(), 0.01);
-    Assert.assertEquals(4, this.unifiedRegisterFileBlock.getRegister("x2").getValue(), 0.01);
+    Assert.assertEquals(-2, (int) this.unifiedRegisterFileBlock.getRegister("x5").getValue(DataTypeEnum.kInt), 0.01);
+    Assert.assertEquals(4, (int) this.unifiedRegisterFileBlock.getRegister("x2").getValue(DataTypeEnum.kInt), 0.01);
     Assert.assertEquals(RegisterReadinessEnum.kExecuted,
                         this.unifiedRegisterFileBlock.getRegister("tg3").getReadiness());
     Assert.assertEquals(RegisterReadinessEnum.kAllocated,
@@ -634,8 +573,8 @@ public class ForwardSimulationTest
     
     this.cpu.step();
     Assert.assertEquals(0, this.reorderBufferBlock.getReorderQueue().size());
-    Assert.assertEquals(4, this.unifiedRegisterFileBlock.getRegister("x2").getValue(), 0.01);
-    Assert.assertEquals(10, this.unifiedRegisterFileBlock.getRegister("x1").getValue(), 0.01);
+    Assert.assertEquals(4, (int) this.unifiedRegisterFileBlock.getRegister("x2").getValue(DataTypeEnum.kInt), 0.01);
+    Assert.assertEquals(10, (int) this.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt), 0.01);
   }
   
   @Test
@@ -1176,7 +1115,7 @@ public class ForwardSimulationTest
     Assert.assertEquals(16, this.branchTargetBuffer.getEntryTarget(4));
     Assert.assertTrue(this.branchTargetBuffer.isEntryUnconditional(8));
     Assert.assertEquals(-1, this.globalHistoryRegister.getHistoryValueAsInt(9));
-    Assert.assertEquals(0, this.unifiedRegisterFileBlock.getRegister("x0").getValue(), 0.01);
+    Assert.assertEquals(0, (int) this.unifiedRegisterFileBlock.getRegister("x0").getValue(DataTypeEnum.kInt), 0.01);
   }
   
   @Test
@@ -1227,8 +1166,8 @@ public class ForwardSimulationTest
     // Prediction is not to take the branch (default value of predictor)
     Assert.assertEquals("subi", this.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
     Assert.assertEquals("nop", this.instructionFetchBlock.getFetchedCode().get(2).getInstructionName());
-    Assert.assertEquals(0, this.unifiedRegisterFileBlock.getRegister("x0").getValue(), 0.01);
-    Assert.assertEquals(6, this.unifiedRegisterFileBlock.getRegister("x3").getValue(), 0.01);
+    Assert.assertEquals(0, (int) this.unifiedRegisterFileBlock.getRegister("x0").getValue(DataTypeEnum.kInt), 0.01);
+    Assert.assertEquals(6, (int) this.unifiedRegisterFileBlock.getRegister("x3").getValue(DataTypeEnum.kInt), 0.01);
     
     this.cpu.step();
     // Second fetch
@@ -1241,7 +1180,7 @@ public class ForwardSimulationTest
                         this.decodeAndDispatchBlock.getAfterRenameCodeList().get(0).getRenamedCodeLine());
     Assert.assertEquals("subi tg0,x3,1",
                         this.decodeAndDispatchBlock.getAfterRenameCodeList().get(1).getRenamedCodeLine());
-    Assert.assertEquals(0, this.unifiedRegisterFileBlock.getRegister("x0").getValue(), 0.01);
+    Assert.assertEquals(0, (int) this.unifiedRegisterFileBlock.getRegister("x0").getValue(DataTypeEnum.kInt), 0.01);
     
     this.cpu.step();
     // jal is an unconditional jump, so fetch starts from `loop:` again
@@ -1255,7 +1194,7 @@ public class ForwardSimulationTest
                         this.branchIssueWindowBlock.getIssuedInstructions().get(0).getRenamedCodeLine());
     // subi got to the ALU issue window
     Assert.assertEquals("subi tg0,x3,1", this.aluIssueWindowBlock.getIssuedInstructions().get(0).getRenamedCodeLine());
-    Assert.assertEquals(0, this.unifiedRegisterFileBlock.getRegister("x0").getValue(), 0.01);
+    Assert.assertEquals(0, (int) this.unifiedRegisterFileBlock.getRegister("x0").getValue(DataTypeEnum.kInt), 0.01);
     // ROB - first two instructions are in the ROB, not ready
     Assert.assertEquals(2, this.reorderBufferBlock.getReorderQueue().size());
     Assert.assertFalse(this.reorderBufferBlock.getFlagsMap().get(0).isReadyToBeCommitted());
@@ -1273,7 +1212,7 @@ public class ForwardSimulationTest
                         this.branchIssueWindowBlock.getIssuedInstructions().get(0).getRenamedCodeLine());
     Assert.assertEquals("beq x3,x0,loopEnd", this.branchFunctionUnitBlock1.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("subi tg0,x3,1", this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertEquals(0, this.unifiedRegisterFileBlock.getRegister("x0").getValue(), 0.01);
+    Assert.assertEquals(0, (int) this.unifiedRegisterFileBlock.getRegister("x0").getValue(DataTypeEnum.kInt), 0.01);
     
     this.cpu.step();
     Assert.assertEquals("beq", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
@@ -1287,7 +1226,7 @@ public class ForwardSimulationTest
     Assert.assertEquals("jal tg1,loop", this.branchFunctionUnitBlock2.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("beq x3,x0,loopEnd", this.branchFunctionUnitBlock1.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("subi tg0,x3,1", this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertEquals(0, this.unifiedRegisterFileBlock.getRegister("x0").getValue(), 0.01);
+    Assert.assertEquals(0, (int) this.unifiedRegisterFileBlock.getRegister("x0").getValue(DataTypeEnum.kInt), 0.01);
     
     this.cpu.step();
     Assert.assertEquals("jal", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
@@ -1306,7 +1245,7 @@ public class ForwardSimulationTest
     // There is a new instruction in the function block
     Assert.assertEquals("subi tg2,tg0,1", this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
     Assert.assertFalse(this.reorderBufferBlock.getFlagsMap().get(1).isReadyToBeCommitted());
-    Assert.assertEquals(0, this.unifiedRegisterFileBlock.getRegister("x0").getValue(), 0.01);
+    Assert.assertEquals(0, (int) this.unifiedRegisterFileBlock.getRegister("x0").getValue(DataTypeEnum.kInt), 0.01);
     
     this.cpu.step();
     Assert.assertEquals("beq", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
@@ -1319,7 +1258,7 @@ public class ForwardSimulationTest
     Assert.assertTrue(this.reorderBufferBlock.getFlagsMap().get(0).isReadyToBeCommitted());
     Assert.assertFalse(this.reorderBufferBlock.getFlagsMap().get(1).isReadyToBeCommitted());
     Assert.assertFalse(this.reorderBufferBlock.getFlagsMap().get(3).isReadyToBeCommitted()); // jal
-    Assert.assertEquals(0, this.unifiedRegisterFileBlock.getRegister("x0").getValue(), 0.01);
+    Assert.assertEquals(0, (int) this.unifiedRegisterFileBlock.getRegister("x0").getValue(DataTypeEnum.kInt), 0.01);
     
     this.cpu.step();
     Assert.assertEquals("jal", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
@@ -1328,7 +1267,7 @@ public class ForwardSimulationTest
     Assert.assertEquals("jal tg3,loop", this.branchFunctionUnitBlock2.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("beq tg0,x0,loopEnd", this.branchFunctionUnitBlock1.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("subi tg4,tg2,1", this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertEquals(0, this.unifiedRegisterFileBlock.getRegister("x0").getValue(), 0.01);
+    Assert.assertEquals(0, (int) this.unifiedRegisterFileBlock.getRegister("x0").getValue(DataTypeEnum.kInt), 0.01);
     Assert.assertTrue(this.reorderBufferBlock.getFlagsMap().get(3).isReadyToBeCommitted());
     
     this.cpu.step();
@@ -1338,7 +1277,7 @@ public class ForwardSimulationTest
     Assert.assertEquals("jal tg3,loop", this.branchFunctionUnitBlock2.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("beq tg0,x0,loopEnd", this.branchFunctionUnitBlock1.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("subi tg4,tg2,1", this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertEquals(0, this.unifiedRegisterFileBlock.getRegister("x0").getValue(), 0.01);
+    Assert.assertEquals(0, (int) this.unifiedRegisterFileBlock.getRegister("x0").getValue(DataTypeEnum.kInt), 0.01);
     
     this.cpu.step();
     Assert.assertEquals("jal tg3,loop", this.branchFunctionUnitBlock2.getSimCodeModel().getRenamedCodeLine());
@@ -1352,14 +1291,14 @@ public class ForwardSimulationTest
     Assert.assertEquals("jal tg5,loop", this.branchFunctionUnitBlock2.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("beq tg2,x0,loopEnd", this.branchFunctionUnitBlock1.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("subi tg6,tg4,1", this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertEquals(0, this.unifiedRegisterFileBlock.getRegister("x0").getValue(), 0.01);
+    Assert.assertEquals(0, (int) this.unifiedRegisterFileBlock.getRegister("x0").getValue(DataTypeEnum.kInt), 0.01);
     Assert.assertTrue(this.reorderBufferBlock.getFlagsMap().get(9).isReadyToBeCommitted());
     
     this.cpu.step();
     Assert.assertEquals("jal tg5,loop", this.branchFunctionUnitBlock2.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("beq tg2,x0,loopEnd", this.branchFunctionUnitBlock1.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("subi tg8,tg6,1", this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertEquals(0, this.unifiedRegisterFileBlock.getRegister("x0").getValue(), 0.01);
+    Assert.assertEquals(0, (int) this.unifiedRegisterFileBlock.getRegister("x0").getValue(DataTypeEnum.kInt), 0.01);
     
     this.cpu.step();
     Assert.assertEquals("jal tg5,loop", this.branchFunctionUnitBlock2.getSimCodeModel().getRenamedCodeLine());
@@ -1452,7 +1391,7 @@ public class ForwardSimulationTest
     Assert.assertEquals(0, this.reorderBufferBlock.getReorderQueue().size());
     Assert.assertEquals(0, this.aluIssueWindowBlock.getIssuedInstructions().size());
     Assert.assertEquals(0, this.branchIssueWindowBlock.getIssuedInstructions().size());
-    Assert.assertEquals(0, this.unifiedRegisterFileBlock.getRegister("x3").getValue(), 0.01);
+    Assert.assertEquals(0, (int) this.unifiedRegisterFileBlock.getRegister("x3").getValue(DataTypeEnum.kInt), 0.01);
   }
   
   @Test
@@ -1578,7 +1517,7 @@ public class ForwardSimulationTest
     Assert.assertTrue(this.reorderBufferBlock.getFlagsMap().get(21).isReadyToBeCommitted());
     
     this.cpu.step();
-    Assert.assertEquals(10, this.unifiedRegisterFileBlock.getRegister("x1").getValue(), 0.01);
+    Assert.assertEquals(10, (int) this.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt), 0.01);
     Assert.assertEquals(0, this.globalHistoryRegister.getRegisterValueAsInt());
   }
   
@@ -1683,7 +1622,7 @@ public class ForwardSimulationTest
     
     this.cpu.step();
     Assert.assertTrue(this.reorderBufferBlock.getFlagsMap().get(3).isReadyToBeCommitted());
-    Assert.assertEquals(-10, this.unifiedRegisterFileBlock.getRegister("x1").getValue(), 0.01);
+    Assert.assertEquals(-10, (int) this.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt), 0.01);
     
     this.cpu.step();
     Assert.assertEquals(1, this.globalHistoryRegister.getRegisterValueAsInt());
@@ -1817,7 +1756,7 @@ public class ForwardSimulationTest
     Assert.assertTrue(this.reorderBufferBlock.getFlagsMap().get(0).isReadyToBeCommitted());
     
     this.cpu.step();
-    Assert.assertEquals(0, this.unifiedRegisterFileBlock.getRegister("x1").getValue(), 0.0);
+    Assert.assertEquals(0, (int) this.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt), 0.0);
   }
   
   @Test
@@ -1916,7 +1855,7 @@ public class ForwardSimulationTest
     
     this.cpu.step();
     Assert.assertEquals(0, this.reorderBufferBlock.getReorderQueue().size());
-    Assert.assertEquals(6, this.unifiedRegisterFileBlock.getRegister("x1").getValue(), 0.01);
+    Assert.assertEquals(6, (int) this.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt), 0.01);
   }
   
   @Test
@@ -2057,7 +1996,7 @@ public class ForwardSimulationTest
     Assert.assertNull(this.memoryAccessUnit.getSimCodeModel());
     
     this.cpu.step();
-    Assert.assertEquals(1, this.unifiedRegisterFileBlock.getRegister("x1").getValue(), 0.01);
+    Assert.assertEquals(1, (int) this.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt), 0.01);
     Assert.assertNull(this.memoryAccessUnit.getSimCodeModel());
   }
   
@@ -2098,9 +2037,9 @@ public class ForwardSimulationTest
     this.memoryAccessUnit.setDelay(3);
     this.memoryAccessUnit.setBaseDelay(3);
     
-    Assert.assertEquals(0, this.unifiedRegisterFileBlock.getRegister("x1").getValue(), 0.01);
-    Assert.assertEquals(25, this.unifiedRegisterFileBlock.getRegister("x2").getValue(), 0.01);
-    Assert.assertEquals(6, this.unifiedRegisterFileBlock.getRegister("x3").getValue(), 0.01);
+    Assert.assertEquals(0, (int) this.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt), 0.01);
+    Assert.assertEquals(25, (int) this.unifiedRegisterFileBlock.getRegister("x2").getValue(DataTypeEnum.kInt), 0.01);
+    Assert.assertEquals(6, (int) this.unifiedRegisterFileBlock.getRegister("x3").getValue(DataTypeEnum.kInt), 0.01);
     
     this.cpu.step();
     Assert.assertEquals("subi", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
@@ -2207,6 +2146,6 @@ public class ForwardSimulationTest
     Assert.assertEquals(0, this.reorderBufferBlock.getReorderQueue().size());
     Assert.assertEquals(0, this.loadBufferBlock.getQueueSize());
     Assert.assertEquals(0, this.storeBufferBlock.getQueueSize());
-    Assert.assertEquals(1, this.unifiedRegisterFileBlock.getRegister("x1").getValue(), 0.01);
+    Assert.assertEquals(1, (int) this.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt), 0.01);
   }
 }

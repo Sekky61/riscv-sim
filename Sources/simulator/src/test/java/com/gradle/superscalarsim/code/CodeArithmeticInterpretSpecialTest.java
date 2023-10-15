@@ -67,7 +67,9 @@ public class CodeArithmeticInterpretSpecialTest
             .hasInstructionName("multipleLines")
             .hasArguments(Arrays.asList(argument1, argument2, argument3, argument4, argument5, argument6)).build();
     SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
-    Assert.assertEquals(2, this.codeArithmeticInterpreter.interpretInstruction(codeModel), 0.01);
+    
+    Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel);
+    Assert.assertEquals(2, (float) v.value.getValue(DataTypeEnum.kFloat), 0.01);
   }
   
   @Test
@@ -83,7 +85,9 @@ public class CodeArithmeticInterpretSpecialTest
             .hasInstructionName("multipleBrackets")
             .hasArguments(Arrays.asList(argument1, argument2, argument3, argument4, argument5, argument6)).build();
     SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
-    Assert.assertEquals(15, this.codeArithmeticInterpreter.interpretInstruction(codeModel), 0.01);
+    
+    Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel);
+    Assert.assertEquals(15, (float) v.value.getValue(DataTypeEnum.kFloat), 0.01);
   }
   
   @Test
@@ -96,7 +100,9 @@ public class CodeArithmeticInterpretSpecialTest
             .hasInstructionName("multipleInstructions").hasArguments(Arrays.asList(argument1, argument2, argument3))
             .build();
     SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
-    Assert.assertEquals(154, this.codeArithmeticInterpreter.interpretInstruction(codeModel), 0.01);
+    
+    Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel);
+    Assert.assertEquals(154, (float) v.value.getValue(DataTypeEnum.kFloat), 0.01);
   }
   
   @Test
@@ -109,7 +115,9 @@ public class CodeArithmeticInterpretSpecialTest
             .hasInstructionName("bitArrayOperation").hasArguments(Arrays.asList(argument1, argument2, argument3))
             .build();
     SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
-    Assert.assertEquals(7, this.codeArithmeticInterpreter.interpretInstruction(codeModel), 0.01);
+    
+    Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel);
+    Assert.assertEquals(7, (int) v.value.getValue(DataTypeEnum.kInt), 0.01);
   }
   
   @Test
@@ -120,14 +128,16 @@ public class CodeArithmeticInterpretSpecialTest
             .hasArguments(Collections.singletonList(argument1)).build();
     SimCodeModel codeModel = new SimCodeModel(inputCodeModel1, 0, 0);
     
-    Assert.assertEquals(31, this.codeArithmeticInterpreter.interpretInstruction(codeModel), 0.01);
+    Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel);
+    Assert.assertEquals(31, (float) v.value.getValue(DataTypeEnum.kFloat), 0.01);
     
     InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rd").hasValue("x1").build();
     InputCodeModel inputCodeModel2 = new InputCodeModelBuilder().hasLoader(initLoader)
             .hasInstructionName("setZeroes3to1").hasArguments(Collections.singletonList(argument2)).build();
     SimCodeModel codeModel2 = new SimCodeModel(inputCodeModel2, 0, 0);
     
-    Assert.assertEquals(17, this.codeArithmeticInterpreter.interpretInstruction(codeModel2), 0.01);
+    Expression.Variable v2 = this.codeArithmeticInterpreter.interpretInstruction(codeModel2);
+    Assert.assertEquals(17, (int) v2.value.getValue(DataTypeEnum.kInt), 0.01);
   }
   
   private Map<String, InstructionFunctionModel> setUpInstructions()

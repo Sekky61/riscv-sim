@@ -53,6 +53,34 @@ public class CodeArithmeticInterpreterFloatTest
     this.codeArithmeticInterpreter = new CodeArithmeticInterpreter(new UnifiedRegisterFileBlock(initLoader));
   }
   
+  private Map<String, InstructionFunctionModel> setUpInstructions()
+  {
+    InstructionFunctionModel instructionFAdd = new InstructionFunctionModelBuilder().hasName("fadd")
+            .hasInputDataType(DataTypeEnum.kFloat).hasOutputDataType(DataTypeEnum.kFloat)
+            .isInterpretedAs("\\rs1 \\rs2 + \\rd =").hasArguments("rd,rs1,rs2").build();
+    
+    InstructionFunctionModel instructionFSub = new InstructionFunctionModelBuilder().hasName("fsub")
+            .hasInputDataType(DataTypeEnum.kFloat).hasOutputDataType(DataTypeEnum.kFloat)
+            .isInterpretedAs("\\rs1 \\rs2 - \\rd =").hasArguments("rd,rs1,rs2").build();
+    
+    InstructionFunctionModel instructionFMul = new InstructionFunctionModelBuilder().hasName("fmul")
+            .hasInputDataType(DataTypeEnum.kFloat).hasOutputDataType(DataTypeEnum.kFloat)
+            .isInterpretedAs("\\rs1 \\rs2 * \\rd =").hasArguments("rd,rs1,rs2").build();
+    
+    InstructionFunctionModel instructionFDiv = new InstructionFunctionModelBuilder().hasName("fdiv")
+            .hasInputDataType(DataTypeEnum.kFloat).hasOutputDataType(DataTypeEnum.kFloat)
+            .isInterpretedAs("\\rs1 \\rs2 / \\rd =").hasArguments("rd,rs1,rs2").build();
+    
+    InstructionFunctionModel instructionFCmpLt = new InstructionFunctionModelBuilder().hasName("fcmplt")
+            .hasInputDataType(DataTypeEnum.kFloat).hasOutputDataType(DataTypeEnum.kFloat)
+            .isInterpretedAs("\\rs1 \\rs2 < \\rd =").hasArguments("rd,rs1,rs2").build();
+    
+    
+    return Map.ofEntries(Map.entry("fadd", instructionFAdd), Map.entry("fsub", instructionFSub),
+                         Map.entry("fmul", instructionFMul), Map.entry("fdiv", instructionFDiv),
+                         Map.entry("fcmplt", instructionFCmpLt));
+  }
+  
   @Test
   public void interpretInstruction_floatAddInstruction_returnValid()
   {
@@ -63,7 +91,8 @@ public class CodeArithmeticInterpreterFloatTest
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
-    Assert.assertEquals(8.625, this.codeArithmeticInterpreter.interpretInstruction(codeModel), 0.0001);
+    Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel);
+    Assert.assertEquals(8.625, (float) v.value.getValue(DataTypeEnum.kFloat), 0.01);
   }
   
   @Test
@@ -76,7 +105,8 @@ public class CodeArithmeticInterpreterFloatTest
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
-    Assert.assertEquals(-2.375, this.codeArithmeticInterpreter.interpretInstruction(codeModel), 0.0001);
+    Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel);
+    Assert.assertEquals(-2.375, (float) v.value.getValue(DataTypeEnum.kFloat), 0.01);
   }
   
   @Test
@@ -89,7 +119,8 @@ public class CodeArithmeticInterpreterFloatTest
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
-    Assert.assertEquals(17.1875, this.codeArithmeticInterpreter.interpretInstruction(codeModel), 0.0001);
+    Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel);
+    Assert.assertEquals(17.1875, (float) v.value.getValue(DataTypeEnum.kFloat), 0.01);
   }
   
   @Test
@@ -102,31 +133,8 @@ public class CodeArithmeticInterpreterFloatTest
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
-    Assert.assertEquals(1.76, this.codeArithmeticInterpreter.interpretInstruction(codeModel), 0.0001);
-  }
-  
-  @Test
-  public void interpretInstruction_floatIncInstruction_returnValid()
-  {
-    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rd").hasValue("f1").build();
-    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("f3").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("finc")
-            .hasArguments(Arrays.asList(argument1, argument2)).build();
-    SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
-    
-    Assert.assertEquals(4.125, this.codeArithmeticInterpreter.interpretInstruction(codeModel), 0.0001);
-  }
-  
-  @Test
-  public void interpretInstruction_floatDecInstruction_returnValid()
-  {
-    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rd").hasValue("f1").build();
-    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("f3").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("fdec")
-            .hasArguments(Arrays.asList(argument1, argument2)).build();
-    SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
-    
-    Assert.assertEquals(2.125, this.codeArithmeticInterpreter.interpretInstruction(codeModel), 0.0001);
+    Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel);
+    Assert.assertEquals(1.76, (float) v.value.getValue(DataTypeEnum.kFloat), 0.01);
   }
   
   @Test
@@ -139,7 +147,8 @@ public class CodeArithmeticInterpreterFloatTest
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
-    Assert.assertEquals(1.0, this.codeArithmeticInterpreter.interpretInstruction(codeModel), 0.0001);
+    Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel);
+    Assert.assertEquals(1.0, (float) v.value.getValue(DataTypeEnum.kFloat), 0.01);
   }
   
   @Test
@@ -152,7 +161,8 @@ public class CodeArithmeticInterpreterFloatTest
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
-    Assert.assertEquals(0.0, this.codeArithmeticInterpreter.interpretInstruction(codeModel), 0.0001);
+    Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel);
+    Assert.assertEquals(0.0, (float) v.value.getValue(DataTypeEnum.kFloat), 0.01);
   }
   
   @Test
@@ -165,216 +175,7 @@ public class CodeArithmeticInterpreterFloatTest
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
-    Assert.assertEquals(0.0, this.codeArithmeticInterpreter.interpretInstruction(codeModel), 0.0001);
-  }
-  
-  @Test
-  public void interpretInstruction_floatCmpLeInstructionWithLessThanArguments_returnOne()
-  {
-    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rd").hasValue("f1").build();
-    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("f3").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("f2").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("fcmple")
-            .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
-    
-    Assert.assertEquals(1.0, this.codeArithmeticInterpreter.interpretInstruction(codeModel), 0.0001);
-  }
-  
-  @Test
-  public void interpretInstruction_floatCmpLeInstructionWithEqualArguments_returnOne()
-  {
-    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rd").hasValue("f1").build();
-    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("f3").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("f3").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("fcmple")
-            .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
-    
-    Assert.assertEquals(1.0, this.codeArithmeticInterpreter.interpretInstruction(codeModel), 0.0001);
-  }
-  
-  @Test
-  public void interpretInstruction_floatCmpLeInstructionWithGreaterThanArguments_returnZero()
-  {
-    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rd").hasValue("f1").build();
-    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("f2").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("f3").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("fcmple")
-            .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
-    
-    Assert.assertEquals(0.0, this.codeArithmeticInterpreter.interpretInstruction(codeModel), 0.0001);
-  }
-  
-  @Test
-  public void interpretInstruction_floatCmpEqInstructionWithLessThanArguments_returnZero()
-  {
-    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rd").hasValue("f1").build();
-    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("f3").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("f2").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("fcmpeq")
-            .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
-    
-    Assert.assertEquals(0.0, this.codeArithmeticInterpreter.interpretInstruction(codeModel), 0.0001);
-  }
-  
-  @Test
-  public void interpretInstruction_floatCmpEqInstructionWithEqualArguments_returnOne()
-  {
-    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rd").hasValue("f1").build();
-    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("f3").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("f3").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("fcmpeq")
-            .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
-    
-    Assert.assertEquals(1.0, this.codeArithmeticInterpreter.interpretInstruction(codeModel), 0.0001);
-  }
-  
-  @Test
-  public void interpretInstruction_floatCmpEqInstructionWithGreaterThanArguments_returnZero()
-  {
-    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rd").hasValue("f1").build();
-    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("f2").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("f3").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("fcmpeq")
-            .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
-    
-    Assert.assertEquals(0.0, this.codeArithmeticInterpreter.interpretInstruction(codeModel), 0.0001);
-  }
-  
-  @Test
-  public void interpretInstruction_floatCmpGeInstructionWithLessThanArguments_returnZero()
-  {
-    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rd").hasValue("f1").build();
-    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("f3").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("f2").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("fcmpge")
-            .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
-    
-    Assert.assertEquals(0.0, this.codeArithmeticInterpreter.interpretInstruction(codeModel), 0.0001);
-  }
-  
-  @Test
-  public void interpretInstruction_floatCmpGeInstructionWithEqualArguments_returnOne()
-  {
-    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rd").hasValue("f1").build();
-    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("f3").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("f3").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("fcmple")
-            .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
-    
-    Assert.assertEquals(1.0, this.codeArithmeticInterpreter.interpretInstruction(codeModel), 0.0001);
-  }
-  
-  @Test
-  public void interpretInstruction_floatCmpGeInstructionWithGreaterThanArguments_returnOne()
-  {
-    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rd").hasValue("f1").build();
-    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("f2").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("f3").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("fcmpge")
-            .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
-    
-    Assert.assertEquals(1.0, this.codeArithmeticInterpreter.interpretInstruction(codeModel), 0.0001);
-  }
-  
-  @Test
-  public void interpretInstruction_floatCmpGtInstructionWithLessThanArguments_returnZero()
-  {
-    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rd").hasValue("f1").build();
-    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("f3").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("f2").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("fcmpgt")
-            .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
-    
-    Assert.assertEquals(0.0, this.codeArithmeticInterpreter.interpretInstruction(codeModel), 0.0001);
-  }
-  
-  @Test
-  public void interpretInstruction_floatCmpGtInstructionWithEqualArguments_returnZero()
-  {
-    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rd").hasValue("f1").build();
-    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("f3").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("f3").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("fcmpgt")
-            .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
-    
-    Assert.assertEquals(0.0, this.codeArithmeticInterpreter.interpretInstruction(codeModel), 0.0001);
-  }
-  
-  @Test
-  public void interpretInstruction_floatCmpGtInstructionWithGreaterThanArguments_returnOne()
-  {
-    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rd").hasValue("f1").build();
-    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("f2").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("f3").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("fcmpgt")
-            .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
-    
-    Assert.assertEquals(1.0, this.codeArithmeticInterpreter.interpretInstruction(codeModel), 0.0001);
-  }
-  
-  private Map<String, InstructionFunctionModel> setUpInstructions()
-  {
-    InstructionFunctionModel instructionFAdd = new InstructionFunctionModelBuilder().hasName("fadd")
-            .hasInputDataType(DataTypeEnum.kFloat).hasOutputDataType(DataTypeEnum.kFloat).isInterpretedAs("rd=rs1+rs2;")
-            .hasArguments("rd,rs1,rs2").build();
-    
-    InstructionFunctionModel instructionFSub = new InstructionFunctionModelBuilder().hasName("fsub")
-            .hasInputDataType(DataTypeEnum.kFloat).hasOutputDataType(DataTypeEnum.kFloat).isInterpretedAs("rd=rs1-rs2;")
-            .hasArguments("rd,rs1,rs2").build();
-    
-    InstructionFunctionModel instructionFMul = new InstructionFunctionModelBuilder().hasName("fmul")
-            .hasInputDataType(DataTypeEnum.kFloat).hasOutputDataType(DataTypeEnum.kFloat).isInterpretedAs("rd=rs1*rs2;")
-            .hasArguments("rd,rs1,rs2").build();
-    
-    InstructionFunctionModel instructionFDiv = new InstructionFunctionModelBuilder().hasName("fdiv")
-            .hasInputDataType(DataTypeEnum.kFloat).hasOutputDataType(DataTypeEnum.kFloat).isInterpretedAs("rd=rs1/rs2;")
-            .hasArguments("rd,rs1,rs2").build();
-    
-    InstructionFunctionModel instructionFInc = new InstructionFunctionModelBuilder().hasName("finc")
-            .hasInputDataType(DataTypeEnum.kFloat).hasOutputDataType(DataTypeEnum.kFloat).isInterpretedAs("rd=++rs1;")
-            .hasArguments("rd,rs1").build();
-    
-    InstructionFunctionModel instructionFDec = new InstructionFunctionModelBuilder().hasName("fdec")
-            .hasInputDataType(DataTypeEnum.kFloat).hasOutputDataType(DataTypeEnum.kFloat).isInterpretedAs("rd=--rs1;")
-            .hasArguments("rd,rs1").build();
-    
-    InstructionFunctionModel instructionFCmpLt = new InstructionFunctionModelBuilder().hasName("fcmplt")
-            .hasInputDataType(DataTypeEnum.kFloat).hasOutputDataType(DataTypeEnum.kFloat).isInterpretedAs("rd=rs1<rs2;")
-            .hasArguments("rd,rs1,rs2").build();
-    
-    InstructionFunctionModel instructionFCmpLe = new InstructionFunctionModelBuilder().hasName("fcmple")
-            .hasInputDataType(DataTypeEnum.kFloat).hasOutputDataType(DataTypeEnum.kFloat)
-            .isInterpretedAs("rd=rs1<=rs2;").hasArguments("rd,rs1,rs2").build();
-    
-    InstructionFunctionModel instructionFCmpEq = new InstructionFunctionModelBuilder().hasName("fcmpeq")
-            .hasInputDataType(DataTypeEnum.kFloat).hasOutputDataType(DataTypeEnum.kFloat)
-            .isInterpretedAs("rd=rs1==rs2;").hasArguments("rd,rs1,rs2").build();
-    
-    InstructionFunctionModel instructionFCmpGe = new InstructionFunctionModelBuilder().hasName("fcmpge")
-            .hasInputDataType(DataTypeEnum.kFloat).hasOutputDataType(DataTypeEnum.kFloat)
-            .isInterpretedAs("rd=rs1>=rs2;").hasArguments("rd,rs1,rs2").build();
-    
-    InstructionFunctionModel instructionFCmpGt = new InstructionFunctionModelBuilder().hasName("fcmpgt")
-            .hasInputDataType(DataTypeEnum.kFloat).hasOutputDataType(DataTypeEnum.kFloat).isInterpretedAs("rd=rs1>rs2;")
-            .hasArguments("rd,rs1,rs2").build();
-    
-    return Map.ofEntries(Map.entry("fadd", instructionFAdd), Map.entry("fsub", instructionFSub),
-                         Map.entry("fmul", instructionFMul), Map.entry("fdiv", instructionFDiv),
-                         Map.entry("finc", instructionFInc), Map.entry("fdec", instructionFDec),
-                         Map.entry("fcmplt", instructionFCmpLt), Map.entry("fcmple", instructionFCmpLe),
-                         Map.entry("fcmpeq", instructionFCmpEq), Map.entry("fcmpge", instructionFCmpGe),
-                         Map.entry("fcmpgt", instructionFCmpGt));
+    Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel);
+    Assert.assertEquals(0.0, (float) v.value.getValue(DataTypeEnum.kFloat), 0.01);
   }
 }

@@ -27,6 +27,7 @@
 
 package com.gradle.superscalarsim.cpu;
 
+import com.gradle.superscalarsim.enums.DataTypeEnum;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -114,7 +115,8 @@ public class InstructionTests
     // Assert
     Assert.assertEquals(7, cpu.cpuState.tick);
     // PC+4=4 is saved in x1
-    Assert.assertEquals(4, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(), 0.5);
+    Assert.assertEquals(4, (int) cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt),
+                        0.5);
   }
   
   /**
@@ -132,7 +134,8 @@ public class InstructionTests
     // Assert
     // TODO: How to assert that it jumped to 10+56=66?
     Assert.assertEquals(1, cpu.cpuState.statisticsCounter.getCommittedInstructions());
-    Assert.assertEquals(4, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").getValue(), 0.5);
+    Assert.assertEquals(4, (int) cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").getValue(DataTypeEnum.kInt),
+                        0.5);
     Assert.assertEquals(1, cpu.cpuState.statisticsCounter.getAllBranches());
   }
   
@@ -1036,8 +1039,10 @@ public class InstructionTests
     cpu.execute();
     
     // Assert
-    Assert.assertEquals(6, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(), 0.5);
-    Assert.assertEquals(-20, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x4").getValue(), 0.5);
+    Assert.assertEquals(6, (int) cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt),
+                        0.5);
+    Assert.assertEquals(-20, (int) cpu.cpuState.unifiedRegisterFileBlock.getRegister("x4").getValue(DataTypeEnum.kInt),
+                        0.5);
   }
   
   /**

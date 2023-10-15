@@ -57,7 +57,7 @@ public class RegisterTests
     // Assert
     // x2 should be the same as sp
     RegisterModel sp = unifiedRegisterFileBlock.getRegister("sp");
-    Assert.assertEquals(10, sp.getValue(), 0.01);
+    Assert.assertEquals(10, (int) sp.getValue(DataTypeEnum.kInt), 0.01);
   }
   
   /**
@@ -75,7 +75,7 @@ public class RegisterTests
     
     // Assert
     RegisterModel x2 = unifiedRegisterFileBlock.getRegister("x2");
-    Assert.assertEquals(10, x2.getValue(), 0.01);
+    Assert.assertEquals(10, (int) x2.getValue(DataTypeEnum.kInt), 0.01);
   }
   
   /**
