@@ -40,35 +40,35 @@ public class RegisterDataContainer
   /**
    * A bit representation of the register value
    */
-  private long value;
+  private long bits;
   
   /**
    * @brief Constructor
    */
   public RegisterDataContainer()
   {
-    this.value = 0;
+    this.bits = 0;
   }
   
-  public void setValue(int value)
+  public void setValue(int bits)
   {
-    this.value = Integer.toUnsignedLong(value);
+    this.bits = Integer.toUnsignedLong(bits);
   }
   
   public void setValue(long value)
   {
-    this.value = value;
+    this.bits = value;
   }
   
   public void setValue(float value)
   {
     int bits = Float.floatToIntBits(value);
-    this.value = Integer.toUnsignedLong(bits);
+    this.bits = Integer.toUnsignedLong(bits);
   }
   
   public void setValue(double value)
   {
-    this.value = Double.doubleToLongBits(value);
+    this.bits = Double.doubleToLongBits(value);
   }
   
   /**
@@ -76,7 +76,7 @@ public class RegisterDataContainer
    */
   public long getBits()
   {
-    return value;
+    return bits;
   }
   
   /**
@@ -90,19 +90,19 @@ public class RegisterDataContainer
   {
     if (type == Integer.class)
     {
-      return type.cast((int) value);
+      return type.cast((int) bits);
     }
     else if (type == Long.class)
     {
-      return type.cast(value);
+      return type.cast(bits);
     }
     else if (type == Float.class)
     {
-      return type.cast(Float.intBitsToFloat((int) value));
+      return type.cast(Float.intBitsToFloat((int) bits));
     }
     else if (type == Double.class)
     {
-      return type.cast(Double.longBitsToDouble(value));
+      return type.cast(Double.longBitsToDouble(bits));
     }
     else
     {

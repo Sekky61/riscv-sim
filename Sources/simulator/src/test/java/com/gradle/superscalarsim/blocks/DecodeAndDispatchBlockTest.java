@@ -55,10 +55,10 @@ public class DecodeAndDispatchBlockTest
     RegisterFileModel integerFile = new RegisterFileModelBuilder().hasName("integer").hasDataType(DataTypeEnum.kInt)
             .hasRegisterList(Arrays.asList(integer1, integer2, integer3, integer4, integer5, integer6)).build();
     
-    RegisterModel float1 = new RegisterModel("f1", false, DataTypeEnum.kFloat, 0, RegisterReadinessEnum.kAssigned);
-    RegisterModel float2 = new RegisterModel("f2", false, DataTypeEnum.kFloat, 5.5, RegisterReadinessEnum.kAssigned);
-    RegisterModel float3 = new RegisterModel("f3", false, DataTypeEnum.kFloat, 3.125, RegisterReadinessEnum.kAssigned);
-    RegisterModel float4 = new RegisterModel("f4", false, DataTypeEnum.kFloat, 12.25, RegisterReadinessEnum.kAssigned);
+    RegisterModel float1 = new RegisterModel("f1", false, DataTypeEnum.kFloat, 0f, RegisterReadinessEnum.kAssigned);
+    RegisterModel float2 = new RegisterModel("f2", false, DataTypeEnum.kFloat, 5.5f, RegisterReadinessEnum.kAssigned);
+    RegisterModel float3 = new RegisterModel("f3", false, DataTypeEnum.kFloat, 3.125f, RegisterReadinessEnum.kAssigned);
+    RegisterModel float4 = new RegisterModel("f4", false, DataTypeEnum.kFloat, 12.25f, RegisterReadinessEnum.kAssigned);
     RegisterFileModel floatFile = new RegisterFileModelBuilder().hasName("float").hasDataType(DataTypeEnum.kFloat)
             .hasRegisterList(Arrays.asList(float1, float2, float3, float4)).build();
     

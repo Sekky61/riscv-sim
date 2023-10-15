@@ -40,9 +40,9 @@ public class CodeArithmeticInterpreterFloatTest
   {
     MockitoAnnotations.openMocks(this);
     RegisterModel float1 = new RegisterModel("f1", false, DataTypeEnum.kFloat, 0, RegisterReadinessEnum.kAssigned);
-    RegisterModel float2 = new RegisterModel("f2", false, DataTypeEnum.kFloat, 5.5, RegisterReadinessEnum.kAssigned);
-    RegisterModel float3 = new RegisterModel("f3", false, DataTypeEnum.kFloat, 3.125, RegisterReadinessEnum.kAssigned);
-    RegisterModel float4 = new RegisterModel("f4", false, DataTypeEnum.kFloat, 12.25, RegisterReadinessEnum.kAssigned);
+    RegisterModel float2 = new RegisterModel("f2", false, DataTypeEnum.kFloat, 5.5f, RegisterReadinessEnum.kAssigned);
+    RegisterModel float3 = new RegisterModel("f3", false, DataTypeEnum.kFloat, 3.125f, RegisterReadinessEnum.kAssigned);
+    RegisterModel float4 = new RegisterModel("f4", false, DataTypeEnum.kFloat, 12.25f, RegisterReadinessEnum.kAssigned);
     RegisterFileModel floatFile = new RegisterFileModelBuilder().hasName("float").hasDataType(DataTypeEnum.kFloat)
             .hasRegisterList(Arrays.asList(float1, float2, float3, float4)).build();
     

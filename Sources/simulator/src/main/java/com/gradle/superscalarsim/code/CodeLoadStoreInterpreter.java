@@ -378,8 +378,8 @@ public class CodeLoadStoreInterpreter
   {
     return switch (dataType)
     {
-      case kInt -> new DataTypeEnum[]{DataTypeEnum.kInt, DataTypeEnum.kLong};
-      case kLong -> new DataTypeEnum[]{DataTypeEnum.kLong};
+      case kInt, kUInt -> new DataTypeEnum[]{DataTypeEnum.kInt, DataTypeEnum.kLong};
+      case kLong, kULong -> new DataTypeEnum[]{DataTypeEnum.kLong};
       case kFloat -> new DataTypeEnum[]{DataTypeEnum.kFloat, DataTypeEnum.kDouble};
       case kDouble -> new DataTypeEnum[]{DataTypeEnum.kDouble};
       case kSpeculative -> new DataTypeEnum[]{};

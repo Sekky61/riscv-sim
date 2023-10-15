@@ -341,8 +341,8 @@ public class CodeArithmeticInterpreter
     
     return switch (inputDataType)
     {
-      case kInt -> processIntOperation((int) operandValue1, (int) operandValue2, operator);
-      case kLong -> processLongOperation((long) operandValue1, (long) operandValue2, operator);
+      case kInt, kUInt -> processIntOperation((int) operandValue1, (int) operandValue2, operator);
+      case kLong, kULong -> processLongOperation((long) operandValue1, (long) operandValue2, operator);
       case kFloat -> processFloatOperation((float) operandValue1, (float) operandValue2, operator);
       case kDouble -> processDoubleOperation(operandValue1, operandValue2, operator);
       case kSpeculative -> Double.NaN;
@@ -616,8 +616,8 @@ public class CodeArithmeticInterpreter
   {
     return switch (dataType)
     {
-      case kInt -> new DataTypeEnum[]{DataTypeEnum.kInt, DataTypeEnum.kLong};
-      case kLong -> new DataTypeEnum[]{DataTypeEnum.kLong};
+      case kInt, kUInt -> new DataTypeEnum[]{DataTypeEnum.kInt, DataTypeEnum.kLong};
+      case kLong, kULong -> new DataTypeEnum[]{DataTypeEnum.kLong};
       case kFloat -> new DataTypeEnum[]{DataTypeEnum.kFloat, DataTypeEnum.kDouble};
       case kDouble -> new DataTypeEnum[]{DataTypeEnum.kDouble};
       case kSpeculative -> new DataTypeEnum[]{};

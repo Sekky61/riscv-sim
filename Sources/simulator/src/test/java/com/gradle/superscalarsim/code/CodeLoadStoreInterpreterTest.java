@@ -47,9 +47,9 @@ public class CodeLoadStoreInterpreterTest
     RegisterFileModel integerFile = new RegisterFileModelBuilder().hasName("integer").hasDataType(DataTypeEnum.kLong)
             .hasRegisterList(Arrays.asList(integer1, integer2, integer3, integer4, integer5, integer6)).build();
     
-    RegisterModel float1 = new RegisterModel("f1", false, DataTypeEnum.kFloat, 0.0, RegisterReadinessEnum.kAssigned);
-    RegisterModel float2 = new RegisterModel("f2", false, DataTypeEnum.kFloat, 25.0, RegisterReadinessEnum.kAssigned);
-    RegisterModel float3 = new RegisterModel("f3", false, DataTypeEnum.kFloat, 6.0, RegisterReadinessEnum.kAssigned);
+    RegisterModel float1 = new RegisterModel("f1", false, DataTypeEnum.kFloat, 0.0f, RegisterReadinessEnum.kAssigned);
+    RegisterModel float2 = new RegisterModel("f2", false, DataTypeEnum.kFloat, 25.0f, RegisterReadinessEnum.kAssigned);
+    RegisterModel float3 = new RegisterModel("f3", false, DataTypeEnum.kFloat, 6.0f, RegisterReadinessEnum.kAssigned);
     RegisterFileModel floatFile = new RegisterFileModelBuilder().hasName("float").hasDataType(DataTypeEnum.kDouble)
             .hasRegisterList(Arrays.asList(float1, float2, float3)).build();
     

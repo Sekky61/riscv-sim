@@ -596,8 +596,8 @@ public class CodeParser
   {
     return switch (argumentDataType)
     {
-      case kInt -> registerDataType == DataTypeEnum.kInt || registerDataType == DataTypeEnum.kLong;
-      case kLong -> registerDataType == DataTypeEnum.kLong;
+      case kInt, kUInt -> registerDataType == DataTypeEnum.kInt || registerDataType == DataTypeEnum.kLong;
+      case kLong, kULong -> registerDataType == DataTypeEnum.kLong;
       case kFloat -> registerDataType == DataTypeEnum.kFloat || registerDataType == DataTypeEnum.kDouble;
       case kDouble -> registerDataType == DataTypeEnum.kDouble;
       case kSpeculative -> false;
