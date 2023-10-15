@@ -177,6 +177,14 @@ public class InstructionFunctionModel
   }// end of getArguments
   //------------------------------------------------------
   
+  /**
+   * @return Argument with given name
+   */
+  public Argument getArgumentByName(String name)
+  {
+    return arguments.stream().filter(argument -> argument.name.equals(name)).findFirst().orElse(null);
+  }
+  
   public boolean hasDefaultArguments()
   {
     return arguments.stream().anyMatch(argument -> argument.defaultValue != null);

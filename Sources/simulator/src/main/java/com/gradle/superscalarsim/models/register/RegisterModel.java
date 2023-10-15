@@ -59,7 +59,7 @@ public class RegisterModel
   /**
    * Value inside the register
    */
-  private final RegisterDataContainer value;
+  private RegisterDataContainer value;
   
   /**
    * State of the register in terms of readiness
@@ -209,9 +209,9 @@ public class RegisterModel
   //------------------------------------------------------
   
   /**
-   * @param [in] newValue - New value to be set. In case of constant register, value is ignored
+   * @param newValue New value to be set. The type of the value must be one of the following: Integer, Long, Float, Double.
    *
-   * @brief Set register value.
+   * @brief Set register value. In case of constant register, value is not changed.
    */
   public <T> void setValue(T newValue)
   {
@@ -261,5 +261,15 @@ public class RegisterModel
   public void setReadiness(RegisterReadinessEnum readiness)
   {
     this.readiness = readiness;
+  }
+  
+  public RegisterDataContainer getValueContainer()
+  {
+    return value;
+  }
+  
+  public void setValueContainer(RegisterDataContainer container)
+  {
+    this.value = container;
   }
 }

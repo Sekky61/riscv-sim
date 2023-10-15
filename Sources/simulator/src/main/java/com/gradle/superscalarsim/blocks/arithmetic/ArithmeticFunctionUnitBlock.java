@@ -37,6 +37,7 @@ import com.gradle.superscalarsim.blocks.base.AbstractIssueWindowBlock;
 import com.gradle.superscalarsim.blocks.base.ReorderBufferBlock;
 import com.gradle.superscalarsim.blocks.base.UnifiedRegisterFileBlock;
 import com.gradle.superscalarsim.code.CodeArithmeticInterpreter;
+import com.gradle.superscalarsim.code.Expression;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.models.InputCodeArgument;
 import com.gradle.superscalarsim.models.register.RegisterModel;
@@ -126,10 +127,11 @@ public class ArithmeticFunctionUnitBlock extends AbstractFunctionUnitBlock
       {
         this.simCodeModel.setFunctionUnitId(this.functionUnitId);
       }
-      InputCodeArgument destinationArgument = simCodeModel.getArgumentByName("rd");
-      double            result              = arithmeticInterpreter.interpretInstruction(this.simCodeModel);
-      RegisterModel     reg                 = registerFileBlock.getRegister(destinationArgument.getValue());
-      reg.setValue(result);
+      InputCodeArgument   destinationArgument = simCodeModel.getArgumentByName("rd");
+      Expression.Variable result              = arithmeticInterpreter.interpretInstruction(this.simCodeModel);
+      RegisterModel       reg                 = registerFileBlock.getRegister(destinationArgument.getValue());
+      // TODO redundant?
+      reg.setValueContainer(result.value);
       reg.setReadiness(RegisterReadinessEnum.kExecuted);
       
       this.reorderBufferBlock.getFlagsMap().get(this.simCodeModel.getId()).setBusy(false);

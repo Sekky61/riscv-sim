@@ -140,11 +140,28 @@ public class Expression
           {
             throw new IllegalArgumentException("Right side of '=' operator must be a variable");
           }
-          if (!canBeAssigned(lVariable.type, rVariable.type))
+          if (!canBeAssigned(rVariable.type, lVariable.type))
           {
             throw new IllegalArgumentException("Left side of '=' operator must be of the same type as right side");
           }
-          rVariable.value = lVariable.value;
+          // Assign value, with some special handling for boolean
+          // TODO: alternatively add the cast operator
+          if (lVariable.type == DataTypeEnum.kBool && rVariable.type != DataTypeEnum.kBool)
+          {
+            boolean value = (boolean) lVariable.value.getValue(DataTypeEnum.kBool);
+            switch (rVariable.type)
+            {
+              case kInt, kUInt -> rVariable.value = RegisterDataContainer.fromValue(value ? 1 : 0);
+              case kLong, kULong -> rVariable.value = RegisterDataContainer.fromValue(value ? 1L : 0L);
+              case kFloat -> rVariable.value = RegisterDataContainer.fromValue(value ? 1.0f : 0.0f);
+              case kDouble -> rVariable.value = RegisterDataContainer.fromValue(value ? 1.0 : 0.0);
+              default -> throw new IllegalArgumentException("Unknown type: " + rVariable.type);
+            }
+          }
+          else
+          {
+            rVariable.value = lVariable.value;
+          }
         }
         else
         {
@@ -243,10 +260,10 @@ public class Expression
   {
     return switch (assignTo)
     {
-      case kInt, kUInt -> assignFrom == DataTypeEnum.kInt || assignFrom == DataTypeEnum.kUInt;
-      case kLong, kULong -> assignFrom == DataTypeEnum.kLong || assignFrom == DataTypeEnum.kULong;
-      case kFloat -> assignFrom == DataTypeEnum.kFloat;
-      case kDouble -> assignFrom == DataTypeEnum.kDouble;
+      case kInt, kUInt -> assignFrom == DataTypeEnum.kInt || assignFrom == DataTypeEnum.kUInt || assignFrom == DataTypeEnum.kBool;
+      case kLong, kULong -> assignFrom == DataTypeEnum.kLong || assignFrom == DataTypeEnum.kULong || assignFrom == DataTypeEnum.kBool;
+      case kFloat -> assignFrom == DataTypeEnum.kFloat || assignFrom == DataTypeEnum.kBool;
+      case kDouble -> assignFrom == DataTypeEnum.kDouble || assignFrom == DataTypeEnum.kBool;
       case kBool -> assignFrom == DataTypeEnum.kBool;
       default -> throw new IllegalArgumentException("Unknown type: " + assignTo);
     };

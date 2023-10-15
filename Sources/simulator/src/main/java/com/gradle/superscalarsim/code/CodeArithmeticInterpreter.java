@@ -39,10 +39,12 @@ import com.gradle.superscalarsim.models.InputCodeArgument;
 import com.gradle.superscalarsim.models.InstructionFunctionModel;
 import com.gradle.superscalarsim.models.OperandModel;
 import com.gradle.superscalarsim.models.SimCodeModel;
+import com.gradle.superscalarsim.models.register.RegisterDataContainer;
 import com.gradle.superscalarsim.models.register.RegisterModel;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 import java.util.regex.Pattern;
@@ -120,39 +122,43 @@ public class CodeArithmeticInterpreter
    * @return Double value based on interpreted instruction
    * @brief Evaluates expressions divided by semicolon ';'
    */
-  public double interpretInstruction(final SimCodeModel simCodeModel)
+  public Expression.Variable interpretInstruction(final SimCodeModel simCodeModel)
   {
     final InstructionFunctionModel instruction = simCodeModel.getInstructionFunctionModel();
     if (instruction == null)
     {
-      return Double.NaN;
+      throw new IllegalArgumentException("Instruction is null");
     }
     
-    String[] splitInterpretable = instruction.getInterpretableAs().split(";");
-    for (String command : splitInterpretable)
+    List<Expression.Variable> variables = new ArrayList<>();
+    for (InputCodeArgument argument : simCodeModel.getArguments())
     {
-      int    equalIndex = command.indexOf('=');
-      String lValue     = command.substring(0, equalIndex);
-      String expression = command.substring(equalIndex + 1);
-      
-      // Dirty fix: if expression contains pc, replace it with PC
-      // TODO: A proper refactor
-      
-      expression = expression.replace("pc", Integer.toString(simCodeModel.getSavedPc()));
-      
-      // Find result arg (for example rd:t0)
-      InputCodeArgument resultArg = simCodeModel.getArguments().stream().filter(arg -> lValue.contains(arg.getName()))
-              .findFirst().orElse(null);
-      OperandModel resultOperand = new OperandModel(lValue, resultArg);
-      double result = evaluateExpression(expression, instruction.getInputDataType(), instruction.getOutputDataType(),
-                                         simCodeModel.getArguments());
-      
-      this.temporaryTag   = resultOperand.getValue();
-      this.temporaryValue = resultOperand.getBitHigh() == -1 ? result : writeSpecificBits(resultOperand, (long) result,
-                                                                                          (long) this.temporaryValue);
+      String name  = argument.getName();
+      String value = argument.getValue();
+      // Check if value is register
+      RegisterModel register = registerFileBlock.getRegister(value);
+      if (register != null)
+      {
+        variables.add(new Expression.Variable(name, register.getDataType(), register.getValueContainer()));
+        continue;
+      }
+      else
+      {
+        // it is immediate
+        DataTypeEnum dataType = instruction.getArgumentByName(name).type();
+        variables.add(getValueFromOperand(value, dataType));
+      }
     }
     
-    return Double.parseDouble(convertDoubleToDatatype(this.temporaryValue, instruction.getOutputDataType()));
+    // Evaluate each expression
+    String[] splitInterpretable = instruction.getInterpretableAs().split(";");
+    for (String expression : splitInterpretable)
+    {
+      Expression.interpret(expression, variables);
+    }
+    
+    // return "rd"
+    return variables.stream().filter(variable -> variable.tag.equals("rd")).findFirst().orElse(null);
   }// end of interpretInstruction
   //-------------------------------------------------------------------------------------------
   
@@ -249,7 +255,7 @@ public class CodeArithmeticInterpreter
     String resultValue = valueStack.pop();
     InputCodeArgument resultArg = argumentList.stream().filter(arg -> resultValue.equals(arg.getName())).findFirst()
             .orElse(null);
-    return getValueFromOperand(resultArg == null ? resultValue : resultArg.getValue(), outputDataType);
+    return 0.0;
   }// end of evaluateExpression
   //-------------------------------------------------------------------------------------------
   
@@ -332,8 +338,8 @@ public class CodeArithmeticInterpreter
                                   @NotNull final String operator,
                                   @NotNull final DataTypeEnum inputDataType)
   {
-    double operandValue1 = operand1 != null ? getValueFromOperand(operand1.getValue(), inputDataType) : 0.0;
-    double operandValue2 = operand2 != null ? getValueFromOperand(operand2.getValue(), inputDataType) : 0.0;
+    double operandValue1 = 0.0;
+    double operandValue2 = 0.0;
     operandValue1 = operand1 == null || operand1.getBitHigh() == -1 ? operandValue1 : selectSpecificBits(operand1,
                                                                                                          operandValue1);
     operandValue2 = operand2 == null || operand2.getBitHigh() == -1 ? operandValue2 : selectSpecificBits(operand2,
@@ -565,44 +571,65 @@ public class CodeArithmeticInterpreter
    * @return Parsed double value from operand
    * @brief Gets value from string operand
    */
-  private double getValueFromOperand(String operand, DataTypeEnum dataType)
+  private Expression.Variable getValueFromOperand(String operand, DataTypeEnum dataType)
   {
     // Checks if value is immediate
     if (hexadecimalPattern.matcher(operand).matches())
     {
-      return Long.parseLong(operand.substring(2), 16);
+      long                  x                     = Long.parseLong(operand.substring(2), 16);
+      RegisterDataContainer registerDataContainer = new RegisterDataContainer();
+      registerDataContainer.setValue(x, dataType);
+      return new Expression.Variable("", dataType, registerDataContainer);
     }
     else if (decimalPattern.matcher(operand).matches())
     {
-      return Double.parseDouble(operand);
-    }
-    
-    // If value is value of previously calculated expression
-    if (temporaryTag.equals(operand))
-    {
-      return temporaryValue;
-    }
-    
-    // If value is register
-    DataTypeEnum[] dataTypeEnums = getFitRegisterTypes(dataType);
-    RegisterModel  registerModel = null;
-    for (DataTypeEnum possibleDataType : dataTypeEnums)
-    {
-      registerModel = this.registerFileBlock.getRegisterList(possibleDataType).stream()
-              .filter(register -> register.getName().equals(operand)).findFirst().orElse(null);
-      if (registerModel != null)
+      // Is there a dot in the number?
+      if (operand.contains("."))
       {
-        break;
+        // Is it a float or a double?
+        if (operand.contains("f"))
+        {
+          float                 x                     = Float.parseFloat(operand);
+          RegisterDataContainer registerDataContainer = new RegisterDataContainer();
+          registerDataContainer.setValue(x, dataType);
+          return new Expression.Variable("", dataType, registerDataContainer);
+        }
+        else
+        {
+          double                x                     = Double.parseDouble(operand);
+          RegisterDataContainer registerDataContainer = new RegisterDataContainer();
+          registerDataContainer.setValue(x, dataType);
+          return new Expression.Variable("", dataType, registerDataContainer);
+        }
+      }
+      else
+      {
+        // Is it an int or a long?
+        if (operand.contains("l"))
+        {
+          long                  x                     = Long.parseLong(operand);
+          RegisterDataContainer registerDataContainer = new RegisterDataContainer();
+          registerDataContainer.setValue(x, dataType);
+          return new Expression.Variable("", dataType, registerDataContainer);
+        }
+        else
+        {
+          int                   x                     = Integer.parseInt(operand);
+          RegisterDataContainer registerDataContainer = new RegisterDataContainer();
+          registerDataContainer.setValue(x, dataType);
+          return new Expression.Variable("", dataType, registerDataContainer);
+        }
       }
     }
     
-    if (registerModel == null)
+    // If value is register
+    RegisterModel reg = registerFileBlock.getRegister(operand);
+    if (reg != null)
     {
-      registerModel = this.registerFileBlock.getRegisterList(DataTypeEnum.kSpeculative).stream()
-              .filter(register -> register.getName().equals(operand)).findFirst().orElse(null);
+      return new Expression.Variable("", reg.getDataType(), reg.getValueContainer());
     }
     
-    return registerModel != null ? registerModel.getValue() : Double.NaN;
+    throw new IllegalArgumentException("Unknown operand: " + operand);
   }// end of getValueFromOperand
   //-------------------------------------------------------------------------------------------
   
