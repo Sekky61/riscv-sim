@@ -1,5 +1,6 @@
 package com.gradle.superscalarsim;
 
+import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.models.register.RegisterDataContainer;
 import org.junit.Assert;
 import org.junit.Test;
@@ -13,7 +14,7 @@ public class RegisterTests
     
     registerDataContainer.setValue(123);
     
-    int x = registerDataContainer.getValue(Integer.class);
+    int x = (int) registerDataContainer.getValue(DataTypeEnum.kInt);
     Assert.assertEquals(123, x);
   }
   
@@ -24,7 +25,7 @@ public class RegisterTests
     
     registerDataContainer.setValue(123L);
     
-    int x = registerDataContainer.getValue(Integer.class);
+    int x = (int) registerDataContainer.getValue(DataTypeEnum.kInt);
     Assert.assertEquals(123, x);
   }
   
@@ -39,7 +40,7 @@ public class RegisterTests
     
     registerDataContainer.setValue(123.0f);
     
-    int x = registerDataContainer.getValue(Integer.class);
+    int x = (int) registerDataContainer.getValue(DataTypeEnum.kInt);
     Assert.assertEquals(0b01000010111101100000000000000000, x);
   }
   
@@ -51,7 +52,7 @@ public class RegisterTests
     registerDataContainer.setValue(123.0);
     
     // The lower bits of the bit representation of the double are all zero.
-    int x = registerDataContainer.getValue(Integer.class);
+    int x = (int) registerDataContainer.getValue(DataTypeEnum.kInt);
     Assert.assertEquals(0b00000000_00000000_00000000_00000000, x);
   }
 }

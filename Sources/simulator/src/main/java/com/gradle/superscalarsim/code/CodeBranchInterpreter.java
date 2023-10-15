@@ -299,7 +299,7 @@ public class CodeBranchInterpreter
       case kLong, kULong -> new DataTypeEnum[]{DataTypeEnum.kLong};
       case kFloat -> new DataTypeEnum[]{DataTypeEnum.kFloat, DataTypeEnum.kDouble};
       case kDouble -> new DataTypeEnum[]{DataTypeEnum.kDouble};
-      case kSpeculative -> new DataTypeEnum[]{};
+      case kSpeculative, kBool -> new DataTypeEnum[]{};
     };
   }// end of getFitRegisterTypes
   //-------------------------------------------------------------------------------------------

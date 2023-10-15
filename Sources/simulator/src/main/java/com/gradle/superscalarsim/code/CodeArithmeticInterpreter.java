@@ -345,7 +345,7 @@ public class CodeArithmeticInterpreter
       case kLong, kULong -> processLongOperation((long) operandValue1, (long) operandValue2, operator);
       case kFloat -> processFloatOperation((float) operandValue1, (float) operandValue2, operator);
       case kDouble -> processDoubleOperation(operandValue1, operandValue2, operator);
-      case kSpeculative -> Double.NaN;
+      case kSpeculative, kBool -> Double.NaN;
     };
   }// end of processOperation
   //-------------------------------------------------------------------------------------------
@@ -620,7 +620,7 @@ public class CodeArithmeticInterpreter
       case kLong, kULong -> new DataTypeEnum[]{DataTypeEnum.kLong};
       case kFloat -> new DataTypeEnum[]{DataTypeEnum.kFloat, DataTypeEnum.kDouble};
       case kDouble -> new DataTypeEnum[]{DataTypeEnum.kDouble};
-      case kSpeculative -> new DataTypeEnum[]{};
+      case kSpeculative, kBool -> new DataTypeEnum[]{};
     };
   }// end of getFitRegisterTypes
   //-------------------------------------------------------------------------------------------

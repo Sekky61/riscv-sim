@@ -118,16 +118,20 @@ public class RegisterDataContainer
    * @return Value of register, cast to given type.
    * @brief Get value of register. Interprets the saved bit sequence as a value of given type.
    */
-  public <T> T getValue(DataTypeEnum type)
+  public Object getValue(DataTypeEnum type)
   {
-    Class<?> cls = (Class<T>) type.getJavaClass();
+    Class<?> cls = type.getJavaClass();
+    if (cls == null)
+    {
+      throw new IllegalArgumentException("Unsupported type: " + type);
+    }
     return switch (type)
     {
-      case kInt, kUInt -> (T) cls.cast((int) bits);
-      case kLong, kULong -> (T) cls.cast(bits);
-      case kFloat -> (T) cls.cast(Float.intBitsToFloat((int) bits));
-      case kDouble -> (T) cls.cast(Double.longBitsToDouble(bits));
-      case kBool -> (T) cls.cast(bits != 0);
+      case kInt, kUInt -> cls.cast((int) bits);
+      case kLong, kULong -> cls.cast(bits);
+      case kFloat -> cls.cast(Float.intBitsToFloat((int) bits));
+      case kDouble -> cls.cast(Double.longBitsToDouble(bits));
+      case kBool -> cls.cast(bits != 0);
       default -> throw new IllegalArgumentException("Unsupported type: " + type);
     };
   }

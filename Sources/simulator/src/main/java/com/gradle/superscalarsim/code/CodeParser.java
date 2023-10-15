@@ -600,7 +600,7 @@ public class CodeParser
       case kLong, kULong -> registerDataType == DataTypeEnum.kLong;
       case kFloat -> registerDataType == DataTypeEnum.kFloat || registerDataType == DataTypeEnum.kDouble;
       case kDouble -> registerDataType == DataTypeEnum.kDouble;
-      case kSpeculative -> false;
+      case kSpeculative, kBool -> false;
     };
   }// end of checkDatatype
   //-------------------------------------------------------------------------------------------

@@ -204,7 +204,7 @@ public class RegisterModel
    */
   public double getValue()
   {
-    return value.getValue(Double.class);
+    return (double) value.getValue(DataTypeEnum.kDouble);
   }// end of getValue
   //------------------------------------------------------
   
@@ -242,7 +242,7 @@ public class RegisterModel
     }
   }// end of setValue
   
-  public <T> T getValue(Class<T> type)
+  public Object getValue(DataTypeEnum type)
   {
     return value.getValue(type);
   }

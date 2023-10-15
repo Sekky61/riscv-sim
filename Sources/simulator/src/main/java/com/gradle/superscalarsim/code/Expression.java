@@ -264,7 +264,8 @@ public class Expression
     // Special handling for cases with different types of operands
     if (lVariable.type != rVariable.type)
     {
-      // TODO
+      throw new IllegalArgumentException(
+              "Incompatible types: " + lVariable.type + " and " + rVariable.type + " for operator: " + operator);
     }
     
     // Dispatch to correct type processor
