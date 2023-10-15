@@ -26,6 +26,8 @@
  */
 package com.gradle.superscalarsim.models.register;
 
+import com.gradle.superscalarsim.enums.DataTypeEnum;
+
 /**
  * Holds the bit representation of the register value. This value may be
  * interpreted as a float, int, or long depending on the register's data type.
@@ -50,6 +52,31 @@ public class RegisterDataContainer
     this.bits = 0;
   }
   
+  public static <T> RegisterDataContainer fromValue(T value)
+  {
+    RegisterDataContainer container = new RegisterDataContainer();
+    DataTypeEnum          type      = DataTypeEnum.fromJavaClass(value.getClass());
+    if (type == null)
+    {
+      throw new IllegalArgumentException("Unsupported type: " + value.getClass());
+    }
+    container.setValue(value, type);
+    return container;
+  }
+  
+  public <T> void setValue(T value, DataTypeEnum type)
+  {
+    switch (type)
+    {
+      case kInt, kUInt -> setValue((int) value);
+      case kLong, kULong -> setValue((long) value);
+      case kFloat -> setValue((float) value);
+      case kDouble -> setValue((double) value);
+      case kBool -> setValue((boolean) value);
+      default -> throw new IllegalArgumentException("Unsupported type: " + type);
+    }
+  }
+  
   public void setValue(int bits)
   {
     this.bits = Integer.toUnsignedLong(bits);
@@ -71,6 +98,11 @@ public class RegisterDataContainer
     this.bits = Double.doubleToLongBits(value);
   }
   
+  public void setValue(boolean value)
+  {
+    this.bits = value ? 1 : 0;
+  }
+  
   /**
    * @return The bit representation of the register value
    */
@@ -86,27 +118,17 @@ public class RegisterDataContainer
    * @return Value of register, cast to given type.
    * @brief Get value of register. Interprets the saved bit sequence as a value of given type.
    */
-  public <T> T getValue(Class<T> type)
+  public <T> T getValue(DataTypeEnum type)
   {
-    if (type == Integer.class)
+    Class<?> cls = (Class<T>) type.getJavaClass();
+    return switch (type)
     {
-      return type.cast((int) bits);
-    }
-    else if (type == Long.class)
-    {
-      return type.cast(bits);
-    }
-    else if (type == Float.class)
-    {
-      return type.cast(Float.intBitsToFloat((int) bits));
-    }
-    else if (type == Double.class)
-    {
-      return type.cast(Double.longBitsToDouble(bits));
-    }
-    else
-    {
-      throw new IllegalArgumentException("Unsupported type: " + type);
-    }
+      case kInt, kUInt -> (T) cls.cast((int) bits);
+      case kLong, kULong -> (T) cls.cast(bits);
+      case kFloat -> (T) cls.cast(Float.intBitsToFloat((int) bits));
+      case kDouble -> (T) cls.cast(Double.longBitsToDouble(bits));
+      case kBool -> (T) cls.cast(bits != 0);
+      default -> throw new IllegalArgumentException("Unsupported type: " + type);
+    };
   }
 }

@@ -60,5 +60,65 @@ public enum DataTypeEnum
   /**
    * 64bit floating point
    */
-  kDouble, kSpeculative  ///< Speculative value
+  kDouble,
+  
+  /**
+   * True/False. Used for expressions.
+   */
+  kBool,
+  
+  kSpeculative;
+  
+  public static DataTypeEnum fromJavaClass(Class<?> aClass)
+  {
+    if (aClass == Integer.class)
+    {
+      return kInt;
+    }
+    else if (aClass == Long.class)
+    {
+      return kLong;
+    }
+    else if (aClass == Float.class)
+    {
+      return kFloat;
+    }
+    else if (aClass == Double.class)
+    {
+      return kDouble;
+    }
+    else if (aClass == Boolean.class)
+    {
+      return kBool;
+    }
+    else
+    {
+      return null;
+    }
+  }
+  
+  public Class<?> getJavaClass()
+  {
+    switch (this)
+    {
+      case kInt:
+        return Integer.class;
+      case kUInt:
+        return Integer.class;
+      case kLong:
+        return Long.class;
+      case kULong:
+        return Long.class;
+      case kFloat:
+        return Float.class;
+      case kDouble:
+        return Double.class;
+      case kBool:
+        return Boolean.class;
+      case kSpeculative:
+        return Long.class;
+      default:
+        return null;
+    }
+  }
 }
