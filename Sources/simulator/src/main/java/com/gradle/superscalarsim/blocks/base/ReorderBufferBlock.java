@@ -42,9 +42,9 @@ import com.gradle.superscalarsim.blocks.loadstore.StoreBufferBlock;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.models.InputCodeArgument;
-import com.gradle.superscalarsim.models.RegisterModel;
 import com.gradle.superscalarsim.models.ReorderFlags;
 import com.gradle.superscalarsim.models.SimCodeModel;
+import com.gradle.superscalarsim.models.register.RegisterModel;
 
 import java.util.ArrayList;
 import java.util.List;

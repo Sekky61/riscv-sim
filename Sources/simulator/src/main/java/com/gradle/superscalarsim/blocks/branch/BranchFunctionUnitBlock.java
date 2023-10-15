@@ -39,7 +39,7 @@ import com.gradle.superscalarsim.blocks.base.UnifiedRegisterFileBlock;
 import com.gradle.superscalarsim.code.CodeBranchInterpreter;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.models.InputCodeArgument;
-import com.gradle.superscalarsim.models.RegisterModel;
+import com.gradle.superscalarsim.models.register.RegisterModel;
 
 import java.util.OptionalInt;
 

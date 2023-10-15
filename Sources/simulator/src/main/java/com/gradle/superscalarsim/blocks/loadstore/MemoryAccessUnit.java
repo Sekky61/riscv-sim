@@ -40,8 +40,8 @@ import com.gradle.superscalarsim.code.CodeLoadStoreInterpreter;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.models.InputCodeArgument;
 import com.gradle.superscalarsim.models.Pair;
-import com.gradle.superscalarsim.models.RegisterModel;
 import com.gradle.superscalarsim.models.SimCodeModel;
+import com.gradle.superscalarsim.models.register.RegisterModel;
 
 import java.util.Objects;
 

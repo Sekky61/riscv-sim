@@ -35,7 +35,7 @@ package com.gradle.superscalarsim.loader;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.gradle.superscalarsim.models.InstructionFunctionModel;
-import com.gradle.superscalarsim.models.RegisterFileModel;
+import com.gradle.superscalarsim.models.register.RegisterFileModel;
 
 import java.io.File;
 import java.io.IOException;

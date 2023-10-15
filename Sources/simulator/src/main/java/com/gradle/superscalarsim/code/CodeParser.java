@@ -30,7 +30,11 @@ package com.gradle.superscalarsim.code;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.loader.InitLoader;
-import com.gradle.superscalarsim.models.*;
+import com.gradle.superscalarsim.models.InputCodeArgument;
+import com.gradle.superscalarsim.models.InputCodeModel;
+import com.gradle.superscalarsim.models.InstructionFunctionModel;
+import com.gradle.superscalarsim.models.register.RegisterFileModel;
+import com.gradle.superscalarsim.models.register.RegisterModel;
 
 import java.util.ArrayList;
 import java.util.HashMap;

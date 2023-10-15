@@ -30,7 +30,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.gradle.superscalarsim.models;
+package com.gradle.superscalarsim.models.register;
 
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
@@ -45,8 +45,9 @@ public class RegisterModel
    * Name of register
    */
   private final String name;
+  
   /**
-   * True if the value of register is constant (example: register x0 from risc-v)
+   * True if the value of register is constant (example: register x0 from risc-v spec)
    */
   private final boolean isConstant;
   
@@ -54,6 +55,7 @@ public class RegisterModel
    * Data type of register (int, float)
    */
   private final DataTypeEnum dataType;
+  
   /**
    * Value inside the register
    */

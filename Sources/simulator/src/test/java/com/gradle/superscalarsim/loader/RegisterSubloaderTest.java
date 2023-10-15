@@ -1,7 +1,7 @@
 package com.gradle.superscalarsim.loader;
 
 import com.gradle.superscalarsim.enums.DataTypeEnum;
-import com.gradle.superscalarsim.models.RegisterFileModel;
+import com.gradle.superscalarsim.models.register.RegisterFileModel;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

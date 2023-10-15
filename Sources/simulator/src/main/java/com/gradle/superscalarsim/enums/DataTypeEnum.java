@@ -32,9 +32,33 @@ package com.gradle.superscalarsim.enums;
  */
 public enum DataTypeEnum
 {
-  kInt,         ///< 32bit Integer value
-  kLong,        ///< 64bit Integer value
-  kFloat,       ///< Float value
-  kDouble,      ///< Double value
-  kSpeculative  ///< Speculative value
+  /**
+   * 32bit signed integer
+   */
+  kInt,
+  
+  /**
+   * 32bit unsigned integer
+   */
+  kUInt,
+  
+  /**
+   * 64bit signed integer
+   */
+  kLong,
+  
+  /**
+   * 64bit unsigned integer
+   */
+  kULong,
+  
+  /**
+   * 32bit floating point
+   */
+  kFloat,
+  
+  /**
+   * 64bit floating point
+   */
+  kDouble, kSpeculative  ///< Speculative value
 }

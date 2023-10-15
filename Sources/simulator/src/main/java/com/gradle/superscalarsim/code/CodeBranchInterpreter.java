@@ -38,7 +38,7 @@ import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.models.IInputCodeModel;
 import com.gradle.superscalarsim.models.InputCodeArgument;
 import com.gradle.superscalarsim.models.InstructionFunctionModel;
-import com.gradle.superscalarsim.models.RegisterModel;
+import com.gradle.superscalarsim.models.register.RegisterModel;
 
 import java.util.Objects;
 import java.util.OptionalInt;
