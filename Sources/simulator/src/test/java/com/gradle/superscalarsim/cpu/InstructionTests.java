@@ -56,7 +56,7 @@ public class InstructionTests
     
     // Assert
     Assert.assertEquals(1, cpu.cpuState.statisticsCounter.getCommittedInstructions());
-    Assert.assertEquals(5, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(), 0.5);
+    Assert.assertEquals(5, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt));
   }
   
   @Test
@@ -70,7 +70,7 @@ public class InstructionTests
     
     // Assert
     Assert.assertEquals(1, cpu.cpuState.statisticsCounter.getCommittedInstructions());
-    Assert.assertEquals(-15, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(), 0.5);
+    Assert.assertEquals(-15, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt));
   }
   
   @Test
@@ -82,7 +82,7 @@ public class InstructionTests
     cpu.execute();
     
     // Assert
-    Assert.assertEquals(0, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x0").getValue(), 0.5);
+    Assert.assertEquals(0, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x0").getValue(DataTypeEnum.kInt));
   }
   
   @Test
@@ -91,13 +91,13 @@ public class InstructionTests
     // Setup + exercise
     cpuConfig.code = "sub x1, x2, x3";
     Cpu cpu = new Cpu(cpuConfig);
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(10.0);
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(5.0);
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x3").setValue(3.0);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(10);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(5);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x3").setValue(3);
     cpu.execute();
     
     // Assert
-    Assert.assertEquals(2, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(), 0.5);
+    Assert.assertEquals(2, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt));
   }
   
   /**
@@ -128,7 +128,7 @@ public class InstructionTests
     // Setup + exercise
     cpuConfig.code = "jalr x2, x8, 56";
     Cpu cpu = new Cpu(cpuConfig);
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x8").setValue(10.0);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x8").setValue(10);
     cpu.execute();
     
     // Assert
@@ -148,13 +148,13 @@ public class InstructionTests
     // Setup + exercise
     cpuConfig.code = "xor x3, x1, x2";
     Cpu cpu = new Cpu(cpuConfig);
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(10.0);
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(5.0);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(10);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(5);
     cpu.execute();
     
     // Assert
     // 1010 XOR 0101 = 1111
-    Assert.assertEquals(15, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x3").getValue(), 0.5);
+    Assert.assertEquals(15, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x3").getValue(DataTypeEnum.kInt));
   }
   
   /**
@@ -166,12 +166,12 @@ public class InstructionTests
     // Setup + exercise
     cpuConfig.code = "xori x2, x1, 5";
     Cpu cpu = new Cpu(cpuConfig);
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(32.0);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(32);
     cpu.execute();
     
     // Assert
     // 100000 XOR 101 = 100101
-    Assert.assertEquals(32 + 5, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").getValue(), 0.5);
+    Assert.assertEquals(32 + 5, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").getValue(DataTypeEnum.kInt));
   }
   
   /**
@@ -183,13 +183,13 @@ public class InstructionTests
     // Setup + exercise
     cpuConfig.code = "sll x2, x1, x10";
     Cpu cpu = new Cpu(cpuConfig);
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(1.0);
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x10").setValue(2.0);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(1);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x10").setValue(2);
     cpu.execute();
     
     // Assert
     // 0001 << 2 = 0100
-    Assert.assertEquals(4, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").getValue(), 0.5);
+    Assert.assertEquals(4, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").getValue(DataTypeEnum.kInt));
   }
   
   /**
@@ -201,12 +201,12 @@ public class InstructionTests
     // Setup + exercise
     cpuConfig.code = "slli x2, x1, 2";
     Cpu cpu = new Cpu(cpuConfig);
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(1.0);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(1);
     cpu.execute();
     
     // Assert
     // 0001 << 2 = 0100
-    Assert.assertEquals(4, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").getValue(), 0.5);
+    Assert.assertEquals(4, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").getValue(DataTypeEnum.kInt));
   }
   
   /**
@@ -218,16 +218,16 @@ public class InstructionTests
     // Setup + exercise
     cpuConfig.code = "srl x2, x1, x10\n" + "srl x3, x9, x10";
     Cpu cpu = new Cpu(cpuConfig);
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(8.0);
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x9").setValue(2.0);
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x10").setValue(2.0);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(8);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x9").setValue(2);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x10").setValue(2);
     cpu.execute();
     
     // Assert
     // 1000 >> 2 = 0010
-    Assert.assertEquals(2, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").getValue(), 0.5);
+    Assert.assertEquals(2, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").getValue(DataTypeEnum.kInt));
     // 0010 >> 2 = 0000
-    Assert.assertEquals(0, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x3").getValue(), 0.5);
+    Assert.assertEquals(0, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x3").getValue(DataTypeEnum.kInt));
   }
   
   /**
@@ -240,16 +240,17 @@ public class InstructionTests
     // Setup + exercise
     cpuConfig.code = "srli x2, x1, 2\nsrli x3, x5, 3";
     Cpu cpu = new Cpu(cpuConfig);
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(9.0);
-    int x5 = 0b11111111111111111111111111000000;
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x5").setValue((double) x5);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(9);
+    int   x5                  = 0b11000000011000000000000000000000;
+    float minusThreePointFive = Float.intBitsToFloat(x5);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x5").setValue(minusThreePointFive);
     cpu.execute();
     
     // Assert
     // 1001 >> 2 = 0010
-    Assert.assertEquals(2, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").getValue(), 0.5);
-    Assert.assertEquals(0b00011111111111111111111111111000,
-                        cpu.cpuState.unifiedRegisterFileBlock.getRegister("x3").getValue(), 0.5);
+    Assert.assertEquals(2, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").getValue(DataTypeEnum.kInt));
+    Assert.assertEquals(0b00011000000011000000000000000000,
+                        cpu.cpuState.unifiedRegisterFileBlock.getRegister("x3").getValue(DataTypeEnum.kInt));
   }
   
   /**
@@ -262,16 +263,16 @@ public class InstructionTests
     // Setup + exercise
     cpuConfig.code = "sra x2, x1, x10\n" + "sra x3, x9, x10";
     Cpu cpu = new Cpu(cpuConfig);
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(8.0);
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x9").setValue(-1.0);
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x10").setValue(2.0);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(8);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x9").setValue(-1);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x10").setValue(2);
     cpu.execute();
     
     // Assert
     // 1000 >> 2 = 1110
-    Assert.assertEquals(2, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").getValue(), 0.5);
+    Assert.assertEquals(2, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").getValue(DataTypeEnum.kInt));
     // 111...111 >> 2 = 111...111
-    Assert.assertEquals(-1, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x3").getValue(), 0.5);
+    Assert.assertEquals(-1, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x3").getValue(DataTypeEnum.kInt));
   }
   
   /**
@@ -284,16 +285,16 @@ public class InstructionTests
     // Setup + exercise
     cpuConfig.code = "srai x2, x1, 2\nsrai x3, x5, 3";
     Cpu cpu = new Cpu(cpuConfig);
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(9.0);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(9);
     int x5 = 0b11111111111111111111111111000000;
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x5").setValue((double) x5);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x5").setValue(x5);
     cpu.execute();
     
     // Assert
     // 1001 >> 2 = 1110
-    Assert.assertEquals(2, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").getValue(), 0.5);
+    Assert.assertEquals(2, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").getValue(DataTypeEnum.kInt));
     Assert.assertEquals(0b11111111111111111111111111111000,
-                        cpu.cpuState.unifiedRegisterFileBlock.getRegister("x3").getValue(), 0.5);
+                        cpu.cpuState.unifiedRegisterFileBlock.getRegister("x3").getValue(DataTypeEnum.kInt));
   }
   
   /**
@@ -306,14 +307,14 @@ public class InstructionTests
     // Setup + exercise
     cpuConfig.code = "slt x4, x3, x2\n" + "slt x5, x2, x3";
     Cpu cpu = new Cpu(cpuConfig);
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(8.0);
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(5.0);
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x3").setValue(-3.0);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(8);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(5);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x3").setValue(-3);
     cpu.execute();
     
     // Assert
-    Assert.assertEquals(1, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x4").getValue(), 0.5);
-    Assert.assertEquals(0, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x5").getValue(), 0.5);
+    Assert.assertEquals(1, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x4").getValue(DataTypeEnum.kInt));
+    Assert.assertEquals(0, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x5").getValue(DataTypeEnum.kInt));
   }
   
   /**
@@ -326,12 +327,12 @@ public class InstructionTests
     // Setup + exercise
     cpuConfig.code = "slti x2, x1, 9\n" + "slti x3, x1, 8";
     Cpu cpu = new Cpu(cpuConfig);
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(8.0);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(8);
     cpu.execute();
     
     // Assert
-    Assert.assertEquals(1, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").getValue(), 0.5);
-    Assert.assertEquals(0, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x3").getValue(), 0.5);
+    Assert.assertEquals(1, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").getValue(DataTypeEnum.kInt));
+    Assert.assertEquals(0, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x3").getValue(DataTypeEnum.kInt));
   }
   
   /**
@@ -344,14 +345,14 @@ public class InstructionTests
     // Setup + exercise
     cpuConfig.code = "sltu x4, x3, x2\n" + "sltu x5, x2, x3";
     Cpu cpu = new Cpu(cpuConfig);
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(8.0);
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(5.0);
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x3").setValue(-3.0);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(8);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(5);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x3").setValue(-3);
     cpu.execute();
     
     // Assert
-    Assert.assertEquals(0, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x4").getValue(), 0.5);
-    Assert.assertEquals(1, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x5").getValue(), 0.5);
+    Assert.assertEquals(0, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x4").getValue(DataTypeEnum.kInt));
+    Assert.assertEquals(1, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x5").getValue(DataTypeEnum.kInt));
   }
   
   /**
@@ -364,13 +365,13 @@ public class InstructionTests
     // Setup + exercise
     cpuConfig.code = "sltiu x2, x1, 9\n" + "sltiu x3, x4, 8";
     Cpu cpu = new Cpu(cpuConfig);
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(8.0);
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x4").setValue(-1.0);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(8);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x4").setValue(-1);
     cpu.execute();
     
     // Assert
-    Assert.assertEquals(1, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").getValue(), 0.5);
-    Assert.assertEquals(0, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x3").getValue(), 0.5);
+    Assert.assertEquals(1, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").getValue(DataTypeEnum.kInt));
+    Assert.assertEquals(0, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x3").getValue(DataTypeEnum.kInt));
   }
   
   /**
@@ -382,12 +383,12 @@ public class InstructionTests
     // Setup + exercise
     cpuConfig.code = "andi x2, x1, 5";
     Cpu cpu = new Cpu(cpuConfig);
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(2.0);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(2);
     cpu.execute();
     
     // Assert
     // 10 AND 101 = 0
-    Assert.assertEquals(0, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").getValue(), 0.5);
+    Assert.assertEquals(0, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").getValue(DataTypeEnum.kInt));
   }
   
   /**
@@ -399,12 +400,12 @@ public class InstructionTests
     // Setup + exercise
     cpuConfig.code = "ori x2, x1, 5";
     Cpu cpu = new Cpu(cpuConfig);
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(9.0);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(9);
     cpu.execute();
     
     // Assert
     // 1001 OR 101 = 1101
-    Assert.assertEquals(13, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").getValue(), 0.5);
+    Assert.assertEquals(13, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").getValue(DataTypeEnum.kInt));
   }
   
   /**
@@ -423,7 +424,7 @@ public class InstructionTests
     // TODO: converting to doubles loses precision, so the value is not exactly 0xC0010000
     // Suggested fix: do not convert everything to doubles, but interpret byte arrays as ints or floats
     Assert.assertEquals(0b11000000000000000001_000000000000,
-                        cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(), 0.5);
+                        cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt));
   }
   
   /**
@@ -440,7 +441,7 @@ public class InstructionTests
     
     // Assert
     Assert.assertEquals(0b00000000000000000001_000000000000,
-                        cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(), 0.5);
+                        cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt));
   }
   
   /**
@@ -456,8 +457,8 @@ public class InstructionTests
     cpu.execute();
     
     // Assert
-    Assert.assertEquals(0xaa000, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(), 0.5);
-    Assert.assertEquals(0x1004, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").getValue(), 0.5);
+    Assert.assertEquals(0xaa000, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt));
+    Assert.assertEquals(0x1004, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").getValue(DataTypeEnum.kInt));
   }
   
   /**
@@ -473,7 +474,7 @@ public class InstructionTests
     cpu.execute();
     
     // Assert
-    Assert.assertEquals(0xaa, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(), 0.5);
+    Assert.assertEquals(0xaa, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt));
   }
   
   /**
@@ -490,7 +491,7 @@ public class InstructionTests
     cpu.execute();
     
     // Assert
-    Assert.assertEquals(55, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(), 0.5);
+    Assert.assertEquals(55, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt));
   }
   
   /**
@@ -507,7 +508,7 @@ public class InstructionTests
     cpu.execute();
     
     // Assert
-    Assert.assertEquals(-55, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(), 0.5);
+    Assert.assertEquals(-55, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt));
   }
   
   /**
@@ -524,7 +525,7 @@ public class InstructionTests
     cpu.execute();
     
     // Assert
-    Assert.assertEquals(1, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").getValue(), 0.5);
+    Assert.assertEquals(1, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").getValue(DataTypeEnum.kInt));
   }
   
   /**
@@ -542,8 +543,8 @@ public class InstructionTests
     cpu.execute();
     
     // Assert
-    Assert.assertEquals(0, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").getValue(), 0.5);
-    Assert.assertEquals(1, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x3").getValue(), 0.5);
+    Assert.assertEquals(0, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").getValue(DataTypeEnum.kInt));
+    Assert.assertEquals(1, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x3").getValue(DataTypeEnum.kInt));
   }
   
   /**
@@ -562,9 +563,9 @@ public class InstructionTests
     cpu.execute();
     
     // Assert
-    Assert.assertEquals(0, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").getValue(), 0.5);
-    Assert.assertEquals(1, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x3").getValue(), 0.5);
-    Assert.assertEquals(0, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x4").getValue(), 0.5);
+    Assert.assertEquals(0, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").getValue(DataTypeEnum.kInt));
+    Assert.assertEquals(1, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x3").getValue(DataTypeEnum.kInt));
+    Assert.assertEquals(0, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x4").getValue(DataTypeEnum.kInt));
   }
   
   /**
@@ -583,9 +584,9 @@ public class InstructionTests
     cpu.execute();
     
     // Assert
-    Assert.assertEquals(1, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").getValue(), 0.5);
-    Assert.assertEquals(0, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x3").getValue(), 0.5);
-    Assert.assertEquals(0, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x4").getValue(), 0.5);
+    Assert.assertEquals(1, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").getValue(DataTypeEnum.kInt));
+    Assert.assertEquals(0, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x3").getValue(DataTypeEnum.kInt));
+    Assert.assertEquals(0, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x4").getValue(DataTypeEnum.kInt));
   }
   
   /**
@@ -597,8 +598,8 @@ public class InstructionTests
     // Setup + exercise
     cpuConfig.code = "bne x1, x2, 12";
     Cpu cpu = new Cpu(cpuConfig);
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(16.0);
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(16.0);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(16);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(16);
     cpu.execute();
     
     // Assert
@@ -616,8 +617,8 @@ public class InstructionTests
     // Setup + exercise
     cpuConfig.code = "bne x1, x2, 20";
     Cpu cpu = new Cpu(cpuConfig);
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(1.0);
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(0.0);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(1);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(0);
     cpu.execute();
     
     // Assert
@@ -642,7 +643,7 @@ public class InstructionTests
     cpu.execute();
     
     // Assert
-    Assert.assertEquals(0x10, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(), 0.5);
+    Assert.assertEquals(0x10, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt));
   }
   
   /**
@@ -661,7 +662,7 @@ public class InstructionTests
     cpu.execute();
     
     // Assert
-    Assert.assertEquals(0x0100, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(), 0.5);
+    Assert.assertEquals(0x0100, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt));
   }
   
   /**
@@ -673,8 +674,8 @@ public class InstructionTests
     // Setup + exercise
     cpuConfig.code = "beqz x1, 4 \n" + "beqz x2, 8";
     Cpu cpu = new Cpu(cpuConfig);
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(0.0);
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(2.0);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(0);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(2);
     cpu.execute();
     
     // Assert
@@ -690,8 +691,8 @@ public class InstructionTests
     // Setup + exercise
     cpuConfig.code = "bnez x1, 4 \n" + "bnez x2, 8";
     Cpu cpu = new Cpu(cpuConfig);
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(1.0);
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(0.0);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(1);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(0);
     cpu.execute();
     
     // Assert
@@ -707,8 +708,8 @@ public class InstructionTests
     // Setup + exercise
     cpuConfig.code = "blez x1, 4 \n" + "blez x2, 8";
     Cpu cpu = new Cpu(cpuConfig);
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(1.0);
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(-1.0);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(1);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(-1);
     cpu.execute();
     
     // Assert
@@ -724,8 +725,8 @@ public class InstructionTests
     // Setup + exercise
     cpuConfig.code = "bgez x1, 4 \n" + "bgez x2, 8";
     Cpu cpu = new Cpu(cpuConfig);
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(-1.0);
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(1.0);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(-1);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(1);
     cpu.execute();
     
     // Assert
@@ -741,8 +742,8 @@ public class InstructionTests
     // Setup + exercise
     cpuConfig.code = "bltz x1, 4 \n" + "bltz x2, 8";
     Cpu cpu = new Cpu(cpuConfig);
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(1.0);
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(-1.0);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(1);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(-1);
     cpu.execute();
     
     // Assert
@@ -758,8 +759,8 @@ public class InstructionTests
     // Setup + exercise
     cpuConfig.code = "bgtz x1, 4 \n" + "bgtz x2, 8";
     Cpu cpu = new Cpu(cpuConfig);
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(-1.0);
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(1.0);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(-1);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(1);
     cpu.execute();
     
     // Assert
@@ -775,8 +776,8 @@ public class InstructionTests
     // Setup + exercise
     cpuConfig.code = "bgt x1, x2, 4";
     Cpu cpu = new Cpu(cpuConfig);
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(2.0);
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(1.0);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(2);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(1);
     cpu.execute();
     
     // Assert
@@ -792,8 +793,8 @@ public class InstructionTests
     // Setup + exercise
     cpuConfig.code = "ble x1, x2, 4";
     Cpu cpu = new Cpu(cpuConfig);
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(-10.0);
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(2.0);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(-10);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(2);
     cpu.execute();
     
     // Assert
@@ -809,8 +810,8 @@ public class InstructionTests
     // Setup + exercise
     cpuConfig.code = "bgtu x1, x2, 4";
     Cpu cpu = new Cpu(cpuConfig);
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(2.0);
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(1.0);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(2);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(1);
     cpu.execute();
     
     // Assert
@@ -827,8 +828,8 @@ public class InstructionTests
     // Setup + exercise
     cpuConfig.code = "bleu x1, x2, 4";
     Cpu cpu = new Cpu(cpuConfig);
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(10.0);
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(-2.0);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(10);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(-2);
     cpu.execute();
     
     // Assert
@@ -844,8 +845,8 @@ public class InstructionTests
     // Setup + exercise
     cpuConfig.code = "bne x1, x2, 4";
     Cpu cpu = new Cpu(cpuConfig);
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(1.0);
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(0.0);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(1);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(0);
     cpu.execute();
     
     // Assert
@@ -861,9 +862,9 @@ public class InstructionTests
     // Setup + exercise
     cpuConfig.code = "beq x1, x2, 4\n" + "beq x1, x3, 8";
     Cpu cpu = new Cpu(cpuConfig);
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(0.0);
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(0.0);
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x3").setValue(6.0);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(0);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(0);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x3").setValue(6);
     cpu.execute();
     
     // Assert
@@ -879,8 +880,8 @@ public class InstructionTests
     // Setup + exercise
     cpuConfig.code = "bge x1, x2, 4";
     Cpu cpu = new Cpu(cpuConfig);
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(2.0);
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(1.0);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(2);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(1);
     cpu.execute();
     
     // Assert
@@ -896,8 +897,8 @@ public class InstructionTests
     // Setup + exercise
     cpuConfig.code = "blt x1, x2, 4";
     Cpu cpu = new Cpu(cpuConfig);
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(-10.0);
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(2.0);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(-10);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(2);
     cpu.execute();
     
     // Assert
@@ -913,8 +914,8 @@ public class InstructionTests
     // Setup + exercise
     cpuConfig.code = "bltu x1, x2, 4";
     Cpu cpu = new Cpu(cpuConfig);
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(10.0);
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(-2.0);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(10);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(-2);
     cpu.execute();
     
     // Assert
@@ -930,9 +931,9 @@ public class InstructionTests
     // Setup + exercise
     cpuConfig.code = "bgeu x1, x2, 4\n" + "bgeu x1, x3, 8";
     Cpu cpu = new Cpu(cpuConfig);
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(1.0);
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(2.0);
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x3").setValue(-1.0);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(1);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(2);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x3").setValue(-1);
     cpu.execute();
     
     // Assert
@@ -964,7 +965,7 @@ public class InstructionTests
     // Setup + exercise
     cpuConfig.code = "jr x1";
     Cpu cpu = new Cpu(cpuConfig);
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(200.0);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(200);
     cpu.execute();
     
     // Assert
@@ -981,7 +982,7 @@ public class InstructionTests
     // Setup + exercise
     cpuConfig.code = "ret";
     Cpu cpu = new Cpu(cpuConfig);
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(200.0);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(200);
     cpu.execute();
     
     // Assert
@@ -1003,7 +1004,7 @@ public class InstructionTests
     // Assert
     Assert.assertTrue(cpu.cpuState.instructionFetchBlock.getPcCounter() > 200);
     Assert.assertEquals(1, cpu.cpuState.statisticsCounter.getTakenBranches());
-    Assert.assertEquals(4, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(), 0.5);
+    Assert.assertEquals(4, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt));
   }
   
   /**
@@ -1061,8 +1062,8 @@ public class InstructionTests
     cpu.execute();
     
     // Assert
-    Assert.assertEquals(-1, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(), 0.5);
-    Assert.assertEquals(2, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x4").getValue(), 0.5);
+    Assert.assertEquals(-1, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt));
+    Assert.assertEquals(2, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x4").getValue(DataTypeEnum.kInt));
   }
   
   /**
@@ -1081,8 +1082,8 @@ public class InstructionTests
     cpu.execute();
     
     // Assert
-    Assert.assertEquals(0, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(), 0.5);
-    Assert.assertEquals(2, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x4").getValue(), 0.5);
+    Assert.assertEquals(0, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt));
+    Assert.assertEquals(2, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x4").getValue(DataTypeEnum.kInt));
   }
   
   /**
@@ -1101,7 +1102,7 @@ public class InstructionTests
     cpu.execute();
     
     // Assert
-    Assert.assertEquals(-1, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(), 0.5);
-    Assert.assertEquals(2, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x4").getValue(), 0.5);
+    Assert.assertEquals(-1, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt));
+    Assert.assertEquals(2, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x4").getValue(DataTypeEnum.kInt));
   }
 }

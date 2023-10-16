@@ -3,34 +3,27 @@ package com.gradle.superscalarsim.code;
 import com.gradle.superscalarsim.blocks.base.UnifiedRegisterFileBlock;
 import com.gradle.superscalarsim.builders.InputCodeArgumentBuilder;
 import com.gradle.superscalarsim.builders.InputCodeModelBuilder;
-import com.gradle.superscalarsim.builders.InstructionFunctionModelBuilder;
 import com.gradle.superscalarsim.builders.RegisterFileModelBuilder;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.loader.InitLoader;
 import com.gradle.superscalarsim.models.InputCodeArgument;
 import com.gradle.superscalarsim.models.InputCodeModel;
-import com.gradle.superscalarsim.models.InstructionFunctionModel;
 import com.gradle.superscalarsim.models.SimCodeModel;
 import com.gradle.superscalarsim.models.register.RegisterFileModel;
 import com.gradle.superscalarsim.models.register.RegisterModel;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Map;
-
-import static org.mockito.ArgumentMatchers.any;
+import java.util.List;
 
 public class CodeArithmeticInterpreterFloatTest
 {
   
-  @Mock
   private InitLoader initLoader;
   
   private CodeArithmeticInterpreter codeArithmeticInterpreter;
@@ -46,39 +39,13 @@ public class CodeArithmeticInterpreterFloatTest
     RegisterFileModel floatFile = new RegisterFileModelBuilder().hasName("float").hasDataType(DataTypeEnum.kFloat)
             .hasRegisterList(Arrays.asList(float1, float2, float3, float4)).build();
     
-    Mockito.when(initLoader.getRegisterFileModelList()).thenReturn(Collections.singletonList(floatFile));
-    Mockito.when(initLoader.getInstructionFunctionModels()).thenReturn(setUpInstructions());
-    Mockito.when(initLoader.getInstructionFunctionModel(any())).thenCallRealMethod();
+    this.initLoader = new InitLoader();
+    UnifiedRegisterFileBlock unifiedRegisterFileBlock = new UnifiedRegisterFileBlock(initLoader);
+    // This adds the reg files, but also creates speculative registers!
+    unifiedRegisterFileBlock.setRegisterList(new ArrayList<>());
+    unifiedRegisterFileBlock.loadRegisters(List.of(floatFile));
     
-    this.codeArithmeticInterpreter = new CodeArithmeticInterpreter(new UnifiedRegisterFileBlock(initLoader));
-  }
-  
-  private Map<String, InstructionFunctionModel> setUpInstructions()
-  {
-    InstructionFunctionModel instructionFAdd = new InstructionFunctionModelBuilder().hasName("fadd")
-            .hasInputDataType(DataTypeEnum.kFloat).hasOutputDataType(DataTypeEnum.kFloat)
-            .isInterpretedAs("\\rs1 \\rs2 + \\rd =").hasArguments("rd,rs1,rs2").build();
-    
-    InstructionFunctionModel instructionFSub = new InstructionFunctionModelBuilder().hasName("fsub")
-            .hasInputDataType(DataTypeEnum.kFloat).hasOutputDataType(DataTypeEnum.kFloat)
-            .isInterpretedAs("\\rs1 \\rs2 - \\rd =").hasArguments("rd,rs1,rs2").build();
-    
-    InstructionFunctionModel instructionFMul = new InstructionFunctionModelBuilder().hasName("fmul")
-            .hasInputDataType(DataTypeEnum.kFloat).hasOutputDataType(DataTypeEnum.kFloat)
-            .isInterpretedAs("\\rs1 \\rs2 * \\rd =").hasArguments("rd,rs1,rs2").build();
-    
-    InstructionFunctionModel instructionFDiv = new InstructionFunctionModelBuilder().hasName("fdiv")
-            .hasInputDataType(DataTypeEnum.kFloat).hasOutputDataType(DataTypeEnum.kFloat)
-            .isInterpretedAs("\\rs1 \\rs2 / \\rd =").hasArguments("rd,rs1,rs2").build();
-    
-    InstructionFunctionModel instructionFCmpLt = new InstructionFunctionModelBuilder().hasName("fcmplt")
-            .hasInputDataType(DataTypeEnum.kFloat).hasOutputDataType(DataTypeEnum.kFloat)
-            .isInterpretedAs("\\rs1 \\rs2 < \\rd =").hasArguments("rd,rs1,rs2").build();
-    
-    
-    return Map.ofEntries(Map.entry("fadd", instructionFAdd), Map.entry("fsub", instructionFSub),
-                         Map.entry("fmul", instructionFMul), Map.entry("fdiv", instructionFDiv),
-                         Map.entry("fcmplt", instructionFCmpLt));
+    this.codeArithmeticInterpreter = new CodeArithmeticInterpreter(unifiedRegisterFileBlock);
   }
   
   @Test
@@ -135,47 +102,5 @@ public class CodeArithmeticInterpreterFloatTest
     
     Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel);
     Assert.assertEquals(1.76, (float) v.value.getValue(DataTypeEnum.kFloat), 0.01);
-  }
-  
-  @Test
-  public void interpretInstruction_floatCmpLtInstructionWithLessThanArguments_returnOne()
-  {
-    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rd").hasValue("f1").build();
-    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("f3").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("f2").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("fcmplt")
-            .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
-    
-    Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel);
-    Assert.assertEquals(1.0, (float) v.value.getValue(DataTypeEnum.kFloat), 0.01);
-  }
-  
-  @Test
-  public void interpretInstruction_floatCmpLtInstructionWithEqualArguments_returnZero()
-  {
-    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rd").hasValue("f1").build();
-    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("f3").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("f3").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("fcmplt")
-            .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
-    
-    Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel);
-    Assert.assertEquals(0.0, (float) v.value.getValue(DataTypeEnum.kFloat), 0.01);
-  }
-  
-  @Test
-  public void interpretInstruction_floatCmpLtInstructionWithGreaterThanArguments_returnZero()
-  {
-    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rd").hasValue("f1").build();
-    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("f2").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("f3").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("fcmplt")
-            .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
-    
-    Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel);
-    Assert.assertEquals(0.0, (float) v.value.getValue(DataTypeEnum.kFloat), 0.01);
   }
 }

@@ -135,4 +135,10 @@ public class RegisterDataContainer
       default -> throw new IllegalArgumentException("Unsupported type: " + type);
     };
   }
+  
+  public String getString(DataTypeEnum type)
+  {
+    Object v = getValue(type);
+    return v.toString();
+  }
 }

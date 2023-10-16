@@ -82,6 +82,7 @@ public class AluIssueWindowBlock extends AbstractIssueWindowBlock
   @Override
   public AbstractFunctionUnitBlock selectSufficientFunctionUnit(InstructionFunctionModel instruction)
   {
+    // TODO: distinguish between busy FUs and no compatible FUs
     for (ArithmeticFunctionUnitBlock functionBlock : this.functionUnitBlockList)
     {
       if (functionBlock.isFunctionUnitEmpty() && isInstructionSupported(functionBlock.getAllowedOperators(),

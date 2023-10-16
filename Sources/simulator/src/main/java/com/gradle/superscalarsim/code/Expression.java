@@ -622,8 +622,7 @@ public class Expression
     @Override
     public String toString()
     {
-      Object v = this.value.getValue(type);
-      return tag + ":" + type + ":" + v;
+      return tag + ":" + type + ":" + value.getString(type);
     }
   }
 }

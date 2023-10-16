@@ -49,9 +49,9 @@ public class InstructionFunctionModelBuilder
     return this;
   }
   
-  public InstructionFunctionModelBuilder hasArguments(String arguments)
+  public InstructionFunctionModelBuilder hasArguments(List<InstructionFunctionModel.Argument> arguments)
   {
-    //    this.arguments = arguments;
+    this.arguments = arguments;
     return this;
   }
   

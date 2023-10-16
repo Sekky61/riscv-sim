@@ -30,6 +30,7 @@ package com.gradle.superscalarsim.cpu;
 
 import com.cedarsoftware.util.io.JsonReader;
 import com.cedarsoftware.util.io.JsonWriter;
+import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.serialization.GsonConfiguration;
 import org.junit.Assert;
 import org.junit.Test;
@@ -129,10 +130,10 @@ public class SerializationTest
     
     // Assert
     Assert.assertEquals(1, cpu.cpuState.statisticsCounter.getCommittedInstructions());
-    Assert.assertEquals(5, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(), 0.5);
+    Assert.assertEquals(5, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt));
     
     Assert.assertEquals(1, cpuSer.cpuState.statisticsCounter.getCommittedInstructions());
-    Assert.assertEquals(5, cpuSer.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(), 0.5);
+    Assert.assertEquals(5, cpuSer.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt));
   }
   
   /**

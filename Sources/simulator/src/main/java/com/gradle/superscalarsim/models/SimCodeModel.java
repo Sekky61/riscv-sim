@@ -501,7 +501,8 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>
         Expression.Variable parsed = Expression.parseConstant(renamedName);
         if (parsed != null)
         {
-          parsed.tag = name;
+          parsed.tag  = name;
+          parsed.type = argument.type();
           variables.add(parsed);
         }
         // Could not parse. Maybe it is a label. Skip now.

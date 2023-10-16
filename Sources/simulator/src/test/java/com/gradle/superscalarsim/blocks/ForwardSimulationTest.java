@@ -127,12 +127,12 @@ public class ForwardSimulationTest
     // 2 branch: (delay 3)
     // 1 mem: (delay 1)
     cpuCfg.fUnits    = new CpuConfiguration.FUnit[10];
-    cpuCfg.fUnits[0] = new CpuConfiguration.FUnit(1, "FX", 2, new String[]{"+"});
-    cpuCfg.fUnits[1] = new CpuConfiguration.FUnit(2, "FX", 2, new String[]{"+"});
-    cpuCfg.fUnits[2] = new CpuConfiguration.FUnit(3, "FX", 2, new String[]{"-"});
-    cpuCfg.fUnits[3] = new CpuConfiguration.FUnit(4, "FP", 2, new String[]{"+"});
-    cpuCfg.fUnits[4] = new CpuConfiguration.FUnit(5, "FP", 2, new String[]{"+"});
-    cpuCfg.fUnits[5] = new CpuConfiguration.FUnit(6, "FP", 2, new String[]{"-"});
+    cpuCfg.fUnits[0] = new CpuConfiguration.FUnit(1, "FX", 2, new String[]{"+", "="});
+    cpuCfg.fUnits[1] = new CpuConfiguration.FUnit(2, "FX", 2, new String[]{"+", "="});
+    cpuCfg.fUnits[2] = new CpuConfiguration.FUnit(3, "FX", 2, new String[]{"-", "="});
+    cpuCfg.fUnits[3] = new CpuConfiguration.FUnit(4, "FP", 2, new String[]{"+", "="});
+    cpuCfg.fUnits[4] = new CpuConfiguration.FUnit(5, "FP", 2, new String[]{"+", "="});
+    cpuCfg.fUnits[5] = new CpuConfiguration.FUnit(6, "FP", 2, new String[]{"-", "="});
     cpuCfg.fUnits[6] = new CpuConfiguration.FUnit(7, "L/S", 1, new String[]{});
     cpuCfg.fUnits[7] = new CpuConfiguration.FUnit(8, "Branch", 3, new String[]{});
     cpuCfg.fUnits[8] = new CpuConfiguration.FUnit(9, "Branch", 3, new String[]{});
@@ -644,7 +644,8 @@ public class ForwardSimulationTest
     this.cpu.step();
     Assert.assertTrue(this.reorderBufferBlock.getReorderQueue().isEmpty());
     Assert.assertTrue(this.reorderBufferBlock.getFlagsMap().isEmpty());
-    Assert.assertEquals(8.625, unifiedRegisterFileBlock.getRegister("f1").getValue(), 0.001);
+    Assert.assertEquals(8.625f, (float) unifiedRegisterFileBlock.getRegister("f1").getValue(DataTypeEnum.kFloat),
+                        0.001f);
     Assert.assertEquals(RegisterReadinessEnum.kFree, this.unifiedRegisterFileBlock.getRegister("tg0").getReadiness());
   }
   
@@ -807,9 +808,12 @@ public class ForwardSimulationTest
     Assert.assertEquals(RegisterReadinessEnum.kFree, this.unifiedRegisterFileBlock.getRegister("tg0").getReadiness());
     Assert.assertEquals(RegisterReadinessEnum.kFree, this.unifiedRegisterFileBlock.getRegister("tg1").getReadiness());
     Assert.assertEquals(RegisterReadinessEnum.kFree, this.unifiedRegisterFileBlock.getRegister("tg2").getReadiness());
-    Assert.assertEquals(12.26, this.unifiedRegisterFileBlock.getRegister("f3").getValue(), 0.01);
-    Assert.assertEquals(24.51, this.unifiedRegisterFileBlock.getRegister("f2").getValue(), 0.01);
-    Assert.assertEquals(36.77, this.unifiedRegisterFileBlock.getRegister("f1").getValue(), 0.01);
+    Assert.assertEquals(12.26, (float) this.unifiedRegisterFileBlock.getRegister("f3").getValue(DataTypeEnum.kFloat),
+                        0.01);
+    Assert.assertEquals(24.51, (float) this.unifiedRegisterFileBlock.getRegister("f2").getValue(DataTypeEnum.kFloat),
+                        0.01);
+    Assert.assertEquals(36.77, (float) this.unifiedRegisterFileBlock.getRegister("f1").getValue(DataTypeEnum.kFloat),
+                        0.01);
   }
   
   ///////////////////////////////////////////////////////////
@@ -928,7 +932,8 @@ public class ForwardSimulationTest
     Assert.assertTrue(this.reorderBufferBlock.getFlagsMap().get(1).isReadyToBeCommitted());
     Assert.assertEquals("fadd tg3,f4,f3", this.faddSecondFunctionBlock.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("fadd tg2,tg1,f3", this.faddFunctionBlock.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertEquals(15.375, this.unifiedRegisterFileBlock.getRegister("tg1").getValue(), 0.001);
+    Assert.assertEquals(15.375f, (float) this.unifiedRegisterFileBlock.getRegister("tg1").getValue(DataTypeEnum.kFloat),
+                        0.001f);
     Assert.assertEquals(RegisterReadinessEnum.kAllocated,
                         this.unifiedRegisterFileBlock.getRegister("tg3").getReadiness());
     Assert.assertEquals(RegisterReadinessEnum.kAllocated,
@@ -1996,7 +2001,7 @@ public class ForwardSimulationTest
     Assert.assertNull(this.memoryAccessUnit.getSimCodeModel());
     
     this.cpu.step();
-    Assert.assertEquals(1, (int) this.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt), 0.01);
+    Assert.assertEquals(1, (int) this.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt));
     Assert.assertNull(this.memoryAccessUnit.getSimCodeModel());
   }
   

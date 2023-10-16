@@ -23,6 +23,7 @@ import org.mockito.MockitoAnnotations;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -56,67 +57,115 @@ public class CodeArithmeticInterpreterIntTest
   {
     InstructionFunctionModel instructionAdd = new InstructionFunctionModelBuilder().hasName("add")
             .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
-            .isInterpretedAs("\\rs1 \\rs2 + \\rd =").hasArguments("rd,rs1,rs2").build();
+            .isInterpretedAs("\\rs1 \\rs2 + \\rd =").hasArguments(
+                    List.of(new InstructionFunctionModel.Argument("rd", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs1", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs2", DataTypeEnum.kInt, null))).build();
     
     InstructionFunctionModel instructionSub = new InstructionFunctionModelBuilder().hasName("sub")
             .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
-            .isInterpretedAs("\\rs1 \\rs2 - \\rd =").hasArguments("rd,rs1,rs2").build();
+            .isInterpretedAs("\\rs1 \\rs2 - \\rd =").hasArguments(
+                    List.of(new InstructionFunctionModel.Argument("rd", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs1", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs2", DataTypeEnum.kInt, null))).build();
     
     InstructionFunctionModel instructionMul = new InstructionFunctionModelBuilder().hasName("mul")
             .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
-            .isInterpretedAs("\\rs1 \\rs2 * \\rd =").hasArguments("rd,rs1,rs2").build();
+            .isInterpretedAs("\\rs1 \\rs2 * \\rd =").hasArguments(
+                    List.of(new InstructionFunctionModel.Argument("rd", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs1", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs2", DataTypeEnum.kInt, null))).build();
     
     InstructionFunctionModel instructionIntDiv = new InstructionFunctionModelBuilder().hasName("div")
             .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
-            .isInterpretedAs("\\rs1 \\rs2 / \\rd =").hasArguments("rd,rs1,rs2").build();
+            .isInterpretedAs("\\rs1 \\rs2 / \\rd =").hasArguments(
+                    List.of(new InstructionFunctionModel.Argument("rd", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs1", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs2", DataTypeEnum.kInt, null))).build();
     
     InstructionFunctionModel instructionShiftLeft = new InstructionFunctionModelBuilder().hasName("shiftLeft")
             .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
-            .isInterpretedAs("\\rs1 \\rs2 << \\rd =").hasArguments("rd,rs1,rs2").build();
+            .isInterpretedAs("\\rs1 \\rs2 << \\rd =").hasArguments(
+                    List.of(new InstructionFunctionModel.Argument("rd", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs1", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs2", DataTypeEnum.kInt, null))).build();
     
     InstructionFunctionModel instructionShiftRight = new InstructionFunctionModelBuilder().hasName("shiftRight")
             .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
-            .isInterpretedAs("\\rs1 \\rs2 >> \\rd =").hasArguments("rd,rs1,rs2").build();
+            .isInterpretedAs("\\rs1 \\rs2 >> \\rd =").hasArguments(
+                    List.of(new InstructionFunctionModel.Argument("rd", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs1", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs2", DataTypeEnum.kInt, null))).build();
     
     InstructionFunctionModel instructionLogShiftRight = new InstructionFunctionModelBuilder().hasName("shiftRightLog")
             .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
-            .isInterpretedAs("\\rs1 \\rs2 >>> \\rd =").hasArguments("rd,rs1,rs2").build();
+            .isInterpretedAs("\\rs1 \\rs2 >>> \\rd =").hasArguments(
+                    List.of(new InstructionFunctionModel.Argument("rd", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs1", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs2", DataTypeEnum.kInt, null))).build();
     
     InstructionFunctionModel instructionMulAdd = new InstructionFunctionModelBuilder().hasName("mulAdd")
             .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
-            .isInterpretedAs("\\rs1 \\rs2 + \\rs1 * \\rd =").hasArguments("rd,rs1,rs2").build();
+            .isInterpretedAs("\\rs1 \\rs2 + \\rs1 * \\rd =").hasArguments(
+                    List.of(new InstructionFunctionModel.Argument("rd", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs1", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs2", DataTypeEnum.kInt, null))).build();
     
     InstructionFunctionModel instructionAddMul = new InstructionFunctionModelBuilder().hasName("addMul")
             .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
-            .isInterpretedAs("\\rs1 \\rs2 * \\rs1 + \\rd =").hasArguments("rd,rs1,rs2").build();
+            .isInterpretedAs("\\rs1 \\rs2 * \\rs1 + \\rd =").hasArguments(
+                    List.of(new InstructionFunctionModel.Argument("rd", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs1", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs2", DataTypeEnum.kInt, null))).build();
     
     InstructionFunctionModel instructionAnd = new InstructionFunctionModelBuilder().hasName("and")
             .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
-            .isInterpretedAs("\\rs1 \\rs2 & \\rd =").hasArguments("rd,rs1,rs2").build();
+            .isInterpretedAs("\\rs1 \\rs2 & \\rd =").hasArguments(
+                    List.of(new InstructionFunctionModel.Argument("rd", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs1", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs2", DataTypeEnum.kInt, null))).build();
     
     InstructionFunctionModel instructionOr = new InstructionFunctionModelBuilder().hasName("or")
             .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
-            .isInterpretedAs("\\rs1 \\rs2 | \\rd =").hasArguments("rd,rs1,rs2").build();
+            .isInterpretedAs("\\rs1 \\rs2 | \\rd =").hasArguments(
+                    List.of(new InstructionFunctionModel.Argument("rd", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs1", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs2", DataTypeEnum.kInt, null))).build();
     
     InstructionFunctionModel instructionCmpLt = new InstructionFunctionModelBuilder().hasName("cmpLt")
             .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
-            .isInterpretedAs("\\rs1 \\rs2 < \\rd =").hasArguments("rd,rs1,rs2").build();
+            .isInterpretedAs("\\rs1 \\rs2 < \\rd =").hasArguments(
+                    List.of(new InstructionFunctionModel.Argument("rd", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs1", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs2", DataTypeEnum.kInt, null))).build();
     
     InstructionFunctionModel instructionCmpLe = new InstructionFunctionModelBuilder().hasName("cmpLe")
             .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
-            .isInterpretedAs("\\rs1 \\rs2 <= \\rd =").hasArguments("rd,rs1,rs2").build();
+            .isInterpretedAs("\\rs1 \\rs2 <= \\rd =").hasArguments(
+                    List.of(new InstructionFunctionModel.Argument("rd", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs1", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs2", DataTypeEnum.kInt, null))).build();
     
     InstructionFunctionModel instructionCmpEq = new InstructionFunctionModelBuilder().hasName("cmpEq")
             .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
-            .isInterpretedAs("\\rs1 \\rs2 == \\rd =").hasArguments("rd,rs1,rs2").build();
+            .isInterpretedAs("\\rs1 \\rs2 == \\rd =").hasArguments(
+                    List.of(new InstructionFunctionModel.Argument("rd", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs1", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs2", DataTypeEnum.kInt, null))).build();
     
     InstructionFunctionModel instructionCmpGt = new InstructionFunctionModelBuilder().hasName("cmpGt")
             .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
-            .isInterpretedAs("\\rs1 \\rs2 > \\rd =").hasArguments("rd,rs1,rs2").build();
+            .isInterpretedAs("\\rs1 \\rs2 > \\rd =").hasArguments(
+                    List.of(new InstructionFunctionModel.Argument("rd", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs1", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs2", DataTypeEnum.kInt, null))).build();
     
     InstructionFunctionModel instructionCmpGe = new InstructionFunctionModelBuilder().hasName("cmpGe")
             .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
-            .isInterpretedAs("\\rs1 \\rs2 >= \\rd =").hasArguments("rd,rs1,rs2").build();
+            .isInterpretedAs("\\rs1 \\rs2 >= \\rd =").hasArguments(
+                    List.of(new InstructionFunctionModel.Argument("rd", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs1", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs2", DataTypeEnum.kInt, null))).build();
     
     return Map.ofEntries(Map.entry("add", instructionAdd), Map.entry("sub", instructionSub),
                          Map.entry("mul", instructionMul), Map.entry("div", instructionIntDiv),

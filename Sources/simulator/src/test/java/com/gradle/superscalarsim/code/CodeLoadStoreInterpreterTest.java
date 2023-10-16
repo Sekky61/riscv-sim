@@ -22,6 +22,7 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -59,6 +60,123 @@ public class CodeLoadStoreInterpreterTest
     
     this.codeLoadStoreInterpreter = new CodeLoadStoreInterpreter(initLoader, new MemoryModel(new SimulatedMemory()),
                                                                  new UnifiedRegisterFileBlock(initLoader));
+  }
+  
+  private Map<String, InstructionFunctionModel> setUpInstructions()
+  {
+    InstructionFunctionModel instructionLoadByte = new InstructionFunctionModelBuilder().hasName("lb")
+            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
+            .isInterpretedAs("load byte:signed rd rs1 imm").hasArguments(
+                    List.of(new InstructionFunctionModel.Argument("rd", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs1", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("imm", DataTypeEnum.kInt, null))).build();
+    
+    InstructionFunctionModel instructionLoadByteUnsigned = new InstructionFunctionModelBuilder().hasName("lbu")
+            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
+            .isInterpretedAs("load byte:unsigned rd rs1 imm").hasArguments(
+                    List.of(new InstructionFunctionModel.Argument("rd", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs1", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("imm", DataTypeEnum.kInt, null))).build();
+    
+    InstructionFunctionModel instructionLoadHigh = new InstructionFunctionModelBuilder().hasName("lh")
+            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
+            .isInterpretedAs("load half:signed rd rs1 imm").hasArguments(
+                    List.of(new InstructionFunctionModel.Argument("rd", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs1", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("imm", DataTypeEnum.kInt, null))).build();
+    
+    InstructionFunctionModel instructionLoadHighUnsigned = new InstructionFunctionModelBuilder().hasName("lhu")
+            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
+            .isInterpretedAs("load half:unsigned rd rs1 imm").hasArguments(
+                    List.of(new InstructionFunctionModel.Argument("rd", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs1", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("imm", DataTypeEnum.kInt, null))).build();
+    
+    InstructionFunctionModel instructionLoadWord = new InstructionFunctionModelBuilder().hasName("lw")
+            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
+            .isInterpretedAs("load word:signed rd rs1 imm").hasArguments(
+                    List.of(new InstructionFunctionModel.Argument("rd", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs1", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("imm", DataTypeEnum.kInt, null))).build();
+    
+    InstructionFunctionModel instructionLoadWordUnsigned = new InstructionFunctionModelBuilder().hasName("lwu")
+            .hasInputDataType(DataTypeEnum.kLong).hasOutputDataType(DataTypeEnum.kLong)
+            .isInterpretedAs("load word:unsigned rd rs1 imm").hasArguments(
+                    List.of(new InstructionFunctionModel.Argument("rd", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs1", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("imm", DataTypeEnum.kInt, null))).build();
+    
+    InstructionFunctionModel instructionLoadDoubleWord = new InstructionFunctionModelBuilder().hasName("ld")
+            .hasInputDataType(DataTypeEnum.kLong).hasOutputDataType(DataTypeEnum.kLong)
+            .isInterpretedAs("load doubleword:signed rd rs1 imm").hasArguments(
+                    List.of(new InstructionFunctionModel.Argument("rd", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs1", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("imm", DataTypeEnum.kInt, null))).build();
+    
+    InstructionFunctionModel instructionLoadFloat = new InstructionFunctionModelBuilder().hasName("flw")
+            .hasInputDataType(DataTypeEnum.kFloat).hasOutputDataType(DataTypeEnum.kFloat)
+            .isInterpretedAs("load float:unsigned rd rs1 imm").hasArguments(
+                    List.of(new InstructionFunctionModel.Argument("rd", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs1", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("imm", DataTypeEnum.kInt, null))).build();
+    
+    InstructionFunctionModel instructionLoadDouble = new InstructionFunctionModelBuilder().hasName("fld")
+            .hasInputDataType(DataTypeEnum.kDouble).hasOutputDataType(DataTypeEnum.kDouble)
+            .isInterpretedAs("load double:unsigned rd rs1 imm").hasArguments(
+                    List.of(new InstructionFunctionModel.Argument("rd", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs1", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("imm", DataTypeEnum.kInt, null))).build();
+    
+    InstructionFunctionModel instructionStoreByte = new InstructionFunctionModelBuilder().hasName("sb")
+            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
+            .isInterpretedAs("store byte rs2 rs1 imm").hasArguments(
+                    List.of(new InstructionFunctionModel.Argument("rs2", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs1", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("imm", DataTypeEnum.kInt, null))).build();
+    
+    InstructionFunctionModel instructionStoreHigh = new InstructionFunctionModelBuilder().hasName("sh")
+            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
+            .isInterpretedAs("store half rs2 rs1 imm").hasArguments(
+                    List.of(new InstructionFunctionModel.Argument("rs2", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs1", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("imm", DataTypeEnum.kInt, null))).build();
+    
+    InstructionFunctionModel instructionStoreWord = new InstructionFunctionModelBuilder().hasName("sw")
+            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
+            .isInterpretedAs("store word rs2 rs1 imm").hasArguments(
+                    List.of(new InstructionFunctionModel.Argument("rs2", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs1", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("imm", DataTypeEnum.kInt, null))).build();
+    
+    InstructionFunctionModel instructionStoreDoubleWord = new InstructionFunctionModelBuilder().hasName("sd")
+            .hasInputDataType(DataTypeEnum.kLong).hasOutputDataType(DataTypeEnum.kLong)
+            .isInterpretedAs("store doubleword rs2 rs1 imm").hasArguments(
+                    List.of(new InstructionFunctionModel.Argument("rs2", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs1", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("imm", DataTypeEnum.kInt, null))).build();
+    
+    InstructionFunctionModel instructionStoreFloat = new InstructionFunctionModelBuilder().hasName("fsw")
+            .hasInputDataType(DataTypeEnum.kFloat).hasOutputDataType(DataTypeEnum.kFloat)
+            .isInterpretedAs("store float rs2 rs1 imm").hasArguments(
+                    List.of(new InstructionFunctionModel.Argument("rs2", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs1", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("imm", DataTypeEnum.kInt, null))).build();
+    
+    InstructionFunctionModel instructionStoreDouble = new InstructionFunctionModelBuilder().hasName("fsd")
+            .hasInputDataType(DataTypeEnum.kFloat).hasOutputDataType(DataTypeEnum.kFloat)
+            .isInterpretedAs("store double rs2 rs1 imm").hasArguments(
+                    List.of(new InstructionFunctionModel.Argument("rs2", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs1", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("imm", DataTypeEnum.kInt, null))).build();
+    
+    return Map.ofEntries(Map.entry("lb", instructionLoadByte), Map.entry("lbu", instructionLoadByteUnsigned),
+                         Map.entry("lh", instructionLoadHigh), Map.entry("lhu", instructionLoadHighUnsigned),
+                         Map.entry("lw", instructionLoadWord), Map.entry("lwu", instructionLoadWordUnsigned),
+                         Map.entry("ld", instructionLoadDoubleWord), Map.entry("flw", instructionLoadFloat),
+                         Map.entry("fld", instructionLoadDouble), Map.entry("sb", instructionStoreByte),
+                         Map.entry("sh", instructionStoreHigh), Map.entry("sw", instructionStoreWord),
+                         Map.entry("sd", instructionStoreDoubleWord), Map.entry("fsw", instructionStoreFloat),
+                         Map.entry("fsd", instructionStoreDouble));
   }
   
   @Test
@@ -441,77 +559,5 @@ public class CodeLoadStoreInterpreterTest
     
     Assert.assertEquals(6.0, result1, 0.0001);
     Assert.assertEquals(6.0, result2, 0.0001);
-  }
-  
-  private Map<String, InstructionFunctionModel> setUpInstructions()
-  {
-    InstructionFunctionModel instructionLoadByte = new InstructionFunctionModelBuilder().hasName("lb")
-            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
-            .isInterpretedAs("load byte:signed rd rs1 imm").hasArguments("rd,rs1,imm").build();
-    
-    InstructionFunctionModel instructionLoadByteUnsigned = new InstructionFunctionModelBuilder().hasName("lbu")
-            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
-            .isInterpretedAs("load byte:unsigned rd rs1 imm").hasArguments("rd,rs1,imm").build();
-    
-    InstructionFunctionModel instructionLoadHigh = new InstructionFunctionModelBuilder().hasName("lh")
-            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
-            .isInterpretedAs("load half:signed rd rs1 imm").hasArguments("rd,rs1,imm").build();
-    
-    InstructionFunctionModel instructionLoadHighUnsigned = new InstructionFunctionModelBuilder().hasName("lhu")
-            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
-            .isInterpretedAs("load half:unsigned rd rs1 imm").hasArguments("rd,rs1,imm").build();
-    
-    InstructionFunctionModel instructionLoadWord = new InstructionFunctionModelBuilder().hasName("lw")
-            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
-            .isInterpretedAs("load word:signed rd rs1 imm").hasArguments("rd,rs1,imm").build();
-    
-    InstructionFunctionModel instructionLoadWordUnsigned = new InstructionFunctionModelBuilder().hasName("lwu")
-            .hasInputDataType(DataTypeEnum.kLong).hasOutputDataType(DataTypeEnum.kLong)
-            .isInterpretedAs("load word:unsigned rd rs1 imm").hasArguments("rd,rs1,imm").build();
-    
-    InstructionFunctionModel instructionLoadDoubleWord = new InstructionFunctionModelBuilder().hasName("ld")
-            .hasInputDataType(DataTypeEnum.kLong).hasOutputDataType(DataTypeEnum.kLong)
-            .isInterpretedAs("load doubleword:signed rd rs1 imm").hasArguments("rd,rs1,imm").build();
-    
-    InstructionFunctionModel instructionLoadFloat = new InstructionFunctionModelBuilder().hasName("flw")
-            .hasInputDataType(DataTypeEnum.kFloat).hasOutputDataType(DataTypeEnum.kFloat)
-            .isInterpretedAs("load float:unsigned rd rs1 imm").hasArguments("rd,rs1,imm").build();
-    
-    InstructionFunctionModel instructionLoadDouble = new InstructionFunctionModelBuilder().hasName("fld")
-            .hasInputDataType(DataTypeEnum.kDouble).hasOutputDataType(DataTypeEnum.kDouble)
-            .isInterpretedAs("load double:unsigned rd rs1 imm").hasArguments("rd,rs1,imm").build();
-    
-    InstructionFunctionModel instructionStoreByte = new InstructionFunctionModelBuilder().hasName("sb")
-            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
-            .isInterpretedAs("store byte rs2 rs1 imm").hasArguments("rs2,rs1,imm").build();
-    
-    InstructionFunctionModel instructionStoreHigh = new InstructionFunctionModelBuilder().hasName("sh")
-            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
-            .isInterpretedAs("store half rs2 rs1 imm").hasArguments("rs2,rs1,imm").build();
-    
-    InstructionFunctionModel instructionStoreWord = new InstructionFunctionModelBuilder().hasName("sw")
-            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
-            .isInterpretedAs("store word rs2 rs1 imm").hasArguments("rs2,rs1,imm").build();
-    
-    InstructionFunctionModel instructionStoreDoubleWord = new InstructionFunctionModelBuilder().hasName("sd")
-            .hasInputDataType(DataTypeEnum.kLong).hasOutputDataType(DataTypeEnum.kLong)
-            .isInterpretedAs("store doubleword rs2 rs1 imm").hasArguments("rs2,rs1,imm").build();
-    
-    InstructionFunctionModel instructionStoreFloat = new InstructionFunctionModelBuilder().hasName("fsw")
-            .hasInputDataType(DataTypeEnum.kFloat).hasOutputDataType(DataTypeEnum.kFloat)
-            .isInterpretedAs("store float rs2 rs1 imm").hasArguments("rs2,rs1,imm").build();
-    
-    InstructionFunctionModel instructionStoreDouble = new InstructionFunctionModelBuilder().hasName("fsd")
-            .hasInputDataType(DataTypeEnum.kFloat).hasOutputDataType(DataTypeEnum.kFloat)
-            .isInterpretedAs("store double rs2 rs1 imm").hasArguments("rs2,rs1,imm").build();
-    
-    return Map.ofEntries(Map.entry("lb", instructionLoadByte), Map.entry("lbu", instructionLoadByteUnsigned),
-                         Map.entry("lh", instructionLoadHigh), Map.entry("lhu", instructionLoadHighUnsigned),
-                         Map.entry("lw", instructionLoadWord), Map.entry("lwu", instructionLoadWordUnsigned),
-                         Map.entry("ld", instructionLoadDoubleWord), Map.entry("flw", instructionLoadFloat),
-                         Map.entry("fld", instructionLoadDouble), Map.entry("sb", instructionStoreByte),
-                         Map.entry("sh", instructionStoreHigh), Map.entry("sw", instructionStoreWord),
-                         Map.entry("sd", instructionStoreDoubleWord), Map.entry("fsw", instructionStoreFloat),
-                         Map.entry("fsd", instructionStoreDouble));
   }
 }
