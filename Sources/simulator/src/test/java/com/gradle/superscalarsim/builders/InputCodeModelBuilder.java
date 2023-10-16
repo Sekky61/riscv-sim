@@ -108,8 +108,7 @@ public class InputCodeModelBuilder
       temp.add(new InputCodeArgument("labelName", this.codeLine));
       this.arguments = temp;
     }
-    return new InputCodeModel(model, this.instructionName, this.arguments, this.instructionTypeEnum, this.dataTypeEnum,
-                              this.id);
+    return new InputCodeModel(model, this.instructionName, this.arguments, this.instructionTypeEnum, this.id);
   }
   
   

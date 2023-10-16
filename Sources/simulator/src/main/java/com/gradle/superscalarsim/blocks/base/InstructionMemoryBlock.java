@@ -71,7 +71,7 @@ public class InstructionMemoryBlock
   {
     this.code   = code;
     this.labels = labels;
-    this.nop    = new InputCodeModel(null, "nop", new ArrayList<>(), null, null, 0);
+    this.nop    = new InputCodeModel(null, "nop", new ArrayList<>(), null, 0);
   }// end of Constructor
   
   

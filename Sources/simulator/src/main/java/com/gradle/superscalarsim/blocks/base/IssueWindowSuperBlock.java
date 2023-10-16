@@ -174,7 +174,7 @@ public class IssueWindowSuperBlock implements AbstractBlock
     for (AbstractIssueWindowBlock issueWindow : this.issueWindowBlockList)
     {
       if (issueWindow.isCorrectInstructionType(instruction.getInstructionType()) && issueWindow.isCorrectDataType(
-              instruction.getOutputDataType()))
+              instruction.getDataType()))
       {
         issueWindow.dispatchInstruction(codeModel);
         issueWindow.createArgumentValidityEntry(codeModel);

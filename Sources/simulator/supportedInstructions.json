@@ -1,8 +1,6 @@
 {
   "jalr": {
     "name": "jalr",
-    "inputDataType": "kInt",
-    "outputDataType": "kInt",
     "instructionType": "kJumpbranch",
     "arguments": [
       {
@@ -25,8 +23,6 @@
   },
   "bne": {
     "name": "bne",
-    "inputDataType": "kInt",
-    "outputDataType": "kInt",
     "instructionType": "kJumpbranch",
     "arguments": [
       {
@@ -47,8 +43,6 @@
   "add": {
     "name": "add",
     "instructionType": "kArithmetic",
-    "inputDataType": "kInt",
-    "outputDataType": "kInt",
     "arguments": [
       {
         "name": "rd",
@@ -69,8 +63,6 @@
   "lh": {
     "name": "lh",
     "instructionType": "kLoadstore",
-    "inputDataType": "kInt",
-    "outputDataType": "kInt",
     "arguments": [
       {
         "name": "rd",
@@ -91,8 +83,6 @@
   "inc": {
     "name": "inc",
     "instructionType": "kArithmetic",
-    "inputDataType": "kInt",
-    "outputDataType": "kInt",
     "arguments": [
       {
         "name": "rd",
@@ -109,8 +99,6 @@
   "fdiv": {
     "name": "fdiv",
     "instructionType": "kArithmetic",
-    "inputDataType": "kFloat",
-    "outputDataType": "kFloat",
     "arguments": [
       {
         "name": "rd",
@@ -130,8 +118,6 @@
   },
   "beq": {
     "name": "beq",
-    "inputDataType": "kInt",
-    "outputDataType": "kInt",
     "instructionType": "kJumpbranch",
     "arguments": [
       {
@@ -152,8 +138,6 @@
   "dec": {
     "name": "dec",
     "instructionType": "kArithmetic",
-    "inputDataType": "kInt",
-    "outputDataType": "kInt",
     "arguments": [
       {
         "name": "rd",
@@ -170,8 +154,6 @@
   "fcvt.l.s": {
     "name": "fcvt.l.s",
     "instructionType": "kArithmetic",
-    "inputDataType": "kFloat",
-    "outputDataType": "kLong",
     "arguments": [
       {
         "name": "rd",
@@ -187,8 +169,6 @@
   },
   "bge": {
     "name": "bge",
-    "inputDataType": "kInt",
-    "outputDataType": "kInt",
     "instructionType": "kJumpbranch",
     "arguments": [
       {
@@ -209,8 +189,6 @@
   "nop": {
     "name": "nop",
     "instructionType": "kArithmetic",
-    "inputDataType": "kInt",
-    "outputDataType": "kInt",
     "arguments": [
       {
         "name": "",
@@ -221,8 +199,6 @@
   },
   "sw": {
     "name": "sw",
-    "inputDataType": "kInt",
-    "outputDataType": "kInt",
     "instructionType": "kLoadstore",
     "arguments": [
       {
@@ -242,8 +218,6 @@
   },
   "sub": {
     "name": "sub",
-    "inputDataType": "kInt",
-    "outputDataType": "kInt",
     "instructionType": "kArithmetic",
     "arguments": [
       {
@@ -264,8 +238,6 @@
   },
   "jal": {
     "name": "jal",
-    "inputDataType": "kInt",
-    "outputDataType": "kInt",
     "instructionType": "kJumpbranch",
     "arguments": [
       {
@@ -284,8 +256,6 @@
   "srli": {
     "name": "srli",
     "instructionType": "kArithmetic",
-    "inputDataType": "kInt",
-    "outputDataType": "kInt",
     "arguments": [
       {
         "name": "rd",
@@ -306,8 +276,6 @@
   "fmul": {
     "name": "fmul",
     "instructionType": "kArithmetic",
-    "inputDataType": "kFloat",
-    "outputDataType": "kFloat",
     "arguments": [
       {
         "name": "rd",
@@ -327,8 +295,6 @@
   },
   "blt": {
     "name": "blt",
-    "inputDataType": "kInt",
-    "outputDataType": "kInt",
     "instructionType": "kJumpbranch",
     "arguments": [
       {
@@ -348,8 +314,6 @@
   },
   "bltu": {
     "name": "bltu",
-    "inputDataType": "kInt",
-    "outputDataType": "kInt",
     "instructionType": "kJumpbranch",
     "arguments": [
       {
@@ -370,8 +334,6 @@
   "fcvt.s.l": {
     "name": "fcvt.s.l",
     "instructionType": "kArithmetic",
-    "inputDataType": "kLong",
-    "outputDataType": "kFloat",
     "arguments": [
       {
         "name": "rd",
@@ -387,8 +349,6 @@
   },
   "ld": {
     "name": "ld",
-    "inputDataType": "kLong",
-    "outputDataType": "kLong",
     "instructionType": "kLoadstore",
     "arguments": [
       {
@@ -410,8 +370,6 @@
   "div": {
     "name": "div",
     "instructionType": "kArithmetic",
-    "inputDataType": "kInt",
-    "outputDataType": "kInt",
     "arguments": [
       {
         "name": "rd",
@@ -432,8 +390,6 @@
   "lb": {
     "name": "lb",
     "instructionType": "kLoadstore",
-    "inputDataType": "kInt",
-    "outputDataType": "kInt",
     "arguments": [
       {
         "name": "rd",
@@ -454,8 +410,6 @@
   "fcvt.w.s": {
     "name": "fcvt.w.s",
     "instructionType": "kArithmetic",
-    "inputDataType": "kFloat",
-    "outputDataType": "kInt",
     "arguments": [
       {
         "name": "rd",
@@ -471,8 +425,6 @@
   },
   "subi": {
     "name": "subi",
-    "inputDataType": "kInt",
-    "outputDataType": "kInt",
     "instructionType": "kArithmetic",
     "arguments": [
       {
@@ -493,8 +445,6 @@
   },
   "lw": {
     "name": "lw",
-    "inputDataType": "kInt",
-    "outputDataType": "kInt",
     "instructionType": "kLoadstore",
     "arguments": [
       {
@@ -515,8 +465,6 @@
   },
   "addi": {
     "name": "addi",
-    "inputDataType": "kInt",
-    "outputDataType": "kInt",
     "instructionType": "kArithmetic",
     "arguments": [
       {
@@ -537,8 +485,6 @@
   },
   "sb": {
     "name": "sb",
-    "inputDataType": "kInt",
-    "outputDataType": "kInt",
     "instructionType": "kLoadstore",
     "arguments": [
       {
@@ -559,8 +505,6 @@
   "srai": {
     "name": "srai",
     "instructionType": "kArithmetic",
-    "inputDataType": "kInt",
-    "outputDataType": "kInt",
     "arguments": [
       {
         "name": "rd",
@@ -581,8 +525,6 @@
   "or": {
     "name": "or",
     "instructionType": "kArithmetic",
-    "inputDataType": "kInt",
-    "outputDataType": "kInt",
     "arguments": [
       {
         "name": "rd",
@@ -602,8 +544,6 @@
   },
   "sh": {
     "name": "sh",
-    "inputDataType": "kInt",
-    "outputDataType": "kInt",
     "instructionType": "kLoadstore",
     "arguments": [
       {
@@ -623,8 +563,6 @@
   },
   "sd": {
     "name": "sd",
-    "inputDataType": "kLong",
-    "outputDataType": "kLong",
     "instructionType": "kLoadstore",
     "arguments": [
       {
@@ -645,8 +583,6 @@
   "and": {
     "name": "and",
     "instructionType": "kArithmetic",
-    "inputDataType": "kInt",
-    "outputDataType": "kInt",
     "arguments": [
       {
         "name": "rd",
@@ -666,8 +602,6 @@
   },
   "flw": {
     "name": "flw",
-    "inputDataType": "kInt",
-    "outputDataType": "kFloat",
     "instructionType": "kLoadstore",
     "arguments": [
       {
@@ -689,8 +623,6 @@
   "slli": {
     "name": "slli",
     "instructionType": "kArithmetic",
-    "inputDataType": "kInt",
-    "outputDataType": "kInt",
     "arguments": [
       {
         "name": "rd",
@@ -711,8 +643,6 @@
   "fsqrt": {
     "name": "fsqrt",
     "instructionType": "kArithmetic",
-    "inputDataType": "kFloat",
-    "outputDataType": "kFloat",
     "arguments": [
       {
         "name": "rd",
@@ -728,8 +658,6 @@
   },
   "fsub": {
     "name": "fsub",
-    "inputDataType": "kFloat",
-    "outputDataType": "kFloat",
     "instructionType": "kArithmetic",
     "arguments": [
       {
@@ -751,8 +679,6 @@
   "not": {
     "name": "not",
     "instructionType": "kArithmetic",
-    "inputDataType": "kInt",
-    "outputDataType": "kInt",
     "arguments": [
       {
         "name": "rd",
@@ -768,8 +694,6 @@
   },
   "lwu": {
     "name": "lwu",
-    "inputDataType": "kInt",
-    "outputDataType": "kInt",
     "instructionType": "kLoadstore",
     "arguments": [
       {
@@ -791,8 +715,6 @@
   "lbu": {
     "name": "lbu",
     "instructionType": "kLoadstore",
-    "inputDataType": "kInt",
-    "outputDataType": "kInt",
     "arguments": [
       {
         "name": "rd",
@@ -812,8 +734,6 @@
   },
   "fadd": {
     "name": "fadd",
-    "inputDataType": "kFloat",
-    "outputDataType": "kFloat",
     "instructionType": "kArithmetic",
     "arguments": [
       {
@@ -834,8 +754,6 @@
   },
   "fsd": {
     "name": "fsd",
-    "inputDataType": "kInt",
-    "outputDataType": "kDouble",
     "instructionType": "kLoadstore",
     "arguments": [
       {
@@ -856,8 +774,6 @@
   "lhu": {
     "name": "lhu",
     "instructionType": "kLoadstore",
-    "inputDataType": "kInt",
-    "outputDataType": "kInt",
     "arguments": [
       {
         "name": "rd",
@@ -878,8 +794,6 @@
   "fcvt.s.w": {
     "name": "fcvt.s.w",
     "instructionType": "kArithmetic",
-    "inputDataType": "kInt",
-    "outputDataType": "kFloat",
     "arguments": [
       {
         "name": "rd",
@@ -895,8 +809,6 @@
   },
   "bgeu": {
     "name": "bgeu",
-    "inputDataType": "kInt",
-    "outputDataType": "kInt",
     "instructionType": "kJumpbranch",
     "arguments": [
       {
@@ -916,8 +828,6 @@
   },
   "fld": {
     "name": "fld",
-    "inputDataType": "kInt",
-    "outputDataType": "kDouble",
     "instructionType": "kLoadstore",
     "arguments": [
       {
@@ -938,8 +848,6 @@
   },
   "fsw": {
     "name": "fsw",
-    "inputDataType": "kInt",
-    "outputDataType": "kFloat",
     "instructionType": "kLoadstore",
     "arguments": [
       {
@@ -960,8 +868,6 @@
   "mul": {
     "name": "mul",
     "instructionType": "kArithmetic",
-    "inputDataType": "kInt",
-    "outputDataType": "kInt",
     "arguments": [
       {
         "name": "rd",
@@ -982,8 +888,6 @@
   "xor": {
     "name": "xor",
     "instructionType": "kArithmetic",
-    "inputDataType": "kInt",
-    "outputDataType": "kInt",
     "arguments": [
       {
         "name": "rd",
@@ -1003,8 +907,6 @@
   },
   "xori": {
     "name": "xori",
-    "inputDataType": "kInt",
-    "outputDataType": "kInt",
     "instructionType": "kArithmetic",
     "arguments": [
       {
@@ -1026,8 +928,6 @@
   "sll": {
     "name": "sll",
     "instructionType": "kArithmetic",
-    "inputDataType": "kInt",
-    "outputDataType": "kInt",
     "arguments": [
       {
         "name": "rd",
@@ -1048,8 +948,6 @@
   "srl": {
     "name": "srl",
     "instructionType": "kArithmetic",
-    "inputDataType": "kInt",
-    "outputDataType": "kInt",
     "arguments": [
       {
         "name": "rd",
@@ -1070,8 +968,6 @@
   "sra": {
     "name": "sra",
     "instructionType": "kArithmetic",
-    "inputDataType": "kInt",
-    "outputDataType": "kInt",
     "arguments": [
       {
         "name": "rd",
@@ -1091,8 +987,6 @@
   },
   "slt": {
     "name": "slt",
-    "inputDataType": "kInt",
-    "outputDataType": "kInt",
     "instructionType": "kArithmetic",
     "arguments": [
       {
@@ -1113,8 +1007,6 @@
   },
   "slti": {
     "name": "slti",
-    "inputDataType": "kInt",
-    "outputDataType": "kInt",
     "instructionType": "kArithmetic",
     "arguments": [
       {
@@ -1135,8 +1027,6 @@
   },
   "sltu": {
     "name": "sltu",
-    "inputDataType": "kInt",
-    "outputDataType": "kInt",
     "instructionType": "kArithmetic",
     "arguments": [
       {
@@ -1157,8 +1047,6 @@
   },
   "sltiu": {
     "name": "sltiu",
-    "inputDataType": "kInt",
-    "outputDataType": "kInt",
     "instructionType": "kArithmetic",
     "arguments": [
       {
@@ -1179,8 +1067,6 @@
   },
   "ori": {
     "name": "ori",
-    "inputDataType": "kInt",
-    "outputDataType": "kInt",
     "instructionType": "kArithmetic",
     "arguments": [
       {
@@ -1201,8 +1087,6 @@
   },
   "andi": {
     "name": "andi",
-    "inputDataType": "kInt",
-    "outputDataType": "kInt",
     "instructionType": "kArithmetic",
     "arguments": [
       {
@@ -1224,8 +1108,6 @@
   "lui": {
     "name": "lui",
     "instructionType": "kArithmetic",
-    "inputDataType": "kInt",
-    "outputDataType": "kInt",
     "arguments": [
       {
         "name": "rd",
@@ -1242,8 +1124,6 @@
   "auipc": {
     "name": "auipc",
     "instructionType": "kArithmetic",
-    "inputDataType": "kInt",
-    "outputDataType": "kInt",
     "arguments": [
       {
         "name": "rd",
@@ -1260,8 +1140,6 @@
   "li": {
     "name": "li",
     "instructionType": "kArithmetic",
-    "inputDataType": "kInt",
-    "outputDataType": "kInt",
     "arguments": [
       {
         "name": "rd",
@@ -1278,8 +1156,6 @@
   "mv": {
     "name": "mv",
     "instructionType": "kArithmetic",
-    "inputDataType": "kInt",
-    "outputDataType": "kInt",
     "arguments": [
       {
         "name": "rd",
@@ -1296,8 +1172,6 @@
   "neg": {
     "name": "neg",
     "instructionType": "kArithmetic",
-    "inputDataType": "kInt",
-    "outputDataType": "kInt",
     "arguments": [
       {
         "name": "rd",
@@ -1313,8 +1187,6 @@
   },
   "seqz": {
     "name": "seqz",
-    "inputDataType": "kInt",
-    "outputDataType": "kInt",
     "instructionType": "kArithmetic",
     "arguments": [
       {
@@ -1331,8 +1203,6 @@
   },
   "snez": {
     "name": "snez",
-    "inputDataType": "kInt",
-    "outputDataType": "kInt",
     "instructionType": "kArithmetic",
     "arguments": [
       {
@@ -1349,8 +1219,6 @@
   },
   "sltz": {
     "name": "sltz",
-    "inputDataType": "kInt",
-    "outputDataType": "kInt",
     "instructionType": "kArithmetic",
     "arguments": [
       {
@@ -1367,8 +1235,6 @@
   },
   "sgtz": {
     "name": "sgtz",
-    "inputDataType": "kInt",
-    "outputDataType": "kInt",
     "instructionType": "kArithmetic",
     "arguments": [
       {
@@ -1385,8 +1251,6 @@
   },
   "beqz": {
     "name": "beqz",
-    "inputDataType": "kInt",
-    "outputDataType": "kInt",
     "instructionType": "kJumpbranch",
     "arguments": [
       {
@@ -1402,8 +1266,6 @@
   },
   "bnez": {
     "name": "bnez",
-    "inputDataType": "kInt",
-    "outputDataType": "kInt",
     "instructionType": "kJumpbranch",
     "arguments": [
       {
@@ -1419,8 +1281,6 @@
   },
   "blez": {
     "name": "blez",
-    "inputDataType": "kInt",
-    "outputDataType": "kInt",
     "instructionType": "kJumpbranch",
     "arguments": [
       {
@@ -1436,8 +1296,6 @@
   },
   "bgez": {
     "name": "bgez",
-    "inputDataType": "kInt",
-    "outputDataType": "kInt",
     "instructionType": "kJumpbranch",
     "arguments": [
       {
@@ -1453,8 +1311,6 @@
   },
   "bltz": {
     "name": "bltz",
-    "inputDataType": "kInt",
-    "outputDataType": "kInt",
     "instructionType": "kJumpbranch",
     "arguments": [
       {
@@ -1470,8 +1326,6 @@
   },
   "bgtz": {
     "name": "bgtz",
-    "inputDataType": "kInt",
-    "outputDataType": "kInt",
     "instructionType": "kJumpbranch",
     "arguments": [
       {
@@ -1487,8 +1341,6 @@
   },
   "bgt": {
     "name": "bgt",
-    "inputDataType": "kInt",
-    "outputDataType": "kInt",
     "instructionType": "kJumpbranch",
     "arguments": [
       {
@@ -1508,8 +1360,6 @@
   },
   "ble": {
     "name": "ble",
-    "inputDataType": "kInt",
-    "outputDataType": "kInt",
     "instructionType": "kJumpbranch",
     "arguments": [
       {
@@ -1529,8 +1379,6 @@
   },
   "bgtu": {
     "name": "bgtu",
-    "inputDataType": "kInt",
-    "outputDataType": "kInt",
     "instructionType": "kJumpbranch",
     "arguments": [
       {
@@ -1550,8 +1398,6 @@
   },
   "bleu": {
     "name": "bleu",
-    "inputDataType": "kInt",
-    "outputDataType": "kInt",
     "instructionType": "kJumpbranch",
     "arguments": [
       {
@@ -1571,8 +1417,6 @@
   },
   "j": {
     "name": "j",
-    "inputDataType": "kInt",
-    "outputDataType": "kInt",
     "instructionType": "kJumpbranch",
     "arguments": [
       {
@@ -1584,8 +1428,6 @@
   },
   "jr": {
     "name": "jr",
-    "inputDataType": "kInt",
-    "outputDataType": "kInt",
     "instructionType": "kJumpbranch",
     "arguments": [
       {
@@ -1597,8 +1439,6 @@
   },
   "ret": {
     "name": "ret",
-    "inputDataType": "kInt",
-    "outputDataType": "kInt",
     "instructionType": "kJumpbranch",
     "instructionSyntax": "ret",
     "arguments": [
@@ -1611,8 +1451,6 @@
   },
   "call": {
     "name": "call",
-    "inputDataType": "kInt",
-    "outputDataType": "kInt",
     "instructionType": "kJumpbranch",
     "arguments": [
       {
@@ -1624,8 +1462,6 @@
   },
   "tail": {
     "name": "tail",
-    "inputDataType": "kInt",
-    "outputDataType": "kInt",
     "instructionType": "kJumpbranch",
     "arguments": [
       {
@@ -1638,8 +1474,6 @@
   "mulh": {
     "name": "mulh",
     "instructionType": "kArithmetic",
-    "inputDataType": "kInt",
-    "outputDataType": "kInt",
     "arguments": [
       {
         "name": "rd",
@@ -1660,8 +1494,6 @@
   "mulhu": {
     "name": "mulhu",
     "instructionType": "kArithmetic",
-    "inputDataType": "kInt",
-    "outputDataType": "kInt",
     "arguments": [
       {
         "name": "rd",
@@ -1682,8 +1514,6 @@
   "mulhsu": {
     "name": "mulhsu",
     "instructionType": "kArithmetic",
-    "inputDataType": "kInt",
-    "outputDataType": "kInt",
     "arguments": [
       {
         "name": "rd",

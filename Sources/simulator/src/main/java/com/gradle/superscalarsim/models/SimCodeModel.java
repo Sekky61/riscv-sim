@@ -133,7 +133,7 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>
                       int instructionBulkNumber)
   {
     this.inputCodeModel        = new InputCodeModel(instructionFunctionModel, instructionName, arguments,
-                                                    instructionTypeEnum, dataTypeEnum, 0);
+                                                    instructionTypeEnum, 0);
     this.id                    = id;
     this.commitId              = -1;
     this.isFinished            = false;
@@ -436,9 +436,9 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>
   }
   
   @Override
-  public DataTypeEnum getResultDataType()
+  public DataTypeEnum getDataType()
   {
-    return inputCodeModel.getResultDataType();
+    return inputCodeModel.getDataType();
   }
   
   @Override

@@ -63,7 +63,6 @@ public class InstructionFunctionModelBuilder
   
   public InstructionFunctionModel build()
   {
-    return new InstructionFunctionModel(this.name, this.instructionType, this.inputDataType.toString(),
-                                        this.outputDataType.toString(), this.arguments, this.interpretableAs);
+    return new InstructionFunctionModel(this.name, this.instructionType, this.arguments, this.interpretableAs);
   }
 }

@@ -374,7 +374,7 @@ public class CodeParser
       CodeToken         argumentToken       = entry.getValue();
       InputCodeArgument inputCodeArgument   = new InputCodeArgument(argumentName, argumentToken.text());
       boolean           isLValue            = argumentName.equals("rd");
-      DataTypeEnum      instructionDataType = isLValue ? instructionModel.getOutputDataType() : instructionModel.getInputDataType();
+      DataTypeEnum      instructionDataType = instructionModel.getArgumentByName(argumentName).type();
       boolean isValid = validateArgument(inputCodeArgument, instructionModel.getInstructionType(), instructionDataType,
                                          isLValue, argumentToken);
       if (isValid)

@@ -110,6 +110,8 @@ public abstract class AbstractIssueWindowBlock implements AbstractBlock
   public abstract boolean isCorrectInstructionType(InstructionTypeEnum instructionType);
   
   /**
+   * TODO: Where should the conversion instructions execute (float to int, eg.)?
+   *
    * @param [in] dataType - Data type (int, float, eg.)
    *
    * @return True if compatible, false otherwise

@@ -53,24 +53,12 @@ public class InstructionFunctionModel
   private final String name;
   
   /**
-   * Data type on which instruction operates
-   */
-  private final DataTypeEnum inputDataType;
-  
-  /**
-   * Data type of output register/memory
-   */
-  private final DataTypeEnum outputDataType;
-  
-  /**
    * Type of the instruction (arithmetic, load/store, branch)
    */
   private final InstructionTypeEnum instructionType;
   
   /**
-   * Syntax of instruction arguments for parsing and validation.
-   * Can include colon and dot-split default values. All or none default values must be used.
-   * Examples: "rd,rs1,rs2", "rs2,imm(rs1)", "rd,rs1,imm:x1..0" - imm does not need to be specified, default value is zero.
+   * Definition of instruction arguments for parsing and validation.
    */
   private final List<Argument> arguments;
   
@@ -82,8 +70,6 @@ public class InstructionFunctionModel
   public InstructionFunctionModel()
   {
     this.name            = "";
-    this.inputDataType   = DataTypeEnum.kInt;
-    this.outputDataType  = DataTypeEnum.kInt;
     this.instructionType = InstructionTypeEnum.kArithmetic;
     this.arguments       = new ArrayList<>();
     this.interpretableAs = "";
@@ -102,14 +88,10 @@ public class InstructionFunctionModel
    */
   public InstructionFunctionModel(String name,
                                   InstructionTypeEnum instructionType,
-                                  String inputDataType,
-                                  String outputDataType,
                                   List<Argument> arguments,
                                   String interpretableAs)
   {
     this.name            = name;
-    this.inputDataType   = DataTypeEnum.valueOf(inputDataType);
-    this.outputDataType  = DataTypeEnum.valueOf(outputDataType);
     this.instructionType = instructionType;
     this.arguments       = arguments;
     this.interpretableAs = interpretableAs;
@@ -148,24 +130,14 @@ public class InstructionFunctionModel
   //------------------------------------------------------
   
   /**
-   * @return Instruction input data type
-   * @brief Get input data type of instruction
+   * TODO: What about instructions with multiple data types (conversions)?
+   *
+   * @return Data type of the instruction
    */
-  public DataTypeEnum getInputDataType()
+  public DataTypeEnum getDataType()
   {
-    return inputDataType;
-  }// end of getInputDataType
-  //------------------------------------------------------
-  
-  /**
-   * @return Instruction output data type
-   * @brief Get output data type of instruction
-   */
-  public DataTypeEnum getOutputDataType()
-  {
-    return outputDataType;
-  }// end of getOutputDataType
-  //------------------------------------------------------
+    return arguments.get(0).type;
+  }
   
   /**
    * @return Instruction arguments
@@ -201,7 +173,7 @@ public class InstructionFunctionModel
   //------------------------------------------------------
   
   /**
-   * @return True if instruction is a unconditional jump
+   * @return True if instruction is an unconditional jump
    */
   public boolean isUnconditionalJump()
   {
@@ -212,6 +184,7 @@ public class InstructionFunctionModel
    * @param name         Name of the argument (example: "rd")
    * @param type         Data type of the argument (example: "kInt")
    * @param defaultValue Default value of the argument (example: "0" or null)
+   * @param writeBack    True if the argument should be written back to register file on commit
    *
    * @brief Could be a record, but is not because of serialization issues
    */
