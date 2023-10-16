@@ -150,7 +150,11 @@ public class CodeLoadStoreInterpreter
     }
     
     String[] interpretableAsParams = instruction.getInterpretableAs().split(":");
-    String   addressExpr           = interpretableAsParams[2];
+    if (interpretableAsParams.length < 3)
+    {
+      throw new IllegalStateException("Unexpected number of parameters: " + interpretableAsParams.length);
+    }
+    String addressExpr = interpretableAsParams[2];
     
     List<Expression.Variable> variables = codeModel.getVariables(registerFileBlock);
     

@@ -83,7 +83,7 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "load half:signed rd rs1 imm;"
+    "interpretableAs": "load:16:\\rs1 \\imm +"
   },
   "inc": {
     "name": "inc",
@@ -231,7 +231,7 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "store word rs2 rs1 imm"
+    "interpretableAs": "store:16:\\rs1 \\imm +:rs2"
   },
   "sub": {
     "name": "sub",
@@ -392,7 +392,7 @@
         "type": "kLong"
       }
     ],
-    "interpretableAs": "load doubleword:signed rd rs1 imm"
+    "interpretableAs": "load:64:\\rs1 \\imm +"
   },
   "div": {
     "name": "div",
@@ -434,7 +434,7 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "load byte:signed rd rs1 imm;"
+    "interpretableAs": "load:8:\\rs1 \\imm +"
   },
   "fcvt.w.s": {
     "name": "fcvt.w.s",
@@ -493,7 +493,7 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "load word:signed rd rs1 imm"
+    "interpretableAs": "load:16:\\rs1 \\imm +"
   },
   "addi": {
     "name": "addi",
@@ -535,7 +535,7 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "store byte rs2 rs1 imm"
+    "interpretableAs": "store:8:\\rs1 \\imm +:rs2"
   },
   "srai": {
     "name": "srai",
@@ -598,7 +598,7 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "store half rs2 rs1 imm"
+    "interpretableAs": "store:16:\\rs1 \\imm +:rs2"
   },
   "sd": {
     "name": "sd",
@@ -619,7 +619,7 @@
         "type": "kLong"
       }
     ],
-    "interpretableAs": "store doubleword rs2 rs1 imm"
+    "interpretableAs": "store:64:\\rs1 \\imm +:rs2"
   },
   "and": {
     "name": "and",
@@ -661,7 +661,7 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "load float:signed rd rs1 imm"
+    "interpretableAs": "load:32:\\rs1 \\imm +"
   },
   "slli": {
     "name": "slli",
@@ -747,7 +747,7 @@
     "arguments": [
       {
         "name": "rd",
-        "type": "kInt"
+        "type": "kUInt"
       },
       {
         "name": "imm",
@@ -758,7 +758,7 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "load word:unsigned rd rs1 imm"
+    "interpretableAs": "load:32:\\rs1 \\imm +"
   },
   "lbu": {
     "name": "lbu",
@@ -768,7 +768,7 @@
     "arguments": [
       {
         "name": "rd",
-        "type": "kInt"
+        "type": "kUInt"
       },
       {
         "name": "imm",
@@ -779,7 +779,7 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "load byte:unsigned rd rs1 imm;"
+    "interpretableAs": "load:8:\\rs1 \\imm +"
   },
   "fadd": {
     "name": "fadd",
@@ -810,7 +810,7 @@
     "arguments": [
       {
         "name": "rs2",
-        "type": "kInt"
+        "type": "kDouble"
       },
       {
         "name": "imm",
@@ -821,7 +821,7 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "store double rs2 rs1 imm"
+    "interpretableAs": "store:32:\\rs1 \\imm +:rs2"
   },
   "lhu": {
     "name": "lhu",
@@ -831,7 +831,7 @@
     "arguments": [
       {
         "name": "rd",
-        "type": "kInt"
+        "type": "kUInt"
       },
       {
         "name": "imm",
@@ -842,7 +842,7 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "load half:unsigned rd rs1 imm;"
+    "interpretableAs": "load:16:\\rs1 \\imm +"
   },
   "fcvt.s.w": {
     "name": "fcvt.s.w",
@@ -901,7 +901,7 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "load double:signed rd rs1 imm"
+    "interpretableAs": "load:32:\\rs1 \\imm +"
   },
   "fsw": {
     "name": "fsw",
@@ -911,7 +911,7 @@
     "arguments": [
       {
         "name": "rs2",
-        "type": "kInt"
+        "type": "kFloat"
       },
       {
         "name": "imm",
@@ -922,7 +922,7 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "store float rs2 rs1 imm"
+    "interpretableAs": "store:32:\\rs1 \\imm +:rs2"
   },
   "mul": {
     "name": "mul",
