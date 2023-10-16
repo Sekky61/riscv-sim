@@ -947,8 +947,10 @@ public class ForwardSimulationTest
     Assert.assertEquals(2, this.reorderBufferBlock.getReorderQueue().size());
     Assert.assertTrue(this.reorderBufferBlock.getFlagsMap().get(3).isReadyToBeCommitted());
     Assert.assertEquals("fadd tg2,tg1,f3", this.faddFunctionBlock.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertEquals(12.24, this.unifiedRegisterFileBlock.getRegister("f5").getValue(), 0.001);
-    Assert.assertEquals(15.375, this.unifiedRegisterFileBlock.getRegister("f2").getValue(), 0.001);
+    Assert.assertEquals(12.24, (float) this.unifiedRegisterFileBlock.getRegister("f5").getValue(DataTypeEnum.kFloat),
+                        0.001);
+    Assert.assertEquals(15.375, (float) this.unifiedRegisterFileBlock.getRegister("f2").getValue(DataTypeEnum.kFloat),
+                        0.001);
     Assert.assertEquals(RegisterReadinessEnum.kExecuted,
                         this.unifiedRegisterFileBlock.getRegister("tg3").getReadiness());
     Assert.assertEquals(RegisterReadinessEnum.kAllocated,
@@ -970,8 +972,10 @@ public class ForwardSimulationTest
     
     this.cpu.step();
     Assert.assertEquals(0, this.reorderBufferBlock.getReorderQueue().size());
-    Assert.assertEquals(15.375, this.unifiedRegisterFileBlock.getRegister("f2").getValue(), 0.001);
-    Assert.assertEquals(18.5, this.unifiedRegisterFileBlock.getRegister("f1").getValue(), 0.01);
+    Assert.assertEquals(15.375, (float) this.unifiedRegisterFileBlock.getRegister("f2").getValue(DataTypeEnum.kFloat),
+                        0.001);
+    Assert.assertEquals(18.5, (float) this.unifiedRegisterFileBlock.getRegister("f1").getValue(DataTypeEnum.kFloat),
+                        0.01);
   }
   
   @Test

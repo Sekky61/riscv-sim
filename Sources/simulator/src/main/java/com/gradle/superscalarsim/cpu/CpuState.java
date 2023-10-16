@@ -192,7 +192,7 @@ public class CpuState implements Serializable
                            config.loadLatency, config.laneReplacementDelay, this.cacheStatisticsCounter);
     
     this.memoryModel          = new MemoryModel(cache, cacheStatisticsCounter);
-    this.loadStoreInterpreter = new CodeLoadStoreInterpreter(initLoader, memoryModel, unifiedRegisterFileBlock);
+    this.loadStoreInterpreter = new CodeLoadStoreInterpreter(memoryModel, unifiedRegisterFileBlock);
     
     this.instructionFetchBlock = new InstructionFetchBlock(simCodeModelAllocator, instructionMemoryBlock, gShareUnit,
                                                            branchTargetBuffer);

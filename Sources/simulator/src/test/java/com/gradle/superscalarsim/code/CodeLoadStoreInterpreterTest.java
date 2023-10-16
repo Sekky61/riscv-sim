@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import static com.gradle.superscalarsim.models.register.RegisterDataContainer.interpretAs;
 import static org.mockito.ArgumentMatchers.any;
 
 public class CodeLoadStoreInterpreterTest
@@ -43,7 +44,7 @@ public class CodeLoadStoreInterpreterTest
     RegisterModel integer3 = new RegisterModel("x3", false, DataTypeEnum.kInt, 6, RegisterReadinessEnum.kAssigned);
     RegisterModel integer4 = new RegisterModel("x4", false, DataTypeEnum.kInt, -1000, RegisterReadinessEnum.kAssigned);
     RegisterModel integer5 = new RegisterModel("x5", false, DataTypeEnum.kInt, -65535, RegisterReadinessEnum.kAssigned);
-    RegisterModel integer6 = new RegisterModel("x6", false, DataTypeEnum.kInt, -4294967295L,
+    RegisterModel integer6 = new RegisterModel("x6", false, DataTypeEnum.kLong, -4294967295L,
                                                RegisterReadinessEnum.kAssigned);
     RegisterFileModel integerFile = new RegisterFileModelBuilder().hasName("integer").hasDataType(DataTypeEnum.kLong)
             .hasRegisterList(Arrays.asList(integer1, integer2, integer3, integer4, integer5, integer6)).build();
@@ -51,14 +52,15 @@ public class CodeLoadStoreInterpreterTest
     RegisterModel float1 = new RegisterModel("f1", false, DataTypeEnum.kFloat, 0.0f, RegisterReadinessEnum.kAssigned);
     RegisterModel float2 = new RegisterModel("f2", false, DataTypeEnum.kFloat, 25.0f, RegisterReadinessEnum.kAssigned);
     RegisterModel float3 = new RegisterModel("f3", false, DataTypeEnum.kFloat, 6.0f, RegisterReadinessEnum.kAssigned);
+    RegisterModel float4 = new RegisterModel("f4", false, DataTypeEnum.kDouble, 6.0d, RegisterReadinessEnum.kAssigned);
     RegisterFileModel floatFile = new RegisterFileModelBuilder().hasName("float").hasDataType(DataTypeEnum.kDouble)
-            .hasRegisterList(Arrays.asList(float1, float2, float3)).build();
+            .hasRegisterList(Arrays.asList(float1, float2, float3, float4)).build();
     
     Mockito.when(initLoader.getRegisterFileModelList()).thenReturn(Arrays.asList(integerFile, floatFile));
     Mockito.when(initLoader.getInstructionFunctionModels()).thenReturn(setUpInstructions());
     Mockito.when(initLoader.getInstructionFunctionModel(any())).thenCallRealMethod();
     
-    this.codeLoadStoreInterpreter = new CodeLoadStoreInterpreter(initLoader, new MemoryModel(new SimulatedMemory()),
+    this.codeLoadStoreInterpreter = new CodeLoadStoreInterpreter(new MemoryModel(new SimulatedMemory()),
                                                                  new UnifiedRegisterFileBlock(initLoader));
   }
   
@@ -66,106 +68,106 @@ public class CodeLoadStoreInterpreterTest
   {
     InstructionFunctionModel instructionLoadByte = new InstructionFunctionModelBuilder().hasName("lb")
             .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
-            .isInterpretedAs("load byte:signed rd rs1 imm").hasArguments(
+            .isInterpretedAs("load:8:\\rs1 \\imm +").hasArguments(
                     List.of(new InstructionFunctionModel.Argument("rd", DataTypeEnum.kInt, null),
                             new InstructionFunctionModel.Argument("rs1", DataTypeEnum.kInt, null),
                             new InstructionFunctionModel.Argument("imm", DataTypeEnum.kInt, null))).build();
     
     InstructionFunctionModel instructionLoadByteUnsigned = new InstructionFunctionModelBuilder().hasName("lbu")
             .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
-            .isInterpretedAs("load byte:unsigned rd rs1 imm").hasArguments(
-                    List.of(new InstructionFunctionModel.Argument("rd", DataTypeEnum.kInt, null),
+            .isInterpretedAs("load:8:\\rs1 \\imm +").hasArguments(
+                    List.of(new InstructionFunctionModel.Argument("rd", DataTypeEnum.kUInt, null),
                             new InstructionFunctionModel.Argument("rs1", DataTypeEnum.kInt, null),
                             new InstructionFunctionModel.Argument("imm", DataTypeEnum.kInt, null))).build();
     
     InstructionFunctionModel instructionLoadHigh = new InstructionFunctionModelBuilder().hasName("lh")
             .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
-            .isInterpretedAs("load half:signed rd rs1 imm").hasArguments(
+            .isInterpretedAs("load:16:\\rs1 \\imm +").hasArguments(
                     List.of(new InstructionFunctionModel.Argument("rd", DataTypeEnum.kInt, null),
                             new InstructionFunctionModel.Argument("rs1", DataTypeEnum.kInt, null),
                             new InstructionFunctionModel.Argument("imm", DataTypeEnum.kInt, null))).build();
     
     InstructionFunctionModel instructionLoadHighUnsigned = new InstructionFunctionModelBuilder().hasName("lhu")
             .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
-            .isInterpretedAs("load half:unsigned rd rs1 imm").hasArguments(
-                    List.of(new InstructionFunctionModel.Argument("rd", DataTypeEnum.kInt, null),
+            .isInterpretedAs("load:16:\\rs1 \\imm +").hasArguments(
+                    List.of(new InstructionFunctionModel.Argument("rd", DataTypeEnum.kUInt, null),
                             new InstructionFunctionModel.Argument("rs1", DataTypeEnum.kInt, null),
                             new InstructionFunctionModel.Argument("imm", DataTypeEnum.kInt, null))).build();
     
     InstructionFunctionModel instructionLoadWord = new InstructionFunctionModelBuilder().hasName("lw")
             .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
-            .isInterpretedAs("load word:signed rd rs1 imm").hasArguments(
+            .isInterpretedAs("load:32:\\rs1 \\imm +").hasArguments(
                     List.of(new InstructionFunctionModel.Argument("rd", DataTypeEnum.kInt, null),
                             new InstructionFunctionModel.Argument("rs1", DataTypeEnum.kInt, null),
                             new InstructionFunctionModel.Argument("imm", DataTypeEnum.kInt, null))).build();
     
     InstructionFunctionModel instructionLoadWordUnsigned = new InstructionFunctionModelBuilder().hasName("lwu")
             .hasInputDataType(DataTypeEnum.kLong).hasOutputDataType(DataTypeEnum.kLong)
-            .isInterpretedAs("load word:unsigned rd rs1 imm").hasArguments(
-                    List.of(new InstructionFunctionModel.Argument("rd", DataTypeEnum.kInt, null),
+            .isInterpretedAs("load:32:\\rs1 \\imm +").hasArguments(
+                    List.of(new InstructionFunctionModel.Argument("rd", DataTypeEnum.kUInt, null),
                             new InstructionFunctionModel.Argument("rs1", DataTypeEnum.kInt, null),
                             new InstructionFunctionModel.Argument("imm", DataTypeEnum.kInt, null))).build();
     
     InstructionFunctionModel instructionLoadDoubleWord = new InstructionFunctionModelBuilder().hasName("ld")
             .hasInputDataType(DataTypeEnum.kLong).hasOutputDataType(DataTypeEnum.kLong)
-            .isInterpretedAs("load doubleword:signed rd rs1 imm").hasArguments(
-                    List.of(new InstructionFunctionModel.Argument("rd", DataTypeEnum.kInt, null),
+            .isInterpretedAs("load:64:\\rs1 \\imm +").hasArguments(
+                    List.of(new InstructionFunctionModel.Argument("rd", DataTypeEnum.kLong, null),
                             new InstructionFunctionModel.Argument("rs1", DataTypeEnum.kInt, null),
                             new InstructionFunctionModel.Argument("imm", DataTypeEnum.kInt, null))).build();
     
     InstructionFunctionModel instructionLoadFloat = new InstructionFunctionModelBuilder().hasName("flw")
             .hasInputDataType(DataTypeEnum.kFloat).hasOutputDataType(DataTypeEnum.kFloat)
-            .isInterpretedAs("load float:unsigned rd rs1 imm").hasArguments(
-                    List.of(new InstructionFunctionModel.Argument("rd", DataTypeEnum.kInt, null),
+            .isInterpretedAs("load:32:\\rs1 \\imm +").hasArguments(
+                    List.of(new InstructionFunctionModel.Argument("rd", DataTypeEnum.kFloat, null),
                             new InstructionFunctionModel.Argument("rs1", DataTypeEnum.kInt, null),
                             new InstructionFunctionModel.Argument("imm", DataTypeEnum.kInt, null))).build();
     
     InstructionFunctionModel instructionLoadDouble = new InstructionFunctionModelBuilder().hasName("fld")
             .hasInputDataType(DataTypeEnum.kDouble).hasOutputDataType(DataTypeEnum.kDouble)
-            .isInterpretedAs("load double:unsigned rd rs1 imm").hasArguments(
-                    List.of(new InstructionFunctionModel.Argument("rd", DataTypeEnum.kInt, null),
+            .isInterpretedAs("load:64:\\rs1 \\imm +").hasArguments(
+                    List.of(new InstructionFunctionModel.Argument("rd", DataTypeEnum.kDouble, null),
                             new InstructionFunctionModel.Argument("rs1", DataTypeEnum.kInt, null),
                             new InstructionFunctionModel.Argument("imm", DataTypeEnum.kInt, null))).build();
     
     InstructionFunctionModel instructionStoreByte = new InstructionFunctionModelBuilder().hasName("sb")
             .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
-            .isInterpretedAs("store byte rs2 rs1 imm").hasArguments(
+            .isInterpretedAs("store:8:\\rs1 \\imm +:rs2").hasArguments(
                     List.of(new InstructionFunctionModel.Argument("rs2", DataTypeEnum.kInt, null),
                             new InstructionFunctionModel.Argument("rs1", DataTypeEnum.kInt, null),
                             new InstructionFunctionModel.Argument("imm", DataTypeEnum.kInt, null))).build();
     
     InstructionFunctionModel instructionStoreHigh = new InstructionFunctionModelBuilder().hasName("sh")
             .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
-            .isInterpretedAs("store half rs2 rs1 imm").hasArguments(
+            .isInterpretedAs("store:16:\\rs1 \\imm +:rs2").hasArguments(
                     List.of(new InstructionFunctionModel.Argument("rs2", DataTypeEnum.kInt, null),
                             new InstructionFunctionModel.Argument("rs1", DataTypeEnum.kInt, null),
                             new InstructionFunctionModel.Argument("imm", DataTypeEnum.kInt, null))).build();
     
     InstructionFunctionModel instructionStoreWord = new InstructionFunctionModelBuilder().hasName("sw")
             .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
-            .isInterpretedAs("store word rs2 rs1 imm").hasArguments(
+            .isInterpretedAs("store:32:\\rs1 \\imm +:rs2").hasArguments(
                     List.of(new InstructionFunctionModel.Argument("rs2", DataTypeEnum.kInt, null),
                             new InstructionFunctionModel.Argument("rs1", DataTypeEnum.kInt, null),
                             new InstructionFunctionModel.Argument("imm", DataTypeEnum.kInt, null))).build();
     
     InstructionFunctionModel instructionStoreDoubleWord = new InstructionFunctionModelBuilder().hasName("sd")
             .hasInputDataType(DataTypeEnum.kLong).hasOutputDataType(DataTypeEnum.kLong)
-            .isInterpretedAs("store doubleword rs2 rs1 imm").hasArguments(
+            .isInterpretedAs("store:64:\\rs1 \\imm +:rs2").hasArguments(
                     List.of(new InstructionFunctionModel.Argument("rs2", DataTypeEnum.kInt, null),
                             new InstructionFunctionModel.Argument("rs1", DataTypeEnum.kInt, null),
                             new InstructionFunctionModel.Argument("imm", DataTypeEnum.kInt, null))).build();
     
     InstructionFunctionModel instructionStoreFloat = new InstructionFunctionModelBuilder().hasName("fsw")
             .hasInputDataType(DataTypeEnum.kFloat).hasOutputDataType(DataTypeEnum.kFloat)
-            .isInterpretedAs("store float rs2 rs1 imm").hasArguments(
-                    List.of(new InstructionFunctionModel.Argument("rs2", DataTypeEnum.kInt, null),
+            .isInterpretedAs("store:32:\\rs1 \\imm +:rs2").hasArguments(
+                    List.of(new InstructionFunctionModel.Argument("rs2", DataTypeEnum.kFloat, null),
                             new InstructionFunctionModel.Argument("rs1", DataTypeEnum.kInt, null),
                             new InstructionFunctionModel.Argument("imm", DataTypeEnum.kInt, null))).build();
     
     InstructionFunctionModel instructionStoreDouble = new InstructionFunctionModelBuilder().hasName("fsd")
             .hasInputDataType(DataTypeEnum.kFloat).hasOutputDataType(DataTypeEnum.kFloat)
-            .isInterpretedAs("store double rs2 rs1 imm").hasArguments(
-                    List.of(new InstructionFunctionModel.Argument("rs2", DataTypeEnum.kInt, null),
+            .isInterpretedAs("store:64:\\rs1 \\imm +:rs2").hasArguments(
+                    List.of(new InstructionFunctionModel.Argument("rs2", DataTypeEnum.kDouble, null),
                             new InstructionFunctionModel.Argument("rs1", DataTypeEnum.kInt, null),
                             new InstructionFunctionModel.Argument("imm", DataTypeEnum.kInt, null))).build();
     
@@ -187,9 +189,10 @@ public class CodeLoadStoreInterpreterTest
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("0").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("sb")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    Assert.assertEquals(
-            this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1, -1), 0).getSecond(),
-            6, 0.01);
+    
+    long value = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1, -1), 0)
+            .getSecond();
+    Assert.assertEquals(6, value);
     
     argument1      = new InputCodeArgumentBuilder().hasName("rd").hasValue("x1").build();
     argument2      = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x2").build();
@@ -197,9 +200,9 @@ public class CodeLoadStoreInterpreterTest
     inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("lbu")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
-    Assert.assertEquals(
-            this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1, -1), 0).getSecond(),
-            6, 0.01);
+    long value2 = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1, -1), 0)
+            .getSecond();
+    Assert.assertEquals(6, value2);
   }
   
   @Test
@@ -210,9 +213,9 @@ public class CodeLoadStoreInterpreterTest
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("0").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("sh")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    Assert.assertEquals(
-            this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1, -1), 0).getSecond(),
-            6, 0.01);
+    long value = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1, -1), 0)
+            .getSecond();
+    Assert.assertEquals(6, value);
     
     argument1      = new InputCodeArgumentBuilder().hasName("rd").hasValue("x1").build();
     argument2      = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x2").build();
@@ -220,9 +223,9 @@ public class CodeLoadStoreInterpreterTest
     inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("lhu")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
-    Assert.assertEquals(
-            this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1, -1), 0).getSecond(),
-            6, 0.01);
+    long value2 = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1, -1), 0)
+            .getSecond();
+    Assert.assertEquals(6, value2);
   }
   
   @Test
@@ -233,9 +236,9 @@ public class CodeLoadStoreInterpreterTest
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("0").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("sw")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    Assert.assertEquals(
-            this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1, -1), 0).getSecond(),
-            6, 0.01);
+    long value = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1, -1), 0)
+            .getSecond();
+    Assert.assertEquals(6, value);
     
     argument1      = new InputCodeArgumentBuilder().hasName("rd").hasValue("x1").build();
     argument2      = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x2").build();
@@ -243,9 +246,9 @@ public class CodeLoadStoreInterpreterTest
     inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("lwu")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
-    Assert.assertEquals(
-            this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1, -1), 0).getSecond(),
-            6, 0.01);
+    long value2 = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1, -1), 0)
+            .getSecond();
+    Assert.assertEquals(6, value2);
   }
   
   @Test
@@ -256,9 +259,9 @@ public class CodeLoadStoreInterpreterTest
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("0").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("sd")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    Assert.assertEquals(
-            this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1, -1), 0).getSecond(),
-            6, 0.01);
+    long value = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1, -1), 0)
+            .getSecond();
+    Assert.assertEquals(6, value);
     
     argument1      = new InputCodeArgumentBuilder().hasName("rd").hasValue("x1").build();
     argument2      = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x2").build();
@@ -266,9 +269,9 @@ public class CodeLoadStoreInterpreterTest
     inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("ld")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
-    Assert.assertEquals(
-            this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1, -1), 0).getSecond(),
-            6, 0.01);
+    long value2 = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1, -1), 0)
+            .getSecond();
+    Assert.assertEquals(6, value2);
   }
   
   @Test
@@ -279,9 +282,10 @@ public class CodeLoadStoreInterpreterTest
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("0").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("fsw")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    Assert.assertEquals(
-            this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1, -1), 0).getSecond(),
-            6, 0.01);
+    long value = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1, -1), 0)
+            .getSecond();
+    float r = (float) interpretAs(value, DataTypeEnum.kFloat);
+    Assert.assertEquals(6.0f, r, 0.001);
     
     argument1      = new InputCodeArgumentBuilder().hasName("rd").hasValue("f1").build();
     argument2      = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x2").build();
@@ -289,22 +293,25 @@ public class CodeLoadStoreInterpreterTest
     inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("flw")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
-    Assert.assertEquals(
-            this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1, -1), 0).getSecond(),
-            6, 0.01);
+    long value2 = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1, -1), 0)
+            .getSecond();
+    float r2 = (float) interpretAs(value, DataTypeEnum.kFloat);
+    Assert.assertEquals(6, r2, 0.001);
   }
   
   @Test
   public void storeDouble_loadDouble_returnsExactValue()
   {
-    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("f3").build();
+    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("f4").build();
     InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x2").build();
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("0").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("fsd")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    Assert.assertEquals(
-            this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1, -1), 0).getSecond(),
-            6, 0.01);
+    
+    long value = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1, -1), 0)
+            .getSecond();
+    double r = (double) interpretAs(value, DataTypeEnum.kDouble);
+    Assert.assertEquals(6.0d, r, 0.001);
     
     argument1      = new InputCodeArgumentBuilder().hasName("rd").hasValue("f1").build();
     argument2      = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x2").build();
@@ -312,22 +319,25 @@ public class CodeLoadStoreInterpreterTest
     inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("fld")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
-    Assert.assertEquals(
-            this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1, -1), 0).getSecond(),
-            6, 0.01);
+    long value2 = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1, -1), 0)
+            .getSecond();
+    double r2 = (double) interpretAs(value2, DataTypeEnum.kDouble);
+    Assert.assertEquals(6.0d, r2, 0.001);
   }
   
   @Test
   public void storeDouble_loadFloat_returnsDifferentValue()
   {
-    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("f3").build();
+    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("f4").build();
     InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x2").build();
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("0").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("fsd")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    Assert.assertEquals(
-            this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1, -1), 0).getSecond(),
-            6, 0.01);
+    
+    long value = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1, -1), 0)
+            .getSecond();
+    double r = (double) interpretAs(value, DataTypeEnum.kDouble);
+    Assert.assertEquals(6.0d, r, 0.001);
     
     argument1      = new InputCodeArgumentBuilder().hasName("rd").hasValue("f1").build();
     argument2      = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x2").build();
@@ -335,9 +345,9 @@ public class CodeLoadStoreInterpreterTest
     inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("flw")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
-    Assert.assertNotEquals(
-            this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1, -1), 0).getSecond(),
-            6, 0.01);
+    long value2 = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1, -1), 0)
+            .getSecond();
+    Assert.assertNotEquals(6, value2);
   }
   
   @Test
@@ -348,9 +358,12 @@ public class CodeLoadStoreInterpreterTest
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("0").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("fsw")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    Assert.assertEquals(
-            this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1, -1), 0).getSecond(),
-            6, 0.01);
+    
+    long value = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1, -1), 0)
+            .getSecond();
+    // Cast to float
+    float r = (float) interpretAs(value, DataTypeEnum.kFloat);
+    Assert.assertEquals(6.0f, r, 0.001);
     
     argument1      = new InputCodeArgumentBuilder().hasName("rd").hasValue("f1").build();
     argument2      = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x2").build();
@@ -358,9 +371,9 @@ public class CodeLoadStoreInterpreterTest
     inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("fld")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
-    Assert.assertNotEquals(
-            this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1, -1), 0).getSecond(),
-            6, 0.01);
+    long value2 = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1, -1), 0)
+            .getSecond();
+    Assert.assertNotEquals(6, value2);
   }
   
   @Test
@@ -371,9 +384,12 @@ public class CodeLoadStoreInterpreterTest
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("0").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("sw")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    Assert.assertEquals(
-            this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1, -1), 0).getSecond(),
-            -1000, 0.01);
+    
+    long value = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1, -1), 0)
+            .getSecond();
+    // The bits have to be interpreted as int
+    int signedValue = (int) interpretAs(value, DataTypeEnum.kInt);
+    Assert.assertEquals(-1000, signedValue);
     
     argument1      = new InputCodeArgumentBuilder().hasName("rd").hasValue("x1").build();
     argument2      = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x2").build();
@@ -381,9 +397,9 @@ public class CodeLoadStoreInterpreterTest
     inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("lb")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
-    Assert.assertEquals(
-            this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1, -1), 0).getSecond(),
-            24, 0.01);
+    long value2 = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1, -1), 0)
+            .getSecond();
+    Assert.assertEquals(24, value2);
   }
   
   @Test
@@ -394,9 +410,10 @@ public class CodeLoadStoreInterpreterTest
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("0").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("sd")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    Assert.assertEquals(
-            this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1, -1), 0).getSecond(),
-            -4294967295L, 0.01);
+    
+    long value = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1, -1), 0)
+            .getSecond();
+    Assert.assertEquals(-4294967295L, value);
     
     argument1      = new InputCodeArgumentBuilder().hasName("rd").hasValue("x1").build();
     argument2      = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x2").build();
@@ -404,9 +421,9 @@ public class CodeLoadStoreInterpreterTest
     inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("lw")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
-    Assert.assertEquals(
-            this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1, -1), 0).getSecond(),
-            1, 0.01);
+    long value2 = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1, -1), 0)
+            .getSecond();
+    Assert.assertEquals(1, value2);
   }
   
   @Test
@@ -417,9 +434,11 @@ public class CodeLoadStoreInterpreterTest
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("0").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("sw")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    Assert.assertEquals(
-            this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1, -1), 0).getSecond(),
-            -65535, 0.01);
+    
+    long value = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1, -1), 0)
+            .getSecond();
+    int signedValue = (int) interpretAs(value, DataTypeEnum.kInt);
+    Assert.assertEquals(-65535, signedValue);
     
     argument1      = new InputCodeArgumentBuilder().hasName("rd").hasValue("x1").build();
     argument2      = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x2").build();
@@ -427,9 +446,9 @@ public class CodeLoadStoreInterpreterTest
     inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("lh")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
-    Assert.assertEquals(
-            this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1, -1), 0).getSecond(),
-            1, 0.01);
+    long value2 = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1, -1), 0)
+            .getSecond();
+    Assert.assertEquals(1, value2);
   }
   
   @Test
@@ -440,12 +459,12 @@ public class CodeLoadStoreInterpreterTest
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("0").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("lw")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    double result1 = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1, -1), 0)
+    long result1 = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1, -1), 0)
             .getSecond();
-    double result2 = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1, -1), 0)
+    long result2 = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1, -1), 0)
             .getSecond();
-    Assert.assertEquals(0, result1, 0.0001);
-    Assert.assertEquals(0, result2, 0.0001);
+    Assert.assertEquals(0, result1);
+    Assert.assertEquals(0, result2);
   }
   
   @Test
@@ -456,18 +475,21 @@ public class CodeLoadStoreInterpreterTest
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("0").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("sw")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    Assert.assertEquals(
-            this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1, -1), 0).getSecond(),
-            25, 0.01);
+    
+    long value = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1, -1), 0)
+            .getSecond();
+    Assert.assertEquals(25, value);
     
     argument1      = new InputCodeArgumentBuilder().hasName("rd").hasValue("x1").build();
     argument2      = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x2").build();
     argument3      = new InputCodeArgumentBuilder().hasName("imm").hasValue("0").build();
     inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("lw")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    Assert.assertNotEquals(
-            this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1, -1), 0).getSecond(),
-            25);
+    
+    long value2 = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1, -1), 0)
+            .getSecond();
+    int valueInt = (int) interpretAs(value2, DataTypeEnum.kInt);
+    Assert.assertEquals(25, valueInt);
   }
   
   @Test
@@ -478,18 +500,20 @@ public class CodeLoadStoreInterpreterTest
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("0").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("sb")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    Assert.assertEquals(
-            this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1, -1), 0).getSecond(),
-            6, 0.01);
+    
+    long value = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1, -1), 0)
+            .getSecond();
+    Assert.assertEquals(6, value);
     
     argument1      = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x3").build();
     argument2      = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x1").build();
     argument3      = new InputCodeArgumentBuilder().hasName("imm").hasValue("1").build();
     inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("sb")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    Assert.assertEquals(
-            this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1, -1), 0).getSecond(),
-            6, 0.01);
+    
+    long value2 = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1, -1), 0)
+            .getSecond();
+    Assert.assertEquals(6, value2);
     
     argument1      = new InputCodeArgumentBuilder().hasName("rd").hasValue("x2").build();
     argument2      = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x1").build();
@@ -497,9 +521,9 @@ public class CodeLoadStoreInterpreterTest
     inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("lhu")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
-    Assert.assertEquals(
-            this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1, -1), 0).getSecond(),
-            1542, 0.01);
+    long value3 = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1, -1), 0)
+            .getSecond();
+    Assert.assertEquals(1542, value3);
   }
   
   @Test
@@ -510,18 +534,20 @@ public class CodeLoadStoreInterpreterTest
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("0").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("sh")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    Assert.assertEquals(
-            this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1, -1), 0).getSecond(),
-            6, 0.01);
+    
+    long value = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1, -1), 0)
+            .getSecond();
+    Assert.assertEquals(6, value);
     
     argument1      = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x3").build();
     argument2      = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x2").build();
     argument3      = new InputCodeArgumentBuilder().hasName("imm").hasValue("2").build();
     inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("sh")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    Assert.assertEquals(
-            this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1, -1), 0).getSecond(),
-            6, 0.01);
+    
+    long value2 = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1, -1), 0)
+            .getSecond();
+    Assert.assertEquals(6, value2);
     
     argument1      = new InputCodeArgumentBuilder().hasName("rd").hasValue("x1").build();
     argument2      = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x2").build();
@@ -529,9 +555,9 @@ public class CodeLoadStoreInterpreterTest
     inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("lwu")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
-    Assert.assertEquals(
-            this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1, -1), 0).getSecond(),
-            393222, 0.01);
+    long value3 = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1, -1), 0)
+            .getSecond();
+    Assert.assertEquals(393222, value3);
   }
   
   @Test
@@ -542,9 +568,10 @@ public class CodeLoadStoreInterpreterTest
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("0").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("sh")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    Assert.assertEquals(
-            this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1, -1), 0).getSecond(),
-            6, 0.01);
+    
+    long value = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1, -1), 0)
+            .getSecond();
+    Assert.assertEquals(6, value);
     
     argument1      = new InputCodeArgumentBuilder().hasName("rd").hasValue("x1").build();
     argument2      = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x2").build();

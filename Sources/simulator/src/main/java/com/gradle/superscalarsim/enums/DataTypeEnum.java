@@ -121,4 +121,14 @@ public enum DataTypeEnum
         return null;
     }
   }
+  
+  /**
+   * Relevant for loads that fill upper bits with sign bit.
+   *
+   * @return True if the data type is signed and upper bits should be filled with sign bit.
+   */
+  public boolean isSigned()
+  {
+    return this == kInt || this == kLong;
+  }
 }

@@ -120,6 +120,11 @@ public class RegisterDataContainer
    */
   public Object getValue(DataTypeEnum type)
   {
+    return interpretAs(bits, type);
+  }
+  
+  public static Object interpretAs(long bits, DataTypeEnum type)
+  {
     Class<?> cls = type.getJavaClass();
     if (cls == null)
     {

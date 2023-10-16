@@ -243,6 +243,14 @@ public class RegisterModel
     }
   }// end of setValue
   
+  /**
+   * @param bits New value to be set
+   */
+  public void setBits(long bits)
+  {
+    value.setValue(bits);
+  }
+  
   public Object getValue(DataTypeEnum type)
   {
     return value.getValue(type);

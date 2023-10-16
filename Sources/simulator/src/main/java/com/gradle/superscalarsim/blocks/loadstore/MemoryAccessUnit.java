@@ -65,7 +65,7 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
   /// First delay is for MAU, second delay is for reply from memory
   private boolean firstDelayPassed = false;
   /// Data of the load operation to be able to store it later
-  private double savedResult;
+  private long savedResult;
   /// settings for first delay
   private int baseDelay;
   
@@ -139,7 +139,7 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
       {
         firstDelayPassed = true;
         
-        Pair<Integer, Double> result = loadStoreInterpreter.interpretInstruction(this.simCodeModel, cycleCount);
+        Pair<Integer, Long> result = loadStoreInterpreter.interpretInstruction(this.simCodeModel, cycleCount);
         savedResult = result.getSecond();
         
         //Set delay for memory response
@@ -161,7 +161,7 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
           InputCodeArgument destinationArgument = simCodeModel.getArgumentByName("rd");
           RegisterModel destRegister = registerFileBlock.getRegister(
                   Objects.requireNonNull(destinationArgument).getValue());
-          destRegister.setValue(savedResult);
+          destRegister.setBits(savedResult);
           destRegister.setReadiness(RegisterReadinessEnum.kExecuted);
           this.loadBufferBlock.setDestinationAvailable(simCodeModel.getId());
           this.loadBufferBlock.setMemoryAccessFinished(simCodeModel.getId());
