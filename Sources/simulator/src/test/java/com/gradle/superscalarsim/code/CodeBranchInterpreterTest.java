@@ -7,6 +7,7 @@ import com.gradle.superscalarsim.builders.InputCodeModelBuilder;
 import com.gradle.superscalarsim.loader.InitLoader;
 import com.gradle.superscalarsim.models.InputCodeArgument;
 import com.gradle.superscalarsim.models.InputCodeModel;
+import com.gradle.superscalarsim.models.SimCodeModel;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -38,8 +39,7 @@ public class CodeBranchInterpreterTest
     unifiedRegisterFileBlock.getRegister("x3").setValue(6);
     unifiedRegisterFileBlock.getRegister("x4").setValue(-2);
     
-    this.codeBranchInterpreter = new CodeBranchInterpreter(instructionMemoryBlock, unifiedRegisterFileBlock,
-                                                           new CodeArithmeticInterpreter(unifiedRegisterFileBlock));
+    this.codeBranchInterpreter = new CodeBranchInterpreter(instructionMemoryBlock, unifiedRegisterFileBlock);
   }
   
   private List<InputCodeModel> setUpParsedCode()
@@ -84,8 +84,9 @@ public class CodeBranchInterpreterTest
     InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("imm").hasValue("one").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("jal")
             .hasArguments(Arrays.asList(argument1, argument2)).build();
+    SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
-    Assert.assertEquals(-3 * 4, this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 3 * 4).getAsInt());
+    Assert.assertEquals(-3 * 4, this.codeBranchInterpreter.interpretInstruction(simCodeModel, 3 * 4).getAsInt());
   }
   
   @Test
@@ -96,9 +97,10 @@ public class CodeBranchInterpreterTest
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("two").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("beq")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
+    SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
     // Should jump to the label "two" which is at index 1
-    Assert.assertEquals(-2 * 4, this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 3 * 4).getAsInt());
+    Assert.assertEquals(-2 * 4, this.codeBranchInterpreter.interpretInstruction(simCodeModel, 3 * 4).getAsInt());
   }
   
   @Test
@@ -109,9 +111,10 @@ public class CodeBranchInterpreterTest
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("two").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("beq")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
+    SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
     // Should not jump
-    Assert.assertFalse(this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 3).isPresent());
+    Assert.assertFalse(this.codeBranchInterpreter.interpretInstruction(simCodeModel, 3).isPresent());
   }
   
   @Test
@@ -122,9 +125,10 @@ public class CodeBranchInterpreterTest
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("three").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("bne")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
+    SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
     // Should jump to the label "three" which is at index 2
-    Assert.assertEquals(-1 * 4, this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 3 * 4).getAsInt());
+    Assert.assertEquals(-1 * 4, this.codeBranchInterpreter.interpretInstruction(simCodeModel, 3 * 4).getAsInt());
   }
   
   @Test
@@ -135,8 +139,9 @@ public class CodeBranchInterpreterTest
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("three").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("bne")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
+    SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
-    Assert.assertFalse(this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 3).isPresent());
+    Assert.assertFalse(this.codeBranchInterpreter.interpretInstruction(simCodeModel, 3).isPresent());
   }
   
   @Test
@@ -147,9 +152,10 @@ public class CodeBranchInterpreterTest
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("one").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("blt")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
+    SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
     // Should jump to the label "one" which is at index 0
-    Assert.assertEquals(-3 * 4, this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 3 * 4).getAsInt());
+    Assert.assertEquals(-3 * 4, this.codeBranchInterpreter.interpretInstruction(simCodeModel, 3 * 4).getAsInt());
   }
   
   @Test
@@ -169,8 +175,9 @@ public class CodeBranchInterpreterTest
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("one").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("blt")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
+    SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
-    Assert.assertFalse(this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 3).isPresent());
+    Assert.assertFalse(this.codeBranchInterpreter.interpretInstruction(simCodeModel, 3).isPresent());
   }
   
   @Test
@@ -181,9 +188,10 @@ public class CodeBranchInterpreterTest
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("one").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("bltu")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
+    SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
     // Should jump to the label "one" which is at index 0
-    Assert.assertEquals(-3 * 4, this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 3 * 4).getAsInt());
+    Assert.assertEquals(-3 * 4, this.codeBranchInterpreter.interpretInstruction(simCodeModel, 3 * 4).getAsInt());
   }
   
   @Test
@@ -194,9 +202,10 @@ public class CodeBranchInterpreterTest
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("one").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("bltu")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
+    SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
     // Should not jump
-    Assert.assertFalse(this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 3).isPresent());
+    Assert.assertFalse(this.codeBranchInterpreter.interpretInstruction(simCodeModel, 3 * 4).isPresent());
   }
   
   @Test
@@ -207,9 +216,10 @@ public class CodeBranchInterpreterTest
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("one").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("bge")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
+    SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
     // Should jump to the label "one" which is at index 0
-    Assert.assertEquals(-3 * 4, this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 3 * 4).getAsInt());
+    Assert.assertEquals(-3 * 4, this.codeBranchInterpreter.interpretInstruction(simCodeModel, 3 * 4).getAsInt());
   }
   
   @Test
@@ -220,9 +230,10 @@ public class CodeBranchInterpreterTest
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("one").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("bge")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
+    SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
     // Should jump to the label "one" which is at index 0
-    Assert.assertEquals(-3 * 4, this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 3 * 4).getAsInt());
+    Assert.assertEquals(-3 * 4, this.codeBranchInterpreter.interpretInstruction(simCodeModel, 3 * 4).getAsInt());
   }
   
   @Test
@@ -233,8 +244,9 @@ public class CodeBranchInterpreterTest
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("one").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("bge")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
+    SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
-    Assert.assertFalse(this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 3).isPresent());
+    Assert.assertFalse(this.codeBranchInterpreter.interpretInstruction(simCodeModel, 3).isPresent());
   }
   
   @Test
@@ -245,9 +257,10 @@ public class CodeBranchInterpreterTest
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("one").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("bgeu")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
+    SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
     // Should jump to the label "one" which is at index 0
-    Assert.assertEquals(-3 * 4, this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 3 * 4).getAsInt());
+    Assert.assertEquals(-3 * 4, this.codeBranchInterpreter.interpretInstruction(simCodeModel, 3 * 4).getAsInt());
   }
   
   @Test
@@ -258,9 +271,10 @@ public class CodeBranchInterpreterTest
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("one").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("bgeu")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
+    SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
     // Should jump to the label "one" which is at index 0
-    Assert.assertEquals(-3 * 4, this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 3 * 4).getAsInt());
+    Assert.assertEquals(-3 * 4, this.codeBranchInterpreter.interpretInstruction(simCodeModel, 3 * 4).getAsInt());
   }
   
   @Test
@@ -271,8 +285,9 @@ public class CodeBranchInterpreterTest
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("one").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("bgeu")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
+    SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
     // Should not jump
-    Assert.assertFalse(this.codeBranchInterpreter.interpretInstruction(inputCodeModel, 3).isPresent());
+    Assert.assertFalse(this.codeBranchInterpreter.interpretInstruction(simCodeModel, 3 * 4).isPresent());
   }
 }

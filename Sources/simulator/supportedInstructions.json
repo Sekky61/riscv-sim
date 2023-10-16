@@ -20,7 +20,7 @@
         "defaultValue": "0"
       }
     ],
-    "interpretableAs": "signed:rs1+imm:true"
+    "interpretableAs": "\\rs1 \\imm +:true"
   },
   "bne": {
     "name": "bne",
@@ -41,7 +41,7 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "signed:imm:rs1 != rs2"
+    "interpretableAs": "\\imm:\\rs1 \\rs2 !="
   },
   "add": {
     "name": "add",
@@ -62,7 +62,7 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "rd=rs1+rs2;"
+    "interpretableAs": "\\rs1 \\rs2 + \\rd ="
   },
   "lh": {
     "name": "lh",
@@ -142,7 +142,7 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "signed:imm:rs1 == rs2"
+    "interpretableAs": "\\imm \\pc +:\\rs1 \\rs2 =="
   },
   "dec": {
     "name": "dec",
@@ -197,7 +197,7 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "signed:imm:rs1 >= rs2"
+    "interpretableAs": "\\imm \\pc +:\\rs1 \\rs2 >="
   },
   "nop": {
     "name": "nop",
@@ -270,7 +270,7 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "signed:imm:true"
+    "interpretableAs": "\\imm \\pc +:true"
   },
   "srli": {
     "name": "srli",
@@ -333,7 +333,7 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "signed:imm:rs1 < rs2"
+    "interpretableAs": "\\imm \\pc +:\\rs1 \\rs2 <"
   },
   "bltu": {
     "name": "bltu",
@@ -343,18 +343,18 @@
     "arguments": [
       {
         "name": "rs1",
-        "type": "kInt"
+        "type": "kUInt"
       },
       {
         "name": "rs2",
-        "type": "kInt"
+        "type": "kUInt"
       },
       {
         "name": "imm",
         "type": "kInt"
       }
     ],
-    "interpretableAs": "unsigned:imm:rs1 < rs2"
+    "interpretableAs": "\\imm:\\rs1 \\rs2 <"
   },
   "fcvt.s.l": {
     "name": "fcvt.s.l",
@@ -869,18 +869,18 @@
     "arguments": [
       {
         "name": "rs1",
-        "type": "kInt"
+        "type": "kUInt"
       },
       {
         "name": "rs2",
-        "type": "kInt"
+        "type": "kUInt"
       },
       {
         "name": "imm",
         "type": "kInt"
       }
     ],
-    "interpretableAs": "unsigned:imm:rs1 >= rs2"
+    "interpretableAs": "\\imm \\pc +:\\rs1 \\rs2 >="
   },
   "fld": {
     "name": "fld",
@@ -1344,7 +1344,7 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "signed:imm:rs1 == 0"
+    "interpretableAs": "\\imm:\\rs1 \\0 =="
   },
   "bnez": {
     "name": "bnez",
@@ -1361,7 +1361,7 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "signed:imm:rs1 != 0"
+    "interpretableAs": "\\imm:\\rs1 0 !="
   },
   "blez": {
     "name": "blez",
@@ -1378,7 +1378,7 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "signed:imm:rs1 <= 0"
+    "interpretableAs": "\\imm \\pc +:\\rs1 \\0 <="
   },
   "bgez": {
     "name": "bgez",
@@ -1395,7 +1395,7 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "signed:imm:rs1 >= 0"
+    "interpretableAs": "\\imm \\pc +:\\rs1 0 >="
   },
   "bltz": {
     "name": "bltz",
@@ -1412,7 +1412,7 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "signed:imm:rs1 < 0"
+    "interpretableAs": "\\imm \\pc +:\\rs1 0 <"
   },
   "bgtz": {
     "name": "bgtz",
@@ -1429,7 +1429,7 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "signed:imm:rs1 > 0"
+    "interpretableAs": "\\imm \\pc +:\\rs1 0 >"
   },
   "bgt": {
     "name": "bgt",
@@ -1450,7 +1450,7 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "signed:imm:rs1 > rs2"
+    "interpretableAs": "\\imm \\pc +:\\rs1 \\rs2 >"
   },
   "ble": {
     "name": "ble",
@@ -1471,7 +1471,7 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "signed:imm:rs1 <= rs2"
+    "interpretableAs": "\\imm \\pc +:\\rs1 \\rs2 <="
   },
   "bgtu": {
     "name": "bgtu",
@@ -1481,18 +1481,18 @@
     "arguments": [
       {
         "name": "rs1",
-        "type": "kInt"
+        "type": "kUInt"
       },
       {
         "name": "rs2",
-        "type": "kInt"
+        "type": "kUInt"
       },
       {
         "name": "imm",
         "type": "kInt"
       }
     ],
-    "interpretableAs": "unsigned:imm:rs1 > rs2"
+    "interpretableAs": "\\imm \\pc +:\\rs1 \\rs2 >"
   },
   "bleu": {
     "name": "bleu",
@@ -1502,18 +1502,18 @@
     "arguments": [
       {
         "name": "rs1",
-        "type": "kInt"
+        "type": "kUInt"
       },
       {
         "name": "rs2",
-        "type": "kInt"
+        "type": "kUInt"
       },
       {
         "name": "imm",
         "type": "kInt"
       }
     ],
-    "interpretableAs": "unsigned:imm:rs1 <= rs2"
+    "interpretableAs": "\\imm \\pc +:\\rs1 \\rs2 <="
   },
   "j": {
     "name": "j",
@@ -1526,7 +1526,7 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "unsigned:imm:true"
+    "interpretableAs": "\\imm \\pc +:true"
   },
   "jr": {
     "name": "jr",
@@ -1539,7 +1539,7 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "unsigned:rs1:true"
+    "interpretableAs": "\\rs1 \\pc +:true"
   },
   "ret": {
     "name": "ret",
@@ -1553,7 +1553,7 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "unsigned:x1+imm:true"
+    "interpretableAs": "\\x1:true"
   },
   "call": {
     "name": "call",
@@ -1566,7 +1566,7 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "unsigned:imm:true"
+    "interpretableAs": "\\imm:true"
   },
   "tail": {
     "name": "tail",
@@ -1579,7 +1579,7 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "unsigned:x6+imm:true"
+    "interpretableAs": "\\imm:true"
   },
   "mulh": {
     "name": "mulh",
