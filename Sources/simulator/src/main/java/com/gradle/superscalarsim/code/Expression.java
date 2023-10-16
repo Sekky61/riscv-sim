@@ -97,7 +97,7 @@ public class Expression
   static
   {
     intPattern         = Pattern.compile("-?\\d+");
-    decimalPattern     = Pattern.compile("-?\\d+(\\.\\d+)?");
+    decimalPattern     = Pattern.compile("-?\\d+(\\.\\d+)?[f, d]?");
     hexadecimalPattern = Pattern.compile("0x\\p{XDigit}+");
   }
   
@@ -185,27 +185,8 @@ public class Expression
       else
       {
         // It is not an operator, it is a value - parse it
-        Variable variable;
-        if (intPattern.matcher(expressionPart).matches())
-        {
-          // It is an int
-          int intValue = Integer.parseInt(expressionPart);
-          variable = new Variable("", DataTypeEnum.kInt, RegisterDataContainer.fromValue(intValue));
-        }
-        else if (decimalPattern.matcher(expressionPart).matches())
-        {
-          // It is a float
-          // TODO: double
-          float floatValue = Float.parseFloat(expressionPart);
-          variable = new Variable("", DataTypeEnum.kFloat, RegisterDataContainer.fromValue(floatValue));
-        }
-        else if (hexadecimalPattern.matcher(expressionPart).matches())
-        {
-          // It is a hex int
-          int intValue = Integer.parseInt(expressionPart.substring(2), 16);
-          variable = new Variable("", DataTypeEnum.kInt, RegisterDataContainer.fromValue(intValue));
-        }
-        else
+        Variable variable = parseConstant(expressionPart);
+        if (variable == null)
         {
           throw new IllegalArgumentException("Unknown value: " + expressionPart);
         }
@@ -215,6 +196,54 @@ public class Expression
     }
     
     // The Variables from the input list have been mutated while interpreting the expression
+  }
+  
+  /**
+   * @param constant constant to parse (e.g. 10.1f)
+   *
+   * @return Variable with the parsed value or null if the constant is not valid
+   * @brief Parse a constant value - supports boolean, int (dec and hex), float and double.
+   */
+  private static Variable parseConstant(String constant)
+  {
+    Variable variable = null;
+    if (constant.equals("true") || constant.equals("false"))
+    {
+      // It is a boolean
+      boolean boolValue = Boolean.parseBoolean(constant);
+      variable = new Variable("", DataTypeEnum.kBool, RegisterDataContainer.fromValue(boolValue));
+    }
+    else if (intPattern.matcher(constant).matches())
+    {
+      // It is an int
+      int intValue = Integer.parseInt(constant);
+      variable = new Variable("", DataTypeEnum.kInt, RegisterDataContainer.fromValue(intValue));
+    }
+    else if (decimalPattern.matcher(constant).matches())
+    {
+      // It is a float/double
+      if (constant.endsWith("f"))
+      {
+        // Float
+        constant = constant.substring(0, constant.length() - 1);
+        float floatValue = Float.parseFloat(constant);
+        variable = new Variable("", DataTypeEnum.kFloat, RegisterDataContainer.fromValue(floatValue));
+      }
+      else
+      {
+        // double
+        constant = constant.substring(0, constant.length() - 1);
+        double doubleValue = Double.parseDouble(constant);
+        variable = new Variable("", DataTypeEnum.kDouble, RegisterDataContainer.fromValue(doubleValue));
+      }
+    }
+    else if (hexadecimalPattern.matcher(constant).matches())
+    {
+      // It is a hex int
+      int intValue = Integer.parseInt(constant.substring(2), 16);
+      variable = new Variable("", DataTypeEnum.kInt, RegisterDataContainer.fromValue(intValue));
+    }
+    return variable;
   }
   
   private static boolean isUnaryOperator(String operator)
