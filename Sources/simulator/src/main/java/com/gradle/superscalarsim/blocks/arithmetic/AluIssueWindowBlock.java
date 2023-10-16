@@ -117,7 +117,7 @@ public class AluIssueWindowBlock extends AbstractIssueWindowBlock
   @Override
   public boolean isCorrectDataType(DataTypeEnum dataType)
   {
-    return dataType == DataTypeEnum.kInt || dataType == DataTypeEnum.kLong;
+    return dataType == DataTypeEnum.kInt || dataType == DataTypeEnum.kLong || dataType == DataTypeEnum.kUInt || dataType == DataTypeEnum.kULong;
   }// end of isCorrectDataType
   //----------------------------------------------------------------------
   

@@ -387,6 +387,66 @@
     ],
     "interpretableAs": "\\rs1 \\rs2 / \\rd ="
   },
+  "divu": {
+    "name": "divu",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kUInt",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kUInt"
+      },
+      {
+        "name": "rs2",
+        "type": "kUInt"
+      }
+    ],
+    "interpretableAs": "\\rs1 \\rs2 / \\rd ="
+  },
+  "rem": {
+    "name": "rem",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kInt",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kInt"
+      },
+      {
+        "name": "rs2",
+        "type": "kInt"
+      }
+    ],
+    "interpretableAs": "\\rs1 \\rs2 % \\rd ="
+  },
+  "remu": {
+    "name": "remu",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kUInt",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kUInt"
+      },
+      {
+        "name": "rs2",
+        "type": "kUInt"
+      }
+    ],
+    "interpretableAs": "\\rs1 \\rs2 % \\rd ="
+  },
   "lb": {
     "name": "lb",
     "instructionType": "kLoadstore",

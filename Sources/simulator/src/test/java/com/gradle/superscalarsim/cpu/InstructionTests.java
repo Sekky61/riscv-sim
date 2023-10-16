@@ -1107,4 +1107,66 @@ public class InstructionTests
     // Upper bits stayed zero
     Assert.assertEquals(1, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x4").getValue(DataTypeEnum.kInt));
   }
+  
+  /**
+   * DIVU does unsigned division. Rounds towards zero.
+   * TODO: Not verified with the spec. I suggest looking at GCC output which should be correct.
+   */
+  @Test
+  public void testDIVU()
+  {
+    // Setup + exercise
+    cpuConfig.code = "divu x1, x2, x3\n" + "divu x4, x5, x6";
+    Cpu cpu = new Cpu(cpuConfig);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(8);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x3").setValue(3);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x5").setValue(5);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x6").setValue(-1);
+    cpu.execute();
+    
+    // Assert
+    Assert.assertEquals(2, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt));
+    Assert.assertEquals(0, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x4").getValue(DataTypeEnum.kInt));
+  }
+  
+  /**
+   * REM does signed remainder.
+   */
+  @Test
+  public void testREM()
+  {
+    // Setup + exercise
+    cpuConfig.code = "rem x1, x2, x3\n" + "rem x4, x5, x6";
+    Cpu cpu = new Cpu(cpuConfig);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(9);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x3").setValue(3);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x5").setValue(5);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x6").setValue(-2);
+    cpu.execute();
+    
+    // Assert
+    Assert.assertEquals(0, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt));
+    Assert.assertEquals(1, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x4").getValue(DataTypeEnum.kInt));
+  }
+  
+  /**
+   * REMU does unsigned remainder.
+   * TODO: Not verified with the spec. I suggest looking at GCC output which should be correct.
+   */
+  @Test
+  public void testREMU()
+  {
+    // Setup + exercise
+    cpuConfig.code = "remu x1, x2, x3\n" + "remu x4, x5, x6";
+    Cpu cpu = new Cpu(cpuConfig);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(7);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x3").setValue(3);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x5").setValue(5);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x6").setValue(-2);
+    cpu.execute();
+    
+    // Assert
+    Assert.assertEquals(1, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt));
+    Assert.assertEquals(5, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x4").getValue(DataTypeEnum.kInt));
+  }
 }

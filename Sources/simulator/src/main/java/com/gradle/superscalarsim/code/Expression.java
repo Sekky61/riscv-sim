@@ -489,8 +489,8 @@ public class Expression
         long r = unsignedIntToLong(value2);
         yield Variable.fromValue(l * r);
       }
-      case "/" -> Variable.fromValue(value / value2);
-      case "%" -> Variable.fromValue(value % value2);
+      case "/" -> Variable.fromValue(Integer.divideUnsigned(value, value2));
+      case "%" -> Variable.fromValue(Integer.remainderUnsigned(value, value2));
       case "&" -> Variable.fromValue(value & value2);
       case "|" -> Variable.fromValue(value | value2);
       case "^" -> Variable.fromValue(value ^ value2);
@@ -547,8 +547,8 @@ public class Expression
       case "+" -> Variable.fromValue(value + value2);
       case "-" -> Variable.fromValue(value - value2);
       case "*" -> Variable.fromValue(value * value2);
-      case "/" -> Variable.fromValue(value / value2);
-      case "%" -> Variable.fromValue(value % value2);
+      case "/" -> Variable.fromValue(Long.divideUnsigned(value, value2));
+      case "%" -> Variable.fromValue(Long.remainderUnsigned(value, value2));
       case "&" -> Variable.fromValue(value & value2);
       case "|" -> Variable.fromValue(value | value2);
       case "^" -> Variable.fromValue(value ^ value2);
