@@ -44,7 +44,6 @@ import java.util.regex.Pattern;
  *   <li>'+' - Addition</li>
  *   <li>'-' - Subtraction</li>
  *   <li>'*' - Multiplication</li>
- *   <li>'<-' - Selecting first operand</li>
  *   <li>'%' - Modulo</li>
  *   <li>'/' - Division</li>
  *   <li>'&' - Bitwise AND</li>
@@ -53,8 +52,6 @@ import java.util.regex.Pattern;
  *   <li>'<<' - Bitwise left shift</li>
  *   <li>'>>' - Bitwise right shift</li>
  *   <li>'>>>' - Bitwise unsigned right shift</li>
- *   <li>'++' - Increment</li>
- *   <li>'--' - Decrement</li>
  *   <li>'sqrt' - Square root</li>
  *   <li>'!' - Bitwise NOT</li>
  *   <li>'>' - Greater than signed</li>
@@ -63,6 +60,13 @@ import java.util.regex.Pattern;
  *   <li>'<=' - Less than or equal</li>
  *   <li>'==' - Equal</li>
  *   <li>'!=' - Not equal</li>
+ * </ul>
+ * <p>
+ * Examples of valid expressions:
+ * <ul>
+ *   <li>\a \b +</li>
+ *   <li>\a 10 *</li>
+ *   <li>\rs1 \rs2 * \rd =</li>
  * </ul>
  *
  * @class ExpressionInterpreter
@@ -83,16 +87,16 @@ public class Expression
   /**
    * Pattern for matching integer values in argument
    */
-  private static Pattern intPattern;
+  private final static Pattern intPattern;
   
   /**
    * Pattern for matching hexadecimal values in argument
    */
-  private static Pattern hexadecimalPattern;
+  private final static Pattern hexadecimalPattern;
   /**
    * Pattern for matching decimal values in argument
    */
-  private static Pattern decimalPattern;
+  private final static Pattern decimalPattern;
   
   static
   {
@@ -102,14 +106,8 @@ public class Expression
   }
   
   /**
-   * @brief Constructor
-   */
-  public Expression()
-  {
-  }
-  
-  /**
-   * Mutates the variables list
+   * Mutates the variables list. Throws IllegalArgumentException if the expression is not valid or variables are not
+   * valid.
    *
    * @param expression expression to interpret
    * @param variables  variables and their values to use in the expression
@@ -118,77 +116,51 @@ public class Expression
   {
     Stack<Variable> valueStack      = new Stack<>();
     String[]        expressionArray = expression.split(" ");
-    for (String expressionPart : expressionArray)
+    for (String token : expressionArray)
     {
-      if (isUnaryOperator(expressionPart))
+      if (isUnaryOperator(token))
       {
         // Pull one from stack, do operation, push back
         Variable variable = valueStack.pop();
-        // Apply operator and Push back
-        Variable result = applyUnaryOperator(expressionPart, variable);
+        Variable result   = applyUnaryOperator(token, variable);
         valueStack.push(result);
       }
-      else if (isBinaryOperator(expressionPart))
+      else if (isBinaryOperator(token))
       {
         // Pull two from stack, do operation, push back
         Variable rVariable = valueStack.pop();
         Variable lVariable = valueStack.pop();
-        if (expressionPart.equals("="))
+        if (token.equals("="))
         {
-          // Special handling for '=' operator
-          if (!rVariable.isVariable())
-          {
-            throw new IllegalArgumentException("Right side of '=' operator must be a variable");
-          }
-          if (!canBeAssigned(rVariable.type, lVariable.type))
-          {
-            throw new IllegalArgumentException("Left side of '=' operator must be of the same type as right side");
-          }
-          // Assign value, with some special handling for boolean
-          // TODO: alternatively add the cast operator
-          if (lVariable.type == DataTypeEnum.kBool && rVariable.type != DataTypeEnum.kBool)
-          {
-            boolean value = (boolean) lVariable.value.getValue(DataTypeEnum.kBool);
-            switch (rVariable.type)
-            {
-              case kInt, kUInt -> rVariable.value = RegisterDataContainer.fromValue(value ? 1 : 0);
-              case kLong, kULong -> rVariable.value = RegisterDataContainer.fromValue(value ? 1L : 0L);
-              case kFloat -> rVariable.value = RegisterDataContainer.fromValue(value ? 1.0f : 0.0f);
-              case kDouble -> rVariable.value = RegisterDataContainer.fromValue(value ? 1.0 : 0.0);
-              default -> throw new IllegalArgumentException("Unknown type: " + rVariable.type);
-            }
-          }
-          else
-          {
-            rVariable.value = lVariable.value;
-          }
+          // Special handling for '=' operator (assign to the right/top variable)
+          assignVariable(rVariable, lVariable);
         }
         else
         {
           // Apply operator and Push back
-          Variable result = applyBinaryOperator(expressionPart, lVariable, rVariable);
+          Variable result = applyBinaryOperator(token, lVariable, rVariable);
           valueStack.push(result);
         }
       }
-      else if (isVariable(expressionPart))
+      else if (isVariable(token))
       {
         // Find variable type and value
-        String   strippedName = expressionPart.substring(1);
+        String   strippedName = token.substring(1);
         Variable variable     = getVariable(strippedName, variables);
         if (variable == null)
         {
-          throw new IllegalArgumentException("Unknown variable: " + expressionPart);
+          throw new IllegalArgumentException("Unknown variable: " + token);
         }
         // Push back
         valueStack.push(variable);
       }
       else
       {
-        // It is not an operator, it is a value - parse it
-        Variable variable = parseConstant(expressionPart);
+        // Try to parse as a constant
+        Variable variable = parseConstant(token);
         if (variable == null)
         {
-          throw new IllegalArgumentException("Unknown value: " + expressionPart);
+          throw new IllegalArgumentException("Unknown value: " + token);
         }
         // Push back
         valueStack.push(variable);
@@ -196,54 +168,6 @@ public class Expression
     }
     
     // The Variables from the input list have been mutated while interpreting the expression
-  }
-  
-  /**
-   * @param constant constant to parse (e.g. 10.1f)
-   *
-   * @return Variable with the parsed value or null if the constant is not valid
-   * @brief Parse a constant value - supports boolean, int (dec and hex), float and double.
-   */
-  private static Variable parseConstant(String constant)
-  {
-    Variable variable = null;
-    if (constant.equals("true") || constant.equals("false"))
-    {
-      // It is a boolean
-      boolean boolValue = Boolean.parseBoolean(constant);
-      variable = new Variable("", DataTypeEnum.kBool, RegisterDataContainer.fromValue(boolValue));
-    }
-    else if (intPattern.matcher(constant).matches())
-    {
-      // It is an int
-      int intValue = Integer.parseInt(constant);
-      variable = new Variable("", DataTypeEnum.kInt, RegisterDataContainer.fromValue(intValue));
-    }
-    else if (decimalPattern.matcher(constant).matches())
-    {
-      // It is a float/double
-      if (constant.endsWith("f"))
-      {
-        // Float
-        constant = constant.substring(0, constant.length() - 1);
-        float floatValue = Float.parseFloat(constant);
-        variable = new Variable("", DataTypeEnum.kFloat, RegisterDataContainer.fromValue(floatValue));
-      }
-      else
-      {
-        // double
-        constant = constant.substring(0, constant.length() - 1);
-        double doubleValue = Double.parseDouble(constant);
-        variable = new Variable("", DataTypeEnum.kDouble, RegisterDataContainer.fromValue(doubleValue));
-      }
-    }
-    else if (hexadecimalPattern.matcher(constant).matches())
-    {
-      // It is a hex int
-      int intValue = Integer.parseInt(constant.substring(2), 16);
-      variable = new Variable("", DataTypeEnum.kInt, RegisterDataContainer.fromValue(intValue));
-    }
-    return variable;
   }
   
   private static boolean isUnaryOperator(String operator)
@@ -281,21 +205,39 @@ public class Expression
   }
   
   /**
-   * Unsigned and signed values can be assigned to each other.
+   * @param to   variable to assign to
+   * @param from variable to assign from
    *
-   * @return True if assignFrom can be assigned to assignTo
+   * @brief Assign value from one variable to another, if possible
    */
-  private static boolean canBeAssigned(DataTypeEnum assignTo, DataTypeEnum assignFrom)
+  private static void assignVariable(Variable to, Variable from)
   {
-    return switch (assignTo)
+    if (!to.isVariable())
     {
-      case kInt, kUInt -> assignFrom == DataTypeEnum.kInt || assignFrom == DataTypeEnum.kUInt || assignFrom == DataTypeEnum.kBool;
-      case kLong, kULong -> assignFrom == DataTypeEnum.kLong || assignFrom == DataTypeEnum.kULong || assignFrom == DataTypeEnum.kBool;
-      case kFloat -> assignFrom == DataTypeEnum.kFloat || assignFrom == DataTypeEnum.kBool;
-      case kDouble -> assignFrom == DataTypeEnum.kDouble || assignFrom == DataTypeEnum.kBool;
-      case kBool -> assignFrom == DataTypeEnum.kBool;
-      default -> throw new IllegalArgumentException("Unknown type: " + assignTo);
-    };
+      throw new IllegalArgumentException("Right side of '=' operator must be a variable");
+    }
+    if (!canBeAssigned(to.type, from.type))
+    {
+      throw new IllegalArgumentException("Left side of '=' operator must be of the same type as right side");
+    }
+    // Assign value, with some special handling for boolean
+    // TODO: alternatively add the cast operator
+    if (from.type == DataTypeEnum.kBool && to.type != DataTypeEnum.kBool)
+    {
+      boolean value = (boolean) from.value.getValue(DataTypeEnum.kBool);
+      switch (to.type)
+      {
+        case kInt, kUInt -> to.value = RegisterDataContainer.fromValue(value ? 1 : 0);
+        case kLong, kULong -> to.value = RegisterDataContainer.fromValue(value ? 1L : 0L);
+        case kFloat -> to.value = RegisterDataContainer.fromValue(value ? 1.0f : 0.0f);
+        case kDouble -> to.value = RegisterDataContainer.fromValue(value ? 1.0 : 0.0);
+        default -> throw new IllegalArgumentException("Unknown type: " + to.type);
+      }
+    }
+    else
+    {
+      to.value = from.value;
+    }
   }
   
   /**
@@ -355,6 +297,54 @@ public class Expression
     return null;
   }
   
+  /**
+   * @param constant constant to parse (e.g. 10.1f)
+   *
+   * @return Variable with the parsed value or null if the constant is not valid
+   * @brief Parse a constant value - supports boolean, int (dec and hex), float and double.
+   */
+  private static Variable parseConstant(String constant)
+  {
+    Variable variable = null;
+    if (constant.equals("true") || constant.equals("false"))
+    {
+      // It is a boolean
+      boolean boolValue = Boolean.parseBoolean(constant);
+      variable = new Variable("", DataTypeEnum.kBool, RegisterDataContainer.fromValue(boolValue));
+    }
+    else if (intPattern.matcher(constant).matches())
+    {
+      // It is an int
+      int intValue = Integer.parseInt(constant);
+      variable = new Variable("", DataTypeEnum.kInt, RegisterDataContainer.fromValue(intValue));
+    }
+    else if (decimalPattern.matcher(constant).matches())
+    {
+      // It is a float/double
+      if (constant.endsWith("f"))
+      {
+        // Float
+        constant = constant.substring(0, constant.length() - 1);
+        float floatValue = Float.parseFloat(constant);
+        variable = new Variable("", DataTypeEnum.kFloat, RegisterDataContainer.fromValue(floatValue));
+      }
+      else
+      {
+        // double
+        constant = constant.substring(0, constant.length() - 1);
+        double doubleValue = Double.parseDouble(constant);
+        variable = new Variable("", DataTypeEnum.kDouble, RegisterDataContainer.fromValue(doubleValue));
+      }
+    }
+    else if (hexadecimalPattern.matcher(constant).matches())
+    {
+      // It is a hex int
+      int intValue = Integer.parseInt(constant.substring(2), 16);
+      variable = new Variable("", DataTypeEnum.kInt, RegisterDataContainer.fromValue(intValue));
+    }
+    return variable;
+  }
+  
   private static Variable applyUnaryOperatorInt(String operator, int value)
   {
     throw new IllegalArgumentException("Unknown operator: " + operator + " for type: " + DataTypeEnum.kInt);
@@ -392,6 +382,24 @@ public class Expression
       case "!" -> new Variable("", DataTypeEnum.kBool, RegisterDataContainer.fromValue(!value));
       default ->
               throw new IllegalArgumentException("Unknown operator: " + operator + " for type: " + DataTypeEnum.kBool);
+    };
+  }
+  
+  /**
+   * Unsigned and signed values can be assigned to each other.
+   *
+   * @return True if assignFrom can be assigned to assignTo
+   */
+  private static boolean canBeAssigned(DataTypeEnum assignTo, DataTypeEnum assignFrom)
+  {
+    return switch (assignTo)
+    {
+      case kInt, kUInt -> assignFrom == DataTypeEnum.kInt || assignFrom == DataTypeEnum.kUInt || assignFrom == DataTypeEnum.kBool;
+      case kLong, kULong -> assignFrom == DataTypeEnum.kLong || assignFrom == DataTypeEnum.kULong || assignFrom == DataTypeEnum.kBool;
+      case kFloat -> assignFrom == DataTypeEnum.kFloat || assignFrom == DataTypeEnum.kBool;
+      case kDouble -> assignFrom == DataTypeEnum.kDouble || assignFrom == DataTypeEnum.kBool;
+      case kBool -> assignFrom == DataTypeEnum.kBool;
+      default -> throw new IllegalArgumentException("Unknown type: " + assignTo);
     };
   }
   
