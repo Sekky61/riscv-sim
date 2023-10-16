@@ -95,11 +95,17 @@ public class Expression
    */
   public static String[] binaryOperators = new String[]{"+", "-", "*", "/", "%", "&", "|", "^", "<<", ">>", ">>>", ">", ">=", "<", "<=", "==", "!=", "="};
   
+  public static String[] allOperators;
+  
   static
   {
     intPattern         = Pattern.compile("-?\\d+");
     decimalPattern     = Pattern.compile("-?\\d+(\\.\\d+)?[f, d]?");
     hexadecimalPattern = Pattern.compile("0x\\p{XDigit}+");
+    
+    allOperators = new String[unaryOperators.length + binaryOperators.length];
+    System.arraycopy(unaryOperators, 0, allOperators, 0, unaryOperators.length);
+    System.arraycopy(binaryOperators, 0, allOperators, unaryOperators.length, binaryOperators.length);
   }
   
   /**

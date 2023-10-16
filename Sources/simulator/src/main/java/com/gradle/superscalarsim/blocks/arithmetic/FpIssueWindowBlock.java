@@ -35,7 +35,7 @@ package com.gradle.superscalarsim.blocks.arithmetic;
 import com.gradle.superscalarsim.blocks.base.AbstractFunctionUnitBlock;
 import com.gradle.superscalarsim.blocks.base.AbstractIssueWindowBlock;
 import com.gradle.superscalarsim.blocks.base.UnifiedRegisterFileBlock;
-import com.gradle.superscalarsim.code.PrecedingTable;
+import com.gradle.superscalarsim.code.Expression;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.models.InstructionFunctionModel;
@@ -154,7 +154,7 @@ public class FpIssueWindowBlock extends AbstractIssueWindowBlock
    */
   private boolean isInstructionSupported(final String[] allowedInstructions, final String interpretableInstruction)
   {
-    String[]     allInstructions   = PrecedingTable.getInstance().getAllowedInstructions();
+    String[]     allInstructions   = Expression.allOperators;
     List<String> foundInstructions = new ArrayList<>();
     String       instruction       = String.copyValueOf(interpretableInstruction.toCharArray());
     for (String operation : allInstructions)
