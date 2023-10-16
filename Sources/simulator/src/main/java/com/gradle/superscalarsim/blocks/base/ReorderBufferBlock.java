@@ -42,6 +42,7 @@ import com.gradle.superscalarsim.blocks.loadstore.StoreBufferBlock;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.models.InputCodeArgument;
+import com.gradle.superscalarsim.models.InstructionFunctionModel;
 import com.gradle.superscalarsim.models.ReorderFlags;
 import com.gradle.superscalarsim.models.SimCodeModel;
 import com.gradle.superscalarsim.models.register.RegisterModel;
@@ -280,11 +281,21 @@ public class ReorderBufferBlock implements AbstractBlock
       }
     }
     
-    // Store destination register into architectural
-    InputCodeArgument destinationArgument = codeModel.getArgumentByName("rd");
-    if (destinationArgument != null)
+    // Store registers to arch. register file
+    List<InstructionFunctionModel.Argument> arguments = codeModel.getInstructionFunctionModel().getArguments();
+    for (InstructionFunctionModel.Argument argument : arguments)
     {
-      renameMapTableBlock.directCopyMapping(destinationArgument.getValue());
+      if (!argument.writeBack())
+      {
+        continue;
+      }
+      InputCodeArgument codeArgument = codeModel.getArgumentByName(argument.name());
+      String            tempRegName  = codeArgument.getValue();
+      if (codeArgument == null)
+      {
+        throw new IllegalArgumentException("Argument " + argument.name() + " not found in code model");
+      }
+      renameMapTableBlock.directCopyMapping(tempRegName);
     }
     
     // Notify rename map table that register has fewer references

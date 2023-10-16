@@ -220,12 +220,22 @@ public class InstructionFunctionModel
     private final String name;
     private final DataTypeEnum type;
     private final String defaultValue;
+    private final boolean writeBack;
     
     public Argument(String name, DataTypeEnum type, String defaultValue)
     {
       this.name         = name;
       this.type         = type;
       this.defaultValue = defaultValue;
+      this.writeBack    = false;
+    }
+    
+    public Argument(String name, DataTypeEnum type, String defaultValue, boolean writeBack)
+    {
+      this.name         = name;
+      this.type         = type;
+      this.defaultValue = defaultValue;
+      this.writeBack    = writeBack;
     }
     
     public String name()
@@ -241,6 +251,11 @@ public class InstructionFunctionModel
     public String defaultValue()
     {
       return defaultValue;
+    }
+    
+    public boolean writeBack()
+    {
+      return writeBack;
     }
     
     @Override

@@ -8,7 +8,8 @@
       {
         "name": "rd",
         "type": "kInt",
-        "defaultValue": "x1"
+        "defaultValue": "x1",
+        "writeBack": true
       },
       {
         "name": "rs1",
@@ -51,7 +52,8 @@
     "arguments": [
       {
         "name": "rd",
-        "type": "kInt"
+        "type": "kInt",
+        "writeBack": true
       },
       {
         "name": "rs1",
@@ -72,7 +74,8 @@
     "arguments": [
       {
         "name": "rd",
-        "type": "kInt"
+        "type": "kInt",
+        "writeBack": true
       },
       {
         "name": "imm",
@@ -93,7 +96,8 @@
     "arguments": [
       {
         "name": "rd",
-        "type": "kInt"
+        "type": "kInt",
+        "writeBack": true
       },
       {
         "name": "rs1",
@@ -110,7 +114,8 @@
     "arguments": [
       {
         "name": "rd",
-        "type": "kFloat"
+        "type": "kFloat",
+        "writeBack": true
       },
       {
         "name": "rs1",
@@ -152,7 +157,8 @@
     "arguments": [
       {
         "name": "rd",
-        "type": "kInt"
+        "type": "kInt",
+        "writeBack": true
       },
       {
         "name": "rs1",
@@ -169,7 +175,8 @@
     "arguments": [
       {
         "name": "rd",
-        "type": "kLong"
+        "type": "kLong",
+        "writeBack": true
       },
       {
         "name": "rs1",
@@ -241,7 +248,8 @@
     "arguments": [
       {
         "name": "rd",
-        "type": "kInt"
+        "type": "kInt",
+        "writeBack": true
       },
       {
         "name": "rs1",
@@ -263,6 +271,7 @@
       {
         "name": "rd",
         "type": "kInt",
+        "writeBack": true,
         "defaultValue": "x1"
       },
       {
@@ -280,7 +289,8 @@
     "arguments": [
       {
         "name": "rd",
-        "type": "kInt"
+        "type": "kInt",
+        "writeBack": true
       },
       {
         "name": "rs1",
@@ -301,7 +311,8 @@
     "arguments": [
       {
         "name": "rd",
-        "type": "kFloat"
+        "type": "kFloat",
+        "writeBack": true
       },
       {
         "name": "rs1",
@@ -364,7 +375,8 @@
     "arguments": [
       {
         "name": "rd",
-        "type": "kFloat"
+        "type": "kFloat",
+        "writeBack": true
       },
       {
         "name": "rs1",
@@ -381,7 +393,8 @@
     "arguments": [
       {
         "name": "rd",
-        "type": "kLong"
+        "type": "kLong",
+        "writeBack": true
       },
       {
         "name": "imm",
@@ -402,7 +415,8 @@
     "arguments": [
       {
         "name": "rd",
-        "type": "kInt"
+        "type": "kInt",
+        "writeBack": true
       },
       {
         "name": "rs1",
@@ -423,7 +437,8 @@
     "arguments": [
       {
         "name": "rd",
-        "type": "kInt"
+        "type": "kInt",
+        "writeBack": true
       },
       {
         "name": "imm",
@@ -444,7 +459,8 @@
     "arguments": [
       {
         "name": "rd",
-        "type": "kInt"
+        "type": "kInt",
+        "writeBack": true
       },
       {
         "name": "rs1",
@@ -461,7 +477,8 @@
     "arguments": [
       {
         "name": "rd",
-        "type": "kInt"
+        "type": "kInt",
+        "writeBack": true
       },
       {
         "name": "rs1",
@@ -482,7 +499,8 @@
     "arguments": [
       {
         "name": "rd",
-        "type": "kInt"
+        "type": "kInt",
+        "writeBack": true
       },
       {
         "name": "imm",
@@ -503,7 +521,8 @@
     "arguments": [
       {
         "name": "rd",
-        "type": "kInt"
+        "type": "kInt",
+        "writeBack": true
       },
       {
         "name": "rs1",
@@ -545,7 +564,8 @@
     "arguments": [
       {
         "name": "rd",
-        "type": "kInt"
+        "type": "kInt",
+        "writeBack": true
       },
       {
         "name": "rs1",
@@ -566,7 +586,8 @@
     "arguments": [
       {
         "name": "rd",
-        "type": "kInt"
+        "type": "kInt",
+        "writeBack": true
       },
       {
         "name": "rs1",
@@ -629,7 +650,8 @@
     "arguments": [
       {
         "name": "rd",
-        "type": "kInt"
+        "type": "kInt",
+        "writeBack": true
       },
       {
         "name": "rs1",
@@ -650,7 +672,8 @@
     "arguments": [
       {
         "name": "rd",
-        "type": "kFloat"
+        "type": "kFloat",
+        "writeBack": true
       },
       {
         "name": "imm",
@@ -671,7 +694,8 @@
     "arguments": [
       {
         "name": "rd",
-        "type": "kInt"
+        "type": "kInt",
+        "writeBack": true
       },
       {
         "name": "rs1",
@@ -692,7 +716,8 @@
     "arguments": [
       {
         "name": "rd",
-        "type": "kFloat"
+        "type": "kFloat",
+        "writeBack": true
       },
       {
         "name": "rs1",
@@ -709,7 +734,8 @@
     "arguments": [
       {
         "name": "rd",
-        "type": "kFloat"
+        "type": "kFloat",
+        "writeBack": true
       },
       {
         "name": "rs1",
@@ -730,7 +756,8 @@
     "arguments": [
       {
         "name": "rd",
-        "type": "kInt"
+        "type": "kInt",
+        "writeBack": true
       },
       {
         "name": "rs1",
@@ -747,7 +774,8 @@
     "arguments": [
       {
         "name": "rd",
-        "type": "kUInt"
+        "type": "kUInt",
+        "writeBack": true
       },
       {
         "name": "imm",
@@ -768,7 +796,8 @@
     "arguments": [
       {
         "name": "rd",
-        "type": "kUInt"
+        "type": "kUInt",
+        "writeBack": true
       },
       {
         "name": "imm",
@@ -789,7 +818,8 @@
     "arguments": [
       {
         "name": "rd",
-        "type": "kFloat"
+        "type": "kFloat",
+        "writeBack": true
       },
       {
         "name": "rs1",
@@ -831,7 +861,8 @@
     "arguments": [
       {
         "name": "rd",
-        "type": "kUInt"
+        "type": "kUInt",
+        "writeBack": true
       },
       {
         "name": "imm",
@@ -852,14 +883,15 @@
     "arguments": [
       {
         "name": "rd",
-        "type": "kFloat"
+        "type": "kFloat",
+        "writeBack": true
       },
       {
         "name": "rs1",
         "type": "kInt"
       }
     ],
-    "interpretableAs": "rd=rs1<-;"
+    "interpretableAs": "\\rs1 \\rd ="
   },
   "bgeu": {
     "name": "bgeu",
@@ -890,7 +922,8 @@
     "arguments": [
       {
         "name": "rd",
-        "type": "kDouble"
+        "type": "kDouble",
+        "writeBack": true
       },
       {
         "name": "imm",
@@ -932,7 +965,8 @@
     "arguments": [
       {
         "name": "rd",
-        "type": "kInt"
+        "type": "kInt",
+        "writeBack": true
       },
       {
         "name": "rs1",
@@ -953,7 +987,8 @@
     "arguments": [
       {
         "name": "rd",
-        "type": "kInt"
+        "type": "kInt",
+        "writeBack": true
       },
       {
         "name": "rs1",
@@ -974,7 +1009,8 @@
     "arguments": [
       {
         "name": "rd",
-        "type": "kInt"
+        "type": "kInt",
+        "writeBack": true
       },
       {
         "name": "rs1",
@@ -995,7 +1031,8 @@
     "arguments": [
       {
         "name": "rd",
-        "type": "kInt"
+        "type": "kInt",
+        "writeBack": true
       },
       {
         "name": "rs1",
@@ -1016,7 +1053,8 @@
     "arguments": [
       {
         "name": "rd",
-        "type": "kInt"
+        "type": "kInt",
+        "writeBack": true
       },
       {
         "name": "rs1",
@@ -1037,7 +1075,8 @@
     "arguments": [
       {
         "name": "rd",
-        "type": "kInt"
+        "type": "kInt",
+        "writeBack": true
       },
       {
         "name": "rs1",
@@ -1058,7 +1097,8 @@
     "arguments": [
       {
         "name": "rd",
-        "type": "kInt"
+        "type": "kInt",
+        "writeBack": true
       },
       {
         "name": "rs1",
@@ -1079,7 +1119,8 @@
     "arguments": [
       {
         "name": "rd",
-        "type": "kInt"
+        "type": "kInt",
+        "writeBack": true
       },
       {
         "name": "rs1",
@@ -1100,7 +1141,8 @@
     "arguments": [
       {
         "name": "rd",
-        "type": "kInt"
+        "type": "kInt",
+        "writeBack": true
       },
       {
         "name": "rs1",
@@ -1121,7 +1163,8 @@
     "arguments": [
       {
         "name": "rd",
-        "type": "kInt"
+        "type": "kInt",
+        "writeBack": true
       },
       {
         "name": "rs1",
@@ -1142,7 +1185,8 @@
     "arguments": [
       {
         "name": "rd",
-        "type": "kInt"
+        "type": "kInt",
+        "writeBack": true
       },
       {
         "name": "rs1",
@@ -1163,7 +1207,8 @@
     "arguments": [
       {
         "name": "rd",
-        "type": "kInt"
+        "type": "kInt",
+        "writeBack": true
       },
       {
         "name": "rs1",
@@ -1184,7 +1229,8 @@
     "arguments": [
       {
         "name": "rd",
-        "type": "kInt"
+        "type": "kInt",
+        "writeBack": true
       },
       {
         "name": "imm",
@@ -1201,7 +1247,8 @@
     "arguments": [
       {
         "name": "rd",
-        "type": "kInt"
+        "type": "kInt",
+        "writeBack": true
       },
       {
         "name": "imm",
@@ -1218,7 +1265,8 @@
     "arguments": [
       {
         "name": "rd",
-        "type": "kInt"
+        "type": "kInt",
+        "writeBack": true
       },
       {
         "name": "imm",
@@ -1235,7 +1283,8 @@
     "arguments": [
       {
         "name": "rd",
-        "type": "kInt"
+        "type": "kInt",
+        "writeBack": true
       },
       {
         "name": "rs1",
@@ -1252,7 +1301,8 @@
     "arguments": [
       {
         "name": "rd",
-        "type": "kInt"
+        "type": "kInt",
+        "writeBack": true
       },
       {
         "name": "rs1",
@@ -1269,7 +1319,8 @@
     "arguments": [
       {
         "name": "rd",
-        "type": "kInt"
+        "type": "kInt",
+        "writeBack": true
       },
       {
         "name": "rs1",
@@ -1286,7 +1337,8 @@
     "arguments": [
       {
         "name": "rd",
-        "type": "kInt"
+        "type": "kInt",
+        "writeBack": true
       },
       {
         "name": "rs1",
@@ -1303,7 +1355,8 @@
     "arguments": [
       {
         "name": "rd",
-        "type": "kInt"
+        "type": "kInt",
+        "writeBack": true
       },
       {
         "name": "rs1",
@@ -1320,7 +1373,8 @@
     "arguments": [
       {
         "name": "rd",
-        "type": "kInt"
+        "type": "kInt",
+        "writeBack": true
       },
       {
         "name": "rs1",
@@ -1589,7 +1643,8 @@
     "arguments": [
       {
         "name": "rd",
-        "type": "kInt"
+        "type": "kInt",
+        "writeBack": true
       },
       {
         "name": "rs1",
@@ -1610,7 +1665,8 @@
     "arguments": [
       {
         "name": "rd",
-        "type": "kInt"
+        "type": "kInt",
+        "writeBack": true
       },
       {
         "name": "rs1",
@@ -1631,7 +1687,8 @@
     "arguments": [
       {
         "name": "rd",
-        "type": "kInt"
+        "type": "kInt",
+        "writeBack": true
       },
       {
         "name": "rs1",
