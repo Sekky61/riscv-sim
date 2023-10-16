@@ -31,6 +31,7 @@
 
 import { StreamLanguage } from '@codemirror/language';
 import { c } from '@codemirror/legacy-modes/mode/clike';
+import { setDiagnostics } from '@codemirror/lint';
 import { EditorView } from '@codemirror/view';
 import { useCodeMirror } from '@uiw/react-codemirror';
 import React, { useEffect, useRef } from 'react';
@@ -43,6 +44,7 @@ import {
 import {
   cFieldTyping,
   selectCCodeMappings,
+  selectCCodeMirrorErrors,
   selectDirty,
   selectEditorMode,
 } from '@/lib/redux/compilerSlice';
@@ -80,11 +82,12 @@ export default function CCodeInput() {
   const dirty = useAppSelector(selectDirty);
   const code = useAppSelector((state) => state.compiler.cCode);
   const mappedCLines = useAppSelector(selectCCodeMappings);
+  const cErrors = useAppSelector(selectCCodeMirrorErrors);
 
   const isEnabled = mode == 'c';
 
   const editor = useRef<HTMLDivElement>(null);
-  const { setContainer, view } = useCodeMirror({
+  const { setContainer, view, state } = useCodeMirror({
     value: code,
     height: '100%',
     width: '100%',
@@ -96,6 +99,15 @@ export default function CCodeInput() {
       dispatch(cFieldTyping(value));
     },
   });
+
+  // Update errors when cErrors change
+  useEffect(() => {
+    if (!state || !view) {
+      return;
+    }
+    const tr = setDiagnostics(state, cErrors);
+    view.dispatch(tr);
+  }, [view, state, cErrors]);
 
   // Update editor state when compiler data changes
   useEffect(() => {
@@ -126,9 +138,9 @@ export default function CCodeInput() {
 
   // The ref is on an inner div so that the gray background is always after the editor
   return (
-    <div className='flex-grow overflow-hidden rounded border'>
+    <div className='flex flex-col flex-grow overflow-hidden rounded border'>
       <EditorBar mode='c' />
-      <div className='h-full w-full relative'>
+      <div className='relative flex-grow'>
         <div className='h-full w-full relative' ref={editor} />
         {!isEnabled && (
           <div className='pointer-events-none absolute inset-0 bg-gray-100/40' />

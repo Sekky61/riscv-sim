@@ -27,9 +27,15 @@
 
 package com.gradle.superscalarsim.server.getState;
 
+import com.gradle.superscalarsim.code.CodeParser;
+import com.gradle.superscalarsim.code.ParseError;
 import com.gradle.superscalarsim.cpu.Cpu;
 import com.gradle.superscalarsim.cpu.CpuConfiguration;
+import com.gradle.superscalarsim.cpu.CpuState;
+import com.gradle.superscalarsim.loader.InitLoader;
 import com.gradle.superscalarsim.server.IRequestResolver;
+
+import java.util.List;
 
 /**
  * @brief Handler for the /getState endpoint
@@ -55,22 +61,50 @@ public class GetStateHandler implements IRequestResolver<GetStateRequest, GetSta
     return response;
   }
   
+  /**
+   * @param request Request containing configuration and program
+   *
+   * @return Response containing state of the CPU, with loaded program
+   * @brief Get state of the CPU, with loaded program
+   */
   private GetStateResponse getState(GetStateRequest request)
   {
+    CpuConfiguration cfg;
     if (request.config == null)
     {
-      Cpu defaultCpu = new Cpu();
-      System.out.println("Providing default state");
-      return new GetStateResponse(defaultCpu.cpuState);
+      System.out.println("Providing default configuration");
+      cfg = CpuConfiguration.getDefaultConfiguration();
     }
-    CpuConfiguration                  cfg              = request.config;
+    else
+    {
+      cfg = request.config;
+    }
+    // Validate configuration
     CpuConfiguration.ValidationResult validationResult = cfg.validate();
+    // Validate code
+    InitLoader loader       = new InitLoader();
+    CodeParser codeParser   = new CodeParser(loader);
+    boolean    parseSuccess = codeParser.parse(request.program);
+    // Create response
+    CpuState         state        = null;
+    List<ParseError> codeErrors   = null;
+    List<String>     configErrors = null;
     if (!validationResult.valid)
     {
       System.err.println("Provided configuration is invalid: " + validationResult.messages);
-      return new GetStateResponse(null, validationResult.messages);
+      configErrors = validationResult.messages;
     }
-    Cpu cpu = new Cpu(request.config);
-    return new GetStateResponse(cpu.cpuState);
+    if (parseSuccess && validationResult.valid)
+    {
+      Cpu cpu = new Cpu(cfg);
+      cpu.loadProgram(request.program);
+      state = cpu.cpuState;
+    }
+    if (!parseSuccess)
+    {
+      System.err.println("Provided code is invalid: " + codeParser.getErrorMessages());
+      codeErrors = codeParser.getErrorMessages();
+    }
+    return new GetStateResponse(state, configErrors, codeErrors);
   }
 }

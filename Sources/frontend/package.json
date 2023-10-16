@@ -17,6 +17,7 @@
     "postbuild": "next-sitemap --config next-sitemap.config.js"
   },
   "dependencies": {
+    "@codemirror/lint": "^6.4.2",
     "@codemirror/state": "^6.2.1",
     "@hookform/resolvers": "^3.3.0",
     "@reduxjs/toolkit": "^1.9.5",

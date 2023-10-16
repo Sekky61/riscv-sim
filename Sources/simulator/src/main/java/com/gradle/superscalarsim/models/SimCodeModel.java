@@ -55,6 +55,11 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>
    */
   private final int id;
   /**
+   * A copy of arguments, which are used for renaming.
+   * The order of arguments is the same as in the original code line and tests depend on this order.
+   */
+  private final List<InputCodeArgument> renamedArguments;
+  /**
    * Number marking bulk of instructions, which was fetched together
    */
   private int instructionBulkNumber;
@@ -78,7 +83,6 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>
    * Bit value marking failure due to wrong branch prediction
    */
   private boolean hasFailed;
-  
   /**
    * Saved value of the PC, when instruction was fetched
    * Used for load/store and branch instructions
@@ -101,10 +105,6 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>
    * Used to fix BTB and PC in misprediction
    */
   private int branchTargetOffset;
-  /**
-   * A copy of arguments, which are used for renaming
-   */
-  private final List<InputCodeArgument> renamedArguments;
   
   /**
    * @param [in] instructionFunctionModel - Instruction function model
@@ -117,14 +117,13 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>
    */
   public SimCodeModel(InstructionFunctionModel instructionFunctionModel,
                       String instructionName,
-                      String codeLine,
                       InstructionTypeEnum instructionTypeEnum,
                       DataTypeEnum dataTypeEnum,
                       List<InputCodeArgument> arguments,
                       int id,
                       int instructionBulkNumber)
   {
-    this.inputCodeModel        = new InputCodeModel(instructionFunctionModel, instructionName, codeLine, arguments,
+    this.inputCodeModel        = new InputCodeModel(instructionFunctionModel, instructionName, arguments,
                                                     instructionTypeEnum, dataTypeEnum, 0);
     this.id                    = id;
     this.instructionBulkNumber = instructionBulkNumber;
@@ -174,6 +173,16 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>
   //------------------------------------------------------
   
   /**
+   * @return Id of the model
+   * @brief Gets Id of the model
+   */
+  public int getId()
+  {
+    return id;
+  }// end of getId
+  //------------------------------------------------------
+  
+  /**
    * @return Integer value of bulk number
    * @brief Gets number marking when was code processed
    */
@@ -183,31 +192,10 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>
   }// end of getId
   //------------------------------------------------------
   
-  /**
-   * @return String with renamed code line
-   * @brief Gets renamed code line
-   */
-  public String getRenamedCodeLine()
+  public void setInstructionBulkNumber(int instructionBulkNumber)
   {
-    String[]      argsArray   = getCodeLine().split(" ");
-    StringBuilder genericLine = new StringBuilder(argsArray[0] + " ");
-    for (int i = 0; i < argsArray.length - 1; i++)
-    {
-      InputCodeArgument argument = getArguments().get(i);
-      genericLine.append(argument.getValue()).append(" ");
-    }
-    return genericLine.toString().trim();
-  }// end of getRenamedCodeLine
-  //------------------------------------------------------
-  
-  /**
-   * @return Id of the model
-   * @brief Gets Id of the model
-   */
-  public int getId()
-  {
-    return id;
-  }// end of getId
+    this.instructionBulkNumber = instructionBulkNumber;
+  }
   //------------------------------------------------------
   
   /**
@@ -221,42 +209,6 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>
   //------------------------------------------------------
   
   /**
-   * @return Id of function block, which processed this instruction, 0 if not yet processed
-   * @brief Gets id of function block, which processed this instruction
-   */
-  public int getFunctionUnitId()
-  {
-    return functionUnitId;
-  }// end of getFunctionUnitId
-  //------------------------------------------------------
-  
-  /**
-   * @return Id of when was instruction's result ready, 0 if not yet processed
-   * @brief Gets id of when was instruction's result ready
-   */
-  public int getReadyId()
-  {
-    return readyId;
-  }// end of getReadyId
-  //------------------------------------------------------
-  
-  /**
-   * @return Id of when was instruction committed, 0 if not yet processed
-   * @brief Gets id of when was instruction committed
-   */
-  public int getCommitId()
-  {
-    return commitId;
-  }// end of getCommitId
-  //------------------------------------------------------
-  
-  
-  public void setInstructionBulkNumber(int instructionBulkNumber)
-  {
-    this.instructionBulkNumber = instructionBulkNumber;
-  }
-  
-  /**
    * @param [in] windowId - Id, when was instruction accepted to issue window
    *
    * @brief Sets accepted id to issue window
@@ -265,6 +217,16 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>
   {
     this.issueWindowId = windowId;
   }// end of setIssueWindowId
+  //------------------------------------------------------
+  
+  /**
+   * @return Id of function block, which processed this instruction, 0 if not yet processed
+   * @brief Gets id of function block, which processed this instruction
+   */
+  public int getFunctionUnitId()
+  {
+    return functionUnitId;
+  }// end of getFunctionUnitId
   //------------------------------------------------------
   
   /**
@@ -279,6 +241,15 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>
   //------------------------------------------------------
   
   /**
+   * @return Id of when was instruction's result ready, 0 if not yet processed
+   * @brief Gets id of when was instruction's result ready
+   */
+  public int getReadyId()
+  {
+    return readyId;
+  }// end of getReadyId
+  
+  /**
    * @param [in] readyId - Id of when was instruction's result ready
    *
    * @brief Sets id of when was instruction's result ready
@@ -287,6 +258,16 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>
   {
     this.readyId = readyId;
   }// end of setReadyId
+  //------------------------------------------------------
+  
+  /**
+   * @return Id of when was instruction committed, 0 if not yet processed
+   * @brief Gets id of when was instruction committed
+   */
+  public int getCommitId()
+  {
+    return commitId;
+  }// end of getCommitId
   //------------------------------------------------------
   
   /**
@@ -319,57 +300,7 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>
   {
     this.hasFailed = hasFailed;
   }// end of setHasFailed
-  
-  @Override
-  public String getInstructionName()
-  {
-    return inputCodeModel.getInstructionName();
-  }
-  
-  @Override
-  public String getCodeLine()
-  {
-    return inputCodeModel.getCodeLine();
-  }
-  
-  /**
-   * @return Renamed arguments of the instruction
-   * @brief Gets arguments of the instruction, copied so they are rewritable
-   */
-  @Override
-  public List<InputCodeArgument> getArguments()
-  {
-    return renamedArguments;
-  }
-  
-  /**
-   * @param name Name of the argument
-   *
-   * @return An argument by its name
-   */
-  @Override
-  public InputCodeArgument getArgumentByName(String name)
-  {
-    return renamedArguments.stream().filter(argument -> argument.getName().equals(name)).findFirst().orElse(null);
-  }// end of getArgumentByName
-  
-  @Override
-  public InstructionTypeEnum getInstructionTypeEnum()
-  {
-    return inputCodeModel.getInstructionTypeEnum();
-  }
-  
-  @Override
-  public DataTypeEnum getResultDataType()
-  {
-    return inputCodeModel.getResultDataType();
-  }
-  
-  @Override
-  public int getCodeId()
-  {
-    return inputCodeModel.getCodeId();
-  }// end of getId
+  //------------------------------------------------------
   
   /**
    * @return Saved value of the PC, when instruction was fetched
@@ -414,12 +345,6 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>
     this.branchTargetOffset = branchTargetOffset;
   }
   
-  @Override
-  public InstructionFunctionModel getInstructionFunctionModel()
-  {
-    return inputCodeModel.getInstructionFunctionModel();
-  }
-  
   /**
    * String representation of the object
    */
@@ -427,5 +352,80 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>
   public String toString()
   {
     return this.getRenamedCodeLine();
+  }
+  
+  /**
+   * Used for testing
+   *
+   * @return String with renamed code line
+   * @brief Gets renamed code line
+   */
+  public String getRenamedCodeLine()
+  {
+    StringBuilder genericLine = new StringBuilder(getInstructionName());
+    for (int i = 0; i < getArguments().size(); i++)
+    {
+      genericLine.append(" ").append(getArguments().get(i).getValue());
+    }
+    return genericLine.toString();
+  }// end of getRenamedCodeLine
+  
+  @Override
+  public String getInstructionName()
+  {
+    return inputCodeModel.getInstructionName();
+  }
+  
+  /**
+   * @return Renamed arguments of the instruction
+   * @brief Gets arguments of the instruction, copied so they are rewritable
+   */
+  @Override
+  public List<InputCodeArgument> getArguments()
+  {
+    return renamedArguments;
+  }
+  
+  /**
+   * @param name Name of the argument
+   *
+   * @return An argument by its name
+   */
+  @Override
+  public InputCodeArgument getArgumentByName(String name)
+  {
+    return renamedArguments.stream().filter(argument -> argument.getName().equals(name)).findFirst().orElse(null);
+  }// end of getArgumentByName
+  
+  @Override
+  public InstructionTypeEnum getInstructionTypeEnum()
+  {
+    return inputCodeModel.getInstructionTypeEnum();
+  }
+  
+  @Override
+  public DataTypeEnum getResultDataType()
+  {
+    return inputCodeModel.getResultDataType();
+  }
+  
+  @Override
+  public int getCodeId()
+  {
+    return inputCodeModel.getCodeId();
+  }// end of getId
+  
+  @Override
+  public InstructionFunctionModel getInstructionFunctionModel()
+  {
+    return inputCodeModel.getInstructionFunctionModel();
+  }
+  
+  /**
+   * @return Original arguments of the instruction (without renaming)
+   */
+  public List<InputCodeArgument> getOriginalArguments()
+  {
+    return inputCodeModel.getArguments();
   }
 }

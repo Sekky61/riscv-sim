@@ -40,11 +40,6 @@ public interface IInputCodeModel
   String getInstructionName();
   
   /**
-   * @return Original code line
-   */
-  String getCodeLine();
-  
-  /**
    * @return List of arguments of the instruction
    */
   List<InputCodeArgument> getArguments();

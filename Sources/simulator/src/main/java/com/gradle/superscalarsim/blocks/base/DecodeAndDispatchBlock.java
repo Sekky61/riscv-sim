@@ -209,23 +209,6 @@ public class DecodeAndDispatchBlock implements AbstractBlock
   //----------------------------------------------------------------------
   
   /**
-   * @brief Resets the all the lists/stacks/variables in the decode block
-   */
-  @Override
-  public void reset()
-  {
-    this.beforeRenameCodeList.clear();
-    this.afterRenameCodeList.clear();
-    this.renameMapTableBlock.clear();
-    this.stallIdStack.clear();
-    this.stalledPullCountStack.clear();
-    this.idCounter        = -2;
-    this.stallFlag        = false;
-    this.stalledPullCount = 0;
-  }// end of reset
-  //----------------------------------------------------------------------
-  
-  /**
    * @brief Simulates decoding and renaming of instructions before dispatching
    */
   @Override
@@ -259,11 +242,8 @@ public class DecodeAndDispatchBlock implements AbstractBlock
       
       // Take `fetchCount` instructions from fetch block, delete them from fetch block
       List<SimCodeModel> removeInputModel = new ArrayList<>();
-      int fetchCount = Math.min((int) this.instructionFetchBlock.getFetchedCode()
-                                                                .stream()
-                                                                .filter(
-                                                                    code -> !code.getInstructionName().equals("nop"))
-                                                                .count(),
+      int fetchCount = Math.min((int) this.instructionFetchBlock.getFetchedCode().stream()
+                                        .filter(code -> !code.getInstructionName().equals("nop")).count(),
                                 this.instructionFetchBlock.getNumberOfWays() - this.afterRenameCodeList.size());
       this.stalledPullCountStack.push(fetchCount);
       this.instructionFetchBlock.setStallFetchCount(fetchCount);
@@ -322,9 +302,10 @@ public class DecodeAndDispatchBlock implements AbstractBlock
       removeList.add(codeModel);
       codeModel.getArguments().forEach(argument ->
                                        {
-                                         if (!codeModel.getCodeLine().contains(
-                                             argument.getValue()) && this.renameMapTableBlock.reduceReference(
-                                             argument.getValue()))
+                                         boolean match = codeModel.getOriginalArguments().stream()
+                                                 .map(InputCodeArgument::getValue)
+                                                 .anyMatch(argVal -> argument.getValue().equals(argVal));
+                                         if (!match && this.renameMapTableBlock.reduceReference(argument.getValue()))
                                          {
                                            this.renameMapTableBlock.freeMapping(argument.getValue());
                                          }
@@ -342,6 +323,32 @@ public class DecodeAndDispatchBlock implements AbstractBlock
       simCodeModel.setInstructionBulkNumber(getCurrentStepId());
     }
   }// end of simulateBackwards
+  //----------------------------------------------------------------------
+  
+  /**
+   * @brief Resets the all the lists/stacks/variables in the decode block
+   */
+  @Override
+  public void reset()
+  {
+    this.beforeRenameCodeList.clear();
+    this.afterRenameCodeList.clear();
+    this.renameMapTableBlock.clear();
+    this.stallIdStack.clear();
+    this.stalledPullCountStack.clear();
+    this.idCounter        = -2;
+    this.stallFlag        = false;
+    this.stalledPullCount = 0;
+  }// end of reset
+  //----------------------------------------------------------------------
+  
+  /**
+   * @brief Decrement ID for next decode step for backward simulation
+   */
+  private void lowerStepId()
+  {
+    idCounter = idCounter <= -2 ? -2 : idCounter - 1;
+  }// end of lowerStepId
   //----------------------------------------------------------------------
   
   /**
@@ -364,12 +371,43 @@ public class DecodeAndDispatchBlock implements AbstractBlock
   //----------------------------------------------------------------------
   
   /**
-   * @brief Decrement ID for next decode step for backward simulation
+   * @brief Checks if fetched code (beforeRenameCodeList) holds any branch instructions and processes them
    */
-  private void lowerStepId()
+  private void checkForBranchInstructions()
   {
-    idCounter = idCounter <= -2 ? -2 : idCounter - 1;
-  }// end of lowerStepId
+    int modelId = idCounter * this.instructionFetchBlock.getNumberOfWays();
+    for (int i = 0; i < this.beforeRenameCodeList.size(); i++)
+    {
+      SimCodeModel codeModel = this.beforeRenameCodeList.get(i);
+      if (codeModel.getInstructionTypeEnum() == InstructionTypeEnum.kJumpbranch)
+      {
+        processBranchInstruction(codeModel, i, modelId);
+      }
+      modelId++;
+    }
+  }// end of checkForBranchInstructions
+  //----------------------------------------------------------------------
+  
+  /**
+   * @param [in,out] decodeCodeModel - CodeModel with registers to be renamed
+   *
+   * @brief Checks map table if source registers were renamed in past and renames them in instruction (RAW conflict)
+   */
+  private void renameSourceRegisters(SimCodeModel simCodeModel)
+  {
+    simCodeModel.getArguments().forEach(argument ->
+                                        {
+                                          String oldArgumentValue = argument.getValue();
+                                          boolean shouldRename = !argument.getName().equals("rd") && !argument.getName()
+                                                  .equals("imm");
+                                          if (shouldRename)
+                                          {
+                                            String rename = renameMapTableBlock.getMappingForRegister(oldArgumentValue);
+                                            argument.setValue(rename);
+                                            renameMapTableBlock.increaseReference(rename);
+                                          }
+                                        });
+  }// end of renameSourceRegisters
   //----------------------------------------------------------------------
   
   /**
@@ -389,47 +427,6 @@ public class DecodeAndDispatchBlock implements AbstractBlock
     // Rename
     destinationArgument.setValue(renameMapTableBlock.mapRegister(destinationArgument.getValue(), simCodeModel.getId()));
   }// end of renameDestinationRegister
-  //----------------------------------------------------------------------
-  
-  /**
-   * @param [in,out] decodeCodeModel - CodeModel with registers to be renamed
-   *
-   * @brief Checks map table if source registers were renamed in past and renames them in instruction (RAW conflict)
-   */
-  private void renameSourceRegisters(SimCodeModel simCodeModel)
-  {
-    simCodeModel.getArguments().forEach(argument ->
-                                        {
-                                          String oldArgumentValue = argument.getValue();
-                                          boolean shouldRename = !argument.getName().equals("rd") && !argument.getName()
-                                                                                                              .equals(
-                                                                                                                  "imm");
-                                          if (shouldRename)
-                                          {
-                                            String rename = renameMapTableBlock.getMappingForRegister(oldArgumentValue);
-                                            argument.setValue(rename);
-                                            renameMapTableBlock.increaseReference(rename);
-                                          }
-                                        });
-  }// end of renameSourceRegisters
-  //----------------------------------------------------------------------
-  
-  /**
-   * @brief Checks if fetched code (beforeRenameCodeList) holds any branch instructions and processes them
-   */
-  private void checkForBranchInstructions()
-  {
-    int modelId = idCounter * this.instructionFetchBlock.getNumberOfWays();
-    for (int i = 0; i < this.beforeRenameCodeList.size(); i++)
-    {
-      SimCodeModel codeModel = this.beforeRenameCodeList.get(i);
-      if (codeModel.getInstructionTypeEnum() == InstructionTypeEnum.kJumpbranch)
-      {
-        processBranchInstruction(codeModel, i, modelId);
-      }
-      modelId++;
-    }
-  }// end of checkForBranchInstructions
   //----------------------------------------------------------------------
   
   /**
@@ -470,20 +467,6 @@ public class DecodeAndDispatchBlock implements AbstractBlock
   //----------------------------------------------------------------------
   
   /**
-   * @param [in] index - index of first instruction to remove
-   *
-   * @brief Remove all instructions from beforeRenameCodeList from specified index until the end
-   */
-  private void removeInstructionsFromIndex(int index)
-  {
-    while (index < this.beforeRenameCodeList.size())
-    {
-      this.beforeRenameCodeList.remove(index);
-    }
-  }// end of removeInstructionsFromIndex
-  //----------------------------------------------------------------------
-  
-  /**
    * @param [in] codeModel - branch code model
    *
    * @return Branch jump target, regardless of prediction
@@ -508,5 +491,19 @@ public class DecodeAndDispatchBlock implements AbstractBlock
     // Jump after label
     return labelOffset + 1;
   }// end of calculateRealBranchAddress
+  //----------------------------------------------------------------------
+  
+  /**
+   * @param [in] index - index of first instruction to remove
+   *
+   * @brief Remove all instructions from beforeRenameCodeList from specified index until the end
+   */
+  private void removeInstructionsFromIndex(int index)
+  {
+    while (index < this.beforeRenameCodeList.size())
+    {
+      this.beforeRenameCodeList.remove(index);
+    }
+  }// end of removeInstructionsFromIndex
   //----------------------------------------------------------------------
 }

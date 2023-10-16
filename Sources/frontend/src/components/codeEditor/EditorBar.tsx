@@ -29,9 +29,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import clsx from 'clsx';
+import { CheckCircle, Circle, XCircle } from 'lucide-react';
 import { ChangeEvent } from 'react';
 
-import { openFile, selectEditorMode } from '@/lib/redux/compilerSlice';
+import {
+  callParseAsm,
+  openFile,
+  selectAsmDirty,
+  selectAsmErrors,
+  selectCDirty,
+  selectCErrors,
+  selectEditorMode,
+} from '@/lib/redux/compilerSlice';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 
 type EditorBarProps = {
@@ -42,7 +52,7 @@ export default function EditorBar({ mode }: EditorBarProps) {
   const dispatch = useAppDispatch();
   const editorMode = useAppSelector(selectEditorMode);
   const _isActive = editorMode == mode;
-  const editorName = mode == 'c' ? 'C code' : 'ASM code';
+  const editorName = mode == 'c' ? 'C Code' : 'ASM Code';
   const inputId = 'file-input-' + mode;
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -60,13 +70,16 @@ export default function EditorBar({ mode }: EditorBarProps) {
     }
   };
 
+  const errorDisplay = mode == 'c' ? <CErrorsDisplay /> : <AsmErrorsDisplay />;
+
   return (
-    <div className='pl-3 text-sm flex gap-1 bg-[#f5f5f5]'>
+    <div className='pl-3 text-sm flex items-center gap-1 bg-[#f5f5f5]'>
       <div className='py-1 px-0.5 font-bold'>{editorName}</div>
+      {errorDisplay}
       <label htmlFor={inputId}>
-        <div className='button-interactions px-2 rounded py-0.5 my-0.5'>
+        <button className='button-interactions px-2 rounded py-0.5 my-0.5'>
           Load
-        </div>
+        </button>
         <input
           type='file'
           id={inputId}
@@ -74,7 +87,84 @@ export default function EditorBar({ mode }: EditorBarProps) {
           onChange={handleFileChange}
         />
       </label>
-      <div className='button-interactions px-2 rounded py-0.5 my-0.5'>Save</div>
+      <button className='button-interactions px-2 rounded py-0.5 my-0.5'>
+        Save
+      </button>
     </div>
   );
 }
+
+const AsmErrorsDisplay = () => {
+  const dispatch = useAppDispatch();
+  const errors = useAppSelector(selectAsmErrors);
+  const dirty = useAppSelector(selectAsmDirty);
+  const hasErrors = errors.length > 0;
+
+  const checkAsm = () => {
+    dispatch(callParseAsm());
+  };
+
+  const boxStyle = clsx(
+    'flex items-center px-2 rounded py-0.5 my-0.5',
+    dirty && 'button-interactions',
+    hasErrors &&
+      !dirty &&
+      'bg-red-500/20 hover:bg-red-500/30 active:bg-red-500/40',
+    !hasErrors &&
+      !dirty &&
+      'bg-green-500/20 hover:bg-green-500/30 active:bg-green-500/40',
+  );
+
+  let iconType: 'circle' | 'tick' | 'x';
+  if (dirty) {
+    iconType = 'circle';
+  } else if (hasErrors) {
+    iconType = 'x';
+  } else {
+    iconType = 'tick';
+  }
+
+  return (
+    <button className={boxStyle} onClick={checkAsm}>
+      <div className='mr-2'>
+        <StatusIcon type={iconType} />
+      </div>
+      Check
+    </button>
+  );
+};
+
+const StatusIcon = ({ type }: { type: 'circle' | 'tick' | 'x' }) => {
+  switch (type) {
+    case 'circle':
+      return <Circle size={16} />;
+    case 'tick':
+      return <CheckCircle size={16} className='text-green-500' />;
+    case 'x':
+      return <XCircle size={16} className='text-red-500' />;
+  }
+};
+
+/**
+ * A fixed width element
+ */
+const CErrorsDisplay = () => {
+  const errors = useAppSelector(selectCErrors);
+  const dirty = useAppSelector(selectCDirty);
+  const hasErrors = errors.length > 0;
+
+  let iconType: 'circle' | 'tick' | 'x';
+  if (dirty) {
+    iconType = 'circle';
+  } else if (hasErrors) {
+    iconType = 'x';
+  } else {
+    iconType = 'tick';
+  }
+
+  return (
+    <div className='mr-2'>
+      <StatusIcon type={iconType} />
+    </div>
+  );
+};

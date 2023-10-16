@@ -85,19 +85,29 @@ public class InputCodeModelBuilder
     InstructionFunctionModel model;
     if (this.loader != null)
     {
-      model = this.loader.getInstructionFunctionModelList()
-                         .stream()
-                         .filter(instructionFunctionModel -> instructionFunctionModel.getName()
-                                                                                     .equals(this.instructionName))
-                         .findFirst()
-                         .orElse(null);
+      model = this.loader.getInstructionFunctionModelList().stream()
+              .filter(instructionFunctionModel -> instructionFunctionModel.getName().equals(this.instructionName))
+              .findFirst().orElse(null);
     }
     else
     {
       model = this.instructionFunctionModel;
     }
-    return new InputCodeModel(model, this.instructionName, this.codeLine, this.arguments, this.instructionTypeEnum,
-                              this.dataTypeEnum, this.id);
+    
+    // Patch: add argument to labels called labelName
+    if (this.instructionName.equals("label"))
+    {
+      ArrayList<InputCodeArgument> temp = new ArrayList<>();
+      // Copy all
+      for (InputCodeArgument argument : this.arguments)
+      {
+        temp.add(new InputCodeArgument(argument));
+      }
+      temp.add(new InputCodeArgument("labelName", this.codeLine));
+      this.arguments = temp;
+    }
+    return new InputCodeModel(model, this.instructionName, this.arguments, this.instructionTypeEnum, this.dataTypeEnum,
+                              this.id);
   }
   
   

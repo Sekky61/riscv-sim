@@ -30,16 +30,20 @@ package com.gradle.superscalarsim.server;
 import com.gradle.superscalarsim.server.checkConfig.CheckConfigHandler;
 import com.gradle.superscalarsim.server.compile.CompileHandler;
 import com.gradle.superscalarsim.server.getState.GetStateHandler;
+import com.gradle.superscalarsim.server.parseAsm.ParseAsmHandler;
 import com.gradle.superscalarsim.server.simulation.SimulationHandler;
 import io.undertow.Undertow;
 
 import java.io.IOException;
 
-import static io.undertow.Handlers.path;
+import static io.undertow.Handlers.*;
 
 public class Server
 {
   
+  /**
+   * @brief Port to listen on. Can be configured via command line argument
+   */
   int port = 8000;
   
   public Server(int port)
@@ -49,16 +53,12 @@ public class Server
   
   public void start() throws IOException
   {
-    Undertow server = Undertow.builder()
-                              .addHttpListener(8000, "localhost")
-                              .setHandler(path().addPrefixPath("/compile", new MyRequestHandler<>(new CompileHandler()))
-                                                .addPrefixPath("/checkConfig", new MyRequestHandler<>(
-                                                    new CheckConfigHandler()))
-                                                .addPrefixPath("/getState", new MyRequestHandler<>(
-                                                    new GetStateHandler()))
-                                                .addPrefixPath("/simulation", new MyRequestHandler<>(
-                                                    new SimulationHandler())))
-                              .build();
+    Undertow server = Undertow.builder().addHttpListener(8000, "localhost").setHandler(
+            path().addPrefixPath("/compile", new MyRequestHandler<>(new CompileHandler()))
+                    .addPrefixPath("/parseAsm", new MyRequestHandler<>(new ParseAsmHandler()))
+                    .addPrefixPath("/checkConfig", new MyRequestHandler<>(new CheckConfigHandler()))
+                    .addPrefixPath("/getState", new MyRequestHandler<>(new GetStateHandler()))
+                    .addPrefixPath("/simulation", new MyRequestHandler<>(new SimulationHandler()))).build();
     server.start();
   }
 }

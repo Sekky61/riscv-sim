@@ -40,7 +40,7 @@ public class InputCodeArgument
 {
   /**
    * Name of the argument
-   * Example: rs1, imm
+   * Example: rs1, imm, labelName
    */
   private String name;
   /**

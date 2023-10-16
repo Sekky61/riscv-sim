@@ -25,25 +25,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.gradle.superscalarsim.server.compile;
+package com.gradle.superscalarsim.server.parseAsm;
 
-import com.cedarsoftware.util.io.JsonReader;
-import com.gradle.superscalarsim.server.checkConfig.CheckConfigRequest;
-
-public class CompileRequest
+public class ParseAsmRequest
 {
   /**
-   * @brief The C code to compile
+   * @brief The ASM code to parse
    */
   String code;
-  /**
-   * @brief True if the code should be optimized
-   */
-  boolean optimize;
   
-  public CompileRequest(String code, boolean optimize)
+  public ParseAsmRequest(String code)
   {
-    this.code     = code;
-    this.optimize = optimize;
+    this.code = code;
   }
 }

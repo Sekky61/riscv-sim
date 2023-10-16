@@ -27,24 +27,34 @@
 
 package com.gradle.superscalarsim.server.getState;
 
+import com.gradle.superscalarsim.code.ParseError;
 import com.gradle.superscalarsim.cpu.CpuState;
 
 import java.util.List;
 
 public class GetStateResponse
 {
+  /**
+   * @brief List of errors concerning configuration validation
+   */
+  public List<String> configErrors;
+  /**
+   * @brief List of errors concerning code validation
+   */
+  public List<ParseError> codeErrors;
   public CpuState state;
-  public List<String> messages;
   
   GetStateResponse(CpuState state)
   {
-    this.state    = state;
-    this.messages = null;
+    this.state        = state;
+    this.configErrors = null;
+    this.codeErrors   = null;
   }
   
-  GetStateResponse(CpuState state, List<String> messages)
+  GetStateResponse(CpuState state, List<String> configErrors, List<ParseError> codeErrors)
   {
-    this.state    = state;
-    this.messages = messages;
+    this.state        = state;
+    this.configErrors = configErrors;
+    this.codeErrors   = codeErrors;
   }
 }

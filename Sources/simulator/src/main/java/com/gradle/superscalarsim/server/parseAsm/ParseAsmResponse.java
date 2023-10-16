@@ -1,10 +1,10 @@
 /**
- * @file CompileRequest.java
+ * @file CompileResponse.java
  * @author Michal Majer
  * Faculty of Information Technology
  * Brno University of Technology
  * xmajer21@stud.fit.vutbr.cz
- * @brief Request for the /compile endpoint
+ * @brief Response for the /compile endpoint
  * @date 26 Sep      2023 10:00 (created)
  * @section Licence
  * This file is part of the Superscalar simulator app
@@ -25,25 +25,32 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.gradle.superscalarsim.server.compile;
+package com.gradle.superscalarsim.server.parseAsm;
 
-import com.cedarsoftware.util.io.JsonReader;
-import com.gradle.superscalarsim.server.checkConfig.CheckConfigRequest;
+import com.gradle.superscalarsim.code.ParseError;
 
-public class CompileRequest
+import java.util.List;
+
+public class ParseAsmResponse
 {
   /**
-   * @brief The C code to compile
+   * @brief True if the compilation was successful
    */
-  String code;
+  public boolean success;
   /**
-   * @brief True if the code should be optimized
+   * @brief Error messages from the compiler
    */
-  boolean optimize;
+  public List<ParseError> errors;
   
-  public CompileRequest(String code, boolean optimize)
+  public ParseAsmResponse()
   {
-    this.code     = code;
-    this.optimize = optimize;
+    this.success = false;
+    this.errors  = null;
+  }
+  
+  public ParseAsmResponse(boolean success, List<ParseError> errors)
+  {
+    this.success = success;
+    this.errors  = errors;
   }
 }

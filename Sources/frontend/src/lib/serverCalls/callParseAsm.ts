@@ -1,14 +1,14 @@
 /**
- * @file    callCompiler.ts
+ * @file    callParseAsm.ts
  *
  * @author  Michal Majer
  *          Faculty of Information Technology
  *          Brno University of Technology
  *          xmajer21@stud.fit.vutbr.cz
  *
- * @brief   Call compiler API implementation
+ * @brief   Call /parseAsm API implementation
  *
- * @date    19 September 2023, 22:00 (created)
+ * @date    29 September 2023, 22:20 (created)
  *
  * @section Licence
  * This file is part of the Superscalar simulator app
@@ -29,42 +29,41 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { CompilerOptions } from './redux/compilerSlice';
+import { ErrorItem } from '@/lib/serverCalls/callCompiler';
 
-export type APIResponse =
+// TODO: rename to ParseAsmApiResponse
+export type ParseAsmAPIResponse =
   | {
-      '@type': string;
       success: true;
-      program: string[];
-      cLines: number[];
-      asmToC: number[];
     }
   | {
-      '@type': string;
       success: false;
-      compilerError?: string;
+      errors: {
+        '@items': Array<ErrorItem>;
+      };
     };
 
-export async function callCompilerImpl(code: string, options: CompilerOptions) {
-  // fetch from :8000/compile
+export async function callParseAsmImpl(code: string) {
+  // fetch from :8000/parseAsm
   // payload:
   // {
-  //   "@type": "com.gradle.superscalarsim.server.compile.CompileRequest",
+  //   "@type": "com.gradle.superscalarsim.server.parseAsm.ParseAsmRequest",
   //   "code": string
-  //   "optimize": boolean
   // }
 
-  const response = await fetch('http://localhost:8000/compile', {
+  const serverUrl =
+    process.env.NEXT_PUBLIC_SIMSERVER_URL || 'http://localhost:8000';
+
+  const response = await fetch(`${serverUrl}/parseAsm`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      '@type': 'com.gradle.superscalarsim.server.compile.CompileRequest',
+      '@type': 'com.gradle.superscalarsim.server.parseAsm.ParseAsmRequest',
       code,
-      optimize: options.optimize,
     }),
   });
-  const json: APIResponse = await response.json();
+  const json: ParseAsmAPIResponse = await response.json();
   return json;
 }

@@ -25,44 +25,50 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.gradle.superscalarsim.server.compile;
+package com.gradle.superscalarsim.server.parseAsm;
 
-import com.gradle.superscalarsim.compiler.AsmParser;
-import com.gradle.superscalarsim.compiler.CompiledProgram;
-import com.gradle.superscalarsim.compiler.GccCaller;
+import com.gradle.superscalarsim.code.CodeParser;
+import com.gradle.superscalarsim.code.ParseError;
+import com.gradle.superscalarsim.loader.InitLoader;
 import com.gradle.superscalarsim.server.IRequestResolver;
+
+import java.util.Collections;
 
 /**
  * @class CompileHandler
  * @brief Handler class for compile requests
  * Gets C code, calls the compiler, returns ASM for RISC-V
  */
-public class CompileHandler implements IRequestResolver<CompileRequest, CompileResponse>
+public class ParseAsmHandler implements IRequestResolver<ParseAsmRequest, ParseAsmResponse>
 {
   
-  public CompileResponse resolve(CompileRequest request)
+  public ParseAsmResponse resolve(ParseAsmRequest request)
   {
     
-    CompileResponse response;
+    ParseAsmResponse response;
     if (request == null || request.code == null)
     {
       // Send error
-      response = CompileResponse.failure("Wrong request format. Expected JSON with 'code' object field", null);
+      response = new ParseAsmResponse(false, Collections.singletonList(
+              new ParseError("error", "Wrong request format. Expected JSON with 'code' object field")));
     }
     else
     {
-      // Compile
-      GccCaller.CompileResult res = GccCaller.compile(request.code, request.optimize);
-      if (!res.success)
+      // Parse the code
+      InitLoader loader = new InitLoader();
+      CodeParser parser = new CodeParser(loader);
+      
+      boolean success = parser.parse(request.code);
+      
+      if (success)
       {
-        System.err.println("Failed to compile code");
-        response = CompileResponse.failure("GCC returned an error", res.compilerErrors);
+        // Return success
+        response = new ParseAsmResponse(true, null);
       }
       else
       {
-        int             cCodeLen = request.code.split("\n").length;
-        CompiledProgram program  = AsmParser.parse(res.code, cCodeLen);
-        response = new CompileResponse(true, program.program, program.cLines, program.asmToC, null, null);
+        // Return errors
+        response = new ParseAsmResponse(false, parser.getErrorMessages());
       }
     }
     
