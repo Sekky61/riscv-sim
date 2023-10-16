@@ -44,7 +44,6 @@ import com.gradle.superscalarsim.models.register.RegisterModel;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 import java.util.regex.Pattern;
@@ -130,25 +129,7 @@ public class CodeArithmeticInterpreter
       throw new IllegalArgumentException("Instruction is null");
     }
     
-    List<Expression.Variable> variables = new ArrayList<>();
-    for (InputCodeArgument argument : simCodeModel.getArguments())
-    {
-      String name  = argument.getName();
-      String value = argument.getValue();
-      // Check if value is register
-      RegisterModel register = registerFileBlock.getRegister(value);
-      if (register != null)
-      {
-        variables.add(new Expression.Variable(name, register.getDataType(), register.getValueContainer()));
-        continue;
-      }
-      else
-      {
-        // it is immediate
-        DataTypeEnum dataType = instruction.getArgumentByName(name).type();
-        variables.add(getValueFromOperand(value, dataType));
-      }
-    }
+    List<Expression.Variable> variables = simCodeModel.getVariables(registerFileBlock);
     
     // Evaluate each expression
     String[] splitInterpretable = instruction.getInterpretableAs().split(";");

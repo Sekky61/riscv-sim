@@ -32,8 +32,12 @@
  */
 package com.gradle.superscalarsim.models;
 
+import com.gradle.superscalarsim.blocks.base.UnifiedRegisterFileBlock;
+import com.gradle.superscalarsim.code.Expression;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
+import com.gradle.superscalarsim.models.register.RegisterDataContainer;
+import com.gradle.superscalarsim.models.register.RegisterModel;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -471,5 +475,42 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>
   public void setFinished(boolean finished)
   {
     isFinished = finished;
+  }
+  
+  /**
+   * @return Variables used in the instruction in the form for expression evaluation
+   */
+  public List<Expression.Variable> getVariables(UnifiedRegisterFileBlock registerFileBlock)
+  {
+    List<Expression.Variable> variables                = new ArrayList<>();
+    InstructionFunctionModel  instructionFunctionModel = getInstructionFunctionModel();
+    
+    for (InstructionFunctionModel.Argument argument : instructionFunctionModel.getArguments())
+    {
+      String name        = argument.name();
+      String renamedName = getArgumentByName(name).getValue();
+      // Check if value is register
+      RegisterModel register = registerFileBlock.getRegister(renamedName);
+      if (register != null)
+      {
+        variables.add(new Expression.Variable(name, argument.type(), register.getValueContainer()));
+      }
+      else
+      {
+        // it is immediate
+        Expression.Variable parsed = Expression.parseConstant(renamedName);
+        if (parsed != null)
+        {
+          parsed.tag = name;
+          variables.add(parsed);
+        }
+        // Could not parse. Maybe it is a label. Skip now.
+      }
+    }
+    
+    // Add pc
+    variables.add(new Expression.Variable("pc", DataTypeEnum.kInt, RegisterDataContainer.fromValue(getSavedPc())));
+    
+    return variables;
   }
 }

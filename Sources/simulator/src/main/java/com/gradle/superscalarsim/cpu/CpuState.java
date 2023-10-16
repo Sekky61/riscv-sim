@@ -206,8 +206,7 @@ public class CpuState implements Serializable
                                                          instructionFetchBlock, statisticsCounter, reorderBufferState);
     this.issueWindowSuperBlock  = new IssueWindowSuperBlock(decodeAndDispatchBlock);
     this.arithmeticInterpreter  = new CodeArithmeticInterpreter(unifiedRegisterFileBlock);
-    this.branchInterpreter      = new CodeBranchInterpreter(instructionMemoryBlock, unifiedRegisterFileBlock,
-                                                            arithmeticInterpreter);
+    this.branchInterpreter      = new CodeBranchInterpreter(instructionMemoryBlock, unifiedRegisterFileBlock);
     
     this.storeBufferBlock = new StoreBufferBlock(loadStoreInterpreter, decodeAndDispatchBlock, unifiedRegisterFileBlock,
                                                  reorderBufferBlock);

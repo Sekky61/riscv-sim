@@ -75,20 +75,9 @@ import java.util.regex.Pattern;
 public class Expression
 {
   /**
-   * List of supported unary operators
-   */
-  public static String[] unaryOperators = new String[]{"sqrt", "!"};
-  
-  /**
-   * List of supported binary operators
-   */
-  public static String[] binaryOperators = new String[]{"+", "-", "*", "/", "%", "&", "|", "^", "<<", ">>", ">>>", ">", ">=", "<", "<=", "==", "!=", "="};
-  
-  /**
    * Pattern for matching integer values in argument
    */
   private final static Pattern intPattern;
-  
   /**
    * Pattern for matching hexadecimal values in argument
    */
@@ -97,6 +86,14 @@ public class Expression
    * Pattern for matching decimal values in argument
    */
   private final static Pattern decimalPattern;
+  /**
+   * List of supported unary operators
+   */
+  public static String[] unaryOperators = new String[]{"sqrt", "!"};
+  /**
+   * List of supported binary operators
+   */
+  public static String[] binaryOperators = new String[]{"+", "-", "*", "/", "%", "&", "|", "^", "<<", ">>", ">>>", ">", ">=", "<", "<=", "==", "!=", "="};
   
   static
   {
@@ -106,13 +103,19 @@ public class Expression
   }
   
   /**
-   * Mutates the variables list. Throws IllegalArgumentException if the expression is not valid or variables are not
+   * There are two ways of getting results from the expression:
+   * 1) The top of the stack after interpreting the expression
+   * 2) The Variables from the input list have been mutated while interpreting the expression
+   * <p>
+   * Throws IllegalArgumentException if the expression is not valid or variables are not
    * valid.
    *
    * @param expression expression to interpret
    * @param variables  variables and their values to use in the expression
+   *
+   * @return The top of the stack after interpreting the expression
    */
-  public static void interpret(String expression, List<Variable> variables)
+  public static Variable interpret(String expression, List<Variable> variables)
   {
     Stack<Variable> valueStack      = new Stack<>();
     String[]        expressionArray = expression.split(" ");
@@ -168,6 +171,14 @@ public class Expression
     }
     
     // The Variables from the input list have been mutated while interpreting the expression
+    // One can also use the top of the stack as the result
+    if (valueStack.size() == 0)
+    {
+      return null;
+    }
+    
+    Variable result = valueStack.pop();
+    return result;
   }
   
   private static boolean isUnaryOperator(String operator)
@@ -303,7 +314,7 @@ public class Expression
    * @return Variable with the parsed value or null if the constant is not valid
    * @brief Parse a constant value - supports boolean, int (dec and hex), float and double.
    */
-  private static Variable parseConstant(String constant)
+  public static Variable parseConstant(String constant)
   {
     Variable variable = null;
     if (constant.equals("true") || constant.equals("false"))
@@ -600,6 +611,13 @@ public class Expression
     public boolean isVariable()
     {
       return tag != null && !tag.isEmpty();
+    }
+    
+    @Override
+    public String toString()
+    {
+      Object v = this.value.getValue(type);
+      return tag + ":" + type + ":" + v;
     }
   }
 }
