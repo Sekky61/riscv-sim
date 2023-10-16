@@ -1600,7 +1600,7 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "\\rs1 \\rs2 * \\rd ="
+    "interpretableAs": "\\rs1 \\rs2 * 32l >> \\rd ="
   },
   "mulhu": {
     "name": "mulhu",
@@ -1614,14 +1614,14 @@
       },
       {
         "name": "rs1",
-        "type": "kInt"
+        "type": "kUInt"
       },
       {
         "name": "rs2",
-        "type": "kInt"
+        "type": "kUInt"
       }
     ],
-    "interpretableAs": "\\rs1 \\rs2 * \\rd ="
+    "interpretableAs": "\\rs1 \\rs2 * 32l >> \\rd ="
   },
   "mulhsu": {
     "name": "mulhsu",
@@ -1639,9 +1639,9 @@
       },
       {
         "name": "rs2",
-        "type": "kInt"
+        "type": "kUInt"
       }
     ],
-    "interpretableAs": "\\rs1 \\rs2 * \\rd ="
+    "interpretableAs": "\\rs1 \\rs2 * 32l >> \\rd ="
   }
 }

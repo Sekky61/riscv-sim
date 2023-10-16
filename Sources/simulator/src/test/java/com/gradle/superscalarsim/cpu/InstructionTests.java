@@ -416,14 +416,14 @@ public class InstructionTests
   {
     // Setup + exercise
     // 0b1100_0000_0000_0000_0001 == 0xC001
-    cpuConfig.code = "lui x1, 0xC001";
+    cpuConfig.code = "lui x1, 0xC0010";
     Cpu cpu = new Cpu(cpuConfig);
     cpu.execute();
     
     // Assert
     // TODO: converting to doubles loses precision, so the value is not exactly 0xC0010000
     // Suggested fix: do not convert everything to doubles, but interpret byte arrays as ints or floats
-    Assert.assertEquals(0b11000000000000000001_000000000000,
+    Assert.assertEquals(0b1100_0000_0000_0001_0000_000000000000,
                         cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt));
   }
   
@@ -1063,7 +1063,8 @@ public class InstructionTests
     
     // Assert
     Assert.assertEquals(-1, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt));
-    Assert.assertEquals(2, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x4").getValue(DataTypeEnum.kInt));
+    // 0111... << 2
+    Assert.assertEquals(1, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x4").getValue(DataTypeEnum.kInt));
   }
   
   /**
@@ -1077,13 +1078,13 @@ public class InstructionTests
     Cpu cpu = new Cpu(cpuConfig);
     cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(8);
     cpu.cpuState.unifiedRegisterFileBlock.getRegister("x3").setValue(3);
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x5").setValue(Integer.MAX_VALUE);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x5").setValue(-1);
     cpu.cpuState.unifiedRegisterFileBlock.getRegister("x6").setValue(4);
     cpu.execute();
     
     // Assert
     Assert.assertEquals(0, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt));
-    Assert.assertEquals(2, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x4").getValue(DataTypeEnum.kInt));
+    Assert.assertEquals(3, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x4").getValue(DataTypeEnum.kInt));
   }
   
   /**
@@ -1098,11 +1099,13 @@ public class InstructionTests
     Cpu cpu = new Cpu(cpuConfig);
     cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(-2);
     cpu.cpuState.unifiedRegisterFileBlock.getRegister("x3").setValue(3);
-    //TODO; better test
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x5").setValue(2);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x6").setValue(-1);
     cpu.execute();
     
     // Assert
     Assert.assertEquals(-1, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt));
-    Assert.assertEquals(2, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x4").getValue(DataTypeEnum.kInt));
+    // Upper bits stayed zero
+    Assert.assertEquals(1, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x4").getValue(DataTypeEnum.kInt));
   }
 }

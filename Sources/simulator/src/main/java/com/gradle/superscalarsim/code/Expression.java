@@ -68,6 +68,11 @@ import java.util.regex.Pattern;
  *   <li>\a 10 *</li>
  *   <li>\rs1 \rs2 * \rd =</li>
  * </ul>
+ * Notes:
+ * <ul>
+ *   <li>Spaces are used to separate tokens</li>
+ *   <li>Int multiplication results in a long result</li>
+ * </ul>
  *
  * @class ExpressionInterpreter
  * @brief Class for interpreting code expressions in reverse polish notation
@@ -99,8 +104,8 @@ public class Expression
   
   static
   {
-    intPattern         = Pattern.compile("-?\\d+");
-    decimalPattern     = Pattern.compile("-?\\d+(\\.\\d+)?[f, d]?");
+    intPattern         = Pattern.compile("-?\\d+[li]?");
+    decimalPattern     = Pattern.compile("-?\\d+(\\.\\d+)?[fd]?");
     hexadecimalPattern = Pattern.compile("0x\\p{XDigit}+");
     
     allOperators = new String[unaryOperators.length + binaryOperators.length];
@@ -251,6 +256,13 @@ public class Expression
         default -> throw new IllegalArgumentException("Unknown type: " + to.type);
       }
     }
+    else if ((to.type == DataTypeEnum.kInt || to.type == DataTypeEnum.kUInt) && (from.type == DataTypeEnum.kLong || from.type == DataTypeEnum.kULong))
+    {
+      // long to int - truncate
+      long value    = (long) from.value.getValue(from.type);
+      int  intValue = (int) value;
+      to.value = RegisterDataContainer.fromValue(intValue);
+    }
     else
     {
       to.value = from.value;
@@ -269,6 +281,15 @@ public class Expression
     // Special handling for cases with different types of operands
     if (lVariable.type != rVariable.type)
     {
+      // Special case: MULHSU (multiply high signed unsigned)
+      if (operator.equals("*") && lVariable.type == DataTypeEnum.kInt && rVariable.type == DataTypeEnum.kUInt)
+      {
+        int  lValueInt = (int) lVariable.value.getValue(DataTypeEnum.kInt);
+        long lValue    = (long) lValueInt;
+        int  rValueInt = (int) rVariable.value.getValue(DataTypeEnum.kUInt);
+        long rValue    = unsignedIntToLong(rValueInt);
+        return Variable.fromValue(lValue * rValue);
+      }
       throw new IllegalArgumentException(
               "Incompatible types: " + lVariable.type + " and " + rVariable.type + " for operator: " + operator);
     }
@@ -331,9 +352,18 @@ public class Expression
     }
     else if (intPattern.matcher(constant).matches())
     {
-      // It is an int
-      int intValue = Integer.parseInt(constant);
-      variable = new Variable("", DataTypeEnum.kInt, RegisterDataContainer.fromValue(intValue));
+      if (constant.endsWith("l"))
+      {
+        // It is a long
+        long longValue = Long.parseLong(constant.substring(0, constant.length() - 1));
+        variable = new Variable("", DataTypeEnum.kLong, RegisterDataContainer.fromValue(longValue));
+      }
+      else
+      {
+        // It is an int
+        int intValue = Integer.parseInt(constant);
+        variable = new Variable("", DataTypeEnum.kInt, RegisterDataContainer.fromValue(intValue));
+      }
     }
     else if (decimalPattern.matcher(constant).matches())
     {
@@ -411,7 +441,7 @@ public class Expression
   {
     return switch (assignTo)
     {
-      case kInt, kUInt -> assignFrom == DataTypeEnum.kInt || assignFrom == DataTypeEnum.kUInt || assignFrom == DataTypeEnum.kBool;
+      case kInt, kUInt -> assignFrom == DataTypeEnum.kInt || assignFrom == DataTypeEnum.kUInt || assignFrom == DataTypeEnum.kBool || assignFrom == DataTypeEnum.kLong || assignFrom == DataTypeEnum.kULong;
       case kLong, kULong -> assignFrom == DataTypeEnum.kLong || assignFrom == DataTypeEnum.kULong || assignFrom == DataTypeEnum.kBool;
       case kFloat -> assignFrom == DataTypeEnum.kFloat || assignFrom == DataTypeEnum.kBool;
       case kDouble -> assignFrom == DataTypeEnum.kDouble || assignFrom == DataTypeEnum.kBool;
@@ -426,7 +456,7 @@ public class Expression
     {
       case "+" -> Variable.fromValue(value + value2);
       case "-" -> Variable.fromValue(value - value2);
-      case "*" -> Variable.fromValue(value * value2);
+      case "*" -> Variable.fromValue((long) value * (long) value2);
       case "/" -> Variable.fromValue(value / value2);
       case "%" -> Variable.fromValue(value % value2);
       case "&" -> Variable.fromValue(value & value2);
@@ -453,7 +483,12 @@ public class Expression
     {
       case "+" -> Variable.fromValue(value + value2);
       case "-" -> Variable.fromValue(value - value2);
-      case "*" -> Variable.fromValue(value * value2);
+      case "*" ->
+      {
+        long l = unsignedIntToLong(value);
+        long r = unsignedIntToLong(value2);
+        yield Variable.fromValue(l * r);
+      }
       case "/" -> Variable.fromValue(value / value2);
       case "%" -> Variable.fromValue(value % value2);
       case "&" -> Variable.fromValue(value & value2);
@@ -471,6 +506,11 @@ public class Expression
       default ->
               throw new IllegalArgumentException("Unknown operator: " + operator + " for type: " + DataTypeEnum.kUInt);
     };
+  }
+  
+  private static long unsignedIntToLong(int i)
+  {
+    return i & 0x0000_0000_ffff_ffffL;
   }
   
   private static Variable applyBinaryOperatorLong(String operator, long value, long value2)
