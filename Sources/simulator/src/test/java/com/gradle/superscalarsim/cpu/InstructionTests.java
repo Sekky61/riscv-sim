@@ -1512,4 +1512,70 @@ public class InstructionTests
                         (float) cpu.cpuState.unifiedRegisterFileBlock.getRegister("f4").getValue(DataTypeEnum.kFloat),
                         0.01);
   }
+  
+  /**
+   * FMV.S moves the float
+   */
+  @Test
+  public void testFMV_S()
+  {
+    // Setup + exercise
+    cpuConfig.code = "fmv.s f1, f2\n" + "fmv.s f3, f4";
+    Cpu cpu = new Cpu(cpuConfig);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f2").setValue(-8.0f);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f4").setValue(5.0f);
+    cpu.execute();
+    
+    // Assert
+    Assert.assertEquals(-8.0f,
+                        (float) cpu.cpuState.unifiedRegisterFileBlock.getRegister("f1").getValue(DataTypeEnum.kFloat),
+                        0.01);
+    Assert.assertEquals(5.0f,
+                        (float) cpu.cpuState.unifiedRegisterFileBlock.getRegister("f3").getValue(DataTypeEnum.kFloat),
+                        0.01);
+  }
+  
+  /**
+   * FABS.S takes the absolute value of the float
+   */
+  @Test
+  public void testFABS_S()
+  {
+    // Setup + exercise
+    cpuConfig.code = "fabs.s f1, f2\n" + "fabs.s f3, f4";
+    Cpu cpu = new Cpu(cpuConfig);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f2").setValue(-8.0f);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f4").setValue(5.0f);
+    cpu.execute();
+    
+    // Assert
+    Assert.assertEquals(8.0f,
+                        (float) cpu.cpuState.unifiedRegisterFileBlock.getRegister("f1").getValue(DataTypeEnum.kFloat),
+                        0.01);
+    Assert.assertEquals(5.0f,
+                        (float) cpu.cpuState.unifiedRegisterFileBlock.getRegister("f3").getValue(DataTypeEnum.kFloat),
+                        0.01);
+  }
+  
+  /**
+   * FNEG.S takes the negated value of the float
+   */
+  @Test
+  public void testFNEG_S()
+  {
+    // Setup + exercise
+    cpuConfig.code = "fneg.s f1, f2\n" + "fneg.s f3, f4";
+    Cpu cpu = new Cpu(cpuConfig);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f2").setValue(-8.0f);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f4").setValue(5.0f);
+    cpu.execute();
+    
+    // Assert
+    Assert.assertEquals(8.0f,
+                        (float) cpu.cpuState.unifiedRegisterFileBlock.getRegister("f1").getValue(DataTypeEnum.kFloat),
+                        0.01);
+    Assert.assertEquals(-5.0f,
+                        (float) cpu.cpuState.unifiedRegisterFileBlock.getRegister("f3").getValue(DataTypeEnum.kFloat),
+                        0.01);
+  }
 }

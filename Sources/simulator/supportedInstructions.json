@@ -1781,5 +1781,53 @@
       }
     ],
     "interpretableAs": "\\rs1 bits \\rs2 bits 0x80000000 & ^ float \\rd ="
+  },
+  "fmv.s": {
+    "name": "fmv.s",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kFloat",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kFloat"
+      }
+    ],
+    "interpretableAs": "\\rs1 \\rd ="
+  },
+  "fneg.s": {
+    "name": "fneg.s",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kFloat",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kFloat"
+      }
+    ],
+    "interpretableAs": "0.0f \\rs1 - \\rd ="
+  },
+  "fabs.s": {
+    "name": "fabs.s",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kFloat",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kFloat"
+      }
+    ],
+    "interpretableAs": "\\rs1 bits 0x7fffffff & float \\rd ="
   }
 }
