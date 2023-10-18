@@ -1578,4 +1578,100 @@ public class InstructionTests
                         (float) cpu.cpuState.unifiedRegisterFileBlock.getRegister("f3").getValue(DataTypeEnum.kFloat),
                         0.01);
   }
+  
+  /**
+   * FMV.W.X copies bits from the integer register to the float register
+   */
+  @Test
+  public void testFMV_W_X()
+  {
+    // Setup + exercise
+    cpuConfig.code = "fmv.w.x f1, x2\n" + "fmv.w.x f3, x4";
+    Cpu cpu              = new Cpu(cpuConfig);
+    int twentyEightFloat = 0b0_10000011_11000000000000000000000;
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(twentyEightFloat);
+    cpu.execute();
+    
+    // Assert
+    Assert.assertEquals(28.0f,
+                        (float) cpu.cpuState.unifiedRegisterFileBlock.getRegister("f1").getValue(DataTypeEnum.kFloat),
+                        0.01);
+  }
+  
+  /**
+   * FMV.X.W copies bits from the float register to the integer register
+   */
+  @Test
+  public void testFMV_X_W()
+  {
+    // Setup + exercise
+    cpuConfig.code = "fmv.x.w x1, f2\n" + "fmv.x.w x3, f4";
+    Cpu cpu = new Cpu(cpuConfig);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f2").setValue(28.0f);
+    cpu.execute();
+    
+    // Assert
+    Assert.assertEquals(0b0_10000011_11000000000000000000000,
+                        cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt));
+  }
+  
+  /**
+   * FLT.S sets the _integer_ register to 1 if the rs1 is less than the float register rs2
+   */
+  @Test
+  public void testFLT_S()
+  {
+    // Setup + exercise
+    cpuConfig.code = "flt.s x1, f2, f3\n" + "flt.s x4, f5, f6";
+    Cpu cpu = new Cpu(cpuConfig);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f2").setValue(28.0f);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f3").setValue(29.0f);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f5").setValue(28.0f);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f6").setValue(27.0f);
+    cpu.execute();
+    
+    // Assert
+    Assert.assertEquals(1, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt));
+    Assert.assertEquals(0, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x4").getValue(DataTypeEnum.kInt));
+  }
+  
+  /**
+   * FLE.S sets the _integer_ register to 1 if the rs1 is less than or equal to the float register rs2
+   */
+  @Test
+  public void testFLE_S()
+  {
+    // Setup + exercise
+    cpuConfig.code = "fle.s x1, f2, f3\n" + "fle.s x4, f5, f6";
+    Cpu cpu = new Cpu(cpuConfig);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f2").setValue(28.0f);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f3").setValue(28.0f);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f5").setValue(28.0f);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f6").setValue(27.0f);
+    cpu.execute();
+    
+    // Assert
+    Assert.assertEquals(1, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt));
+    Assert.assertEquals(0, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x4").getValue(DataTypeEnum.kInt));
+  }
+  
+  /**
+   * FEQ.S sets the _integer_ register to 1 if the rs1 is equal to the float register rs2
+   */
+  @Test
+  public void testFEQ_S()
+  {
+    // Setup + exercise
+    cpuConfig.code = "feq.s x1, f2, f3\n" + "feq.s x4, f5, f6";
+    Cpu cpu = new Cpu(cpuConfig);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f2").setValue(28.0f);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f3").setValue(29.0f);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f5").setValue(2.0f);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f6").setValue(2.0f);
+    cpu.execute();
+    
+    // Assert
+    Assert.assertEquals(0, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt));
+    Assert.assertEquals(1, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x4").getValue(DataTypeEnum.kInt));
+  }
 }

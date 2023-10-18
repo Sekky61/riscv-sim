@@ -1829,5 +1829,97 @@
       }
     ],
     "interpretableAs": "\\rs1 bits 0x7fffffff & float \\rd ="
+  },
+  "fmv.x.w": {
+    "name": "fmv.x.w",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kInt",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kFloat"
+      }
+    ],
+    "interpretableAs": "\\rs1 bits \\rd ="
+  },
+  "fmv.w.x": {
+    "name": "fmv.w.x",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kFloat",
+        "writeBack": true
+      },
+      {
+        "name": "rs2",
+        "type": "kInt"
+      }
+    ],
+    "interpretableAs": "\\rs2 float \\rd ="
+  },
+  "flt.s": {
+    "name": "flt.s",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kUInt",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kFloat"
+      },
+      {
+        "name": "rs2",
+        "type": "kFloat"
+      }
+    ],
+    "interpretableAs": "\\rs1 \\rs2 < \\rd ="
+  },
+  "fle.s": {
+    "name": "fle.s",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kUInt",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kFloat"
+      },
+      {
+        "name": "rs2",
+        "type": "kFloat"
+      }
+    ],
+    "interpretableAs": "\\rs1 \\rs2 <= \\rd ="
+  },
+  "feq.s": {
+    "name": "feq.s",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kUInt",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kFloat"
+      },
+      {
+        "name": "rs2",
+        "type": "kFloat"
+      }
+    ],
+    "interpretableAs": "\\rs1 \\rs2 == \\rd ="
   }
 }
