@@ -1585,5 +1585,45 @@
       }
     ],
     "interpretableAs": "\\rs1 \\rs2 * 32l >> \\rd ="
+  },
+  "fmin.s": {
+    "name": "fmin.s",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kFloat",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kFloat"
+      },
+      {
+        "name": "rs2",
+        "type": "kFloat"
+      }
+    ],
+    "interpretableAs": "\\rs1 \\rs2 \\rs1 \\rs2 > pick \\rd ="
+  },
+  "fmax.s": {
+    "name": "fmax.s",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kFloat",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kFloat"
+      },
+      {
+        "name": "rs2",
+        "type": "kFloat"
+      }
+    ],
+    "interpretableAs": "\\rs1 \\rs2 \\rs1 \\rs2 < pick \\rd ="
   }
 }

@@ -1288,4 +1288,52 @@ public class InstructionTests
                         (float) cpu.cpuState.unifiedRegisterFileBlock.getRegister("f4").getValue(DataTypeEnum.kFloat),
                         0.01);
   }
+  
+  /**
+   * FMIN.S does single precision floating point minimum
+   */
+  @Test
+  public void testFMIN_S()
+  {
+    // Setup + exercise
+    cpuConfig.code = "fmin.s f1, f2, f3\n" + "fmin.s f4, f5, f6";
+    Cpu cpu = new Cpu(cpuConfig);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f2").setValue(8.0f);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f3").setValue(3.0f);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f5").setValue(5.0f);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f6").setValue(-2.0f);
+    cpu.execute();
+    
+    // Assert
+    Assert.assertEquals(3.0f,
+                        (float) cpu.cpuState.unifiedRegisterFileBlock.getRegister("f1").getValue(DataTypeEnum.kFloat),
+                        0.01);
+    Assert.assertEquals(-2.0f,
+                        (float) cpu.cpuState.unifiedRegisterFileBlock.getRegister("f4").getValue(DataTypeEnum.kFloat),
+                        0.01);
+  }
+  
+  /**
+   * FMAX.S does single precision floating point maximum
+   */
+  @Test
+  public void testFMAX_S()
+  {
+    // Setup + exercise
+    cpuConfig.code = "fmax.s f1, f2, f3\n" + "fmax.s f4, f5, f6";
+    Cpu cpu = new Cpu(cpuConfig);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f2").setValue(8.0f);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f3").setValue(3.0f);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f5").setValue(5.0f);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f6").setValue(-2.0f);
+    cpu.execute();
+    
+    // Assert
+    Assert.assertEquals(8.0f,
+                        (float) cpu.cpuState.unifiedRegisterFileBlock.getRegister("f1").getValue(DataTypeEnum.kFloat),
+                        0.01);
+    Assert.assertEquals(5.0f,
+                        (float) cpu.cpuState.unifiedRegisterFileBlock.getRegister("f4").getValue(DataTypeEnum.kFloat),
+                        0.01);
+  }
 }

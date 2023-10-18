@@ -60,6 +60,8 @@ import java.util.regex.Pattern;
  *   <li>'<=' - Less than or equal</li>
  *   <li>'==' - Equal</li>
  *   <li>'!=' - Not equal</li>
+ *   <li>'=' - Assign (left to the right)</li>
+ *   <li>'pick' - Pick one of the two variables based on the value of the third variable (false picks the left one)</li>
  * </ul>
  * <p>
  * Examples of valid expressions:
@@ -99,6 +101,11 @@ public class Expression
    * List of supported binary operators
    */
   public static String[] binaryOperators = new String[]{"+", "-", "*", "/", "%", "&", "|", "^", "<<", ">>", ">>>", ">", ">=", "<", "<=", "==", "!=", "="};
+  
+  /**
+   * List of all ternary operators
+   */
+  public static String[] ternaryOperators = new String[]{"pick"};
   
   public static String[] allOperators;
   
@@ -155,6 +162,16 @@ public class Expression
           Variable result = applyBinaryOperator(token, lVariable, rVariable);
           valueStack.push(result);
         }
+      }
+      else if (isTernaryOperator(token))
+      {
+        // Pull three from stack, do operation, push back
+        Variable rVariable = valueStack.pop();
+        Variable mVariable = valueStack.pop();
+        Variable lVariable = valueStack.pop();
+        // Special handling for 'pick' operator
+        Variable result = applyTernaryOperator(token, lVariable, mVariable, rVariable);
+        valueStack.push(result);
       }
       else if (isVariable(token))
       {
@@ -309,6 +326,28 @@ public class Expression
       case kBool -> applyBinaryOperatorBool(operator, (boolean) value, (boolean) value2);
       default -> throw new IllegalArgumentException("Unknown type: " + type);
     };
+  }
+  
+  private static boolean isTernaryOperator(String operator)
+  {
+    return Arrays.asList(ternaryOperators).contains(operator);
+  }
+  
+  private static Variable applyTernaryOperator(String operator,
+                                               Variable lVariable,
+                                               Variable mVariable,
+                                               Variable rVariable)
+  {
+    if (operator.equals("pick"))
+    {
+      // The pick operator is used to select one of the two variables based on the value of the third variable
+      boolean condition = (boolean) rVariable.value.getValue(DataTypeEnum.kBool);
+      return condition ? mVariable : lVariable;
+    }
+    else
+    {
+      throw new IllegalArgumentException("Unknown operator: " + operator);
+    }
   }
   
   /**
