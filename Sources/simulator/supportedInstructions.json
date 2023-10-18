@@ -1501,12 +1501,7 @@
     "name": "ret",
     "instructionType": "kJumpbranch",
     "instructionSyntax": "ret",
-    "arguments": [
-      {
-        "name": "",
-        "type": "kInt"
-      }
-    ],
+    "arguments": [],
     "interpretableAs": "\\x1:true"
   },
   "call": {

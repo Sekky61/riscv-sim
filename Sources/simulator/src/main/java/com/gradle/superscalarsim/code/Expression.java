@@ -450,6 +450,11 @@ public class Expression
     };
   }
   
+  private static long unsignedIntToLong(int i)
+  {
+    return i & 0x0000_0000_ffff_ffffL;
+  }
+  
   private static Variable applyBinaryOperatorInt(String operator, int value, int value2)
   {
     return switch (operator)
@@ -506,11 +511,6 @@ public class Expression
       default ->
               throw new IllegalArgumentException("Unknown operator: " + operator + " for type: " + DataTypeEnum.kUInt);
     };
-  }
-  
-  private static long unsignedIntToLong(int i)
-  {
-    return i & 0x0000_0000_ffff_ffffL;
   }
   
   private static Variable applyBinaryOperatorLong(String operator, long value, long value2)
@@ -618,6 +618,17 @@ public class Expression
       default ->
               throw new IllegalArgumentException("Unknown operator: " + operator + " for type: " + DataTypeEnum.kBool);
     };
+  }
+  
+  /**
+   * @param expression expression to parse
+   *
+   * @return list of variable names in the expression without duplicates and without the leading '\' character
+   */
+  public static List<String> getVariableNames(String expression)
+  {
+    String[] expressionArray = expression.split(" ");
+    return Arrays.stream(expressionArray).filter(Expression::isVariable).distinct().map(s -> s.substring(1)).toList();
   }
   
   /**

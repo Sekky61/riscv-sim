@@ -231,6 +231,8 @@ public class InstructionFetchBlock implements AbstractBlock
         }
       }
       
+      // TODO: If we cannot follow anymore, do we still fetch instructions, or end early?
+      // And does it matter if the branch is taken?
       boolean branchPredicted = isBranchingPredicted(pcCounter);
       if (branchPredicted && followedBranches < branchFollowLimit)
       {

@@ -156,7 +156,8 @@ public class CodeLoadStoreInterpreter
     }
     String addressExpr = interpretableAsParams[2];
     
-    List<Expression.Variable> variables = codeModel.getVariables(registerFileBlock);
+    List<String>              varNames  = Expression.getVariableNames(addressExpr);
+    List<Expression.Variable> variables = codeModel.getVariables(varNames, registerFileBlock);
     
     Expression.Variable addressResult = Expression.interpret(addressExpr, variables);
     if (addressResult == null)

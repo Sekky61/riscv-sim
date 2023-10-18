@@ -43,6 +43,7 @@ import com.gradle.superscalarsim.models.SimCodeModel;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.OptionalInt;
 
 /**
  * @class DecodeAndDispatchBlock
@@ -385,8 +386,9 @@ public class DecodeAndDispatchBlock implements AbstractBlock
     boolean prediction          = codeModel.isBranchPredicted();
     // -1 means that entry was not predicted
     // TODO: this line is sus
-    int predTarget = this.branchTargetBuffer.getEntryTarget(instructionPosition);
-    int realTarget = calculateRealBranchAddress(codeModel);
+    int         predTarget    = this.branchTargetBuffer.getEntryTarget(instructionPosition);
+    OptionalInt realTargetOpt = calculateRealBranchAddress(codeModel);
+    int         realTarget    = realTargetOpt.orElse(-1);
     
     boolean globalHistoryBit = prediction && predTarget != 0;
     boolean jumpBad          = unconditional && realTarget != predTarget;
@@ -407,30 +409,33 @@ public class DecodeAndDispatchBlock implements AbstractBlock
   //----------------------------------------------------------------------
   
   /**
-   * @param [in] codeModel - branch code model
+   * @param codeModel Branch code model
    *
-   * @return Branch jump target, regardless of prediction
+   * @return Branch jump target if possible to calculate in decode stage, empty otherwise
    * @brief Calculates branch instruction target if possible (label or offset)
    */
-  private int calculateRealBranchAddress(final SimCodeModel codeModel)
+  private OptionalInt calculateRealBranchAddress(final SimCodeModel codeModel)
   {
     // TODO: jalr instruction bases offset on register value, can we handle that?
-    // TODO: also jr instruction
+    // TODO: also jr, ret instruction
     // Or, should it fall through and be caught later as bad prediction?
     InputCodeArgument immediateArgument = codeModel.getArgumentByName("imm");
     if (immediateArgument == null)
     {
-      throw new RuntimeException("Branch instruction does not have immediate argument");
+      // Cannot predict, continue on next instruction
+      return OptionalInt.empty();
+      //      throw new RuntimeException("Branch instruction does not have immediate argument");
     }
     // If there is label, get its position
     int labelOffset = instructionMemoryBlock.getLabelPosition(immediateArgument.getValue());
     if (labelOffset == -1)
     {
       // No label found -- this must be a relative jump (imm is relative to current pc)
-      return codeModel.getSavedPc() + Integer.parseInt(immediateArgument.getValue());
+      int x = codeModel.getSavedPc() + Integer.parseInt(immediateArgument.getValue());
+      return OptionalInt.of(x);
     }
     // Jump after label
-    return labelOffset;
+    return OptionalInt.of(labelOffset);
   }// end of calculateRealBranchAddress
   //----------------------------------------------------------------------
   

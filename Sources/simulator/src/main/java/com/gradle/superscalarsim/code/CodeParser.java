@@ -401,6 +401,7 @@ public class CodeParser
     // TODO: bugs like: addi x1(x2(x3
     boolean         openParen         = false;
     boolean         expectingArgState = true;
+    boolean         followsSeparator  = false;
     List<CodeToken> collectedArgs     = new ArrayList<>();
     while (true)
     {
@@ -409,9 +410,23 @@ public class CodeParser
       
       if (expectingArgState)
       {
+        if (!currentToken.type().equals(CodeToken.Type.SYMBOL))
+        {
+          if (followsSeparator)
+          {
+            addError(currentToken, "Expected argument, got " + currentToken.type());
+            return null;
+          }
+          else
+          {
+            // Not an error (zero arguments?)
+            return collectedArgs;
+          }
+        }
         collectedArgs.add(currentToken);
         nextToken();
         expectingArgState = false; // Now a comma
+        followsSeparator  = false;
         continue;
       }
       
@@ -435,6 +450,7 @@ public class CodeParser
       else if (isComma || isParen)
       {
         expectingArgState = true;
+        followsSeparator  = true;
         if (isParen)
         {
           openParen = true;

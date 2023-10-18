@@ -63,7 +63,7 @@ public class CodeArithmeticInterpreter
    * @param simCodeModel Executed instruction
    *
    * @return Double value based on interpreted instruction
-   * @brief Evaluates expressions divided by semicolon ';'
+   * @brief Evaluates expression
    */
   public Expression.Variable interpretInstruction(final SimCodeModel simCodeModel)
   {
@@ -73,14 +73,11 @@ public class CodeArithmeticInterpreter
       throw new IllegalArgumentException("Instruction is null");
     }
     
-    List<Expression.Variable> variables = simCodeModel.getVariables(registerFileBlock);
-    
-    // Evaluate each expression
-    String[] splitInterpretable = instruction.getInterpretableAs().split(";");
-    for (String expression : splitInterpretable)
-    {
-      Expression.interpret(expression, variables);
-    }
+    // Evaluate expression
+    String                    expression = instruction.getInterpretableAs();
+    List<String>              varNames   = Expression.getVariableNames(expression);
+    List<Expression.Variable> variables  = simCodeModel.getVariables(varNames, registerFileBlock);
+    Expression.interpret(expression, variables);
     
     // return "rd"
     return variables.stream().filter(variable -> variable.tag.equals("rd")).findFirst().orElse(null);

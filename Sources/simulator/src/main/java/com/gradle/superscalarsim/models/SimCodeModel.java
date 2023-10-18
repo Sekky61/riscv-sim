@@ -309,19 +309,6 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>
   }// end of setHasFailed
   //------------------------------------------------------
   
-  /**
-   * @return Saved value of the PC, when instruction was fetched
-   */
-  public int getSavedPc()
-  {
-    return savedPc;
-  }
-  
-  public void setSavedPc(int savedPc)
-  {
-    this.savedPc = savedPc;
-  }
-  
   public boolean isBranchPredicted()
   {
     return branchPredicted;
@@ -480,38 +467,71 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>
   /**
    * @return Variables used in the instruction in the form for expression evaluation
    */
-  public List<Expression.Variable> getVariables(UnifiedRegisterFileBlock registerFileBlock)
+  public List<Expression.Variable> getVariables(List<String> variableNames, UnifiedRegisterFileBlock registerFileBlock)
   {
     List<Expression.Variable> variables                = new ArrayList<>();
     InstructionFunctionModel  instructionFunctionModel = getInstructionFunctionModel();
     
-    for (InstructionFunctionModel.Argument argument : instructionFunctionModel.getArguments())
+    for (String varName : variableNames)
     {
-      String name        = argument.name();
-      String renamedName = getArgumentByName(name).getValue();
-      // Check if value is register
-      RegisterModel register = registerFileBlock.getRegister(renamedName);
-      if (register != null)
+      if (varName.equals("pc"))
       {
-        variables.add(new Expression.Variable(name, argument.type(), register.getValueContainer()));
+        variables.add(new Expression.Variable("pc", DataTypeEnum.kInt, RegisterDataContainer.fromValue(getSavedPc())));
+        continue;
+      }
+      // We need to find varName in the arguments or in the register file
+      InstructionFunctionModel.Argument argument = instructionFunctionModel.getArgumentByName(varName);
+      if (argument != null)
+      {
+        String name        = argument.name();
+        String renamedName = getArgumentByName(name).getValue();
+        // Check if value is register
+        RegisterModel register = registerFileBlock.getRegister(renamedName);
+        if (register != null)
+        {
+          variables.add(new Expression.Variable(name, argument.type(), register.getValueContainer()));
+        }
+        else
+        {
+          // it is immediate
+          Expression.Variable parsed = Expression.parseConstant(renamedName);
+          if (parsed != null)
+          {
+            parsed.tag  = name;
+            parsed.type = argument.type();
+            variables.add(parsed);
+          }
+          // Could not parse. Maybe it is a label. Skip now.
+        }
       }
       else
       {
-        // it is immediate
-        Expression.Variable parsed = Expression.parseConstant(renamedName);
-        if (parsed != null)
+        // Check if value is register
+        RegisterModel register = registerFileBlock.getRegister(varName);
+        if (register != null)
         {
-          parsed.tag  = name;
-          parsed.type = argument.type();
-          variables.add(parsed);
+          variables.add(new Expression.Variable(varName, register.getDataType(), register.getValueContainer()));
         }
-        // Could not parse. Maybe it is a label. Skip now.
+        else
+        {
+          throw new RuntimeException("Variable " + varName + " not found in " + this);
+        }
       }
     }
     
-    // Add pc
-    variables.add(new Expression.Variable("pc", DataTypeEnum.kInt, RegisterDataContainer.fromValue(getSavedPc())));
-    
     return variables;
+  }
+  
+  /**
+   * @return Saved value of the PC, when instruction was fetched
+   */
+  public int getSavedPc()
+  {
+    return savedPc;
+  }
+  
+  public void setSavedPc(int savedPc)
+  {
+    this.savedPc = savedPc;
   }
 }

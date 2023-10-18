@@ -136,7 +136,14 @@ public class InstructionFunctionModel
    */
   public DataTypeEnum getDataType()
   {
-    return arguments.get(0).type;
+    if (arguments.isEmpty())
+    {
+      return null;
+    }
+    else
+    {
+      return arguments.get(0).type;
+    }
   }
   
   /**

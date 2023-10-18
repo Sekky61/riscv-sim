@@ -103,7 +103,8 @@ public class CodeBranchInterpreter
     }
     String                    targetExpr    = splitInterpretableAs[0];
     String                    conditionExpr = splitInterpretableAs[1];
-    List<Expression.Variable> variables     = codeModel.getVariables(registerFileBlock);
+    List<String>              varNames      = Expression.getVariableNames(targetExpr + " " + conditionExpr);
+    List<Expression.Variable> variables     = codeModel.getVariables(varNames, registerFileBlock);
     
     // Check if condition is met
     Expression.Variable exprResult    = Expression.interpret(conditionExpr, variables);

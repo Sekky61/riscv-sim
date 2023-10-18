@@ -57,27 +57,29 @@ public class CodeParserTest
   }
   
   @Test
-  public void parseCode_codeWithLabel_returnTrueAndParsedCodeHasSixInstr()
+  public void parseCode_codeWithLabel_returnTrueAndParsedCodeHasFourInstr()
   {
     String code = """
             one:   add x1, x2, x3
             two:   fcvt.w.s x1, f3
+            ret
             three: fadd f1, f2, f3
             """;
     codeParser.parseCode(code);
     
     Assert.assertTrue(codeParser.success());
-    Assert.assertEquals(3, codeParser.getInstructions().size());
+    Assert.assertEquals(4, codeParser.getInstructions().size());
     Assert.assertTrue(codeParser.getErrorMessages().isEmpty());
     
     Assert.assertEquals("add", codeParser.getInstructions().get(0).getInstructionName());
     Assert.assertEquals("fcvt.w.s", codeParser.getInstructions().get(1).getInstructionName());
-    Assert.assertEquals("fadd", codeParser.getInstructions().get(2).getInstructionName());
+    Assert.assertEquals("ret", codeParser.getInstructions().get(2).getInstructionName());
+    Assert.assertEquals("fadd", codeParser.getInstructions().get(3).getInstructionName());
     
     // Parser does not deal in bytes, but index offsets
     Assert.assertEquals(0, (int) codeParser.getLabels().get("one"));
     Assert.assertEquals(1, (int) codeParser.getLabels().get("two"));
-    Assert.assertEquals(2, (int) codeParser.getLabels().get("three"));
+    Assert.assertEquals(3, (int) codeParser.getLabels().get("three"));
   }
   
   @Test

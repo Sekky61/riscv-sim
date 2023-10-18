@@ -1576,9 +1576,9 @@ public class ForwardSimulationTest
     // beq x3 x0 labelIf
     // subi x1 x1 10
     // jal x0 labelFin
-    // labelIf
+    // labelIf:
     // addi x1 x1 10
-    // labelFin
+    // labelFin:
     
     this.cpu.step();
     // 3 fetches
