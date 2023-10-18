@@ -96,8 +96,8 @@
     ],
     "interpretableAs": "\\rs1 1 + \\rd ="
   },
-  "fdiv": {
-    "name": "fdiv",
+  "fdiv.s": {
+    "name": "fdiv.s",
     "instructionType": "kArithmetic",
     "arguments": [
       {
@@ -273,8 +273,8 @@
     ],
     "interpretableAs": "\\rs1 \\imm >>> \\rd ="
   },
-  "fmul": {
-    "name": "fmul",
+  "fmul.s": {
+    "name": "fmul.s",
     "instructionType": "kArithmetic",
     "arguments": [
       {
@@ -700,8 +700,8 @@
     ],
     "interpretableAs": "\\rs1 \\imm << \\rd ="
   },
-  "fsqrt": {
-    "name": "fsqrt",
+  "fsqrt.s": {
+    "name": "fsqrt.s",
     "instructionType": "kArithmetic",
     "arguments": [
       {
@@ -716,8 +716,8 @@
     ],
     "interpretableAs": "\\rs1 sqrt \\rd ="
   },
-  "fsub": {
-    "name": "fsub",
+  "fsub.s": {
+    "name": "fsub.s",
     "instructionType": "kArithmetic",
     "arguments": [
       {
@@ -792,8 +792,8 @@
     ],
     "interpretableAs": "load:8:\\rs1 \\imm +"
   },
-  "fadd": {
-    "name": "fadd",
+  "fadd.s": {
+    "name": "fadd.s",
     "instructionType": "kArithmetic",
     "arguments": [
       {

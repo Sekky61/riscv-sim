@@ -38,7 +38,7 @@ public class CodeParserTest
     String code = """
             add x1, x2, x3
             fcvt.w.s x1, f3
-            fadd f1, f2, f3
+            fadd.s f1, f2, f3
             """;
     codeParser.parseCode(code);
     
@@ -49,7 +49,7 @@ public class CodeParserTest
     
     Assert.assertEquals("add", codeParser.getInstructions().get(0).getInstructionName());
     Assert.assertEquals("fcvt.w.s", codeParser.getInstructions().get(1).getInstructionName());
-    Assert.assertEquals("fadd", codeParser.getInstructions().get(2).getInstructionName());
+    Assert.assertEquals("fadd.s", codeParser.getInstructions().get(2).getInstructionName());
     
     Assert.assertEquals("x1", codeParser.getInstructions().get(0).getArgumentByName("rd").getValue());
     Assert.assertEquals("x2", codeParser.getInstructions().get(0).getArgumentByName("rs1").getValue());
@@ -63,7 +63,7 @@ public class CodeParserTest
             one:   add x1, x2, x3
             two:   fcvt.w.s x1, f3
             ret
-            three: fadd f1, f2, f3
+            three: fadd.s f1, f2, f3
             """;
     codeParser.parseCode(code);
     
@@ -74,7 +74,7 @@ public class CodeParserTest
     Assert.assertEquals("add", codeParser.getInstructions().get(0).getInstructionName());
     Assert.assertEquals("fcvt.w.s", codeParser.getInstructions().get(1).getInstructionName());
     Assert.assertEquals("ret", codeParser.getInstructions().get(2).getInstructionName());
-    Assert.assertEquals("fadd", codeParser.getInstructions().get(3).getInstructionName());
+    Assert.assertEquals("fadd.s", codeParser.getInstructions().get(3).getInstructionName());
     
     // Parser does not deal in bytes, but index offsets
     Assert.assertEquals(0, (int) codeParser.getLabels().get("one"));
@@ -91,7 +91,7 @@ public class CodeParserTest
             two:
             fcvt.w.s x1, f3
             three:
-            fadd f1, f2, f3
+            fadd.s f1, f2, f3
             """;
     codeParser.parseCode(code);
     
@@ -101,7 +101,7 @@ public class CodeParserTest
     
     Assert.assertEquals("add", codeParser.getInstructions().get(0).getInstructionName());
     Assert.assertEquals("fcvt.w.s", codeParser.getInstructions().get(1).getInstructionName());
-    Assert.assertEquals("fadd", codeParser.getInstructions().get(2).getInstructionName());
+    Assert.assertEquals("fadd.s", codeParser.getInstructions().get(2).getInstructionName());
     
     Assert.assertEquals(0, (int) codeParser.getLabels().get("one"));
     Assert.assertEquals(1, (int) codeParser.getLabels().get("two"));
@@ -117,7 +117,7 @@ public class CodeParserTest
             one:
             fcvt.w.s x1, f3
             one:
-            fadd f1, f2, f3
+            fadd.s f1, f2, f3
             """;
     codeParser.parseCode(code);
     
@@ -136,7 +136,7 @@ public class CodeParserTest
             add x1, x2, x3
             fcvt.w.s x1, f3
             beq x1, x2, two
-            fadd f1, f2, f3
+            fadd.s f1, f2, f3
             """;
     codeParser.parseCode(code);
     
@@ -171,7 +171,7 @@ public class CodeParserTest
     String code = """
             add x1, x2
             fcvt.w.s x1, f3
-            fadd f1, f2, f3
+            fadd.s f1, f2, f3
             """;
     codeParser.parseCode(code);
     
@@ -186,7 +186,7 @@ public class CodeParserTest
     String code = """
             add x1, x2, x3
             fcvt.w.s f3, x1, x1
-            fadd f1, f2, f3
+            fadd.s f1, f2, f3
             """;
     codeParser.parseCode(code);
     
@@ -203,7 +203,7 @@ public class CodeParserTest
     String code = """
             add x1, x2, x3
             someRandomInstruction f3, x1 # a comment here
-            fadd f1, f2, f3
+            fadd.s f1, f2, f3
             """;
     codeParser.parseCode(code);
     
@@ -220,7 +220,7 @@ public class CodeParserTest
     String code = """
             add x1, x2, x3 # commas required
             fcvt.w.s x1, f3
-            fadd 20, f2, f3
+            fadd.s 20, f2, f3
             """;
     codeParser.parseCode(code);
     
@@ -237,7 +237,7 @@ public class CodeParserTest
     String code = """
             add x1, x2, x3
             fcvt.w.s x1, f3
-            fadd 0x20, f2, f3
+            fadd.s 0x20, f2, f3
             """;
     codeParser.parseCode(code);
     
@@ -253,7 +253,7 @@ public class CodeParserTest
     String code = """
             add x1, value, x2
             fcvt.w.s x1, f3
-            fadd f1, f2, f3
+            fadd.s f1, f2, f3
             """;
     codeParser.parseCode(code);
     
@@ -269,7 +269,7 @@ public class CodeParserTest
     String code = """
             add x1, x2, 0x01
             fcvt.w.s x1, f3
-            fadd f1, f2, f3
+            fadd.s f1, f2, f3
             """;
     codeParser.parseCode(code);
     
@@ -285,7 +285,7 @@ public class CodeParserTest
     String code = """
             addi x1, x2, x3
             fcvt.w.s x1, f3
-            fadd f1, f2, f3
+            fadd.s f1, f2, f3
             """;
     codeParser.parseCode(code);
     
@@ -300,7 +300,7 @@ public class CodeParserTest
     String code = """
             addi x1, x2, x3
             fcvt.w.s x1, f3, x2
-            fadd 0x01, f2, f3
+            fadd.s 0x01, f2, f3
             """;
     codeParser.parseCode(code);
     
@@ -358,7 +358,7 @@ public class CodeParserTest
   {
     // sp is an int register alias, using it in a float instruction should fail
     String code = """
-            fadd f1, sp ,f2
+            fadd.s f1, sp ,f2
             """;
     codeParser.parseCode(code);
     

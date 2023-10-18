@@ -527,7 +527,7 @@ public class BackwardSimulationTest
   public void simulateBackwards_oneFloatInstruction_simulateToEndAndBack()
   {
     setUp("""
-                  fadd f1, f2, f3
+                  fadd.s f1, f2, f3
                   """);
     
     this.cpu.step();
@@ -553,21 +553,21 @@ public class BackwardSimulationTest
     this.cpu.stepBack();
     Assert.assertTrue(this.cpu.cpuState.fpIssueWindowBlock.getIssuedInstructions().isEmpty());
     Assert.assertFalse(getFaddFunctionBlock(cpu).isFunctionUnitEmpty());
-    Assert.assertEquals("fadd", getFaddFunctionBlock(cpu).getSimCodeModel().getInstructionName());
+    Assert.assertEquals("fadd.s", getFaddFunctionBlock(cpu).getSimCodeModel().getInstructionName());
     Assert.assertTrue(this.cpu.cpuState.reorderBufferBlock.getFlagsMap().get(0).isBusy());
     
     this.cpu.stepBack();
     Assert.assertTrue(this.cpu.cpuState.fpIssueWindowBlock.getIssuedInstructions().isEmpty());
     Assert.assertFalse(getFaddFunctionBlock(cpu).isFunctionUnitEmpty());
-    Assert.assertEquals("fadd", getFaddFunctionBlock(cpu).getSimCodeModel().getInstructionName());
+    Assert.assertEquals("fadd.s", getFaddFunctionBlock(cpu).getSimCodeModel().getInstructionName());
     Assert.assertTrue(this.cpu.cpuState.reorderBufferBlock.getFlagsMap().get(0).isBusy());
     
     this.cpu.stepBack();
     Assert.assertTrue(this.cpu.cpuState.decodeAndDispatchBlock.getAfterRenameCodeList().isEmpty());
-    Assert.assertEquals("fadd",
+    Assert.assertEquals("fadd.s",
                         this.cpu.cpuState.fpIssueWindowBlock.getIssuedInstructions().get(0).getInstructionName());
     Assert.assertFalse(this.cpu.cpuState.reorderBufferBlock.getReorderQueue().isEmpty());
-    Assert.assertEquals("fadd", this.cpu.cpuState.reorderBufferBlock.getReorderQueue().peek().getInstructionName());
+    Assert.assertEquals("fadd.s", this.cpu.cpuState.reorderBufferBlock.getReorderQueue().peek().getInstructionName());
     Assert.assertTrue(this.cpu.cpuState.reorderBufferBlock.getFlagsMap().get(0).isBusy());
     Assert.assertTrue(this.cpu.cpuState.reorderBufferBlock.getFlagsMap().get(0).isValid());
     Assert.assertFalse(this.cpu.cpuState.reorderBufferBlock.getFlagsMap().get(0).isSpeculative());
@@ -577,9 +577,9 @@ public class BackwardSimulationTest
     Assert.assertEquals("nop", this.cpu.cpuState.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
     Assert.assertEquals("nop", this.cpu.cpuState.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
     Assert.assertEquals("nop", this.cpu.cpuState.instructionFetchBlock.getFetchedCode().get(2).getInstructionName());
-    Assert.assertEquals("fadd",
+    Assert.assertEquals("fadd.s",
                         this.cpu.cpuState.decodeAndDispatchBlock.getAfterRenameCodeList().get(0).getInstructionName());
-    Assert.assertEquals("fadd tg0,f2,f3",
+    Assert.assertEquals("fadd.s tg0,f2,f3",
                         this.cpu.cpuState.decodeAndDispatchBlock.getAfterRenameCodeList().get(0).getRenamedCodeLine());
     Assert.assertTrue(this.cpu.cpuState.fpIssueWindowBlock.getIssuedInstructions().isEmpty());
     Assert.assertTrue(this.cpu.cpuState.reorderBufferBlock.getReorderQueue().isEmpty());
@@ -588,7 +588,7 @@ public class BackwardSimulationTest
     
     this.cpu.stepBack();
     Assert.assertEquals(12, this.cpu.cpuState.instructionFetchBlock.getPcCounter());
-    Assert.assertEquals("fadd", this.cpu.cpuState.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
+    Assert.assertEquals("fadd.s", this.cpu.cpuState.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
     Assert.assertEquals("nop", this.cpu.cpuState.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
     Assert.assertEquals("nop", this.cpu.cpuState.instructionFetchBlock.getFetchedCode().get(2).getInstructionName());
     Assert.assertTrue(this.cpu.cpuState.decodeAndDispatchBlock.getAfterRenameCodeList().isEmpty());
@@ -606,9 +606,9 @@ public class BackwardSimulationTest
   public void simulateBackwards_threeFloatRawInstructions_simulateToEndAndBack()
   {
     setUp("""
-                  fadd f3, f4, f5
-                  fadd f2, f3, f4
-                  fadd f1, f2, f3
+                  fadd.s f3, f4, f5
+                  fadd.s f2, f3, f4
+                  fadd.s f1, f2, f3
                   """);
     
     
@@ -649,7 +649,7 @@ public class BackwardSimulationTest
     Assert.assertFalse(getFaddFunctionBlock(cpu).isFunctionUnitEmpty());
     Assert.assertTrue(getFaddSecondFunctionBlock(cpu).isFunctionUnitEmpty());
     Assert.assertEquals(1, this.cpu.cpuState.reorderBufferBlock.getReorderQueue().size());
-    Assert.assertEquals("fadd", getFaddFunctionBlock(cpu).getSimCodeModel().getInstructionName());
+    Assert.assertEquals("fadd.s", getFaddFunctionBlock(cpu).getSimCodeModel().getInstructionName());
     Assert.assertEquals(RegisterReadinessEnum.kAssigned,
                         this.cpu.cpuState.unifiedRegisterFileBlock.getRegister("tg1").getReadiness());
     Assert.assertTrue(this.cpu.cpuState.reorderBufferBlock.getFlagsMap().get(2).isBusy());
@@ -658,7 +658,7 @@ public class BackwardSimulationTest
     Assert.assertTrue(this.cpu.cpuState.fpIssueWindowBlock.getIssuedInstructions().isEmpty());
     Assert.assertFalse(getFaddFunctionBlock(cpu).isFunctionUnitEmpty());
     Assert.assertTrue(getFaddSecondFunctionBlock(cpu).isFunctionUnitEmpty());
-    Assert.assertEquals("fadd", getFaddFunctionBlock(cpu).getSimCodeModel().getInstructionName());
+    Assert.assertEquals("fadd.s", getFaddFunctionBlock(cpu).getSimCodeModel().getInstructionName());
     Assert.assertTrue(this.cpu.cpuState.reorderBufferBlock.getFlagsMap().get(1).isReadyToBeCommitted());
     Assert.assertEquals(RegisterReadinessEnum.kExecuted,
                         this.cpu.cpuState.unifiedRegisterFileBlock.getRegister("tg1").getReadiness());
@@ -666,11 +666,11 @@ public class BackwardSimulationTest
     
     this.cpu.stepBack();
     Assert.assertEquals(1, this.cpu.cpuState.fpIssueWindowBlock.getIssuedInstructions().size());
-    Assert.assertEquals("fadd tg2,tg1,tg0",
+    Assert.assertEquals("fadd.s tg2,tg1,tg0",
                         this.cpu.cpuState.fpIssueWindowBlock.getIssuedInstructions().get(0).getRenamedCodeLine());
     Assert.assertFalse(getFaddFunctionBlock(cpu).isFunctionUnitEmpty());
     Assert.assertTrue(getFaddSecondFunctionBlock(cpu).isFunctionUnitEmpty());
-    Assert.assertEquals("fadd", getFaddFunctionBlock(cpu).getSimCodeModel().getInstructionName());
+    Assert.assertEquals("fadd.s", getFaddFunctionBlock(cpu).getSimCodeModel().getInstructionName());
     Assert.assertEquals(2, this.cpu.cpuState.reorderBufferBlock.getReorderQueue().size());
     Assert.assertEquals(RegisterReadinessEnum.kAssigned,
                         this.cpu.cpuState.unifiedRegisterFileBlock.getRegister("tg0").getReadiness());
@@ -679,11 +679,11 @@ public class BackwardSimulationTest
     
     this.cpu.stepBack();
     Assert.assertEquals(1, this.cpu.cpuState.fpIssueWindowBlock.getIssuedInstructions().size());
-    Assert.assertEquals("fadd tg2,tg1,tg0",
+    Assert.assertEquals("fadd.s tg2,tg1,tg0",
                         this.cpu.cpuState.fpIssueWindowBlock.getIssuedInstructions().get(0).getRenamedCodeLine());
     Assert.assertFalse(getFaddFunctionBlock(cpu).isFunctionUnitEmpty());
     Assert.assertTrue(getFaddSecondFunctionBlock(cpu).isFunctionUnitEmpty());
-    Assert.assertEquals("fadd", getFaddFunctionBlock(cpu).getSimCodeModel().getInstructionName());
+    Assert.assertEquals("fadd.s", getFaddFunctionBlock(cpu).getSimCodeModel().getInstructionName());
     Assert.assertTrue(this.cpu.cpuState.reorderBufferBlock.getFlagsMap().get(0).isReadyToBeCommitted());
     Assert.assertEquals(RegisterReadinessEnum.kExecuted,
                         this.cpu.cpuState.unifiedRegisterFileBlock.getRegister("tg0").getReadiness());
@@ -692,26 +692,26 @@ public class BackwardSimulationTest
     
     this.cpu.stepBack();
     Assert.assertEquals(2, this.cpu.cpuState.fpIssueWindowBlock.getIssuedInstructions().size());
-    Assert.assertEquals("fadd tg1,tg0,f4",
+    Assert.assertEquals("fadd.s tg1,tg0,f4",
                         this.cpu.cpuState.fpIssueWindowBlock.getIssuedInstructions().get(0).getRenamedCodeLine());
-    Assert.assertEquals("fadd tg2,tg1,tg0",
+    Assert.assertEquals("fadd.s tg2,tg1,tg0",
                         this.cpu.cpuState.fpIssueWindowBlock.getIssuedInstructions().get(1).getRenamedCodeLine());
     Assert.assertFalse(getFaddFunctionBlock(cpu).isFunctionUnitEmpty());
     Assert.assertTrue(getFaddSecondFunctionBlock(cpu).isFunctionUnitEmpty());
-    Assert.assertEquals("fadd", getFaddFunctionBlock(cpu).getSimCodeModel().getInstructionName());
+    Assert.assertEquals("fadd.s", getFaddFunctionBlock(cpu).getSimCodeModel().getInstructionName());
     Assert.assertTrue(this.cpu.cpuState.reorderBufferBlock.getFlagsMap().get(0).isBusy());
     Assert.assertTrue(this.cpu.cpuState.reorderBufferBlock.getFlagsMap().get(1).isBusy());
     Assert.assertTrue(this.cpu.cpuState.reorderBufferBlock.getFlagsMap().get(2).isBusy());
     
     this.cpu.stepBack();
     Assert.assertEquals(2, this.cpu.cpuState.fpIssueWindowBlock.getIssuedInstructions().size());
-    Assert.assertEquals("fadd tg1,tg0,f4",
+    Assert.assertEquals("fadd.s tg1,tg0,f4",
                         this.cpu.cpuState.fpIssueWindowBlock.getIssuedInstructions().get(0).getRenamedCodeLine());
-    Assert.assertEquals("fadd tg2,tg1,tg0",
+    Assert.assertEquals("fadd.s tg2,tg1,tg0",
                         this.cpu.cpuState.fpIssueWindowBlock.getIssuedInstructions().get(1).getRenamedCodeLine());
     Assert.assertFalse(getFaddFunctionBlock(cpu).isFunctionUnitEmpty());
     Assert.assertTrue(getFaddSecondFunctionBlock(cpu).isFunctionUnitEmpty());
-    Assert.assertEquals("fadd", getFaddFunctionBlock(cpu).getSimCodeModel().getInstructionName());
+    Assert.assertEquals("fadd.s", getFaddFunctionBlock(cpu).getSimCodeModel().getInstructionName());
     Assert.assertTrue(this.cpu.cpuState.reorderBufferBlock.getFlagsMap().get(0).isBusy());
     Assert.assertTrue(this.cpu.cpuState.reorderBufferBlock.getFlagsMap().get(1).isBusy());
     Assert.assertTrue(this.cpu.cpuState.reorderBufferBlock.getFlagsMap().get(2).isBusy());
@@ -721,15 +721,15 @@ public class BackwardSimulationTest
     Assert.assertEquals(0, this.cpu.cpuState.fpIssueWindowBlock.getIssuedInstructions().get(0).getId());
     Assert.assertEquals(1, this.cpu.cpuState.fpIssueWindowBlock.getIssuedInstructions().get(1).getId());
     Assert.assertEquals(2, this.cpu.cpuState.fpIssueWindowBlock.getIssuedInstructions().get(2).getId());
-    Assert.assertEquals("fadd tg0,f4,f5",
+    Assert.assertEquals("fadd.s tg0,f4,f5",
                         this.cpu.cpuState.fpIssueWindowBlock.getIssuedInstructions().get(0).getRenamedCodeLine());
-    Assert.assertEquals("fadd tg1,tg0,f4",
+    Assert.assertEquals("fadd.s tg1,tg0,f4",
                         this.cpu.cpuState.fpIssueWindowBlock.getIssuedInstructions().get(1).getRenamedCodeLine());
-    Assert.assertEquals("fadd tg2,tg1,tg0",
+    Assert.assertEquals("fadd.s tg2,tg1,tg0",
                         this.cpu.cpuState.fpIssueWindowBlock.getIssuedInstructions().get(2).getRenamedCodeLine());
     Assert.assertFalse(this.cpu.cpuState.reorderBufferBlock.getReorderQueue().isEmpty());
     Assert.assertEquals(3, this.cpu.cpuState.reorderBufferBlock.getReorderQueue().size());
-    Assert.assertEquals("fadd", this.cpu.cpuState.reorderBufferBlock.getReorderQueue().peek().getInstructionName());
+    Assert.assertEquals("fadd.s", this.cpu.cpuState.reorderBufferBlock.getReorderQueue().peek().getInstructionName());
     Assert.assertTrue(this.cpu.cpuState.reorderBufferBlock.getFlagsMap().get(0).isBusy());
     Assert.assertTrue(this.cpu.cpuState.reorderBufferBlock.getFlagsMap().get(1).isBusy());
     Assert.assertTrue(this.cpu.cpuState.reorderBufferBlock.getFlagsMap().get(2).isBusy());
@@ -740,17 +740,17 @@ public class BackwardSimulationTest
     Assert.assertEquals("nop", this.cpu.cpuState.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
     Assert.assertEquals("nop", this.cpu.cpuState.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
     Assert.assertEquals("nop", this.cpu.cpuState.instructionFetchBlock.getFetchedCode().get(2).getInstructionName());
-    Assert.assertEquals("fadd",
+    Assert.assertEquals("fadd.s",
                         this.cpu.cpuState.decodeAndDispatchBlock.getAfterRenameCodeList().get(0).getInstructionName());
-    Assert.assertEquals("fadd",
+    Assert.assertEquals("fadd.s",
                         this.cpu.cpuState.decodeAndDispatchBlock.getAfterRenameCodeList().get(1).getInstructionName());
-    Assert.assertEquals("fadd",
+    Assert.assertEquals("fadd.s",
                         this.cpu.cpuState.decodeAndDispatchBlock.getAfterRenameCodeList().get(2).getInstructionName());
-    Assert.assertEquals("fadd tg0,f4,f5",
+    Assert.assertEquals("fadd.s tg0,f4,f5",
                         this.cpu.cpuState.decodeAndDispatchBlock.getAfterRenameCodeList().get(0).getRenamedCodeLine());
-    Assert.assertEquals("fadd tg1,tg0,f4",
+    Assert.assertEquals("fadd.s tg1,tg0,f4",
                         this.cpu.cpuState.decodeAndDispatchBlock.getAfterRenameCodeList().get(1).getRenamedCodeLine());
-    Assert.assertEquals("fadd tg2,tg1,tg0",
+    Assert.assertEquals("fadd.s tg2,tg1,tg0",
                         this.cpu.cpuState.decodeAndDispatchBlock.getAfterRenameCodeList().get(2).getRenamedCodeLine());
     Assert.assertTrue(this.cpu.cpuState.fpIssueWindowBlock.getIssuedInstructions().isEmpty());
     Assert.assertTrue(this.cpu.cpuState.reorderBufferBlock.getReorderQueue().isEmpty());
@@ -763,9 +763,9 @@ public class BackwardSimulationTest
     
     this.cpu.stepBack();
     Assert.assertEquals(12, this.cpu.cpuState.instructionFetchBlock.getPcCounter());
-    Assert.assertEquals("fadd", this.cpu.cpuState.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
-    Assert.assertEquals("fadd", this.cpu.cpuState.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
-    Assert.assertEquals("fadd", this.cpu.cpuState.instructionFetchBlock.getFetchedCode().get(2).getInstructionName());
+    Assert.assertEquals("fadd.s", this.cpu.cpuState.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
+    Assert.assertEquals("fadd.s", this.cpu.cpuState.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
+    Assert.assertEquals("fadd.s", this.cpu.cpuState.instructionFetchBlock.getFetchedCode().get(2).getInstructionName());
     Assert.assertTrue(this.cpu.cpuState.decodeAndDispatchBlock.getAfterRenameCodeList().isEmpty());
     Assert.assertTrue(this.cpu.cpuState.decodeAndDispatchBlock.getBeforeRenameCodeList().isEmpty());
     Assert.assertEquals(RegisterReadinessEnum.kFree,
@@ -781,10 +781,10 @@ public class BackwardSimulationTest
   public void simulate_floatOneRawConflict_usesFullPotentialOfTheProcessor()
   {
     setUp("""
-                  fsub f5, f4, f5
-                  fadd f2, f3, f4
-                  fadd f1, f2, f3
-                  fadd f4, f4, f3
+                  fsub.s f5, f4, f5
+                  fadd.s f2, f3, f4
+                  fadd.s f1, f2, f3
+                  fadd.s f4, f4, f3
                   """);
     
     this.cpu.step();
@@ -817,7 +817,7 @@ public class BackwardSimulationTest
     this.cpu.stepBack();
     Assert.assertEquals(2, this.cpu.cpuState.reorderBufferBlock.getReorderQueue().size());
     Assert.assertTrue(this.cpu.cpuState.reorderBufferBlock.getFlagsMap().get(3).isReadyToBeCommitted());
-    Assert.assertEquals("fadd tg2,tg1,f3", getFaddFunctionBlock(cpu).getSimCodeModel().getRenamedCodeLine());
+    Assert.assertEquals("fadd\\\"fadd.s  tg2,tg1,f3", getFaddFunctionBlock(cpu).getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals(12.24, (float) this.cpu.cpuState.unifiedRegisterFileBlock.getRegister("f5")
             .getValue(DataTypeEnum.kFloat), 0.001);
     Assert.assertEquals(15.375, (float) this.cpu.cpuState.unifiedRegisterFileBlock.getRegister("f2")
@@ -835,8 +835,8 @@ public class BackwardSimulationTest
     Assert.assertEquals(4, this.cpu.cpuState.reorderBufferBlock.getReorderQueue().size());
     Assert.assertTrue(this.cpu.cpuState.reorderBufferBlock.getFlagsMap().get(0).isReadyToBeCommitted());
     Assert.assertTrue(this.cpu.cpuState.reorderBufferBlock.getFlagsMap().get(1).isReadyToBeCommitted());
-    Assert.assertEquals("fadd tg3,f4,f3", getFaddSecondFunctionBlock(cpu).getSimCodeModel().getRenamedCodeLine());
-    Assert.assertEquals("fadd tg2,tg1,f3", getFaddFunctionBlock(cpu).getSimCodeModel().getRenamedCodeLine());
+    Assert.assertEquals("fadd.s tg3,f4,f3", getFaddSecondFunctionBlock(cpu).getSimCodeModel().getRenamedCodeLine());
+    Assert.assertEquals("fadd.s tg2,tg1,f3", getFaddFunctionBlock(cpu).getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals(15.375, this.cpu.cpuState.unifiedRegisterFileBlock.getRegister("tg1").getValue(), 0.001);
     Assert.assertEquals(RegisterReadinessEnum.kAllocated,
                         this.cpu.cpuState.unifiedRegisterFileBlock.getRegister("tg3").getReadiness());
@@ -848,11 +848,11 @@ public class BackwardSimulationTest
                         this.cpu.cpuState.unifiedRegisterFileBlock.getRegister("tg0").getReadiness());
     
     this.cpu.stepBack();
-    Assert.assertEquals("fadd tg2,tg1,f3",
+    Assert.assertEquals("fadd.s tg2,tg1,f3",
                         this.cpu.cpuState.fpIssueWindowBlock.getIssuedInstructions().get(0).getRenamedCodeLine());
-    Assert.assertEquals("fadd tg3,f4,f3", getFaddSecondFunctionBlock(cpu).getSimCodeModel().getRenamedCodeLine());
-    Assert.assertEquals("fsub tg0,f4,f5", getFsubFunctionBlock(cpu).getSimCodeModel().getRenamedCodeLine());
-    Assert.assertEquals("fadd tg1,f3,f4", getFaddFunctionBlock(cpu).getSimCodeModel().getRenamedCodeLine());
+    Assert.assertEquals("fadd.s tg3,f4,f3", getFaddSecondFunctionBlock(cpu).getSimCodeModel().getRenamedCodeLine());
+    Assert.assertEquals("fsub.s tg0,f4,f5", getFsubFunctionBlock(cpu).getSimCodeModel().getRenamedCodeLine());
+    Assert.assertEquals("fadd.s tg1,f3,f4", getFaddFunctionBlock(cpu).getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals(RegisterReadinessEnum.kAllocated,
                         this.cpu.cpuState.unifiedRegisterFileBlock.getRegister("tg3").getReadiness());
     Assert.assertEquals(RegisterReadinessEnum.kAllocated,
@@ -864,12 +864,12 @@ public class BackwardSimulationTest
     
     this.cpu.stepBack();
     Assert.assertEquals(4, this.cpu.cpuState.reorderBufferBlock.getReorderQueue().size());
-    Assert.assertEquals("fadd tg2,tg1,f3",
+    Assert.assertEquals("fadd.s tg2,tg1,f3",
                         this.cpu.cpuState.fpIssueWindowBlock.getIssuedInstructions().get(0).getRenamedCodeLine());
-    Assert.assertEquals("fadd tg3,f4,f3",
+    Assert.assertEquals("fadd.s tg3,f4,f3",
                         this.cpu.cpuState.fpIssueWindowBlock.getIssuedInstructions().get(1).getRenamedCodeLine());
-    Assert.assertEquals("fsub tg0,f4,f5", getFsubFunctionBlock(cpu).getSimCodeModel().getRenamedCodeLine());
-    Assert.assertEquals("fadd tg1,f3,f4", getFaddFunctionBlock(cpu).getSimCodeModel().getRenamedCodeLine());
+    Assert.assertEquals("fsub.s tg0,f4,f5", getFsubFunctionBlock(cpu).getSimCodeModel().getRenamedCodeLine());
+    Assert.assertEquals("fadd.s tg1,f3,f4", getFaddFunctionBlock(cpu).getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals(RegisterReadinessEnum.kAllocated,
                         this.cpu.cpuState.unifiedRegisterFileBlock.getRegister("tg3").getReadiness());
     Assert.assertEquals(RegisterReadinessEnum.kAllocated,
@@ -881,13 +881,13 @@ public class BackwardSimulationTest
     
     this.cpu.stepBack();
     Assert.assertEquals(3, this.cpu.cpuState.reorderBufferBlock.getReorderQueue().size());
-    Assert.assertEquals("fadd tg3,f4,f3",
+    Assert.assertEquals("fadd.s tg3,f4,f3",
                         this.cpu.cpuState.decodeAndDispatchBlock.getAfterRenameCodeList().get(0).getRenamedCodeLine());
-    Assert.assertEquals("fsub tg0,f4,f5",
+    Assert.assertEquals("fsub.s tg0,f4,f5",
                         this.cpu.cpuState.fpIssueWindowBlock.getIssuedInstructions().get(0).getRenamedCodeLine());
-    Assert.assertEquals("fadd tg1,f3,f4",
+    Assert.assertEquals("fadd.s tg1,f3,f4",
                         this.cpu.cpuState.fpIssueWindowBlock.getIssuedInstructions().get(1).getRenamedCodeLine());
-    Assert.assertEquals("fadd tg2,tg1,f3",
+    Assert.assertEquals("fadd.s tg2,tg1,f3",
                         this.cpu.cpuState.fpIssueWindowBlock.getIssuedInstructions().get(2).getRenamedCodeLine());
     Assert.assertEquals(RegisterReadinessEnum.kAllocated,
                         this.cpu.cpuState.unifiedRegisterFileBlock.getRegister("tg3").getReadiness());
@@ -899,12 +899,12 @@ public class BackwardSimulationTest
                         this.cpu.cpuState.unifiedRegisterFileBlock.getRegister("tg0").getReadiness());
     
     this.cpu.stepBack();
-    Assert.assertEquals("fadd", this.cpu.cpuState.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
-    Assert.assertEquals("fsub tg0,f4,f5",
+    Assert.assertEquals("fadd.s", this.cpu.cpuState.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
+    Assert.assertEquals("fsub.s tg0,f4,f5",
                         this.cpu.cpuState.decodeAndDispatchBlock.getAfterRenameCodeList().get(0).getRenamedCodeLine());
-    Assert.assertEquals("fadd tg1,f3,f4",
+    Assert.assertEquals("fadd.s tg1,f3,f4",
                         this.cpu.cpuState.decodeAndDispatchBlock.getAfterRenameCodeList().get(1).getRenamedCodeLine());
-    Assert.assertEquals("fadd tg2,tg1,f3",
+    Assert.assertEquals("fadd.s tg2,tg1,f3",
                         this.cpu.cpuState.decodeAndDispatchBlock.getAfterRenameCodeList().get(2).getRenamedCodeLine());
     Assert.assertEquals(RegisterReadinessEnum.kFree,
                         this.cpu.cpuState.unifiedRegisterFileBlock.getRegister("tg3").getReadiness());
@@ -916,9 +916,9 @@ public class BackwardSimulationTest
                         this.cpu.cpuState.unifiedRegisterFileBlock.getRegister("tg0").getReadiness());
     
     this.cpu.stepBack();
-    Assert.assertEquals("fsub", this.cpu.cpuState.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
-    Assert.assertEquals("fadd", this.cpu.cpuState.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
-    Assert.assertEquals("fadd", this.cpu.cpuState.instructionFetchBlock.getFetchedCode().get(2).getInstructionName());
+    Assert.assertEquals("fsub.s", this.cpu.cpuState.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
+    Assert.assertEquals("fadd.s", this.cpu.cpuState.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
+    Assert.assertEquals("fadd.s", this.cpu.cpuState.instructionFetchBlock.getFetchedCode().get(2).getInstructionName());
     Assert.assertEquals(RegisterReadinessEnum.kFree,
                         this.cpu.cpuState.unifiedRegisterFileBlock.getRegister("tg3").getReadiness());
     Assert.assertEquals(RegisterReadinessEnum.kFree,

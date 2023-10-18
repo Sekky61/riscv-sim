@@ -1169,4 +1169,123 @@ public class InstructionTests
     Assert.assertEquals(1, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt));
     Assert.assertEquals(5, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x4").getValue(DataTypeEnum.kInt));
   }
+  
+  /**
+   * FDIV.S does single precision floating point division
+   */
+  @Test
+  public void testFDIV_S()
+  {
+    // Setup + exercise
+    cpuConfig.code = "fdiv.s f1, f2, f3\n" + "fdiv.s f4, f5, f6";
+    Cpu cpu = new Cpu(cpuConfig);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f2").setValue(8.0f);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f3").setValue(3.0f);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f5").setValue(5.0f);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f6").setValue(-2.0f);
+    cpu.execute();
+    
+    // Assert
+    Assert.assertEquals(8.0f / 3.0f,
+                        (float) cpu.cpuState.unifiedRegisterFileBlock.getRegister("f1").getValue(DataTypeEnum.kFloat),
+                        0.01);
+    Assert.assertEquals(5.0f / -2.0f,
+                        (float) cpu.cpuState.unifiedRegisterFileBlock.getRegister("f4").getValue(DataTypeEnum.kFloat),
+                        0.01);
+  }
+  
+  /**
+   * FMUL.S does single precision floating point multiplication
+   */
+  @Test
+  public void testFMUL_S()
+  {
+    // Setup + exercise
+    cpuConfig.code = "fmul.s f1, f2, f3\n" + "fmul.s f4, f5, f6";
+    Cpu cpu = new Cpu(cpuConfig);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f2").setValue(8.0f);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f3").setValue(3.0f);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f5").setValue(5.0f);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f6").setValue(-2.0f);
+    cpu.execute();
+    
+    // Assert
+    Assert.assertEquals(8.0f * 3.0f,
+                        (float) cpu.cpuState.unifiedRegisterFileBlock.getRegister("f1").getValue(DataTypeEnum.kFloat),
+                        0.01);
+    Assert.assertEquals(5.0f * -2.0f,
+                        (float) cpu.cpuState.unifiedRegisterFileBlock.getRegister("f4").getValue(DataTypeEnum.kFloat),
+                        0.01);
+  }
+  
+  /**
+   * FSQRT.S does single precision floating point square root
+   */
+  @Test
+  public void testFSQRT_S()
+  {
+    // Setup + exercise
+    cpuConfig.code = "fsqrt.s f1, f2\n" + "fsqrt.s f3, f4";
+    Cpu cpu = new Cpu(cpuConfig);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f2").setValue(8.0f);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f4").setValue(5.0f);
+    cpu.execute();
+    // TODO: test exception
+    
+    // Assert
+    Assert.assertEquals((float) Math.sqrt(8.0f),
+                        (float) cpu.cpuState.unifiedRegisterFileBlock.getRegister("f1").getValue(DataTypeEnum.kFloat),
+                        0.01);
+    Assert.assertEquals((float) Math.sqrt(5.0f),
+                        (float) cpu.cpuState.unifiedRegisterFileBlock.getRegister("f3").getValue(DataTypeEnum.kFloat),
+                        0.01);
+  }
+  
+  /**
+   * FSUB.S does single precision floating point subtraction
+   */
+  @Test
+  public void testFSUB_S()
+  {
+    // Setup + exercise
+    cpuConfig.code = "fsub.s f1, f2, f3\n" + "fsub.s f4, f5, f6";
+    Cpu cpu = new Cpu(cpuConfig);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f2").setValue(8.0f);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f3").setValue(3.0f);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f5").setValue(5.0f);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f6").setValue(-2.0f);
+    cpu.execute();
+    
+    // Assert
+    Assert.assertEquals(8.0f - 3.0f,
+                        (float) cpu.cpuState.unifiedRegisterFileBlock.getRegister("f1").getValue(DataTypeEnum.kFloat),
+                        0.01);
+    Assert.assertEquals(5.0f - -2.0f,
+                        (float) cpu.cpuState.unifiedRegisterFileBlock.getRegister("f4").getValue(DataTypeEnum.kFloat),
+                        0.01);
+  }
+  
+  /**
+   * FADD.S does single precision floating point addition
+   */
+  @Test
+  public void testFADD_S()
+  {
+    // Setup + exercise
+    cpuConfig.code = "fadd.s f1, f2, f3\n" + "fadd.s f4, f5, f6";
+    Cpu cpu = new Cpu(cpuConfig);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f2").setValue(8.0f);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f3").setValue(3.0f);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f5").setValue(5.0f);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f6").setValue(-2.0f);
+    cpu.execute();
+    
+    // Assert
+    Assert.assertEquals(8.0f + 3.0f,
+                        (float) cpu.cpuState.unifiedRegisterFileBlock.getRegister("f1").getValue(DataTypeEnum.kFloat),
+                        0.01);
+    Assert.assertEquals(5.0f + -2.0f,
+                        (float) cpu.cpuState.unifiedRegisterFileBlock.getRegister("f4").getValue(DataTypeEnum.kFloat),
+                        0.01);
+  }
 }
