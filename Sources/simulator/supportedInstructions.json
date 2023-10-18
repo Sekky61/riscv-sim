@@ -1625,5 +1625,101 @@
       }
     ],
     "interpretableAs": "\\rs1 \\rs2 \\rs1 \\rs2 < pick \\rd ="
+  },
+  "fmadd.s": {
+    "name": "fmadd.s",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kFloat",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kFloat"
+      },
+      {
+        "name": "rs2",
+        "type": "kFloat"
+      },
+      {
+        "name": "rs3",
+        "type": "kFloat"
+      }
+    ],
+    "interpretableAs": "\\rs1 \\rs2 * \\rs3 + \\rd ="
+  },
+  "fmsub.s": {
+    "name": "fmsub.s",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kFloat",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kFloat"
+      },
+      {
+        "name": "rs2",
+        "type": "kFloat"
+      },
+      {
+        "name": "rs3",
+        "type": "kFloat"
+      }
+    ],
+    "interpretableAs": "\\rs1 \\rs2 * \\rs3 - \\rd ="
+  },
+  "fnmadd.s": {
+    "name": "fnmadd.s",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kFloat",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kFloat"
+      },
+      {
+        "name": "rs2",
+        "type": "kFloat"
+      },
+      {
+        "name": "rs3",
+        "type": "kFloat"
+      }
+    ],
+    "interpretableAs": "0.0f \\rs1 - \\rs2 * \\rs3 - \\rd ="
+  },
+  "fnmsub.s": {
+    "name": "fnmsub.s",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kFloat",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kFloat"
+      },
+      {
+        "name": "rs2",
+        "type": "kFloat"
+      },
+      {
+        "name": "rs3",
+        "type": "kFloat"
+      }
+    ],
+    "interpretableAs": "0.0f \\rs1 - \\rs2 * \\rs3 + \\rd ="
   }
 }

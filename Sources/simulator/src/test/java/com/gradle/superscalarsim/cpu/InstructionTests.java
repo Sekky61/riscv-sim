@@ -1336,4 +1336,108 @@ public class InstructionTests
                         (float) cpu.cpuState.unifiedRegisterFileBlock.getRegister("f4").getValue(DataTypeEnum.kFloat),
                         0.01);
   }
+  
+  /**
+   * FMADD.S performs a fused multiply addition
+   */
+  @Test
+  public void testFMADD_S()
+  {
+    // Setup + exercise
+    cpuConfig.code = "fmadd.s f1, f2, f3, f4\n" + "fmadd.s f5, f6, f7, f8";
+    Cpu cpu = new Cpu(cpuConfig);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f2").setValue(8.0f);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f3").setValue(3.0f);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f4").setValue(2.0f);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f6").setValue(5.0f);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f7").setValue(-2.0f);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f8").setValue(1.0f);
+    cpu.execute();
+    
+    // Assert
+    Assert.assertEquals(8.0f * 3.0f + 2.0f,
+                        (float) cpu.cpuState.unifiedRegisterFileBlock.getRegister("f1").getValue(DataTypeEnum.kFloat),
+                        0.01);
+    Assert.assertEquals(5.0f * -2.0f + 1.0f,
+                        (float) cpu.cpuState.unifiedRegisterFileBlock.getRegister("f5").getValue(DataTypeEnum.kFloat),
+                        0.01);
+  }
+  
+  /**
+   * FMSUB.S performs a fused multiply subtraction
+   */
+  @Test
+  public void testFMSUB_S()
+  {
+    // Setup + exercise
+    cpuConfig.code = "fmsub.s f1, f2, f3, f4\n" + "fmsub.s f5, f6, f7, f8";
+    Cpu cpu = new Cpu(cpuConfig);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f2").setValue(8.0f);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f3").setValue(3.0f);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f4").setValue(2.0f);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f6").setValue(5.0f);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f7").setValue(-2.0f);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f8").setValue(1.0f);
+    cpu.execute();
+    
+    // Assert
+    Assert.assertEquals(8.0f * 3.0f - 2.0f,
+                        (float) cpu.cpuState.unifiedRegisterFileBlock.getRegister("f1").getValue(DataTypeEnum.kFloat),
+                        0.01);
+    Assert.assertEquals(5.0f * -2.0f - 1.0f,
+                        (float) cpu.cpuState.unifiedRegisterFileBlock.getRegister("f5").getValue(DataTypeEnum.kFloat),
+                        0.01);
+  }
+  
+  /**
+   * FNMADD.S performs a fused negative multiply addition
+   */
+  @Test
+  public void testFNMADD_S()
+  {
+    // Setup + exercise
+    cpuConfig.code = "fnmadd.s f1, f2, f3, f4\n" + "fnmadd.s f5, f6, f7, f8";
+    Cpu cpu = new Cpu(cpuConfig);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f2").setValue(8.0f);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f3").setValue(3.0f);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f4").setValue(2.0f);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f6").setValue(5.0f);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f7").setValue(-2.0f);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f8").setValue(1.0f);
+    cpu.execute();
+    
+    // Assert
+    Assert.assertEquals(-8.0f * 3.0f - 2.0f,
+                        (float) cpu.cpuState.unifiedRegisterFileBlock.getRegister("f1").getValue(DataTypeEnum.kFloat),
+                        0.01);
+    Assert.assertEquals(-(5.0f * -2.0f + 1.0f),
+                        (float) cpu.cpuState.unifiedRegisterFileBlock.getRegister("f5").getValue(DataTypeEnum.kFloat),
+                        0.01);
+  }
+  
+  /**
+   * FNMSUB.S performs a fused negative multiply subtraction
+   */
+  @Test
+  public void testFNMSUB_S()
+  {
+    // Setup + exercise
+    cpuConfig.code = "fnmsub.s f1, f2, f3, f4\n" + "fnmsub.s f5, f6, f7, f8";
+    Cpu cpu = new Cpu(cpuConfig);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f2").setValue(8.0f);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f3").setValue(3.0f);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f4").setValue(2.0f);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f6").setValue(5.0f);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f7").setValue(-2.0f);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f8").setValue(1.0f);
+    cpu.execute();
+    
+    // Assert
+    Assert.assertEquals(-8.0f * 3.0f + 2.0f,
+                        (float) cpu.cpuState.unifiedRegisterFileBlock.getRegister("f1").getValue(DataTypeEnum.kFloat),
+                        0.01);
+    Assert.assertEquals(-(5.0f * -2.0f - 1.0f),
+                        (float) cpu.cpuState.unifiedRegisterFileBlock.getRegister("f5").getValue(DataTypeEnum.kFloat),
+                        0.01);
+  }
 }
