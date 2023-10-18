@@ -67,12 +67,18 @@ public class InstructionFunctionModel
    */
   private final String interpretableAs;
   
+  /**
+   * @brief Explicitly stated instruction data type. Most likely null and should be inferred from arguments.
+   */
+  private DataTypeEnum dataType;
+  
   public InstructionFunctionModel()
   {
     this.name            = "";
     this.instructionType = InstructionTypeEnum.kArithmetic;
     this.arguments       = new ArrayList<>();
     this.interpretableAs = "";
+    this.dataType        = null;
   }
   
   /**
@@ -130,12 +136,16 @@ public class InstructionFunctionModel
   //------------------------------------------------------
   
   /**
-   * TODO: What about instructions with multiple data types (conversions)?
+   * Instruction data type is either explicitly stated or inferred from arguments
    *
    * @return Data type of the instruction
    */
   public DataTypeEnum getDataType()
   {
+    if (this.dataType != null)
+    {
+      return this.dataType;
+    }
     if (arguments.isEmpty())
     {
       return null;

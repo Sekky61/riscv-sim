@@ -1674,4 +1674,22 @@ public class InstructionTests
     Assert.assertEquals(0, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt));
     Assert.assertEquals(1, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x4").getValue(DataTypeEnum.kInt));
   }
+  
+  /**
+   * FCLASS.S classifies the float register (see {@link com.gradle.superscalarsim.code.Fclass}
+   */
+  @Test
+  public void testFCLASS_S()
+  {
+    // Setup + exercise
+    cpuConfig.code = "fclass.s x1, f2\n" + "fclass.s x3, f4";
+    Cpu cpu = new Cpu(cpuConfig);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f2").setValue(28.0f);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f4").setValue(-0.0f);
+    cpu.execute();
+    
+    // Assert
+    Assert.assertEquals(0b1000000, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt));
+    Assert.assertEquals(0b1010, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x3").getValue(DataTypeEnum.kInt));
+  }
 }

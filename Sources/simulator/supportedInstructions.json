@@ -1921,5 +1921,22 @@
       }
     ],
     "interpretableAs": "\\rs1 \\rs2 == \\rd ="
+  },
+  "fclass.s": {
+    "name": "fclass.s",
+    "instructionType": "kArithmetic",
+    "dataType": "kFloat",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kUInt",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kFloat"
+      }
+    ],
+    "interpretableAs": "\\rs1 fclass \\rd ="
   }
 }

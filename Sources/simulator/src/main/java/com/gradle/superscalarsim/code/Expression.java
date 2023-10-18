@@ -1,9 +1,5 @@
 /**
- * @file ExpressionInterpreter.java
- * @author Jan Vavra \n
- * Faculty of Information Technology \n
- * Brno University of Technology \n
- * xvavra20@fit.vutbr.cz
+ * @file Expression.java
  * @author Michal Majer
  * Faculty of Information Technology
  * Brno University of Technology
@@ -99,7 +95,7 @@ public class Expression
   /**
    * List of supported unary operators
    */
-  public static String[] unaryOperators = new String[]{"sqrt", "!", "bits", "float"};
+  public static String[] unaryOperators = new String[]{"sqrt", "!", "bits", "float", "fclass"};
   
   /**
    * List of supported binary operators
@@ -464,6 +460,7 @@ public class Expression
       case "sqrt" -> new Variable("", DataTypeEnum.kFloat, RegisterDataContainer.fromValue((float) Math.sqrt(value)));
       case "bits" -> new Variable("", DataTypeEnum.kInt, RegisterDataContainer.fromValue(Float.floatToIntBits(value)));
       case "float" -> new Variable("", DataTypeEnum.kFloat, RegisterDataContainer.fromValue(value));
+      case "fclass" -> new Variable("", DataTypeEnum.kInt, RegisterDataContainer.fromValue(Fclass.classify(value)));
       default ->
               throw new IllegalArgumentException("Unknown operator: " + operator + " for type: " + DataTypeEnum.kFloat);
     };
