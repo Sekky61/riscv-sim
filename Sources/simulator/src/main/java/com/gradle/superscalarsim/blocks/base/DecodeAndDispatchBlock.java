@@ -358,15 +358,16 @@ public class DecodeAndDispatchBlock implements AbstractBlock
    */
   private void renameDestinationRegister(SimCodeModel simCodeModel)
   {
-    // Find rd, rename it
-    InputCodeArgument destinationArgument = simCodeModel.getArgumentByName("rd");
-    if (destinationArgument == null)
+    // Rename all arguments that will be written back
+    for (InstructionFunctionModel.Argument argument : simCodeModel.getInstructionFunctionModel().getArguments())
     {
-      return;
+      if (argument.writeBack())
+      {
+        InputCodeArgument destinationArgument = simCodeModel.getArgumentByName(argument.name());
+        String mappedReg = renameMapTableBlock.mapRegister(destinationArgument.getValue(), simCodeModel.getId());
+        destinationArgument.setValue(mappedReg);
+      }
     }
-    
-    // Rename
-    destinationArgument.setValue(renameMapTableBlock.mapRegister(destinationArgument.getValue(), simCodeModel.getId()));
   }// end of renameDestinationRegister
   //----------------------------------------------------------------------
   

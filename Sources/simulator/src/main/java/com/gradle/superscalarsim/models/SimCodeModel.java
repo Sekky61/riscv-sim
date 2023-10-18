@@ -358,7 +358,7 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>
   {
     StringBuilder genericLine = new StringBuilder(getInstructionName());
     genericLine.append(" ");
-    List<InstructionFunctionModel.Argument> args = inputCodeModel.getInstructionFunctionModel().getArguments();
+    List<InstructionFunctionModel.Argument> args = inputCodeModel.getInstructionFunctionModel().getAsmArguments();
     for (int i = 0; i < args.size(); i++)
     {
       boolean wrapInParens = inputCodeModel.getInstructionFunctionModel().getInstructionType()

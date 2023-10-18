@@ -1501,19 +1501,33 @@
     "name": "ret",
     "instructionType": "kJumpbranch",
     "instructionSyntax": "ret",
-    "arguments": [],
-    "interpretableAs": "\\x1:true"
+    "arguments": [
+      {
+        "name": "rd1",
+        "type": "kInt",
+        "defaultValue": "x1",
+        "silent": true
+      }
+    ],
+    "interpretableAs": "\\rd1:true"
   },
   "call": {
     "name": "call",
     "instructionType": "kJumpbranch",
     "arguments": [
       {
+        "name": "rd1",
+        "type": "kInt",
+        "defaultValue": "x1",
+        "writeBack": true,
+        "silent": true
+      },
+      {
         "name": "imm",
         "type": "kInt"
       }
     ],
-    "interpretableAs": "\\imm:true"
+    "interpretableAs": "\\pc 4 + \\rd1 = \\imm:true"
   },
   "tail": {
     "name": "tail",

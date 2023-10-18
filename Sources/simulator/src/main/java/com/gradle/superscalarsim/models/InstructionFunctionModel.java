@@ -167,6 +167,22 @@ public class InstructionFunctionModel
   //------------------------------------------------------
   
   /**
+   * @return List of arguments, which are not silent
+   */
+  public List<Argument> getAsmArguments()
+  {
+    List<Argument> asmArguments = new ArrayList<>();
+    for (Argument argument : arguments)
+    {
+      if (!argument.silent)
+      {
+        asmArguments.add(argument);
+      }
+    }
+    return asmArguments;
+  }
+  
+  /**
    * @return Argument with given name
    */
   public Argument getArgumentByName(String name)
@@ -212,12 +228,18 @@ public class InstructionFunctionModel
     private final String defaultValue;
     private final boolean writeBack;
     
+    /**
+     * @brief If true, count this argument as data dependency, but is not allowed to be used in ASM code.
+     */
+    private final boolean silent;
+    
     public Argument(String name, DataTypeEnum type, String defaultValue)
     {
       this.name         = name;
       this.type         = type;
       this.defaultValue = defaultValue;
       this.writeBack    = false;
+      this.silent       = false;
     }
     
     public Argument(String name, DataTypeEnum type, String defaultValue, boolean writeBack)
@@ -226,6 +248,7 @@ public class InstructionFunctionModel
       this.type         = type;
       this.defaultValue = defaultValue;
       this.writeBack    = writeBack;
+      this.silent       = false;
     }
     
     public String name()
@@ -246,6 +269,11 @@ public class InstructionFunctionModel
     public boolean writeBack()
     {
       return writeBack;
+    }
+    
+    public boolean silent()
+    {
+      return silent;
     }
     
     @Override

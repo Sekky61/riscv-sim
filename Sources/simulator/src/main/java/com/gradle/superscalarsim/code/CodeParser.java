@@ -334,13 +334,18 @@ public class CodeParser
     Map<String, CodeToken> args               = new HashMap<>();
     int                    numArguments       = collectedArgs.size();
     int                    collectedArgsIndex = 0;
-    boolean useDefaultArgs = numArguments < instructionModel.getArguments()
+    boolean useDefaultArgs = numArguments < instructionModel.getAsmArguments()
             .size() && instructionModel.hasDefaultArguments();
     for (InstructionFunctionModel.Argument argument : instructionModel.getArguments())
     {
       String  key        = argument.name();
       boolean hasDefault = argument.defaultValue() != null;
-      if (useDefaultArgs && hasDefault)
+      if (argument.silent())
+      {
+        // Add to the args, assumes all silent arguments have default values
+        args.put(key, new CodeToken(0, 0, argument.defaultValue(), CodeToken.Type.EOF));
+      }
+      else if (useDefaultArgs && hasDefault)
       {
         // Use default argument
         args.put(key, new CodeToken(0, 0, argument.defaultValue(), CodeToken.Type.EOF));

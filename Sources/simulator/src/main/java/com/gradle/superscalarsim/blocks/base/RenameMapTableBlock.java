@@ -257,7 +257,8 @@ public class RenameMapTableBlock
     if (isSpeculativeRegister(speculativeRegister))
     {
       RenameMapModel architecturalRegister = this.registerMap.get(speculativeRegister);
-      double         value                 = this.registerFileBlock.getRegister(speculativeRegister).getValue();
+      RegisterModel  register              = this.registerFileBlock.getRegister(speculativeRegister);
+      long           value                 = (long) register.getValue(DataTypeEnum.kLong);
       this.registerFileBlock.getRegister(architecturalRegister.getArchitecturalRegister()).setValue(value);
     }
   }// end of directCopyMapping

@@ -282,7 +282,8 @@ public class Expression
     }
     else
     {
-      to.value = from.value;
+      // TODO: Wrap this as a method (does not change OID)
+      to.value.setValue(from.value.getValue(DataTypeEnum.kLong), DataTypeEnum.kLong);
     }
   }
   
@@ -729,7 +730,9 @@ public class Expression
     @Override
     public String toString()
     {
-      return tag + ":" + type + ":" + value.getString(type);
+      String       typeStr  = type == null ? "null" : type.toString();
+      DataTypeEnum typeType = this.type == null ? DataTypeEnum.kULong : this.type;
+      return tag + ":" + typeStr + ":" + value.getString(typeType);
     }
   }
 }
