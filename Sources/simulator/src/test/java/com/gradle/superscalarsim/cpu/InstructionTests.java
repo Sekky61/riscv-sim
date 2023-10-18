@@ -1440,4 +1440,76 @@ public class InstructionTests
                         (float) cpu.cpuState.unifiedRegisterFileBlock.getRegister("f5").getValue(DataTypeEnum.kFloat),
                         0.01);
   }
+  
+  /**
+   * FSGNJ.S takes the sign from the second register and puts it on the first register
+   */
+  @Test
+  public void testFSGNJ_S()
+  {
+    // Setup + exercise
+    cpuConfig.code = "fsgnj.s f1, f2, f3\n" + "fsgnj.s f4, f5, f6";
+    Cpu cpu = new Cpu(cpuConfig);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f2").setValue(8.0f);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f3").setValue(-3.0f);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f5").setValue(5.0f);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f6").setValue(2.0f);
+    cpu.execute();
+    
+    // Assert
+    Assert.assertEquals(-8.0f,
+                        (float) cpu.cpuState.unifiedRegisterFileBlock.getRegister("f1").getValue(DataTypeEnum.kFloat),
+                        0.01);
+    Assert.assertEquals(5.0f,
+                        (float) cpu.cpuState.unifiedRegisterFileBlock.getRegister("f4").getValue(DataTypeEnum.kFloat),
+                        0.01);
+  }
+  
+  /**
+   * FSGNJN.S takes the negated sign from the second register and puts it on the first register
+   */
+  @Test
+  public void testFSGNJN_S()
+  {
+    // Setup + exercise
+    cpuConfig.code = "fsgnjn.s f1, f2, f3\n" + "fsgnjn.s f4, f5, f6";
+    Cpu cpu = new Cpu(cpuConfig);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f2").setValue(8.0f);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f3").setValue(-3.0f);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f5").setValue(5.0f);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f6").setValue(2.0f);
+    cpu.execute();
+    
+    // Assert
+    Assert.assertEquals(8.0f,
+                        (float) cpu.cpuState.unifiedRegisterFileBlock.getRegister("f1").getValue(DataTypeEnum.kFloat),
+                        0.01);
+    Assert.assertEquals(-5.0f,
+                        (float) cpu.cpuState.unifiedRegisterFileBlock.getRegister("f4").getValue(DataTypeEnum.kFloat),
+                        0.01);
+  }
+  
+  /**
+   * FSGNJX.S takes the xor of the signs and puts it on the first register
+   */
+  @Test
+  public void testFSGNJX_S()
+  {
+    // Setup + exercise
+    cpuConfig.code = "fsgnjx.s f1, f2, f3\n" + "fsgnjx.s f4, f5, f6";
+    Cpu cpu = new Cpu(cpuConfig);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f2").setValue(-8.0f);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f3").setValue(-3.0f);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f5").setValue(5.0f);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("f6").setValue(-2.0f);
+    cpu.execute();
+    
+    // Assert
+    Assert.assertEquals(8.0f,
+                        (float) cpu.cpuState.unifiedRegisterFileBlock.getRegister("f1").getValue(DataTypeEnum.kFloat),
+                        0.01);
+    Assert.assertEquals(-5.0f,
+                        (float) cpu.cpuState.unifiedRegisterFileBlock.getRegister("f4").getValue(DataTypeEnum.kFloat),
+                        0.01);
+  }
 }

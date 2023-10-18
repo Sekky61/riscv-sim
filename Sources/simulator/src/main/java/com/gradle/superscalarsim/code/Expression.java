@@ -85,18 +85,22 @@ public class Expression
    * Pattern for matching integer values in argument
    */
   private final static Pattern intPattern;
+  
   /**
    * Pattern for matching hexadecimal values in argument
    */
   private final static Pattern hexadecimalPattern;
+  
   /**
    * Pattern for matching decimal values in argument
    */
   private final static Pattern decimalPattern;
+  
   /**
    * List of supported unary operators
    */
-  public static String[] unaryOperators = new String[]{"sqrt", "!"};
+  public static String[] unaryOperators = new String[]{"sqrt", "!", "bits", "float"};
+  
   /**
    * List of supported binary operators
    */
@@ -394,7 +398,7 @@ public class Expression
       if (constant.endsWith("l"))
       {
         // It is a long
-        long longValue = Long.parseLong(constant.substring(0, constant.length() - 1));
+        long longValue = Long.parseUnsignedLong(constant.substring(0, constant.length() - 1));
         variable = new Variable("", DataTypeEnum.kLong, RegisterDataContainer.fromValue(longValue));
       }
       else
@@ -425,7 +429,7 @@ public class Expression
     else if (hexadecimalPattern.matcher(constant).matches())
     {
       // It is a hex int
-      int intValue = Integer.parseInt(constant.substring(2), 16);
+      int intValue = Integer.parseUnsignedInt(constant.substring(2), 16);
       variable = new Variable("", DataTypeEnum.kInt, RegisterDataContainer.fromValue(intValue));
     }
     return variable;
@@ -433,12 +437,24 @@ public class Expression
   
   private static Variable applyUnaryOperatorInt(String operator, int value)
   {
-    throw new IllegalArgumentException("Unknown operator: " + operator + " for type: " + DataTypeEnum.kInt);
+    return switch (operator)
+    {
+      case "!" -> new Variable("", DataTypeEnum.kInt, RegisterDataContainer.fromValue(~value));
+      case "float" -> new Variable("", DataTypeEnum.kFloat, RegisterDataContainer.fromValue(value));
+      default ->
+              throw new IllegalArgumentException("Unknown operator: " + operator + " for type: " + DataTypeEnum.kInt);
+    };
   }
   
   private static Variable applyUnaryOperatorLong(String operator, long value)
   {
-    throw new IllegalArgumentException("Unknown operator: " + operator + " for type: " + DataTypeEnum.kLong);
+    return switch (operator)
+    {
+      case "!" -> new Variable("", DataTypeEnum.kInt, RegisterDataContainer.fromValue(~value));
+      case "float" -> new Variable("", DataTypeEnum.kDouble, RegisterDataContainer.fromValue(value));
+      default ->
+              throw new IllegalArgumentException("Unknown operator: " + operator + " for type: " + DataTypeEnum.kLong);
+    };
   }
   
   private static Variable applyUnaryOperatorFloat(String operator, float value)
@@ -446,6 +462,8 @@ public class Expression
     return switch (operator)
     {
       case "sqrt" -> new Variable("", DataTypeEnum.kFloat, RegisterDataContainer.fromValue((float) Math.sqrt(value)));
+      case "bits" -> new Variable("", DataTypeEnum.kInt, RegisterDataContainer.fromValue(Float.floatToIntBits(value)));
+      case "float" -> new Variable("", DataTypeEnum.kFloat, RegisterDataContainer.fromValue(value));
       default ->
               throw new IllegalArgumentException("Unknown operator: " + operator + " for type: " + DataTypeEnum.kFloat);
     };
@@ -456,6 +474,8 @@ public class Expression
     return switch (operator)
     {
       case "sqrt" -> new Variable("", DataTypeEnum.kDouble, RegisterDataContainer.fromValue(Math.sqrt(value)));
+      case "bits" -> new Variable("", DataTypeEnum.kLong,
+                                  RegisterDataContainer.fromValue(Double.doubleToLongBits(value)));
       default -> throw new IllegalArgumentException(
               "Unknown operator: " + operator + " for type: " + DataTypeEnum.kDouble);
     };

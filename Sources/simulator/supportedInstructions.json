@@ -1721,5 +1721,65 @@
       }
     ],
     "interpretableAs": "0.0f \\rs1 - \\rs2 * \\rs3 + \\rd ="
+  },
+  "fsgnj.s": {
+    "name": "fsgnj.s",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kFloat",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kFloat"
+      },
+      {
+        "name": "rs2",
+        "type": "kFloat"
+      }
+    ],
+    "interpretableAs": "\\rs1 bits 0x7fffffff & \\rs2 bits 0x80000000 & | float \\rd ="
+  },
+  "fsgnjn.s": {
+    "name": "fsgnjn.s",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kFloat",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kFloat"
+      },
+      {
+        "name": "rs2",
+        "type": "kFloat"
+      }
+    ],
+    "interpretableAs": "\\rs1 bits 0x7fffffff & \\rs2 bits ! 0x80000000 & | float \\rd ="
+  },
+  "fsgnjx.s": {
+    "name": "fsgnjx.s",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kFloat",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kFloat"
+      },
+      {
+        "name": "rs2",
+        "type": "kFloat"
+      }
+    ],
+    "interpretableAs": "\\rs1 bits \\rs2 bits 0x80000000 & ^ float \\rd ="
   }
 }
