@@ -42,7 +42,7 @@ import java.util.List;
  * @brief Definition of register file
  * @details Collection of registers of the same type (integer/floating point)
  */
-public class RegisterFileModel
+public class RegisterFileModel implements IRegisterFile
 {
   /**
    * Name of register file. Used for logs/debug
@@ -122,6 +122,7 @@ public class RegisterFileModel
    * @return Data type of register file
    * @brief Get data type of register file
    */
+  @Override
   public final RegisterTypeEnum getDataType()
   {
     return dataType;
@@ -144,6 +145,7 @@ public class RegisterFileModel
    * @return Register, or null if not found
    * @brief Get register by name
    */
+  @Override
   public RegisterModel getRegister(String registerName)
   {
     for (RegisterModel register : registerList)
@@ -155,4 +157,13 @@ public class RegisterFileModel
     }
     return null;
   }// end of getRegister
+  
+  /**
+   * @return Number of registers in register file
+   */
+  @Override
+  public int getRegisterCount()
+  {
+    return registerList.size();
+  }
 }

@@ -35,8 +35,10 @@ package com.gradle.superscalarsim.blocks.base;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.enums.RegisterTypeEnum;
 import com.gradle.superscalarsim.loader.InitLoader;
+import com.gradle.superscalarsim.models.register.IRegisterFile;
 import com.gradle.superscalarsim.models.register.RegisterFileModel;
 import com.gradle.superscalarsim.models.register.RegisterModel;
+import com.gradle.superscalarsim.models.register.SpeculativeRegisterFile;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -71,7 +73,7 @@ public class UnifiedRegisterFileBlock
   /**
    * Speculative register file. Holds all speculative registers.
    */
-  private RegisterFileModel speculativeRegisterFile;
+  private SpeculativeRegisterFile speculativeRegisterFile;
   
   /**
    * Constructor for (de)serialization
@@ -117,7 +119,7 @@ public class UnifiedRegisterFileBlock
       }
       registerCount = registerCount + registerFile.getRegisterList().size();
     }
-    createSpeculativeRegisters(registerCount * specRegisterMultiplier);
+    speculativeRegisterFile = new SpeculativeRegisterFile(registerCount * specRegisterMultiplier);
   }// end of loadRegisters
   //----------------------------------------------------------------------
   
@@ -132,34 +134,19 @@ public class UnifiedRegisterFileBlock
   //----------------------------------------------------------------------
   
   /**
-   * @param size Number of speculative registers
-   *
-   * @brief Creates speculative register file
-   */
-  private void createSpeculativeRegisters(int size)
-  {
-    // TODO: Do not instantiate all speculative registers ahead of time
-    List<RegisterModel> registerModelList = new ArrayList<>();
-    for (int i = 0; i < size; i++)
-    {
-      RegisterModel reg = new RegisterModel("tg" + i, false, null, 0, RegisterReadinessEnum.kFree);
-      registerModelList.add(reg);
-      this.registerMap.put(reg.getName(), reg);
-    }
-    
-    speculativeRegisterFile = new RegisterFileModel("Speculative register file", null, registerModelList);
-  }// end of createSpeculativeRegisters
-  //----------------------------------------------------------------------
-  
-  /**
    * @param registerName Name (tag) of the register
    *
    * @return The register object
-   * @brief Get object representation of register based on provided name (tag or arch. name)
+   * @brief Get register object based on provided name (tag or arch. name)
    */
   public RegisterModel getRegister(final String registerName)
   {
-    return this.registerMap.get(registerName);
+    RegisterModel reg = this.registerMap.get(registerName);
+    if (reg == null)
+    {
+      return speculativeRegisterFile.getRegister(registerName);
+    }
+    return reg;
   }// end of getRegisterValue
   //----------------------------------------------------------------------
   
@@ -184,7 +171,7 @@ public class UnifiedRegisterFileBlock
   }// end of getRegisterList
   //----------------------------------------------------------------------
   
-  public RegisterFileModel getSpeculativeRegisterFile()
+  public IRegisterFile getSpeculativeRegisterFile()
   {
     return speculativeRegisterFile;
   }

@@ -90,7 +90,7 @@ public class RenameMapTableBlock
     this.referenceMap      = new TreeMap<>();
     this.registerFileBlock = registerFileBlock;
     
-    initiateFreeList(registerFileBlock.getSpeculativeRegisterFile().getRegisterList());
+    initiateFreeList(registerFileBlock.getSpeculativeRegisterFile().getRegisterCount());
   }// end of Constructor
   //----------------------------------------------------------------------
   
@@ -99,15 +99,12 @@ public class RenameMapTableBlock
    *
    * @brief Creates speculative registers in free list, where for each one architectural one creates one speculative
    */
-  private void initiateFreeList(List<RegisterModel> registerModelList)
+  private void initiateFreeList(int specRegistersCount)
   {
-    List<String> registerModelSubList = new ArrayList<>();
-    for (RegisterModel register : registerModelList)
+    for (int i = 0; i < specRegistersCount; i++)
     {
-      registerModelSubList.add(register.getName());
+      this.freeList.add("tg" + i);
     }
-    
-    freeList.addAll(registerModelSubList);
   }// end of createSpeculativeRegisters
   //----------------------------------------------------------------------
   
@@ -121,13 +118,13 @@ public class RenameMapTableBlock
     this.freeList.clear();
     this.registerMap.clear();
     this.referenceMap.clear();
-    initiateFreeList(registerFileBlock.getSpeculativeRegisterFile().getRegisterList());
+    //    initiateFreeList(registerFileBlock.getSpeculativeRegisterFile().getRegisterList());
   }// end of clear
   //----------------------------------------------------------------------
   
   /**
-   * @param [in] registerName - Name of the architectural register
-   * @param [in] order        - Id specifying order between mappings to same register
+   * @param registerName Name of the architectural register
+   * @param order        Id specifying order between mappings to same register
    *
    * @return Name of the speculative register, which is mapped to architectural
    * @brief Maps architectural register to free speculative one
@@ -182,6 +179,32 @@ public class RenameMapTableBlock
   //----------------------------------------------------------------------
   
   /**
+   * @param speculativeRegister Register to free
+   *
+   * @brief Only frees the specified register
+   */
+  public void freeMapping(String speculativeRegister)
+  {
+    if (!isSpeculativeRegister(speculativeRegister))
+    {
+      return;
+    }
+    
+    RegisterModel specRegister = this.registerFileBlock.getRegister(speculativeRegister);
+    if (specRegister == null)
+    {
+      throw new RuntimeException("Speculative register " + speculativeRegister + " not found");
+    }
+    
+    this.registerFileBlock.getRegister(speculativeRegister).setReadiness(RegisterReadinessEnum.kFree);
+    this.referenceMap.remove(specRegister.getName());
+    this.registerMap.remove(specRegister.getName());
+    this.freeList.add(specRegister.getName());
+    
+  }// end of freeMapping
+  //----------------------------------------------------------------------
+  
+  /**
    * @param [in] register - Name of the register to be checked
    *
    * @return True if register is speculative, false otherwise
@@ -191,33 +214,6 @@ public class RenameMapTableBlock
   {
     return freeList.contains(register) || registerMap.containsKey(register);
   }// end of isSpeculativeRegister
-  //----------------------------------------------------------------------
-  
-  /**
-   * @param [in] speculativeRegister - Register to free
-   *
-   * @brief Only frees the specified register
-   */
-  public void freeMapping(String speculativeRegister)
-  {
-    if (isSpeculativeRegister(speculativeRegister))
-    {
-      this.registerFileBlock.getSpeculativeRegisterFile().getRegisterList().stream()
-              .filter(reg -> reg.getName().equals(speculativeRegister)).findFirst().ifPresent(register ->
-                                                                                              {
-                                                                                                this.registerFileBlock.getRegister(
-                                                                                                                speculativeRegister)
-                                                                                                        .setReadiness(
-                                                                                                                RegisterReadinessEnum.kFree);
-                                                                                                this.referenceMap.remove(
-                                                                                                        register.getName());
-                                                                                                this.registerMap.remove(
-                                                                                                        register.getName());
-                                                                                                this.freeList.add(
-                                                                                                        register.getName());
-                                                                                              });
-    }
-  }// end of freeMapping
   //----------------------------------------------------------------------
   
   /**
