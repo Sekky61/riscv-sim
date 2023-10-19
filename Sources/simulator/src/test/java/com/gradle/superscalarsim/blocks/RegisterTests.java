@@ -2,6 +2,7 @@ package com.gradle.superscalarsim.blocks;
 
 import com.gradle.superscalarsim.blocks.base.UnifiedRegisterFileBlock;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
+import com.gradle.superscalarsim.enums.RegisterTypeEnum;
 import com.gradle.superscalarsim.loader.InitLoader;
 import com.gradle.superscalarsim.models.register.RegisterModel;
 import org.junit.Assert;
@@ -85,7 +86,7 @@ public class RegisterTests
   public void testRegisterFileAndMapReferenceEquality()
   {
     // Execute
-    List<RegisterModel> intlist    = unifiedRegisterFileBlock.getRegisterList(DataTypeEnum.kInt);
+    List<RegisterModel> intlist    = unifiedRegisterFileBlock.getRegisterList(RegisterTypeEnum.kInt);
     RegisterModel       x2FromList = intlist.get(2);
     
     RegisterModel x2FromMap = unifiedRegisterFileBlock.getRegisterMap().get("x2");

@@ -6,6 +6,7 @@ import com.gradle.superscalarsim.builders.InputCodeModelBuilder;
 import com.gradle.superscalarsim.builders.RegisterFileModelBuilder;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
+import com.gradle.superscalarsim.enums.RegisterTypeEnum;
 import com.gradle.superscalarsim.loader.InitLoader;
 import com.gradle.superscalarsim.models.InputCodeArgument;
 import com.gradle.superscalarsim.models.InputCodeModel;
@@ -32,11 +33,14 @@ public class CodeArithmeticInterpreterFloatTest
   public void setUp()
   {
     MockitoAnnotations.openMocks(this);
-    RegisterModel float1 = new RegisterModel("f1", false, DataTypeEnum.kFloat, 0, RegisterReadinessEnum.kAssigned);
-    RegisterModel float2 = new RegisterModel("f2", false, DataTypeEnum.kFloat, 5.5f, RegisterReadinessEnum.kAssigned);
-    RegisterModel float3 = new RegisterModel("f3", false, DataTypeEnum.kFloat, 3.125f, RegisterReadinessEnum.kAssigned);
-    RegisterModel float4 = new RegisterModel("f4", false, DataTypeEnum.kFloat, 12.25f, RegisterReadinessEnum.kAssigned);
-    RegisterFileModel floatFile = new RegisterFileModelBuilder().hasName("float").hasDataType(DataTypeEnum.kFloat)
+    RegisterModel float1 = new RegisterModel("f1", false, RegisterTypeEnum.kFloat, 0, RegisterReadinessEnum.kAssigned);
+    RegisterModel float2 = new RegisterModel("f2", false, RegisterTypeEnum.kFloat, 5.5f,
+                                             RegisterReadinessEnum.kAssigned);
+    RegisterModel float3 = new RegisterModel("f3", false, RegisterTypeEnum.kFloat, 3.125f,
+                                             RegisterReadinessEnum.kAssigned);
+    RegisterModel float4 = new RegisterModel("f4", false, RegisterTypeEnum.kFloat, 12.25f,
+                                             RegisterReadinessEnum.kAssigned);
+    RegisterFileModel floatFile = new RegisterFileModelBuilder().hasName("float").hasDataType(RegisterTypeEnum.kFloat)
             .hasRegisterList(Arrays.asList(float1, float2, float3, float4)).build();
     
     this.initLoader = new InitLoader();

@@ -34,6 +34,7 @@ package com.gradle.superscalarsim.models.register;
 
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
+import com.gradle.superscalarsim.enums.RegisterTypeEnum;
 
 /**
  * @class RegisterModel
@@ -54,7 +55,7 @@ public class RegisterModel
   /**
    * Data type of register (int, float)
    */
-  private final DataTypeEnum dataType;
+  private final RegisterTypeEnum type;
   
   /**
    * Value inside the register
@@ -78,11 +79,11 @@ public class RegisterModel
    */
   public RegisterModel(String name,
                        boolean isConstant,
-                       DataTypeEnum dataType,
+                       RegisterTypeEnum type,
                        float value,
                        RegisterReadinessEnum readiness)
   {
-    this(name, isConstant, dataType, readiness);
+    this(name, isConstant, type, readiness);
     this.value.setValue(value);
   }// end of Constructor
   //------------------------------------------------------
@@ -90,16 +91,16 @@ public class RegisterModel
   /**
    * @param name       Register name
    * @param isConstant Ture in case of static value, false otherwise
-   * @param dataType   Register data type
+   * @param type       Register type
    * @param readiness  Register readiness
    *
    * @brief Constructor with default register value
    */
-  public RegisterModel(String name, boolean isConstant, DataTypeEnum dataType, RegisterReadinessEnum readiness)
+  public RegisterModel(String name, boolean isConstant, RegisterTypeEnum type, RegisterReadinessEnum readiness)
   {
     this.name       = name;
     this.isConstant = isConstant;
-    this.dataType   = dataType;
+    this.type       = type;
     this.readiness  = readiness;
     this.value      = new RegisterDataContainer();
   }// end of Constructor
@@ -107,11 +108,11 @@ public class RegisterModel
   
   public RegisterModel(String name,
                        boolean isConstant,
-                       DataTypeEnum dataType,
+                       RegisterTypeEnum type,
                        double value,
                        RegisterReadinessEnum readiness)
   {
-    this(name, isConstant, dataType, readiness);
+    this(name, isConstant, type, readiness);
     this.value.setValue(value);
   }// end of Constructor
   //------------------------------------------------------
@@ -127,22 +128,22 @@ public class RegisterModel
    */
   public RegisterModel(String name,
                        boolean isConstant,
-                       DataTypeEnum dataType,
+                       RegisterTypeEnum type,
                        int value,
                        RegisterReadinessEnum readiness)
   {
-    this(name, isConstant, dataType, readiness);
+    this(name, isConstant, type, readiness);
     this.value.setValue(value);
   }// end of Constructor
   //------------------------------------------------------
   
   public RegisterModel(String name,
                        boolean isConstant,
-                       DataTypeEnum dataType,
+                       RegisterTypeEnum type,
                        long value,
                        RegisterReadinessEnum readiness)
   {
-    this(name, isConstant, dataType, readiness);
+    this(name, isConstant, type, readiness);
     this.value.setValue(value);
   }// end of Constructor
   //------------------------------------------------------
@@ -154,7 +155,7 @@ public class RegisterModel
   {
     this.name       = register.name;
     this.isConstant = register.isConstant;
-    this.dataType   = register.dataType;
+    this.type       = register.type;
     this.value      = register.value;
     this.readiness  = register.readiness;
   }// end of Copy constructor
@@ -166,7 +167,7 @@ public class RegisterModel
   @Override
   public String toString()
   {
-    return "register " + name + (isConstant ? ", const" : "") + " = " + value.getString(dataType);
+    return "register " + name + (isConstant ? ", const" : "") + " = " + value.getString(null);
   }// end of toString
   //------------------------------------------------------
   
@@ -189,14 +190,6 @@ public class RegisterModel
     return isConstant;
   }// end of isConstant
   //------------------------------------------------------
-  
-  /**
-   * @brief Get data type of register
-   */
-  public DataTypeEnum getDataType()
-  {
-    return dataType;
-  }
   
   /**
    * @return Value inside register

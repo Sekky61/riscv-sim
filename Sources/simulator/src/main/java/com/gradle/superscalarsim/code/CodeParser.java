@@ -29,6 +29,7 @@ package com.gradle.superscalarsim.code;
 
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
+import com.gradle.superscalarsim.enums.RegisterTypeEnum;
 import com.gradle.superscalarsim.loader.InitLoader;
 import com.gradle.superscalarsim.models.InputCodeArgument;
 import com.gradle.superscalarsim.models.InputCodeModel;
@@ -613,15 +614,12 @@ public class CodeParser
    * @return True if argument can fit inside the register, false otherwise
    * @brief Check argument and register data types if they fit within each other
    */
-  private boolean checkDatatype(final DataTypeEnum argumentDataType, final DataTypeEnum registerDataType)
+  private boolean checkDatatype(final DataTypeEnum argumentDataType, final RegisterTypeEnum registerDataType)
   {
     return switch (argumentDataType)
     {
-      case kInt, kUInt -> registerDataType == DataTypeEnum.kInt || registerDataType == DataTypeEnum.kLong;
-      case kLong, kULong -> registerDataType == DataTypeEnum.kLong;
-      case kFloat -> registerDataType == DataTypeEnum.kFloat || registerDataType == DataTypeEnum.kDouble;
-      case kDouble -> registerDataType == DataTypeEnum.kDouble;
-      case kSpeculative, kBool -> false;
+      case kInt, kUInt, kLong, kULong, kBool -> registerDataType == RegisterTypeEnum.kInt;
+      case kFloat, kDouble -> registerDataType == RegisterTypeEnum.kFloat;
     };
   }// end of checkDatatype
   //-------------------------------------------------------------------------------------------

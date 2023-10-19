@@ -32,7 +32,7 @@
  */
 package com.gradle.superscalarsim.models.register;
 
-import com.gradle.superscalarsim.enums.DataTypeEnum;
+import com.gradle.superscalarsim.enums.RegisterTypeEnum;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,7 +47,7 @@ public class RegisterFileModel
   /// Name of register file
   private final String name;
   /// Data type of register file
-  private final DataTypeEnum dataType;
+  private final RegisterTypeEnum dataType;
   /// List of registers of register file
   private final List<RegisterModel> registerList;
   
@@ -55,21 +55,21 @@ public class RegisterFileModel
   public RegisterFileModel()
   {
     this.name         = "";
-    this.dataType     = DataTypeEnum.kInt;
+    this.dataType     = RegisterTypeEnum.kInt;
     this.registerList = null;
   }
   
   /**
-   * @param [in] name         - Register file name
-   * @param [in] dataType     - Register file data type
-   * @param [in] registerList - List of registers of register file
+   * @param name         - Register file name
+   * @param type         - Register file type
+   * @param registerList - List of registers of register file
    *
    * @brief Constructor
    */
-  public RegisterFileModel(String name, String dataType, List<RegisterModel> registerList)
+  public RegisterFileModel(String name, RegisterTypeEnum type, List<RegisterModel> registerList)
   {
     this.name         = name;
-    this.dataType     = DataTypeEnum.valueOf(dataType);
+    this.dataType     = type;
     this.registerList = registerList;
   }// end of Constructor
   //------------------------------------------------------
@@ -114,7 +114,7 @@ public class RegisterFileModel
    * @return Data type of register file
    * @brief Get data type of register file
    */
-  public final DataTypeEnum getDataType()
+  public final RegisterTypeEnum getDataType()
   {
     return dataType;
   }// end of getDataType

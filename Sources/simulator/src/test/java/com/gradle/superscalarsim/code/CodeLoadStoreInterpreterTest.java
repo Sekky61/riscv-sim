@@ -7,6 +7,7 @@ import com.gradle.superscalarsim.builders.InstructionFunctionModelBuilder;
 import com.gradle.superscalarsim.builders.RegisterFileModelBuilder;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
+import com.gradle.superscalarsim.enums.RegisterTypeEnum;
 import com.gradle.superscalarsim.loader.InitLoader;
 import com.gradle.superscalarsim.models.InputCodeArgument;
 import com.gradle.superscalarsim.models.InputCodeModel;
@@ -39,21 +40,27 @@ public class CodeLoadStoreInterpreterTest
   public void setUp()
   {
     MockitoAnnotations.openMocks(this);
-    RegisterModel integer1 = new RegisterModel("x1", false, DataTypeEnum.kInt, 0, RegisterReadinessEnum.kAssigned);
-    RegisterModel integer2 = new RegisterModel("x2", false, DataTypeEnum.kInt, 25, RegisterReadinessEnum.kAssigned);
-    RegisterModel integer3 = new RegisterModel("x3", false, DataTypeEnum.kInt, 6, RegisterReadinessEnum.kAssigned);
-    RegisterModel integer4 = new RegisterModel("x4", false, DataTypeEnum.kInt, -1000, RegisterReadinessEnum.kAssigned);
-    RegisterModel integer5 = new RegisterModel("x5", false, DataTypeEnum.kInt, -65535, RegisterReadinessEnum.kAssigned);
-    RegisterModel integer6 = new RegisterModel("x6", false, DataTypeEnum.kLong, -4294967295L,
+    RegisterModel integer1 = new RegisterModel("x1", false, RegisterTypeEnum.kInt, 0, RegisterReadinessEnum.kAssigned);
+    RegisterModel integer2 = new RegisterModel("x2", false, RegisterTypeEnum.kInt, 25, RegisterReadinessEnum.kAssigned);
+    RegisterModel integer3 = new RegisterModel("x3", false, RegisterTypeEnum.kInt, 6, RegisterReadinessEnum.kAssigned);
+    RegisterModel integer4 = new RegisterModel("x4", false, RegisterTypeEnum.kInt, -1000,
                                                RegisterReadinessEnum.kAssigned);
-    RegisterFileModel integerFile = new RegisterFileModelBuilder().hasName("integer").hasDataType(DataTypeEnum.kLong)
+    RegisterModel integer5 = new RegisterModel("x5", false, RegisterTypeEnum.kInt, -65535,
+                                               RegisterReadinessEnum.kAssigned);
+    RegisterModel integer6 = new RegisterModel("x6", false, RegisterTypeEnum.kInt, -4294967295L,
+                                               RegisterReadinessEnum.kAssigned);
+    RegisterFileModel integerFile = new RegisterFileModelBuilder().hasName("integer").hasDataType(RegisterTypeEnum.kInt)
             .hasRegisterList(Arrays.asList(integer1, integer2, integer3, integer4, integer5, integer6)).build();
     
-    RegisterModel float1 = new RegisterModel("f1", false, DataTypeEnum.kFloat, 0.0f, RegisterReadinessEnum.kAssigned);
-    RegisterModel float2 = new RegisterModel("f2", false, DataTypeEnum.kFloat, 25.0f, RegisterReadinessEnum.kAssigned);
-    RegisterModel float3 = new RegisterModel("f3", false, DataTypeEnum.kFloat, 6.0f, RegisterReadinessEnum.kAssigned);
-    RegisterModel float4 = new RegisterModel("f4", false, DataTypeEnum.kDouble, 6.0d, RegisterReadinessEnum.kAssigned);
-    RegisterFileModel floatFile = new RegisterFileModelBuilder().hasName("float").hasDataType(DataTypeEnum.kDouble)
+    RegisterModel float1 = new RegisterModel("f1", false, RegisterTypeEnum.kFloat, 0.0f,
+                                             RegisterReadinessEnum.kAssigned);
+    RegisterModel float2 = new RegisterModel("f2", false, RegisterTypeEnum.kFloat, 25.0f,
+                                             RegisterReadinessEnum.kAssigned);
+    RegisterModel float3 = new RegisterModel("f3", false, RegisterTypeEnum.kFloat, 6.0f,
+                                             RegisterReadinessEnum.kAssigned);
+    RegisterModel float4 = new RegisterModel("f4", false, RegisterTypeEnum.kFloat, 6.0d,
+                                             RegisterReadinessEnum.kAssigned);
+    RegisterFileModel floatFile = new RegisterFileModelBuilder().hasName("float").hasDataType(RegisterTypeEnum.kFloat)
             .hasRegisterList(Arrays.asList(float1, float2, float3, float4)).build();
     
     Mockito.when(initLoader.getRegisterFileModelList()).thenReturn(Arrays.asList(integerFile, floatFile));

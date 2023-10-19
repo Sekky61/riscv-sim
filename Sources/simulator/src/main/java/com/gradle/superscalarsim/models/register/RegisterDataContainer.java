@@ -45,11 +45,17 @@ public class RegisterDataContainer
   private long bits;
   
   /**
+   * Last type of the register - used for inspection, display
+   */
+  private DataTypeEnum currentType;
+  
+  /**
    * @brief Constructor
    */
   public RegisterDataContainer()
   {
-    this.bits = 0;
+    this.bits        = 0;
+    this.currentType = DataTypeEnum.kULong;
   }
   
   public static <T> RegisterDataContainer fromValue(T value)
@@ -75,32 +81,38 @@ public class RegisterDataContainer
       case kBool -> setValue((boolean) value);
       default -> throw new IllegalArgumentException("Unsupported type: " + type);
     }
+    this.currentType = type;
   }
   
   public void setValue(int bits)
   {
-    this.bits = Integer.toUnsignedLong(bits);
+    this.bits        = Integer.toUnsignedLong(bits);
+    this.currentType = DataTypeEnum.kInt;
   }
   
   public void setValue(long value)
   {
-    this.bits = value;
+    this.bits        = value;
+    this.currentType = DataTypeEnum.kLong;
   }
   
   public void setValue(float value)
   {
     int bits = Float.floatToIntBits(value);
-    this.bits = Integer.toUnsignedLong(bits);
+    this.bits        = Integer.toUnsignedLong(bits);
+    this.currentType = DataTypeEnum.kFloat;
   }
   
   public void setValue(double value)
   {
-    this.bits = Double.doubleToLongBits(value);
+    this.bits        = Double.doubleToLongBits(value);
+    this.currentType = DataTypeEnum.kDouble;
   }
   
   public void setValue(boolean value)
   {
-    this.bits = value ? 1 : 0;
+    this.bits        = value ? 1 : 0;
+    this.currentType = DataTypeEnum.kBool;
   }
   
   /**
@@ -112,10 +124,9 @@ public class RegisterDataContainer
   }
   
   /**
-   * @param type Type to cast to (example: Integer.class)
-   * @param <T>  Type to cast to
+   * @param type Type to cast to (example: `Integer.class`)
    *
-   * @return Value of register, cast to given type.
+   * @return Value of register, cast to given type. Consumer must cast the result to the correct type.
    * @brief Get value of register. Interprets the saved bit sequence as a value of given type.
    */
   public Object getValue(DataTypeEnum type)
@@ -145,7 +156,7 @@ public class RegisterDataContainer
   {
     if (type == null)
     {
-      type = DataTypeEnum.kULong;
+      type = currentType;
     }
     Object v = getValue(type);
     return v.toString();

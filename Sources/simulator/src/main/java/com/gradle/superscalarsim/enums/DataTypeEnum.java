@@ -65,9 +65,7 @@ public enum DataTypeEnum
   /**
    * True/False. Used for expressions.
    */
-  kBool,
-  
-  kSpeculative;
+  kBool;
   
   public static DataTypeEnum fromJavaClass(Class<?> aClass)
   {
@@ -115,8 +113,6 @@ public enum DataTypeEnum
         return Double.class;
       case kBool:
         return Boolean.class;
-      case kSpeculative:
-        return Long.class;
       default:
         return null;
     }
