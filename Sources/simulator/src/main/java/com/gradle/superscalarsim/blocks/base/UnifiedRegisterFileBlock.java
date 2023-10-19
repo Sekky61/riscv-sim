@@ -74,6 +74,14 @@ public class UnifiedRegisterFileBlock
   private RegisterFileModel speculativeRegisterFile;
   
   /**
+   * Constructor for (de)serialization
+   */
+  public UnifiedRegisterFileBlock()
+  {
+    registerMap = new HashMap<>();
+  }// end of Constructor
+  
+  /**
    * @param loader - InitLoader class holding information about instruction and registers. Only needed during initialization.
    *
    * @brief Constructor
