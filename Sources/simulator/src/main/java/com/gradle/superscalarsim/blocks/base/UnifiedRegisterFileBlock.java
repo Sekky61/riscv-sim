@@ -82,7 +82,7 @@ public class UnifiedRegisterFileBlock
   }// end of Constructor
   
   /**
-   * @param loader - InitLoader class holding information about instruction and registers. Only needed during initialization.
+   * @param loader InitLoader class holding information about instruction and registers. Only needed during initialization.
    *
    * @brief Constructor
    */
@@ -98,7 +98,7 @@ public class UnifiedRegisterFileBlock
    * The provided registers must be copied! Otherwise, the original register files will be modified,
    * as the owner (initLoader) does not get destroyed during backwards simulation.
    *
-   * @param registerFileModelList - List of all architectural register files
+   * @param registerFileModelList List of all architectural register files
    *
    * @brief Load all register files to this class and create the speculative file
    */
@@ -132,7 +132,7 @@ public class UnifiedRegisterFileBlock
   //----------------------------------------------------------------------
   
   /**
-   * @param size - Number of speculative registers
+   * @param size Number of speculative registers
    *
    * @brief Creates speculative register file
    */
