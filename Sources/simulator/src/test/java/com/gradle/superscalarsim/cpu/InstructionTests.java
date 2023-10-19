@@ -627,44 +627,6 @@ public class InstructionTests
   }
   
   /**
-   * LH loads a half-word (2 bytes) from memory
-   */
-  @Test
-  public void testLH()
-  {
-    // Setup + exercise
-    // Load from address x2+0
-    // Little endian so 0x10 is the first byte
-    cpuConfig.code = "lh x1, 0(x2)";
-    Cpu cpu = new Cpu(cpuConfig);
-    cpu.cpuState.simulatedMemory.insertIntoMemory(0x5L, (byte) 0x10, 0);
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(0x5);
-    cpu.execute();
-    
-    // Assert
-    Assert.assertEquals(0x10, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt));
-  }
-  
-  /**
-   * LH loads a half-word (2 bytes) from memory
-   */
-  @Test
-  public void testLH_little_endian()
-  {
-    // Setup + exercise
-    // Load from address x2+0
-    // Little endian so 0x10 is the high byte now
-    cpuConfig.code = "lh x1, 0(x2)";
-    Cpu cpu = new Cpu(cpuConfig);
-    cpu.cpuState.simulatedMemory.insertIntoMemory(0x5L, (byte) 0x01, 0);
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(0x4);
-    cpu.execute();
-    
-    // Assert
-    Assert.assertEquals(0x0100, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt));
-  }
-  
-  /**
    * BEQZ jumps if the register is 0
    */
   @Test
@@ -1691,5 +1653,171 @@ public class InstructionTests
     // Assert
     Assert.assertEquals(0b1000000, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt));
     Assert.assertEquals(0b1010, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x3").getValue(DataTypeEnum.kInt));
+  }
+  
+  /**
+   * LB loads a byte from memory
+   */
+  @Test
+  public void testLB()
+  {
+    // Setup + exercise
+    cpuConfig.code = "lb x1, 0(x2)\n" + "lb x3, 2(x4)";
+    Cpu cpu = new Cpu(cpuConfig);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(0x100);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x4").setValue(0xfe);
+    cpu.cpuState.memoryModel.store(0x100, 0b11, 1, 0, 0);
+    cpu.execute();
+    
+    // Assert
+    Assert.assertEquals(0b11, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt));
+    Assert.assertEquals(0b11, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x3").getValue(DataTypeEnum.kInt));
+  }
+  
+  /**
+   * LH loads a half-word (2 bytes) from memory
+   */
+  @Test
+  public void testLH()
+  {
+    // Setup + exercise
+    // Load from address x2+0
+    // Little endian so 0x10 is the first byte
+    cpuConfig.code = "lh x1, 0(x2)\n" + "lh x3, 0(x4)";
+    Cpu cpu = new Cpu(cpuConfig);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(0x100);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x4").setValue(0x101);
+    cpu.cpuState.memoryModel.store(0x100, 0x10, 1, 0, 0);
+    cpu.cpuState.memoryModel.store(0x102, 0xff, 1, 0, 0);
+    cpu.execute();
+    
+    // Assert
+    Assert.assertEquals(0x10, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt));
+    Assert.assertEquals(0xffffff00,
+                        cpu.cpuState.unifiedRegisterFileBlock.getRegister("x3").getValue(DataTypeEnum.kInt));
+  }
+  
+  /**
+   * LW loads a word (4 bytes) from memory
+   */
+  @Test
+  public void testLW()
+  {
+    // Setup + exercise
+    cpuConfig.code = "lw x1, 0(x2)\n" + "lw x3, 0(x4)";
+    Cpu cpu = new Cpu(cpuConfig);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(0x100);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x4").setValue(0x103);
+    cpu.cpuState.memoryModel.store(0x100, 0x12345678, 4, 0, 0);
+    cpu.execute();
+    
+    // Assert
+    Assert.assertEquals(0x12345678,
+                        cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt));
+    Assert.assertEquals(0x12, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x3").getValue(DataTypeEnum.kInt));
+  }
+  
+  /**
+   * LBU loads a byte from memory and zero extends it
+   */
+  @Test
+  public void testLBU()
+  {
+    // Setup + exercise
+    cpuConfig.code = "lbu x1, 0(x2)\n" + "lbu x3, 0(x4)";
+    Cpu cpu = new Cpu(cpuConfig);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(0x100);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x4").setValue(0xff);
+    cpu.cpuState.memoryModel.store(0x100, 255, 1, 0, 0);
+    cpu.execute();
+    
+    // Assert
+    Assert.assertEquals(255, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt));
+    Assert.assertEquals(0, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x3").getValue(DataTypeEnum.kInt));
+  }
+  
+  /**
+   * LHU loads a half-word (2 bytes) from memory and zero extends it
+   */
+  @Test
+  public void testLHU()
+  {
+    // Setup + exercise
+    cpuConfig.code = "lhu x1, 0(x2)\n" + "lhu x3, 0(x4)";
+    Cpu cpu = new Cpu(cpuConfig);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(0x100);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x4").setValue(0xff);
+    cpu.cpuState.memoryModel.store(0x100, 0xffff, 2, 0, 0);
+    cpu.execute();
+    
+    // Assert
+    Assert.assertEquals(0x0000ffff,
+                        cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt));
+    Assert.assertEquals(0x0000ff00,
+                        cpu.cpuState.unifiedRegisterFileBlock.getRegister("x3").getValue(DataTypeEnum.kInt));
+  }
+  
+  /*
+   * LWU loads a word (4 bytes) from memory and zero extends it to *64 bits*
+   * This is RV64I instruction
+   * TODO: not implemented properly
+   */
+  
+  /**
+   * SB stores the low 8 bits of register to memory
+   */
+  @Test
+  public void testSB()
+  {
+    // Setup + exercise
+    cpuConfig.code = "sb x1, 0(x2)";
+    Cpu cpu = new Cpu(cpuConfig);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(0xff11);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(0x100);
+    cpu.execute();
+    
+    // Assert
+    Assert.assertEquals(0x11, (long) cpu.cpuState.memoryModel.load(0x100, 1, 0, 0).getSecond());
+    Assert.assertEquals(0x00, (long) cpu.cpuState.memoryModel.load(0x101, 1, 0, 0).getSecond());
+  }
+  
+  /**
+   * SH stores the low 16 bits of register to memory
+   */
+  @Test
+  public void testSH()
+  {
+    // Setup + exercise
+    cpuConfig.code = "sh x1, 0(x2)";
+    Cpu cpu = new Cpu(cpuConfig);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(0xff112233);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(0x100);
+    cpu.execute();
+    
+    // Assert
+    Assert.assertEquals(0x33, (long) cpu.cpuState.memoryModel.load(0x100, 1, 0, 0).getSecond());
+    Assert.assertEquals(0x22, (long) cpu.cpuState.memoryModel.load(0x101, 1, 0, 0).getSecond());
+    Assert.assertEquals(0x00, (long) cpu.cpuState.memoryModel.load(0x102, 1, 0, 0).getSecond());
+    Assert.assertEquals(0x00, (long) cpu.cpuState.memoryModel.load(0x103, 1, 0, 0).getSecond());
+  }
+  
+  /**
+   * SW stores the low 32 bits of register to memory
+   */
+  @Test
+  public void testSW()
+  {
+    // Setup + exercise
+    cpuConfig.code = "sw x1, 0(x2)";
+    Cpu cpu = new Cpu(cpuConfig);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(0xff112233);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(0x100);
+    cpu.execute();
+    
+    // Assert
+    Assert.assertEquals(0x33, (long) cpu.cpuState.memoryModel.load(0x100, 1, 0, 0).getSecond());
+    Assert.assertEquals(0x22, (long) cpu.cpuState.memoryModel.load(0x101, 1, 0, 0).getSecond());
+    Assert.assertEquals(0x11, (long) cpu.cpuState.memoryModel.load(0x102, 1, 0, 0).getSecond());
+    Assert.assertEquals(0xff, (long) cpu.cpuState.memoryModel.load(0x103, 1, 0, 0).getSecond());
   }
 }

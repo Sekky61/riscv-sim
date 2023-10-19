@@ -214,7 +214,7 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "store:16:\\rs1 \\imm +:rs2"
+    "interpretableAs": "store:32:\\rs1 \\imm +:rs2"
   },
   "sub": {
     "name": "sub",
@@ -521,7 +521,7 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "load:16:\\rs1 \\imm +"
+    "interpretableAs": "load:32:\\rs1 \\imm +"
   },
   "addi": {
     "name": "addi",
@@ -758,7 +758,7 @@
     "arguments": [
       {
         "name": "rd",
-        "type": "kUInt",
+        "type": "kULong",
         "writeBack": true
       },
       {
