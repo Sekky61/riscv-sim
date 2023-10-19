@@ -466,6 +466,7 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>
   
   /**
    * @return Variables used in the instruction in the form for expression evaluation
+   * @brief reads current register values (including speculative values), the PC, constants
    */
   public List<Expression.Variable> getVariables(List<String> variableNames, UnifiedRegisterFileBlock registerFileBlock)
   {
@@ -479,42 +480,37 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>
         variables.add(new Expression.Variable("pc", DataTypeEnum.kInt, RegisterDataContainer.fromValue(getSavedPc())));
         continue;
       }
-      // We need to find varName in the arguments or in the register file
+      
       InstructionFunctionModel.Argument argument = instructionFunctionModel.getArgumentByName(varName);
-      if (argument != null)
+      if (argument == null)
       {
-        String name        = argument.name();
-        String renamedName = getArgumentByName(name).getValue();
-        // Check if value is register
-        RegisterModel register = registerFileBlock.getRegister(renamedName);
-        if (register != null)
-        {
-          variables.add(new Expression.Variable(name, argument.type(), register.getValueContainer()));
-        }
-        else
-        {
-          // it is immediate
-          Expression.Variable parsed = Expression.parseConstant(renamedName);
-          if (parsed != null)
-          {
-            parsed.tag  = name;
-            parsed.type = argument.type();
-            variables.add(parsed);
-          }
-          // Could not parse. Maybe it is a label. Skip now.
-        }
+        throw new IllegalStateException("Argument " + varName + " not found in " + instructionFunctionModel.getName());
+      }
+      
+      // Variable is an argument of the instruction (rs1/imm)
+      String name        = argument.name();
+      String renamedName = getArgumentByName(name).getValue();
+      // Check if value is register
+      RegisterModel register = registerFileBlock.getRegister(renamedName);
+      if (register != null)
+      {
+        // Register found (or its speculative rename)
+        variables.add(new Expression.Variable(name, argument.type(), register.getValueContainer()));
       }
       else
       {
-        // Check if value is register
-        RegisterModel register = registerFileBlock.getRegister(varName);
-        if (register != null)
+        //It is an immediate - constant or a label
+        Expression.Variable parsed = Expression.parseConstant(renamedName);
+        if (parsed != null)
         {
-          variables.add(new Expression.Variable(varName, register.getDataType(), register.getValueContainer()));
+          parsed.tag  = name;
+          parsed.type = argument.type();
+          variables.add(parsed);
         }
         else
         {
-          throw new RuntimeException("Variable " + varName + " not found in " + this);
+          // TODO: Handle labels: load their value or extract it in parse. Skip for now.
+          //throw new IllegalStateException("Could not parse " + renamedName + " as constant");
         }
       }
     }

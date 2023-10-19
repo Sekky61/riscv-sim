@@ -58,6 +58,9 @@ import java.util.regex.Pattern;
  *   <li>'!=' - Not equal</li>
  *   <li>'=' - Assign (left to the right)</li>
  *   <li>'pick' - Pick one of the two variables based on the value of the third variable (false picks the left one)</li>
+ *   <li>'float' - Convert to float (does not change the bits, interpret cast)</li>
+ *   <li>'bits' - Convert to bits (does not change the bits, interpret cast)</li>
+ *   <li>'fclass' - Classify float (returns an int)</li>
  * </ul>
  * <p>
  * Examples of valid expressions:
@@ -200,13 +203,12 @@ public class Expression
     
     // The Variables from the input list have been mutated while interpreting the expression
     // One can also use the top of the stack as the result
-    if (valueStack.size() == 0)
+    if (valueStack.isEmpty())
     {
       return null;
     }
     
-    Variable result = valueStack.pop();
-    return result;
+    return valueStack.pop();
   }
   
   private static boolean isUnaryOperator(String operator)
@@ -225,16 +227,15 @@ public class Expression
   private static Variable applyUnaryOperator(String operator, Variable variable)
   {
     // Dispatch to correct type processor
-    DataTypeEnum type  = variable.type;
-    Object       value = variable.value.getValue(type);
-    return switch (type)
+    Object value = variable.value.getValue(variable.type);
+    return switch (variable.type)
     {
       case kInt, kUInt -> applyUnaryOperatorInt(operator, (int) value);
       case kLong, kULong -> applyUnaryOperatorLong(operator, (long) value);
       case kFloat -> applyUnaryOperatorFloat(operator, (float) value);
       case kDouble -> applyUnaryOperatorDouble(operator, (double) value);
       case kBool -> applyUnaryOperatorBool(operator, (boolean) value);
-      default -> throw new IllegalArgumentException("Unknown type: " + type);
+      default -> throw new IllegalArgumentException("Unknown type: " + variable.type);
     };
   }
   
@@ -260,7 +261,7 @@ public class Expression
       throw new IllegalArgumentException("Left side of '=' operator must be of the same type as right side");
     }
     // Assign value, with some special handling for boolean
-    // TODO: alternatively add the cast operator
+    // Alternatively add the cast operator
     if (from.type == DataTypeEnum.kBool && to.type != DataTypeEnum.kBool)
     {
       boolean value = (boolean) from.value.getValue(DataTypeEnum.kBool);
@@ -282,8 +283,7 @@ public class Expression
     }
     else
     {
-      // TODO: Wrap this as a method (does not change OID)
-      to.value.setValue(from.value.getValue(DataTypeEnum.kLong), DataTypeEnum.kLong);
+      to.value.copyFrom(from.value);
     }
   }
   
@@ -363,6 +363,12 @@ public class Expression
     return expressionPart.startsWith("\\");
   }
   
+  /**
+   * @param tag       Tag of the variable to search for (example: "rd", not "\rd")
+   * @param variables List of variables to search in
+   *
+   * @return Found variable or null if not found
+   */
   private static Variable getVariable(String tag, List<Variable> variables)
   {
     for (Variable variable : variables)

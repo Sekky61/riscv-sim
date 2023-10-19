@@ -166,8 +166,7 @@ public class RegisterModel
   @Override
   public String toString()
   {
-    return "register " + name + ", " + (isConstant ? "constant " : "variable ") + "= " + value.getString(
-            dataType) + '\n';
+    return "register " + name + (isConstant ? ", const" : "") + " = " + value.getString(dataType);
   }// end of toString
   //------------------------------------------------------
   

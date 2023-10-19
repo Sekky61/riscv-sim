@@ -143,7 +143,21 @@ public class RegisterDataContainer
   
   public String getString(DataTypeEnum type)
   {
+    if (type == null)
+    {
+      type = DataTypeEnum.kULong;
+    }
     Object v = getValue(type);
     return v.toString();
+  }
+  
+  /**
+   * @param other Container to copy from
+   *
+   * @brief Copy value from other container.
+   */
+  public void copyFrom(RegisterDataContainer other)
+  {
+    this.bits = other.bits;
   }
 }
