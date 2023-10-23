@@ -336,7 +336,7 @@ public class CpuState implements Serializable
   
   public static CpuState deserialize(String json)
   {
-    CpuState state = (CpuState) JsonReader.jsonToJava(json, GsonConfiguration.getJsonWriterOptions());
+    CpuState state = (CpuState) JsonReader.jsonToJava(json, GsonConfiguration.getJsonReaderOptions());
     return state;
   }
   

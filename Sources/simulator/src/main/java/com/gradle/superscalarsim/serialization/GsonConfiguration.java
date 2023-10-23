@@ -37,6 +37,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static com.cedarsoftware.util.io.JsonWriter.CUSTOM_WRITER_MAP;
+import static com.cedarsoftware.util.io.JsonWriter.TYPE_NAME_MAP;
 
 /**
  * @brief Provider for Gson instance configured with custom (de)serializers
@@ -44,21 +45,50 @@ import static com.cedarsoftware.util.io.JsonWriter.CUSTOM_WRITER_MAP;
 public class GsonConfiguration
 {
   
-  // TODO: Use JsonWriter with TYPE_NAME_MAP for shorter types
+  /**
+   * Map from long type names to short ones.
+   * Used to shorten the JSON output.
+   */
+  static Map<String, String> typeMap;
+  
+  static
+  {
+    typeMap = new HashMap<>();
+    typeMap.put("java.util.ArrayList", "ArrayList");
+    typeMap.put("java.util.BitSet", "BitSet");
+    typeMap.put("com.gradle.superscalarsim.models.InputCodeModel", "InputCodeModel");
+    typeMap.put("com.gradle.superscalarsim.models.register.RegisterModel", "RegisterModel");
+    typeMap.put("com.gradle.superscalarsim.models.register.RegisterValueModel", "RegisterValueModel");
+    typeMap.put("com.gradle.superscalarsim.models.InputCodeArgument", "InputCodeArgument");
+    typeMap.put("com.gradle.superscalarsim.models.InstructionFunctionModel$Argument",
+                "InstructionFunctionModelArgument");
+    typeMap.put("com.gradle.superscalarsim.models.SimCodeModel", "SimCodeModel");
+    typeMap.put("com.gradle.superscalarsim.blocks.branch.OneBitPredictor", "OneBitPredictor");
+    typeMap.put("com.gradle.superscalarsim.blocks.branch.TwoBitPredictor", "TwoBitPredictor");
+    typeMap.put("com.gradle.superscalarsim.blocks.branch.ZeroBitPredictor", "ZeroBitPredictor");
+    typeMap.put("com.gradle.superscalarsim.models.RenameMapModel", "RenameMapModel");
+  }
   
   /**
    * @return Instance of options for JsonWriter (JavaIo library)
    */
   public static Map<String, Object> getJsonWriterOptions()
   {
-    // TODO: use TYPE_NAME_MAP
     // https://github.com/jdereg/json-io/blob/master/user-guide.md
     Map<Class, JsonWriter.JsonClassWriterEx> javaIoWriters = new HashMap<>();
     javaIoWriters.put(ParseError.class, new ParseError.CustomParseErrorWriter());
     
     Map<String, Object> javaIoOptions = new HashMap<>();
     javaIoOptions.put(CUSTOM_WRITER_MAP, javaIoWriters);
+    javaIoOptions.put(TYPE_NAME_MAP, typeMap);
     
+    return javaIoOptions;
+  }
+  
+  public static Map<String, Object> getJsonReaderOptions()
+  {
+    Map<String, Object> javaIoOptions = new HashMap<>();
+    javaIoOptions.put(TYPE_NAME_MAP, typeMap);
     return javaIoOptions;
   }
   
