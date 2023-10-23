@@ -44,7 +44,7 @@ public class InstructionFetchBlockTest
     
     this.instructionFetchBlock.simulate();
     
-    Assert.assertEquals(12, this.instructionFetchBlock.getPcCounter());
+    Assert.assertEquals(12, this.instructionFetchBlock.getPc());
     Assert.assertEquals("nop", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
     Assert.assertEquals("nop", this.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
     Assert.assertEquals("nop", this.instructionFetchBlock.getFetchedCode().get(2).getInstructionName());
@@ -61,7 +61,7 @@ public class InstructionFetchBlockTest
     
     this.instructionFetchBlock.simulate();
     
-    Assert.assertEquals(12, this.instructionFetchBlock.getPcCounter());
+    Assert.assertEquals(12, this.instructionFetchBlock.getPc());
     Assert.assertEquals("ins1", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
     Assert.assertEquals("ins2", this.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
     Assert.assertEquals("ins3", this.instructionFetchBlock.getFetchedCode().get(2).getInstructionName());
@@ -77,7 +77,7 @@ public class InstructionFetchBlockTest
     
     this.instructionFetchBlock.simulate();
     
-    Assert.assertEquals(12, this.instructionFetchBlock.getPcCounter());
+    Assert.assertEquals(12, this.instructionFetchBlock.getPc());
     Assert.assertEquals("ins1", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
     Assert.assertEquals("ins2", this.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
     Assert.assertEquals("nop", this.instructionFetchBlock.getFetchedCode().get(2).getInstructionName());
@@ -95,7 +95,7 @@ public class InstructionFetchBlockTest
     this.instructionFetchBlock.setNumberOfWays(5);
     this.instructionFetchBlock.simulate();
     
-    Assert.assertEquals(5 * 4, this.instructionFetchBlock.getPcCounter());
+    Assert.assertEquals(5 * 4, this.instructionFetchBlock.getPc());
     Assert.assertEquals("ins1", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
     Assert.assertEquals("ins2", this.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
     Assert.assertEquals("ins3", this.instructionFetchBlock.getFetchedCode().get(2).getInstructionName());
@@ -115,7 +115,7 @@ public class InstructionFetchBlockTest
     this.instructionFetchBlock.simulate();
     this.instructionFetchBlock.simulate();
     
-    Assert.assertEquals(24, this.instructionFetchBlock.getPcCounter());
+    Assert.assertEquals(24, this.instructionFetchBlock.getPc());
     Assert.assertEquals("nop", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
     Assert.assertEquals("nop", this.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
     Assert.assertEquals("nop", this.instructionFetchBlock.getFetchedCode().get(2).getInstructionName());
@@ -130,12 +130,12 @@ public class InstructionFetchBlockTest
     List<InputCodeModel> instructions = Arrays.asList(ins1, ins2, ins3);
     instructionMemoryBlock.setCode(instructions);
     
-    Assert.assertEquals(0, this.instructionFetchBlock.getPcCounter());
+    Assert.assertEquals(0, this.instructionFetchBlock.getPc());
     Assert.assertEquals(0, this.instructionFetchBlock.getFetchedCode().size());
     
     this.instructionFetchBlock.simulate();
     
-    Assert.assertEquals(12, this.instructionFetchBlock.getPcCounter());
+    Assert.assertEquals(12, this.instructionFetchBlock.getPc());
     Assert.assertEquals("ins1", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
     Assert.assertEquals("ins2", this.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
     Assert.assertEquals("ins3", this.instructionFetchBlock.getFetchedCode().get(2).getInstructionName());

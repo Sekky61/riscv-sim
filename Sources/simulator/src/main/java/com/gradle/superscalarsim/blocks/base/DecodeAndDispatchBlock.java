@@ -226,7 +226,6 @@ public class DecodeAndDispatchBlock implements AbstractBlock
       int fetchCount = Math.min((int) this.instructionFetchBlock.getFetchedCode().stream()
                                         .filter(code -> !code.getInstructionName().equals("nop")).count(),
                                 this.instructionFetchBlock.getNumberOfWays() - this.afterRenameCodeList.size());
-      this.instructionFetchBlock.setStallFetchCount(fetchCount);
       for (int i = 0; i < fetchCount; i++)
       {
         SimCodeModel codeModel = this.instructionFetchBlock.getFetchedCode().get(i);
@@ -400,7 +399,7 @@ public class DecodeAndDispatchBlock implements AbstractBlock
       // Fix entry in BTB, set correct PC
       codeModel.setBranchPredicted(true);
       this.branchTargetBuffer.setEntry(instructionPosition, codeModel, realTarget, modelId, -1);
-      this.instructionFetchBlock.setPcCounter(realTarget);
+      this.instructionFetchBlock.setPc(realTarget);
       // Drop instructions after branch
       removeInstructionsFromIndex(position + 1);
       globalHistoryBit = true;

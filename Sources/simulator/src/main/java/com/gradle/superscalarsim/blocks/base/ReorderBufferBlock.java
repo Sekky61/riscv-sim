@@ -265,7 +265,7 @@ public class ReorderBufferBlock implements AbstractBlock
         activeRegister.setHistoryValueAsCurrent(codeModel.getId());
         activeRegister.shiftValue(false);
         
-        this.instructionFetchBlock.setPcCounter(resultPc);
+        this.instructionFetchBlock.setPc(resultPc);
       }
     }
     else if (codeModel.getInstructionTypeEnum() == InstructionTypeEnum.kLoadstore)

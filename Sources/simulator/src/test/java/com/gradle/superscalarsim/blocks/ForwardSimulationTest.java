@@ -210,7 +210,7 @@ public class ForwardSimulationTest
     instructionMemoryBlock.setCode(instructions);
     
     this.cpu.step();
-    Assert.assertEquals(12, this.instructionFetchBlock.getPcCounter());
+    Assert.assertEquals(12, this.instructionFetchBlock.getPc());
     Assert.assertEquals("add", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
     Assert.assertEquals("nop", this.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
     Assert.assertEquals("nop", this.instructionFetchBlock.getFetchedCode().get(2).getInstructionName());
@@ -294,7 +294,7 @@ public class ForwardSimulationTest
     instructionMemoryBlock.setCode(instructions);
     
     this.cpu.step();
-    Assert.assertEquals(12, this.instructionFetchBlock.getPcCounter());
+    Assert.assertEquals(12, this.instructionFetchBlock.getPc());
     Assert.assertEquals("add", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
     Assert.assertEquals("add", this.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
     Assert.assertEquals("add", this.instructionFetchBlock.getFetchedCode().get(2).getInstructionName());
@@ -597,7 +597,7 @@ public class ForwardSimulationTest
     instructionMemoryBlock.setCode(instructions);
     
     this.cpu.step();
-    Assert.assertEquals(12, this.instructionFetchBlock.getPcCounter());
+    Assert.assertEquals(12, this.instructionFetchBlock.getPc());
     Assert.assertEquals("fadd.s", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
     Assert.assertEquals("nop", this.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
     Assert.assertEquals("nop", this.instructionFetchBlock.getFetchedCode().get(2).getInstructionName());
@@ -687,7 +687,7 @@ public class ForwardSimulationTest
     instructionMemoryBlock.setCode(instructions);
     
     this.cpu.step();
-    Assert.assertEquals(12, this.instructionFetchBlock.getPcCounter());
+    Assert.assertEquals(12, this.instructionFetchBlock.getPc());
     Assert.assertEquals("fadd.s", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
     Assert.assertEquals("fadd.s", this.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
     Assert.assertEquals("fadd.s", this.instructionFetchBlock.getFetchedCode().get(2).getInstructionName());
@@ -1466,7 +1466,7 @@ public class ForwardSimulationTest
     
     // First fetch
     this.cpu.step();
-    Assert.assertEquals(8, this.instructionFetchBlock.getPcCounter());
+    Assert.assertEquals(8, this.instructionFetchBlock.getPc());
     Assert.assertEquals("beq", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
     Assert.assertEquals("subi", this.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
     // Third instruction is not fetched - it is a second branch
@@ -1474,7 +1474,7 @@ public class ForwardSimulationTest
     
     // Second fetch
     this.cpu.step();
-    Assert.assertEquals(20, this.instructionFetchBlock.getPcCounter());
+    Assert.assertEquals(20, this.instructionFetchBlock.getPc());
     Assert.assertEquals("jal", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
     Assert.assertEquals("addi", this.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
     Assert.assertEquals("nop", this.instructionFetchBlock.getFetchedCode().get(2).getInstructionName());

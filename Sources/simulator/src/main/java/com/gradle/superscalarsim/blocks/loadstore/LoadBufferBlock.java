@@ -276,8 +276,8 @@ public class LoadBufferBlock implements AbstractBlock
       bufferItem.setMemoryAccessId(beforeMaId);
       bufferItem.setHasBypassed(beforeBypass);
       // Fix PC
-      instructionFetchBlock.setPcCounter(simCodeModel.getSavedPc());
-      simCodeModel.setSavedPc(instructionFetchBlock.getPcCounter());
+      instructionFetchBlock.setPc(simCodeModel.getSavedPc());
+      simCodeModel.setSavedPc(instructionFetchBlock.getPc());
     }
   }// end of checkIfProcessedHasConflict
   //-------------------------------------------------------------------------------------------
