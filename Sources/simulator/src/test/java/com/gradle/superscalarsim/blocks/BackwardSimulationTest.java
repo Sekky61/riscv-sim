@@ -31,8 +31,6 @@ public class BackwardSimulationTest
 {
   Cpu cpu;
   
-  InitLoader initLoader;
-  
   @Test
   public void simulateBackwards_oneIntInstruction_simulateToEndAndBack()
   {
@@ -171,13 +169,14 @@ public class BackwardSimulationTest
     this.cpu = new Cpu(cpuCfg);
     CpuState cpuState = this.cpu.cpuState;
     
-    this.initLoader = cpuState.initLoader;
+    InitLoader initLoader = new InitLoader();
+    
     // Load predefined register files
-    this.initLoader.setRegisterFileModelList(Arrays.asList(integerFile, floatFile));
+    initLoader.setRegisterFileModelList(Arrays.asList(integerFile, floatFile));
     
     // This adds the reg files, but also creates speculative registers!
     this.cpu.cpuState.unifiedRegisterFileBlock.setRegisterList(new ArrayList<>());
-    this.cpu.cpuState.unifiedRegisterFileBlock.loadRegisters(this.initLoader.getRegisterFileModelList());
+    this.cpu.cpuState.unifiedRegisterFileBlock.loadRegisters(initLoader.getRegisterFileModelList());
   }
   
   private ArithmeticFunctionUnitBlock getAddFunctionBlock(Cpu cpu)
@@ -1541,7 +1540,7 @@ public class BackwardSimulationTest
     InputCodeArgument load2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x2").build();
     InputCodeArgument load3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("0").build();
     
-    InputCodeModel loadCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("lw")
+    InputCodeModel loadCodeModel = new InputCodeModelBuilder().hasLoader(new InitLoader()).hasInstructionName("lw")
             .hasCodeLine("lw x1,0(x2)").hasDataTypeEnum(DataTypeEnum.kInt)
             .hasInstructionTypeEnum(InstructionTypeEnum.kLoadstore).hasArguments(Arrays.asList(load1, load2, load3))
             .build();

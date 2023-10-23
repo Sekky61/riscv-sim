@@ -56,10 +56,6 @@ public class CpuState implements Serializable
 {
   public int tick;
   
-  /**
-   * Warning: this must be a reference to the same loader as in Cpu
-   */
-  public InitLoader initLoader;
   public InstructionMemoryBlock instructionMemoryBlock;
   public SimCodeModelAllocator simCodeModelAllocator;
   
@@ -123,14 +119,13 @@ public class CpuState implements Serializable
   
   public CpuState(CpuConfiguration config, InitLoader initLoader)
   {
-    this.initLoader = initLoader;
-    this.initState(config);
+    this.initState(config, initLoader);
   }
   
   /**
    * @brief Initialize the CPU state - given the configuration.
    */
-  public void initState(CpuConfiguration config)
+  public void initState(CpuConfiguration config, InitLoader initLoader)
   {
     this.tick = 0;
     

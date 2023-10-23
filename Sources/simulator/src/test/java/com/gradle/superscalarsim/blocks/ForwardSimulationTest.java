@@ -182,7 +182,7 @@ public class ForwardSimulationTest
     this.branchFunctionUnitBlock1 = cpuState.branchFunctionUnitBlocks.get(0);
     this.branchFunctionUnitBlock2 = cpuState.branchFunctionUnitBlocks.get(1);
     
-    this.initLoader = cpuState.initLoader;
+    this.initLoader = new InitLoader();
     // Load predefined register files
     this.initLoader.setRegisterFileModelList(Arrays.asList(integerFile, floatFile));
     
