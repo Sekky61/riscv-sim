@@ -2,14 +2,11 @@ package com.gradle.superscalarsim.blocks;
 
 import com.gradle.superscalarsim.blocks.base.UnifiedRegisterFileBlock;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
-import com.gradle.superscalarsim.enums.RegisterTypeEnum;
 import com.gradle.superscalarsim.loader.InitLoader;
 import com.gradle.superscalarsim.models.register.RegisterModel;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.util.List;
 
 public class RegisterTests
 {
@@ -77,23 +74,5 @@ public class RegisterTests
     // Assert
     RegisterModel x2 = unifiedRegisterFileBlock.getRegister("x2");
     Assert.assertEquals(10, (int) x2.getValue(DataTypeEnum.kInt), 0.01);
-  }
-  
-  /**
-   * Test that register file and register map point to the same objects
-   */
-  @Test
-  public void testRegisterFileAndMapReferenceEquality()
-  {
-    // Execute
-    List<RegisterModel> intlist    = unifiedRegisterFileBlock.getRegisterList(RegisterTypeEnum.kInt);
-    RegisterModel       x2FromList = intlist.get(2);
-    
-    RegisterModel x2FromMap = unifiedRegisterFileBlock.getRegisterMap().get("x2");
-    
-    // Assert
-    Assert.assertEquals("x2", x2FromList.getName());
-    Assert.assertEquals("x2", x2FromMap.getName());
-    Assert.assertEquals(x2FromList, x2FromMap);
   }
 }

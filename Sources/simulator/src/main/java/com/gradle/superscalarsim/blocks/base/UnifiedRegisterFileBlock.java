@@ -33,14 +33,12 @@
 package com.gradle.superscalarsim.blocks.base;
 
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
-import com.gradle.superscalarsim.enums.RegisterTypeEnum;
 import com.gradle.superscalarsim.loader.InitLoader;
 import com.gradle.superscalarsim.models.register.IRegisterFile;
 import com.gradle.superscalarsim.models.register.RegisterFileModel;
 import com.gradle.superscalarsim.models.register.RegisterModel;
 import com.gradle.superscalarsim.models.register.SpeculativeRegisterFile;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -59,16 +57,11 @@ public class UnifiedRegisterFileBlock
   
   /**
    * Mapping of names to register objects.
-   * Allows to have multiple names for one register - it references the *same* objects as registerList.
+   * Allows to have multiple names for one register.
+   * Speculative registers are not included in this map.
    * Also, theoretically faster than searching through the list (O(1) vs O(n)).
    */
   private final Map<String, RegisterModel> registerMap;
-  
-  /**
-   * List of all register files
-   * TODO: Remove this list and use a field for each register file type (one for ints, ...)
-   */
-  private List<RegisterFileModel> registerList;
   
   /**
    * Speculative register file. Holds all speculative registers.
@@ -90,8 +83,7 @@ public class UnifiedRegisterFileBlock
    */
   public UnifiedRegisterFileBlock(final InitLoader loader)
   {
-    this.registerList = new ArrayList<>();
-    this.registerMap  = new HashMap<>();
+    this.registerMap = new HashMap<>();
     loadRegisters(loader.getRegisterFileModelList());
     loadAliases(loader.getRegisterAliases());
   }// end of Constructor
@@ -109,9 +101,7 @@ public class UnifiedRegisterFileBlock
     int registerCount = 0;
     for (RegisterFileModel registerFile : registerFileModelList)
     {
-      // Copy into registerList
       RegisterFileModel fileCopy = new RegisterFileModel(registerFile);
-      this.registerList.add(fileCopy);
       // Put entry into the map for each register
       for (RegisterModel register : fileCopy.getRegisterList())
       {
@@ -150,25 +140,24 @@ public class UnifiedRegisterFileBlock
   }// end of getRegisterValue
   //----------------------------------------------------------------------
   
-  public void setRegisterList(List<RegisterFileModel> registerList)
-  {
-    this.registerList = registerList;
-  }
-  //----------------------------------------------------------------------
-  
   /**
-   * @param dataType Data type of searched register list
+   * Does not copy the objects. Does not manipulate speculative registers.
    *
-   * @return List of registers
-   * @brief Get list of registers based on data type provided. Assumes that there is only one register file with
-   * provided data type
+   * @param registerList List of register files to set
+   *
+   * @brief Set all registers
    */
-  public final List<RegisterModel> getRegisterList(RegisterTypeEnum dataType)
+  public void setRegistersWithList(List<RegisterFileModel> registerList)
   {
-    RegisterFileModel registerModelList = this.registerList.stream()
-            .filter(registerFileModel -> registerFileModel.getDataType() == dataType).findFirst().orElse(null);
-    return registerModelList == null ? new ArrayList<>() : registerModelList.getRegisterList();
-  }// end of getRegisterList
+    registerMap.clear();
+    for (RegisterFileModel registerFileModel : registerList)
+    {
+      for (RegisterModel registerModel : registerFileModel.getRegisterList())
+      {
+        this.registerMap.put(registerModel.getName(), registerModel);
+      }
+    }
+  }
   //----------------------------------------------------------------------
   
   public IRegisterFile getSpeculativeRegisterFile()
@@ -193,11 +182,4 @@ public class UnifiedRegisterFileBlock
   }// end of copyAndFree
   //----------------------------------------------------------------------
   
-  /**
-   * @return Map of all registers. For testing purposes *only*
-   */
-  public Map<String, RegisterModel> getRegisterMap()
-  {
-    return registerMap;
-  }
 }

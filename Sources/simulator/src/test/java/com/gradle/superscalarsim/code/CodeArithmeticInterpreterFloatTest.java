@@ -46,7 +46,7 @@ public class CodeArithmeticInterpreterFloatTest
     this.initLoader = new InitLoader();
     UnifiedRegisterFileBlock unifiedRegisterFileBlock = new UnifiedRegisterFileBlock(initLoader);
     // This adds the reg files, but also creates speculative registers!
-    unifiedRegisterFileBlock.setRegisterList(new ArrayList<>());
+    unifiedRegisterFileBlock.setRegistersWithList(new ArrayList<>());
     unifiedRegisterFileBlock.loadRegisters(List.of(floatFile));
     
     this.codeArithmeticInterpreter = new CodeArithmeticInterpreter(unifiedRegisterFileBlock);

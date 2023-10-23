@@ -175,7 +175,7 @@ public class BackwardSimulationTest
     initLoader.setRegisterFileModelList(Arrays.asList(integerFile, floatFile));
     
     // This adds the reg files, but also creates speculative registers!
-    this.cpu.cpuState.unifiedRegisterFileBlock.setRegisterList(new ArrayList<>());
+    this.cpu.cpuState.unifiedRegisterFileBlock.setRegistersWithList(new ArrayList<>());
     this.cpu.cpuState.unifiedRegisterFileBlock.loadRegisters(initLoader.getRegisterFileModelList());
   }
   

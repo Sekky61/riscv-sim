@@ -187,7 +187,7 @@ public class ForwardSimulationTest
     this.initLoader.setRegisterFileModelList(Arrays.asList(integerFile, floatFile));
     
     // This adds the reg files, but also creates speculative registers!
-    this.unifiedRegisterFileBlock.setRegisterList(new ArrayList<>());
+    this.unifiedRegisterFileBlock.setRegistersWithList(new ArrayList<>());
     this.unifiedRegisterFileBlock.loadRegisters(this.initLoader.getRegisterFileModelList());
   }
   
