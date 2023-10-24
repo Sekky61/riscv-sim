@@ -30,6 +30,7 @@
  */
 
 import { Reference, WithId } from '@/lib/types/cpuApi';
+import { SimCodeModel } from '@/lib/types/cpuDeref';
 
 /**
  * Type guard for Reference type.
@@ -66,6 +67,9 @@ export function resolveRefs(obj: object, map: IdMap): object {
     if (isReference(value)) {
       // if the property is a reference, resolve it
       const mapValue = map[value['@ref']];
+      if (!mapValue) {
+        throw new Error(`Reference ${value['@ref']} not found in map`);
+      }
       // The resolved object can have references inside, so we need to resolve them too
       const res = resolveRefs(mapValue, map);
       resolved[key] = res;
@@ -79,4 +83,14 @@ export function resolveRefs(obj: object, map: IdMap): object {
   }
 
   return resolved;
+}
+
+/**
+ * Type guard for SimCodeModel type.
+ */
+export function isSimCodeModel(obj: unknown): obj is SimCodeModel {
+  if (typeof obj !== 'object' || obj === null) {
+    return false;
+  }
+  return '@type' in obj && obj['@type'] === 'SimCodeModel';
 }

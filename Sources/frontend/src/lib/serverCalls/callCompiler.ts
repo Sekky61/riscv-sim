@@ -35,7 +35,7 @@ export type CompilerAPIResponse =
   | {
       '@type': string;
       success: true;
-      program: string[];
+      program: string;
       cLines: number[];
       asmToC: number[];
     }

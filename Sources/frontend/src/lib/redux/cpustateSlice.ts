@@ -32,7 +32,13 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-import { hasId, IdMap, isReference, resolveRefs } from '@/lib/cpuState/util';
+import {
+  hasId,
+  IdMap,
+  isReference,
+  isSimCodeModel,
+  resolveRefs,
+} from '@/lib/cpuState/util';
 import { selectActiveIsa } from '@/lib/redux/isaSlice';
 import type { RootState } from '@/lib/redux/store';
 import { callSimulationImpl } from '@/lib/serverCalls/callSimulation';
@@ -132,7 +138,7 @@ export const cpuSlice = createSlice({
   initialState,
   reducers: {
     // Use the PayloadAction type to declare the contents of `action.payload`
-    cFieldTyping: (state, action: PayloadAction<string>) => {
+    cFieldTyping: (state, _action: PayloadAction<string>) => {
       state.state = null;
     },
   },
@@ -143,29 +149,29 @@ export const cpuSlice = createSlice({
         state.state = action.payload.state;
         state.idMap = action.payload.idMap;
       })
-      .addCase(callSimulation.rejected, (state, action) => {
+      .addCase(callSimulation.rejected, (state, _action) => {
         state.state = null;
       })
-      .addCase(callSimulation.pending, (state, action) => {
+      .addCase(callSimulation.pending, (_state, _action) => {
         // nothing
       })
       .addCase(simStepForward.fulfilled, (state, action) => {
         state.state = action.payload.state;
         state.idMap = action.payload.idMap;
       })
-      .addCase(simStepForward.rejected, (state, action) => {
+      .addCase(simStepForward.rejected, (state, _action) => {
         state.state = null;
       })
-      .addCase(simStepForward.pending, (state, action) => {
+      .addCase(simStepForward.pending, (_state, _action) => {
         // nothing
       })
       .addCase(simStepBackward.fulfilled, (state, action) => {
         state.state = action.payload.state;
       })
-      .addCase(simStepBackward.rejected, (state, action) => {
+      .addCase(simStepBackward.rejected, (state, _action) => {
         state.state = null;
       })
-      .addCase(simStepBackward.pending, (state, action) => {
+      .addCase(simStepBackward.pending, (_state, _action) => {
         // nothing
       });
   },
@@ -191,7 +197,15 @@ export const selectFetch = (state: RootState): InstructionFetchBlock | null => {
       throw new Error(`Unexpected object ${code}`);
     }
     const id = code['@ref'];
-    const obj: SimCodeModel = resolveRefs(state.cpu.idMap[id], state.cpu.idMap);
+    const resolvedObject = state.cpu.idMap[id];
+    if (!resolvedObject) {
+      throw new Error(`Id ${id} not found in idMap`);
+    }
+    const obj = resolveRefs(resolvedObject, state.cpu.idMap);
+    // Check type
+    if (!isSimCodeModel(obj)) {
+      throw new Error(`Unexpected object ${obj}`);
+    }
     collectedFetchedCode.push(obj);
   }
   return {

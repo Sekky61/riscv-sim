@@ -34,7 +34,7 @@ import { useState } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { OptionsOrDependencyArray } from 'react-hotkeys-hook/dist/types';
 
-import { ReactChildren } from '@/lib/reactTypes';
+import { ReactChildren } from '@/lib/types/reactTypes';
 
 export type AnimatedButtonProps = {
   active?: boolean;

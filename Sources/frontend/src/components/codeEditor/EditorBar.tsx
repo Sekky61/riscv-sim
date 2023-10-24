@@ -59,9 +59,13 @@ export default function EditorBar({ mode }: EditorBarProps) {
     if (e.target.files && e.target.files.length > 0) {
       // Read the file and set C code
       const file = e.target.files[0];
+      if (file === undefined) {
+        console.warn('No file selected');
+        return;
+      }
       const reader = new FileReader();
-      reader.onload = (e) => {
-        const contents = e.target?.result;
+      reader.onload = (ee) => {
+        const contents = ee.target?.result;
         if (typeof contents === 'string') {
           dispatch(openFile({ code: contents, type: mode }));
         }

@@ -74,8 +74,23 @@ export const wordHover = hoverTooltip((view, pos, side) => {
   const { from, to, text } = view.state.doc.lineAt(pos);
   let start = pos,
     end = pos;
-  while (start > from && /\w/.test(text[start - from - 1])) start--;
-  while (end < to && /\w/.test(text[end - from])) end++;
+
+  while (start > from) {
+    const l = text[start - from - 1];
+    if (!l || !/\w/.test(l)) {
+      break;
+    }
+    start--;
+  }
+
+  while (end < to) {
+    const l = text[end - from];
+    if (!l || !/\w/.test(l)) {
+      break;
+    }
+    end++;
+  }
+
   if ((start == pos && side < 0) || (end == pos && side > 0)) {
     return null;
   }

@@ -93,9 +93,9 @@ export default function Page() {
     // Isa [number] regex
     const regex = /Isa (\d+)/;
     let biggestNum = 0;
-    for (let i = 0; i < isas.length; i++) {
-      const match = isas[i].name.match(regex);
-      if (match) {
+    for (const isa of isas) {
+      const match = isa.name.match(regex);
+      if (match && match[1]) {
         // We have a match
         const num = parseInt(match[1]);
         if (num > biggestNum) {

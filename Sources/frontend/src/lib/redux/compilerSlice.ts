@@ -273,7 +273,7 @@ export const compilerSlice = createSlice({
           state.asmCode = '';
           return;
         }
-        state.asmCode = action.payload.program.join('\n');
+        state.asmCode = action.payload.program;
         state.compileStatus = 'success';
         state.cErrors = [];
         state.asmManuallyEdited = false;

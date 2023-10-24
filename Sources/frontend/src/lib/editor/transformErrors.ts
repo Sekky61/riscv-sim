@@ -48,7 +48,13 @@ export function transformErrors(
   // Add one to each line length to account for the fact that caret can be at the end of the line
   const lineLengths = code.split('\n').map((line) => line.length + 1);
   const lineLengthsPrefixSum = lineLengths.reduce(
-    (acc, curr, i) => [...acc, curr + acc[i]],
+    (acc, curr, i) => {
+      const prev = acc[i];
+      if (prev === undefined) {
+        throw new Error('Invalid line lengths');
+      }
+      return [...acc, curr + prev];
+    },
     [0],
   );
   return errors.map((error: ErrorItem): Diagnostic => {
@@ -60,9 +66,11 @@ export function transformErrors(
     }
     // 1-based line and column
     const line = span.caret.line;
-
-    const charIndex =
-      lineLengthsPrefixSum[line - 1] + span.caret['display-column'] - 1;
+    const lineStart = lineLengthsPrefixSum[line - 1];
+    if (lineStart === undefined) {
+      throw new Error(`Invalid line start for line ${line}`);
+    }
+    const charIndex = lineStart + span.caret['display-column'] - 1;
 
     let charIndexEnd;
     if (span.finish) {

@@ -40,8 +40,6 @@ export default function FetchBlock() {
 
   if (!fetchObject) return null;
 
-  console.log(fetchObject);
-
   const capacity = fetchObject.numberOfWays;
 
   return (
@@ -49,7 +47,10 @@ export default function FetchBlock() {
       <div>PC: {fetchObject?.pc}</div>
       {[...Array(capacity)].map((_, index) => {
         const instruction = fetchObject.fetchedCode[index];
-        return <InstructionField key={index} instruction={instruction} />;
+        if (!instruction) throw new Error('Instruction not found');
+        return (
+          <InstructionField key={instruction.id} instruction={instruction} />
+        );
       })}
     </Block>
   );

@@ -41,7 +41,7 @@ import React from 'react';
 import { useId } from 'react';
 import { FieldValues, Path, UseFormRegister } from 'react-hook-form';
 
-import { ReactClassName } from '@/lib/reactTypes';
+import { ReactClassName } from '@/lib/types/reactTypes';
 
 interface RadioInputBaseProps extends ReactClassName {
   choices: readonly string[];
