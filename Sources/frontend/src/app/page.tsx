@@ -35,6 +35,9 @@ import { ZoomIn, ZoomOut } from 'lucide-react';
 import { useState } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 
+import { callSimulation, selectCpu } from '@/lib/redux/cpustateSlice';
+import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
+
 import AnimatedButton from '@/components/AnimatedButton';
 import CanvasWindow from '@/components/CanvasWindow';
 import Placement from '@/components/Placement';
@@ -46,6 +49,13 @@ import Timeline from '@/components/simulation/Timeline';
 
 export default function HomePage() {
   const [scale, setScale] = useState(1);
+  const dispatch = useAppDispatch();
+  const state = useAppSelector(selectCpu);
+
+  // Fetch initial state if not already fetched
+  if (!state) {
+    dispatch(callSimulation(0));
+  }
 
   const scaleUp = () => {
     setScale(scale + 0.2);

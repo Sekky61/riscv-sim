@@ -48,9 +48,11 @@ export default function FetchBlock() {
       <div className='flex flex-col gap-1'>
         {[...Array(capacity)].map((_, i) => {
           const instruction = fetchObject.fetchedCode[i];
-          if (!instruction) throw new Error('Instruction not found');
           return (
-            <InstructionField key={instruction.id} instruction={instruction} />
+            <InstructionField
+              key={instruction?.id || i}
+              instruction={instruction}
+            />
           );
         })}
       </div>

@@ -168,6 +168,7 @@ export const cpuSlice = createSlice({
       })
       .addCase(simStepBackward.fulfilled, (state, action) => {
         state.state = action.payload.state;
+        state.idMap = action.payload.idMap;
       })
       .addCase(simStepBackward.rejected, (state, _action) => {
         state.state = null;
@@ -205,7 +206,7 @@ export const selectFetch = (state: RootState): InstructionFetchBlock | null => {
     const obj = resolveRefs(resolvedObject, state.cpu.idMap);
     // Check type
     if (!isSimCodeModel(obj)) {
-      throw new Error(`Unexpected object ${obj}`);
+      throw new Error(`Unexpected object ${JSON.stringify(obj)}`);
     }
     collectedFetchedCode.push(obj);
   }
