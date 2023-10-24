@@ -152,4 +152,39 @@ describe('The resolveRefs function', () => {
       },
     });
   });
+
+  it('Should keep arrays intact', () => {
+    const obj = {
+      '@id': 1,
+      a: {
+        '@ref': 2,
+      },
+      b: [1, 2, 3],
+    };
+
+    const map = {
+      1: {
+        '@id': 1,
+        a: {
+          '@ref': 2,
+        },
+        b: [1, 2, 3],
+      },
+      2: {
+        '@id': 2,
+        bar: 'baz',
+      },
+    };
+
+    const resolved = resolveRefs(obj, map);
+
+    expect(resolved).toEqual({
+      '@id': 1,
+      a: {
+        '@id': 2,
+        bar: 'baz',
+      },
+      b: [1, 2, 3],
+    });
+  });
 });

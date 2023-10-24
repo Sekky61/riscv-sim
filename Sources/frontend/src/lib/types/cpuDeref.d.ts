@@ -30,7 +30,6 @@
  */
 
 import {
-  InputCodeArgument,
   InputCodeModel,
   InstructionFetchBlockRef,
   SimCodeModelRef,
@@ -42,5 +41,4 @@ export interface InstructionFetchBlock extends InstructionFetchBlockRef {
 
 export interface SimCodeModel extends SimCodeModelRef {
   inputCodeModel: InputCodeModel;
-  renamedArguments: Array<InputCodeArgument>;
 }

@@ -29,6 +29,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { getArrayItems } from '@/lib/cpuState/util';
 import { selectInstructionMemoryBlock } from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
 
@@ -37,7 +38,9 @@ import Block from '@/components/simulation/Block';
 export default function Program() {
   const instructions = useAppSelector(selectInstructionMemoryBlock);
 
-  const program = instructions?.code['@items'] ?? [];
+  if (!instructions) return null;
+
+  const program = getArrayItems(instructions.code);
 
   return (
     <Block title='Program'>

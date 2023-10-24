@@ -73,9 +73,12 @@ export interface Reference {
   '@ref': number;
 }
 
+/**
+ * '@items' not being present means that there are no items
+ */
 export interface ArrayList<T> {
   '@type': 'ArrayList';
-  '@items': Array<T>;
+  '@items'?: Array<T>;
 }
 
 export interface WithId {
@@ -136,7 +139,7 @@ export interface InstructionFetchBlockRef {
 export interface SimCodeModelRef {
   inputCodeModel: InputCodeModel | Reference;
   id: number;
-  renamedArguments: ArrayList<InputCodeArgument | Reference>;
+  renamedArguments: ArrayList<InputCodeArgument>;
   instructionBulkNumber: number;
   issueWindowId: number;
   functionUnitId: number;

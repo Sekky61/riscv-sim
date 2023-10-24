@@ -29,7 +29,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Reference, WithId } from '@/lib/types/cpuApi';
+import { ArrayList, Reference, WithId } from '@/lib/types/cpuApi';
 import { SimCodeModel } from '@/lib/types/cpuDeref';
 
 /**
@@ -59,8 +59,18 @@ export type IdMap = { [id: number]: object };
  * Given an object and a map of ids, creates a copy of the object with all references resolved
  * TODO: Can we do it without changing object identity?
  */
-export function resolveRefs(obj: object, map: IdMap): object {
+export function resolveRefs(obj: unknown, map: IdMap): unknown {
   const resolved: Record<string, unknown> = {};
+
+  // Do nothing to primitives
+  if (typeof obj !== 'object' || obj === null) {
+    return obj;
+  }
+
+  // Handle arrays
+  if (Array.isArray(obj)) {
+    return obj.map((item) => resolveRefs(item, map));
+  }
 
   // recursively visit all properties of the object
   for (const [key, value] of Object.entries(obj)) {
@@ -93,4 +103,8 @@ export function isSimCodeModel(obj: unknown): obj is SimCodeModel {
     return false;
   }
   return '@type' in obj && obj['@type'] === 'SimCodeModel';
+}
+
+export function getArrayItems<T>(arr: ArrayList<T>): Array<T> {
+  return arr['@items'] ?? [];
 }

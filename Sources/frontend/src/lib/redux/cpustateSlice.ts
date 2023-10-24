@@ -33,6 +33,7 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 import {
+  getArrayItems,
   hasId,
   IdMap,
   isReference,
@@ -190,9 +191,9 @@ export const selectFetch = (state: RootState): InstructionFetchBlock | null => {
   if (!fetch) {
     return null;
   }
-  const fetchedCode = fetch.fetchedCode;
+  const fetchedCode = getArrayItems(fetch.fetchedCode);
   const collectedFetchedCode: Array<SimCodeModel> = [];
-  for (const code of fetchedCode['@items']) {
+  for (const code of fetchedCode) {
     if (!isReference(code)) {
       throw new Error(`Unexpected object ${code}`);
     }

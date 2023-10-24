@@ -29,7 +29,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import clsx from 'clsx';
+
+import { getArrayItems } from '@/lib/cpuState/util';
 import { SimCodeModel } from '@/lib/types/cpuDeref';
+import { ReactChildren, ReactClassName } from '@/lib/types/reactTypes';
 
 export type InstructionFieldProps = {
   instruction?: SimCodeModel;
@@ -38,16 +42,34 @@ export type InstructionFieldProps = {
 export default function InstructionField({
   instruction,
 }: InstructionFieldProps) {
+  // Empty field
   if (!instruction) {
     return (
-      <div className='w-full rounded-sm border p-0.5'>
+      <InstructionBubble className='flex justify-center px-2 py-1'>
         <span className='text-gray-400'>empty</span>
-      </div>
+      </InstructionBubble>
     );
   }
+
+  const args = getArrayItems(instruction.renamedArguments);
+
   return (
-    <div className='w-full rounded-sm border p-0.5'>
-      {instruction.inputCodeModel.instructionName}
-    </div>
+    <InstructionBubble className='flex gap-4 px-2 py-1'>
+      <div>{instruction.inputCodeModel.instructionName}</div>
+      {args.map((arg) => (
+        <div key={arg.name} className='text-gray-400'>
+          {arg.value}
+        </div>
+      ))}
+    </InstructionBubble>
   );
+}
+
+interface InstructionBubbleProps extends ReactClassName {
+  children: ReactChildren;
+}
+
+function InstructionBubble({ children, className }: InstructionBubbleProps) {
+  const cls = clsx('w-full rounded-sm border p-0.5', className);
+  return <div className={cls}>{children}</div>;
 }
