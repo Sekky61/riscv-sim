@@ -77,7 +77,10 @@ export default function HomePage() {
         <Placement x={500} y={100}>
           <ReorderBuffer />
         </Placement>
-        <Placement x={250} y={300}>
+        <Placement x={250} y={400}>
+          <Line length={50} />
+        </Placement>
+        <Placement x={300} y={300}>
           <FetchBlock />
         </Placement>
       </CanvasWindow>

@@ -116,7 +116,7 @@ export default function CanvasWindow({
     <div
       ref={canvasRef}
       onMouseDown={onDragStart}
-      className={`${className} relative h-full w-full overflow-auto`}
+      className={`${className} relative h-full w-full overflow-auto dotted-bg`}
     >
       <div
         ref={elRef}

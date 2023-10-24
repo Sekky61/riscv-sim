@@ -44,6 +44,11 @@
     @apply bg-neutral-99 text-neutral-10;
   }
 
+  .dotted-bg {
+    background-image: radial-gradient(circle at 1px 1px, #bbb 1px, transparent 0);
+    background-size: 24px 24px;
+  }
+
   p {
     @apply my-2;
   }
