@@ -187,4 +187,24 @@ describe('The resolveRefs function', () => {
       b: [1, 2, 3],
     });
   });
+
+  it('Can resolve a root reference', () => {
+    const obj = {
+      '@ref': 1,
+    };
+
+    const map = {
+      1: {
+        '@id': 1,
+        foo: 'bar',
+      },
+    };
+
+    const resolved = resolveRefs(obj, map);
+
+    expect(resolved).toEqual({
+      '@id': 1,
+      foo: 'bar',
+    });
+  });
 });

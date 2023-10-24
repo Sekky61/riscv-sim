@@ -36,7 +36,6 @@ import {
   getArrayItems,
   hasId,
   IdMap,
-  isReference,
   isSimCodeModel,
   resolveRefs,
 } from '@/lib/cpuState/util';
@@ -195,15 +194,7 @@ export const selectFetch = (state: RootState): InstructionFetchBlock | null => {
   const fetchedCode = getArrayItems(fetch.fetchedCode);
   const collectedFetchedCode: Array<SimCodeModel> = [];
   for (const code of fetchedCode) {
-    if (!isReference(code)) {
-      throw new Error(`Unexpected object ${code}`);
-    }
-    const id = code['@ref'];
-    const resolvedObject = state.cpu.idMap[id];
-    if (!resolvedObject) {
-      throw new Error(`Id ${id} not found in idMap`);
-    }
-    const obj = resolveRefs(resolvedObject, state.cpu.idMap);
+    const obj = resolveRefs(code, state.cpu.idMap);
     // Check type
     if (!isSimCodeModel(obj)) {
       throw new Error(`Unexpected object ${JSON.stringify(obj)}`);

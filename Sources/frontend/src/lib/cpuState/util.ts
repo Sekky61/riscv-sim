@@ -72,24 +72,20 @@ export function resolveRefs(obj: unknown, map: IdMap): unknown {
     return obj.map((item) => resolveRefs(item, map));
   }
 
+  // If obj has a '@ref' property, resolve it
+  if (isReference(obj)) {
+    const mapValue = map[obj['@ref']];
+    if (!mapValue) {
+      throw new Error(`Reference ${obj['@ref']} not found in map`);
+    }
+    return resolveRefs(mapValue, map);
+  }
+
+  // Not a reference, for all properties recursively resolve references
+
   // recursively visit all properties of the object
   for (const [key, value] of Object.entries(obj)) {
-    if (isReference(value)) {
-      // if the property is a reference, resolve it
-      const mapValue = map[value['@ref']];
-      if (!mapValue) {
-        throw new Error(`Reference ${value['@ref']} not found in map`);
-      }
-      // The resolved object can have references inside, so we need to resolve them too
-      const res = resolveRefs(mapValue, map);
-      resolved[key] = res;
-    } else if (typeof value === 'object' && value !== null) {
-      // if the property is an object, recursively resolve all references in it
-      resolved[key] = resolveRefs(value, map);
-    } else {
-      // otherwise just copy the property
-      resolved[key] = value;
-    }
+    resolved[key] = resolveRefs(value, map);
   }
 
   return resolved;
