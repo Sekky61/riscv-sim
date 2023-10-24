@@ -374,10 +374,10 @@ public class CodeParser
     
     // Validate arguments
     List<InputCodeArgument> codeArguments = new ArrayList<>();
-    for (Map.Entry<String, CodeToken> entry : args.entrySet())
+    for (InstructionFunctionModel.Argument argument : instructionModel.getArguments())
     {
-      String            argumentName        = entry.getKey();
-      CodeToken         argumentToken       = entry.getValue();
+      CodeToken         argumentToken       = args.get(argument.name());
+      String            argumentName        = argument.name();
       InputCodeArgument inputCodeArgument   = new InputCodeArgument(argumentName, argumentToken.text());
       boolean           isLValue            = argumentName.equals("rd");
       DataTypeEnum      instructionDataType = instructionModel.getArgumentByName(argumentName).type();
