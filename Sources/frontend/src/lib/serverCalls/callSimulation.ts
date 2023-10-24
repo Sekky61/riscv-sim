@@ -1,12 +1,12 @@
 /**
- * @file    ReorderBuffer.tsx
+ * @file    callSimulation.ts
  *
  * @author  Michal Majer
  *          Faculty of Information Technology
  *          Brno University of Technology
  *          xmajer21@stud.fit.vutbr.cz
  *
- * @brief   Reorder Buffer component
+ * @brief   Call compiler API implementation
  *
  * @date    19 September 2023, 22:00 (created)
  *
@@ -29,24 +29,37 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Block from '@/components/simulation/Block';
-import InstructionField from '@/components/simulation/InstructionField';
+import { CpuState } from '@/lib/types/cpuApi';
 
-export default function ReorderBuffer() {
-  const capacity = 128;
-  const used = 2;
+export interface SimulatorResponse {
+  '@type': 'com.gradle.superscalarsim.server.simulation.SimulationResponse';
+  executedSteps: number;
+  state: CpuState;
+}
 
-  return (
-    <Block title='Reorder Buffer'>
-      <div>
-        <span>
-          {used}/{capacity}
-        </span>
-      </div>
-      <div className='flex flex-col gap-1'>
-        <InstructionField />
-        <InstructionField />
-      </div>
-    </Block>
-  );
+export async function callSimulationImpl(tick: number, cfg: object) {
+  // fetch from :8000/compile
+  // payload:
+  // {
+  //   "@type": "com.gradle.superscalarsim.server.simulation.SimulationRequest",
+  //   "tick": number,
+  //   "config": CpuConfig
+  // }
+
+  const serverUrl =
+    process.env.NEXT_PUBLIC_SIMSERVER_URL || 'http://localhost:8000';
+
+  const response = await fetch(`${serverUrl}/simulation`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      '@type': 'com.gradle.superscalarsim.server.simulation.SimulationRequest',
+      tick,
+      config: cfg,
+    }),
+  });
+  const json: SimulatorResponse = await response.json();
+  return json;
 }

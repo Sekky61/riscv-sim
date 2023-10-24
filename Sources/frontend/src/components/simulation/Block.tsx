@@ -35,9 +35,9 @@
 import clsx from 'clsx';
 import { MoreVertical } from 'lucide-react';
 
-import { ReactChildren, ReactClassName } from '@/lib/reactTypes';
 import { useAppDispatch } from '@/lib/redux/hooks';
 import { openModal } from '@/lib/redux/modalSlice';
+import { ReactChildren, ReactClassName } from '@/lib/types/reactTypes';
 
 export type BlockProps = {
   children: ReactChildren;

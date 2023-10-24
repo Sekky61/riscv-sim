@@ -29,21 +29,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { parsedInstructions } from '@/lib/redux/compilerSlice';
+import { selectInstructionMemoryBlock } from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
 
 import Block from '@/components/simulation/Block';
-import InstructionField from '@/components/simulation/InstructionField';
 
 export default function Program() {
-  const instructions = useAppSelector(parsedInstructions);
+  const instructions = useAppSelector(selectInstructionMemoryBlock);
+
+  const program = instructions?.code['@items'] ?? [];
 
   return (
     <Block title='Program'>
       <div className='flex h-[600px] flex-col gap-1 overflow-y-scroll'>
-        {instructions.map((instruction) => {
+        {program.map((instruction) => {
           return (
-            <InstructionField instruction={instruction} key={instruction.id} />
+            <div key={instruction.codeId}>{instruction.instructionName}</div>
           );
         })}
       </div>

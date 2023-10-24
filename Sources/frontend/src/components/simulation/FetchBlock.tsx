@@ -1,14 +1,14 @@
 /**
- * @file    ReorderBuffer.tsx
+ * @file    Block.tsx
  *
  * @author  Michal Majer
  *          Faculty of Information Technology
  *          Brno University of Technology
  *          xmajer21@stud.fit.vutbr.cz
  *
- * @brief   Reorder Buffer component
+ * @brief   A component for displaying the Fetch block
  *
- * @date    19 September 2023, 22:00 (created)
+ * @date    24 October 2023, 10:00 (created)
  *
  * @section Licence
  * This file is part of the Superscalar simulator app
@@ -29,24 +29,28 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { selectFetch } from '@/lib/redux/cpustateSlice';
+import { useAppSelector } from '@/lib/redux/hooks';
+
 import Block from '@/components/simulation/Block';
 import InstructionField from '@/components/simulation/InstructionField';
 
-export default function ReorderBuffer() {
-  const capacity = 128;
-  const used = 2;
+export default function FetchBlock() {
+  const fetchObject = useAppSelector(selectFetch);
+
+  if (!fetchObject) return null;
+
+  console.log(fetchObject);
+
+  const capacity = fetchObject.numberOfWays;
 
   return (
-    <Block title='Reorder Buffer'>
-      <div>
-        <span>
-          {used}/{capacity}
-        </span>
-      </div>
-      <div className='flex flex-col gap-1'>
-        <InstructionField />
-        <InstructionField />
-      </div>
+    <Block title='Fetch Block'>
+      <div>PC: {fetchObject?.pc}</div>
+      {[...Array(capacity)].map((_, index) => {
+        const instruction = fetchObject.fetchedCode[index];
+        return <InstructionField key={index} instruction={instruction} />;
+      })}
     </Block>
   );
 }

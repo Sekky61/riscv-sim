@@ -252,7 +252,6 @@ type FuOpMetadata = {
   name: string;
 };
 
-// ++,--,!,#,<-,+,-,*,/,%,&,|,>>>,<<,>>,<=,>=,==,<,>,(,)
 const fuOpsMetadata: { [key in FuOps]: FuOpMetadata } = {
   '+': { name: 'Add' },
   '-': { name: 'Subtract' },
@@ -263,19 +262,19 @@ const fuOpsMetadata: { [key in FuOps]: FuOpMetadata } = {
   '|': { name: 'Bitwise or' },
   '>>': { name: 'Shift right' },
   '<<': { name: 'Shift left' },
-  '>>>': { name: 'TODO' },
+  '>>>': { name: 'Unsigned shift' },
   '<': { name: 'Less than' },
   '>': { name: 'Greater than' },
   '<=': { name: 'Less than or equal' },
   '>=': { name: 'Greater than or equal' },
   '==': { name: 'Equal' },
-  '!': { name: 'TODO' },
-  '++': { name: 'Increment' },
-  '--': { name: 'Decrement' },
-  '#': { name: 'TODO' },
-  '<-': { name: 'TODO' },
-  '(': { name: 'TODO' },
-  ')': { name: 'TODO' },
+  '!': { name: 'Not' },
+  bits: { name: 'Convert to bits' },
+  '^': { name: 'Bitwise xor' },
+  '=': { name: 'Assign' },
+  sqrt: { name: 'Square root' },
+  float: { name: 'Convert to float' },
+  fclass: { name: 'Classify float' },
 };
 
 interface FunctionalUnitInputProps {

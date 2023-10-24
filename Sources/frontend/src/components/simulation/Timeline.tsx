@@ -31,6 +31,9 @@
 
 import { ArrowBigLeft, ArrowBigRight, SkipForward } from 'lucide-react';
 
+import { simStepBackward, simStepForward } from '@/lib/redux/cpustateSlice';
+import { useAppDispatch } from '@/lib/redux/hooks';
+
 import AnimatedButton from '@/components/AnimatedButton';
 
 export type TimelineProps = Pick<
@@ -41,6 +44,8 @@ export type TimelineProps = Pick<
 // Control ticks of simulation
 // Go forward, back, finish
 export default function Timeline({ className = '' }: TimelineProps) {
+  const dispatch = useAppDispatch();
+
   return (
     <div
       className={
@@ -48,10 +53,16 @@ export default function Timeline({ className = '' }: TimelineProps) {
         ' flex gap-2 rounded-full border bg-gray-100 p-1 drop-shadow'
       }
     >
-      <AnimatedButton shortCut='left'>
+      <AnimatedButton
+        shortCut='left'
+        clickCallback={() => dispatch(simStepBackward())}
+      >
         <ArrowBigLeft strokeWidth={1.5} />
       </AnimatedButton>
-      <AnimatedButton shortCut='right'>
+      <AnimatedButton
+        shortCut='right'
+        clickCallback={() => dispatch(simStepForward())}
+      >
         <ArrowBigRight strokeWidth={1.5} />
       </AnimatedButton>
       <AnimatedButton shortCut='ctrl+enter'>

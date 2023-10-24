@@ -34,7 +34,7 @@ import { z } from 'zod';
 export const predictorTypes = ['1bit', '2bit'] as const;
 export type PredictorType = (typeof predictorTypes)[number];
 
-export const predictorDefaults = ['taken', 'not-taken'] as const;
+export const predictorDefaults = ['Taken', 'Not Taken'] as const;
 export type PredictorDefault = (typeof predictorDefaults)[number];
 
 export const cacheReplacementTypes = ['LRU', 'FIFO', 'Random'] as const;
@@ -53,27 +53,32 @@ export type FuTypes = (typeof fuTypes)[number];
  *   <li>'+' - Addition</li>
  *   <li>'-' - Subtraction</li>
  *   <li>'*' - Multiplication</li>
- *   <li>'<-' - Selecting first operand</li>
  *   <li>'%' - Modulo</li>
  *   <li>'/' - Division</li>
  *   <li>'&' - Bitwise AND</li>
  *   <li>'|' - Bitwise OR</li>
+ *   <li>'^' - Bitwise XOR</li>
  *   <li>'<<' - Bitwise left shift</li>
  *   <li>'>>' - Bitwise right shift</li>
  *   <li>'>>>' - Bitwise unsigned right shift</li>
- *   <li>'++' - Increment</li>
- *   <li>'--' - Decrement</li>
- *   <li>'#' - Square root</li>
+ *   <li>'sqrt' - Square root</li>
  *   <li>'!' - Bitwise NOT</li>
- *   <li>'>' - Greater than</li>
+ *   <li>'>' - Greater than signed</li>
  *   <li>'>=' - Greater than or equal</li>
  *   <li>'<' - Less than</li>
  *   <li>'<=' - Less than or equal</li>
  *   <li>'==' - Equal</li>
  *   <li>'!=' - Not equal</li>
+ *   <li>'=' - Assign (left to the right)</li>
+ *   <li>'pick' - Pick one of the two variables based on the value of the third variable (false picks the left one)</li>
+ *   <li>'float' - Convert to float (does not change the bits, interpret cast)</li>
+ *   <li>'bits' - Convert to bits (does not change the bits, interpret cast)</li>
+ *   <li>'fclass' - Classify float (returns an int)</li>
  * </ul>
  */
 export const fuOps = [
+  '!',
+  'bits',
   '+',
   '-',
   '*',
@@ -81,21 +86,19 @@ export const fuOps = [
   '%',
   '&',
   '|',
-  '>>',
-  '<<',
+  '^',
   '>>>',
-  '<',
-  '>',
+  '<<',
+  '>>',
   '<=',
   '>=',
   '==',
-  '!',
-  '++',
-  '--',
-  '#',
-  '<-',
-  '(',
-  ')',
+  '<',
+  '>',
+  '=',
+  'sqrt',
+  'float',
+  'fclass',
 ] as const;
 export type FuOps = (typeof fuOps)[number];
 
@@ -165,19 +168,16 @@ export const isaFormDefaultValues: IsaNamedConfig = {
   commitWidth: 4,
   btbSize: 1024,
   phtSize: 10,
-  predictorType: '2bit',
-  predictorDefault: 'not-taken',
+  predictorType: '1bit',
+  predictorDefault: 'Not Taken',
   fUnits: [
     {
       id: 0,
       fuType: 'FX',
       latency: 2,
       operations: [
-        '++',
-        '--',
         '!',
-        '#',
-        '<-',
+        'bits',
         '+',
         '-',
         '*',
@@ -185,6 +185,7 @@ export const isaFormDefaultValues: IsaNamedConfig = {
         '%',
         '&',
         '|',
+        '^',
         '>>>',
         '<<',
         '>>',
@@ -193,8 +194,7 @@ export const isaFormDefaultValues: IsaNamedConfig = {
         '==',
         '<',
         '>',
-        '(',
-        ')',
+        '=',
       ],
     },
     {
@@ -202,11 +202,8 @@ export const isaFormDefaultValues: IsaNamedConfig = {
       fuType: 'FP',
       latency: 2,
       operations: [
-        '++',
-        '--',
         '!',
-        '#',
-        '<-',
+        'bits',
         '+',
         '-',
         '*',
@@ -214,6 +211,7 @@ export const isaFormDefaultValues: IsaNamedConfig = {
         '%',
         '&',
         '|',
+        '^',
         '>>>',
         '<<',
         '>>',
@@ -222,8 +220,10 @@ export const isaFormDefaultValues: IsaNamedConfig = {
         '==',
         '<',
         '>',
-        '(',
-        ')',
+        '=',
+        'sqrt',
+        'float',
+        'fclass',
       ],
     },
     {

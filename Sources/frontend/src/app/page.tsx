@@ -38,6 +38,7 @@ import { useHotkeys } from 'react-hotkeys-hook';
 import AnimatedButton from '@/components/AnimatedButton';
 import CanvasWindow from '@/components/CanvasWindow';
 import Placement from '@/components/Placement';
+import FetchBlock from '@/components/simulation/FetchBlock';
 import Line from '@/components/simulation/Line';
 import Program from '@/components/simulation/Program';
 import ReorderBuffer from '@/components/simulation/ReorderBuffer';
@@ -65,6 +66,9 @@ export default function HomePage() {
         </Placement>
         <Placement x={500} y={100}>
           <ReorderBuffer />
+        </Placement>
+        <Placement x={250} y={300}>
+          <FetchBlock />
         </Placement>
       </CanvasWindow>
       <div className='pointer-events-none absolute top-0 flex w-full justify-center pt-2'>

@@ -38,7 +38,7 @@ import {
   supportedInstructions,
 } from '@/constant/supportedInstructions';
 
-import { InstructionDescription } from '../instructionsDatabase';
+import { InstructionDescription } from '../types/instructionsDatabase';
 
 /**
  * Create a tooltip (HTML element) for the given instruction

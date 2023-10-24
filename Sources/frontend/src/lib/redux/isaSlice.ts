@@ -118,12 +118,17 @@ export const selectActiveIsaName = (state: RootState) =>
   state.isa.activeIsaName;
 export const selectIsas = (state: RootState) => state.isa.isas;
 
+/**
+ * Adds "code" field to the ISA config
+ */
 export const selectActiveIsa = createSelector(
   [selectIsas, selectActiveIsaName],
   (isas, name) => {
     const isa = isas.find((isa) => isa.name == name);
     if (isa == undefined) throw new Error('Active ISA not found');
-    return isa;
+    // Copy the ISA config
+    const copyIsa = { ...isa, code: 'addi x1, x1, 5' };
+    return copyIsa;
   },
 );
 

@@ -29,10 +29,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Instruction } from '@/lib/redux/compilerSlice';
+import { SimCodeModel } from '@/lib/types/cpuDeref';
 
 export type InstructionFieldProps = {
-  instruction?: Instruction;
+  instruction?: SimCodeModel;
 };
 
 export default function InstructionField({
@@ -46,6 +46,8 @@ export default function InstructionField({
     );
   }
   return (
-    <div className='w-full rounded-sm border p-0.5'>{instruction.mnemonic}</div>
+    <div className='w-full rounded-sm border p-0.5'>
+      {instruction.inputCodeModel.instructionName}
+    </div>
   );
 }
