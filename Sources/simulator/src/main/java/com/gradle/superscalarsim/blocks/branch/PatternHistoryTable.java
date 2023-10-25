@@ -41,27 +41,39 @@ import java.util.TreeMap;
  */
 public class PatternHistoryTable
 {
-  /// List of predictors
+  /**
+   * Collection of predictors
+   * This collection is sparse, new predictors are added only when needed
+   */
   private final Map<Integer, IBitPredictor> predictorMap;
-  /// Size of the PHT
-  private int size;
-  /// Default state of the predictors
+  /**
+   * Size of the PHT
+   */
+  private final int size;
+  /**
+   * Default type of the predictor, used for creating new predictors
+   */
+  PredictorType defaultPredictorClass;
+  /**
+   * Default state of the predictors, used for creating new predictors
+   */
   private boolean[] defaultTaken;
-  /// Reallocated flag, which is set on init/reset. It is used to draw GUI.
-  private boolean reallocated;
   
-  // enum for predictor types with values
-  public enum PredictorType
+  /**
+   * @param size                  Size of the PHT
+   * @param defaultTaken          Default state of the predictors, used for creating new predictors
+   * @param defaultPredictorClass Default type of the predictor, used for creating new predictors
+   *
+   * @brief Constructor
+   */
+  public PatternHistoryTable(int size, boolean[] defaultTaken, PredictorType defaultPredictorClass)
   {
-    ZERO_BIT_PREDICTOR(0), ONE_BIT_PREDICTOR(1), TWO_BIT_PREDICTOR(2);
-    
-    private final int value;
-    
-    PredictorType(int value)
-    {
-      this.value = value;
-    }
-  }
+    // Use tree map to keep the order of the predictors for displaying in GUI
+    this.predictorMap          = new TreeMap<>();
+    this.size                  = size;
+    this.defaultTaken          = defaultTaken;
+    this.defaultPredictorClass = defaultPredictorClass;
+  }// end of Constructor
   
   public void setDefaultTaken(boolean[] defaultTaken)
   {
@@ -73,129 +85,33 @@ public class PatternHistoryTable
     this.defaultPredictorClass = defaultPredictorClass;
   }
   
-  /// Default type of the predictor
-  PredictorType defaultPredictorClass;
-  
   /**
-   * @param [in] size - Size of the PHT
-   *
-   * @brief Constructor
-   */
-  public PatternHistoryTable(int size)
-  {
-    // Use tree map to keep the order of the predictors for displaying in GUI
-    this.predictorMap          = new TreeMap<>();
-    this.reallocated           = true;
-    this.size                  = size;
-    this.defaultTaken          = new boolean[]{true, false};
-    this.defaultPredictorClass = PredictorType.TWO_BIT_PREDICTOR;
-  }// end of Constructor
-  //----------------------------------------------------------------------
-  
-  /**
-   * @brief Resets the list of  bit vectors and sets the reallocated flag
+   * @brief Resets the list of  bit vectors
    */
   public void reset()
   {
-    this.reallocated = true;
     this.predictorMap.clear();
   }// end of reset
   //----------------------------------------------------------------------
   
   /**
-   * @return Boolean value of the reallocated flag
-   * @brief Get the reallocated flag
-   */
-  public boolean isReallocated()
-  {
-    return reallocated;
-  }// end of isReallocated
-  //----------------------------------------------------------------------
-  
-  /**
-   * @return List of the bit predictors
-   * @brief Get the whole list of the bit predictors allocated in the PHT
-   */
-  public Map<Integer, IBitPredictor> getPredictorMap()
-  {
-    return predictorMap;
-  }// end of getHistoryList
-  //----------------------------------------------------------------------
-  
-  /**
-   * @param [in] size    - Size of the PHT
-   * @param [in] isTaken - Initial state of the Bit predictor
-   *
-   * @brief Initiate PHT with Zero-bit predictors
-   */
-  public void initiateZeroBitPredictors(int size, boolean isTaken)
-  {
-    this.reallocated           = true;
-    this.size                  = size;
-    this.defaultTaken          = new boolean[]{isTaken};
-    this.defaultPredictorClass = PredictorType.ZERO_BIT_PREDICTOR;
-    this.predictorMap.clear();
-  }// end of initiateZeroBitPredictors
-  //----------------------------------------------------------------------
-  
-  /**
-   * @param [in] size    - Size of the PHT
-   * @param [in] isTaken - Initial state of the Bit predictor
-   *
-   * @brief Initiate PHT with One-bit predictors
-   */
-  public void initiateOneBitPredictor(int size, boolean isTaken)
-  {
-    this.reallocated           = true;
-    this.size                  = size;
-    this.defaultTaken          = new boolean[]{isTaken};
-    this.defaultPredictorClass = PredictorType.ONE_BIT_PREDICTOR;
-    this.predictorMap.clear();
-  }// end of initiateOneBitPredictor
-  //----------------------------------------------------------------------
-  
-  /**
-   * @param [in] size    - Size of the PHT
-   * @param [in] isTaken - Initial state of the Bit predictor
-   *
-   * @brief Initiate PHT with Two-bit predictors
-   */
-  public void initiateTwoBitPredictor(int size, boolean[] initialState)
-  {
-    this.reallocated           = true;
-    this.size                  = size;
-    this.defaultTaken          = initialState;
-    this.defaultPredictorClass = PredictorType.TWO_BIT_PREDICTOR;
-    this.predictorMap.clear();
-  }// end of initiateTwoBitPredictor
-  //----------------------------------------------------------------------
-  
-  /**
-   * @param [in] index - Index of the predictor
+   * @param index Index of the predictor
    *
    * @return Bit predictor
    * @brief Get predictor on specified index
    */
   public IBitPredictor getPredictor(int index)
   {
-    this.reallocated = false;
     boolean hasPredictor = this.predictorMap.containsKey(index % size);
     if (!hasPredictor)
     {
       // Insert default predictor
-      IBitPredictor bitPredictor;
-      if (this.defaultPredictorClass == PredictorType.ZERO_BIT_PREDICTOR)
+      IBitPredictor bitPredictor = switch (this.defaultPredictorClass)
       {
-        bitPredictor = new ZeroBitPredictor(defaultTaken[0]);
-      }
-      else if (this.defaultPredictorClass == PredictorType.ONE_BIT_PREDICTOR)
-      {
-        bitPredictor = new OneBitPredictor(defaultTaken[0]);
-      }
-      else
-      {
-        bitPredictor = new TwoBitPredictor(defaultTaken);
-      }
+        case ZERO_BIT_PREDICTOR -> new ZeroBitPredictor(defaultTaken[0]);
+        case ONE_BIT_PREDICTOR -> new OneBitPredictor(defaultTaken[0]);
+        case TWO_BIT_PREDICTOR -> new TwoBitPredictor(defaultTaken);
+      };
       this.predictorMap.put(index % size, bitPredictor);
     }
     
@@ -204,25 +120,27 @@ public class PatternHistoryTable
   //----------------------------------------------------------------------
   
   /**
-   * @return Default value of the bit vector
-   * @brief Get the value of default bit vector value
+   * Enum for predictor types with values
+   * Gets serialized as
+   * <p>
+   * {@code
+   * {
+   * "value": 1,
+   * "name": "ONE_BIT_PREDICTOR"
+   * }
+   * }
    */
-  public boolean[] getDefaultTaken()
+  public enum PredictorType
   {
-    return defaultTaken;
-  }// end of getDefaultTaken
-  //----------------------------------------------------------------------
-  
-  /**
-   * @param [in] index - Index of the predictor
-   *
-   * @brief Sets predictor value
-   */
-  public void setDefault(int index)
-  {
-    this.reallocated = true;
-    this.predictorMap.remove(index % size);
-  }// end of setDefault
+    ZERO_BIT_PREDICTOR(0), ONE_BIT_PREDICTOR(1), TWO_BIT_PREDICTOR(2);
+    
+    private final int value;
+    
+    PredictorType(int value)
+    {
+      this.value = value;
+    }
+  }
   //----------------------------------------------------------------------
 }
 

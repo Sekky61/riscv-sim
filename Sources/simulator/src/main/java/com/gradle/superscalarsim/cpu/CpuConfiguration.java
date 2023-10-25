@@ -76,6 +76,12 @@ import java.util.Objects;
  */
 public class CpuConfiguration implements Serializable
 {
+  /**
+   * Code to run.
+   * <p>
+   * Must be part of the configuration because it is used to create the initial state
+   */
+  public String code;
   public int robSize;
   public int lbSize;
   public int sbSize;
@@ -109,6 +115,7 @@ public class CpuConfiguration implements Serializable
   public static CpuConfiguration getDefaultConfiguration()
   {
     CpuConfiguration config = new CpuConfiguration();
+    config.code             = "";
     config.robSize          = 256;
     config.lbSize           = 64;
     config.sbSize           = 64;
@@ -124,16 +131,14 @@ public class CpuConfiguration implements Serializable
     config.fUnits[0].id         = 0;
     config.fUnits[0].fuType     = "FX";
     config.fUnits[0].latency    = 2;
-    config.fUnits[0].operations = new String[]{"++", "--", "!", "#", "<-", "+", "-", "*", "/", "%", "&", "|", ">>>",
-        "<<", ">>", "<=", ">=", "==", "<", ">", "(", ")"};
+    config.fUnits[0].operations = new String[]{"++", "--", "!", "#", "<-", "+", "-", "*", "/", "%", "&", "|", ">>>", "<<", ">>", "<=", ">=", "==", "<", ">", "(", ")"};
     
     // FP with all ops
     config.fUnits[1]            = new FUnit();
     config.fUnits[1].id         = 1;
     config.fUnits[1].fuType     = "FP";
     config.fUnits[1].latency    = 2;
-    config.fUnits[1].operations = new String[]{"++", "--", "!", "#", "<-", "+", "-", "*", "/", "%", "&", "|", ">>>",
-        "<<", ">>", "<=", ">=", "==", "<", ">", "(", ")"};
+    config.fUnits[1].operations = new String[]{"++", "--", "!", "#", "<-", "+", "-", "*", "/", "%", "&", "|", ">>>", "<<", ">>", "<=", ">=", "==", "<", ">", "(", ")"};
     
     // L/S
     config.fUnits[2]         = new FUnit();
@@ -175,6 +180,10 @@ public class CpuConfiguration implements Serializable
     // List of error messages
     ArrayList<String> errorMessages = new ArrayList<>();
     
+    if (code == null)
+    {
+      errorMessages.add("Code must not be null");
+    }
     // Null checks
     if (fUnits == null)
     {
@@ -290,7 +299,7 @@ public class CpuConfiguration implements Serializable
     
     // Allowed predictor types: 0bit, 1bit, 2bit
     if (!Objects.equals(predictorType, "0bit") && !Objects.equals(predictorType, "1bit") && !Objects.equals(
-        predictorType, "2bit"))
+            predictorType, "2bit"))
     {
       errorMessages.add("Predictor type must be one of 0bit, 1bit, 2bit");
     }
@@ -318,10 +327,10 @@ public class CpuConfiguration implements Serializable
       // Allowed predictor defaults: Strongly Not Taken, Weakly Not Taken, Weakly Taken, Strongly Taken
       if (!Objects.equals(predictorDefault, "Strongly Not Taken") && !Objects.equals(predictorDefault,
                                                                                      "Weakly Not " + "Taken") && !Objects.equals(
-          predictorDefault, "Weakly Taken") && !Objects.equals(predictorDefault, "Strongly Taken"))
+              predictorDefault, "Weakly Taken") && !Objects.equals(predictorDefault, "Strongly Taken"))
       {
         errorMessages.add(
-            "Predictor default form 2bit predictor must be one of Strongly Not Taken, Weakly Not Taken," + " Weakly " + "Taken, Strongly Taken");
+                "Predictor default form 2bit predictor must be one of Strongly Not Taken, Weakly Not Taken," + " Weakly " + "Taken, Strongly Taken");
       }
     }
     

@@ -51,46 +51,46 @@ import java.util.Stack;
  */
 public class Cache
 {
-  private final CacheStatisticsCounter cacheStatisticsCounter;
+  private CacheStatisticsCounter cacheStatisticsCounter;
   
   ///Number of cache lines
-  private final int numberOfLines;
+  private int numberOfLines;
   ///Number of lines per index
-  private final int associativity;
+  private int associativity;
   ///Size of line in bytes in multiple of 4
-  private final int lineSize;
+  private int lineSize;
   ///Cache implementation 1st direction is index, second are specific lines depending on associativity
-  private final CacheLineModel[][] cache;
+  private CacheLineModel[][] cache;
   ///Replacement policy implementation
-  private final ReplacementPolicyModel replacementPolicy;
-  
-  public void setMemory(SimulatedMemory memory)
-  {
-    this.memory = memory;
-  }
-  
+  private ReplacementPolicyModel replacementPolicy;
+  ///Is the cache write back or write through?
+  private boolean writeBack;
+  /**
+   * Stack of last accesses in the cache - used in printing the memory
+   * TODO: Maybe move this to statistics?
+   */
+  private Stack<CacheAccess> lastAccess;
+  /// Delay of store access
+  private int storeDelay;
+  /// Delay of load access
+  private int loadDelay;
+  /// How long does it take to replace a line
+  private int lineReplacementDelay;
+  /// Should the line replacement delay be added to store?
+  private boolean addRemainingDelayToStore;
+  /// Type of replacement policy used in the cache
+  private ReplacementPoliciesEnum replacementPolicyType;
   ///Handler to memory
   private SimulatedMemory memory;
-  ///Is the cache write back or write through?
-  private final boolean writeBack;
-  private final Stack<CacheLineModel> cacheLineHistory;
-  /// History stack of all store instruction ids
-  private final Stack<Integer> cacheIdHistory;
-  /// Stack of last accesses in the cache - used in printing the memory
-  private final Stack<CacheAccess> lastAccess;
-  
-  /// Delay of store access
-  private final int storeDelay;
-  /// Delay of load access
-  private final int loadDelay;
-  /// How long does it take to replace a line
-  private final int lineReplacementDelay;
-  /// Should the line replacement delay be added to store?
-  private final boolean addRemainingDelayToStore;
-  /// Type of replacement policy used in the cache
-  private final ReplacementPoliciesEnum replacementPolicyType;
   /// Cycle in which the last line will stop replacing
   private int cycleEndOfReplacement;
+  
+  /**
+   * @brief Constructor for (de)serialization
+   */
+  public Cache()
+  {
+  }
   
   /**
    * @param memory                   - Simulated memory
@@ -139,8 +139,6 @@ public class Cache
                                                                                   associativity);
     this.memory                = memory;
     this.writeBack             = writeBack;
-    cacheLineHistory           = new Stack<>();
-    cacheIdHistory             = new Stack<>();
     this.lastAccess            = new Stack<>();
     this.lastAccess.add(new CacheAccess(0, 0, 0, new Boolean[0], false, 0, 0, 0, 0, new Integer[0], new Integer[0]));
     
@@ -154,43 +152,21 @@ public class Cache
   }
   
   /**
-   * @brief Constructor with all fields
+   * @param numberOfLines - Number of cache lines
+   * @param associativity - Number of lines per index
+   * @param lineSize      - Size of line in bytes, must be multiple of 4
+   *
+   * @return boolean - Are these settings valid?
+   * @brief Checks if the values of the cache are set valid
    */
-  public Cache(CacheStatisticsCounter cacheStatisticsCounter,
-               int numberOfLines,
-               int associativity,
-               int lineSize,
-               CacheLineModel[][] cache,
-               ReplacementPolicyModel replacementPolicy,
-               SimulatedMemory memory,
-               boolean writeBack,
-               Stack<CacheLineModel> cacheLineHistory,
-               Stack<Integer> cacheIdHistory,
-               Stack<CacheAccess> lastAccess,
-               int storeDelay,
-               int loadDelay,
-               int lineReplacementDelay,
-               boolean addRemainingDelayToStore,
-               ReplacementPoliciesEnum replacementPolicyType,
-               int cycleEndOfReplacement)
+  public boolean checkCorrectSettings(int numberOfLines, int associativity, int lineSize)
   {
-    this.cacheStatisticsCounter   = cacheStatisticsCounter;
-    this.numberOfLines            = numberOfLines;
-    this.associativity            = associativity;
-    this.lineSize                 = lineSize;
-    this.cache                    = cache;
-    this.replacementPolicy        = replacementPolicy;
-    this.memory                   = memory;
-    this.writeBack                = writeBack;
-    this.cacheLineHistory         = cacheLineHistory;
-    this.cacheIdHistory           = cacheIdHistory;
-    this.lastAccess               = lastAccess;
-    this.storeDelay               = storeDelay;
-    this.loadDelay                = loadDelay;
-    this.lineReplacementDelay     = lineReplacementDelay;
-    this.addRemainingDelayToStore = addRemainingDelayToStore;
-    this.replacementPolicyType    = replacementPolicyType;
-    this.cycleEndOfReplacement    = cycleEndOfReplacement;
+    return numberOfLines % associativity == 0 && lineSize % 4 == 0 && numberOfLines % 2 == 0;
+  }
+  
+  public void setMemory(SimulatedMemory memory)
+  {
+    this.memory = memory;
   }
   
   /**
@@ -210,8 +186,7 @@ public class Cache
     else
     {
       //Add line replacement delay + if some line is already replacing add it's time too
-      cycleEndOfReplacement = (cycleEndOfReplacement <= currentCycle) ? currentCycle + lineReplacementDelay :
-          cycleEndOfReplacement + lineReplacementDelay;
+      cycleEndOfReplacement = (cycleEndOfReplacement <= currentCycle) ? currentCycle + lineReplacementDelay : cycleEndOfReplacement + lineReplacementDelay;
       return Math.max(0, cycleEndOfReplacement - currentCycle);
     }
   }
@@ -268,23 +243,8 @@ public class Cache
       }
     }
     //No previous access matched - this is a miss
-    cycleEndOfReplacement = (cycleEndOfReplacement <= currentCycle) ? currentCycle + lineReplacementDelay :
-        cycleEndOfReplacement + lineReplacementDelay;
+    cycleEndOfReplacement = (cycleEndOfReplacement <= currentCycle) ? currentCycle + lineReplacementDelay : cycleEndOfReplacement + lineReplacementDelay;
     return (!isStore) ? lineReplacementDelay : 0;
-  }
-  
-  
-  /**
-   * @param numberOfLines - Number of cache lines
-   * @param associativity - Number of lines per index
-   * @param lineSize      - Size of line in bytes, must be multiple of 4
-   *
-   * @return boolean - Are these settings valid?
-   * @brief Checks if the values of the cache are set valid
-   */
-  public boolean checkCorrectSettings(int numberOfLines, int associativity, int lineSize)
-  {
-    return numberOfLines % associativity == 0 && lineSize % 4 == 0 && numberOfLines % 2 == 0;
   }
   
   private int getLog(int value, int log)
@@ -384,8 +344,8 @@ public class Cache
     {
       cacheStatisticsCounter.incrementAccesses();
       this.lastAccess.add(
-          new CacheAccess(currentCycle, cycleEndOfReplacement, id, new Boolean[0], false, splittedAddress, 0,
-                          new Integer[0], new Integer[0]));
+              new CacheAccess(currentCycle, cycleEndOfReplacement, id, new Boolean[0], false, splittedAddress, 0,
+                              new Integer[0], new Integer[0]));
     }
     
     //Go through all lines - compare if tag matches
@@ -398,8 +358,8 @@ public class Cache
         cacheStatisticsCounter.incrementHits(currentCycle);
         
         replacementPolicy.updatePolicy(id, splittedAddress.getSecond(), i);
-        lastAccess.peek().addLineAccess(true, splittedAddress.getSecond() * associativity + i,
-                                        splittedAddress.getThird());
+        lastAccess.peek()
+                .addLineAccess(true, splittedAddress.getSecond() * associativity + i, splittedAddress.getThird());
         Pair<Integer, Long> tmpReturnVal = getDataFromLines(line, address, size, id, currentCycle);
         return new Pair<>(tmpReturnVal.getFirst() + loadDelay + computeRemainingDelay(true, false, currentCycle,
                                                                                       splittedAddress.getFirst(),
@@ -432,8 +392,6 @@ public class Cache
     cacheStatisticsCounter.incrementMisses(currentCycle);
     
     //Store current cache line in history for backward simulation
-    cacheLineHistory.add(cache[splittedAddress.getSecond()][selectedLine]);
-    cacheIdHistory.add(id);
     cache[splittedAddress.getSecond()][selectedLine].saveToHistory(id);
     
     long baseMemoryAddress = address & -(1L << getLog(lineSize, 2));
@@ -565,13 +523,11 @@ public class Cache
         cacheStatisticsCounter.incrementHits(currentCycle);
         
         //Store current cache line in history for backward simulation
-        cacheLineHistory.add(line);
-        cacheIdHistory.add(id);
         line.saveToHistory(id);
         
         replacementPolicy.updatePolicy(id, splittedAddress.getSecond(), i);
-        lastAccess.peek().addLineAccess(true, splittedAddress.getSecond() * associativity + i,
-                                        splittedAddress.getThird());
+        lastAccess.peek()
+                .addLineAccess(true, splittedAddress.getSecond() * associativity + i, splittedAddress.getThird());
         int tmpReturn = setDataToLines(line, address, data, size, id, currentCycle);
         return storeDelay + tmpReturn + computeRemainingDelay(true, true, currentCycle, splittedAddress.getFirst(),
                                                               splittedAddress.getSecond());
@@ -602,8 +558,6 @@ public class Cache
     cacheStatisticsCounter.incrementMisses(currentCycle);
     
     //Store current cache line in history for backward simulation
-    cacheLineHistory.add(cache[splittedAddress.getSecond()][selectedLine]);
-    cacheIdHistory.add(id);
     cache[splittedAddress.getSecond()][selectedLine].saveToHistory(id);
     
     long baseMemoryAddress = address & -(1L << getLog(lineSize, 2));
@@ -628,44 +582,6 @@ public class Cache
   }
   
   /**
-   * @param id - Current clock cycle
-   *
-   * @brief Restores current line from history
-   */
-  public void revertHistory(int id)
-  {
-    while (!lastAccess.isEmpty() && lastAccess.peek().getId() == id)
-    {
-      cacheStatisticsCounter.decrementTotalDelay();
-      cacheStatisticsCounter.decrementAccesses();
-      for (boolean hitMiss : lastAccess.peek().isHit())
-      {
-        if (hitMiss)
-        {
-          cacheStatisticsCounter.decrementHits();
-        }
-        else
-        {
-          cacheStatisticsCounter.decrementMisses();
-        }
-      }
-      this.cycleEndOfReplacement = lastAccess.peek().getEndOfReplacement();
-      //This should not actually be called multiple times
-      lastAccess.pop();
-    }
-    
-    while (!cacheIdHistory.isEmpty() && (cacheIdHistory.peek() == id))
-    {
-      cacheLineHistory.peek().revertHistory(id);
-      memory.revertHistory(id);
-      replacementPolicy.revertHistory(id);
-      
-      cacheIdHistory.pop();
-      cacheLineHistory.pop();
-    }
-  }
-  
-  /**
    * @brief Resets the cache state
    */
   public void reset()
@@ -678,8 +594,6 @@ public class Cache
         cache[i][j] = new CacheLineModel(lineSize, i * associativity + j);
       }
     }
-    cacheLineHistory.clear();
-    cacheIdHistory.clear();
     memory.reset();
     cycleEndOfReplacement = 0;
     lastAccess.clear();

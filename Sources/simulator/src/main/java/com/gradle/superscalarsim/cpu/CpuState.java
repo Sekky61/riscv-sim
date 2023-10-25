@@ -29,7 +29,6 @@ package com.gradle.superscalarsim.cpu;
 
 import com.cedarsoftware.util.io.JsonReader;
 import com.cedarsoftware.util.io.JsonWriter;
-import com.google.gson.Gson;
 import com.gradle.superscalarsim.blocks.CacheStatisticsCounter;
 import com.gradle.superscalarsim.blocks.StatisticsCounter;
 import com.gradle.superscalarsim.blocks.arithmetic.AluIssueWindowBlock;
@@ -41,7 +40,6 @@ import com.gradle.superscalarsim.blocks.loadstore.*;
 import com.gradle.superscalarsim.code.*;
 import com.gradle.superscalarsim.enums.cache.ReplacementPoliciesEnum;
 import com.gradle.superscalarsim.loader.InitLoader;
-import com.gradle.superscalarsim.models.SimCodeModel;
 import com.gradle.superscalarsim.serialization.GsonConfiguration;
 
 import java.io.Serializable;
@@ -56,10 +54,13 @@ import java.util.Objects;
  */
 public class CpuState implements Serializable
 {
+  public int tick;
   
+  /**
+   * Warning: this must be a reference to the same loader as in Cpu
+   */
   public InitLoader initLoader;
   public CodeParser codeParser;
-  public List<SimCodeModel> simCodeModels;
   public SimCodeModelAllocator simCodeModelAllocator;
   
   public ReorderBufferState reorderBufferState;
@@ -118,19 +119,13 @@ public class CpuState implements Serializable
   public CpuState()
   {
     // Empty constructor for serialization
+    
   }
   
-  public CpuState(CpuConfiguration config)
+  public CpuState(CpuConfiguration config, InitLoader initLoader)
   {
+    this.initLoader = initLoader;
     this.initState(config);
-  }
-  
-  /**
-   * @brief Initialize the CPU state - the default state of the CPU.
-   */
-  public void initState()
-  {
-    initState(CpuConfiguration.getDefaultConfiguration());
   }
   
   /**
@@ -138,15 +133,12 @@ public class CpuState implements Serializable
    */
   public void initState(CpuConfiguration config)
   {
+    this.tick = 0;
     
-    this.initLoader = new InitLoader();
     this.codeParser = new CodeParser(initLoader);
-    
+    this.codeParser.parse(config.code);
     
     simCodeModelAllocator = new SimCodeModelAllocator();
-    // Must reference outside list
-    simCodeModels = new ArrayList<>();
-    simCodeModelAllocator.setSimCodeModels(simCodeModels);
     
     this.reorderBufferState        = new ReorderBufferState();
     reorderBufferState.bufferSize  = config.robSize;
@@ -161,50 +153,20 @@ public class CpuState implements Serializable
     this.renameMapTableBlock      = new RenameMapTableBlock(unifiedRegisterFileBlock);
     
     this.globalHistoryRegister = new GlobalHistoryRegister(10);
-    this.patternHistoryTable   = new PatternHistoryTable(config.phtSize);
     PatternHistoryTable.PredictorType predictorType = switch (config.predictorType)
     {
+      case "0bit" -> PatternHistoryTable.PredictorType.ZERO_BIT_PREDICTOR;
       case "1bit" -> PatternHistoryTable.PredictorType.ONE_BIT_PREDICTOR;
       case "2bit" -> PatternHistoryTable.PredictorType.TWO_BIT_PREDICTOR;
       default -> throw new IllegalStateException("Unexpected value for predictor type: " + config.predictorType);
     };
-    patternHistoryTable.setDefaultPredictorClass(predictorType);
     
-    boolean[] defaultTaken;
-    if (config.predictorType.equals("0bit") || config.predictorType.equals("1bit"))
-    {
-      if (!Objects.equals(config.predictorDefault, "Taken") && !Objects.equals(config.predictorDefault, "Not Taken"))
-      {
-        throw new IllegalStateException("Unexpected value for 0bit/1bit predictor: " + config.predictorDefault);
-      }
-      boolean take = config.predictorDefault.equals("taken");
-      defaultTaken = new boolean[]{take};
-    }
-    else if (config.predictorType.equals("2bit"))
-    {
-      defaultTaken = switch (config.predictorDefault)
-      {
-        case "Strongly Not Taken" -> new boolean[]{false, false};
-        case "Weakly Not Taken" -> new boolean[]{true, false};
-        case "Weakly Taken" -> new boolean[]{false, true};
-        case "Strongly Taken" -> new boolean[]{true, true};
-        default -> throw new IllegalStateException("Unexpected value for 2bit predictor: " + config.predictorDefault);
-      };
-    }
-    else
-    {
-      throw new IllegalStateException("Unexpected predictor type: " + config.predictorType);
-    }
+    boolean[] defaultTaken = getDefaultTaken(config);
     
-    defaultTaken[0] = config.predictorDefault == "taken";
-    patternHistoryTable.setDefaultTaken(defaultTaken);
-    
-    this.gShareUnit = new GShareUnit(1024, this.globalHistoryRegister);
-    this.gShareUnit.setPatternHistoryTable(patternHistoryTable);
-    
-    this.branchTargetBuffer = new BranchTargetBuffer(initLoader, config.btbSize);
-    
-    this.simulatedMemory = new SimulatedMemory();
+    this.patternHistoryTable = new PatternHistoryTable(config.phtSize, defaultTaken, predictorType);
+    this.gShareUnit          = new GShareUnit(1024, this.globalHistoryRegister, this.patternHistoryTable);
+    this.branchTargetBuffer  = new BranchTargetBuffer(config.btbSize);
+    this.simulatedMemory     = new SimulatedMemory();
     
     ReplacementPoliciesEnum replacementPoliciesEnum = switch (config.cacheReplacement)
     {
@@ -233,21 +195,20 @@ public class CpuState implements Serializable
     
     this.decodeAndDispatchBlock = new DecodeAndDispatchBlock(simCodeModelAllocator, instructionFetchBlock,
                                                              renameMapTableBlock, globalHistoryRegister,
-                                                             branchTargetBuffer, codeParser, initLoader);
+                                                             branchTargetBuffer, codeParser);
     this.reorderBufferBlock     = new ReorderBufferBlock(unifiedRegisterFileBlock, renameMapTableBlock,
                                                          decodeAndDispatchBlock, gShareUnit, branchTargetBuffer,
                                                          instructionFetchBlock, statisticsCounter, reorderBufferState);
-    this.issueWindowSuperBlock  = new IssueWindowSuperBlock(decodeAndDispatchBlock, initLoader);
-    this.arithmeticInterpreter  = new CodeArithmeticInterpreter(initLoader, precedingTable, unifiedRegisterFileBlock);
-    this.branchInterpreter      = new CodeBranchInterpreter(codeParser, initLoader, unifiedRegisterFileBlock);
+    this.issueWindowSuperBlock  = new IssueWindowSuperBlock(decodeAndDispatchBlock);
+    this.arithmeticInterpreter  = new CodeArithmeticInterpreter(precedingTable, unifiedRegisterFileBlock);
+    this.branchInterpreter      = new CodeBranchInterpreter(codeParser, unifiedRegisterFileBlock);
     
     this.storeBufferBlock = new StoreBufferBlock(loadStoreInterpreter, decodeAndDispatchBlock, unifiedRegisterFileBlock,
-                                                 initLoader, reorderBufferBlock);
+                                                 reorderBufferBlock);
     storeBufferBlock.setBufferSize(config.sbSize);
     
-    this.loadBufferBlock = new LoadBufferBlock(loadStoreInterpreter, storeBufferBlock, decodeAndDispatchBlock,
-                                               unifiedRegisterFileBlock, initLoader, reorderBufferBlock,
-                                               instructionFetchBlock);
+    this.loadBufferBlock = new LoadBufferBlock(storeBufferBlock, decodeAndDispatchBlock, unifiedRegisterFileBlock,
+                                               reorderBufferBlock, instructionFetchBlock);
     loadBufferBlock.setBufferSize(config.lbSize);
     
     // FUs
@@ -255,7 +216,7 @@ public class CpuState implements Serializable
     this.aluIssueWindowBlock       = new AluIssueWindowBlock(initLoader, unifiedRegisterFileBlock, precedingTable);
     this.branchIssueWindowBlock    = new BranchIssueWindowBlock(initLoader, unifiedRegisterFileBlock);
     this.fpIssueWindowBlock        = new FpIssueWindowBlock(initLoader, unifiedRegisterFileBlock, precedingTable);
-    this.loadStoreIssueWindowBlock = new LoadStoreIssueWindowBlock(initLoader, unifiedRegisterFileBlock);
+    this.loadStoreIssueWindowBlock = new LoadStoreIssueWindowBlock(unifiedRegisterFileBlock);
     
     this.issueWindowSuperBlock.addAluIssueWindow(aluIssueWindowBlock);
     this.issueWindowSuperBlock.addFpIssueWindow(fpIssueWindowBlock);
@@ -326,6 +287,39 @@ public class CpuState implements Serializable
   }
   
   /**
+   * @param config The configuration
+   *
+   * @brief Get the default state for the predictor from the configuration
+   */
+  private static boolean[] getDefaultTaken(CpuConfiguration config)
+  {
+    boolean[] defaultTaken;
+    if (config.predictorType.equals("0bit") || config.predictorType.equals("1bit"))
+    {
+      if (!Objects.equals(config.predictorDefault, "Taken") && !Objects.equals(config.predictorDefault, "Not Taken"))
+      {
+        throw new IllegalStateException("Unexpected value for 0bit/1bit predictor: " + config.predictorDefault);
+      }
+      boolean take = config.predictorDefault.equals("taken");
+      defaultTaken = new boolean[]{take};
+    }
+    else
+    {
+      assert config.predictorType.equals("2bit");
+      defaultTaken = switch (config.predictorDefault)
+      {
+        case "Strongly Not Taken" -> new boolean[]{false, false};
+        case "Weakly Not Taken" -> new boolean[]{true, false};
+        case "Weakly Taken" -> new boolean[]{false, true};
+        case "Strongly Taken" -> new boolean[]{true, true};
+        default -> throw new IllegalStateException("Unexpected value for 2bit predictor: " + config.predictorDefault);
+      };
+    }
+    defaultTaken[0] = config.predictorDefault.equals("taken");
+    return defaultTaken;
+  }
+  
+  /**
    * @brief Create a new CPU state - a deep copy of the current state.
    */
   public CpuState deepCopy()
@@ -337,12 +331,12 @@ public class CpuState implements Serializable
   
   public String serialize()
   {
-    return JsonWriter.objectToJson(this);
+    return JsonWriter.objectToJson(this, GsonConfiguration.getJsonWriterOptions());
   }
   
   public static CpuState deserialize(String json)
   {
-    CpuState state = (CpuState) JsonReader.jsonToJava(json);
+    CpuState state = (CpuState) JsonReader.jsonToJava(json, GsonConfiguration.getJsonWriterOptions());
     return state;
   }
   
@@ -367,10 +361,8 @@ public class CpuState implements Serializable
     CpuState myObject = (CpuState) obj;
     
     // Compare:
-    Gson gson = GsonConfiguration.getGson();
-    
-    String meJson    = JsonWriter.objectToJson(this);
-    String otherJson = JsonWriter.objectToJson(myObject);
+    String meJson    = JsonWriter.objectToJson(this, GsonConfiguration.getJsonWriterOptions());
+    String otherJson = JsonWriter.objectToJson(myObject, GsonConfiguration.getJsonWriterOptions());
     
     return meJson.equals(otherJson);
   }
@@ -392,8 +384,7 @@ public class CpuState implements Serializable
     // Check which buffer contains older instruction at the top
     // Null check first, if any is empty, the order does not matter
     if (loadBufferBlock.getLoadQueueFirst() == null || storeBufferBlock.getStoreQueueFirst() == null || loadBufferBlock.getLoadQueueFirst()
-                                                                                                                       .getId() < storeBufferBlock.getStoreQueueFirst()
-                                                                                                                                                  .getId())
+            .getId() < storeBufferBlock.getStoreQueueFirst().getId())
     {
       loadBufferBlock.simulate();
       storeBufferBlock.simulate();
@@ -415,31 +406,10 @@ public class CpuState implements Serializable
     reorderBufferBlock.bumpCommitID();
     // Stats
     statisticsCounter.incrementClockCycles();
+    
+    this.tick++;
+    
+    // Clean up
+    simCodeModelAllocator.deleteOldReferences();
   }// end of run
-  
-  public void stepBack()
-  {
-    decodeAndDispatchBlock.simulateBackwards();
-    issueWindowSuperBlock.simulateBackwards();
-    reorderBufferBlock.simulateBackwards();
-    // run all AbstractIssueWindowBlock blocks
-    aluIssueWindowBlock.simulateBackwards();
-    fpIssueWindowBlock.simulateBackwards();
-    branchIssueWindowBlock.simulateBackwards();
-    loadStoreIssueWindowBlock.simulateBackwards();
-    
-    storeBufferBlock.simulateBackwards();
-    loadBufferBlock.simulateBackwards();
-    // Run all FUs
-    arithmeticFunctionUnitBlocks.forEach(ArithmeticFunctionUnitBlock::simulateBackwards);
-    fpFunctionUnitBlocks.forEach(ArithmeticFunctionUnitBlock::simulateBackwards);
-    branchFunctionUnitBlocks.forEach(BranchFunctionUnitBlock::simulateBackwards);
-    loadStoreFunctionUnits.forEach(LoadStoreFunctionUnit::simulateBackwards);
-    memoryAccessUnits.forEach(MemoryAccessUnit::simulateBackwards);
-    instructionFetchBlock.simulateBackwards();
-    
-    this.statisticsCounter.decrementClockCycles();
-  }
-  //-------------------------------------------------------------------------------------------
-  
 }

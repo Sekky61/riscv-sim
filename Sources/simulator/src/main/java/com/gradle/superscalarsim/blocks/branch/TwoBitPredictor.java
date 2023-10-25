@@ -32,33 +32,25 @@
  */
 package com.gradle.superscalarsim.blocks.branch;
 
-import java.util.Stack;
-
 /**
  * @class OneBitPredictor
  * @brief Class containing implementation of the Two-bit predictor
  */
 public class TwoBitPredictor implements IBitPredictor
 {
-  /// Bit array of current prediction
-  private final boolean[] state;
-  /// Stack of previous history values
-  private final Stack<boolean[]> history;
-  /// Initial state of the predictor
-  private final boolean[] initialState;
+  /**
+   * State - a bit array
+   * The second bit decides whether the branch should be taken or not
+   */
+  private boolean[] state;
   
   /**
-   * @param [in] isTaken - Initial value of the bit predictor
-   *
-   * @brief Constructor
+   * @brief (De)serialize constructor
    */
-  public TwoBitPredictor(boolean isTaken)
+  public TwoBitPredictor()
   {
-    this.state        = new boolean[]{false, isTaken};
-    this.history      = new Stack<>();
-    this.initialState = new boolean[]{false, isTaken};
-  }// end of Constructor
-  //----------------------------------------------------------------------
+    this.state = new boolean[]{false, false};
+  }
   
   /**
    * @param [in] initialState - Initial bit array of the bit predictor
@@ -67,9 +59,7 @@ public class TwoBitPredictor implements IBitPredictor
    */
   public TwoBitPredictor(boolean[] initialState)
   {
-    this.state        = new boolean[]{initialState[0], initialState[1]};
-    this.history      = new Stack<>();
-    this.initialState = new boolean[]{initialState[0], initialState[1]};
+    this.state = new boolean[]{initialState[0], initialState[1]};
   }// end of Constructor
   //----------------------------------------------------------------------
   
@@ -90,7 +80,6 @@ public class TwoBitPredictor implements IBitPredictor
   @Override
   public void upTheProbability()
   {
-    this.saveHistory(this.state);
     if (!this.state[0])
     {
       this.state[0] = true;
@@ -108,7 +97,6 @@ public class TwoBitPredictor implements IBitPredictor
   @Override
   public void downTheProbability()
   {
-    this.saveHistory(this.state);
     if (this.state[0])
     {
       this.state[0] = false;
@@ -118,18 +106,6 @@ public class TwoBitPredictor implements IBitPredictor
       this.state[1] = false;
     }
   }// end of downTheProbability
-  //----------------------------------------------------------------------
-  
-  /**
-   * @brief Predicts backwards based on saved history
-   */
-  @Override
-  public void predictBackwards()
-  {
-    boolean[] previousState = !this.history.isEmpty() ? this.history.pop() : initialState;
-    this.state[1] = previousState[1];
-    this.state[0] = previousState[0];
-  }// end of predictBackwards
   //----------------------------------------------------------------------
   
   /**
@@ -147,16 +123,5 @@ public class TwoBitPredictor implements IBitPredictor
     String suffix = this.state[1] ? "Taken" : "Not Taken";
     return prefix + " " + suffix;
   }// end of bitVectorToString
-  //----------------------------------------------------------------------
-  
-  /**
-   * @param [in] bitArray - Bit array to save
-   *
-   * @brief Save history for backward prediction
-   */
-  private void saveHistory(boolean[] bitArray)
-  {
-    this.history.push(new boolean[]{bitArray[0], bitArray[1]});
-  }// end of saveHistory
   //----------------------------------------------------------------------
 }

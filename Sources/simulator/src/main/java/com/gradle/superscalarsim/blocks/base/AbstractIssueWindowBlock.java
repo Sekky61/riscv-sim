@@ -36,10 +36,12 @@ import com.gradle.superscalarsim.blocks.AbstractBlock;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
-import com.gradle.superscalarsim.loader.InitLoader;
 import com.gradle.superscalarsim.models.*;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @class AbstractIssueWindowBlock
@@ -47,50 +49,43 @@ import java.util.*;
  */
 public abstract class AbstractIssueWindowBlock implements AbstractBlock
 {
-  /// List of all instructions dispatched to this window
+  /**
+   * List of all instructions dispatched to this window
+   */
   private final List<SimCodeModel> issuedInstructions;
   
-  /// Map of readiness of each instruction in window
+  /**
+   * Map of readiness of each instruction in window.
+   */
   protected final Map<Integer, List<IssueItemModel>> argumentValidityMap;
-  /// Initial loader of interpretable instructions and register files
-  private InitLoader loader;
-  /// Class containing all registers, that simulator uses
+  /**
+   * Class containing all registers, that simulator uses
+   */
   private UnifiedRegisterFileBlock registerFileBlock;
   
-  /// Stack for all instructions which failed in the instruction window
-  protected final Stack<SimCodeModel> failedInstructions;
-  /// Stack for the validity maps of the failed instructions
-  protected final Stack<List<IssueItemModel>> failedValidityMaps;
-  
-  /// Id counter specifying which issue window did the instruction took
+  /**
+   * ID counter specifying which issue window did the instruction took
+   */
   protected int windowId;
   
   public AbstractIssueWindowBlock()
   {
     this.issuedInstructions  = new ArrayList<>();
     this.argumentValidityMap = new HashMap<>();
-    
-    this.failedValidityMaps = new Stack<>();
-    this.failedInstructions = new Stack<>();
   }
   
   /**
    * @param [in] blockScheduleTask - Task class, where blocks are periodically triggered by the GlobalTimer
-   * @param [in] loader            - Initial loader of interpretable instructions and register files
    * @param [in] registerFileBlock - Class containing all registers, that simulator uses
    *
    * @brief Constructor
    */
-  public AbstractIssueWindowBlock(InitLoader loader, UnifiedRegisterFileBlock registerFileBlock)
+  public AbstractIssueWindowBlock(UnifiedRegisterFileBlock registerFileBlock)
   {
     this.issuedInstructions  = new ArrayList<>();
     this.argumentValidityMap = new HashMap<>();
     
-    this.loader            = loader;
     this.registerFileBlock = registerFileBlock;
-    
-    this.failedValidityMaps = new Stack<>();
-    this.failedInstructions = new Stack<>();
   }// end of Constructor
   //----------------------------------------------------------------------
   
@@ -153,8 +148,6 @@ public abstract class AbstractIssueWindowBlock implements AbstractBlock
   {
     this.issuedInstructions.clear();
     this.argumentValidityMap.clear();
-    this.failedValidityMaps.clear();
-    this.failedInstructions.clear();
   }// end of reset
   //----------------------------------------------------------------------
   
@@ -182,10 +175,11 @@ public abstract class AbstractIssueWindowBlock implements AbstractBlock
       
       if (functionUnitBlock == null || functionUnitBlock.getSimCodeModel() != null)
       {
+        // Currently no compatible FU is free
         continue;
       }
       
-      // Instruction is ready for execution and there is free FU -> issue instruction
+      // Instruction is ready for execution and there is a free FU -> issue the instruction
       currentModel.setIssueWindowId(this.windowId);
       functionUnitBlock.resetCounter();
       functionUnitBlock.setSimCodeModel(currentModel);
@@ -246,7 +240,7 @@ public abstract class AbstractIssueWindowBlock implements AbstractBlock
         String                registerName = argument.getValue();
         RegisterModel         reg          = this.registerFileBlock.getRegister(registerName);
         RegisterReadinessEnum readiness    = reg.getReadiness();
-        boolean validity = readiness == RegisterReadinessEnum.kExecuted || readiness == RegisterReadinessEnum.kAssigned;
+        boolean               validity     = readiness == RegisterReadinessEnum.kExecuted || readiness == RegisterReadinessEnum.kAssigned;
         itemModelList.add(new IssueItemModel(registerName, reg.getValue(), validity));
       }
       else if (argument.getName().startsWith("imm"))
@@ -330,8 +324,6 @@ public abstract class AbstractIssueWindowBlock implements AbstractBlock
       if (codeModel.hasFailed())
       {
         codeModel.setIssueWindowId(this.windowId);
-        this.failedValidityMaps.push(this.argumentValidityMap.get(codeModel.getId()));
-        this.failedInstructions.push(codeModel);
         this.argumentValidityMap.remove(codeModel.getId());
         removedInstructions.add(codeModel);
       }

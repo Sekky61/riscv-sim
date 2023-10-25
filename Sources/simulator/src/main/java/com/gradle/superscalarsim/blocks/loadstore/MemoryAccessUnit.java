@@ -38,10 +38,12 @@ import com.gradle.superscalarsim.blocks.base.ReorderBufferBlock;
 import com.gradle.superscalarsim.blocks.base.UnifiedRegisterFileBlock;
 import com.gradle.superscalarsim.code.CodeLoadStoreInterpreter;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
-import com.gradle.superscalarsim.models.*;
+import com.gradle.superscalarsim.models.InputCodeArgument;
+import com.gradle.superscalarsim.models.Pair;
+import com.gradle.superscalarsim.models.RegisterModel;
+import com.gradle.superscalarsim.models.SimCodeModel;
 
 import java.util.Objects;
-import java.util.Stack;
 
 /**
  * @class MemoryAccessUnit
@@ -67,23 +69,18 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
   /// settings for first delay
   private int baseDelay;
   
-  private Stack<Integer> savedDelays;
-  
-  private Stack<Boolean> savedFirstDelayPassed;
-  
   public MemoryAccessUnit()
   {
   }
   
   /**
-   * @param [in] blockScheduleTask    - Task class, where blocks are periodically triggered by the GlobalTimer
-   * @param [in] reorderBufferBlock   - Class containing simulated Reorder Buffer
-   * @param [in] delay                - Delay for function unit
-   * @param [in] issueWindowBlock     - Issue window block for comparing instruction and data types
-   * @param [in] loadBufferBlock      - Buffer keeping all in-flight load instructions
-   * @param [in] storeBufferBlock     - Buffer keeping all in-flight store instructions
-   * @param [in] loadStoreInterpreter - Interpreter processing load/store instructions
-   * @param [in] registerFileBlock    - Class containing all registers, that simulator uses
+   * @param reorderBufferBlock   Class containing simulated Reorder Buffer
+   * @param delay                Delay for function unit
+   * @param issueWindowBlock     Issue window block for comparing instruction and data types
+   * @param loadBufferBlock      Buffer keeping all in-flight load instructions
+   * @param storeBufferBlock     Buffer keeping all in-flight store instructions
+   * @param loadStoreInterpreter Interpreter processing load/store instructions
+   * @param registerFileBlock    Class containing all registers, that simulator uses
    *
    * @brief Constructor
    */
@@ -96,13 +93,11 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
                           UnifiedRegisterFileBlock registerFileBlock)
   {
     super(reorderBufferBlock, delay, issueWindowBlock);
-    this.loadBufferBlock       = loadBufferBlock;
-    this.storeBufferBlock      = storeBufferBlock;
-    this.loadStoreInterpreter  = loadStoreInterpreter;
-    this.registerFileBlock     = registerFileBlock;
-    this.baseDelay             = delay;
-    this.savedDelays           = new Stack<>();
-    this.savedFirstDelayPassed = new Stack<>();
+    this.loadBufferBlock      = loadBufferBlock;
+    this.storeBufferBlock     = storeBufferBlock;
+    this.loadStoreInterpreter = loadStoreInterpreter;
+    this.registerFileBlock    = registerFileBlock;
+    this.baseDelay            = delay;
   }// end of Constructor
   //----------------------------------------------------------------------
   
@@ -117,11 +112,9 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
     {
       hasDelayPassed();
       this.simCodeModel.setFunctionUnitId(this.functionUnitId);
-      this.failedInstructions.push(this.simCodeModel);
       this.simCodeModel = null;
       this.zeroTheCounter();
       
-      this.savedFirstDelayPassed.add(this.firstDelayPassed);
       this.setDelay(baseDelay);
       this.firstDelayPassed = false;
     }
@@ -149,7 +142,6 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
         Pair<Integer, Double> result = loadStoreInterpreter.interpretInstruction(this.simCodeModel, cycleCount);
         savedResult = result.getSecond();
         
-        this.savedDelays.add(result.getFirst());
         //Set delay for memory response
         this.setDelay(result.getFirst());
         this.resetCounter();
@@ -168,7 +160,7 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
         {
           InputCodeArgument destinationArgument = simCodeModel.getArgumentByName("rd");
           RegisterModel destRegister = registerFileBlock.getRegister(
-              Objects.requireNonNull(destinationArgument).getValue());
+                  Objects.requireNonNull(destinationArgument).getValue());
           destRegister.setValue(savedResult);
           destRegister.setReadiness(RegisterReadinessEnum.kExecuted);
           this.loadBufferBlock.setDestinationAvailable(simCodeModel.getId());
@@ -190,95 +182,14 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
   }// end of simulate
   //----------------------------------------------------------------------
   
-  /**
-   * @brief Simulates backwards (resets flags and waits until un-execution of instruction)
-   */
   @Override
-  public void simulateBackwards()
+  public void reset()
   {
-    cycleCount--;
-    reduceCounter();
-    if (!isFunctionUnitEmpty())
-    {
-      if (hasReversedDelayPassed() && firstDelayPassed)
-      {
-        setDelay(baseDelay);
-        firstDelayPassed = false;
-        resetReverseCounter();
-        loadStoreInterpreter.revertMemoryHistory(this.simCodeModel);
-        savedDelays.pop();
-      }
-    }
-    else
-    {
-      this.functionUnitId -= this.functionUnitCount;
-      for (SimCodeModel codeModel : this.loadBufferBlock.getLoadQueue())
-      {
-        LoadBufferItem item = this.loadBufferBlock.getLoadMap().get(codeModel.getId());
-        if (item.getMemoryAccessId() == this.functionUnitId && !item.hasBypassed())
-        {
-          this.reorderBufferBlock.getFlagsMap().get(codeModel.getId()).setBusy(true);
-          if (savedDelays.peek() == 0)
-          {
-            this.setDelay(baseDelay);
-            firstDelayPassed = false;
-            loadStoreInterpreter.revertMemoryHistory(codeModel);
-            savedDelays.pop();
-          }
-          else
-          {
-            firstDelayPassed = true;
-            this.setDelay(savedDelays.peek());
-          }
-          this.resetReverseCounter();
-          this.simCodeModel = codeModel;
-          if (!this.failedInstructions.isEmpty() && this.simCodeModel == this.failedInstructions.peek())
-          {
-            this.failedInstructions.pop();
-            this.popHistoryCounter();
-          }
-          item.setDestinationReady(false);
-          return;
-        }
-      }
-      for (SimCodeModel codeModel : this.storeBufferBlock.getStoreQueue())
-      {
-        StoreBufferItem item = this.storeBufferBlock.getStoreMap().get(codeModel.getId());
-        if (item.getMemoryAccessId() == this.functionUnitId)
-        {
-          this.reorderBufferBlock.getFlagsMap().get(codeModel.getId()).setBusy(true);
-          if (savedDelays.peek() == 0)
-          {
-            this.setDelay(baseDelay);
-            firstDelayPassed = false;
-            loadStoreInterpreter.revertMemoryHistory(codeModel);
-            savedDelays.pop();
-          }
-          else
-          {
-            firstDelayPassed = true;
-            this.setDelay(savedDelays.peek());
-          }
-          this.resetReverseCounter();
-          this.simCodeModel = codeModel;
-          if (!this.failedInstructions.isEmpty() && this.simCodeModel == this.failedInstructions.peek())
-          {
-            this.failedInstructions.pop();
-            this.popHistoryCounter();
-          }
-          return;
-        }
-      }
-      if (!this.failedInstructions.isEmpty() && this.failedInstructions.peek()
-                                                                       .getFunctionUnitId() == this.functionUnitId)
-      {
-        this.simCodeModel     = this.failedInstructions.pop();
-        this.firstDelayPassed = this.savedFirstDelayPassed.pop();
-        this.popHistoryCounter();
-      }
-    }
-  }// end of simulateBackwards
-  //----------------------------------------------------------------------
+    super.reset();
+    firstDelayPassed = false;
+    cycleCount       = 0;
+    this.setDelay(baseDelay);
+  }
   
   /**
    * @return True if counter is at 0 or less, false otherwise
@@ -289,15 +200,6 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
   {
     return getCounter() <= 0;
   }// end of hasReversedDelayPassed
-  
-  @Override
-  public void reset()
-  {
-    super.reset();
-    firstDelayPassed = false;
-    cycleCount       = 0;
-    this.setDelay(baseDelay);
-  }
   
   /**
    * @param [in] simCodeModel - Possible executing model
@@ -310,11 +212,9 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
     {
       hasDelayPassed();
       this.simCodeModel.setFunctionUnitId(this.functionUnitId - 1);
-      this.failedInstructions.push(this.simCodeModel);
       this.simCodeModel = null;
       this.zeroTheCounter();
       
-      this.savedFirstDelayPassed.add(this.firstDelayPassed);
       this.setDelay(baseDelay);
       this.firstDelayPassed = false;
     }

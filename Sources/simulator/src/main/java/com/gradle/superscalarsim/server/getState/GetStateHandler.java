@@ -27,12 +27,10 @@
 
 package com.gradle.superscalarsim.server.getState;
 
-import com.gradle.superscalarsim.code.CodeParser;
 import com.gradle.superscalarsim.code.ParseError;
 import com.gradle.superscalarsim.cpu.Cpu;
 import com.gradle.superscalarsim.cpu.CpuConfiguration;
 import com.gradle.superscalarsim.cpu.CpuState;
-import com.gradle.superscalarsim.loader.InitLoader;
 import com.gradle.superscalarsim.server.IRequestResolver;
 
 import java.util.List;
@@ -81,29 +79,25 @@ public class GetStateHandler implements IRequestResolver<GetStateRequest, GetSta
     }
     // Validate configuration
     CpuConfiguration.ValidationResult validationResult = cfg.validate();
-    // Validate code
-    InitLoader loader       = new InitLoader();
-    CodeParser codeParser   = new CodeParser(loader);
-    boolean    parseSuccess = codeParser.parse(request.program);
     // Create response
     CpuState         state        = null;
     List<ParseError> codeErrors   = null;
     List<String>     configErrors = null;
-    if (!validationResult.valid)
+    
+    if (validationResult.valid)
+    {
+      Cpu cpu = new Cpu(cfg);
+      state = cpu.cpuState;
+      List<ParseError> e = cpu.cpuState.codeParser.getErrorMessages();
+      if (e != null && !e.isEmpty())
+      {
+        codeErrors = e;
+      }
+    }
+    else
     {
       System.err.println("Provided configuration is invalid: " + validationResult.messages);
       configErrors = validationResult.messages;
-    }
-    if (parseSuccess && validationResult.valid)
-    {
-      Cpu cpu = new Cpu(cfg);
-      cpu.loadProgram(request.program);
-      state = cpu.cpuState;
-    }
-    if (!parseSuccess)
-    {
-      System.err.println("Provided code is invalid: " + codeParser.getErrorMessages());
-      codeErrors = codeParser.getErrorMessages();
     }
     return new GetStateResponse(state, configErrors, codeErrors);
   }

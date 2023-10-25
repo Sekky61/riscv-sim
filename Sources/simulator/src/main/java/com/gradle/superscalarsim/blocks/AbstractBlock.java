@@ -46,11 +46,6 @@ public interface AbstractBlock extends Serializable
   void simulate();
   
   /**
-   * @brief Simulates in reverse direction to enable backwards simulation steps (from ROB to IF)
-   */
-  void simulateBackwards();
-  
-  /**
    * @brief Resets the lists/stacks/variables inside the block
    */
   void reset();

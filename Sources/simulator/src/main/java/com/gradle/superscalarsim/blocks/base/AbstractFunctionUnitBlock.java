@@ -35,8 +35,6 @@ package com.gradle.superscalarsim.blocks.base;
 import com.gradle.superscalarsim.blocks.AbstractBlock;
 import com.gradle.superscalarsim.models.SimCodeModel;
 
-import java.util.Stack;
-
 /**
  * @class AbstractFunctionUnitBlock
  * @brief Abstract class containing interface and shared logic for all function units
@@ -58,18 +56,11 @@ public abstract class AbstractFunctionUnitBlock implements AbstractBlock
   protected int functionUnitId;
   /// Overall count of FUs in assigned issue window
   protected int functionUnitCount;
-  
-  /// Stack holding values of counters when function block fails
-  protected final Stack<Integer> failedCounters;
-  /// Stack holding failed instructions
-  protected final Stack<SimCodeModel> failedInstructions;
   /// Issue window block for comparing instruction and data types
   protected AbstractIssueWindowBlock issueWindowBlock;
   
   public AbstractFunctionUnitBlock()
   {
-    this.failedCounters     = new Stack<>();
-    this.failedInstructions = new Stack<>();
   }
   
   /**
@@ -88,8 +79,6 @@ public abstract class AbstractFunctionUnitBlock implements AbstractBlock
     this.delay              = delay;
     this.counter            = 0;
     this.simCodeModel       = null;
-    this.failedCounters     = new Stack<>();
-    this.failedInstructions = new Stack<>();
     this.issueWindowBlock   = issueWindowBlock;
     this.name               = "Function Unit";
   }// end of Constructor
@@ -103,8 +92,6 @@ public abstract class AbstractFunctionUnitBlock implements AbstractBlock
   {
     this.counter      = 0;
     this.simCodeModel = null;
-    this.failedCounters.clear();
-    this.failedInstructions.clear();
   }// end of reset
   //----------------------------------------------------------------------
   
@@ -190,14 +177,6 @@ public abstract class AbstractFunctionUnitBlock implements AbstractBlock
   }// end of hasReversedDelayPassed
   //----------------------------------------------------------------------
   
-  /**
-   * @brief Moves the counter down, stops at zero
-   */
-  protected void reduceCounter()
-  {
-    this.counter = Math.max(this.counter - 1, 0);
-  }// end of hasReversedDelayPassed
-  
   public boolean hasTimerStarted()
   {
     return this.counter == 0;
@@ -257,20 +236,10 @@ public abstract class AbstractFunctionUnitBlock implements AbstractBlock
   //----------------------------------------------------------------------
   
   /**
-   * @brief Resets counter from stack of failed instruction counters
-   */
-  public void popHistoryCounter()
-  {
-    this.counter = this.failedCounters.pop() - 1;
-  }// end of resetCounter
-  //----------------------------------------------------------------------
-  
-  /**
    * @brief Set zero to counter and saves previous value of the counter to the stack
    */
   protected void zeroTheCounter()
   {
-    this.failedCounters.push(this.counter);
     this.counter = 0;
   }// end of setCounter
   //----------------------------------------------------------------------

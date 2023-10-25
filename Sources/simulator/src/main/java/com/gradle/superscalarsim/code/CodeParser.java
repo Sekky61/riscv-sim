@@ -38,8 +38,9 @@ import com.gradle.superscalarsim.loader.InitLoader;
 import com.gradle.superscalarsim.models.*;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -86,16 +87,26 @@ public class CodeParser
   /**
    * InitLoader object with loaded instructions and registers
    */
-  private InitLoader initLoader;
+  private final InitLoader initLoader;
   /**
    * List of parsed instructions
    */
   private List<InputCodeModel> parsedCode;
+  
   /**
-   * @brief List of all labels
    * The strings are without the colon at the end.
+   * Label can point after the last instruction.
+   *
+   * @brief List of all labels
    */
-  private List<String> labels;
+  private Map<String, Integer> labels;
+  
+  /**
+   * Nop instruction is instantiated once and reused, to have all SimCodeModel objects point to the same object.
+   *
+   * @brief Nop instruction
+   */
+  private final InputCodeModel nop;
   
   /**
    * @param [in] initLoader - InitLoader object with loaded instructions and registers
@@ -107,7 +118,7 @@ public class CodeParser
     this.initLoader         = initLoader;
     this.errorMessages      = new ArrayList<>();
     this.parsedCode         = new ArrayList<>();
-    this.labels             = new ArrayList<>();
+    this.labels             = new TreeMap<>();
     this.decimalPattern     = Pattern.compile("-?\\d+(\\.\\d+)?");
     this.hexadecimalPattern = Pattern.compile("0x\\p{XDigit}+");
     this.registerPattern    = Pattern.compile("r[d,s]\\d*");
@@ -116,10 +127,13 @@ public class CodeParser
     this.immediatePattern = Pattern.compile("imm\\d*");
     // Anything with a colon at the end
     this.labelPattern = Pattern.compile("^[a-zA-Z0-9\\.]+:");
+    this.nop          = new InputCodeModel(null, "nop", new ArrayList<>(), null, null, 0);
   }// end of Constructor
   
   /**
-   * @param [in] codeString - String holding unparsed code
+   * Does not check unused labels.
+   *
+   * @param codeString String holding unparsed code
    *
    * @return True, in case no errors arises, otherwise false
    * @brief Parse whole string with code
@@ -203,11 +217,11 @@ public class CodeParser
   /**
    * @param tokens List of tokens
    *
-   * @brief Collects all labels from the code, reports duplicate labels
+   * @brief Collects all labels from the code, reports duplicate labels.
    */
   private void collectLabels(List<CodeToken> tokens)
   {
-    labels = new ArrayList<>();
+    labels = new TreeMap<>();
     for (CodeToken token : tokens)
     {
       if (token.type() != CodeToken.Type.LABEL)
@@ -215,13 +229,14 @@ public class CodeParser
         continue;
       }
       String label = token.text();
-      if (labels.contains(label))
+      if (labels.containsKey(label))
       {
         this.addError(token, "Label \"" + label + "\" already exists in current scope.");
       }
       else
       {
-        labels.add(label);
+        // We do not know the position of the label yet, so we put -1 there
+        labels.put(label, -1);
       }
     }
   }
@@ -245,12 +260,9 @@ public class CodeParser
         case LABEL ->
         {
           // Duplicate labels are already checked in collectLabels
-          int insertionIndex = this.parsedCode.size();
-          List<InputCodeArgument> args = Collections.singletonList(
-                  new InputCodeArgument("labelName", currentToken.text()));
-          InputCodeModel inputCodeModel = new InputCodeModel(null, "label", args, InstructionTypeEnum.kLabel, null,
-                                                             insertionIndex);
-          this.parsedCode.add(inputCodeModel);
+          int    labelPosition = this.parsedCode.size();
+          String labelName     = currentToken.text();
+          labels.put(labelName, labelPosition);
           currentTokenIndex++;
           continue;
         }
@@ -360,10 +372,10 @@ public class CodeParser
   }
   
   /**
-   * @param lineNumber - Line number of the error
-   * @param spanStart  - Start of the error span (column)
-   * @param spanEnd    - End of the error span (column)
-   * @param message    - Error message
+   * @param lineNumber Line number of the error
+   * @param spanStart  Start of the error span (column)
+   * @param spanEnd    End of the error span (column)
+   * @param message    Error message
    *
    * @brief Adds a single-line error message to the list of errors
    */
@@ -460,7 +472,7 @@ public class CodeParser
       return false;
     }
     
-    if (!isDirectValue && !this.labels.contains(argumentValue))
+    if (!isDirectValue && !this.labels.containsKey(argumentValue))
     {
       this.addError(token, "Label \"" + argumentValue + "\" does not exist.");
       return false;
@@ -549,7 +561,7 @@ public class CodeParser
   //-------------------------------------------------------------------------------------------
   
   /**
-   * Get the position of the label in the code. (Assumes the label exists)
+   * Get the position of the label in the memory. (Assumes the label exists and instructions are 4 bytes long)
    *
    * @param label Label name to search for. (example: "loop")
    *
@@ -557,11 +569,12 @@ public class CodeParser
    */
   public int getLabelPosition(String label)
   {
-    // Temporary until labels are done properly
-    InputCodeModel labelCode = getParsedCode().stream().filter(inputCodeModel -> inputCodeModel.getInstructionName()
-                    .equals("label") && inputCodeModel.getArgumentByName("labelName").getValue().equals(label)).findFirst()
-            .orElse(null);
-    return getParsedCode().indexOf(labelCode);
+    Integer index = labels.get(label);
+    if (index == null)
+    {
+      return -1;
+    }
+    return index * 4;
   }
   //-------------------------------------------------------------------------------------------
   
@@ -581,6 +594,25 @@ public class CodeParser
   }
   
   /**
+   * Get instruction at the given PC. Assumes an instruction is 4 bytes long.
+   *
+   * @param pc Program counter.
+   *
+   * @return Instruction at the given PC, or a nop if the PC is out of range.
+   */
+  public InputCodeModel getInstructionAt(int pc)
+  {
+    assert pc % 4 == 0;
+    int index = pc / 4;
+    // getParsedCode so it is mockable
+    if (index < 0 || index >= getParsedCode().size())
+    {
+      return this.nop;
+    }
+    return getParsedCode().get(index);
+  }
+  
+  /**
    * @return Error messages
    * @brief Get list of error messages in case of load failure
    */
@@ -589,4 +621,13 @@ public class CodeParser
     return errorMessages;
   }// end of getErrorMessage
   
+  public void setLabels(Map<String, Integer> labels)
+  {
+    this.labels = labels;
+  }
+  
+  public InputCodeModel getNop()
+  {
+    return nop;
+  }
 }

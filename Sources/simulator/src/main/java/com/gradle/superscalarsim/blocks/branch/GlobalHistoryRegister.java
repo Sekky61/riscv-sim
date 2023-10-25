@@ -32,12 +32,9 @@
  */
 package com.gradle.superscalarsim.blocks.branch;
 
-import com.gradle.superscalarsim.models.GlobalHistoryReleaseModel;
-
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Stack;
 
 /**
  * @class GlobalHistoryRegister
@@ -46,14 +43,21 @@ import java.util.Stack;
  */
 public class GlobalHistoryRegister
 {
-  /// Bit array
-  private boolean[] shiftRegister;
-  /// History of bit arrays for later indexing to GShare or for bit array repair
+  /**
+   * @brief Bit array.
+   * Index 0 is the newest bit. New value is written for every decoded branch instruction.
+   */
+  private final boolean[] shiftRegister;
+  /**
+   * History of bit arrays for later indexing to GShare or for bit array repair.
+   * Key is the id of an instruction.
+   * Value is the bit array shiftRegister.
+   */
   private final Map<Integer, boolean[]> history;
-  /// Stack of released histories used for backward simulation
-  private final Stack<GlobalHistoryReleaseModel> releasedHistories;
-  /// Size (in bits) of the GHR
-  private int size;
+  /**
+   * Size (in bits) of the GHR
+   */
+  private final int size;
   
   /**
    * @param [in] size - Size of the bit array
@@ -62,10 +66,9 @@ public class GlobalHistoryRegister
    */
   public GlobalHistoryRegister(int size)
   {
-    this.shiftRegister     = new boolean[size];
-    this.history           = new HashMap<>();
-    this.releasedHistories = new Stack<>();
-    this.size              = size;
+    this.shiftRegister = new boolean[size];
+    this.history       = new HashMap<>();
+    this.size          = size;
     
     Arrays.fill(this.shiftRegister, false);
   }// end of Constructor
@@ -77,32 +80,8 @@ public class GlobalHistoryRegister
   public void reset()
   {
     this.history.clear();
-    this.releasedHistories.clear();
     Arrays.fill(this.shiftRegister, false);
   }// end of reset
-  //----------------------------------------------------------------------
-  
-  /**
-   * @return Size of the GHR
-   * @brief Get register size (in bits)
-   */
-  public int getRegisterSize()
-  {
-    return size;
-  }// end of getRegisterSize
-  //----------------------------------------------------------------------
-  
-  /**
-   * @param [in] size - New size of the register
-   *
-   * @brief Resize the register to specified size (and resets it)
-   */
-  public void resizeRegister(int size)
-  {
-    this.shiftRegister = new boolean[size];
-    this.size          = size;
-    reset();
-  }// end of resizeRegister
   //----------------------------------------------------------------------
   
   /**
@@ -134,23 +113,8 @@ public class GlobalHistoryRegister
   //----------------------------------------------------------------------
   
   /**
-   * @return String representation of the GHR
-   * @brief Get the register value as a string of bits
-   */
-  public String getRegisterValueAsVectorString()
-  {
-    StringBuilder builder = new StringBuilder();
-    for (boolean bit : this.shiftRegister)
-    {
-      builder.append(bit ? "1" : "0");
-    }
-    return builder.reverse().toString();
-  }// end of getRegisterValueAsVectorString
-  //----------------------------------------------------------------------
-  
-  /**
    * @return Integer value of the bit vector
-   * @brief Returns the bit array as integer
+   * @brief Returns the bit array as integer.
    */
   public int getRegisterValueAsInt()
   {
@@ -192,51 +156,20 @@ public class GlobalHistoryRegister
    */
   public void removeHistoryValue(int id)
   {
-    boolean[] historyValue = this.history.get(id);
-    this.releasedHistories.push(new GlobalHistoryReleaseModel(id, historyValue));
     this.history.remove(id);
   }// end of removeHistoryValue
   //----------------------------------------------------------------------
   
   /**
-   * @param [in] id - Id of the history bit array (bulk id)
+   * @param id Id of the history bit array (bulk id)
    *
    * @brief Sets history bit array value as current value
    */
   public void setHistoryValueAsCurrent(int id)
   {
     boolean[] historyValue = this.history.get(id);
-    this.releasedHistories.push(new GlobalHistoryReleaseModel(id, historyValue));
     this.history.remove(id);
     System.arraycopy(historyValue, 0, this.shiftRegister, 0, historyValue.length);
   }// end of setHistoryValueAsCurrent
-  //----------------------------------------------------------------------
-  
-  /**
-   * @param [in] id - Id of the history bit array (code id)
-   *
-   * @brief Reverts value from released stack back to history map
-   */
-  public void revertToHistory(int id)
-  {
-    if (id == this.releasedHistories.peek().getId())
-    {
-      GlobalHistoryReleaseModel model = this.releasedHistories.pop();
-      this.history.put(model.getId(), model.getHistory());
-    }
-  }// end of revertToHistory
-  //----------------------------------------------------------------------
-  
-  /**
-   * @param [in] id - Id of the history bit array (bulk id)
-   *
-   * @brief Revert value from history to main bit array
-   */
-  public void revertFromHistory(int id)
-  {
-    boolean[] historyValue = this.history.get(id);
-    this.history.remove(id);
-    System.arraycopy(historyValue, 0, this.shiftRegister, 0, historyValue.length);
-  }// end of revertFromHistory
   //----------------------------------------------------------------------
 }

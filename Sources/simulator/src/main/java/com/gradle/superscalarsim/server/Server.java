@@ -36,7 +36,7 @@ import io.undertow.Undertow;
 
 import java.io.IOException;
 
-import static io.undertow.Handlers.*;
+import static io.undertow.Handlers.path;
 
 public class Server
 {

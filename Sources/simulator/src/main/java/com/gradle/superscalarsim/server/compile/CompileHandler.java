@@ -31,6 +31,7 @@ import com.gradle.superscalarsim.compiler.AsmParser;
 import com.gradle.superscalarsim.compiler.CompiledProgram;
 import com.gradle.superscalarsim.compiler.GccCaller;
 import com.gradle.superscalarsim.server.IRequestResolver;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * @class CompileHandler
@@ -60,9 +61,10 @@ public class CompileHandler implements IRequestResolver<CompileRequest, CompileR
       }
       else
       {
-        int             cCodeLen = request.code.split("\n").length;
-        CompiledProgram program  = AsmParser.parse(res.code, cCodeLen);
-        response = new CompileResponse(true, program.program, program.cLines, program.asmToC, null, null);
+        int             cCodeLen            = request.code.split("\n").length;
+        CompiledProgram program             = AsmParser.parse(res.code, cCodeLen);
+        String          concatenatedProgram = StringUtils.join(program.program, "\n");
+        response = new CompileResponse(true, concatenatedProgram, program.cLines, program.asmToC, null, null);
       }
     }
     

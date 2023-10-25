@@ -37,13 +37,11 @@ import com.gradle.superscalarsim.blocks.arithmetic.AluIssueWindowBlock;
 import com.gradle.superscalarsim.blocks.arithmetic.FpIssueWindowBlock;
 import com.gradle.superscalarsim.blocks.branch.BranchIssueWindowBlock;
 import com.gradle.superscalarsim.blocks.loadstore.LoadStoreIssueWindowBlock;
-import com.gradle.superscalarsim.loader.InitLoader;
 import com.gradle.superscalarsim.models.InstructionFunctionModel;
 import com.gradle.superscalarsim.models.SimCodeModel;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Stack;
 
 /**
  * @class IssueWindowSuperBlock
@@ -51,18 +49,17 @@ import java.util.Stack;
  */
 public class IssueWindowSuperBlock implements AbstractBlock
 {
-  /// List of failed instructions that were to be pulled from decode
-  private final Stack<SimCodeModel> failedInstructions;
-  /// Class, which simulates instruction decode and renames registers
+  /**
+   * Class, which simulates instruction decode and renames registers.
+   */
   private DecodeAndDispatchBlock decodeAndDispatchBlock;
-  /// List of all issue windows
+  /**
+   * List of all issue windows.
+   */
   private List<AbstractIssueWindowBlock> issueWindowBlockList;
-  /// Initial loader of interpretable instructions and register files
-  private InitLoader loader;
   
   public IssueWindowSuperBlock()
   {
-    failedInstructions = new Stack<>();
   }
   
   /**
@@ -72,12 +69,10 @@ public class IssueWindowSuperBlock implements AbstractBlock
    *
    * @brief Constructor
    */
-  public IssueWindowSuperBlock(DecodeAndDispatchBlock decodeAndDispatchBlock, InitLoader loader)
+  public IssueWindowSuperBlock(DecodeAndDispatchBlock decodeAndDispatchBlock)
   {
     this.decodeAndDispatchBlock = decodeAndDispatchBlock;
     this.issueWindowBlockList   = new ArrayList<>();
-    this.loader                 = loader;
-    this.failedInstructions     = new Stack<>();
     
   }// end of Constructor
   //----------------------------------------------------------------------
@@ -134,7 +129,6 @@ public class IssueWindowSuperBlock implements AbstractBlock
   @Override
   public void reset()
   {
-    this.failedInstructions.clear();
   }// end of reset
   //----------------------------------------------------------------------
   
@@ -144,21 +138,20 @@ public class IssueWindowSuperBlock implements AbstractBlock
   @Override
   public void simulate()
   {
+    // TODO: move to decode block
+    // TODO: places like this, where simcodemodels are deleted, leave behind history of GlobalHistoryRegister
     if (decodeAndDispatchBlock.shouldFlush())
     {
-      for (int i = 0; i < this.decodeAndDispatchBlock.getAfterRenameCodeList().size(); i++)
-      {
-        this.failedInstructions.push(this.decodeAndDispatchBlock.getAfterRenameCodeList().get(i));
-      }
+      this.decodeAndDispatchBlock.getAfterRenameCodeList().forEach(codeModel -> codeModel.setFinished(true));
       this.decodeAndDispatchBlock.getAfterRenameCodeList().clear();
+      this.decodeAndDispatchBlock.getBeforeRenameCodeList().forEach(codeModel -> codeModel.setFinished(true));
       this.decodeAndDispatchBlock.getBeforeRenameCodeList().clear();
       this.decodeAndDispatchBlock.setFlush(false);
     }
     else
     {
       int pullCount = !decodeAndDispatchBlock.shouldStall() ? this.decodeAndDispatchBlock.getAfterRenameCodeList()
-                                                                                         .size() :
-          this.decodeAndDispatchBlock.getStalledPullCount();
+              .size() : this.decodeAndDispatchBlock.getStalledPullCount();
       
       for (int i = 0; i < pullCount; i++)
       {
@@ -168,40 +161,6 @@ public class IssueWindowSuperBlock implements AbstractBlock
       }
     }
   }// end of simulate
-  //----------------------------------------------------------------------
-  
-  /**
-   * Simulate backwards (pulls instructions from Issue windows to decode)
-   */
-  @Override
-  public void simulateBackwards()
-  {
-    int                id                     = this.decodeAndDispatchBlock.getCurrentStepId();
-    List<SimCodeModel> returningCodeModelList = new ArrayList<>();
-    for (AbstractIssueWindowBlock issueWindowBlock : this.issueWindowBlockList)
-    {
-      List<SimCodeModel> currentFoundCodeModelList = new ArrayList<>();
-      issueWindowBlock.getIssuedInstructions().forEach(decodeCodeModel ->
-                                                       {
-                                                         if (decodeCodeModel.getInstructionBulkNumber() == id)
-                                                         {
-                                                           currentFoundCodeModelList.add(decodeCodeModel);
-                                                         }
-                                                       });
-      issueWindowBlock.getIssuedInstructions().removeAll(currentFoundCodeModelList);
-      returningCodeModelList.addAll(currentFoundCodeModelList);
-    }
-    if (returningCodeModelList.isEmpty() && !this.failedInstructions.isEmpty() && this.failedInstructions.peek()
-                                                                                                         .getInstructionBulkNumber() == id)
-    {
-      while (!this.failedInstructions.isEmpty() && this.failedInstructions.peek().getInstructionBulkNumber() == id)
-      {
-        returningCodeModelList.add(this.failedInstructions.pop());
-      }
-    }
-    this.decodeAndDispatchBlock.getAfterRenameCodeList().addAll(returningCodeModelList);
-    this.decodeAndDispatchBlock.getAfterRenameCodeList().sort(SimCodeModel::compareTo);
-  }// end of simulateBackwards
   //----------------------------------------------------------------------
   
   /**
@@ -215,7 +174,7 @@ public class IssueWindowSuperBlock implements AbstractBlock
     for (AbstractIssueWindowBlock issueWindow : this.issueWindowBlockList)
     {
       if (issueWindow.isCorrectInstructionType(instruction.getInstructionType()) && issueWindow.isCorrectDataType(
-          instruction.getOutputDataType()))
+              instruction.getOutputDataType()))
       {
         issueWindow.dispatchInstruction(codeModel);
         issueWindow.createArgumentValidityEntry(codeModel);

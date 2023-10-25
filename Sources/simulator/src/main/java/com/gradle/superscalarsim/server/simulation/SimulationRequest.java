@@ -27,11 +27,29 @@
 
 package com.gradle.superscalarsim.server.simulation;
 
+import com.gradle.superscalarsim.cpu.CpuConfiguration;
 import com.gradle.superscalarsim.cpu.CpuState;
 
-// Payload of /simulation request
+/**
+ * Parameters for the /simulation endpoint request
+ */
 public class SimulationRequest
 {
-  int steps;
+  /**
+   * The requested tick to get the state of
+   */
+  int tick;
+  /**
+   * The configuration to use for the simulation
+   * Used for getting the initial state in case of a backwards simulation
+   */
+  CpuConfiguration config;
+  /**
+   * The state to start the simulation from. Can be null
+   *
+   * @details Including this field is simply a performance optimization.
+   * If the state is not provided, it will be first calculated from the configuration,
+   * then simulated to the desired {@link #tick}
+   */
   CpuState state;
 }

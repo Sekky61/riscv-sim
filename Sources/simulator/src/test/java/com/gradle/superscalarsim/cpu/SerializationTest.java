@@ -30,8 +30,10 @@ package com.gradle.superscalarsim.cpu;
 
 import com.cedarsoftware.util.io.JsonReader;
 import com.cedarsoftware.util.io.JsonWriter;
+import com.gradle.superscalarsim.serialization.GsonConfiguration;
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 public class SerializationTest
 {
@@ -142,5 +144,89 @@ public class SerializationTest
     
     Assert.assertEquals(1, cpuSer.cpuState.statisticsCounter.getCommittedInstructions());
     Assert.assertEquals(5, cpuSer.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(), 0.5);
+  }
+  
+  /**
+   * There was a bug in serialization of labels
+   */
+  @Test
+  public void cpuState_label_serialization()
+  {
+    CpuConfiguration cfg = CpuConfiguration.getDefaultConfiguration();
+    cfg.code = """
+            addi x3 x0 10000
+            loop:
+            """;
+    
+    Cpu cpu = new Cpu(cfg);
+    cpu.simulateState(0);
+    
+    // Exercise
+    CpuState stateCopy = cpu.cpuState.deepCopy();
+    
+    // Assert
+    Assert.assertEquals(cpu.cpuState, stateCopy);
+  }
+  
+  @Test
+  public void cpuState_afterTicks_deepcopy_theSame()
+  {
+    CpuConfiguration cfg = CpuConfiguration.getDefaultConfiguration();
+    cfg.code = """
+            addi x3 x0 10000
+            addi x8 x0 50
+            sw x8 x0 16
+            loop:
+            beq x3 x0 loopEnd
+            lw x8 x0 16
+            addi x8 x8 1
+            sw x8 x0 16
+            subi x3 x3 1
+            jal x0 loop
+            loopEnd:""";
+    Cpu cpu = new Cpu(cfg);
+    cpu.simulateState(200);
+    
+    // Exercise
+    CpuState stateCopy = cpu.cpuState.deepCopy();
+    
+    String meJson    = JsonWriter.objectToJson(cpu.cpuState, GsonConfiguration.getJsonWriterOptions());
+    String otherJson = JsonWriter.objectToJson(stateCopy, GsonConfiguration.getJsonWriterOptions());
+    
+    String meJsonPretty    = JsonWriter.formatJson(meJson);
+    String otherJsonPretty = JsonWriter.formatJson(otherJson);
+    
+    // Assert
+    Assert.assertEquals(meJsonPretty, otherJsonPretty);
+  }
+  
+  @Test
+  public void cpuState_afterDeserialization_canPickup()
+  {
+    CpuConfiguration cfg = CpuConfiguration.getDefaultConfiguration();
+    cfg.code = """
+            addi x3 x0 10000
+            addi x8 x0 50
+            sw x8 x0 16
+            loop:
+            beq x3 x0 loopEnd
+            lw x8 x0 16
+            addi x8 x8 1
+            sw x8 x0 16
+            subi x3 x3 1
+            jal x0 loop
+            loopEnd:""";
+    Cpu cpu = new Cpu(cfg);
+    cpu.simulateState(50);
+    String stateSerialized = cpu.cpuState.serialize();
+    
+    CpuState stateDe = CpuState.deserialize(stateSerialized);
+    // When asking for the state at time 52, simulation step should only be called twice
+    CpuState stateSpy = Mockito.spy(stateDe);
+    Cpu      cpu2     = new Cpu(cfg, stateSpy);
+    cpu2.simulateState(52);
+    
+    // Assert
+    Mockito.verify(stateSpy, Mockito.times(2)).step();
   }
 }

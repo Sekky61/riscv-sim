@@ -71,8 +71,19 @@ public class ExecuteUtil
     return cpu;
   }
   
-  static String artihmeticProgram = "addi x3 x4 5\n" + "add x2 x3 x4\n" + "add x1 x2 x3";
+  static String artihmeticProgram = """
+          addi x3 x4 5
+          add x2 x3 x4
+          add x1 x2 x3""";
   
-  static String simpleLoopProgram =
-      "addi x3 x0 5\n" + "loop:\n" + "beq x3 x0 loopEnd\n" + "subi x3 x3 1\n" + "jal " + "x0" + " loop\n" + "loopEnd:";
+  /**
+   * @param loopCount How many times to loop
+   *
+   * @return The program
+   * @brief Get a simple program that loops a given number of times
+   */
+  static String getLoopProgram(int loopCount)
+  {
+    return "addi x3 x0 " + loopCount + "\n" + "loop:\n" + "beq x3 x0 loopEnd\n" + "subi x3 x3 1\n" + "jal x0 loop\n" + "loopEnd:";
+  }
 }

@@ -34,7 +34,6 @@ package com.gradle.superscalarsim.code;
 
 import com.gradle.superscalarsim.blocks.base.UnifiedRegisterFileBlock;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
-import com.gradle.superscalarsim.loader.InitLoader;
 import com.gradle.superscalarsim.models.IInputCodeModel;
 import com.gradle.superscalarsim.models.InputCodeArgument;
 import com.gradle.superscalarsim.models.InstructionFunctionModel;
@@ -56,8 +55,6 @@ public class CodeBranchInterpreter
   private transient final Pattern decimalPattern;
   /// Object of the parser with parsed instructions
   private final CodeParser codeParser;
-  /// InitLoader object with loaded instructions and registers
-  private final InitLoader initLoader;
   /// Array of allowed operations
   private final char[] allowedOperators = {'<', '>', '=', '!'};
   private final UnifiedRegisterFileBlock registerFileBlock;
@@ -68,15 +65,12 @@ public class CodeBranchInterpreter
    *
    * @brief Constructor
    */
-  public CodeBranchInterpreter(final CodeParser codeParser,
-                               final InitLoader initLoader,
-                               final UnifiedRegisterFileBlock registerFileBlock)
+  public CodeBranchInterpreter(final CodeParser codeParser, final UnifiedRegisterFileBlock registerFileBlock)
   {
     this.registerFileBlock  = registerFileBlock;
     this.decimalPattern     = Pattern.compile("-?\\d+(\\.\\d+)?");
     this.hexadecimalPattern = Pattern.compile("0x\\p{XDigit}+");
     this.codeParser         = codeParser;
-    this.initLoader         = initLoader;
   }// end of Constructor
   //-------------------------------------------------------------------------------------------
   
@@ -95,7 +89,7 @@ public class CodeBranchInterpreter
     if (splitInterpretableAs.length != 2)
     {
       throw new IllegalArgumentException(
-          "InterpretableAs in instruction " + instruction.getName() + " is not valid: " + instruction.getInterpretableAs());
+              "InterpretableAs in instruction " + instruction.getName() + " is not valid: " + instruction.getInterpretableAs());
     }
     // Do not jump if condition is not met
     
@@ -149,7 +143,7 @@ public class CodeBranchInterpreter
       else
       {
         // Label found
-        return OptionalInt.of(labelPosition - instructionPosition + 1);
+        return OptionalInt.of(labelPosition - instructionPosition);
       }
     }
     else
@@ -274,8 +268,8 @@ public class CodeBranchInterpreter
     RegisterModel  registerModel = null;
     for (DataTypeEnum possibleDataType : dataTypeEnums)
     {
-      registerModel = this.registerFileBlock.getRegisterList(possibleDataType).stream().filter(
-          register -> register.getName().equals(operand)).findFirst().orElse(null);
+      registerModel = this.registerFileBlock.getRegisterList(possibleDataType).stream()
+              .filter(register -> register.getName().equals(operand)).findFirst().orElse(null);
       if (registerModel != null)
       {
         break;
@@ -285,8 +279,8 @@ public class CodeBranchInterpreter
     if (registerModel == null)
     {
       // Not found in register files, look in speculative register file
-      registerModel = this.registerFileBlock.getRegisterList(DataTypeEnum.kSpeculative).stream().filter(
-          register -> register.getName().equals(operand)).findFirst().orElse(null);
+      registerModel = this.registerFileBlock.getRegisterList(DataTypeEnum.kSpeculative).stream()
+              .filter(register -> register.getName().equals(operand)).findFirst().orElse(null);
     }
     
     if (registerModel == null)

@@ -38,14 +38,12 @@ import com.gradle.superscalarsim.blocks.branch.GlobalHistoryRegister;
 import com.gradle.superscalarsim.code.CodeParser;
 import com.gradle.superscalarsim.code.SimCodeModelAllocator;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
-import com.gradle.superscalarsim.loader.InitLoader;
 import com.gradle.superscalarsim.models.InputCodeArgument;
 import com.gradle.superscalarsim.models.InstructionFunctionModel;
 import com.gradle.superscalarsim.models.SimCodeModel;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Stack;
 
 /**
  * @class DecodeAndDispatchBlock
@@ -57,13 +55,8 @@ public class DecodeAndDispatchBlock implements AbstractBlock
   private final List<SimCodeModel> beforeRenameCodeList;
   /// List holding code with renamed registers ready for dispatch
   private final List<SimCodeModel> afterRenameCodeList;
-  /// Stack of ids, which indicates points in time when the decode block was stalled (used in backward simulation)
-  private final Stack<Integer> stallIdStack;
-  /// Stack of the amounts of instructions that were pulled from instruction fetch when the decode block was stalling
-  private final Stack<Integer> stalledPullCountStack;
   /// Instruction Fetch Block holding fetched instructions
   private final InstructionFetchBlock instructionFetchBlock;
-  private final SimCodeModelAllocator simCodeModelAllocator;
   /// Class holding all mappings from architectural to speculative
   private final RenameMapTableBlock renameMapTableBlock;
   /// Bit register marking history of predictions
@@ -72,8 +65,6 @@ public class DecodeAndDispatchBlock implements AbstractBlock
   private final BranchTargetBuffer branchTargetBuffer;
   /// Parser holding parsed instructions
   private final CodeParser codeParser;
-  /// InitLoader class holding information about instruction and registers
-  private final InitLoader initLoader;
   /// Counter giving out ids for instructions in order to correctly simulate backwards
   private int idCounter;
   /// Boolean flag indicating if the decode block should be flushed
@@ -93,7 +84,6 @@ public class DecodeAndDispatchBlock implements AbstractBlock
    * @param [in] globalHistoryRegister - Bit register holding history of predictions
    * @param [in] branchTargetBuffer    - Buffer holding information about branch instructions targets
    * @param [in] codeParser            - Parser holding parsed instructions
-   * @param [in] initLoader            - InitLoader class holding information about instruction and registers
    *
    * @brief Constructor
    */
@@ -102,25 +92,20 @@ public class DecodeAndDispatchBlock implements AbstractBlock
                                 RenameMapTableBlock renameMapTableBlock,
                                 GlobalHistoryRegister globalHistoryRegister,
                                 BranchTargetBuffer branchTargetBuffer,
-                                CodeParser codeParser,
-                                InitLoader initLoader)
+                                CodeParser codeParser)
   {
-    this.simCodeModelAllocator = simCodeModelAllocator;
     this.instructionFetchBlock = instructionFetchBlock;
     this.renameMapTableBlock   = renameMapTableBlock;
     
-    this.beforeRenameCodeList  = new ArrayList<>();
-    this.afterRenameCodeList   = new ArrayList<>();
-    this.stallIdStack          = new Stack<>();
-    this.stalledPullCountStack = new Stack<>();
-    this.idCounter             = -2;
-    this.stallFlag             = false;
-    this.stalledPullCount      = 0;
+    this.beforeRenameCodeList = new ArrayList<>();
+    this.afterRenameCodeList  = new ArrayList<>();
+    this.idCounter            = -2;
+    this.stallFlag            = false;
+    this.stalledPullCount     = 0;
     
     this.globalHistoryRegister = globalHistoryRegister;
     this.branchTargetBuffer    = branchTargetBuffer;
     this.codeParser            = codeParser;
-    this.initLoader            = initLoader;
   }// end of Constructor
   //----------------------------------------------------------------------
   
@@ -222,7 +207,6 @@ public class DecodeAndDispatchBlock implements AbstractBlock
       // Decode is stalled.
       // Stall fetch block
       this.instructionFetchBlock.setStallFlag(true);
-      this.stallIdStack.push(decodeId);
       
       // Remove instructions loaded by ROB
       List<SimCodeModel> removeModel = new ArrayList<>();
@@ -233,19 +217,15 @@ public class DecodeAndDispatchBlock implements AbstractBlock
         {
           removeModel.add(codeModel);
         }
-        else
-        {
-          codeModel.setInstructionBulkNumber(decodeId);
-        }
       }
       this.afterRenameCodeList.removeAll(removeModel);
       
       // Take `fetchCount` instructions from fetch block, delete them from fetch block
+      // TODO: is fetchCount correct given that it is configurable?
       List<SimCodeModel> removeInputModel = new ArrayList<>();
       int fetchCount = Math.min((int) this.instructionFetchBlock.getFetchedCode().stream()
                                         .filter(code -> !code.getInstructionName().equals("nop")).count(),
                                 this.instructionFetchBlock.getNumberOfWays() - this.afterRenameCodeList.size());
-      this.stalledPullCountStack.push(fetchCount);
       this.instructionFetchBlock.setStallFetchCount(fetchCount);
       for (int i = 0; i < fetchCount; i++)
       {
@@ -264,14 +244,21 @@ public class DecodeAndDispatchBlock implements AbstractBlock
     }
     
     // Filter out nops and labels
-    this.beforeRenameCodeList.removeIf(code -> code.getInstructionName().equals("nop"));
-    this.beforeRenameCodeList.removeIf(code -> code.getInstructionName().equals("label"));
+    for (int i = this.beforeRenameCodeList.size() - 1; i >= 0; i--)
+    {
+      SimCodeModel codeModel = this.beforeRenameCodeList.get(i);
+      if (codeModel.getInstructionName().equals("nop") || codeModel.getInstructionName().equals("label"))
+      {
+        codeModel.setFinished(true);
+        this.beforeRenameCodeList.remove(i);
+      }
+    }
     
     checkForBranchInstructions();
     for (SimCodeModel simCodeModel : this.beforeRenameCodeList)
     {
       renameSourceRegisters(simCodeModel);
-      // Not sure this does anything
+      // Not sure if this does anything
       renameDestinationRegister(simCodeModel);
       this.afterRenameCodeList.add(simCodeModel);
     }
@@ -279,50 +266,6 @@ public class DecodeAndDispatchBlock implements AbstractBlock
     this.stallFlag        = false;
     this.stalledPullCount = 0;
   }// end of simulate
-  //----------------------------------------------------------------------
-  
-  /**
-   * @brief Simulates backwards (unmaps speculative registers)
-   */
-  @Override
-  public void simulateBackwards()
-  {
-    int removeCount = this.afterRenameCodeList.size();
-    if (!this.stallIdStack.empty() && getCurrentStepId() == this.stallIdStack.peek())
-    {
-      this.stallIdStack.pop();
-      removeCount = this.stalledPullCountStack.pop();
-    }
-    lowerStepId();
-    int                removeLowerBound = this.afterRenameCodeList.size() - removeCount;
-    List<SimCodeModel> removeList       = new ArrayList<>();
-    for (int i = this.afterRenameCodeList.size() - 1; i >= removeLowerBound; i--)
-    {
-      SimCodeModel codeModel = this.afterRenameCodeList.get(i);
-      removeList.add(codeModel);
-      codeModel.getArguments().forEach(argument ->
-                                       {
-                                         boolean match = codeModel.getOriginalArguments().stream()
-                                                 .map(InputCodeArgument::getValue)
-                                                 .anyMatch(argVal -> argument.getValue().equals(argVal));
-                                         if (!match && this.renameMapTableBlock.reduceReference(argument.getValue()))
-                                         {
-                                           this.renameMapTableBlock.freeMapping(argument.getValue());
-                                         }
-                                       });
-      if (codeModel.getInstructionTypeEnum() == InstructionTypeEnum.kJumpbranch)
-      {
-        int savedPc = codeModel.getSavedPc();
-        branchTargetBuffer.resetEntry(savedPc, codeModel.getId(), -1);
-        globalHistoryRegister.revertFromHistory(codeModel.getId());
-      }
-    }
-    this.afterRenameCodeList.removeAll(removeList);
-    for (SimCodeModel simCodeModel : this.afterRenameCodeList)
-    {
-      simCodeModel.setInstructionBulkNumber(getCurrentStepId());
-    }
-  }// end of simulateBackwards
   //----------------------------------------------------------------------
   
   /**
@@ -334,8 +277,6 @@ public class DecodeAndDispatchBlock implements AbstractBlock
     this.beforeRenameCodeList.clear();
     this.afterRenameCodeList.clear();
     this.renameMapTableBlock.clear();
-    this.stallIdStack.clear();
-    this.stalledPullCountStack.clear();
     this.idCounter        = -2;
     this.stallFlag        = false;
     this.stalledPullCount = 0;
@@ -489,7 +430,7 @@ public class DecodeAndDispatchBlock implements AbstractBlock
       return codeModel.getSavedPc() + Integer.parseInt(immediateArgument.getValue());
     }
     // Jump after label
-    return labelOffset + 1;
+    return labelOffset;
   }// end of calculateRealBranchAddress
   //----------------------------------------------------------------------
   

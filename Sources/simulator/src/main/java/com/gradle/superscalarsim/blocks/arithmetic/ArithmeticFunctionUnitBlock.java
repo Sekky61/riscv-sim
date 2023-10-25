@@ -40,7 +40,6 @@ import com.gradle.superscalarsim.code.CodeArithmeticInterpreter;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.models.InputCodeArgument;
 import com.gradle.superscalarsim.models.RegisterModel;
-import com.gradle.superscalarsim.models.SimCodeModel;
 
 /**
  * @class ArithmeticFunctionUnitBlock
@@ -112,7 +111,6 @@ public class ArithmeticFunctionUnitBlock extends AbstractFunctionUnitBlock
     {
       hasDelayPassed();
       this.simCodeModel.setFunctionUnitId(this.functionUnitId);
-      this.failedInstructions.push(this.simCodeModel);
       this.simCodeModel = null;
       this.zeroTheCounter();
     }
@@ -144,47 +142,6 @@ public class ArithmeticFunctionUnitBlock extends AbstractFunctionUnitBlock
       this.functionUnitId += this.functionUnitCount;
     }
   }// end of simulate
-  //----------------------------------------------------------------------
-  
-  /**
-   * @brief Simulates backwards (resets flags and waits until un-execution of instruction)
-   */
-  @Override
-  public void simulateBackwards()
-  {
-    if (isFunctionUnitEmpty())
-    {
-      this.functionUnitId -= this.functionUnitCount;
-      for (SimCodeModel codeModel : this.reorderBufferBlock.getReorderQueue())
-      {
-        if (codeModel.getFunctionUnitId() == this.functionUnitId && issueWindowBlock.isCorrectDataType(
-            codeModel.getResultDataType()) && issueWindowBlock.isCorrectInstructionType(
-            codeModel.getInstructionTypeEnum()))
-        {
-          this.resetReverseCounter();
-          this.simCodeModel = codeModel;
-          if (!this.failedInstructions.isEmpty() && this.simCodeModel == this.failedInstructions.peek())
-          {
-            this.failedInstructions.pop();
-            this.popHistoryCounter();
-          }
-          InputCodeArgument arg = simCodeModel.getArgumentByName("rd");
-          if (arg != null)
-          {
-            registerFileBlock.getRegister(arg.getValue()).setReadiness(RegisterReadinessEnum.kAllocated);
-          }
-          reorderBufferBlock.getFlagsMap().get(codeModel.getId()).setBusy(true);
-          return;
-        }
-      }
-      if (!this.failedInstructions.isEmpty() && this.failedInstructions.peek()
-                                                                       .getFunctionUnitId() == this.functionUnitId)
-      {
-        this.simCodeModel = this.failedInstructions.pop();
-        this.popHistoryCounter();
-      }
-    }
-  }// end of simulateBackwards
   //----------------------------------------------------------------------
   
   /**

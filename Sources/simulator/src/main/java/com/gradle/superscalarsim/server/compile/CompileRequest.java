@@ -27,9 +27,6 @@
 
 package com.gradle.superscalarsim.server.compile;
 
-import com.cedarsoftware.util.io.JsonReader;
-import com.gradle.superscalarsim.server.checkConfig.CheckConfigRequest;
-
 public class CompileRequest
 {
   /**

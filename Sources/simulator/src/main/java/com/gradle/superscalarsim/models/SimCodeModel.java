@@ -80,6 +80,11 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>
    */
   private int commitId;
   /**
+   * True if simcodemodel has left the system (committed, flushed).
+   * A finished simcodemodel can be safely deleted.
+   */
+  private boolean isFinished;
+  /**
    * Bit value marking failure due to wrong branch prediction
    */
   private boolean hasFailed;
@@ -90,19 +95,19 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>
    */
   private int savedPc;
   /**
-   * Prediction made by branch predictor at the time of fetching
-   * Used for branch instructions
+   * Prediction made by branch predictor at the time of fetching.
+   * Used for branch instructions.
    */
   private boolean branchPredicted;
   /**
-   * Result of the branch computation
-   * Used to check for mispredictions
-   * True means branch was taken
+   * Result of the branch computation.
+   * Used to check for mispredictions.
+   * True means branch was taken.
    */
   private boolean branchLogicResult;
   /**
-   * Target of the branch instruction (offset from the savedPc)
-   * Used to fix BTB and PC in misprediction
+   * Target of the branch instruction (offset from the savedPc).
+   * Used to fix BTB and PC in misprediction.
    */
   private int branchTargetOffset;
   
@@ -126,6 +131,8 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>
     this.inputCodeModel        = new InputCodeModel(instructionFunctionModel, instructionName, arguments,
                                                     instructionTypeEnum, dataTypeEnum, 0);
     this.id                    = id;
+    this.commitId              = -1;
+    this.isFinished            = false;
     this.instructionBulkNumber = instructionBulkNumber;
     this.hasFailed             = false;
     // Copy arguments
@@ -148,6 +155,8 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>
   {
     this.inputCodeModel        = inputCodeModel;
     this.id                    = id;
+    this.commitId              = -1;
+    this.isFinished            = false;
     this.instructionBulkNumber = instructionBulkNumber;
     this.hasFailed             = false;
     // Copy arguments
@@ -190,12 +199,6 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>
   {
     return instructionBulkNumber;
   }// end of getId
-  //------------------------------------------------------
-  
-  public void setInstructionBulkNumber(int instructionBulkNumber)
-  {
-    this.instructionBulkNumber = instructionBulkNumber;
-  }
   //------------------------------------------------------
   
   /**
@@ -427,5 +430,21 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>
   public List<InputCodeArgument> getOriginalArguments()
   {
     return inputCodeModel.getArguments();
+  }
+  
+  /**
+   * @return True if simcodemodel has left the system (committed, flushed)
+   */
+  public boolean isFinished()
+  {
+    return isFinished;
+  }
+  
+  /**
+   * @param finished True if simcodemodel has left the system (committed, flushed)
+   */
+  public void setFinished(boolean finished)
+  {
+    isFinished = finished;
   }
 }

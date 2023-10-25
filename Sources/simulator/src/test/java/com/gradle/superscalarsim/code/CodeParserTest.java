@@ -110,23 +110,16 @@ public class CodeParserTest
             three: fadd f1 f2 f3
             """;
     Assert.assertTrue(codeParser.parse(code));
-    Assert.assertEquals(6, codeParser.getParsedCode().size());
+    Assert.assertEquals(3, codeParser.getParsedCode().size());
     Assert.assertTrue(codeParser.getErrorMessages().isEmpty());
     
-    Assert.assertEquals("label", codeParser.getParsedCode().get(0).getInstructionName());
-    Assert.assertEquals("label one", codeParser.getParsedCode().get(0).toString());
+    Assert.assertEquals("add", codeParser.getParsedCode().get(0).getInstructionName());
+    Assert.assertEquals("fcvt.w.s", codeParser.getParsedCode().get(1).getInstructionName());
+    Assert.assertEquals("fadd", codeParser.getParsedCode().get(2).getInstructionName());
     
-    Assert.assertEquals("add", codeParser.getParsedCode().get(1).getInstructionName());
-    
-    Assert.assertEquals("label", codeParser.getParsedCode().get(2).getInstructionName());
-    Assert.assertEquals("label two", codeParser.getParsedCode().get(2).toString());
-    
-    Assert.assertEquals("fcvt.w.s", codeParser.getParsedCode().get(3).getInstructionName());
-    
-    Assert.assertEquals("label", codeParser.getParsedCode().get(4).getInstructionName());
-    Assert.assertEquals("label three", codeParser.getParsedCode().get(4).toString());
-    
-    Assert.assertEquals("fadd", codeParser.getParsedCode().get(5).getInstructionName());
+    Assert.assertEquals(0, codeParser.getLabelPosition("one"));
+    Assert.assertEquals(4, codeParser.getLabelPosition("two"));
+    Assert.assertEquals(8, codeParser.getLabelPosition("three"));
   }
   
   @Test
@@ -141,23 +134,16 @@ public class CodeParserTest
             fadd f1 f2 f3
             """;
     Assert.assertTrue(codeParser.parse(code));
-    Assert.assertEquals(6, codeParser.getParsedCode().size());
+    Assert.assertEquals(3, codeParser.getParsedCode().size());
     Assert.assertTrue(codeParser.getErrorMessages().isEmpty());
     
-    Assert.assertEquals("label", codeParser.getParsedCode().get(0).getInstructionName());
-    Assert.assertEquals("label one", codeParser.getParsedCode().get(0).toString());
+    Assert.assertEquals("add", codeParser.getParsedCode().get(0).getInstructionName());
+    Assert.assertEquals("fcvt.w.s", codeParser.getParsedCode().get(1).getInstructionName());
+    Assert.assertEquals("fadd", codeParser.getParsedCode().get(2).getInstructionName());
     
-    Assert.assertEquals("add", codeParser.getParsedCode().get(1).getInstructionName());
-    
-    Assert.assertEquals("label", codeParser.getParsedCode().get(2).getInstructionName());
-    Assert.assertEquals("label two", codeParser.getParsedCode().get(2).toString());
-    
-    Assert.assertEquals("fcvt.w.s", codeParser.getParsedCode().get(3).getInstructionName());
-    
-    Assert.assertEquals("label", codeParser.getParsedCode().get(4).getInstructionName());
-    Assert.assertEquals("label three", codeParser.getParsedCode().get(4).toString());
-    
-    Assert.assertEquals("fadd", codeParser.getParsedCode().get(5).getInstructionName());
+    Assert.assertEquals(0, codeParser.getLabelPosition("one"));
+    Assert.assertEquals(4, codeParser.getLabelPosition("two"));
+    Assert.assertEquals(8, codeParser.getLabelPosition("three"));
   }
   
   @Test
@@ -196,6 +182,21 @@ public class CodeParserTest
     Assert.assertEquals(4, firstError.line);
     Assert.assertEquals(11, firstError.columnStart);
     Assert.assertEquals(13, firstError.columnEnd);
+  }
+  
+  @Test
+  public void parseCode_multipleLabels_perInstruction()
+  {
+    String code = """
+            one:
+            two: three: add x1 x2 x3
+            """;
+    
+    Assert.assertTrue(codeParser.parse(code));
+    Assert.assertEquals(1, codeParser.getParsedCode().size());
+    Assert.assertEquals(0, codeParser.getLabelPosition("one"));
+    Assert.assertEquals(0, codeParser.getLabelPosition("two"));
+    Assert.assertEquals(0, codeParser.getLabelPosition("three"));
   }
   
   @Test

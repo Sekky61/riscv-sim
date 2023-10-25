@@ -117,42 +117,6 @@ public class CacheTest
     Assert.assertEquals(0x2345L, (long) cache.getData(128, 2, 0, 0).getSecond());
   }
   
-  
-  @Test
-  public void cache_RevertHistoryTestMultipleLines()
-  {
-    memory = new SimulatedMemory();
-    cache  = new Cache(memory, 16, 2, 16, ReplacementPoliciesEnum.RANDOM, true, true, 1, 1, 1,
-                       new CacheStatisticsCounter());
-    
-    cache.storeData(126, 0x23456789L, 4, 1, 0);
-    Assert.assertEquals(0x23456789L, (long) cache.getData(126, 4, 2, 0).getSecond());
-    Assert.assertEquals(0x6789L, (long) cache.getData(126, 2, 3, 0).getSecond());
-    Assert.assertEquals(0x2345L, (long) cache.getData(128, 2, 3, 0).getSecond());
-    cache.storeData(128, 0x7878L, 2, 4, 0);
-    Assert.assertEquals(0x78786789L, (long) cache.getData(126, 4, 5, 0).getSecond());
-    
-    cache.revertHistory(5);
-    Assert.assertEquals(0x78786789L, (long) cache.getData(126, 4, 5, 0).getSecond());
-    cache.revertHistory(4);
-    Assert.assertEquals(0x23456789L, (long) cache.getData(126, 4, 3, 0).getSecond());
-    cache.revertHistory(3);
-    cache.revertHistory(2);
-    cache.revertHistory(1);
-    Assert.assertEquals(0x0L, (long) cache.getData(126, 2, 1, 0).getSecond());
-    Assert.assertEquals(0x0L, (long) cache.getData(128, 2, 1, 0).getSecond());
-    Assert.assertEquals(0x0L, (long) cache.getData(126, 4, 1, 0).getSecond());
-    cache.revertHistory(1);
-    Assert.assertEquals(0x0L, (long) cache.getData(126, 2, 1, 0).getSecond());
-    Assert.assertEquals(0x0L, (long) cache.getData(128, 2, 1, 0).getSecond());
-    Assert.assertEquals(0x0L, (long) cache.getData(126, 4, 1, 0).getSecond());
-    cache.storeData(126, 0x2345L, 2, 1, 0);
-    Assert.assertEquals(0x00002345L, (long) cache.getData(126, 4, 2, 0).getSecond());
-    cache.revertHistory(2);
-    cache.revertHistory(1);
-    Assert.assertEquals(0x0L, (long) cache.getData(126, 4, 2, 0).getSecond());
-  }
-  
   @Test
   public void cache_lru()
   {
