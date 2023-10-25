@@ -44,7 +44,10 @@ export default function FetchBlock() {
 
   return (
     <Block title='Fetch Block'>
-      <div>PC: {fetchObject?.pc}</div>
+      <div className='my-2 text-sm'>
+        <div>PC: {fetchObject.pc}</div>
+        <div>{fetchObject.stallFlag ? 'Stalled' : null}</div>
+      </div>
       <div className='flex flex-col gap-1'>
         {[...Array(capacity)].map((_, i) => {
           const instruction = fetchObject.fetchedCode[i];

@@ -45,7 +45,7 @@ export default function InstructionField({
   // Empty field
   if (!instruction) {
     return (
-      <InstructionBubble className='flex justify-center px-2 py-1'>
+      <InstructionBubble className='flex justify-center px-2 py-1 font-mono'>
         <span className='text-gray-400'>empty</span>
       </InstructionBubble>
     );
@@ -54,13 +54,19 @@ export default function InstructionField({
   const args = getArrayItems(instruction.renamedArguments);
 
   return (
-    <InstructionBubble className='flex gap-4 px-2 py-1'>
-      <div>{instruction.inputCodeModel.instructionName}</div>
-      {args.map((arg) => (
-        <div key={arg.name} className='text-gray-400'>
-          {arg.value}
-        </div>
-      ))}
+    <InstructionBubble className='flex justify-between items-center gap-4 font-mono px-2'>
+      <InstructionName mnemonic={instruction.inputCodeModel.instructionName} />
+      <div className='flex gap-2'>
+        {args.map((arg) => (
+          <div
+            key={arg.name}
+            className='rounded hover:bg-gray-200 w-6 h-6 flex justify-center items-center leading-4'
+            title={`Argument ${arg.name}: ${arg.value}`}
+          >
+            {arg.value}
+          </div>
+        ))}
+      </div>
     </InstructionBubble>
   );
 }
@@ -70,6 +76,14 @@ interface InstructionBubbleProps extends ReactClassName {
 }
 
 function InstructionBubble({ children, className }: InstructionBubbleProps) {
-  const cls = clsx('w-full rounded-sm border p-0.5', className);
+  const cls = clsx('rounded-sm border h-8', className);
   return <div className={cls}>{children}</div>;
+}
+
+function InstructionName({ mnemonic }: { mnemonic: string }) {
+  return (
+    <div className='font-mono hover:cursor-pointer hover:underline leading-4'>
+      {mnemonic}
+    </div>
+  );
 }

@@ -68,20 +68,17 @@ export default function HomePage() {
   return (
     <>
       <CanvasWindow scale={scale}>
-        <Placement x={50} y={100}>
+        <Placement x={50} y={50}>
           <Program />
         </Placement>
-        <Placement x={250} y={150}>
-          <Line length={250} />
-        </Placement>
-        <Placement x={500} y={100}>
-          <ReorderBuffer />
-        </Placement>
-        <Placement x={250} y={400}>
+        <Placement x={180 + 50} y={100}>
           <Line length={50} />
         </Placement>
-        <Placement x={300} y={300}>
+        <Placement x={180 + 50 + 50} y={50}>
           <FetchBlock />
+        </Placement>
+        <Placement x={700} y={80}>
+          <ReorderBuffer />
         </Placement>
       </CanvasWindow>
       <div className='pointer-events-none absolute top-0 flex w-full justify-center pt-2'>
