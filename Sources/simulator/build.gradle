@@ -47,5 +47,5 @@ jar {
 }
 
 application {
-    mainClass = 'RISCVsimulator'
+    mainClass = 'App'
 }

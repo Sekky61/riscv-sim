@@ -56,39 +56,50 @@ export function hasId(obj: unknown): obj is WithId {
 export type IdMap = { [id: number]: object };
 
 /**
+ * Type that removes all (Reference | T) to a plain T.
+ * This expresses the fact that a reference is resolved to the object it points to.
+ */
+export type Resolved<T> = ExcludeReference<T>;
+
+export type ExcludeReference<T> = T extends Reference
+  ? never
+  : T extends object
+  ? { [K in keyof T]: ExcludeReference<T[K]> }
+  : T;
+
+/**
  * Given an object and a map of ids, creates a copy of the object with all references resolved
  * TODO: Can we do it without changing object identity?
+ * @warning Does not detect circular references
+ *
+ * Uses the 'as' operator to cast the result to the correct type. The safety is ensured by tests.
  */
-export function resolveRefs(obj: unknown, map: IdMap): unknown {
-  const resolved: Record<string, unknown> = {};
-
-  // Do nothing to primitives
-  if (typeof obj !== 'object' || obj === null) {
-    return obj;
-  }
-
-  // Handle arrays
-  if (Array.isArray(obj)) {
-    return obj.map((item) => resolveRefs(item, map));
-  }
-
-  // If obj has a '@ref' property, resolve it
-  if (isReference(obj)) {
+export function resolveRefs<T>(obj: T, map: IdMap): Resolved<T> {
+  if (typeof obj !== 'object' || obj === null || obj === undefined) {
+    // Do nothing to primitives
+    return obj as Resolved<T>;
+  } else if (isReference(obj)) {
+    // obj has a '@ref' property, resolve it
     const mapValue = map[obj['@ref']];
     if (!mapValue) {
       throw new Error(`Reference ${obj['@ref']} not found in map`);
     }
-    return resolveRefs(mapValue, map);
+    return resolveRefs(mapValue, map) as Resolved<T>;
+  } else {
+    // Not a reference, for all properties recursively resolve references (array or plain object)
+
+    if (Array.isArray(obj)) {
+      return obj.map((item) => resolveRefs(item, map)) as Resolved<T>;
+    }
+
+    const resolved: Record<string, unknown> = {};
+    // recursively visit all properties of the object
+    for (const [key, value] of Object.entries(obj)) {
+      resolved[key] = resolveRefs(value, map);
+    }
+
+    return resolved as Resolved<T>;
   }
-
-  // Not a reference, for all properties recursively resolve references
-
-  // recursively visit all properties of the object
-  for (const [key, value] of Object.entries(obj)) {
-    resolved[key] = resolveRefs(value, map);
-  }
-
-  return resolved;
 }
 
 /**

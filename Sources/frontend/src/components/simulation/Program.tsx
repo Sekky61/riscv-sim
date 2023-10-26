@@ -30,22 +30,22 @@
  */
 
 import { getArrayItems } from '@/lib/cpuState/util';
-import { selectInstructionMemoryBlock } from '@/lib/redux/cpustateSlice';
+import { selectProgram } from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
 
 import Block from '@/components/simulation/Block';
 
 export default function Program() {
-  const instructions = useAppSelector(selectInstructionMemoryBlock);
+  const program = useAppSelector(selectProgram);
 
-  if (!instructions) return null;
+  if (!program) return null;
 
-  const program = getArrayItems(instructions.code);
+  const code = getArrayItems(program.code);
 
   return (
     <Block title='Program'>
       <div className='flex h-[600px] flex-col gap-1 overflow-y-scroll'>
-        {program.map((instruction) => {
+        {code.map((instruction) => {
           return (
             <div key={instruction.codeId}>{instruction.instructionName}</div>
           );

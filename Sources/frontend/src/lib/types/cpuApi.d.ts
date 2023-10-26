@@ -73,6 +73,8 @@ export interface Reference {
   '@ref': number;
 }
 
+export type MaybeReference<T> = T | Reference;
+
 /**
  * '@items' not being present means that there are no items
  */

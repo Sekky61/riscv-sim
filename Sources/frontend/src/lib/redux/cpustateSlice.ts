@@ -30,31 +30,28 @@
  */
 
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
-
 import {
-  getArrayItems,
-  hasId,
-  IdMap,
-  isSimCodeModel,
-  resolveRefs,
-} from '@/lib/cpuState/util';
+  createAsyncThunk,
+  createSelector,
+  createSlice,
+  PayloadAction,
+} from '@reduxjs/toolkit';
+
+import { getArrayItems, hasId, IdMap, resolveRefs } from '@/lib/cpuState/util';
 import { selectActiveIsa } from '@/lib/redux/isaSlice';
 import type { RootState } from '@/lib/redux/store';
 import { callSimulationImpl } from '@/lib/serverCalls/callSimulation';
 import { CpuState } from '@/lib/types/cpuApi';
-import { InstructionFetchBlock, SimCodeModel } from '@/lib/types/cpuDeref';
+import { InstructionFetchBlock } from '@/lib/types/cpuDeref';
 
 // Define a type for the slice state
 interface CpuSlice {
   state: CpuState | null;
-  idMap: IdMap;
 }
 
 // Define the initial state using that type
 const initialState: CpuSlice = {
   state: null,
-  idMap: {},
 };
 
 /**
@@ -87,7 +84,6 @@ function collectIds(state: CpuState): IdMap {
 
 type SimulationParsedResult = {
   state: CpuState;
-  idMap: IdMap;
 };
 
 // Call example: dispatch(callSimulation());
@@ -99,8 +95,7 @@ export const callSimulation = createAsyncThunk<SimulationParsedResult, number>(
     const config = selectActiveIsa(state);
     const tick = arg;
     const response = await callSimulationImpl(tick, config);
-    const map = collectIds(response.state);
-    return { state: response.state, idMap: map };
+    return { state: response.state };
   },
 );
 
@@ -147,7 +142,6 @@ export const cpuSlice = createSlice({
       // /simulation
       .addCase(callSimulation.fulfilled, (state, action) => {
         state.state = action.payload.state;
-        state.idMap = action.payload.idMap;
       })
       .addCase(callSimulation.rejected, (state, _action) => {
         state.state = null;
@@ -157,7 +151,6 @@ export const cpuSlice = createSlice({
       })
       .addCase(simStepForward.fulfilled, (state, action) => {
         state.state = action.payload.state;
-        state.idMap = action.payload.idMap;
       })
       .addCase(simStepForward.rejected, (state, _action) => {
         state.state = null;
@@ -167,7 +160,6 @@ export const cpuSlice = createSlice({
       })
       .addCase(simStepBackward.fulfilled, (state, action) => {
         state.state = action.payload.state;
-        state.idMap = action.payload.idMap;
       })
       .addCase(simStepBackward.rejected, (state, _action) => {
         state.state = null;
@@ -183,31 +175,56 @@ export const { cFieldTyping } = cpuSlice.actions;
 export const selectCpu = (state: RootState) => state.cpu.state;
 export const selectTick = (state: RootState) => state.cpu.state?.tick ?? 0;
 
-export const selectInstructionMemoryBlock = (state: RootState) =>
-  state.cpu.state?.instructionMemoryBlock;
-
-export const selectFetch = (state: RootState): InstructionFetchBlock | null => {
-  const fetch = state.cpu.state?.instructionFetchBlock;
-  if (!fetch) {
+/**
+ * Collects all objects with ID into a map
+ */
+export const selectIdMap = createSelector([selectCpu], (state) => {
+  if (!state) {
     return null;
   }
-  const fetchedCode = getArrayItems(fetch.fetchedCode);
-  const collectedFetchedCode: Array<SimCodeModel> = [];
-  for (const code of fetchedCode) {
-    const obj = resolveRefs(code, state.cpu.idMap);
-    // Check type
-    if (!isSimCodeModel(obj)) {
-      throw new Error(`Unexpected object ${JSON.stringify(obj)}`);
+  return collectIds(state);
+});
+
+export const selectInputCodeModels = createSelector(
+  [selectCpu, selectIdMap],
+  (state, map) => {
+    if (!state || !map) {
+      return null;
     }
-    collectedFetchedCode.push(obj);
-  }
-  return {
-    numberOfWays: fetch.numberOfWays,
-    fetchedCode: collectedFetchedCode,
-    pc: fetch.pc,
-    stallFlag: fetch.stallFlag,
-    cycleId: fetch.cycleId,
-  };
-};
+    return resolveRefs(state.instructionMemoryBlock, map);
+  },
+);
+
+export const selectProgram = createSelector(
+  [selectCpu, selectIdMap],
+  (state, map) => {
+    if (!state || !map) {
+      return null;
+    }
+    return resolveRefs(state.instructionMemoryBlock, map);
+  },
+);
+
+export const selectFetch = createSelector(
+  [selectCpu, selectIdMap],
+  (state, map): InstructionFetchBlock | null => {
+    if (!state || !map) {
+      return null;
+    }
+
+    const fetch = state.instructionFetchBlock;
+    const collectedFetchedCode = resolveRefs(
+      getArrayItems(fetch.fetchedCode),
+      map,
+    );
+    return {
+      numberOfWays: fetch.numberOfWays,
+      fetchedCode: collectedFetchedCode,
+      pc: fetch.pc,
+      stallFlag: fetch.stallFlag,
+      cycleId: fetch.cycleId,
+    };
+  },
+);
 
 export default cpuSlice.reducer;
