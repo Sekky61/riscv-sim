@@ -204,9 +204,9 @@ public class StoreBufferBlock implements AbstractBlock
                                                             {
                                                               if (isInstructionStore(codeModel))
                                                               {
-                                                                if (isBufferFull(
-                                                                        1) || !this.reorderBufferBlock.getFlagsMap()
-                                                                        .containsKey(codeModel.getId()))
+                                                                boolean isPresent = this.reorderBufferBlock.getRobItem(
+                                                                        codeModel.getId()) != null;
+                                                                if (isBufferFull(1) || !isPresent)
                                                                 {
                                                                   return;
                                                                 }
@@ -276,8 +276,8 @@ public class StoreBufferBlock implements AbstractBlock
         break;
       }
       
-      boolean isAvailableForMA = item.getAddress() != -1 && !item.isAccessingMemory() && item.getAccessingMemoryId() == -1 && item.isSourceReady() && !reorderBufferBlock.getFlagsMap()
-              .get(simCodeModel.getId()).isSpeculative();
+      boolean isSpeculative    = reorderBufferBlock.getRobItem(simCodeModel.getId()).reorderFlags.isSpeculative();
+      boolean isAvailableForMA = item.getAddress() != -1 && !item.isAccessingMemory() && item.getAccessingMemoryId() == -1 && item.isSourceReady() && !isSpeculative;
       if (isAvailableForMA)
       {
         for (SimCodeModel previousStore : this.storeQueue)

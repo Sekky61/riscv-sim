@@ -134,7 +134,7 @@ public class ArithmeticFunctionUnitBlock extends AbstractFunctionUnitBlock
       reg.setValueContainer(result.value);
       reg.setReadiness(RegisterReadinessEnum.kExecuted);
       
-      this.reorderBufferBlock.getFlagsMap().get(this.simCodeModel.getId()).setBusy(false);
+      this.reorderBufferBlock.getRobItem(this.simCodeModel.getId()).reorderFlags.setBusy(false);
       this.simCodeModel = null;
     }
     

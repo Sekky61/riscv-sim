@@ -41,16 +41,12 @@ import com.gradle.superscalarsim.blocks.loadstore.LoadBufferBlock;
 import com.gradle.superscalarsim.blocks.loadstore.StoreBufferBlock;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
-import com.gradle.superscalarsim.models.InputCodeArgument;
-import com.gradle.superscalarsim.models.InstructionFunctionModel;
-import com.gradle.superscalarsim.models.ReorderFlags;
-import com.gradle.superscalarsim.models.SimCodeModel;
+import com.gradle.superscalarsim.models.*;
 import com.gradle.superscalarsim.models.register.RegisterModel;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Queue;
+import java.util.stream.Stream;
 
 /**
  * @class ReorderBufferBlock
@@ -151,10 +147,11 @@ public class ReorderBufferBlock implements AbstractBlock
   public void simulate()
   {
     // First check if any instruction is ready for committing and set their register to assigned
-    for (SimCodeModel currentInstruction : this.state.reorderQueue)
+    for (ReorderBufferItem robItem : this.state.reorderQueue)
     {
+      SimCodeModel currentInstruction = robItem.simCodeModel;
       assert !currentInstruction.getInstructionName().equals("nop");
-      ReorderFlags currentReorderFlags = this.state.flagsMap.get(currentInstruction.getId());
+      ReorderFlags currentReorderFlags = robItem.reorderFlags;
       if (currentReorderFlags.isReadyToBeCommitted())
       {
         currentInstruction.setReadyId(this.state.commitId);
@@ -176,8 +173,9 @@ public class ReorderBufferBlock implements AbstractBlock
     int commitCount = 0;
     while (commitCount < this.state.commitLimit && !this.state.reorderQueue.isEmpty())
     {
-      SimCodeModel currentInstruction  = this.state.reorderQueue.peek();
-      ReorderFlags currentReorderFlags = this.state.flagsMap.get(currentInstruction.getId());
+      ReorderBufferItem robItem             = this.state.reorderQueue.peek();
+      SimCodeModel      currentInstruction  = robItem.simCodeModel;
+      ReorderFlags      currentReorderFlags = robItem.reorderFlags;
       
       if (!currentReorderFlags.isReadyToBeCommitted())
       {
@@ -189,7 +187,6 @@ public class ReorderBufferBlock implements AbstractBlock
       commitCount++;
       // Delete instruction from ROB
       this.state.reorderQueue.poll();
-      this.state.flagsMap.remove(currentInstruction.getId());
       
       processCommittableInstruction(currentInstruction);
       currentInstruction.setCommitId(this.state.commitId);
@@ -212,7 +209,6 @@ public class ReorderBufferBlock implements AbstractBlock
   public void reset()
   {
     this.state.reorderQueue.clear();
-    this.state.flagsMap.clear();
     
     this.state.commitId         = 0;
     this.state.speculativePulls = false;
@@ -256,9 +252,15 @@ public class ReorderBufferBlock implements AbstractBlock
       {
         // Wrong prediction - feedback to predictor
         int resultPc = pc + codeModel.getBranchTargetOffset();
+        // TODO: Why down? Shouldn't the feedback be in the opposite direction of the wrong prediction?
         this.gShareUnit.getPredictorFromOld(pc, codeModel.getId()).downTheProbability();
         this.branchTargetBuffer.setEntry(pc, codeModel, resultPc, -1, state.commitId);
-        invalidateInstructions(this.state.reorderQueue.peek());
+        
+        ReorderBufferItem robItem = this.state.reorderQueue.peek();
+        if (robItem != null)
+        {
+          invalidateInstructions(robItem.simCodeModel);
+        }
         
         GlobalHistoryRegister activeRegister = gShareUnit.getGlobalHistoryRegister();
         // This also removes the value from the history stack
@@ -318,17 +320,17 @@ public class ReorderBufferBlock implements AbstractBlock
    */
   public void flushInvalidInstructions()
   {
-    List<SimCodeModel> instructionForRemoval = new ArrayList<>();
-    for (SimCodeModel currentInstruction : this.state.reorderQueue)
+    List<ReorderBufferItem> instructionForRemoval = new ArrayList<>();
+    for (ReorderBufferItem robItem : this.state.reorderQueue)
     {
-      ReorderFlags currentReorderFlags = this.state.flagsMap.get(currentInstruction.getId());
+      SimCodeModel currentInstruction  = robItem.simCodeModel;
+      ReorderFlags currentReorderFlags = robItem.reorderFlags;
       if (currentReorderFlags.isReadyToBeRemoved())
       {
         statisticsCounter.incrementFailedInstructions();
         currentInstruction.setCommitId(this.state.commitId);
-        instructionForRemoval.add(currentInstruction);
+        instructionForRemoval.add(robItem);
         currentInstruction.setFinished(true);
-        this.state.flagsMap.remove(currentInstruction.getId());
         currentInstruction.getArguments().stream().filter(argument -> argument.getName().startsWith("r"))
                 .forEach(argument ->
                          {
@@ -364,8 +366,9 @@ public class ReorderBufferBlock implements AbstractBlock
           this.decodeAndDispatchBlock.setStalledPullCount(pullCount);
           return;
         }
-        this.state.reorderQueue.add(codeModel);
-        this.state.flagsMap.put(codeModel.getId(), new ReorderFlags(this.state.speculativePulls));
+        ReorderBufferItem reorderBufferItem = new ReorderBufferItem(codeModel,
+                                                                    new ReorderFlags(this.state.speculativePulls));
+        this.state.reorderQueue.add(reorderBufferItem);
         this.state.speculativePulls = this.state.speculativePulls || codeModel.getInstructionTypeEnum() == InstructionTypeEnum.kJumpbranch;
         pullCount++;
       }
@@ -378,20 +381,14 @@ public class ReorderBufferBlock implements AbstractBlock
    */
   private void validateInstructions()
   {
-    List<SimCodeModel> polledInstructions = new ArrayList<>();
-    SimCodeModel       codeModel          = this.state.reorderQueue.poll();
-    while (codeModel != null)
+    for (ReorderBufferItem item : this.state.reorderQueue)
     {
-      polledInstructions.add(codeModel);
-      this.state.flagsMap.get(codeModel.getId()).setSpeculative(false);
-      if (codeModel.getInstructionTypeEnum() == InstructionTypeEnum.kJumpbranch)
+      item.reorderFlags.setSpeculative(false);
+      if (item.simCodeModel.getInstructionTypeEnum() == InstructionTypeEnum.kJumpbranch)
       {
-        this.state.reorderQueue.addAll(polledInstructions);
         return;
       }
-      codeModel = this.state.reorderQueue.poll();
     }
-    this.state.reorderQueue.addAll(polledInstructions);
     this.state.speculativePulls = false;
   }// end of validateInstructions
   //----------------------------------------------------------------------
@@ -401,20 +398,20 @@ public class ReorderBufferBlock implements AbstractBlock
    */
   public void invalidateInstructions(SimCodeModel firstInvalidInstruction)
   {
-    List<SimCodeModel> polledInstructions = new ArrayList<>();
-    SimCodeModel       codeModel          = this.state.reorderQueue.peek();
-    while (codeModel != null && firstInvalidInstruction != codeModel)
+    List<ReorderBufferItem> polledInstructions = new ArrayList<>();
+    ReorderBufferItem       codeModel          = this.state.reorderQueue.peek();
+    while (codeModel != null && firstInvalidInstruction != codeModel.simCodeModel)
     {
       polledInstructions.add(this.state.reorderQueue.poll());
       codeModel = this.state.reorderQueue.peek();
     }
     
-    for (SimCodeModel simCodeModel : this.state.reorderQueue)
+    for (ReorderBufferItem robItem : this.state.reorderQueue)
     {
+      SimCodeModel simCodeModel = robItem.simCodeModel;
       simCodeModel.setHasFailed(true);
-      ReorderFlags reorderFlags = this.state.flagsMap.get(simCodeModel.getId());
-      reorderFlags.setSpeculative(false);
-      reorderFlags.setValid(false);
+      robItem.reorderFlags.setSpeculative(false);
+      robItem.reorderFlags.setValid(false);
     }
     // clear what you can
     this.decodeAndDispatchBlock.setFlush(true);
@@ -435,8 +432,8 @@ public class ReorderBufferBlock implements AbstractBlock
     }
     this.instructionFetchBlock.getFetchedCode().clear();
     
-    this.state.speculativePulls = !polledInstructions.isEmpty() && this.state.flagsMap.get(
-            polledInstructions.get(polledInstructions.size() - 1).getId()).isSpeculative();
+    this.state.speculativePulls = !polledInstructions.isEmpty() && polledInstructions.get(
+            polledInstructions.size() - 1).reorderFlags.isSpeculative();
     this.state.reorderQueue.addAll(polledInstructions);
   }// end of invalidateInstructions
   //----------------------------------------------------------------------
@@ -477,13 +474,10 @@ public class ReorderBufferBlock implements AbstractBlock
   }// end of isBufferFull
   //----------------------------------------------------------------------
   
-  /**
-   * @return Map of ROB flags
-   * @brief Get the map of flags
-   */
-  public Map<Integer, ReorderFlags> getFlagsMap()
+  public ReorderBufferItem getRobItem(int simcodeId)
   {
-    return state.flagsMap;
+    return state.reorderQueue.stream().filter(robItem -> robItem.simCodeModel.getId() == simcodeId).findFirst()
+            .orElse(null);
   }// end of getFlagsMap
   //----------------------------------------------------------------------
   
@@ -497,9 +491,18 @@ public class ReorderBufferBlock implements AbstractBlock
    * @return Current reorder queue
    * @brief Get current Reorder queue
    */
-  public Queue<SimCodeModel> getReorderQueue()
+  public int getReorderQueueSize()
   {
-    return state.reorderQueue;
+    return state.reorderQueue.size();
   }// end of getReorderQueue
   //----------------------------------------------------------------------
+  
+  /**
+   * @return Current reorder queue
+   * @brief Get current Reorder queue
+   */
+  public Stream<ReorderBufferItem> getReorderQueue()
+  {
+    return state.reorderQueue.stream();
+  }// end of getReorderQueue
 }

@@ -139,7 +139,7 @@ public class BranchFunctionUnitBlock extends AbstractFunctionUnitBlock
         reg.setReadiness(RegisterReadinessEnum.kExecuted);
       }
       
-      this.reorderBufferBlock.getFlagsMap().get(this.simCodeModel.getId()).setBusy(false);
+      this.reorderBufferBlock.getRobItem(this.simCodeModel.getId()).reorderFlags.setBusy(false);
       this.simCodeModel = null;
     }
     

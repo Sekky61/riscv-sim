@@ -155,7 +155,7 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
       {
         firstDelayPassed = false;
         this.setDelay(baseDelay);
-        this.reorderBufferBlock.getFlagsMap().get(this.simCodeModel.getId()).setBusy(false);
+        this.reorderBufferBlock.getRobItem(this.simCodeModel.getId()).reorderFlags.setBusy(false);
         if (this.loadBufferBlock.getLoadMap().containsKey(this.simCodeModel.getId()))
         {
           InputCodeArgument destinationArgument = simCodeModel.getArgumentByName("rd");

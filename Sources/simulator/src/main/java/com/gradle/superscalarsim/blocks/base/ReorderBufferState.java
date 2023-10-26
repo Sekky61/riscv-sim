@@ -27,13 +27,9 @@
 
 package com.gradle.superscalarsim.blocks.base;
 
-import com.gradle.superscalarsim.models.ReorderFlags;
-import com.gradle.superscalarsim.models.SimCodeModel;
+import com.gradle.superscalarsim.models.ReorderBufferItem;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.PriorityQueue;
-import java.util.Queue;
+import java.util.ArrayDeque;
 
 /**
  * @class ReorderBufferState
@@ -43,9 +39,7 @@ import java.util.Queue;
 public class ReorderBufferState
 {
   /// Queue of scheduled instruction in backend
-  public final Queue<SimCodeModel> reorderQueue;
-  /// Flags for each entry in queue
-  public final Map<Integer, ReorderFlags> flagsMap;
+  public final ArrayDeque<ReorderBufferItem> reorderQueue;
   /// Numerical limit, how many instruction can be committed in one tick
   public int commitLimit;
   /// Id counter for Ids, when was instruction committed/ready
@@ -57,8 +51,7 @@ public class ReorderBufferState
   
   public ReorderBufferState()
   {
-    this.reorderQueue = new PriorityQueue<>();
-    this.flagsMap     = new HashMap<>();
+    this.reorderQueue = new ArrayDeque<>();
     
     this.commitId         = 0;
     this.speculativePulls = false;

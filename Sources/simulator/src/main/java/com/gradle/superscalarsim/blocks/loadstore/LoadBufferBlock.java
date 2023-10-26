@@ -230,9 +230,9 @@ public class LoadBufferBlock implements AbstractBlock
                                                               {
                                                                 return;
                                                               }
-                                                              if (isBufferFull(
-                                                                      1) || !this.reorderBufferBlock.getFlagsMap()
-                                                                      .containsKey(codeModel.getId()))
+                                                              boolean containsKey = this.reorderBufferBlock.getRobItem(
+                                                                      codeModel.getId()) != null;
+                                                              if (isBufferFull(1) || !containsKey)
                                                               {
                                                                 return;
                                                               }
@@ -384,7 +384,8 @@ public class LoadBufferBlock implements AbstractBlock
    */
   private SimCodeModel processLoadInstruction(SimCodeModel simCodeModel)
   {
-    if (reorderBufferBlock.getFlagsMap().get(simCodeModel.getId()) == null)
+    ReorderBufferItem robItem = this.reorderBufferBlock.getRobItem(simCodeModel.getId());
+    if (robItem == null)
     {
       //If current instruction has been flushed from reorder buffer stop computing it
       return simCodeModel;
@@ -421,7 +422,7 @@ public class LoadBufferBlock implements AbstractBlock
     loadMap.get(simCodeModel.getId()).setDestinationReady(true);
     loadMap.get(simCodeModel.getId()).setHasBypassed(true);
     loadMap.get(simCodeModel.getId()).setMemoryAccessId(this.commitId);
-    reorderBufferBlock.getFlagsMap().get(simCodeModel.getId()).setBusy(false);
+    reorderBufferBlock.getRobItem(simCodeModel.getId()).reorderFlags.setBusy(false);
     return null;
     
   }// end of processLoadInstruction
