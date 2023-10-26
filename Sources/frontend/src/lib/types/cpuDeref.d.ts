@@ -42,3 +42,12 @@ export interface InstructionFetchBlock extends InstructionFetchBlockRef {
 export interface SimCodeModel extends SimCodeModelRef {
   inputCodeModel: InputCodeModel;
 }
+
+export interface DecodeAndDispatchBlock extends DecodeAndDispatchBlockRef {
+  beforeRenameCodeList: Array<SimCodeModel>;
+  afterRenameCodeList: Array<SimCodeModel>;
+  idCounter: number;
+  flush: boolean;
+  stallFlag: boolean;
+  stalledPullCount: number;
+}

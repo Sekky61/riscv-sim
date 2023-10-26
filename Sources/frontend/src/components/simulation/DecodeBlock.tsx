@@ -1,14 +1,14 @@
 /**
- * @file    Line.tsx
+ * @file    DecodeBlock.tsx
  *
  * @author  Michal Majer
  *          Faculty of Information Technology
  *          Brno University of Technology
  *          xmajer21@stud.fit.vutbr.cz
  *
- * @brief   SVG line component
+ * @brief   A component for displaying the Decode block
  *
- * @date    19 September 2023, 22:00 (created)
+ * @date    26 October 2023, 16:00 (created)
  *
  * @section Licence
  * This file is part of the Superscalar simulator app
@@ -29,27 +29,32 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// Renders a svg line
+import { selectDecode } from '@/lib/redux/cpustateSlice';
+import { useAppSelector } from '@/lib/redux/hooks';
 
-export type LineProps = {
-  length: number;
-  down?: boolean;
-};
+import Block from '@/components/simulation/Block';
+import InstructionField from '@/components/simulation/InstructionField';
 
-// https://thenewcode.com/1068/Making-Arrows-in-SVG
+export default function DecodeBlock() {
+  const decode = useAppSelector(selectDecode);
 
-export default function Line({ length, down = false }: LineProps) {
-  const width = down ? 10 : length;
-  const height = down ? length : 10;
+  if (!decode) return null;
+
+  const before = decode.beforeRenameCodeList;
+  const after = decode.afterRenameCodeList;
+
   return (
-    <svg width={width} height={height}>
-      <line
-        x1={down ? 5 : 0}
-        y1={down ? 0 : 5}
-        x2={down ? 5 : length}
-        y2={down ? length : 5}
-        className='schemaLine'
-      />
-    </svg>
+    <Block title='Decode Block'>
+      <div className='my-2 text-sm'>
+        <div>Stalled: {decode.stallFlag}</div>
+      </div>
+      <div className='flex flex-col gap-1'>
+        {after.map((instruction) => {
+          return (
+            <InstructionField key={instruction.id} instruction={instruction} />
+          );
+        })}
+      </div>
+    </Block>
   );
 }

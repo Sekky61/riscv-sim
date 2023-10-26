@@ -29,17 +29,27 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import clsx from 'clsx';
+
+import { ReactClassName } from '@/lib/types/reactTypes';
+
 // Place component on a canvas
 
 export type PlacementProps = {
   children?: React.ReactNode;
   x: number;
   y: number;
-};
+} & ReactClassName;
 
-export default function Placement({ children, x = 0, y = 0 }: PlacementProps) {
+export default function Placement({
+  children,
+  x = 0,
+  y = 0,
+  className,
+}: PlacementProps) {
+  const cls = clsx('absolute', className);
   return (
-    <div className='absolute' style={{ left: `${x}px`, top: `${y}px` }}>
+    <div className={cls} style={{ left: `${x}px`, top: `${y}px` }}>
       {children}
     </div>
   );

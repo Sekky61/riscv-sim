@@ -41,6 +41,7 @@ import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import AnimatedButton from '@/components/AnimatedButton';
 import CanvasWindow from '@/components/CanvasWindow';
 import Placement from '@/components/Placement';
+import DecodeBlock from '@/components/simulation/DecodeBlock';
 import FetchBlock from '@/components/simulation/FetchBlock';
 import Line from '@/components/simulation/Line';
 import Program from '@/components/simulation/Program';
@@ -71,12 +72,23 @@ export default function HomePage() {
         <Placement x={50} y={50}>
           <Program />
         </Placement>
+
+        {/* Fetch block, line program--fetch */}
         <Placement x={180 + 50} y={100}>
           <Line length={50} />
         </Placement>
-        <Placement x={180 + 50 + 50} y={50}>
+
+        {/* Fetch, Decode block, line fetch--decode */}
+        <Placement
+          x={180 + 50 + 50}
+          y={50}
+          className='flex flex-col items-center'
+        >
           <FetchBlock />
+          <Line length={50} down />
+          <DecodeBlock />
         </Placement>
+
         <Placement x={700} y={80}>
           <ReorderBuffer />
         </Placement>

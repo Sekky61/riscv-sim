@@ -42,7 +42,10 @@ import { selectActiveIsa } from '@/lib/redux/isaSlice';
 import type { RootState } from '@/lib/redux/store';
 import { callSimulationImpl } from '@/lib/serverCalls/callSimulation';
 import { CpuState } from '@/lib/types/cpuApi';
-import { InstructionFetchBlock } from '@/lib/types/cpuDeref';
+import {
+  DecodeAndDispatchBlock,
+  InstructionFetchBlock,
+} from '@/lib/types/cpuDeref';
 
 // Define a type for the slice state
 interface CpuSlice {
@@ -223,6 +226,27 @@ export const selectFetch = createSelector(
       pc: fetch.pc,
       stallFlag: fetch.stallFlag,
       cycleId: fetch.cycleId,
+    };
+  },
+);
+
+export const selectDecode = createSelector(
+  [selectCpu, selectIdMap],
+  (state, map): DecodeAndDispatchBlock | null => {
+    if (!state || !map) {
+      return null;
+    }
+
+    const decode = state.decodeAndDispatchBlock;
+    const before = resolveRefs(getArrayItems(decode.beforeRenameCodeList), map);
+    const after = resolveRefs(getArrayItems(decode.afterRenameCodeList), map);
+    return {
+      beforeRenameCodeList: before,
+      afterRenameCodeList: after,
+      idCounter: decode.idCounter,
+      flush: decode.flush,
+      stallFlag: decode.stallFlag,
+      stalledPullCount: decode.stalledPullCount,
     };
   },
 );

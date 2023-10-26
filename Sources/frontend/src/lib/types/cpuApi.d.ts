@@ -43,7 +43,7 @@ export interface CpuState {
   unifiedRegisterFileBlock: UnifiedRegisterFileBlock;
   renameMapTableBlock: RenameMapTableBlock;
   instructionFetchBlock: InstructionFetchBlockRef;
-  decodeAndDispatchBlock: DecodeAndDispatchBlock;
+  decodeAndDispatchBlock: DecodeAndDispatchBlockRef;
   cache: Cache;
   memoryModel: MemoryModel;
   loadStoreInterpreter: CodeLoadStoreInterpreter;
@@ -131,15 +131,24 @@ export interface InstructionTypeEnum {
 }
 
 export interface InstructionFetchBlockRef {
-  fetchedCode: ArrayList<SimCodeModelRef | Reference>;
+  fetchedCode: ArrayList<MaybeReference<SimCodeModelRef>>;
   numberOfWays: number;
   pc: number;
   stallFlag: boolean;
   cycleId: number;
 }
 
+export interface DecodeAndDispatchBlockRef {
+  beforeRenameCodeList: ArrayList<MaybeReference<SimCodeModelRef>>;
+  afterRenameCodeList: ArrayList<MaybeReference<SimCodeModelRef>>;
+  idCounter: number;
+  flush: boolean;
+  stallFlag: boolean;
+  stalledPullCount: number;
+}
+
 export interface SimCodeModelRef {
-  inputCodeModel: InputCodeModel | Reference;
+  inputCodeModel: MaybeReference<InputCodeModel>;
   id: number;
   renamedArguments: ArrayList<InputCodeArgument>;
   instructionBulkNumber: number;
