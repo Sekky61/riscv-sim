@@ -274,6 +274,18 @@ public class InstructionFetchBlock implements AbstractBlock
   //----------------------------------------------------------------------
   
   /**
+   * @brief Clears fetched code buffer
+   */
+  public void clearFetchedCode()
+  {
+    for (SimCodeModel simCode : this.getFetchedCode())
+    {
+      simCode.setFinished(true);
+    }
+    this.fetchedCode.clear();
+  }
+  
+  /**
    * Gets current PC counter value
    *
    * @return PC counter value

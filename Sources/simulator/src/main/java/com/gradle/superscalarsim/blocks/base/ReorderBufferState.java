@@ -38,15 +38,30 @@ import java.util.ArrayDeque;
  */
 public class ReorderBufferState
 {
-  /// Queue of scheduled instruction in backend
+  /**
+   * Queue of scheduled instruction in backend
+   */
   public final ArrayDeque<ReorderBufferItem> reorderQueue;
-  /// Numerical limit, how many instruction can be committed in one tick
+  
+  /**
+   * Numerical limit, how many instruction can be committed in a single tick
+   */
   public int commitLimit;
-  /// Id counter for Ids, when was instruction committed/ready
+  
+  /**
+   * ID (tick( counter for marking when an instruction was committed/ready
+   */
   public int commitId;
-  /// Bit value marking if all instructions that are pulled to ROB should be speculative or not
+  
+  /**
+   * Flag to mark newly added instructions as speculative.
+   * This flag is set after encountering branch instruction.
+   */
   public boolean speculativePulls;
-  /// Reorder buffer size limit
+  
+  /**
+   * Reorder buffer size limit.
+   */
   public int bufferSize;
   
   public ReorderBufferState()

@@ -44,7 +44,6 @@ import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.models.*;
 import com.gradle.superscalarsim.models.register.RegisterModel;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -54,29 +53,56 @@ import java.util.stream.Stream;
  */
 public class ReorderBufferBlock implements AbstractBlock
 {
-  /// Class containing all registers, that simulator uses
+  /**
+   * Class containing all registers, that simulator uses
+   */
   private UnifiedRegisterFileBlock registerFileBlock;
-  /// Class holding mappings from architectural registers to speculative
+  
+  /**
+   * Class holding mappings from architectural registers to speculative
+   */
   private RenameMapTableBlock renameMapTableBlock;
-  /// Class, which simulates instruction decode and renames registers
+  
+  /**
+   * Class, which simulates instruction decode and renames registers
+   */
   private DecodeAndDispatchBlock decodeAndDispatchBlock;
-  /// Class for statistics gathering
+  
+  /**
+   * Class for statistics gathering
+   */
   private StatisticsCounter statisticsCounter;
   
   
-  /// GShare unit for getting correct prediction counters
+  /**
+   * GShare unit for getting correct prediction counters
+   */
   private GShareUnit gShareUnit;
-  /// Buffer holding information about branch instructions targets
+  
+  /**
+   * Buffer holding information about branch instructions targets
+   */
   private BranchTargetBuffer branchTargetBuffer;
-  /// Class that fetches code from CodeParser
+  
+  /**
+   * Class that fetches code from CodeParser
+   */
   private InstructionFetchBlock instructionFetchBlock;
   
-  /// Buffer that tracks all in-flight load instructions
+  
+  /**
+   * Buffer that tracks all in-flight load instructions
+   */
   private LoadBufferBlock loadBufferBlock;
-  /// Buffer that tracks all in-flight store instructions
+  
+  /**
+   * Buffer that tracks all in-flight store instructions
+   */
   private StoreBufferBlock storeBufferBlock;
   
-  /// The state
+  /**
+   * The state. This is separated from the block to make it easily serializable (cyclic references).
+   */
   private ReorderBufferState state;
   
   public ReorderBufferBlock()
@@ -84,14 +110,14 @@ public class ReorderBufferBlock implements AbstractBlock
   }
   
   /**
-   * @param [in] blockScheduleTask      - Task class, where blocks are periodically triggered by the GlobalTimer
-   * @param [in] registerFileBlock      - Class containing all registers, that simulator uses
-   * @param [in] renameMapTableBlock    - Class holding mappings from architectural registers to speculative
-   * @param [in] decodeAndDispatchBlock - Class, which simulates instruction decode and renames registers
-   * @param [in] gShareUnit             - GShare unit for getting correct prediction counters
-   * @param [in] branchTargetBuffer     - Buffer holding information about branch instructions targets
-   * @param [in] instructionFetchBlock  - Class that fetches code from CodeParser
-   * @param [in] statisticsCounter      - Class for statistics gathering
+   * @param blockScheduleTask      Task class, where blocks are periodically triggered by the GlobalTimer
+   * @param registerFileBlock      Class containing all registers, that simulator uses
+   * @param renameMapTableBlock    Class holding mappings from architectural registers to speculative
+   * @param decodeAndDispatchBlock Class, which simulates instruction decode and renames registers
+   * @param gShareUnit             GShare unit for getting correct prediction counters
+   * @param branchTargetBuffer     Buffer holding information about branch instructions targets
+   * @param instructionFetchBlock  Class that fetches code from CodeParser
+   * @param statisticsCounter      Class for statistics gathering
    *
    * @brief Constructor
    */
@@ -119,7 +145,7 @@ public class ReorderBufferBlock implements AbstractBlock
   //----------------------------------------------------------------------
   
   /**
-   * @param [in] storeBufferBlock - A Load Buffer block object
+   * @param storeBufferBlock A Load Buffer block object
    *
    * @brief Sets Load Buffer block object
    */
@@ -130,7 +156,7 @@ public class ReorderBufferBlock implements AbstractBlock
   //----------------------------------------------------------------------
   
   /**
-   * @param [in] storeBufferBlock - A Store Buffer block object
+   * @param storeBufferBlock A Store Buffer block object
    *
    * @brief Sets Store Buffer block object
    */
@@ -141,6 +167,11 @@ public class ReorderBufferBlock implements AbstractBlock
   //----------------------------------------------------------------------
   
   /**
+   * Actions in a cycle:
+   * - Commit all instructions that are ready
+   * - Flush badly speculated instructions
+   * - Pull new instructions from decoder
+   *
    * @brief Simulates committing of instructions
    */
   @Override
@@ -151,54 +182,58 @@ public class ReorderBufferBlock implements AbstractBlock
     {
       SimCodeModel currentInstruction = robItem.simCodeModel;
       assert !currentInstruction.getInstructionName().equals("nop");
-      ReorderFlags currentReorderFlags = robItem.reorderFlags;
-      if (currentReorderFlags.isReadyToBeCommitted())
+      if (!robItem.reorderFlags.isReadyToBeCommitted())
       {
-        currentInstruction.setReadyId(this.state.commitId);
-        InputCodeArgument argument = currentInstruction.getArgumentByName("rd");
-        if (argument == null)
+        continue;
+      }
+      currentInstruction.setReadyId(this.state.commitId);
+      
+      // Mark registers of write back arguments as assigned
+      for (InstructionFunctionModel.Argument argument : currentInstruction.getInstructionFunctionModel().getArguments())
+      {
+        if (!argument.writeBack())
         {
           continue;
         }
-        RegisterModel reg = registerFileBlock.getRegister(argument.getValue());
-        if (reg.getReadiness() == RegisterReadinessEnum.kExecuted)
-        {
-          reg.setReadiness(RegisterReadinessEnum.kAssigned);
-        }
+        String        regName = currentInstruction.getArgumentByName(argument.name()).getValue();
+        RegisterModel reg     = registerFileBlock.getRegister(regName);
+        assert reg.getReadiness() == RegisterReadinessEnum.kExecuted;
+        reg.setReadiness(RegisterReadinessEnum.kAssigned);
       }
-    }// End assign check
+    }
     
     // Next, go through queue and commit all instructions you can
     // until you reach un-committable instruction, or you reach limit
     int commitCount = 0;
     while (commitCount < this.state.commitLimit && !this.state.reorderQueue.isEmpty())
     {
-      ReorderBufferItem robItem             = this.state.reorderQueue.peek();
-      SimCodeModel      currentInstruction  = robItem.simCodeModel;
-      ReorderFlags      currentReorderFlags = robItem.reorderFlags;
+      ReorderBufferItem robItem = this.state.reorderQueue.peek();
       
-      if (!currentReorderFlags.isReadyToBeCommitted())
+      if (!robItem.reorderFlags.isReadyToBeCommitted())
       {
         break;
       }
       
-      // Check if instruction should be committed or removed because of failed speculation
-      statisticsCounter.incrementCommittedInstructions();
-      commitCount++;
       // Delete instruction from ROB
       this.state.reorderQueue.poll();
       
+      // Check if instruction should be committed or removed because of failed speculation
+      statisticsCounter.incrementCommittedInstructions();
+      commitCount++;
+      
+      SimCodeModel currentInstruction = robItem.simCodeModel;
       processCommittableInstruction(currentInstruction);
       currentInstruction.setCommitId(this.state.commitId);
-      // Instruction can also be removed from allocator
-      currentInstruction.setFinished(true);
     }
-    // End commit stage
     
     // Check all instructions if after commit some can be removed, remove them in other units
     flushInvalidInstructions();
-    pullNewDecodedInstructions();
     
+    // Pull new instructions from decoder, unless you are flushing
+    if (!this.decodeAndDispatchBlock.shouldFlush())
+    {
+      pullNewDecodedInstructions();
+    }
   }// end of simulate
   //----------------------------------------------------------------------
   
@@ -229,7 +264,6 @@ public class ReorderBufferBlock implements AbstractBlock
   {
     if (codeModel.getInstructionTypeEnum() == InstructionTypeEnum.kJumpbranch)
     {
-      boolean prediction          = codeModel.isBranchPredicted();
       boolean branchActuallyTaken = codeModel.isBranchLogicResult();
       int     pc                  = codeModel.getSavedPc();
       
@@ -239,7 +273,7 @@ public class ReorderBufferBlock implements AbstractBlock
         statisticsCounter.incrementTakenBranches();
       }
       
-      if (prediction == branchActuallyTaken)
+      if (codeModel.isBranchPredicted() == branchActuallyTaken)
       {
         // Correct prediction
         statisticsCounter.incrementCorrectlyPredictedBranches();
@@ -300,84 +334,66 @@ public class ReorderBufferBlock implements AbstractBlock
       renameMapTableBlock.directCopyMapping(tempRegName);
     }
     
-    // Notify rename map table that register has fewer references
-    for (InputCodeArgument argument : codeModel.getArguments())
-    {
-      if (!argument.getName().startsWith("r"))
-      {
-        continue;
-      }
-      if (renameMapTableBlock.reduceReference(argument.getValue()))
-      {
-        renameMapTableBlock.freeMapping(argument.getValue());
-      }
-    }
+    // Clear
+    removeInstruction(codeModel);
   }// end of processCommittableInstruction
-  //----------------------------------------------------------------------
   
   /**
+   * It does not stop at the first valid instruction, but flushes all invalid instructions.
+   *
    * @brief Removes all invalid (ready to removed) instructions from ROB
    */
   public void flushInvalidInstructions()
   {
-    List<ReorderBufferItem> instructionForRemoval = new ArrayList<>();
     for (ReorderBufferItem robItem : this.state.reorderQueue)
     {
-      SimCodeModel currentInstruction  = robItem.simCodeModel;
-      ReorderFlags currentReorderFlags = robItem.reorderFlags;
-      if (currentReorderFlags.isReadyToBeRemoved())
+      if (!robItem.reorderFlags.isReadyToBeRemoved())
       {
-        statisticsCounter.incrementFailedInstructions();
-        currentInstruction.setCommitId(this.state.commitId);
-        instructionForRemoval.add(robItem);
-        currentInstruction.setFinished(true);
-        currentInstruction.getArguments().stream().filter(argument -> argument.getName().startsWith("r"))
-                .forEach(argument ->
-                         {
-                           if (renameMapTableBlock.reduceReference(argument.getValue()))
-                           {
-                             renameMapTableBlock.freeMapping(argument.getValue());
-                           }
-                         });
-        
-        if (currentInstruction.getInstructionTypeEnum() == InstructionTypeEnum.kJumpbranch)
-        {
-          this.gShareUnit.getGlobalHistoryRegister().removeHistoryValue(currentInstruction.getId());
-        }
+        continue;
       }
+      
+      statisticsCounter.incrementFailedInstructions();
+      SimCodeModel currentInstruction = robItem.simCodeModel;
+      currentInstruction.setCommitId(this.state.commitId);
+      if (currentInstruction.getInstructionTypeEnum() == InstructionTypeEnum.kJumpbranch)
+      {
+        this.gShareUnit.getGlobalHistoryRegister().removeHistoryValue(currentInstruction.getId());
+      }
+      
+      // Remove
+      removeInstruction(currentInstruction);
+      this.state.reorderQueue.poll();
     }
-    this.state.reorderQueue.removeAll(instructionForRemoval);
   }// end of flushInvalidInstructions
   //----------------------------------------------------------------------
   
   /**
+   * Stalls decode block if there is no room for new instructions.
+   *
    * @brief Takes decoded instructions from decoder and orders them
    */
   private void pullNewDecodedInstructions()
   {
-    if (!this.decodeAndDispatchBlock.shouldFlush())
+    int pullCount = 0;
+    for (SimCodeModel codeModel : this.decodeAndDispatchBlock.getAfterRenameCodeList())
     {
-      int pullCount = 0;
-      for (SimCodeModel codeModel : this.decodeAndDispatchBlock.getAfterRenameCodeList())
+      if (!checkIfInstructionsHaveRoom(codeModel))
       {
-        if (!checkIfInstructionsHaveRoom(codeModel))
-        {
-          this.decodeAndDispatchBlock.setStallFlag(true);
-          this.decodeAndDispatchBlock.setStalledPullCount(pullCount);
-          return;
-        }
-        ReorderBufferItem reorderBufferItem = new ReorderBufferItem(codeModel,
-                                                                    new ReorderFlags(this.state.speculativePulls));
-        this.state.reorderQueue.add(reorderBufferItem);
-        this.state.speculativePulls = this.state.speculativePulls || codeModel.getInstructionTypeEnum() == InstructionTypeEnum.kJumpbranch;
-        pullCount++;
+        this.decodeAndDispatchBlock.setStallFlag(true);
+        this.decodeAndDispatchBlock.setStalledPullCount(pullCount);
+        return;
       }
+      ReorderBufferItem reorderBufferItem = new ReorderBufferItem(codeModel,
+                                                                  new ReorderFlags(this.state.speculativePulls));
+      this.state.reorderQueue.add(reorderBufferItem);
+      this.state.speculativePulls = this.state.speculativePulls || codeModel.getInstructionTypeEnum() == InstructionTypeEnum.kJumpbranch;
+      pullCount++;
     }
   }// end of pullNewDecodedInstructions
   //----------------------------------------------------------------------
   
   /**
-   * @brief Validate all instructions from top of the queue to the first branch instruction
+   * @brief Mark all instructions from top of the queue to the first branch instruction as non-speculative
    */
   private void validateInstructions()
   {
@@ -389,30 +405,33 @@ public class ReorderBufferBlock implements AbstractBlock
         return;
       }
     }
+    // If we go to the end of the queue, we did not find a branch instruction.
+    // This means that we are not speculating at this point.
     this.state.speculativePulls = false;
   }// end of validateInstructions
   //----------------------------------------------------------------------
   
   /**
+   * Mark firstInvalidInstruction and all subsequent instructions as invalid.
+   *
+   * @param firstInvalidInstruction First instruction that should be invalidated
+   *
    * @brief Sets instruction flags to notify ROB to flush itself
    */
   public void invalidateInstructions(SimCodeModel firstInvalidInstruction)
   {
-    List<ReorderBufferItem> polledInstructions = new ArrayList<>();
-    ReorderBufferItem       codeModel          = this.state.reorderQueue.peek();
-    while (codeModel != null && firstInvalidInstruction != codeModel.simCodeModel)
-    {
-      polledInstructions.add(this.state.reorderQueue.poll());
-      codeModel = this.state.reorderQueue.peek();
-    }
-    
+    boolean flush = false;
     for (ReorderBufferItem robItem : this.state.reorderQueue)
     {
-      SimCodeModel simCodeModel = robItem.simCodeModel;
-      simCodeModel.setHasFailed(true);
-      robItem.reorderFlags.setSpeculative(false);
-      robItem.reorderFlags.setValid(false);
+      flush = flush || robItem.simCodeModel == firstInvalidInstruction;
+      if (flush)
+      {
+        robItem.reorderFlags.setSpeculative(false);
+        robItem.reorderFlags.setValid(false);
+        robItem.simCodeModel.setHasFailed(true);
+      }
     }
+    
     // clear what you can
     this.decodeAndDispatchBlock.setFlush(true);
     // TODO: move to fetch and decode block
@@ -426,28 +445,22 @@ public class ReorderBufferBlock implements AbstractBlock
                                }
                              }));
     
-    for (SimCodeModel simCode : this.instructionFetchBlock.getFetchedCode())
-    {
-      simCode.setFinished(true);
-    }
-    this.instructionFetchBlock.getFetchedCode().clear();
+    this.instructionFetchBlock.clearFetchedCode();
     
-    this.state.speculativePulls = !polledInstructions.isEmpty() && polledInstructions.get(
-            polledInstructions.size() - 1).reorderFlags.isSpeculative();
-    this.state.reorderQueue.addAll(polledInstructions);
+    boolean keptAnyInstruction  = !this.state.reorderQueue.isEmpty();
+    boolean lastKeptSpeculative = keptAnyInstruction && this.state.reorderQueue.getLast().reorderFlags.isSpeculative();
+    this.state.speculativePulls = keptAnyInstruction && lastKeptSpeculative;
   }// end of invalidateInstructions
   //----------------------------------------------------------------------
   
   /**
-   * @param [in] codeModel - Code model to be added into the buffers
+   * @param codeModel Code model to be added into the buffers
    *
    * @return True if there is a space, false if one of the buffers does not have room
    * @brief Verifies if Reorder/Load/Store buffers have space for newly decoded instructions
    */
   private boolean checkIfInstructionsHaveRoom(SimCodeModel codeModel)
   {
-    int allInstructionCount = 1;
-    
     if (loadBufferBlock.isInstructionLoad(codeModel))
     {
       this.loadBufferBlock.incrementPossibleNewEntries();
@@ -457,21 +470,34 @@ public class ReorderBufferBlock implements AbstractBlock
       this.storeBufferBlock.incrementPossibleNewEntries();
     }
     
-    return !this.isBufferFull(allInstructionCount) && !this.loadBufferBlock.isBufferFull(
-            0) && !this.storeBufferBlock.isBufferFull(0);
+    boolean robFull   = this.state.bufferSize < (this.state.reorderQueue.size() + 1);
+    boolean loadFull  = this.loadBufferBlock.isBufferFull(0);
+    boolean storeFull = this.storeBufferBlock.isBufferFull(0);
+    
+    return !robFull && !loadFull && !storeFull;
   }// end of checkIfInstructionsHaveRoom
   //----------------------------------------------------------------------
   
   /**
-   * @param [in] possibleAddition - how many instructions we want to store
+   * Sets finished flag, reduces references and frees registers
    *
-   * @return True if buffer will overflow, false otherwise
-   * @brief Checks if buffer will overflow if instructions were to be added into ROB
+   * @brief Handles removal of instruction from the system
    */
-  public boolean isBufferFull(int possibleAddition)
+  private void removeInstruction(SimCodeModel simCodeModel)
   {
-    return this.state.bufferSize < (this.state.reorderQueue.size() + possibleAddition);
-  }// end of isBufferFull
+    // Reduce references to speculative registers
+    for (InputCodeArgument argument : simCodeModel.getArguments())
+    {
+      if (!argument.getName().startsWith("r"))
+      {
+        continue;
+      }
+      if (renameMapTableBlock.reduceReference(argument.getValue()))
+      {
+        renameMapTableBlock.freeMapping(argument.getValue());
+      }
+    }
+  }
   //----------------------------------------------------------------------
   
   public ReorderBufferItem getRobItem(int simcodeId)
