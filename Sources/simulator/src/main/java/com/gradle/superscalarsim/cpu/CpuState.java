@@ -196,9 +196,9 @@ public class CpuState implements Serializable
     this.decodeAndDispatchBlock = new DecodeAndDispatchBlock(simCodeModelAllocator, instructionFetchBlock,
                                                              renameMapTableBlock, globalHistoryRegister,
                                                              branchTargetBuffer, instructionMemoryBlock);
-    this.reorderBufferBlock     = new ReorderBufferBlock(unifiedRegisterFileBlock, renameMapTableBlock,
-                                                         decodeAndDispatchBlock, gShareUnit, branchTargetBuffer,
-                                                         instructionFetchBlock, statisticsCounter, reorderBufferState);
+    this.reorderBufferBlock     = new ReorderBufferBlock(renameMapTableBlock, decodeAndDispatchBlock, gShareUnit,
+                                                         branchTargetBuffer, instructionFetchBlock, statisticsCounter,
+                                                         reorderBufferState);
     this.issueWindowSuperBlock  = new IssueWindowSuperBlock(decodeAndDispatchBlock);
     this.arithmeticInterpreter  = new CodeArithmeticInterpreter(unifiedRegisterFileBlock);
     this.branchInterpreter      = new CodeBranchInterpreter(instructionMemoryBlock, unifiedRegisterFileBlock);

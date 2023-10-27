@@ -221,9 +221,9 @@ public class BackwardSimulationTest
     Assert.assertEquals(1, this.cpu.cpuState.reorderBufferBlock.getReorderQueueSize());
     Assert.assertEquals(RegisterReadinessEnum.kExecuted,
                         this.cpu.cpuState.unifiedRegisterFileBlock.getRegister("tg2").getReadiness());
-    Assert.assertEquals(RegisterReadinessEnum.kAssigned,
+    Assert.assertEquals(RegisterReadinessEnum.kExecuted,
                         this.cpu.cpuState.unifiedRegisterFileBlock.getRegister("tg1").getReadiness());
-    Assert.assertEquals(RegisterReadinessEnum.kAssigned,
+    Assert.assertEquals(RegisterReadinessEnum.kExecuted,
                         this.cpu.cpuState.unifiedRegisterFileBlock.getRegister("tg0").getReadiness());
     
     
@@ -233,7 +233,7 @@ public class BackwardSimulationTest
     Assert.assertTrue(getAddSecondFunctionBlock(cpu).isFunctionUnitEmpty());
     Assert.assertEquals(1, this.cpu.cpuState.reorderBufferBlock.getReorderQueueSize());
     Assert.assertEquals("add", getAddFunctionBlock(cpu).getSimCodeModel().getInstructionName());
-    Assert.assertEquals(RegisterReadinessEnum.kAssigned,
+    Assert.assertEquals(RegisterReadinessEnum.kExecuted,
                         this.cpu.cpuState.unifiedRegisterFileBlock.getRegister("tg1").getReadiness());
     Assert.assertTrue(this.cpu.cpuState.reorderBufferBlock.getRobItem(2).reorderFlags.isBusy());
     
@@ -255,7 +255,7 @@ public class BackwardSimulationTest
     Assert.assertTrue(getAddSecondFunctionBlock(cpu).isFunctionUnitEmpty());
     Assert.assertEquals("add", getAddFunctionBlock(cpu).getSimCodeModel().getInstructionName());
     Assert.assertEquals(2, this.cpu.cpuState.reorderBufferBlock.getReorderQueueSize());
-    Assert.assertEquals(RegisterReadinessEnum.kAssigned,
+    Assert.assertEquals(RegisterReadinessEnum.kExecuted,
                         this.cpu.cpuState.unifiedRegisterFileBlock.getRegister("tg0").getReadiness());
     Assert.assertTrue(this.cpu.cpuState.reorderBufferBlock.getRobItem(1).reorderFlags.isBusy());
     Assert.assertTrue(this.cpu.cpuState.reorderBufferBlock.getRobItem(2).reorderFlags.isBusy());
@@ -399,11 +399,11 @@ public class BackwardSimulationTest
     this.cpu.stepBack();
     Assert.assertTrue(this.cpu.cpuState.reorderBufferBlock.getRobItem(3).reorderFlags.isReadyToBeCommitted());
     Assert.assertTrue(this.cpu.cpuState.reorderBufferBlock.getRobItem(2).reorderFlags.isReadyToBeCommitted());
-    Assert.assertEquals(RegisterReadinessEnum.kAssigned,
+    Assert.assertEquals(RegisterReadinessEnum.kExecuted,
                         this.cpu.cpuState.unifiedRegisterFileBlock.getRegister("tg3").getReadiness());
     Assert.assertEquals(RegisterReadinessEnum.kExecuted,
                         this.cpu.cpuState.unifiedRegisterFileBlock.getRegister("tg2").getReadiness());
-    Assert.assertEquals(RegisterReadinessEnum.kAssigned,
+    Assert.assertEquals(RegisterReadinessEnum.kExecuted,
                         this.cpu.cpuState.unifiedRegisterFileBlock.getRegister("tg1").getReadiness());
     Assert.assertEquals(RegisterReadinessEnum.kFree,
                         this.cpu.cpuState.unifiedRegisterFileBlock.getRegister("tg0").getReadiness());
@@ -419,7 +419,7 @@ public class BackwardSimulationTest
                         this.cpu.cpuState.unifiedRegisterFileBlock.getRegister("tg3").getReadiness());
     Assert.assertEquals(RegisterReadinessEnum.kAllocated,
                         this.cpu.cpuState.unifiedRegisterFileBlock.getRegister("tg2").getReadiness());
-    Assert.assertEquals(RegisterReadinessEnum.kAssigned,
+    Assert.assertEquals(RegisterReadinessEnum.kExecuted,
                         this.cpu.cpuState.unifiedRegisterFileBlock.getRegister("tg1").getReadiness());
     Assert.assertEquals(RegisterReadinessEnum.kFree,
                         this.cpu.cpuState.unifiedRegisterFileBlock.getRegister("tg0").getReadiness());
@@ -657,7 +657,7 @@ public class BackwardSimulationTest
     Assert.assertTrue(getFaddSecondFunctionBlock(cpu).isFunctionUnitEmpty());
     Assert.assertEquals(1, this.cpu.cpuState.reorderBufferBlock.getReorderQueueSize());
     Assert.assertEquals("fadd.s", getFaddFunctionBlock(cpu).getSimCodeModel().getInstructionName());
-    Assert.assertEquals(RegisterReadinessEnum.kAssigned,
+    Assert.assertEquals(RegisterReadinessEnum.kExecuted,
                         this.cpu.cpuState.unifiedRegisterFileBlock.getRegister("tg1").getReadiness());
     Assert.assertTrue(this.cpu.cpuState.reorderBufferBlock.getRobItem(2).reorderFlags.isBusy());
     
@@ -679,7 +679,7 @@ public class BackwardSimulationTest
     Assert.assertTrue(getFaddSecondFunctionBlock(cpu).isFunctionUnitEmpty());
     Assert.assertEquals("fadd.s", getFaddFunctionBlock(cpu).getSimCodeModel().getInstructionName());
     Assert.assertEquals(2, this.cpu.cpuState.reorderBufferBlock.getReorderQueueSize());
-    Assert.assertEquals(RegisterReadinessEnum.kAssigned,
+    Assert.assertEquals(RegisterReadinessEnum.kExecuted,
                         this.cpu.cpuState.unifiedRegisterFileBlock.getRegister("tg0").getReadiness());
     Assert.assertTrue(this.cpu.cpuState.reorderBufferBlock.getRobItem(1).reorderFlags.isBusy());
     Assert.assertTrue(this.cpu.cpuState.reorderBufferBlock.getRobItem(2).reorderFlags.isBusy());
@@ -813,11 +813,11 @@ public class BackwardSimulationTest
     this.cpu.stepBack();
     Assert.assertTrue(this.cpu.cpuState.reorderBufferBlock.getRobItem(3).reorderFlags.isReadyToBeCommitted());
     Assert.assertTrue(this.cpu.cpuState.reorderBufferBlock.getRobItem(2).reorderFlags.isReadyToBeCommitted());
-    Assert.assertEquals(RegisterReadinessEnum.kAssigned,
+    Assert.assertEquals(RegisterReadinessEnum.kExecuted,
                         this.cpu.cpuState.unifiedRegisterFileBlock.getRegister("tg3").getReadiness());
     Assert.assertEquals(RegisterReadinessEnum.kExecuted,
                         this.cpu.cpuState.unifiedRegisterFileBlock.getRegister("tg2").getReadiness());
-    Assert.assertEquals(RegisterReadinessEnum.kAssigned,
+    Assert.assertEquals(RegisterReadinessEnum.kExecuted,
                         this.cpu.cpuState.unifiedRegisterFileBlock.getRegister("tg1").getReadiness());
     Assert.assertEquals(RegisterReadinessEnum.kFree,
                         this.cpu.cpuState.unifiedRegisterFileBlock.getRegister("tg0").getReadiness());
@@ -825,7 +825,7 @@ public class BackwardSimulationTest
     this.cpu.stepBack();
     Assert.assertEquals(2, this.cpu.cpuState.reorderBufferBlock.getReorderQueueSize());
     Assert.assertTrue(this.cpu.cpuState.reorderBufferBlock.getRobItem(3).reorderFlags.isReadyToBeCommitted());
-    Assert.assertEquals("fadd\\\"fadd.s  tg2,tg1,f3", getFaddFunctionBlock(cpu).getSimCodeModel().getRenamedCodeLine());
+    Assert.assertEquals("fadd.s tg2,tg1,f3", getFaddFunctionBlock(cpu).getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals(12.24, (float) this.cpu.cpuState.unifiedRegisterFileBlock.getRegister("f5")
             .getValue(DataTypeEnum.kFloat), 0.001);
     Assert.assertEquals(15.375, (float) this.cpu.cpuState.unifiedRegisterFileBlock.getRegister("f2")
@@ -834,7 +834,7 @@ public class BackwardSimulationTest
                         this.cpu.cpuState.unifiedRegisterFileBlock.getRegister("tg3").getReadiness());
     Assert.assertEquals(RegisterReadinessEnum.kAllocated,
                         this.cpu.cpuState.unifiedRegisterFileBlock.getRegister("tg2").getReadiness());
-    Assert.assertEquals(RegisterReadinessEnum.kAssigned,
+    Assert.assertEquals(RegisterReadinessEnum.kExecuted,
                         this.cpu.cpuState.unifiedRegisterFileBlock.getRegister("tg1").getReadiness());
     Assert.assertEquals(RegisterReadinessEnum.kFree,
                         this.cpu.cpuState.unifiedRegisterFileBlock.getRegister("tg0").getReadiness());

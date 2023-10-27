@@ -389,7 +389,7 @@ public class ForwardSimulationTest
     Assert.assertTrue(this.addSecondFunctionBlock.isFunctionUnitEmpty());
     Assert.assertEquals("add", this.addFunctionBlock.getSimCodeModel().getInstructionName());
     Assert.assertEquals(2, this.reorderBufferBlock.getReorderQueueSize());
-    Assert.assertEquals(RegisterReadinessEnum.kAssigned,
+    Assert.assertEquals(RegisterReadinessEnum.kExecuted,
                         this.unifiedRegisterFileBlock.getRegister("tg0").getReadiness());
     Assert.assertTrue(this.reorderBufferBlock.getRobItem(1).reorderFlags.isBusy());
     Assert.assertTrue(this.reorderBufferBlock.getRobItem(2).reorderFlags.isBusy());
@@ -410,7 +410,7 @@ public class ForwardSimulationTest
     Assert.assertTrue(this.addSecondFunctionBlock.isFunctionUnitEmpty());
     Assert.assertEquals(1, this.reorderBufferBlock.getReorderQueueSize());
     Assert.assertEquals("add", this.addFunctionBlock.getSimCodeModel().getInstructionName());
-    Assert.assertEquals(RegisterReadinessEnum.kAssigned,
+    Assert.assertEquals(RegisterReadinessEnum.kExecuted,
                         this.unifiedRegisterFileBlock.getRegister("tg1").getReadiness());
     Assert.assertTrue(this.reorderBufferBlock.getRobItem(2).reorderFlags.isBusy());
     
@@ -563,18 +563,18 @@ public class ForwardSimulationTest
                         this.unifiedRegisterFileBlock.getRegister("tg3").getReadiness());
     Assert.assertEquals(RegisterReadinessEnum.kAllocated,
                         this.unifiedRegisterFileBlock.getRegister("tg2").getReadiness());
-    Assert.assertEquals(RegisterReadinessEnum.kAssigned,
+    Assert.assertEquals(RegisterReadinessEnum.kExecuted,
                         this.unifiedRegisterFileBlock.getRegister("tg1").getReadiness());
     Assert.assertEquals(RegisterReadinessEnum.kFree, this.unifiedRegisterFileBlock.getRegister("tg0").getReadiness());
     
     this.cpu.step();
     Assert.assertTrue(this.reorderBufferBlock.getRobItem(3).reorderFlags.isReadyToBeCommitted());
     Assert.assertTrue(this.reorderBufferBlock.getRobItem(2).reorderFlags.isReadyToBeCommitted());
-    Assert.assertEquals(RegisterReadinessEnum.kAssigned,
+    Assert.assertEquals(RegisterReadinessEnum.kExecuted,
                         this.unifiedRegisterFileBlock.getRegister("tg3").getReadiness());
     Assert.assertEquals(RegisterReadinessEnum.kExecuted,
                         this.unifiedRegisterFileBlock.getRegister("tg2").getReadiness());
-    Assert.assertEquals(RegisterReadinessEnum.kAssigned,
+    Assert.assertEquals(RegisterReadinessEnum.kExecuted,
                         this.unifiedRegisterFileBlock.getRegister("tg1").getReadiness());
     Assert.assertEquals(RegisterReadinessEnum.kFree, this.unifiedRegisterFileBlock.getRegister("tg0").getReadiness());
     
@@ -788,7 +788,7 @@ public class ForwardSimulationTest
     Assert.assertTrue(this.faddSecondFunctionBlock.isFunctionUnitEmpty());
     Assert.assertEquals("fadd.s", this.faddFunctionBlock.getSimCodeModel().getInstructionName());
     Assert.assertEquals(2, this.reorderBufferBlock.getReorderQueueSize());
-    Assert.assertEquals(RegisterReadinessEnum.kAssigned,
+    Assert.assertEquals(RegisterReadinessEnum.kExecuted,
                         this.unifiedRegisterFileBlock.getRegister("tg0").getReadiness());
     Assert.assertTrue(this.reorderBufferBlock.getRobItem(1).reorderFlags.isBusy());
     Assert.assertTrue(this.reorderBufferBlock.getRobItem(2).reorderFlags.isBusy());
@@ -809,7 +809,7 @@ public class ForwardSimulationTest
     Assert.assertTrue(this.faddSecondFunctionBlock.isFunctionUnitEmpty());
     Assert.assertEquals(1, this.reorderBufferBlock.getReorderQueueSize());
     Assert.assertEquals("fadd.s", this.faddFunctionBlock.getSimCodeModel().getInstructionName());
-    Assert.assertEquals(RegisterReadinessEnum.kAssigned,
+    Assert.assertEquals(RegisterReadinessEnum.kExecuted,
                         this.unifiedRegisterFileBlock.getRegister("tg1").getReadiness());
     Assert.assertTrue(this.reorderBufferBlock.getRobItem(2).reorderFlags.isBusy());
     
@@ -981,18 +981,18 @@ public class ForwardSimulationTest
                         this.unifiedRegisterFileBlock.getRegister("tg3").getReadiness());
     Assert.assertEquals(RegisterReadinessEnum.kAllocated,
                         this.unifiedRegisterFileBlock.getRegister("tg2").getReadiness());
-    Assert.assertEquals(RegisterReadinessEnum.kAssigned,
+    Assert.assertEquals(RegisterReadinessEnum.kExecuted,
                         this.unifiedRegisterFileBlock.getRegister("tg1").getReadiness());
     Assert.assertEquals(RegisterReadinessEnum.kFree, this.unifiedRegisterFileBlock.getRegister("tg0").getReadiness());
     
     this.cpu.step();
     Assert.assertTrue(this.reorderBufferBlock.getRobItem(3).reorderFlags.isReadyToBeCommitted());
     Assert.assertTrue(this.reorderBufferBlock.getRobItem(2).reorderFlags.isReadyToBeCommitted());
-    Assert.assertEquals(RegisterReadinessEnum.kAssigned,
+    Assert.assertEquals(RegisterReadinessEnum.kExecuted,
                         this.unifiedRegisterFileBlock.getRegister("tg3").getReadiness());
     Assert.assertEquals(RegisterReadinessEnum.kExecuted,
                         this.unifiedRegisterFileBlock.getRegister("tg2").getReadiness());
-    Assert.assertEquals(RegisterReadinessEnum.kAssigned,
+    Assert.assertEquals(RegisterReadinessEnum.kExecuted,
                         this.unifiedRegisterFileBlock.getRegister("tg1").getReadiness());
     Assert.assertEquals(RegisterReadinessEnum.kFree, this.unifiedRegisterFileBlock.getRegister("tg0").getReadiness());
     
