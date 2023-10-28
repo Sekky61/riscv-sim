@@ -29,9 +29,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { getArrayItems } from '@/lib/cpuState/util';
 import { selectProgram } from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
+import { InputCodeModel } from '@/lib/types/cpuApi';
 
 import Block from '@/components/simulation/Block';
 
@@ -40,14 +40,41 @@ export default function Program() {
 
   if (!program) return null;
 
-  const code = getArrayItems(program.code);
+  const code = program.code;
+
+  // Sort instructions and labels together to a single array
+
+  // COPY code
+  const codeOrder: Array<InputCodeModel | string> = [...code];
+
+  // For each label, insert it before the instruction it points to
+  Object.entries(program.labels).forEach(([labelName, idx]) => {
+    let insertIndex = codeOrder.findIndex(
+      (instruction) =>
+        typeof instruction !== 'string' && instruction.codeId === idx,
+    );
+    if (insertIndex === -1) {
+      insertIndex = codeOrder.length;
+    }
+    codeOrder.splice(insertIndex, 0, labelName);
+  });
 
   return (
     <Block title='Program'>
       <div className='flex h-[600px] flex-col gap-1 overflow-y-scroll'>
-        {code.map((instruction) => {
+        {codeOrder.map((instructionOrLabel) => {
+          if (typeof instructionOrLabel === 'string') {
+            return (
+              <div key={instructionOrLabel} className='font-bold'>
+                {instructionOrLabel}:
+              </div>
+            );
+          }
+          // Instruction
           return (
-            <div key={instruction.codeId}>{instruction.instructionName}</div>
+            <div key={instructionOrLabel.codeId}>
+              {instructionOrLabel.instructionName}
+            </div>
           );
         })}
       </div>

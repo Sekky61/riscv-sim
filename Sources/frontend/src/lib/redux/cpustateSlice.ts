@@ -45,6 +45,7 @@ import { CpuState } from '@/lib/types/cpuApi';
 import {
   DecodeAndDispatchBlock,
   InstructionFetchBlock,
+  InstructionMemoryBlock,
   ReorderBufferState,
 } from '@/lib/types/cpuDeref';
 
@@ -201,11 +202,29 @@ export const selectInputCodeModels = createSelector(
 
 export const selectProgram = createSelector(
   [selectCpu, selectIdMap],
-  (state, map) => {
+  (state, map): InstructionMemoryBlock | null => {
     if (!state || !map) {
       return null;
     }
-    return resolveRefs(state.instructionMemoryBlock, map);
+
+    const program = resolveRefs(state.instructionMemoryBlock, map);
+
+    const code = getArrayItems(program.code);
+
+    const labels: Record<string, number> = {};
+    Object.entries(program.labels).forEach(([key, value]) => {
+      // Filter out @type entry, TODO handle generally
+      if (key === '@type') {
+        return;
+      }
+      labels[key] = value.value;
+    });
+
+    return {
+      nop: program.nop,
+      code,
+      labels,
+    };
   },
 );
 

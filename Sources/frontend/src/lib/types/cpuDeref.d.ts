@@ -33,6 +33,7 @@ import {
   DecodeAndDispatchBlockRef,
   InputCodeModel,
   InstructionFetchBlockRef,
+  InstructionMemoryBlockRef,
   ReorderBufferItemRef,
   ReorderBufferStateRef,
   SimCodeModelRef,
@@ -57,4 +58,9 @@ export interface ReorderBufferItem extends ReorderBufferItemRef {
 
 export interface ReorderBufferState extends ReorderBufferStateRef {
   reorderQueue: Array<ReorderBufferItem>;
+}
+
+export interface InstructionMemoryBlock extends InstructionMemoryBlockRef {
+  code: Array<InputCodeModel>;
+  labels: Record<string, number>;
 }

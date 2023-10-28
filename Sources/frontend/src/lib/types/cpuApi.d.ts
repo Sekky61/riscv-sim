@@ -31,7 +31,7 @@
 
 export interface CpuState {
   tick: number;
-  instructionMemoryBlock: InstructionMemoryBlock;
+  instructionMemoryBlock: InstructionMemoryBlockRef;
   simCodeModelAllocator: SimCodeModelAllocator;
   reorderBufferState: ReorderBufferStateRef;
   statisticsCounter: StatisticsCounter;
@@ -98,10 +98,14 @@ export interface WithId {
   '@id': number;
 }
 
-export interface InstructionMemoryBlock {
+export interface NumberObject {
+  value: number;
+}
+
+export interface InstructionMemoryBlockRef {
   nop: InputCodeModel;
   code: ArrayList<InputCodeModel>;
-  labels: Record<string, number>;
+  labels: Record<string, NumberObject>;
 }
 
 export interface InputCodeModel {
