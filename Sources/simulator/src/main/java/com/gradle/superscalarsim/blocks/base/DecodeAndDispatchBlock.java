@@ -35,7 +35,6 @@ package com.gradle.superscalarsim.blocks.base;
 import com.gradle.superscalarsim.blocks.AbstractBlock;
 import com.gradle.superscalarsim.blocks.branch.BranchTargetBuffer;
 import com.gradle.superscalarsim.blocks.branch.GlobalHistoryRegister;
-import com.gradle.superscalarsim.code.SimCodeModelAllocator;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.models.InputCodeArgument;
 import com.gradle.superscalarsim.models.InstructionFunctionModel;
@@ -78,21 +77,28 @@ public class DecodeAndDispatchBlock implements AbstractBlock
   private int stalledPullCount;
   
   /**
-   * @param [in] instructionFetchBlock - Block fetching N instructions each clock event
-   * @param [in] blockScheduleTask     - Task class, where blocks are periodically triggered by the GlobalTimer
-   * @param [in] renameMapTableBlock   - Class holding mappings from architectural registers to speculative
-   * @param [in] globalHistoryRegister - Bit register holding history of predictions
-   * @param [in] branchTargetBuffer    - Buffer holding information about branch instructions targets
-   * @param [in] codeParser            - Parser holding parsed instructions
+   * Decode buffer size limit
+   * TODO: Make configurable
+   */
+  private int decodeBufferSize;
+  
+  /**
+   * @param [in]             instructionFetchBlock - Block fetching N instructions each clock event
+   * @param [in]             blockScheduleTask     - Task class, where blocks are periodically triggered by the GlobalTimer
+   * @param [in]             renameMapTableBlock   - Class holding mappings from architectural registers to speculative
+   * @param [in]             globalHistoryRegister - Bit register holding history of predictions
+   * @param [in]             branchTargetBuffer    - Buffer holding information about branch instructions targets
+   * @param [in]             codeParser            - Parser holding parsed instructions
+   * @param decodeBufferSize - Size of the decode buffer
    *
    * @brief Constructor
    */
-  public DecodeAndDispatchBlock(SimCodeModelAllocator simCodeModelAllocator,
-                                InstructionFetchBlock instructionFetchBlock,
+  public DecodeAndDispatchBlock(InstructionFetchBlock instructionFetchBlock,
                                 RenameMapTableBlock renameMapTableBlock,
                                 GlobalHistoryRegister globalHistoryRegister,
                                 BranchTargetBuffer branchTargetBuffer,
-                                InstructionMemoryBlock codeParser)
+                                InstructionMemoryBlock codeParser,
+                                int decodeBufferSize)
   {
     this.instructionFetchBlock = instructionFetchBlock;
     this.renameMapTableBlock   = renameMapTableBlock;
@@ -106,6 +112,7 @@ public class DecodeAndDispatchBlock implements AbstractBlock
     this.globalHistoryRegister  = globalHistoryRegister;
     this.branchTargetBuffer     = branchTargetBuffer;
     this.instructionMemoryBlock = codeParser;
+    this.decodeBufferSize       = decodeBufferSize;
   }// end of Constructor
   //----------------------------------------------------------------------
   
@@ -363,7 +370,8 @@ public class DecodeAndDispatchBlock implements AbstractBlock
       if (argument.writeBack())
       {
         InputCodeArgument destinationArgument = simCodeModel.getArgumentByName(argument.name());
-        String mappedReg = renameMapTableBlock.mapRegister(destinationArgument.getValue(), simCodeModel.getId());
+        String            mappedReg           = renameMapTableBlock.mapRegister(destinationArgument.getValue(),
+                                                                                simCodeModel.getId());
         destinationArgument.setValue(mappedReg);
       }
     }

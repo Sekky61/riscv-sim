@@ -193,9 +193,9 @@ public class CpuState implements Serializable
                                                            branchTargetBuffer);
     instructionFetchBlock.setNumberOfWays(config.fetchWidth);
     
-    this.decodeAndDispatchBlock = new DecodeAndDispatchBlock(simCodeModelAllocator, instructionFetchBlock,
-                                                             renameMapTableBlock, globalHistoryRegister,
-                                                             branchTargetBuffer, instructionMemoryBlock);
+    this.decodeAndDispatchBlock = new DecodeAndDispatchBlock(instructionFetchBlock, renameMapTableBlock,
+                                                             globalHistoryRegister, branchTargetBuffer,
+                                                             instructionMemoryBlock, config.fetchWidth);
     this.reorderBufferBlock     = new ReorderBufferBlock(renameMapTableBlock, decodeAndDispatchBlock, gShareUnit,
                                                          branchTargetBuffer, instructionFetchBlock, statisticsCounter,
                                                          reorderBufferState);
