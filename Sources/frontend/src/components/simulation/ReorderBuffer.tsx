@@ -34,6 +34,7 @@ import { useAppSelector } from '@/lib/redux/hooks';
 
 import Block from '@/components/simulation/Block';
 import InstructionField from '@/components/simulation/InstructionField';
+import { InstructionListDisplay } from '@/components/simulation/InstructionListDisplay';
 
 export default function ReorderBuffer() {
   const rob = useAppSelector(selectROB);
@@ -51,19 +52,22 @@ export default function ReorderBuffer() {
           {used}/{rob.bufferSize}
         </span>
       </div>
-      <div className='flex flex-col gap-1'>
-        {rob.reorderQueue.slice(0, showLimit).map((robItem) => {
-          const isConfirmed = !robItem.reorderFlags.isSpeculative;
+      <InstructionListDisplay
+        instructions={rob.reorderQueue}
+        limit={showLimit}
+        instructionRenderer={(item) => {
+          const isPresent = item !== undefined;
+          const isConfirmed = !(item?.reorderFlags.isSpeculative ?? false);
           return (
-            <div key={robItem.simCodeModel.id} className='relative'>
-              <InstructionField instruction={robItem.simCodeModel} />
-              {isConfirmed && (
+            <div className='relative'>
+              <InstructionField instruction={item?.simCodeModel} />
+              {isPresent && isConfirmed && (
                 <span className='absolute right-0 top-0 w-1 h-full bg-green-300' />
               )}
             </div>
           );
-        })}
-      </div>
+        }}
+      />
       {showMore && (
         <div className='flex justify-center'>
           And {used - showLimit} more...

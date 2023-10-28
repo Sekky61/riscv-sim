@@ -33,6 +33,7 @@ import { selectDecode } from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
 
 import Block from '@/components/simulation/Block';
+import InstructionField from '@/components/simulation/InstructionField';
 import { InstructionListDisplay } from '@/components/simulation/InstructionListDisplay';
 
 export default function DecodeBlock() {
@@ -50,7 +51,9 @@ export default function DecodeBlock() {
       <InstructionListDisplay
         instructions={after}
         limit={decode.decodeBufferSize}
-        pad
+        instructionRenderer={(instruction) => (
+          <InstructionField instruction={instruction} />
+        )}
       />
     </Block>
   );

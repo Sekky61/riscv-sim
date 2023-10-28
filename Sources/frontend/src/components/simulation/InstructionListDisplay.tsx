@@ -29,34 +29,28 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { SimCodeModel } from '@/lib/types/cpuDeref';
-
-import InstructionField from '@/components/simulation/InstructionField';
-
-export type InstructionListDisplayProps = {
-  instructions: Array<SimCodeModel>;
+export type InstructionListDisplayProps<T> = {
+  instructions: Array<T>;
   limit?: number;
-  pad?: boolean;
+  instructionRenderer: (item?: T) => React.ReactNode;
 };
 
-export function InstructionListDisplay({
+export function InstructionListDisplay<T>({
   instructions,
   limit,
-  pad = false,
-}: InstructionListDisplayProps) {
-  const displayLimit = limit || instructions.length;
-  const displayCount = Math.min(displayLimit, instructions.length);
+  instructionRenderer,
+}: InstructionListDisplayProps<T>) {
+  let displayLimit = instructions.length;
+  if (limit !== undefined) {
+    displayLimit = limit;
+  }
 
   return (
-    <div className='flex flex-col gap-1'>
-      {instructions.slice(0, displayCount).map((codeModel) => (
-        <InstructionField key={codeModel.id} instruction={codeModel} />
-      ))}
-      {pad && displayCount < displayLimit
-        ? [...Array(displayLimit - displayCount)].map((_, i) => (
-            <InstructionField key={`pad-${i}`} instruction={undefined} />
-          ))
-        : null}
-    </div>
+    <ul className='flex flex-col gap-1'>
+      {[...Array(displayLimit)].map((_, i) => {
+        const codeModel = i < displayLimit ? instructions[i] : undefined;
+        return <li key={`pad-${i}`}>{instructionRenderer(codeModel)}</li>;
+      })}
+    </ul>
   );
 }

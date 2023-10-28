@@ -33,6 +33,7 @@ import { selectFetch } from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
 
 import Block from '@/components/simulation/Block';
+import InstructionField from '@/components/simulation/InstructionField';
 import { InstructionListDisplay } from '@/components/simulation/InstructionListDisplay';
 
 export default function FetchBlock() {
@@ -51,7 +52,9 @@ export default function FetchBlock() {
       <InstructionListDisplay
         instructions={fetchObject.fetchedCode}
         limit={capacity}
-        pad
+        instructionRenderer={(codeModel) => (
+          <InstructionField instruction={codeModel} />
+        )}
       />
     </Block>
   );
