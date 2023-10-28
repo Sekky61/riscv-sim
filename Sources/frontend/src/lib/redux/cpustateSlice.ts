@@ -45,6 +45,7 @@ import { CpuState } from '@/lib/types/cpuApi';
 import {
   DecodeAndDispatchBlock,
   InstructionFetchBlock,
+  ReorderBufferState,
 } from '@/lib/types/cpuDeref';
 
 // Define a type for the slice state
@@ -247,6 +248,25 @@ export const selectDecode = createSelector(
       flush: decode.flush,
       stallFlag: decode.stallFlag,
       stalledPullCount: decode.stalledPullCount,
+    };
+  },
+);
+
+export const selectROB = createSelector(
+  [selectCpu, selectIdMap],
+  (state, map): ReorderBufferState | null => {
+    if (!state || !map) {
+      return null;
+    }
+
+    const rob = state.reorderBufferState;
+    const robQueue = resolveRefs(rob.reorderQueue, map);
+    return {
+      reorderQueue: robQueue,
+      commitLimit: rob.commitLimit,
+      commitId: rob.commitId,
+      speculativePulls: rob.speculativePulls,
+      bufferSize: rob.bufferSize,
     };
   },
 );

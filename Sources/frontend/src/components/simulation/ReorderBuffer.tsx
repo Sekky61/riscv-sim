@@ -29,24 +29,41 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { selectROB } from '@/lib/redux/cpustateSlice';
+import { useAppSelector } from '@/lib/redux/hooks';
+
 import Block from '@/components/simulation/Block';
 import InstructionField from '@/components/simulation/InstructionField';
 
 export default function ReorderBuffer() {
-  const capacity = 128;
-  const used = 2;
+  const rob = useAppSelector(selectROB);
+
+  if (!rob) return null;
+
+  const used = rob.reorderQueue.length;
+  const showLimit = 16;
+  const showMore = used > showLimit;
 
   return (
     <Block title='Reorder Buffer'>
       <div>
         <span>
-          {used}/{capacity}
+          {used}/{rob.bufferSize}
         </span>
       </div>
       <div className='flex flex-col gap-1'>
-        <InstructionField />
-        <InstructionField />
+        {rob.reorderQueue.slice(0, showLimit).map((item) => (
+          <InstructionField
+            key={item.simCodeModel.id}
+            instruction={item.simCodeModel}
+          />
+        ))}
       </div>
+      {showMore && (
+        <div className='flex justify-center'>
+          And {used - showLimit} more...
+        </div>
+      )}
     </Block>
   );
 }

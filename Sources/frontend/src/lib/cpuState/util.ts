@@ -29,7 +29,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { ArrayList, Reference, WithId } from '@/lib/types/cpuApi';
+import { ArrayList, JavaHashMap, Reference, WithId } from '@/lib/types/cpuApi';
 import { SimCodeModel } from '@/lib/types/cpuDeref';
 
 /**
@@ -114,4 +114,10 @@ export function isSimCodeModel(obj: unknown): obj is SimCodeModel {
 
 export function getArrayItems<T>(arr: ArrayList<T>): Array<T> {
   return arr['@items'] ?? [];
+}
+
+export interface JavaHashMap<K, V> {
+  '@type': 'java.util.HashMap';
+  '@keys'?: Array<K>;
+  '@items'?: Array<V>;
 }

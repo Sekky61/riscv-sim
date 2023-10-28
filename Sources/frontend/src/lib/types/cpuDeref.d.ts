@@ -30,8 +30,11 @@
  */
 
 import {
+  DecodeAndDispatchBlockRef,
   InputCodeModel,
   InstructionFetchBlockRef,
+  ReorderBufferItemRef,
+  ReorderBufferStateRef,
   SimCodeModelRef,
 } from '@/lib/types/cpuApi';
 
@@ -46,8 +49,12 @@ export interface SimCodeModel extends SimCodeModelRef {
 export interface DecodeAndDispatchBlock extends DecodeAndDispatchBlockRef {
   beforeRenameCodeList: Array<SimCodeModel>;
   afterRenameCodeList: Array<SimCodeModel>;
-  idCounter: number;
-  flush: boolean;
-  stallFlag: boolean;
-  stalledPullCount: number;
+}
+
+export interface ReorderBufferItem extends ReorderBufferItemRef {
+  simCodeModel: SimCodeModel;
+}
+
+export interface ReorderBufferState extends ReorderBufferStateRef {
+  reorderQueue: Array<ReorderBufferItem>;
 }

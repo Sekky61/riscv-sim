@@ -47,7 +47,7 @@ export type BlockProps = {
 
 export default function Block({ children, className, title }: BlockProps) {
   const dispatch = useAppDispatch();
-  const classes = clsx(className, 'w-[180px] rounded border bg-white p-2');
+  const classes = clsx(className, 'w-[184px] rounded border bg-white p-2');
 
   const handleMore = () => {
     dispatch(

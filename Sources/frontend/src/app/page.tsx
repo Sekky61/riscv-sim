@@ -66,30 +66,33 @@ export default function HomePage() {
     setScale(scale - 0.2);
   };
 
+  const blockWidth = 184;
+  const spaceBetweenBlocks = 50;
+
+  const firstCol = 50;
+  const secondCol = firstCol + blockWidth + spaceBetweenBlocks;
+  const thirdCol = secondCol + blockWidth + spaceBetweenBlocks;
+
   return (
     <>
       <CanvasWindow scale={scale}>
-        <Placement x={50} y={50}>
+        <Placement x={firstCol} y={50}>
           <Program />
         </Placement>
 
         {/* Fetch block, line program--fetch */}
-        <Placement x={180 + 50} y={100}>
+        <Placement x={firstCol + blockWidth} y={100}>
           <Line length={50} />
         </Placement>
 
         {/* Fetch, Decode block, line fetch--decode */}
-        <Placement
-          x={180 + 50 + 50}
-          y={50}
-          className='flex flex-col items-center'
-        >
+        <Placement x={secondCol} y={50} className='flex flex-col items-center'>
           <FetchBlock />
           <Line length={50} down />
           <DecodeBlock />
         </Placement>
 
-        <Placement x={700} y={80}>
+        <Placement x={thirdCol} y={50}>
           <ReorderBuffer />
         </Placement>
       </CanvasWindow>

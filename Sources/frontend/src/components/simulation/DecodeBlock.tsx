@@ -40,7 +40,6 @@ export default function DecodeBlock() {
 
   if (!decode) return null;
 
-  const before = decode.beforeRenameCodeList;
   const after = decode.afterRenameCodeList;
 
   return (

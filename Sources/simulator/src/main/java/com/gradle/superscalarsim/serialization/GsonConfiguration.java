@@ -67,6 +67,7 @@ public class GsonConfiguration
     typeMap.put("com.gradle.superscalarsim.blocks.branch.TwoBitPredictor", "TwoBitPredictor");
     typeMap.put("com.gradle.superscalarsim.blocks.branch.ZeroBitPredictor", "ZeroBitPredictor");
     typeMap.put("com.gradle.superscalarsim.models.RenameMapModel", "RenameMapModel");
+    typeMap.put("com.gradle.superscalarsim.models.ReorderBufferItem", "ReorderBufferItem");
   }
   
   /**

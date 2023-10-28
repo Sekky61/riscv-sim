@@ -33,7 +33,7 @@ export interface CpuState {
   tick: number;
   instructionMemoryBlock: InstructionMemoryBlock;
   simCodeModelAllocator: SimCodeModelAllocator;
-  reorderBufferState: ReorderBufferState;
+  reorderBufferState: ReorderBufferStateRef;
   statisticsCounter: StatisticsCounter;
   cacheStatisticsCounter: CacheStatisticsCounter;
   branchTargetBuffer: BranchTargetBuffer;
@@ -81,6 +81,17 @@ export type MaybeReference<T> = T | Reference;
 export interface ArrayList<T> {
   '@type': 'ArrayList';
   '@items'?: Array<T>;
+}
+
+export interface PriorityQueue<T> {
+  '@type': 'java.util.PriorityQueue';
+  '@items'?: Array<T>;
+}
+
+export interface JavaHashMap<K, V> {
+  '@type': 'java.util.HashMap';
+  '@keys'?: Array<K>;
+  '@items'?: Array<V>;
 }
 
 export interface WithId {
@@ -147,6 +158,25 @@ export interface DecodeAndDispatchBlockRef {
   stalledPullCount: number;
 }
 
+export interface ReorderBufferStateRef {
+  reorderQueue: Array<ReorderBufferItemRef>;
+  commitLimit: number;
+  commitId: number;
+  speculativePulls: boolean;
+  bufferSize: number;
+}
+
+export interface ReorderBufferItemRef {
+  simCodeModel: SimCodeModelRef;
+  flags: ReorderFlags;
+}
+
+export interface ReorderFlags {
+  isValid: boolean;
+  isBusy: boolean;
+  isSpeculative: boolean;
+}
+
 export interface SimCodeModelRef {
   inputCodeModel: MaybeReference<InputCodeModel>;
   id: number;
@@ -168,14 +198,13 @@ export interface SimCodeModelRef {
  * - kArithmetic - Instruction is arithmetic
  * - kLoadstore - Instruction does load/store operation
  * - kJumpbranch - Instruction does un/conditional jump in code
- * - kLabel - Instruction is jump label
  */
 export type InstructionTypeEnum = {
-  name: 'kArithmetic' | 'kLoadstore' | 'kJumpbranch' | 'kLabel';
+  name: 'kArithmetic' | 'kLoadstore' | 'kJumpbranch';
 };
 
 export type DataTypeEnum = {
-  name: 'kInt' | 'kLong' | 'kFloat' | 'kDouble' | 'kSpeculative';
+  name: 'kInt' | 'kLong' | 'kFloat' | 'kDouble' | 'kBool' | 'kUInt' | 'kULong';
 };
 
 /**
