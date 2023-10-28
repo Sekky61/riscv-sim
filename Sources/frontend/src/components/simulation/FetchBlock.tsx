@@ -33,7 +33,7 @@ import { selectFetch } from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
 
 import Block from '@/components/simulation/Block';
-import InstructionField from '@/components/simulation/InstructionField';
+import { InstructionListDisplay } from '@/components/simulation/InstructionListDisplay';
 
 export default function FetchBlock() {
   const fetchObject = useAppSelector(selectFetch);
@@ -48,17 +48,11 @@ export default function FetchBlock() {
         <div>PC: {fetchObject.pc}</div>
         <div>{fetchObject.stallFlag ? 'Stalled' : null}</div>
       </div>
-      <div className='flex flex-col gap-1'>
-        {[...Array(capacity)].map((_, i) => {
-          const instruction = fetchObject.fetchedCode[i];
-          return (
-            <InstructionField
-              key={instruction?.id || i}
-              instruction={instruction}
-            />
-          );
-        })}
-      </div>
+      <InstructionListDisplay
+        instructions={fetchObject.fetchedCode}
+        limit={capacity}
+        pad
+      />
     </Block>
   );
 }

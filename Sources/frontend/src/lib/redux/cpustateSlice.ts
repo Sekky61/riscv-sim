@@ -248,6 +248,7 @@ export const selectDecode = createSelector(
       flush: decode.flush,
       stallFlag: decode.stallFlag,
       stalledPullCount: decode.stalledPullCount,
+      decodeBufferSize: decode.decodeBufferSize,
     };
   },
 );

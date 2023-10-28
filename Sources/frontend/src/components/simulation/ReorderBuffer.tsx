@@ -52,12 +52,17 @@ export default function ReorderBuffer() {
         </span>
       </div>
       <div className='flex flex-col gap-1'>
-        {rob.reorderQueue.slice(0, showLimit).map((item) => (
-          <InstructionField
-            key={item.simCodeModel.id}
-            instruction={item.simCodeModel}
-          />
-        ))}
+        {rob.reorderQueue.slice(0, showLimit).map((robItem) => {
+          const isConfirmed = !robItem.reorderFlags.isSpeculative;
+          return (
+            <div key={robItem.simCodeModel.id} className='relative'>
+              <InstructionField instruction={robItem.simCodeModel} />
+              {isConfirmed && (
+                <span className='absolute right-0 top-0 w-1 h-full bg-green-300' />
+              )}
+            </div>
+          );
+        })}
       </div>
       {showMore && (
         <div className='flex justify-center'>

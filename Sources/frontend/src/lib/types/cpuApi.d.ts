@@ -156,6 +156,7 @@ export interface DecodeAndDispatchBlockRef {
   flush: boolean;
   stallFlag: boolean;
   stalledPullCount: number;
+  decodeBufferSize: number;
 }
 
 export interface ReorderBufferStateRef {
@@ -168,7 +169,7 @@ export interface ReorderBufferStateRef {
 
 export interface ReorderBufferItemRef {
   simCodeModel: SimCodeModelRef;
-  flags: ReorderFlags;
+  reorderFlags: ReorderFlags;
 }
 
 export interface ReorderFlags {

@@ -33,7 +33,7 @@ import { selectDecode } from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
 
 import Block from '@/components/simulation/Block';
-import InstructionField from '@/components/simulation/InstructionField';
+import { InstructionListDisplay } from '@/components/simulation/InstructionListDisplay';
 
 export default function DecodeBlock() {
   const decode = useAppSelector(selectDecode);
@@ -47,13 +47,11 @@ export default function DecodeBlock() {
       <div className='my-2 text-sm'>
         <div>Stalled: {decode.stallFlag}</div>
       </div>
-      <div className='flex flex-col gap-1'>
-        {after.map((instruction) => {
-          return (
-            <InstructionField key={instruction.id} instruction={instruction} />
-          );
-        })}
-      </div>
+      <InstructionListDisplay
+        instructions={after}
+        limit={decode.decodeBufferSize}
+        pad
+      />
     </Block>
   );
 }
