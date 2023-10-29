@@ -29,8 +29,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { ArrayList, JavaHashMap, Reference, WithId } from '@/lib/types/cpuApi';
-import { SimCodeModel } from '@/lib/types/cpuDeref';
+import type {
+  ArrayList,
+  CpuState,
+  Reference,
+  WithId,
+} from '@/lib/types/cpuApi';
+import type { SimCodeModel } from '@/lib/types/cpuDeref';
 
 /**
  * Type guard for Reference type.
@@ -54,6 +59,34 @@ export function hasId(obj: unknown): obj is WithId {
 }
 
 export type IdMap = { [id: number]: object };
+
+/**
+ * Recusively collect all ids from cpuState, put the ids and objects in a map
+ */
+export function collectIds(state: CpuState): IdMap {
+  const idMap: IdMap = {};
+  const queue: Array<unknown> = [state];
+  while (queue.length > 0) {
+    const obj = queue.pop();
+    if (hasId(obj)) {
+      // Add to map
+      const id = obj['@id'];
+      if (idMap[id] !== undefined) {
+        throw new Error(`Duplicate id ${id}`);
+      }
+      idMap[id] = obj;
+    }
+
+    if (typeof obj === 'object' && obj !== null) {
+      Object.values(obj).forEach((val) => {
+        if (typeof val === 'object') {
+          queue.push(val);
+        }
+      });
+    }
+  }
+  return idMap;
+}
 
 /**
  * Type that removes all (Reference | T) to a plain T.

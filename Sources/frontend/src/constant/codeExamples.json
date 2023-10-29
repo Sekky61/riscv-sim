@@ -2,7 +2,7 @@
   {
     "name": "Basic load/store",
     "type": "asm",
-    "code": "addi x1 x0 10\naddi x2 x0 10\n\naddi x3 x0 20\nsw x1 x3 0\nsw x2 x3 0\n\naddi x4 x0 20\nlw x5 x4 0\nlw x6 x4 0"
+    "code": "addi x1,x0,10\naddi x2,x0,10\n\naddi x3,x0,20\nsw x1,0(x3)\nsw x2,0(x3)\n\naddi x4,x0,20\nlw x5,0(x4)\nlw x6,0(x4)"
   },
   {
     "name": "Bubble sort",

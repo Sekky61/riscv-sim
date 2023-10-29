@@ -29,9 +29,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { ArrowBigLeft, ArrowBigRight, SkipForward } from 'lucide-react';
+import clsx from 'clsx';
+import {
+  ArrowBigLeft,
+  ArrowBigRight,
+  RefreshCcw,
+  SkipForward,
+} from 'lucide-react';
 
-import { simStepBackward, simStepForward } from '@/lib/redux/cpustateSlice';
+import {
+  reloadSimulation,
+  simStepBackward,
+  simStepForward,
+} from '@/lib/redux/cpustateSlice';
 import { useAppDispatch } from '@/lib/redux/hooks';
 
 import AnimatedButton from '@/components/AnimatedButton';
@@ -46,28 +56,32 @@ export type TimelineProps = Pick<
 export default function Timeline({ className = '' }: TimelineProps) {
   const dispatch = useAppDispatch();
 
+  const cls = clsx('flex bg-red-300 rounded-full h-10', className);
+
   return (
-    <div
-      className={
-        className +
-        ' flex gap-2 rounded-full border bg-gray-100 p-1 drop-shadow'
-      }
-    >
-      <AnimatedButton
-        shortCut='left'
-        clickCallback={() => dispatch(simStepBackward())}
-      >
-        <ArrowBigLeft strokeWidth={1.5} />
-      </AnimatedButton>
-      <AnimatedButton
-        shortCut='right'
-        clickCallback={() => dispatch(simStepForward())}
-      >
-        <ArrowBigRight strokeWidth={1.5} />
-      </AnimatedButton>
-      <AnimatedButton shortCut='ctrl+enter'>
-        <SkipForward />
-      </AnimatedButton>
+    <div className={cls}>
+      <div className='flex gap-2 rounded-full border bg-gray-100 p-1 drop-shadow'>
+        <AnimatedButton
+          shortCut='left'
+          clickCallback={() => dispatch(simStepBackward())}
+        >
+          <ArrowBigLeft strokeWidth={1.5} />
+        </AnimatedButton>
+        <AnimatedButton
+          shortCut='right'
+          clickCallback={() => dispatch(simStepForward())}
+        >
+          <ArrowBigRight strokeWidth={1.5} />
+        </AnimatedButton>
+        <AnimatedButton shortCut='ctrl+enter'>
+          <SkipForward strokeWidth={1.5} />
+        </AnimatedButton>
+      </div>
+      <div className='p-1 border border-transparent'>
+        <AnimatedButton clickCallback={() => dispatch(reloadSimulation())}>
+          <RefreshCcw strokeWidth={1.5} />
+        </AnimatedButton>
+      </div>
     </div>
   );
 }

@@ -30,6 +30,7 @@
  */
 
 /* eslint-disable @typescript-eslint/ban-ts-comment */
+
 import {
   createAsyncThunk,
   createSelector,
@@ -37,12 +38,13 @@ import {
   PayloadAction,
 } from '@reduxjs/toolkit';
 
-import { getArrayItems, hasId, IdMap, resolveRefs } from '@/lib/cpuState/util';
+import { collectIds, getArrayItems, resolveRefs } from '@/lib/cpuState/util';
+import { selectAsmCode } from '@/lib/redux/compilerSlice';
 import { selectActiveIsa } from '@/lib/redux/isaSlice';
 import type { RootState } from '@/lib/redux/store';
 import { callSimulationImpl } from '@/lib/serverCalls/callSimulation';
-import { CpuState } from '@/lib/types/cpuApi';
-import {
+import type { CpuState } from '@/lib/types/cpuApi';
+import type {
   DecodeAndDispatchBlock,
   InstructionFetchBlock,
   InstructionMemoryBlock,
@@ -52,44 +54,32 @@ import {
 // Define a type for the slice state
 interface CpuSlice {
   state: CpuState | null;
+  code: string;
 }
 
 // Define the initial state using that type
 const initialState: CpuSlice = {
   state: null,
+  code: '',
 };
-
-/**
- * Recusively collect all ids from cpuState, put the ids and objects in a map
- */
-function collectIds(state: CpuState): IdMap {
-  const idMap: IdMap = {};
-  const queue: Array<unknown> = [state];
-  while (queue.length > 0) {
-    const obj = queue.pop();
-    if (hasId(obj)) {
-      // Add to map
-      const id = obj['@id'];
-      if (idMap[id] !== undefined) {
-        throw new Error(`Duplicate id ${id}`);
-      }
-      idMap[id] = obj;
-    }
-
-    if (typeof obj === 'object' && obj !== null) {
-      Object.values(obj).forEach((val) => {
-        if (typeof val === 'object') {
-          queue.push(val);
-        }
-      });
-    }
-  }
-  return idMap;
-}
 
 type SimulationParsedResult = {
   state: CpuState;
 };
+
+// Call example: dispatch(reloadSimulation());
+export const reloadSimulation = createAsyncThunk<SimulationParsedResult>(
+  'cpu/reloadSimulation',
+  async (_, { getState, dispatch }) => {
+    // @ts-ignore
+    const state: RootState = getState();
+    const config = selectActiveIsa(state);
+    const code = selectAsmCode(state);
+    dispatch(setSimulationCode(code));
+    const response = await callSimulationImpl(0, { ...config, code });
+    return { state: response.state };
+  },
+);
 
 // Call example: dispatch(callSimulation());
 export const callSimulation = createAsyncThunk<SimulationParsedResult, number>(
@@ -98,8 +88,9 @@ export const callSimulation = createAsyncThunk<SimulationParsedResult, number>(
     // @ts-ignore
     const state: RootState = getState();
     const config = selectActiveIsa(state);
+    const code = state.cpu.code;
     const tick = arg;
-    const response = await callSimulationImpl(tick, config);
+    const response = await callSimulationImpl(tick, { ...config, code });
     return { state: response.state };
   },
 );
@@ -107,28 +98,34 @@ export const callSimulation = createAsyncThunk<SimulationParsedResult, number>(
 // Call example: dispatch(simStepForward());
 export const simStepForward = createAsyncThunk<SimulationParsedResult>(
   'cpu/simStepForward',
-  async (arg, { getState }) => {
+  async (_, { getState }) => {
     // @ts-ignore
     const state: RootState = getState();
     const config = selectActiveIsa(state);
+    const code = state.cpu.code;
     const currentTick = selectTick(state);
-    const response = await callSimulationImpl(currentTick + 1, config);
-    const map = collectIds(response.state);
-    return { state: response.state, idMap: map };
+    const response = await callSimulationImpl(currentTick + 1, {
+      ...config,
+      code,
+    });
+    return { state: response.state };
   },
 );
 
 // Call example: dispatch(simStepForward());
 export const simStepBackward = createAsyncThunk<SimulationParsedResult>(
   'cpu/simStepBackward',
-  async (arg, { getState }) => {
+  async (_, { getState }) => {
     // @ts-ignore
     const state: RootState = getState();
     const config = selectActiveIsa(state);
+    const code = state.cpu.code;
     const currentTick = selectTick(state);
-    const response = await callSimulationImpl(currentTick - 1, config);
-    const map = collectIds(response.state);
-    return { state: response.state, idMap: map };
+    const response = await callSimulationImpl(currentTick - 1, {
+      ...config,
+      code,
+    });
+    return { state: response.state };
   },
 );
 
@@ -137,14 +134,21 @@ export const cpuSlice = createSlice({
   // `createSlice` will infer the state type from the `initialState` argument
   initialState,
   reducers: {
-    // Use the PayloadAction type to declare the contents of `action.payload`
-    cFieldTyping: (state, _action: PayloadAction<string>) => {
-      state.state = null;
+    setSimulationCode: (state, action: PayloadAction<string>) => {
+      state.code = action.payload;
     },
   },
   extraReducers: (builder) => {
     builder
-      // /simulation
+      .addCase(reloadSimulation.fulfilled, (state, action) => {
+        state.state = action.payload.state;
+      })
+      .addCase(reloadSimulation.rejected, (state, _action) => {
+        state.state = null;
+      })
+      .addCase(reloadSimulation.pending, (_state, _action) => {
+        // nothing
+      })
       .addCase(callSimulation.fulfilled, (state, action) => {
         state.state = action.payload.state;
       })
@@ -175,7 +179,7 @@ export const cpuSlice = createSlice({
   },
 });
 
-export const { cFieldTyping } = cpuSlice.actions;
+export const { setSimulationCode } = cpuSlice.actions;
 
 export const selectCpu = (state: RootState) => state.cpu.state;
 export const selectTick = (state: RootState) => state.cpu.state?.tick ?? 0;

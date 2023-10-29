@@ -111,6 +111,7 @@ export const isaSlice = createSlice({
     },
   },
 });
+
 export type IsaReducer = ReturnType<typeof isaSlice.reducer>;
 
 export const { newActiveIsa, createIsa, updateIsa, removeIsa } =
@@ -125,12 +126,11 @@ export const selectIsas = (state: RootState) => state.isa.isas;
  */
 export const selectActiveIsa = createSelector(
   [selectIsas, selectActiveIsaName],
-  (isas, name) => {
+  (isas, name): IsaNamedConfig => {
     const isa = isas.find((isaItem) => isaItem.name == name);
     if (isa == undefined) throw new Error('Active ISA not found');
     // Copy the ISA config
-    const copyIsa = { ...isa, code: 'addi x1, x1, 5' };
-    return copyIsa;
+    return isa;
   },
 );
 

@@ -300,7 +300,7 @@
 
   /* Icon highlight */
   .timelineHighlight {
-    @apply duration-100 hover:bg-gray-200;
+    @apply duration-100 hover:bg-black/10;
   }
 
   .tlbutton-animation-outer {

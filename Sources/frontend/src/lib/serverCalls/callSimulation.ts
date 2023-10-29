@@ -61,5 +61,10 @@ export async function callSimulationImpl(tick: number, cfg: object) {
     }),
   });
   const json: SimulatorResponse = await response.json();
+
+  if (json == null) {
+    throw new Error('Simulator response state is null');
+  }
+
   return json;
 }

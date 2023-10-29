@@ -32,10 +32,10 @@
 'use client';
 
 import { ZoomIn, ZoomOut } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 
-import { callSimulation, selectCpu } from '@/lib/redux/cpustateSlice';
+import { reloadSimulation, selectCpu } from '@/lib/redux/cpustateSlice';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 
 import AnimatedButton from '@/components/AnimatedButton';
@@ -53,10 +53,12 @@ export default function HomePage() {
   const dispatch = useAppDispatch();
   const state = useAppSelector(selectCpu);
 
-  // Fetch initial state if not already fetched
-  if (!state) {
-    dispatch(callSimulation(0));
-  }
+  useEffect(() => {
+    if (!state) {
+      // TODO: calls multiple times unnecessarily
+      dispatch(reloadSimulation());
+    }
+  }, [state, dispatch]);
 
   const scaleUp = () => {
     setScale(scale + 0.2);
