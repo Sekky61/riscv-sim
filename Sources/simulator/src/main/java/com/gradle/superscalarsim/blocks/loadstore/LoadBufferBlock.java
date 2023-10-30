@@ -40,6 +40,7 @@ import com.gradle.superscalarsim.blocks.base.UnifiedRegisterFileBlock;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.models.*;
+import com.gradle.superscalarsim.models.register.RegisterModel;
 
 import java.util.*;
 

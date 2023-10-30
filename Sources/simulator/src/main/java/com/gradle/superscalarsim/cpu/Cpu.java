@@ -87,6 +87,16 @@ public class Cpu implements Serializable
   }
   
   /**
+   * @brief Changes the code in the CPU. Useful for testing. Overwrites the current state.
+   */
+  public void setCode(String code)
+  {
+    this.configuration.code = code;
+    this.cpuState           = new CpuState(this.configuration, this.initLoader);
+  }
+  
+  
+  /**
    * Run the simulation for a given number of steps
    *
    * @param maxSteps Maximum number of steps to run
@@ -106,8 +116,9 @@ public class Cpu implements Serializable
   
   public boolean simEnded()
   {
-    boolean robEmpty      = cpuState.reorderBufferBlock.getReorderQueue().isEmpty();
-    boolean pcEnd         = cpuState.instructionFetchBlock.getPcCounter() >= cpuState.codeParser.getParsedCode().size();
+    boolean robEmpty = cpuState.reorderBufferBlock.getReorderQueue().isEmpty();
+    boolean pcEnd = cpuState.instructionFetchBlock.getPcCounter() >= cpuState.instructionMemoryBlock.getCode()
+            .size() * 4;
     boolean renameEmpty   = cpuState.decodeAndDispatchBlock.getAfterRenameCodeList().isEmpty();
     boolean fetchNotEmpty = !cpuState.instructionFetchBlock.getFetchedCode().isEmpty();
     boolean nop = fetchNotEmpty && cpuState.instructionFetchBlock.getFetchedCode().get(0).getInstructionName()
@@ -165,18 +176,6 @@ public class Cpu implements Serializable
     {
       step();
     }
-  }
-  
-  // Load a program into the CPU. Needs to be build() first.
-  public boolean loadProgram(String code)
-  {
-    return cpuState.codeParser.parse(code);
-  }
-  
-  public void setDefaultState()
-  {
-    this.configuration = CpuConfiguration.getDefaultConfiguration();
-    this.cpuState      = new CpuState(this.configuration, this.initLoader);
   }
 }
 

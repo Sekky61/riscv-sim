@@ -35,7 +35,6 @@ package com.gradle.superscalarsim.blocks.base;
 import com.gradle.superscalarsim.blocks.AbstractBlock;
 import com.gradle.superscalarsim.blocks.branch.BranchTargetBuffer;
 import com.gradle.superscalarsim.blocks.branch.GShareUnit;
-import com.gradle.superscalarsim.code.CodeParser;
 import com.gradle.superscalarsim.code.SimCodeModelAllocator;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.models.SimCodeModel;
@@ -66,7 +65,7 @@ public class InstructionFetchBlock implements AbstractBlock
    */
   private final int branchFollowLimit;
   /// Class containing parsed code
-  public CodeParser parser;
+  public InstructionMemoryBlock instructionMemoryBlock;
   /// List for storing fetched code
   private List<SimCodeModel> fetchedCode;
   /// Marks the maximum number of instructions fetched in one tick
@@ -93,14 +92,14 @@ public class InstructionFetchBlock implements AbstractBlock
    * @brief Constructor
    */
   public InstructionFetchBlock(SimCodeModelAllocator simCodeModelAllocator,
-                               CodeParser parser,
+                               InstructionMemoryBlock parser,
                                GShareUnit gShareUnit,
                                BranchTargetBuffer branchTargetBuffer)
   {
-    this.simCodeModelAllocator = simCodeModelAllocator;
-    this.parser                = parser;
-    this.gShareUnit            = gShareUnit;
-    this.branchTargetBuffer    = branchTargetBuffer;
+    this.simCodeModelAllocator  = simCodeModelAllocator;
+    this.instructionMemoryBlock = parser;
+    this.gShareUnit             = gShareUnit;
+    this.branchTargetBuffer     = branchTargetBuffer;
     
     this.numberOfWays      = 3;
     this.pcCounter         = 0;
@@ -207,8 +206,8 @@ public class InstructionFetchBlock implements AbstractBlock
     {
       // Unique ID of the instruction
       int simCodeId = this.cycleId * numberOfWays + i;
-      SimCodeModel codeModel = this.simCodeModelAllocator.createSimCodeModel(parser.getInstructionAt(pcCounter),
-                                                                             simCodeId, cycleId);
+      SimCodeModel codeModel = this.simCodeModelAllocator.createSimCodeModel(
+              instructionMemoryBlock.getInstructionAt(pcCounter), simCodeId, cycleId);
       
       codeModel.setSavedPc(pcCounter);
       
@@ -223,8 +222,8 @@ public class InstructionFetchBlock implements AbstractBlock
           codeModel.setBranchPredicted(false);
           for (int j = i; j < numberOfWays; j++)
           {
-            SimCodeModel nopCodeModel = this.simCodeModelAllocator.createSimCodeModel(parser.getNop(), simCodeId,
-                                                                                      cycleId);
+            SimCodeModel nopCodeModel = this.simCodeModelAllocator.createSimCodeModel(instructionMemoryBlock.getNop(),
+                                                                                      simCodeId, cycleId);
             nopCodeModel.setSavedPc(pcCounter);
             fetchedCode.add(nopCodeModel);
           }
@@ -232,6 +231,8 @@ public class InstructionFetchBlock implements AbstractBlock
         }
       }
       
+      // TODO: If we cannot follow anymore, do we still fetch instructions, or end early?
+      // And does it matter if the branch is taken?
       boolean branchPredicted = isBranchingPredicted(pcCounter);
       if (branchPredicted && followedBranches < branchFollowLimit)
       {

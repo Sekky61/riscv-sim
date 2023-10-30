@@ -34,8 +34,8 @@ package com.gradle.superscalarsim.blocks.base;
 
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
-import com.gradle.superscalarsim.models.RegisterModel;
 import com.gradle.superscalarsim.models.RenameMapModel;
+import com.gradle.superscalarsim.models.register.RegisterModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -90,7 +90,7 @@ public class RenameMapTableBlock
     this.referenceMap      = new TreeMap<>();
     this.registerFileBlock = registerFileBlock;
     
-    initiateFreeList(registerFileBlock.getRegisterList(DataTypeEnum.kSpeculative));
+    initiateFreeList(registerFileBlock.getSpeculativeRegisterFile().getRegisterList());
   }// end of Constructor
   //----------------------------------------------------------------------
   
@@ -116,11 +116,12 @@ public class RenameMapTableBlock
    */
   public void clear()
   {
-    this.registerFileBlock.refreshRegisters();
+    // Broken clear. TODO: remove all clearing and reseting. We have CpuConfiguration for that
+    //    this.registerFileBlock.refreshRegisters();
     this.freeList.clear();
     this.registerMap.clear();
     this.referenceMap.clear();
-    initiateFreeList(registerFileBlock.getRegisterList(DataTypeEnum.kSpeculative));
+    initiateFreeList(registerFileBlock.getSpeculativeRegisterFile().getRegisterList());
   }// end of clear
   //----------------------------------------------------------------------
   
@@ -201,7 +202,7 @@ public class RenameMapTableBlock
   {
     if (isSpeculativeRegister(speculativeRegister))
     {
-      this.registerFileBlock.getRegisterList(DataTypeEnum.kSpeculative).stream()
+      this.registerFileBlock.getSpeculativeRegisterFile().getRegisterList().stream()
               .filter(reg -> reg.getName().equals(speculativeRegister)).findFirst().ifPresent(register ->
                                                                                               {
                                                                                                 this.registerFileBlock.getRegister(
@@ -257,7 +258,8 @@ public class RenameMapTableBlock
     if (isSpeculativeRegister(speculativeRegister))
     {
       RenameMapModel architecturalRegister = this.registerMap.get(speculativeRegister);
-      double         value                 = this.registerFileBlock.getRegister(speculativeRegister).getValue();
+      RegisterModel  register              = this.registerFileBlock.getRegister(speculativeRegister);
+      long           value                 = (long) register.getValue(DataTypeEnum.kLong);
       this.registerFileBlock.getRegister(architecturalRegister.getArchitecturalRegister()).setValue(value);
     }
   }// end of directCopyMapping

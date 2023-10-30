@@ -4,23 +4,25 @@ import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.models.InstructionFunctionModel;
 
+import java.util.List;
+
 public class InstructionFunctionModelBuilder
 {
   private String name;
   private InstructionTypeEnum instructionType;
   private DataTypeEnum inputDataType;
   private DataTypeEnum outputDataType;
-  private String instructionSyntax;
+  private List<InstructionFunctionModel.Argument> arguments;
   private String interpretableAs;
   
   public InstructionFunctionModelBuilder()
   {
-    this.name              = "";
-    this.instructionType   = null;
-    this.inputDataType     = null;
-    this.outputDataType    = null;
-    this.instructionSyntax = "";
-    this.interpretableAs   = "";
+    this.name            = "";
+    this.instructionType = null;
+    this.inputDataType   = null;
+    this.outputDataType  = null;
+    this.arguments       = null;
+    this.interpretableAs = "";
   }
   
   public InstructionFunctionModelBuilder hasName(String name)
@@ -47,9 +49,9 @@ public class InstructionFunctionModelBuilder
     return this;
   }
   
-  public InstructionFunctionModelBuilder hasSyntax(String instructionSyntax)
+  public InstructionFunctionModelBuilder hasArguments(List<InstructionFunctionModel.Argument> arguments)
   {
-    this.instructionSyntax = instructionSyntax;
+    this.arguments = arguments;
     return this;
   }
   
@@ -61,7 +63,6 @@ public class InstructionFunctionModelBuilder
   
   public InstructionFunctionModel build()
   {
-    return new InstructionFunctionModel(this.name, this.instructionType, this.inputDataType.toString(),
-                                        this.outputDataType.toString(), this.instructionSyntax, this.interpretableAs);
+    return new InstructionFunctionModel(this.name, this.instructionType, this.arguments, this.interpretableAs);
   }
 }

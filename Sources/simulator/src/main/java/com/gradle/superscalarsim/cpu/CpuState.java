@@ -60,14 +60,13 @@ public class CpuState implements Serializable
    * Warning: this must be a reference to the same loader as in Cpu
    */
   public InitLoader initLoader;
-  public CodeParser codeParser;
+  public InstructionMemoryBlock instructionMemoryBlock;
   public SimCodeModelAllocator simCodeModelAllocator;
   
   public ReorderBufferState reorderBufferState;
   
   // Housekeeping
   
-  public PrecedingTable precedingTable;
   public StatisticsCounter statisticsCounter;
   public CacheStatisticsCounter cacheStatisticsCounter;
   
@@ -135,8 +134,16 @@ public class CpuState implements Serializable
   {
     this.tick = 0;
     
-    this.codeParser = new CodeParser(initLoader);
-    this.codeParser.parse(config.code);
+    // Parse code
+    CodeParser codeParser = new CodeParser(initLoader);
+    codeParser.parseCode(config.code);
+    
+    if (!codeParser.success())
+    {
+      throw new IllegalStateException("Code parsing failed: " + codeParser.getErrorMessages());
+    }
+    
+    this.instructionMemoryBlock = new InstructionMemoryBlock(codeParser.getInstructions(), codeParser.getLabels());
     
     simCodeModelAllocator = new SimCodeModelAllocator();
     
@@ -146,8 +153,6 @@ public class CpuState implements Serializable
     
     this.statisticsCounter      = new StatisticsCounter();
     this.cacheStatisticsCounter = new CacheStatisticsCounter();
-    
-    this.precedingTable = new PrecedingTable();
     
     this.unifiedRegisterFileBlock = new UnifiedRegisterFileBlock(initLoader);
     this.renameMapTableBlock      = new RenameMapTableBlock(unifiedRegisterFileBlock);
@@ -187,21 +192,21 @@ public class CpuState implements Serializable
                            config.loadLatency, config.laneReplacementDelay, this.cacheStatisticsCounter);
     
     this.memoryModel          = new MemoryModel(cache, cacheStatisticsCounter);
-    this.loadStoreInterpreter = new CodeLoadStoreInterpreter(initLoader, memoryModel, unifiedRegisterFileBlock);
+    this.loadStoreInterpreter = new CodeLoadStoreInterpreter(memoryModel, unifiedRegisterFileBlock);
     
-    this.instructionFetchBlock = new InstructionFetchBlock(simCodeModelAllocator, codeParser, gShareUnit,
+    this.instructionFetchBlock = new InstructionFetchBlock(simCodeModelAllocator, instructionMemoryBlock, gShareUnit,
                                                            branchTargetBuffer);
     instructionFetchBlock.setNumberOfWays(config.fetchWidth);
     
     this.decodeAndDispatchBlock = new DecodeAndDispatchBlock(simCodeModelAllocator, instructionFetchBlock,
                                                              renameMapTableBlock, globalHistoryRegister,
-                                                             branchTargetBuffer, codeParser);
+                                                             branchTargetBuffer, instructionMemoryBlock);
     this.reorderBufferBlock     = new ReorderBufferBlock(unifiedRegisterFileBlock, renameMapTableBlock,
                                                          decodeAndDispatchBlock, gShareUnit, branchTargetBuffer,
                                                          instructionFetchBlock, statisticsCounter, reorderBufferState);
     this.issueWindowSuperBlock  = new IssueWindowSuperBlock(decodeAndDispatchBlock);
-    this.arithmeticInterpreter  = new CodeArithmeticInterpreter(precedingTable, unifiedRegisterFileBlock);
-    this.branchInterpreter      = new CodeBranchInterpreter(codeParser, unifiedRegisterFileBlock);
+    this.arithmeticInterpreter  = new CodeArithmeticInterpreter(unifiedRegisterFileBlock);
+    this.branchInterpreter      = new CodeBranchInterpreter(instructionMemoryBlock, unifiedRegisterFileBlock);
     
     this.storeBufferBlock = new StoreBufferBlock(loadStoreInterpreter, decodeAndDispatchBlock, unifiedRegisterFileBlock,
                                                  reorderBufferBlock);
@@ -213,9 +218,9 @@ public class CpuState implements Serializable
     
     // FUs
     
-    this.aluIssueWindowBlock       = new AluIssueWindowBlock(initLoader, unifiedRegisterFileBlock, precedingTable);
-    this.branchIssueWindowBlock    = new BranchIssueWindowBlock(initLoader, unifiedRegisterFileBlock);
-    this.fpIssueWindowBlock        = new FpIssueWindowBlock(initLoader, unifiedRegisterFileBlock, precedingTable);
+    this.aluIssueWindowBlock       = new AluIssueWindowBlock(unifiedRegisterFileBlock);
+    this.branchIssueWindowBlock    = new BranchIssueWindowBlock(unifiedRegisterFileBlock);
+    this.fpIssueWindowBlock        = new FpIssueWindowBlock(unifiedRegisterFileBlock);
     this.loadStoreIssueWindowBlock = new LoadStoreIssueWindowBlock(unifiedRegisterFileBlock);
     
     this.issueWindowSuperBlock.addAluIssueWindow(aluIssueWindowBlock);

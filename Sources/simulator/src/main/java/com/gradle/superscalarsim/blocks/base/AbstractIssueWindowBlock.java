@@ -36,7 +36,11 @@ import com.gradle.superscalarsim.blocks.AbstractBlock;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
-import com.gradle.superscalarsim.models.*;
+import com.gradle.superscalarsim.models.InputCodeArgument;
+import com.gradle.superscalarsim.models.InstructionFunctionModel;
+import com.gradle.superscalarsim.models.IssueItemModel;
+import com.gradle.superscalarsim.models.SimCodeModel;
+import com.gradle.superscalarsim.models.register.RegisterModel;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -106,6 +110,8 @@ public abstract class AbstractIssueWindowBlock implements AbstractBlock
   public abstract boolean isCorrectInstructionType(InstructionTypeEnum instructionType);
   
   /**
+   * TODO: Where should the conversion instructions execute (float to int, eg.)?
+   *
    * @param [in] dataType - Data type (int, float, eg.)
    *
    * @return True if compatible, false otherwise

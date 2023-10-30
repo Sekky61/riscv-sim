@@ -58,9 +58,9 @@ public class ParseAsmHandler implements IRequestResolver<ParseAsmRequest, ParseA
       InitLoader loader = new InitLoader();
       CodeParser parser = new CodeParser(loader);
       
-      boolean success = parser.parse(request.code);
+      parser.parseCode(request.code);
       
-      if (success)
+      if (parser.success())
       {
         // Return success
         response = new ParseAsmResponse(true, null);

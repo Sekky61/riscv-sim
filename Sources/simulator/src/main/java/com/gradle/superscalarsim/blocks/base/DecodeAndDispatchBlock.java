@@ -35,7 +35,6 @@ package com.gradle.superscalarsim.blocks.base;
 import com.gradle.superscalarsim.blocks.AbstractBlock;
 import com.gradle.superscalarsim.blocks.branch.BranchTargetBuffer;
 import com.gradle.superscalarsim.blocks.branch.GlobalHistoryRegister;
-import com.gradle.superscalarsim.code.CodeParser;
 import com.gradle.superscalarsim.code.SimCodeModelAllocator;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.models.InputCodeArgument;
@@ -44,6 +43,7 @@ import com.gradle.superscalarsim.models.SimCodeModel;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.OptionalInt;
 
 /**
  * @class DecodeAndDispatchBlock
@@ -64,7 +64,7 @@ public class DecodeAndDispatchBlock implements AbstractBlock
   /// Buffer holding information about branch instructions targets
   private final BranchTargetBuffer branchTargetBuffer;
   /// Parser holding parsed instructions
-  private final CodeParser codeParser;
+  private final InstructionMemoryBlock instructionMemoryBlock;
   /// Counter giving out ids for instructions in order to correctly simulate backwards
   private int idCounter;
   /// Boolean flag indicating if the decode block should be flushed
@@ -92,7 +92,7 @@ public class DecodeAndDispatchBlock implements AbstractBlock
                                 RenameMapTableBlock renameMapTableBlock,
                                 GlobalHistoryRegister globalHistoryRegister,
                                 BranchTargetBuffer branchTargetBuffer,
-                                CodeParser codeParser)
+                                InstructionMemoryBlock codeParser)
   {
     this.instructionFetchBlock = instructionFetchBlock;
     this.renameMapTableBlock   = renameMapTableBlock;
@@ -103,9 +103,9 @@ public class DecodeAndDispatchBlock implements AbstractBlock
     this.stallFlag            = false;
     this.stalledPullCount     = 0;
     
-    this.globalHistoryRegister = globalHistoryRegister;
-    this.branchTargetBuffer    = branchTargetBuffer;
-    this.codeParser            = codeParser;
+    this.globalHistoryRegister  = globalHistoryRegister;
+    this.branchTargetBuffer     = branchTargetBuffer;
+    this.instructionMemoryBlock = codeParser;
   }// end of Constructor
   //----------------------------------------------------------------------
   
@@ -358,15 +358,16 @@ public class DecodeAndDispatchBlock implements AbstractBlock
    */
   private void renameDestinationRegister(SimCodeModel simCodeModel)
   {
-    // Find rd, rename it
-    InputCodeArgument destinationArgument = simCodeModel.getArgumentByName("rd");
-    if (destinationArgument == null)
+    // Rename all arguments that will be written back
+    for (InstructionFunctionModel.Argument argument : simCodeModel.getInstructionFunctionModel().getArguments())
     {
-      return;
+      if (argument.writeBack())
+      {
+        InputCodeArgument destinationArgument = simCodeModel.getArgumentByName(argument.name());
+        String mappedReg = renameMapTableBlock.mapRegister(destinationArgument.getValue(), simCodeModel.getId());
+        destinationArgument.setValue(mappedReg);
+      }
     }
-    
-    // Rename
-    destinationArgument.setValue(renameMapTableBlock.mapRegister(destinationArgument.getValue(), simCodeModel.getId()));
   }// end of renameDestinationRegister
   //----------------------------------------------------------------------
   
@@ -386,8 +387,9 @@ public class DecodeAndDispatchBlock implements AbstractBlock
     boolean prediction          = codeModel.isBranchPredicted();
     // -1 means that entry was not predicted
     // TODO: this line is sus
-    int predTarget = this.branchTargetBuffer.getEntryTarget(instructionPosition);
-    int realTarget = calculateRealBranchAddress(codeModel);
+    int         predTarget    = this.branchTargetBuffer.getEntryTarget(instructionPosition);
+    OptionalInt realTargetOpt = calculateRealBranchAddress(codeModel);
+    int         realTarget    = realTargetOpt.orElse(-1);
     
     boolean globalHistoryBit = prediction && predTarget != 0;
     boolean jumpBad          = unconditional && realTarget != predTarget;
@@ -408,29 +410,33 @@ public class DecodeAndDispatchBlock implements AbstractBlock
   //----------------------------------------------------------------------
   
   /**
-   * @param [in] codeModel - branch code model
+   * @param codeModel Branch code model
    *
-   * @return Branch jump target, regardless of prediction
+   * @return Branch jump target if possible to calculate in decode stage, empty otherwise
    * @brief Calculates branch instruction target if possible (label or offset)
    */
-  private int calculateRealBranchAddress(final SimCodeModel codeModel)
+  private OptionalInt calculateRealBranchAddress(final SimCodeModel codeModel)
   {
     // TODO: jalr instruction bases offset on register value, can we handle that?
+    // TODO: also jr, ret instruction
     // Or, should it fall through and be caught later as bad prediction?
     InputCodeArgument immediateArgument = codeModel.getArgumentByName("imm");
     if (immediateArgument == null)
     {
-      throw new RuntimeException("Branch instruction does not have immediate argument");
+      // Cannot predict, continue on next instruction
+      return OptionalInt.empty();
+      //      throw new RuntimeException("Branch instruction does not have immediate argument");
     }
     // If there is label, get its position
-    int labelOffset = codeParser.getLabelPosition(immediateArgument.getValue());
+    int labelOffset = instructionMemoryBlock.getLabelPosition(immediateArgument.getValue());
     if (labelOffset == -1)
     {
       // No label found -- this must be a relative jump (imm is relative to current pc)
-      return codeModel.getSavedPc() + Integer.parseInt(immediateArgument.getValue());
+      int x = codeModel.getSavedPc() + Integer.parseInt(immediateArgument.getValue());
+      return OptionalInt.of(x);
     }
     // Jump after label
-    return labelOffset;
+    return OptionalInt.of(labelOffset);
   }// end of calculateRealBranchAddress
   //----------------------------------------------------------------------
   

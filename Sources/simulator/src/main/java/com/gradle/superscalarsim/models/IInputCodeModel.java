@@ -59,7 +59,7 @@ public interface IInputCodeModel
   /**
    * @return Data type of the instruction (e.g. kInt)
    */
-  DataTypeEnum getResultDataType();
+  DataTypeEnum getDataType();
   
   /**
    * TODO: explain indexing (PC+4?)

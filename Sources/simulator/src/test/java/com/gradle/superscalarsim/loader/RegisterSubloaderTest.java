@@ -1,7 +1,8 @@
 package com.gradle.superscalarsim.loader;
 
 import com.gradle.superscalarsim.enums.DataTypeEnum;
-import com.gradle.superscalarsim.models.RegisterFileModel;
+import com.gradle.superscalarsim.enums.RegisterTypeEnum;
+import com.gradle.superscalarsim.models.register.RegisterFileModel;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,7 +24,7 @@ public class RegisterSubloaderTest
     Assert.assertNotNull(model);
     
     Assert.assertEquals("Integer physical register", model.getName());
-    Assert.assertEquals(DataTypeEnum.kInt, model.getDataType());
+    Assert.assertEquals(RegisterTypeEnum.kInt, model.getDataType());
     
     Assert.assertEquals("x0", model.getRegisterList().get(0).getName());
     Assert.assertTrue(model.getRegisterList().get(0).isConstant());
@@ -31,7 +32,7 @@ public class RegisterSubloaderTest
     
     Assert.assertEquals("x1", model.getRegisterList().get(1).getName());
     Assert.assertFalse(model.getRegisterList().get(1).isConstant());
-    Assert.assertEquals(25, model.getRegisterList().get(1).getValue(), 0.01);
+    Assert.assertEquals(25, (int) model.getRegisterList().get(1).getValue(DataTypeEnum.kInt));
   }
   
   
@@ -64,7 +65,7 @@ public class RegisterSubloaderTest
     loader.setRegisterAliasesFilePath("testFiles/registerAliases.json");
     
     // Exercise
-    loader.load();
+    loader.loadFromConfigFiles();
     
     //Assert
     Assert.assertEquals("x0", loader.getRegisterAliases().get(0).register);

@@ -35,8 +35,8 @@ package com.gradle.superscalarsim.loader;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
-import com.gradle.superscalarsim.models.RegisterFileModel;
-import com.gradle.superscalarsim.models.RegisterModel;
+import com.gradle.superscalarsim.models.register.RegisterFileModel;
+import com.gradle.superscalarsim.models.register.RegisterModel;
 
 import java.io.IOException;
 import java.io.Reader;

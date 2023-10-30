@@ -35,10 +35,9 @@ package com.gradle.superscalarsim.blocks.arithmetic;
 import com.gradle.superscalarsim.blocks.base.AbstractFunctionUnitBlock;
 import com.gradle.superscalarsim.blocks.base.AbstractIssueWindowBlock;
 import com.gradle.superscalarsim.blocks.base.UnifiedRegisterFileBlock;
-import com.gradle.superscalarsim.code.PrecedingTable;
+import com.gradle.superscalarsim.code.Expression;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
-import com.gradle.superscalarsim.loader.InitLoader;
 import com.gradle.superscalarsim.models.InstructionFunctionModel;
 
 import java.util.ArrayList;
@@ -53,8 +52,6 @@ public class FpIssueWindowBlock extends AbstractIssueWindowBlock
 {
   /// List for all function units associated with this window
   private List<ArithmeticFunctionUnitBlock> functionUnitBlockList;
-  /// Preceding table with all allowed instructions
-  private PrecedingTable precedingTable;
   
   public FpIssueWindowBlock()
   {
@@ -68,13 +65,10 @@ public class FpIssueWindowBlock extends AbstractIssueWindowBlock
    *
    * @brief Constructor
    */
-  public FpIssueWindowBlock(InitLoader loader,
-                            UnifiedRegisterFileBlock registerFileBlock,
-                            PrecedingTable precedingTable)
+  public FpIssueWindowBlock(UnifiedRegisterFileBlock registerFileBlock)
   {
     super(registerFileBlock);
     this.functionUnitBlockList = new ArrayList<>();
-    this.precedingTable        = precedingTable;
   }// end of Constructor
   //----------------------------------------------------------------------
   
@@ -160,7 +154,7 @@ public class FpIssueWindowBlock extends AbstractIssueWindowBlock
    */
   private boolean isInstructionSupported(final String[] allowedInstructions, final String interpretableInstruction)
   {
-    String[]     allInstructions   = precedingTable.getAllowedInstructions();
+    String[]     allInstructions   = Expression.allOperators;
     List<String> foundInstructions = new ArrayList<>();
     String       instruction       = String.copyValueOf(interpretableInstruction.toCharArray());
     for (String operation : allInstructions)

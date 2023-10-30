@@ -35,10 +35,9 @@ package com.gradle.superscalarsim.blocks.arithmetic;
 import com.gradle.superscalarsim.blocks.base.AbstractFunctionUnitBlock;
 import com.gradle.superscalarsim.blocks.base.AbstractIssueWindowBlock;
 import com.gradle.superscalarsim.blocks.base.UnifiedRegisterFileBlock;
-import com.gradle.superscalarsim.code.PrecedingTable;
+import com.gradle.superscalarsim.code.Expression;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
-import com.gradle.superscalarsim.loader.InitLoader;
 import com.gradle.superscalarsim.models.InstructionFunctionModel;
 
 import java.util.ArrayList;
@@ -53,8 +52,6 @@ public class AluIssueWindowBlock extends AbstractIssueWindowBlock
 {
   /// List for all function units associated with this window
   private List<ArithmeticFunctionUnitBlock> functionUnitBlockList;
-  /// Preceding table with all allowed instructions
-  private PrecedingTable precedingTable;
   
   public AluIssueWindowBlock()
   {
@@ -69,13 +66,10 @@ public class AluIssueWindowBlock extends AbstractIssueWindowBlock
    *
    * @brief Constructor
    */
-  public AluIssueWindowBlock(InitLoader loader,
-                             UnifiedRegisterFileBlock registerFileBlock,
-                             PrecedingTable precedingTable)
+  public AluIssueWindowBlock(UnifiedRegisterFileBlock registerFileBlock)
   {
     super(registerFileBlock);
     this.functionUnitBlockList = new ArrayList<>();
-    this.precedingTable        = precedingTable;
   }// end of Constructor
   //----------------------------------------------------------------------
   
@@ -88,6 +82,7 @@ public class AluIssueWindowBlock extends AbstractIssueWindowBlock
   @Override
   public AbstractFunctionUnitBlock selectSufficientFunctionUnit(InstructionFunctionModel instruction)
   {
+    // TODO: distinguish between busy FUs and no compatible FUs
     for (ArithmeticFunctionUnitBlock functionBlock : this.functionUnitBlockList)
     {
       if (functionBlock.isFunctionUnitEmpty() && isInstructionSupported(functionBlock.getAllowedOperators(),
@@ -122,7 +117,7 @@ public class AluIssueWindowBlock extends AbstractIssueWindowBlock
   @Override
   public boolean isCorrectDataType(DataTypeEnum dataType)
   {
-    return dataType == DataTypeEnum.kInt || dataType == DataTypeEnum.kLong;
+    return dataType == DataTypeEnum.kInt || dataType == DataTypeEnum.kLong || dataType == DataTypeEnum.kUInt || dataType == DataTypeEnum.kULong;
   }// end of isCorrectDataType
   //----------------------------------------------------------------------
   
@@ -161,7 +156,7 @@ public class AluIssueWindowBlock extends AbstractIssueWindowBlock
    */
   private boolean isInstructionSupported(String[] allowedInstructions, String interpretableInstruction)
   {
-    String[]     allInstructions   = precedingTable.getAllowedInstructions();
+    String[]     allInstructions   = Expression.allOperators;
     List<String> foundInstructions = new ArrayList<>();
     String       instruction       = String.copyValueOf(interpretableInstruction.toCharArray());
     for (String operation : allInstructions)

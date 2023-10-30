@@ -27,8 +27,13 @@
 
 package com.gradle.superscalarsim.cpu;
 
+import com.gradle.superscalarsim.code.CodeParser;
+import com.gradle.superscalarsim.code.ParseError;
+import com.gradle.superscalarsim.loader.InitLoader;
+
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 // The corresponding Typescript type is:
@@ -131,14 +136,14 @@ public class CpuConfiguration implements Serializable
     config.fUnits[0].id         = 0;
     config.fUnits[0].fuType     = "FX";
     config.fUnits[0].latency    = 2;
-    config.fUnits[0].operations = new String[]{"++", "--", "!", "#", "<-", "+", "-", "*", "/", "%", "&", "|", ">>>", "<<", ">>", "<=", ">=", "==", "<", ">", "(", ")"};
+    config.fUnits[0].operations = new String[]{"!", "bits", "+", "-", "*", "/", "%", "&", "|", "^", ">>>", "<<", ">>", "<=", ">=", "==", "<", ">", "="};
     
     // FP with all ops
     config.fUnits[1]            = new FUnit();
     config.fUnits[1].id         = 1;
     config.fUnits[1].fuType     = "FP";
     config.fUnits[1].latency    = 2;
-    config.fUnits[1].operations = new String[]{"++", "--", "!", "#", "<-", "+", "-", "*", "/", "%", "&", "|", ">>>", "<<", ">>", "<=", ">=", "==", "<", ">", "(", ")"};
+    config.fUnits[1].operations = new String[]{"!", "sqrt", "bits", "float", "fclass", "+", "-", "*", "/", "%", "&", "|", "^", ">>>", "<<", ">>", "<=", ">=", "==", "<", ">", "="};
     
     // L/S
     config.fUnits[2]         = new FUnit();
@@ -173,17 +178,29 @@ public class CpuConfiguration implements Serializable
   
   /**
    * @return ValidationResult
-   * @brief Validates configuration
+   * @brief Validates configuration, including code
    */
   public ValidationResult validate()
   {
     // List of error messages
-    ArrayList<String> errorMessages = new ArrayList<>();
+    List<String>     errorMessages = new ArrayList<>();
+    List<ParseError> codeErrors    = null;
     
     if (code == null)
     {
       errorMessages.add("Code must not be null");
     }
+    
+    // Parse code
+    CodeParser codeParser = new CodeParser(new InitLoader());
+    codeParser.parseCode(code);
+    
+    if (!codeParser.success())
+    {
+      errorMessages.add("Code parsing failed");
+      codeErrors = codeParser.getErrorMessages();
+    }
+    
     // Null checks
     if (fUnits == null)
     {
@@ -365,11 +382,11 @@ public class CpuConfiguration implements Serializable
     
     if (errorMessages.isEmpty())
     {
-      return new ValidationResult(true, null);
+      return new ValidationResult(true, null, null);
     }
     else
     {
-      return new ValidationResult(false, errorMessages);
+      return new ValidationResult(false, errorMessages, codeErrors);
     }
   }
   
@@ -397,12 +414,14 @@ public class CpuConfiguration implements Serializable
   public static class ValidationResult
   {
     public boolean valid;
-    public ArrayList<String> messages;
+    public List<String> messages;
+    public List<ParseError> codeErrors;
     
-    public ValidationResult(boolean valid, ArrayList<String> messages)
+    public ValidationResult(boolean valid, List<String> messages, List<ParseError> codeErrors)
     {
-      this.valid    = valid;
-      this.messages = messages;
+      this.valid      = valid;
+      this.messages   = messages;
+      this.codeErrors = codeErrors;
     }
   }
 }

@@ -1,378 +1,1956 @@
 {
-    "jalr": {
-        "name": "jalr",
-        "inputDataType": "kInt",
-        "outputDataType": "kInt",
-        "instructionType": "kJumpbranch",
-        "instructionSyntax": "jalr rd rs1 imm",
-        "interpretableAs": "jump:rs1+imm"
-    },
-    "bne": {
-        "name": "bne",
-        "inputDataType": "kInt",
-        "outputDataType": "kInt",
-        "instructionType": "kJumpbranch",
-        "instructionSyntax": "bne rs1 rs2 imm",
-        "interpretableAs": "signed:rs1 != rs2"
-    },
-    "add": {
-        "name": "add",
-        "instructionType": "kArithmetic",
-        "inputDataType": "kInt",
-        "outputDataType": "kInt",
-        "instructionSyntax": "add rd rs1 rs2",
-        "interpretableAs": "rd=rs1+rs2;"
-    },
-    "lh": {
-        "name": "lh",
-        "instructionType": "kLoadstore",
-        "inputDataType": "kInt",
-        "outputDataType": "kInt",
-        "instructionSyntax": "lh rd rs1 imm",
-        "interpretableAs": "load half:signed rd rs1 imm;"
-    },
-    "inc": {
-        "name": "inc",
-        "instructionType": "kArithmetic",
-        "inputDataType": "kInt",
-        "outputDataType": "kInt",
-        "instructionSyntax": "inc rd rs1",
-        "interpretableAs": "rd=++rs1;"
-    },
-    "fdiv": {
-        "name": "fdiv",
-        "instructionType": "kArithmetic",
-        "inputDataType": "kFloat",
-        "outputDataType": "kFloat",
-        "instructionSyntax": "fdiv rd rs1 rs2",
-        "interpretableAs": "rd=rs1/rs2;"
-    },
-    "beq": {
-        "name": "beq",
-        "inputDataType": "kInt",
-        "outputDataType": "kInt",
-        "instructionType": "kJumpbranch",
-        "instructionSyntax": "beq rs1 rs2 imm",
-        "interpretableAs": "signed:rs1 == rs2"
-    },
-    "dec": {
-        "name": "dec",
-        "instructionType": "kArithmetic",
-        "inputDataType": "kInt",
-        "outputDataType": "kInt",
-        "instructionSyntax": "dec rd rs1",
-        "interpretableAs": "rd=--rs1;"
-    },
-    "fcvt.l.s": {
-        "name": "fcvt.l.s",
-        "instructionType": "kArithmetic",
-        "inputDataType": "kFloat",
-        "outputDataType": "kLong",
-        "instructionSyntax": "fcvt.l.s rd rs1",
-        "interpretableAs": "rd=rs1<-;"
-    },
-    "bge": {
-        "name": "bge",
-        "inputDataType": "kInt",
-        "outputDataType": "kInt",
-        "instructionType": "kJumpbranch",
-        "instructionSyntax": "bge rs1 rs2 imm",
-        "interpretableAs": "signed:rs1 >= rs2"
-    },
-    "nop": {
-        "name": "nop",
-        "instructionType": "kArithmetic",
-        "inputDataType": "kInt",
-        "outputDataType": "kInt",
-        "instructionSyntax": "nop",
-        "interpretableAs": "0=0+0;"
-    },
-    "sw": {
-        "name": "sw",
-        "inputDataType": "kInt",
-        "outputDataType": "kInt",
-        "instructionType": "kLoadstore",
-        "instructionSyntax": "sw rs2 rs1 imm",
-        "interpretableAs": "store word rs2 rs1 imm"
-    },
-    "sub": {
-        "name": "sub",
-        "inputDataType": "kInt",
-        "outputDataType": "kInt",
-        "instructionType": "kArithmetic",
-        "instructionSyntax": "sub rd rs1 rs2",
-        "interpretableAs": "rd=rs1-rs2;"
-    },
-    "jal": {
-        "name": "jal",
-        "inputDataType": "kInt",
-        "outputDataType": "kInt",
-        "instructionType": "kJumpbranch",
-        "instructionSyntax": "jal rd imm",
-        "interpretableAs": "jump:imm"
-    },
-    "srli": {
-        "name": "srli",
-        "instructionType": "kArithmetic",
-        "inputDataType": "kInt",
-        "outputDataType": "kInt",
-        "instructionSyntax": "srli rd rs1 imm",
-        "interpretableAs": "rd=rs1>>imm;"
-    },
-    "fmul": {
-        "name": "fmul",
-        "instructionType": "kArithmetic",
-        "inputDataType": "kFloat",
-        "outputDataType": "kFloat",
-        "instructionSyntax": "fmul rd rs1 rs2",
-        "interpretableAs": "rd=rs1*rs2;"
-    },
-    "blt": {
-        "name": "blt",
-        "inputDataType": "kInt",
-        "outputDataType": "kInt",
-        "instructionType": "kJumpbranch",
-        "instructionSyntax": "blt rs1 rs2 imm",
-        "interpretableAs": "signed:rs1 < rs2"
-    },
-    "bltu": {
-        "name": "bltu",
-        "inputDataType": "kInt",
-        "outputDataType": "kInt",
-        "instructionType": "kJumpbranch",
-        "instructionSyntax": "bltu rs1 rs2 imm",
-        "interpretableAs": "unsigned:rs1 < rs2"
-    },
-    "fcvt.s.l": {
-        "name": "fcvt.s.l",
-        "instructionType": "kArithmetic",
-        "inputDataType": "kLong",
-        "outputDataType": "kFloat",
-        "instructionSyntax": "fcvt.s.l rd rs1",
-        "interpretableAs": "rd=rs1<-;"
-    },
-    "ld": {
-        "name": "ld",
-        "inputDataType": "kLong",
-        "outputDataType": "kLong",
-        "instructionType": "kLoadstore",
-        "instructionSyntax": "ld rd rs1 imm",
-        "interpretableAs": "load doubleword:signed rd rs1 imm"
-    },
-    "div": {
-        "name": "div",
-        "instructionType": "kArithmetic",
-        "inputDataType": "kInt",
-        "outputDataType": "kInt",
-        "instructionSyntax": "div rd rs1 rs2",
-        "interpretableAs": "rd=rs1/rs2;"
-    },
-    "lb": {
-        "name": "lb",
-        "instructionType": "kLoadstore",
-        "inputDataType": "kInt",
-        "outputDataType": "kInt",
-        "instructionSyntax": "lb rd rs1 imm",
-        "interpretableAs": "load byte:signed rd rs1 imm;"
-    },
-    "fcvt.w.s": {
-        "name": "fcvt.w.s",
-        "instructionType": "kArithmetic",
-        "inputDataType": "kFloat",
-        "outputDataType": "kInt",
-        "instructionSyntax": "fcvt.w.s rd rs1",
-        "interpretableAs": "rd=rs1<-;"
-    },
-    "subi": {
-        "name": "subi",
-        "inputDataType": "kInt",
-        "outputDataType": "kInt",
-        "instructionType": "kArithmetic",
-        "instructionSyntax": "subi rd rs1 imm",
-        "interpretableAs": "rd=rs1-imm;"
-    },
-    "lw": {
-        "name": "lw",
-        "inputDataType": "kInt",
-        "outputDataType": "kInt",
-        "instructionType": "kLoadstore",
-        "instructionSyntax": "lw rd rs1 imm",
-        "interpretableAs": "load word:signed rd rs1 imm"
-    },
-    "addi": {
-        "name": "addi",
-        "inputDataType": "kInt",
-        "outputDataType": "kInt",
-        "instructionType": "kArithmetic",
-        "instructionSyntax": "addi rd rs1 imm",
-        "interpretableAs": "rd=rs1+imm;"
-    },
-    "sb": {
-        "name": "sb",
-        "inputDataType": "kInt",
-        "outputDataType": "kInt",
-        "instructionType": "kLoadstore",
-        "instructionSyntax": "sb rs2 rs1 imm",
-        "interpretableAs": "store byte rs2 rs1 imm"
-    },
-    "srai": {
-        "name": "srai",
-        "instructionType": "kArithmetic",
-        "inputDataType": "kInt",
-        "outputDataType": "kInt",
-        "instructionSyntax": "srai rd rs1 imm",
-        "interpretableAs": "rd=rs1>>>imm;"
-    },
-    "or": {
-        "name": "or",
-        "instructionType": "kArithmetic",
-        "inputDataType": "kInt",
-        "outputDataType": "kInt",
-        "instructionSyntax": "or rd rs1 rs2",
-        "interpretableAs": "rd=rs1|rs2;"
-    },
-    "sh": {
-        "name": "sh",
-        "inputDataType": "kInt",
-        "outputDataType": "kInt",
-        "instructionType": "kLoadstore",
-        "instructionSyntax": "sh rs2 rs1 imm",
-        "interpretableAs": "store half rs2 rs1 imm"
-    },
-    "sd": {
-        "name": "sd",
-        "inputDataType": "kLong",
-        "outputDataType": "kLong",
-        "instructionType": "kLoadstore",
-        "instructionSyntax": "sd rs2 rs1 imm",
-        "interpretableAs": "store doubleword rs2 rs1 imm"
-    },
-    "and": {
-        "name": "and",
-        "instructionType": "kArithmetic",
-        "inputDataType": "kInt",
-        "outputDataType": "kInt",
-        "instructionSyntax": "and rd rs1 rs2",
-        "interpretableAs": "rd=rs1&rs2;"
-    },
-    "flw": {
-        "name": "flw",
-        "inputDataType": "kInt",
-        "outputDataType": "kFloat",
-        "instructionType": "kLoadstore",
-        "instructionSyntax": "flw rd rs1 imm",
-        "interpretableAs": "load float:signed rd rs1 imm"
-    },
-    "slli": {
-        "name": "slli",
-        "instructionType": "kArithmetic",
-        "inputDataType": "kInt",
-        "outputDataType": "kInt",
-        "instructionSyntax": "slli rd rs1 imm",
-        "interpretableAs": "rd=rs1<<imm;"
-    },
-    "fsqrt": {
-        "name": "fsqrt",
-        "instructionType": "kArithmetic",
-        "inputDataType": "kFloat",
-        "outputDataType": "kFloat",
-        "instructionSyntax": "fsqrt rd rs1",
-        "interpretableAs": "rd=rs1#;"
-    },
-    "fsub": {
-        "name": "fsub",
-        "inputDataType": "kFloat",
-        "outputDataType": "kFloat",
-        "instructionType": "kArithmetic",
-        "instructionSyntax": "fsub rd rs1 rs2",
-        "interpretableAs": "rd=rs1-rs2;"
-    },
-    "not": {
-        "name": "not",
-        "instructionType": "kArithmetic",
-        "inputDataType": "kInt",
-        "outputDataType": "kInt",
-        "instructionSyntax": "not rd rs1",
-        "interpretableAs": "rd=!rs1;"
-    },
-    "lwu": {
-        "name": "lwu",
-        "inputDataType": "kInt",
-        "outputDataType": "kInt",
-        "instructionType": "kLoadstore",
-        "instructionSyntax": "lwu rd rs1 imm",
-        "interpretableAs": "load word:unsigned rd rs1 imm"
-    },
-    "lbu": {
-        "name": "lbu",
-        "instructionType": "kLoadstore",
-        "inputDataType": "kInt",
-        "outputDataType": "kInt",
-        "instructionSyntax": "lbu rd rs1 imm",
-        "interpretableAs": "load byte:unsigned rd rs1 imm;"
-    },
-    "fadd": {
-        "name": "fadd",
-        "inputDataType": "kFloat",
-        "outputDataType": "kFloat",
-        "instructionType": "kArithmetic",
-        "instructionSyntax": "fadd rd rs1 rs2",
-        "interpretableAs": "rd=rs1+rs2;"
-    },
-    "fsd": {
-        "name": "fsd",
-        "inputDataType": "kInt",
-        "outputDataType": "kDouble",
-        "instructionType": "kLoadstore",
-        "instructionSyntax": "fsd rs2 rs1 imm",
-        "interpretableAs": "store double rs2 rs1 imm"
-    },
-    "lhu": {
-        "name": "lhu",
-        "instructionType": "kLoadstore",
-        "inputDataType": "kInt",
-        "outputDataType": "kInt",
-        "instructionSyntax": "lhu rd rs1 imm",
-        "interpretableAs": "load half:unsigned rd rs1 imm;"
-    },
-    "fcvt.s.w": {
-        "name": "fcvt.s.w",
-        "instructionType": "kArithmetic",
-        "inputDataType": "kInt",
-        "outputDataType": "kFloat",
-        "instructionSyntax": "fcvt.s.w rd rs1",
-        "interpretableAs": "rd=rs1<-;"
-    },
-    "bgeu": {
-        "name": "bgeu",
-        "inputDataType": "kInt",
-        "outputDataType": "kInt",
-        "instructionType": "kJumpbranch",
-        "instructionSyntax": "bgeu rs1 rs2 imm",
-        "interpretableAs": "unsigned:rs1 >= rs2"
-    },
-    "fld": {
-        "name": "fld",
-        "inputDataType": "kInt",
-        "outputDataType": "kDouble",
-        "instructionType": "kLoadstore",
-        "instructionSyntax": "fld rd rs1 imm",
-        "interpretableAs": "load double:signed rd rs1 imm"
-    },
-    "fsw": {
-        "name": "fsw",
-        "inputDataType": "kInt",
-        "outputDataType": "kFloat",
-        "instructionType": "kLoadstore",
-        "instructionSyntax": "fsw rs2 rs1 imm",
-        "interpretableAs": "store float rs2 rs1 imm"
-    },
-    "mul": {
-        "name": "mul",
-        "instructionType": "kArithmetic",
-        "inputDataType": "kInt",
-        "outputDataType": "kInt",
-        "instructionSyntax": "mul rd rs1 rs2",
-        "interpretableAs": "rd=rs1*rs2;"
-    }
+  "jalr": {
+    "name": "jalr",
+    "instructionType": "kJumpbranch",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kInt",
+        "defaultValue": "x1",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kInt"
+      },
+      {
+        "name": "imm",
+        "type": "kInt",
+        "defaultValue": "0"
+      }
+    ],
+    "interpretableAs": "\\rs1 \\imm +:true"
+  },
+  "bne": {
+    "name": "bne",
+    "instructionType": "kJumpbranch",
+    "arguments": [
+      {
+        "name": "rs1",
+        "type": "kInt"
+      },
+      {
+        "name": "rs2",
+        "type": "kInt"
+      },
+      {
+        "name": "imm",
+        "type": "kInt"
+      }
+    ],
+    "interpretableAs": "\\imm:\\rs1 \\rs2 !="
+  },
+  "add": {
+    "name": "add",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kInt",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kInt"
+      },
+      {
+        "name": "rs2",
+        "type": "kInt"
+      }
+    ],
+    "interpretableAs": "\\rs1 \\rs2 + \\rd ="
+  },
+  "lh": {
+    "name": "lh",
+    "instructionType": "kLoadstore",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kInt",
+        "writeBack": true
+      },
+      {
+        "name": "imm",
+        "type": "kInt"
+      },
+      {
+        "name": "rs1",
+        "type": "kInt"
+      }
+    ],
+    "interpretableAs": "load:16:\\rs1 \\imm +"
+  },
+  "inc": {
+    "name": "inc",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kInt",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kInt"
+      }
+    ],
+    "interpretableAs": "\\rs1 1 + \\rd ="
+  },
+  "fdiv.s": {
+    "name": "fdiv.s",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kFloat",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kFloat"
+      },
+      {
+        "name": "rs2",
+        "type": "kFloat"
+      }
+    ],
+    "interpretableAs": "\\rs1 \\rs2 / \\rd ="
+  },
+  "beq": {
+    "name": "beq",
+    "instructionType": "kJumpbranch",
+    "arguments": [
+      {
+        "name": "rs1",
+        "type": "kInt"
+      },
+      {
+        "name": "rs2",
+        "type": "kInt"
+      },
+      {
+        "name": "imm",
+        "type": "kInt"
+      }
+    ],
+    "interpretableAs": "\\imm \\pc +:\\rs1 \\rs2 =="
+  },
+  "dec": {
+    "name": "dec",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kInt",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kInt"
+      }
+    ],
+    "interpretableAs": "\\rs1 1 - \\rd ="
+  },
+  "fcvt.l.s": {
+    "name": "fcvt.l.s",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kLong",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kFloat"
+      }
+    ],
+    "interpretableAs": "\\rs1 \\rd ="
+  },
+  "bge": {
+    "name": "bge",
+    "instructionType": "kJumpbranch",
+    "arguments": [
+      {
+        "name": "rs1",
+        "type": "kInt"
+      },
+      {
+        "name": "rs2",
+        "type": "kInt"
+      },
+      {
+        "name": "imm",
+        "type": "kInt"
+      }
+    ],
+    "interpretableAs": "\\imm \\pc +:\\rs1 \\rs2 >="
+  },
+  "nop": {
+    "name": "nop",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "",
+        "type": "kInt"
+      }
+    ],
+    "interpretableAs": "0"
+  },
+  "sw": {
+    "name": "sw",
+    "instructionType": "kLoadstore",
+    "arguments": [
+      {
+        "name": "rs2",
+        "type": "kInt"
+      },
+      {
+        "name": "imm",
+        "type": "kInt"
+      },
+      {
+        "name": "rs1",
+        "type": "kInt"
+      }
+    ],
+    "interpretableAs": "store:32:\\rs1 \\imm +:rs2"
+  },
+  "sub": {
+    "name": "sub",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kInt",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kInt"
+      },
+      {
+        "name": "rs2",
+        "type": "kInt"
+      }
+    ],
+    "interpretableAs": "\\rs1 \\rs2 - \\rd ="
+  },
+  "jal": {
+    "name": "jal",
+    "instructionType": "kJumpbranch",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kInt",
+        "writeBack": true,
+        "defaultValue": "x1"
+      },
+      {
+        "name": "imm",
+        "type": "kInt"
+      }
+    ],
+    "interpretableAs": "\\imm \\pc +:true"
+  },
+  "srli": {
+    "name": "srli",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kInt",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kUInt"
+      },
+      {
+        "name": "imm",
+        "type": "kUInt"
+      }
+    ],
+    "interpretableAs": "\\rs1 \\imm >>> \\rd ="
+  },
+  "fmul.s": {
+    "name": "fmul.s",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kFloat",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kFloat"
+      },
+      {
+        "name": "rs2",
+        "type": "kFloat"
+      }
+    ],
+    "interpretableAs": "\\rs1 \\rs2 * \\rd ="
+  },
+  "blt": {
+    "name": "blt",
+    "instructionType": "kJumpbranch",
+    "arguments": [
+      {
+        "name": "rs1",
+        "type": "kInt"
+      },
+      {
+        "name": "rs2",
+        "type": "kInt"
+      },
+      {
+        "name": "imm",
+        "type": "kInt"
+      }
+    ],
+    "interpretableAs": "\\imm \\pc +:\\rs1 \\rs2 <"
+  },
+  "bltu": {
+    "name": "bltu",
+    "instructionType": "kJumpbranch",
+    "arguments": [
+      {
+        "name": "rs1",
+        "type": "kUInt"
+      },
+      {
+        "name": "rs2",
+        "type": "kUInt"
+      },
+      {
+        "name": "imm",
+        "type": "kInt"
+      }
+    ],
+    "interpretableAs": "\\imm:\\rs1 \\rs2 <"
+  },
+  "fcvt.s.l": {
+    "name": "fcvt.s.l",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kFloat",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kLong"
+      }
+    ],
+    "interpretableAs": "\\rs1 \\rd ="
+  },
+  "ld": {
+    "name": "ld",
+    "instructionType": "kLoadstore",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kLong",
+        "writeBack": true
+      },
+      {
+        "name": "imm",
+        "type": "kLong"
+      },
+      {
+        "name": "rs1",
+        "type": "kLong"
+      }
+    ],
+    "interpretableAs": "load:64:\\rs1 \\imm +"
+  },
+  "div": {
+    "name": "div",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kInt",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kInt"
+      },
+      {
+        "name": "rs2",
+        "type": "kInt"
+      }
+    ],
+    "interpretableAs": "\\rs1 \\rs2 / \\rd ="
+  },
+  "divu": {
+    "name": "divu",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kUInt",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kUInt"
+      },
+      {
+        "name": "rs2",
+        "type": "kUInt"
+      }
+    ],
+    "interpretableAs": "\\rs1 \\rs2 / \\rd ="
+  },
+  "rem": {
+    "name": "rem",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kInt",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kInt"
+      },
+      {
+        "name": "rs2",
+        "type": "kInt"
+      }
+    ],
+    "interpretableAs": "\\rs1 \\rs2 % \\rd ="
+  },
+  "remu": {
+    "name": "remu",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kUInt",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kUInt"
+      },
+      {
+        "name": "rs2",
+        "type": "kUInt"
+      }
+    ],
+    "interpretableAs": "\\rs1 \\rs2 % \\rd ="
+  },
+  "lb": {
+    "name": "lb",
+    "instructionType": "kLoadstore",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kInt",
+        "writeBack": true
+      },
+      {
+        "name": "imm",
+        "type": "kInt"
+      },
+      {
+        "name": "rs1",
+        "type": "kInt"
+      }
+    ],
+    "interpretableAs": "load:8:\\rs1 \\imm +"
+  },
+  "fcvt.w.s": {
+    "name": "fcvt.w.s",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kInt",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kFloat"
+      }
+    ],
+    "interpretableAs": "\\rs1 \\rd ="
+  },
+  "subi": {
+    "name": "subi",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kInt",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kInt"
+      },
+      {
+        "name": "imm",
+        "type": "kInt"
+      }
+    ],
+    "interpretableAs": "\\rs1 \\imm - \\rd ="
+  },
+  "lw": {
+    "name": "lw",
+    "instructionType": "kLoadstore",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kInt",
+        "writeBack": true
+      },
+      {
+        "name": "imm",
+        "type": "kInt"
+      },
+      {
+        "name": "rs1",
+        "type": "kInt"
+      }
+    ],
+    "interpretableAs": "load:32:\\rs1 \\imm +"
+  },
+  "addi": {
+    "name": "addi",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kInt",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kInt"
+      },
+      {
+        "name": "imm",
+        "type": "kInt"
+      }
+    ],
+    "interpretableAs": "\\rs1 \\imm + \\rd ="
+  },
+  "sb": {
+    "name": "sb",
+    "instructionType": "kLoadstore",
+    "arguments": [
+      {
+        "name": "rs2",
+        "type": "kInt"
+      },
+      {
+        "name": "imm",
+        "type": "kInt"
+      },
+      {
+        "name": "rs1",
+        "type": "kInt"
+      }
+    ],
+    "interpretableAs": "store:8:\\rs1 \\imm +:rs2"
+  },
+  "srai": {
+    "name": "srai",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kInt",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kInt"
+      },
+      {
+        "name": "imm",
+        "type": "kInt"
+      }
+    ],
+    "interpretableAs": "\\rs1 \\imm >> \\rd ="
+  },
+  "or": {
+    "name": "or",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kInt",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kInt"
+      },
+      {
+        "name": "rs2",
+        "type": "kInt"
+      }
+    ],
+    "interpretableAs": "\\rs1 \\rs2 | \\rd ="
+  },
+  "sh": {
+    "name": "sh",
+    "instructionType": "kLoadstore",
+    "arguments": [
+      {
+        "name": "rs2",
+        "type": "kInt"
+      },
+      {
+        "name": "imm",
+        "type": "kInt"
+      },
+      {
+        "name": "rs1",
+        "type": "kInt"
+      }
+    ],
+    "interpretableAs": "store:16:\\rs1 \\imm +:rs2"
+  },
+  "sd": {
+    "name": "sd",
+    "instructionType": "kLoadstore",
+    "arguments": [
+      {
+        "name": "rs2",
+        "type": "kLong"
+      },
+      {
+        "name": "imm",
+        "type": "kLong"
+      },
+      {
+        "name": "rs1",
+        "type": "kLong"
+      }
+    ],
+    "interpretableAs": "store:64:\\rs1 \\imm +:rs2"
+  },
+  "and": {
+    "name": "and",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kInt",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kInt"
+      },
+      {
+        "name": "rs2",
+        "type": "kInt"
+      }
+    ],
+    "interpretableAs": "\\rs1 \\rs2 & \\rd ="
+  },
+  "flw": {
+    "name": "flw",
+    "instructionType": "kLoadstore",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kFloat",
+        "writeBack": true
+      },
+      {
+        "name": "imm",
+        "type": "kInt"
+      },
+      {
+        "name": "rs1",
+        "type": "kInt"
+      }
+    ],
+    "interpretableAs": "load:32:\\rs1 \\imm +"
+  },
+  "slli": {
+    "name": "slli",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kInt",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kInt"
+      },
+      {
+        "name": "imm",
+        "type": "kInt"
+      }
+    ],
+    "interpretableAs": "\\rs1 \\imm << \\rd ="
+  },
+  "fsqrt.s": {
+    "name": "fsqrt.s",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kFloat",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kFloat"
+      }
+    ],
+    "interpretableAs": "\\rs1 sqrt \\rd ="
+  },
+  "fsub.s": {
+    "name": "fsub.s",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kFloat",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kFloat"
+      },
+      {
+        "name": "rs2",
+        "type": "kFloat"
+      }
+    ],
+    "interpretableAs": "\\rs1 \\rs2 - \\rd ="
+  },
+  "not": {
+    "name": "not",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kInt",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kInt"
+      }
+    ],
+    "interpretableAs": "\\rs1 ! \\rd ="
+  },
+  "lwu": {
+    "name": "lwu",
+    "instructionType": "kLoadstore",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kULong",
+        "writeBack": true
+      },
+      {
+        "name": "imm",
+        "type": "kInt"
+      },
+      {
+        "name": "rs1",
+        "type": "kInt"
+      }
+    ],
+    "interpretableAs": "load:32:\\rs1 \\imm +"
+  },
+  "lbu": {
+    "name": "lbu",
+    "instructionType": "kLoadstore",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kUInt",
+        "writeBack": true
+      },
+      {
+        "name": "imm",
+        "type": "kInt"
+      },
+      {
+        "name": "rs1",
+        "type": "kInt"
+      }
+    ],
+    "interpretableAs": "load:8:\\rs1 \\imm +"
+  },
+  "fadd.s": {
+    "name": "fadd.s",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kFloat",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kFloat"
+      },
+      {
+        "name": "rs2",
+        "type": "kFloat"
+      }
+    ],
+    "interpretableAs": "\\rs1 \\rs2 + \\rd ="
+  },
+  "fsd": {
+    "name": "fsd",
+    "instructionType": "kLoadstore",
+    "arguments": [
+      {
+        "name": "rs2",
+        "type": "kDouble"
+      },
+      {
+        "name": "imm",
+        "type": "kInt"
+      },
+      {
+        "name": "rs1",
+        "type": "kInt"
+      }
+    ],
+    "interpretableAs": "store:32:\\rs1 \\imm +:rs2"
+  },
+  "lhu": {
+    "name": "lhu",
+    "instructionType": "kLoadstore",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kUInt",
+        "writeBack": true
+      },
+      {
+        "name": "imm",
+        "type": "kInt"
+      },
+      {
+        "name": "rs1",
+        "type": "kInt"
+      }
+    ],
+    "interpretableAs": "load:16:\\rs1 \\imm +"
+  },
+  "fcvt.s.w": {
+    "name": "fcvt.s.w",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kFloat",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kInt"
+      }
+    ],
+    "interpretableAs": "\\rs1 \\rd ="
+  },
+  "bgeu": {
+    "name": "bgeu",
+    "instructionType": "kJumpbranch",
+    "arguments": [
+      {
+        "name": "rs1",
+        "type": "kUInt"
+      },
+      {
+        "name": "rs2",
+        "type": "kUInt"
+      },
+      {
+        "name": "imm",
+        "type": "kInt"
+      }
+    ],
+    "interpretableAs": "\\imm \\pc +:\\rs1 \\rs2 >="
+  },
+  "fld": {
+    "name": "fld",
+    "instructionType": "kLoadstore",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kDouble",
+        "writeBack": true
+      },
+      {
+        "name": "imm",
+        "type": "kInt"
+      },
+      {
+        "name": "rs1",
+        "type": "kInt"
+      }
+    ],
+    "interpretableAs": "load:32:\\rs1 \\imm +"
+  },
+  "fsw": {
+    "name": "fsw",
+    "instructionType": "kLoadstore",
+    "arguments": [
+      {
+        "name": "rs2",
+        "type": "kFloat"
+      },
+      {
+        "name": "imm",
+        "type": "kInt"
+      },
+      {
+        "name": "rs1",
+        "type": "kInt"
+      }
+    ],
+    "interpretableAs": "store:32:\\rs1 \\imm +:rs2"
+  },
+  "mul": {
+    "name": "mul",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kInt",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kInt"
+      },
+      {
+        "name": "rs2",
+        "type": "kInt"
+      }
+    ],
+    "interpretableAs": "\\rs1 \\rs2 * \\rd ="
+  },
+  "xor": {
+    "name": "xor",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kInt",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kInt"
+      },
+      {
+        "name": "rs2",
+        "type": "kInt"
+      }
+    ],
+    "interpretableAs": "\\rs1 \\rs2 ^ \\rd ="
+  },
+  "xori": {
+    "name": "xori",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kInt",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kInt"
+      },
+      {
+        "name": "imm",
+        "type": "kInt"
+      }
+    ],
+    "interpretableAs": "\\rs1 \\imm ^ \\rd ="
+  },
+  "sll": {
+    "name": "sll",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kInt",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kInt"
+      },
+      {
+        "name": "rs2",
+        "type": "kInt"
+      }
+    ],
+    "interpretableAs": "\\rs1 \\rs2 << \\rd ="
+  },
+  "srl": {
+    "name": "srl",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kInt",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kInt"
+      },
+      {
+        "name": "rs2",
+        "type": "kInt"
+      }
+    ],
+    "interpretableAs": "\\rs1 \\rs2 >>> \\rd ="
+  },
+  "sra": {
+    "name": "sra",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kInt",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kInt"
+      },
+      {
+        "name": "rs2",
+        "type": "kInt"
+      }
+    ],
+    "interpretableAs": "\\rs1 \\rs2 >> \\rd ="
+  },
+  "slt": {
+    "name": "slt",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kInt",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kInt"
+      },
+      {
+        "name": "rs2",
+        "type": "kInt"
+      }
+    ],
+    "interpretableAs": "\\rs1 \\rs2 < \\rd ="
+  },
+  "slti": {
+    "name": "slti",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kInt",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kInt"
+      },
+      {
+        "name": "imm",
+        "type": "kInt"
+      }
+    ],
+    "interpretableAs": "\\rs1 \\imm < \\rd ="
+  },
+  "sltu": {
+    "name": "sltu",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kInt",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kUInt"
+      },
+      {
+        "name": "rs2",
+        "type": "kUInt"
+      }
+    ],
+    "interpretableAs": "\\rs1 \\rs2 < \\rd ="
+  },
+  "sltiu": {
+    "name": "sltiu",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kInt",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kUInt"
+      },
+      {
+        "name": "imm",
+        "type": "kUInt"
+      }
+    ],
+    "interpretableAs": "\\rs1 \\imm < \\rd ="
+  },
+  "ori": {
+    "name": "ori",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kInt",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kInt"
+      },
+      {
+        "name": "imm",
+        "type": "kInt"
+      }
+    ],
+    "interpretableAs": "\\rs1 \\imm | \\rd ="
+  },
+  "andi": {
+    "name": "andi",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kInt",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kInt"
+      },
+      {
+        "name": "imm",
+        "type": "kInt"
+      }
+    ],
+    "interpretableAs": "\\rs1 \\imm & \\rd ="
+  },
+  "lui": {
+    "name": "lui",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kInt",
+        "writeBack": true
+      },
+      {
+        "name": "imm",
+        "type": "kInt"
+      }
+    ],
+    "interpretableAs": "\\imm 12 << \\rd ="
+  },
+  "auipc": {
+    "name": "auipc",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kInt",
+        "writeBack": true
+      },
+      {
+        "name": "imm",
+        "type": "kInt"
+      }
+    ],
+    "interpretableAs": "\\imm 12 << \\pc + \\rd ="
+  },
+  "li": {
+    "name": "li",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kInt",
+        "writeBack": true
+      },
+      {
+        "name": "imm",
+        "type": "kInt"
+      }
+    ],
+    "interpretableAs": "\\imm \\rd ="
+  },
+  "mv": {
+    "name": "mv",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kInt",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kInt"
+      }
+    ],
+    "interpretableAs": "\\rs1 \\rd ="
+  },
+  "neg": {
+    "name": "neg",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kInt",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kInt"
+      }
+    ],
+    "interpretableAs": "0 \\rs1 - \\rd ="
+  },
+  "seqz": {
+    "name": "seqz",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kInt",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kInt"
+      }
+    ],
+    "interpretableAs": "\\rs1 0 == \\rd ="
+  },
+  "snez": {
+    "name": "snez",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kInt",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kInt"
+      }
+    ],
+    "interpretableAs": "\\rs1 0 != \\rd ="
+  },
+  "sltz": {
+    "name": "sltz",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kInt",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kInt"
+      }
+    ],
+    "interpretableAs": "\\rs1 0 < \\rd ="
+  },
+  "sgtz": {
+    "name": "sgtz",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kInt",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kInt"
+      }
+    ],
+    "interpretableAs": "\\rs1 0 > \\rd ="
+  },
+  "beqz": {
+    "name": "beqz",
+    "instructionType": "kJumpbranch",
+    "arguments": [
+      {
+        "name": "rs1",
+        "type": "kInt"
+      },
+      {
+        "name": "imm",
+        "type": "kInt"
+      }
+    ],
+    "interpretableAs": "\\imm:\\rs1 0 =="
+  },
+  "bnez": {
+    "name": "bnez",
+    "instructionType": "kJumpbranch",
+    "arguments": [
+      {
+        "name": "rs1",
+        "type": "kInt"
+      },
+      {
+        "name": "imm",
+        "type": "kInt"
+      }
+    ],
+    "interpretableAs": "\\imm:\\rs1 0 !="
+  },
+  "blez": {
+    "name": "blez",
+    "instructionType": "kJumpbranch",
+    "arguments": [
+      {
+        "name": "rs1",
+        "type": "kInt"
+      },
+      {
+        "name": "imm",
+        "type": "kInt"
+      }
+    ],
+    "interpretableAs": "\\imm \\pc +:\\rs1 0 <="
+  },
+  "bgez": {
+    "name": "bgez",
+    "instructionType": "kJumpbranch",
+    "arguments": [
+      {
+        "name": "rs1",
+        "type": "kInt"
+      },
+      {
+        "name": "imm",
+        "type": "kInt"
+      }
+    ],
+    "interpretableAs": "\\imm \\pc +:\\rs1 0 >="
+  },
+  "bltz": {
+    "name": "bltz",
+    "instructionType": "kJumpbranch",
+    "arguments": [
+      {
+        "name": "rs1",
+        "type": "kInt"
+      },
+      {
+        "name": "imm",
+        "type": "kInt"
+      }
+    ],
+    "interpretableAs": "\\imm \\pc +:\\rs1 0 <"
+  },
+  "bgtz": {
+    "name": "bgtz",
+    "instructionType": "kJumpbranch",
+    "arguments": [
+      {
+        "name": "rs1",
+        "type": "kInt"
+      },
+      {
+        "name": "imm",
+        "type": "kInt"
+      }
+    ],
+    "interpretableAs": "\\imm \\pc +:\\rs1 0 >"
+  },
+  "bgt": {
+    "name": "bgt",
+    "instructionType": "kJumpbranch",
+    "arguments": [
+      {
+        "name": "rs1",
+        "type": "kInt"
+      },
+      {
+        "name": "rs2",
+        "type": "kInt"
+      },
+      {
+        "name": "imm",
+        "type": "kInt"
+      }
+    ],
+    "interpretableAs": "\\imm \\pc +:\\rs1 \\rs2 >"
+  },
+  "ble": {
+    "name": "ble",
+    "instructionType": "kJumpbranch",
+    "arguments": [
+      {
+        "name": "rs1",
+        "type": "kInt"
+      },
+      {
+        "name": "rs2",
+        "type": "kInt"
+      },
+      {
+        "name": "imm",
+        "type": "kInt"
+      }
+    ],
+    "interpretableAs": "\\imm \\pc +:\\rs1 \\rs2 <="
+  },
+  "bgtu": {
+    "name": "bgtu",
+    "instructionType": "kJumpbranch",
+    "arguments": [
+      {
+        "name": "rs1",
+        "type": "kUInt"
+      },
+      {
+        "name": "rs2",
+        "type": "kUInt"
+      },
+      {
+        "name": "imm",
+        "type": "kInt"
+      }
+    ],
+    "interpretableAs": "\\imm \\pc +:\\rs1 \\rs2 >"
+  },
+  "bleu": {
+    "name": "bleu",
+    "instructionType": "kJumpbranch",
+    "arguments": [
+      {
+        "name": "rs1",
+        "type": "kUInt"
+      },
+      {
+        "name": "rs2",
+        "type": "kUInt"
+      },
+      {
+        "name": "imm",
+        "type": "kInt"
+      }
+    ],
+    "interpretableAs": "\\imm \\pc +:\\rs1 \\rs2 <="
+  },
+  "j": {
+    "name": "j",
+    "instructionType": "kJumpbranch",
+    "arguments": [
+      {
+        "name": "imm",
+        "type": "kInt"
+      }
+    ],
+    "interpretableAs": "\\imm \\pc +:true"
+  },
+  "jr": {
+    "name": "jr",
+    "instructionType": "kJumpbranch",
+    "arguments": [
+      {
+        "name": "rs1",
+        "type": "kInt"
+      }
+    ],
+    "interpretableAs": "\\rs1 \\pc +:true"
+  },
+  "ret": {
+    "name": "ret",
+    "instructionType": "kJumpbranch",
+    "instructionSyntax": "ret",
+    "arguments": [
+      {
+        "name": "rd1",
+        "type": "kInt",
+        "defaultValue": "x1",
+        "silent": true
+      }
+    ],
+    "interpretableAs": "\\rd1:true"
+  },
+  "call": {
+    "name": "call",
+    "instructionType": "kJumpbranch",
+    "arguments": [
+      {
+        "name": "rd1",
+        "type": "kInt",
+        "defaultValue": "x1",
+        "writeBack": true,
+        "silent": true
+      },
+      {
+        "name": "imm",
+        "type": "kInt"
+      }
+    ],
+    "interpretableAs": "\\pc 4 + \\rd1 = \\imm:true"
+  },
+  "tail": {
+    "name": "tail",
+    "instructionType": "kJumpbranch",
+    "arguments": [
+      {
+        "name": "imm",
+        "type": "kInt"
+      }
+    ],
+    "interpretableAs": "\\imm:true"
+  },
+  "mulh": {
+    "name": "mulh",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kInt",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kInt"
+      },
+      {
+        "name": "rs2",
+        "type": "kInt"
+      }
+    ],
+    "interpretableAs": "\\rs1 \\rs2 * 32l >> \\rd ="
+  },
+  "mulhu": {
+    "name": "mulhu",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kInt",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kUInt"
+      },
+      {
+        "name": "rs2",
+        "type": "kUInt"
+      }
+    ],
+    "interpretableAs": "\\rs1 \\rs2 * 32l >> \\rd ="
+  },
+  "mulhsu": {
+    "name": "mulhsu",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kInt",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kInt"
+      },
+      {
+        "name": "rs2",
+        "type": "kUInt"
+      }
+    ],
+    "interpretableAs": "\\rs1 \\rs2 * 32l >> \\rd ="
+  },
+  "fmin.s": {
+    "name": "fmin.s",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kFloat",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kFloat"
+      },
+      {
+        "name": "rs2",
+        "type": "kFloat"
+      }
+    ],
+    "interpretableAs": "\\rs1 \\rs2 \\rs1 \\rs2 > pick \\rd ="
+  },
+  "fmax.s": {
+    "name": "fmax.s",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kFloat",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kFloat"
+      },
+      {
+        "name": "rs2",
+        "type": "kFloat"
+      }
+    ],
+    "interpretableAs": "\\rs1 \\rs2 \\rs1 \\rs2 < pick \\rd ="
+  },
+  "fmadd.s": {
+    "name": "fmadd.s",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kFloat",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kFloat"
+      },
+      {
+        "name": "rs2",
+        "type": "kFloat"
+      },
+      {
+        "name": "rs3",
+        "type": "kFloat"
+      }
+    ],
+    "interpretableAs": "\\rs1 \\rs2 * \\rs3 + \\rd ="
+  },
+  "fmsub.s": {
+    "name": "fmsub.s",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kFloat",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kFloat"
+      },
+      {
+        "name": "rs2",
+        "type": "kFloat"
+      },
+      {
+        "name": "rs3",
+        "type": "kFloat"
+      }
+    ],
+    "interpretableAs": "\\rs1 \\rs2 * \\rs3 - \\rd ="
+  },
+  "fnmadd.s": {
+    "name": "fnmadd.s",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kFloat",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kFloat"
+      },
+      {
+        "name": "rs2",
+        "type": "kFloat"
+      },
+      {
+        "name": "rs3",
+        "type": "kFloat"
+      }
+    ],
+    "interpretableAs": "0.0f \\rs1 - \\rs2 * \\rs3 - \\rd ="
+  },
+  "fnmsub.s": {
+    "name": "fnmsub.s",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kFloat",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kFloat"
+      },
+      {
+        "name": "rs2",
+        "type": "kFloat"
+      },
+      {
+        "name": "rs3",
+        "type": "kFloat"
+      }
+    ],
+    "interpretableAs": "0.0f \\rs1 - \\rs2 * \\rs3 + \\rd ="
+  },
+  "fsgnj.s": {
+    "name": "fsgnj.s",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kFloat",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kFloat"
+      },
+      {
+        "name": "rs2",
+        "type": "kFloat"
+      }
+    ],
+    "interpretableAs": "\\rs1 bits 0x7fffffff & \\rs2 bits 0x80000000 & | float \\rd ="
+  },
+  "fsgnjn.s": {
+    "name": "fsgnjn.s",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kFloat",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kFloat"
+      },
+      {
+        "name": "rs2",
+        "type": "kFloat"
+      }
+    ],
+    "interpretableAs": "\\rs1 bits 0x7fffffff & \\rs2 bits ! 0x80000000 & | float \\rd ="
+  },
+  "fsgnjx.s": {
+    "name": "fsgnjx.s",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kFloat",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kFloat"
+      },
+      {
+        "name": "rs2",
+        "type": "kFloat"
+      }
+    ],
+    "interpretableAs": "\\rs1 bits \\rs2 bits 0x80000000 & ^ float \\rd ="
+  },
+  "fmv.s": {
+    "name": "fmv.s",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kFloat",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kFloat"
+      }
+    ],
+    "interpretableAs": "\\rs1 \\rd ="
+  },
+  "fneg.s": {
+    "name": "fneg.s",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kFloat",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kFloat"
+      }
+    ],
+    "interpretableAs": "0.0f \\rs1 - \\rd ="
+  },
+  "fabs.s": {
+    "name": "fabs.s",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kFloat",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kFloat"
+      }
+    ],
+    "interpretableAs": "\\rs1 bits 0x7fffffff & float \\rd ="
+  },
+  "fmv.x.w": {
+    "name": "fmv.x.w",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kInt",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kFloat"
+      }
+    ],
+    "interpretableAs": "\\rs1 bits \\rd ="
+  },
+  "fmv.w.x": {
+    "name": "fmv.w.x",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kFloat",
+        "writeBack": true
+      },
+      {
+        "name": "rs2",
+        "type": "kInt"
+      }
+    ],
+    "interpretableAs": "\\rs2 float \\rd ="
+  },
+  "flt.s": {
+    "name": "flt.s",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kUInt",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kFloat"
+      },
+      {
+        "name": "rs2",
+        "type": "kFloat"
+      }
+    ],
+    "interpretableAs": "\\rs1 \\rs2 < \\rd ="
+  },
+  "fle.s": {
+    "name": "fle.s",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kUInt",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kFloat"
+      },
+      {
+        "name": "rs2",
+        "type": "kFloat"
+      }
+    ],
+    "interpretableAs": "\\rs1 \\rs2 <= \\rd ="
+  },
+  "feq.s": {
+    "name": "feq.s",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kUInt",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kFloat"
+      },
+      {
+        "name": "rs2",
+        "type": "kFloat"
+      }
+    ],
+    "interpretableAs": "\\rs1 \\rs2 == \\rd ="
+  },
+  "fclass.s": {
+    "name": "fclass.s",
+    "instructionType": "kArithmetic",
+    "dataType": "kFloat",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kUInt",
+        "writeBack": true
+      },
+      {
+        "name": "rs1",
+        "type": "kFloat"
+      }
+    ],
+    "interpretableAs": "\\rs1 fclass \\rd ="
+  }
 }

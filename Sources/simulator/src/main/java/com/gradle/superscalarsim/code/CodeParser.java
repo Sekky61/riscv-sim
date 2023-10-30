@@ -1,17 +1,11 @@
 /**
  * @file CodeParser.java
- * @author Jan Vavra \n
- * Faculty of Information Technology \n
- * Brno University of Technology \n
- * xvavra20@fit.vutbr.cz
  * @author Michal Majer
  * Faculty of Information Technology
  * Brno University of Technology
  * xmajer21@stud.fit.vutbr.cz
- * @brief File contains parser for user made code
- * @date 10 November  2020 18:00 (created) \n
- * 12 May       2020 11:00 (revised)
- * 26 Sep      2023 10:00 (revised)
+ * @brief File contains parser for parsing and validating ASM code
+ * @date 10 October  2023 18:00 (created)
  * @section Licence
  * This file is part of the Superscalar simulator app
  * <p>
@@ -30,352 +24,272 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package com.gradle.superscalarsim.code;
 
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
+import com.gradle.superscalarsim.enums.RegisterTypeEnum;
 import com.gradle.superscalarsim.loader.InitLoader;
-import com.gradle.superscalarsim.models.*;
+import com.gradle.superscalarsim.models.InputCodeArgument;
+import com.gradle.superscalarsim.models.InputCodeModel;
+import com.gradle.superscalarsim.models.InstructionFunctionModel;
+import com.gradle.superscalarsim.models.register.RegisterFileModel;
+import com.gradle.superscalarsim.models.register.RegisterModel;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * @class CodeParser
- * @brief Parses provided string of code
- * @detail Class which provides parsing logic for written code in assembly. Code shall contain instructions loaded
+ * @brief Transforms tokens from the lexer into instructions and labels
+ * @details Class which provides parsing logic for code written in assembly. Code shall contain instructions loaded
  * by InitLoader. Class also verifies parsed code and in case of failure, error message will be provided with
- * line number and cause.
+ * line number and cause. Conforms to GCC RISC-V syntax.
  */
 public class CodeParser
 {
   /**
-   * Pattern for matching hexadecimal values in argument
+   * Descriptions of all instructions
    */
-  private final transient Pattern hexadecimalPattern;
+  Map<String, InstructionFunctionModel> instructionModels;
+  
   /**
-   * Pattern for matching decimal values in argument
+   * Descriptions of all register files
    */
-  private final transient Pattern decimalPattern;
+  List<RegisterFileModel> registerFileModelList;
+  
   /**
-   * Pattern for matching register tags in instructionSyntax value of instruction
+   * Lexer for parsing the code
    */
-  private final transient Pattern registerPattern;
+  Lexer lexer;
+  
   /**
-   * Pattern for splitting instruction arguments
+   * Current token
    */
-  private final transient Pattern splitArgsPattern;
+  CodeToken currentToken;
+  
   /**
-   * Pattern for matching immediate tags in instructionSyntax value of instruction
+   * Peek token
    */
-  private final transient Pattern immediatePattern;
+  CodeToken peekToken;
+  
   /**
-   * Pattern for matching labels in code
+   * Result of the parsing - list of instructions.
    */
-  private final transient Pattern labelPattern;
+  List<InputCodeModel> instructions;
+  
+  /**
+   * Result of the parsing - list of labels.
+   */
+  Map<String, Integer> labels;
+  
+  /**
+   * Unconfirmed labels
+   */
+  List<CodeToken> unconfirmedLabels;
+  
   /**
    * Error messages from parsing ASM code.
-   * TODO: Remove from the instance, return it from parse instead.
    *
    * @brief List of error messages
    */
-  private final List<ParseError> errorMessages;
-  /**
-   * InitLoader object with loaded instructions and registers
-   */
-  private final InitLoader initLoader;
-  /**
-   * List of parsed instructions
-   */
-  private List<InputCodeModel> parsedCode;
+  List<ParseError> errorMessages;
+  
+  Pattern decimalPattern;
+  Pattern hexadecimalPattern;
+  Pattern registerPattern;
+  Pattern immediatePattern;
   
   /**
-   * The strings are without the colon at the end.
-   * Label can point after the last instruction.
-   *
-   * @brief List of all labels
+   * The aliases between registers.
+   * The key is the architecture name (x0), the value is the alias (zero).
+   * Must be a list - register x8 has two aliases (s0 and fp).
    */
-  private Map<String, Integer> labels;
+  private List<InitLoader.RegisterMapping> registerAliases;
   
   /**
-   * Nop instruction is instantiated once and reused, to have all SimCodeModel objects point to the same object.
-   *
-   * @brief Nop instruction
+   * @brief Constructor when initloader is available
    */
-  private final InputCodeModel nop;
+  public CodeParser(InitLoader initLoader)
+  {
+    this(initLoader.getInstructionFunctionModels(), initLoader.getRegisterFileModelList(),
+         initLoader.getRegisterAliases());
+  }
   
   /**
-   * @param [in] initLoader - InitLoader object with loaded instructions and registers
-   *
    * @brief Constructor
    */
-  public CodeParser(final InitLoader initLoader)
+  public CodeParser(Map<String, InstructionFunctionModel> instructionModels,
+                    List<RegisterFileModel> registerFileModelList,
+                    List<InitLoader.RegisterMapping> registerAliases)
   {
-    this.initLoader         = initLoader;
-    this.errorMessages      = new ArrayList<>();
-    this.parsedCode         = new ArrayList<>();
-    this.labels             = new TreeMap<>();
+    this.registerFileModelList = registerFileModelList;
+    this.instructionModels     = instructionModels;
+    this.registerAliases       = registerAliases;
+    this.lexer                 = null;
+    this.currentToken          = null;
+    this.peekToken             = null;
+    this.errorMessages         = new ArrayList<>();
+    this.unconfirmedLabels     = new ArrayList<>();
+    
     this.decimalPattern     = Pattern.compile("-?\\d+(\\.\\d+)?");
     this.hexadecimalPattern = Pattern.compile("0x\\p{XDigit}+");
     this.registerPattern    = Pattern.compile("r[d,s]\\d*");
-    // Any number of spaces, at most one comma between them
-    this.splitArgsPattern = Pattern.compile("\\s*[,\\s]\\s*");
-    this.immediatePattern = Pattern.compile("imm\\d*");
-    // Anything with a colon at the end
-    this.labelPattern = Pattern.compile("^[a-zA-Z0-9\\.]+:");
-    this.nop          = new InputCodeModel(null, "nop", new ArrayList<>(), null, null, 0);
-  }// end of Constructor
-  
-  /**
-   * Does not check unused labels.
-   *
-   * @param codeString String holding unparsed code
-   *
-   * @return True, in case no errors arises, otherwise false
-   * @brief Parse whole string with code
-   */
-  public boolean parse(final String codeString)
-  {
-    this.errorMessages.clear();
-    this.parsedCode.clear();
-    this.labels.clear();
+    this.immediatePattern   = Pattern.compile("imm\\d*");
     
-    if (codeString == null)
-    {
-      this.errorMessages.add(new ParseError("error", "Code was not provided."));
-      return false;
-    }
-    
-    List<CodeToken> tokens = tokenize(codeString);
-    
-    // First pass - collect all labels
-    collectLabels(tokens);
-    // Second pass - parse instructions
-    parseInstructions(tokens);
-    boolean result = this.errorMessages.isEmpty();
-    
-    if (!result)
-    {
-      parsedCode.clear();
-    }
-    return result;
-  }// end of parse
-  
-  /**
-   * Code tokenizer - produces a list of words, commas, labels and newlines.
-   *
-   * @param code Code to tokenize
-   *
-   * @return List of tokens
-   */
-  public List<CodeToken> tokenize(final String code)
-  {
-    List<CodeToken> tokens = new ArrayList<>();
-    // Split lines
-    String[] lines = code.split("\n");
-    // 1-based line index
-    
-    for (int i = 0; i < lines.length; i++)
-    {
-      int currentLineIndex = i + 1;
-      
-      // Remove comments
-      String line = lines[i].split("#", 2)[0];
-      
-      // Split the code to words and commas
-      Pattern pattern = Pattern.compile("[\\w\\.\\(\\)-]+:?|,");
-      Matcher matcher = pattern.matcher(line);
-      while (matcher.find())
-      {
-        String token = matcher.group();
-        int    col   = matcher.start() + 1;
-        if (token.equals(","))
-        {
-          tokens.add(new CodeToken(currentLineIndex, col, token, CodeToken.Type.COMMA));
-        }
-        else if (labelPattern.matcher(token).matches())
-        {
-          // Remove the colon
-          String label = token.substring(0, token.length() - 1);
-          tokens.add(new CodeToken(currentLineIndex, col, label, CodeToken.Type.LABEL));
-        }
-        else
-        {
-          tokens.add(new CodeToken(currentLineIndex, col, token, CodeToken.Type.WORD));
-        }
-      }
-      tokens.add(new CodeToken(currentLineIndex, 1, "\n", CodeToken.Type.NEWLINE));
-    }
-    
-    return tokens;
   }
   
   /**
-   * @param tokens List of tokens
+   * After calling this method, the results can be collected from the instance.
    *
-   * @brief Collects all labels from the code, reports duplicate labels.
+   * @param code ASM Code to parse
    */
-  private void collectLabels(List<CodeToken> tokens)
+  public void parseCode(String code)
   {
-    labels = new TreeMap<>();
-    for (CodeToken token : tokens)
+    this.lexer             = new Lexer(code);
+    this.currentToken      = this.lexer.nextToken();
+    this.peekToken         = this.lexer.nextToken();
+    this.errorMessages     = new ArrayList<>();
+    this.instructions      = new ArrayList<>();
+    this.labels            = new HashMap<>();
+    this.unconfirmedLabels = new ArrayList<>();
+    parse();
+    
+    // Delete code if errors
+    if (!this.errorMessages.isEmpty())
     {
-      if (token.type() != CodeToken.Type.LABEL)
-      {
-        continue;
-      }
-      String label = token.text();
-      if (labels.containsKey(label))
-      {
-        this.addError(token, "Label \"" + label + "\" already exists in current scope.");
-      }
-      else
-      {
-        // We do not know the position of the label yet, so we put -1 there
-        labels.put(label, -1);
-      }
+      this.instructions = new ArrayList<>();
+      this.labels       = new HashMap<>();
     }
   }
   
   /**
-   * @param tokens List of tokens
+   * Creates list of instructions, labels, errors (mutates the state of the parser).
    *
-   * @brief Core of the parser
-   * Mutates internal state - creates errorMessages, parsedCode
+   * @brief Parses the code
    */
-  private void parseInstructions(List<CodeToken> tokens)
+  private void parse()
   {
-    int currentTokenIndex = 0;
-    outer:
-    while (currentTokenIndex < tokens.size())
+    assert lexer != null;
+    assert currentToken != null;
+    
+    while (!currentToken.type().equals(CodeToken.Type.EOF))
     {
-      // A line-centric loop: first newlines and labels, then 1 instruction
-      CodeToken currentToken = tokens.get(currentTokenIndex);
-      switch (currentToken.type())
+      // Label
+      if (peekToken.type().equals(CodeToken.Type.COLON))
       {
-        case LABEL ->
-        {
-          // Duplicate labels are already checked in collectLabels
-          int    labelPosition = this.parsedCode.size();
-          String labelName     = currentToken.text();
-          labels.put(labelName, labelPosition);
-          currentTokenIndex++;
-          continue;
-        }
-        case NEWLINE ->
-        {
-          currentTokenIndex++;
-          continue;
-        }
-        case COMMA ->
-        {
-          // Comma without an instruction - error
-          addError(currentToken, "Unexpected comma.");
-          currentTokenIndex++;
-          continue;
-        }
-      }
-      
-      // One instruction - the switch above ensures that this token is a word
-      String                   instructionName = currentToken.text();
-      InstructionFunctionModel instruction     = initLoader.getInstructionFunctionModel(instructionName);
-      
-      if (instruction == null)
-      {
-        addError(currentToken, "Instruction \"" + instructionName + "\" does not exists.");
-        // Recover - skip to the next newline
-        currentTokenIndex = findNextNewline(tokens, currentTokenIndex);
+        parseLabel();
+        // Allow multiple labels on a line. Start over
         continue;
       }
       
-      // Parse the instruction signature
-      String[] splitSyntax = splitArgsPattern.split(instruction.getInstructionSyntax());
-      int      numArgs     = splitSyntax.length - 1;
-      
-      // Parse arguments
-      List<InputCodeArgument> parsedArgs = new ArrayList<>();
-      for (int i = 0; i < numArgs; i++)
+      // Directive or instruction
+      if (currentToken.type().equals(CodeToken.Type.SYMBOL))
       {
-        String paramType = splitSyntax[i + 1];
-        
-        // Load token if exists
-        currentTokenIndex++;
-        if (currentTokenIndex >= tokens.size())
-        {
-          addError(currentToken, "Expected argument, got end of file.");
-          continue outer;
-        }
-        currentToken = tokens.get(currentTokenIndex);
-        
-        // first skip over comma, unless this is the first argument
-        if (currentToken.type() == CodeToken.Type.COMMA)
-        {
-          if (i == 0)
-          {
-            addError(currentToken, "Comma not allowed between instruction name and first argument.");
-            // Recover - do not do anything
-          }
-          currentTokenIndex++;
-          if (currentTokenIndex >= tokens.size())
-          {
-            addError(currentToken, "Expected argument, got end of file.");
-            continue outer;
-          }
-          currentToken = tokens.get(currentTokenIndex);
-        }
-        
-        // Check if the token is a word
-        if (currentToken.type() != CodeToken.Type.WORD)
-        {
-          addError(currentToken, "Expected argument, got " + currentToken.text() + ".");
-          // Recover - skip to the next newline
-          currentTokenIndex = findNextNewline(tokens, currentTokenIndex);
-          continue outer;
-        }
-        
-        InputCodeArgument arg                 = new InputCodeArgument(paramType, currentToken.text());
-        boolean           isLValue            = paramType.equals("rd");
-        DataTypeEnum      instructionDataType = isLValue ? instruction.getOutputDataType() : instruction.getInputDataType();
-        boolean valid = validateArgument(arg, instruction.getInstructionType(), instructionDataType, isLValue,
-                                         currentToken);
-        if (valid)
-        {
-          parsedArgs.add(arg);
-        }
+        parseDirectiveOrInstruction();
       }
       
-      // Create instruction model
-      int codeIndex = this.parsedCode.size();
-      InputCodeModel inputCodeModel = new InputCodeModel(instruction, instructionName, parsedArgs,
-                                                         instruction.getInstructionType(),
-                                                         instruction.getInputDataType(), codeIndex);
-      this.parsedCode.add(inputCodeModel);
-      
-      // Peek at the next token. If it exists, it must be a newline
-      currentTokenIndex++;
-      if (currentTokenIndex < tokens.size())
+      // Skip comment
+      if (currentToken.type().equals(CodeToken.Type.COMMENT))
       {
-        currentToken = tokens.get(currentTokenIndex);
-        if (currentToken.type() != CodeToken.Type.NEWLINE)
-        {
-          addError(currentToken, "Expected newline, got " + currentToken.text() + ".");
-          // Recover - skip to the next newline
-          currentTokenIndex = findNextNewline(tokens, currentTokenIndex);
-          continue;
-        }
+        nextToken();
+      }
+      
+      // If instruction parsing ended early, skip to the next line
+      if (!currentToken.type().equals(CodeToken.Type.NEWLINE) && !currentToken.type().equals(CodeToken.Type.EOF))
+      {
+        addError(currentToken, "Expected newline, got " + currentToken.type());
+      }
+      
+      while (!currentToken.type().equals(CodeToken.Type.NEWLINE) && !currentToken.type().equals(CodeToken.Type.EOF))
+      {
+        nextToken();
+      }
+      nextToken();
+    }
+    
+    // Check if all labels are defined
+    for (CodeToken unconfirmedLabel : unconfirmedLabels)
+    {
+      addError(unconfirmedLabel, "Label '" + unconfirmedLabel.text() + "' is not defined");
+    }
+  }
+  
+  /**
+   * @brief Parse label. Current token is the label name, peek token is colon.
+   */
+  private void parseLabel()
+  {
+    assert currentToken.type().equals(CodeToken.Type.SYMBOL);
+    assert peekToken.type().equals(CodeToken.Type.COLON);
+    
+    String labelName = currentToken.text();
+    
+    // Check label syntax
+    if (!labelName.matches("^[a-zA-Z0-9_\\.]+$"))
+    {
+      addError(currentToken, "Invalid label name '" + labelName + "'");
+    }
+    
+    // Check if label is already defined
+    if (labels.containsKey(labelName))
+    {
+      addError(currentToken, "Label '" + labelName + "' already defined");
+    }
+    else
+    {
+      // Add label, this is index to the array of instructions, not "bytes"
+      labels.put(labelName, instructions.size());
+      // Clear unconfirmed labels
+      unconfirmedLabels.removeIf(token -> token.text().equals(labelName));
+    }
+    
+    // Consume label name and colon
+    nextToken();
+    nextToken();
+  }
+  
+  /**
+   * @brief Parse directive or instruction. Current token is a symbol.
+   */
+  private void parseDirectiveOrInstruction()
+  {
+    assert currentToken.type().equals(CodeToken.Type.SYMBOL);
+    
+    String symbolName = currentToken.text();
+    
+    // Check if symbol is a directive
+    if (symbolName.startsWith("."))
+    {
+      parseDirective();
+    }
+    else
+    {
+      parseInstruction();
+      
+      // Skip to the next line
+      while (!currentToken.type().equals(CodeToken.Type.NEWLINE) && !currentToken.type().equals(CodeToken.Type.EOF))
+      {
+        nextToken();
       }
     }
   }
   
   /**
-   * @param lineNumber Line number of the error
-   * @param spanStart  Start of the error span (column)
-   * @param spanEnd    End of the error span (column)
-   * @param message    Error message
+   * @brief Load next token
+   */
+  private void nextToken()
+  {
+    this.currentToken = this.peekToken;
+    this.peekToken    = this.lexer.nextToken();
+  }
+  
+  /**
+   * @param token   Token where the error occurred
+   * @param message Error message
    *
    * @brief Adds a single-line error message to the list of errors
    */
@@ -383,32 +297,188 @@ public class CodeParser
   {
     this.errorMessages.add(new ParseError("error", message, token.line(), token.columnStart(), token.columnEnd()));
   }
-  //-------------------------------------------------------------------------------------------
   
-  /**
-   * @brief Finds the next newline token in the list of tokens, starting from the given index
-   */
-  int findNextNewline(List<CodeToken> tokens, int currentTokenIndex)
+  private void parseDirective()
   {
-    while (currentTokenIndex < tokens.size())
-    {
-      CodeToken currentToken = tokens.get(currentTokenIndex);
-      if (currentToken.type() == CodeToken.Type.NEWLINE)
-      {
-        return currentTokenIndex;
-      }
-      currentTokenIndex++;
-    }
-    return tokens.size();
+    // TODO: Implement
   }
-  //-------------------------------------------------------------------------------------------
   
   /**
-   * @param [in]  inputCodeArgument   - Argument to be verified
-   * @param [in]  instructionType     - Type of the instruction
-   * @param [in]  instructionDataType - Data type of an argument according to instruction template
-   * @param [in]  isLValue            - True, if the currently verified argument lvalue, false otherwise
-   * @param token - Token of the argument, for error reporting
+   * @brief Parse instruction. Current token is a symbol with the name of the instruction.
+   */
+  private void parseInstruction()
+  {
+    assert currentToken.type().equals(CodeToken.Type.SYMBOL);
+    
+    CodeToken                instructionNameToken = currentToken;
+    String                   instructionName      = instructionNameToken.text();
+    InstructionFunctionModel instructionModel     = getInstructionFunctionModel(instructionName);
+    
+    // Check if instruction is valid
+    if (instructionModel == null)
+    {
+      addError(currentToken, "Unknown instruction '" + instructionName + "'");
+      return;
+    }
+    
+    // Consume instruction name
+    nextToken();
+    
+    // Collect arguments
+    List<CodeToken> collectedArgs = collectInstructionArgs();
+    if (collectedArgs == null)
+    {
+      return;
+    }
+    
+    // Collect args, fill with defaults if needed
+    Map<String, CodeToken> args               = new HashMap<>();
+    int                    numArguments       = collectedArgs.size();
+    int                    collectedArgsIndex = 0;
+    boolean useDefaultArgs = numArguments < instructionModel.getAsmArguments()
+            .size() && instructionModel.hasDefaultArguments();
+    for (InstructionFunctionModel.Argument argument : instructionModel.getArguments())
+    {
+      String  key        = argument.name();
+      boolean hasDefault = argument.defaultValue() != null;
+      if (argument.silent())
+      {
+        // Add to the args, assumes all silent arguments have default values
+        args.put(key, new CodeToken(0, 0, argument.defaultValue(), CodeToken.Type.EOF));
+      }
+      else if (useDefaultArgs && hasDefault)
+      {
+        // Use default argument
+        args.put(key, new CodeToken(0, 0, argument.defaultValue(), CodeToken.Type.EOF));
+      }
+      else if (collectedArgsIndex < collectedArgs.size())
+      {
+        // Use collected argument
+        args.put(key, collectedArgs.get(collectedArgsIndex));
+        collectedArgsIndex++;
+      }
+      else
+      {
+        // Missing argument
+        addError(instructionNameToken, "Missing argument " + argument.name());
+        return;
+      }
+    }
+    
+    if (collectedArgsIndex < collectedArgs.size())
+    {
+      // Not all arguments were used
+      addError(instructionNameToken, "Too many arguments");
+      return;
+    }
+    
+    // Validate arguments
+    List<InputCodeArgument> codeArguments = new ArrayList<>();
+    for (Map.Entry<String, CodeToken> entry : args.entrySet())
+    {
+      String            argumentName        = entry.getKey();
+      CodeToken         argumentToken       = entry.getValue();
+      InputCodeArgument inputCodeArgument   = new InputCodeArgument(argumentName, argumentToken.text());
+      boolean           isLValue            = argumentName.equals("rd");
+      DataTypeEnum      instructionDataType = instructionModel.getArgumentByName(argumentName).type();
+      boolean isValid = validateArgument(inputCodeArgument, instructionModel.getInstructionType(), instructionDataType,
+                                         isLValue, argumentToken);
+      if (isValid)
+      {
+        codeArguments.add(inputCodeArgument);
+      }
+    }
+    
+    InputCodeModel inputCodeModel = new InputCodeModel(instructionModel, codeArguments, instructions.size());
+    instructions.add(inputCodeModel);
+  }
+  
+  private InstructionFunctionModel getInstructionFunctionModel(String instructionName)
+  {
+    return instructionModels.get(instructionName);
+  }
+  
+  /**
+   * @return List of tokens representing arguments, null in case of error
+   * @brief Collects arguments of an instruction from the token stream
+   */
+  private List<CodeToken> collectInstructionArgs()
+  {
+    // TODO: bugs like: addi x1(x2(x3
+    boolean         openParen         = false;
+    boolean         expectingArgState = true;
+    boolean         followsSeparator  = false;
+    List<CodeToken> collectedArgs     = new ArrayList<>();
+    while (true)
+    {
+      // instructions with parentheses can also be written with commas
+      // example: flw rd,imm(rs1) also flw rd,imm,rs1
+      
+      if (expectingArgState)
+      {
+        if (!currentToken.type().equals(CodeToken.Type.SYMBOL))
+        {
+          if (followsSeparator)
+          {
+            addError(currentToken, "Expected argument, got " + currentToken.type());
+            return null;
+          }
+          else
+          {
+            // Not an error (zero arguments?)
+            return collectedArgs;
+          }
+        }
+        collectedArgs.add(currentToken);
+        nextToken();
+        expectingArgState = false; // Now a comma
+        followsSeparator  = false;
+        continue;
+      }
+      
+      // Not expecting argument
+      
+      boolean isComma      = currentToken.type().equals(CodeToken.Type.COMMA);
+      boolean isParen      = currentToken.type().equals(CodeToken.Type.L_PAREN);
+      boolean isCloseParen = currentToken.type().equals(CodeToken.Type.R_PAREN);
+      boolean isEnd = currentToken.type().equals(CodeToken.Type.NEWLINE) || currentToken.type()
+              .equals(CodeToken.Type.EOF) || currentToken.type().equals(CodeToken.Type.COMMENT);
+      
+      if (isEnd)
+      {
+        break;
+      }
+      
+      if (openParen && isCloseParen)
+      {
+        openParen = false;
+      }
+      else if (isComma || isParen)
+      {
+        expectingArgState = true;
+        followsSeparator  = true;
+        if (isParen)
+        {
+          openParen = true;
+        }
+      }
+      else
+      {
+        // Give up, next line
+        addError(currentToken, "Expected comma or parenthesis, got " + currentToken.type());
+        return null;
+      }
+      nextToken();
+    }
+    return collectedArgs;
+  }
+  
+  /**
+   * @param inputCodeArgument   Argument to be verified
+   * @param instructionType     Type of the instruction
+   * @param instructionDataType Data type of argument according to instruction template
+   * @param isLValue            True, if the currently verified argument lvalue, false otherwise
+   * @param token               Token of the argument, for error reporting
    *
    * @return True in case of valid argument, false otherwise
    * @brief Validates argument's value and data type
@@ -442,16 +512,15 @@ public class CodeParser
   {
     return this.hexadecimalPattern.matcher(argValue).matches() || this.decimalPattern.matcher(argValue).matches();
   }
-  //-------------------------------------------------------------------------------------------
   
   /**
-   * @param [in]     argumentValue - Value of an argument in string format
-   * @param [in]     isLValue      - True, if the currently verified argument lvalue, false otherwise
-   * @param [in]     isDirectValue - True, if argument is decimal or hexadecimal , false otherwise
-   * @param isBranch
-   * @param token
+   * @param argumentValue Value of an argument in string format
+   * @param isLValue      True, if the currently verified argument lvalue (destination), false otherwise
+   * @param isDirectValue True, if argument is decimal or hexadecimal , false otherwise
+   * @param isBranch      True, if instruction is branch/jump, false otherwise
+   * @param token         Token of the argument, for error reporting
    *
-   * @return True if argument is valid immediated value, otherwise false
+   * @return True if argument is valid immediate value, otherwise false
    * @brief Verifies if argument is immediate value
    */
   private boolean checkImmediateArgument(final String argumentValue,
@@ -474,20 +543,18 @@ public class CodeParser
     
     if (!isDirectValue && !this.labels.containsKey(argumentValue))
     {
-      this.addError(token, "Label \"" + argumentValue + "\" does not exist.");
-      return false;
+      this.unconfirmedLabels.add(token);
     }
     
     return true;
   }// end of checkImmediateArgument
-  //-------------------------------------------------------------------------------------------
   
   /**
-   * @param [in]  argumentValue    - Value of an argument in string format
-   * @param [in]  argumentDataType - Expected data type of an argument
-   * @param [in]  isLValue         - True, if the currently verified argument lvalue, false otherwise
-   * @param [in]  isDirectValue    - True, if argument is decimal or hexadecimal , false otherwise
-   * @param token
+   * @param argumentValue    Value of an argument in string format
+   * @param argumentDataType Expected data type of argument
+   * @param isLValue         True, if the currently verified argument lvalue, false otherwise
+   * @param isDirectValue    True, if argument is decimal or hexadecimal , false otherwise
+   * @param token            Token of the argument, for error reporting
    *
    * @return True if argument is valid register, otherwise false
    * @brief Verifies if argument is register
@@ -513,7 +580,7 @@ public class CodeParser
     // Assumes that the register names and aliases are unique
     // First try to find alias
     String registerToLookFor = argumentValue;
-    for (InitLoader.RegisterMapping alias : initLoader.getRegisterAliases())
+    for (InitLoader.RegisterMapping alias : registerAliases)
     {
       if (alias.alias.equals(argumentValue))
       {
@@ -522,7 +589,7 @@ public class CodeParser
         break;
       }
     }
-    for (RegisterFileModel registerFileModel : initLoader.getRegisterFileModelList())
+    for (RegisterFileModel registerFileModel : registerFileModelList)
     {
       if (!checkDatatype(argumentDataType, registerFileModel.getDataType()))
       {
@@ -541,93 +608,42 @@ public class CodeParser
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @param [in] argumentDataType - The datatype of an argument
-   * @param [in] registerDataType - The datatype of an register file
+   * @param argumentDataType The datatype of an argument
+   * @param registerDataType The datatype of a register file
    *
    * @return True if argument can fit inside the register, false otherwise
    * @brief Check argument and register data types if they fit within each other
    */
-  private boolean checkDatatype(final DataTypeEnum argumentDataType, final DataTypeEnum registerDataType)
+  private boolean checkDatatype(final DataTypeEnum argumentDataType, final RegisterTypeEnum registerDataType)
   {
     return switch (argumentDataType)
     {
-      case kInt -> registerDataType == DataTypeEnum.kInt || registerDataType == DataTypeEnum.kLong;
-      case kLong -> registerDataType == DataTypeEnum.kLong;
-      case kFloat -> registerDataType == DataTypeEnum.kFloat || registerDataType == DataTypeEnum.kDouble;
-      case kDouble -> registerDataType == DataTypeEnum.kDouble;
-      case kSpeculative -> false;
+      case kInt, kUInt, kLong, kULong, kBool -> registerDataType == RegisterTypeEnum.kInt;
+      case kFloat, kDouble -> registerDataType == RegisterTypeEnum.kFloat;
     };
   }// end of checkDatatype
   //-------------------------------------------------------------------------------------------
   
   /**
-   * Get the position of the label in the memory. (Assumes the label exists and instructions are 4 bytes long)
-   *
-   * @param label Label name to search for. (example: "loop")
-   *
-   * @return Position of the label in the code, or -1 if the label does not exist.
+   * @return True if the parsing was successful, false otherwise
    */
-  public int getLabelPosition(String label)
+  public boolean success()
   {
-    Integer index = labels.get(label);
-    if (index == null)
-    {
-      return -1;
-    }
-    return index * 4;
-  }
-  //-------------------------------------------------------------------------------------------
-  
-  /**
-   * @return List of parsed instructions
-   * @brief Get list of parsed instructions
-   */
-  public List<InputCodeModel> getParsedCode()
-  {
-    return parsedCode;
-  }// end of getParsedCode
-  //-------------------------------------------------------------------------------------------
-  
-  public void setParsedCode(List<InputCodeModel> parsedCode)
-  {
-    this.parsedCode = parsedCode;
+    return this.errorMessages.isEmpty();
   }
   
-  /**
-   * Get instruction at the given PC. Assumes an instruction is 4 bytes long.
-   *
-   * @param pc Program counter.
-   *
-   * @return Instruction at the given PC, or a nop if the PC is out of range.
-   */
-  public InputCodeModel getInstructionAt(int pc)
+  public List<InputCodeModel> getInstructions()
   {
-    assert pc % 4 == 0;
-    int index = pc / 4;
-    // getParsedCode so it is mockable
-    if (index < 0 || index >= getParsedCode().size())
-    {
-      return this.nop;
-    }
-    return getParsedCode().get(index);
+    return instructions;
   }
   
-  /**
-   * @return Error messages
-   * @brief Get list of error messages in case of load failure
-   */
+  public Map<String, Integer> getLabels()
+  {
+    return labels;
+  }
+  
   public List<ParseError> getErrorMessages()
   {
     return errorMessages;
-  }// end of getErrorMessage
-  
-  public void setLabels(Map<String, Integer> labels)
-  {
-    this.labels = labels;
-  }
-  
-  public InputCodeModel getNop()
-  {
-    return nop;
   }
 }

@@ -32,8 +32,12 @@
  */
 package com.gradle.superscalarsim.models;
 
+import com.gradle.superscalarsim.blocks.base.UnifiedRegisterFileBlock;
+import com.gradle.superscalarsim.code.Expression;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
+import com.gradle.superscalarsim.models.register.RegisterDataContainer;
+import com.gradle.superscalarsim.models.register.RegisterModel;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -129,7 +133,7 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>
                       int instructionBulkNumber)
   {
     this.inputCodeModel        = new InputCodeModel(instructionFunctionModel, instructionName, arguments,
-                                                    instructionTypeEnum, dataTypeEnum, 0);
+                                                    instructionTypeEnum, 0);
     this.id                    = id;
     this.commitId              = -1;
     this.isFinished            = false;
@@ -305,19 +309,6 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>
   }// end of setHasFailed
   //------------------------------------------------------
   
-  /**
-   * @return Saved value of the PC, when instruction was fetched
-   */
-  public int getSavedPc()
-  {
-    return savedPc;
-  }
-  
-  public void setSavedPc(int savedPc)
-  {
-    this.savedPc = savedPc;
-  }
-  
   public boolean isBranchPredicted()
   {
     return branchPredicted;
@@ -366,9 +357,34 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>
   public String getRenamedCodeLine()
   {
     StringBuilder genericLine = new StringBuilder(getInstructionName());
-    for (int i = 0; i < getArguments().size(); i++)
+    genericLine.append(" ");
+    List<InstructionFunctionModel.Argument> args = inputCodeModel.getInstructionFunctionModel().getAsmArguments();
+    for (int i = 0; i < args.size(); i++)
     {
-      genericLine.append(" ").append(getArguments().get(i).getValue());
+      boolean wrapInParens = inputCodeModel.getInstructionFunctionModel().getInstructionType()
+              .equals(InstructionTypeEnum.kLoadstore) && i == args.size() - 1;
+      if (i != 0)
+      {
+        if (wrapInParens)
+        {
+          genericLine.append("(");
+        }
+        else
+        {
+          genericLine.append(",");
+        }
+      }
+      InstructionFunctionModel.Argument arg        = args.get(i);
+      InputCodeArgument                 renamedArg = getArgumentByName(arg.name());
+      if (renamedArg == null)
+      {
+        throw new RuntimeException("Argument " + arg.name() + " not found in " + this);
+      }
+      genericLine.append(renamedArg.getValue());
+      if (wrapInParens)
+      {
+        genericLine.append(")");
+      }
     }
     return genericLine.toString();
   }// end of getRenamedCodeLine
@@ -407,9 +423,9 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>
   }
   
   @Override
-  public DataTypeEnum getResultDataType()
+  public DataTypeEnum getDataType()
   {
-    return inputCodeModel.getResultDataType();
+    return inputCodeModel.getDataType();
   }
   
   @Override
@@ -446,5 +462,72 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>
   public void setFinished(boolean finished)
   {
     isFinished = finished;
+  }
+  
+  /**
+   * @return Variables used in the instruction in the form for expression evaluation
+   * @brief reads current register values (including speculative values), the PC, constants
+   */
+  public List<Expression.Variable> getVariables(List<String> variableNames, UnifiedRegisterFileBlock registerFileBlock)
+  {
+    List<Expression.Variable> variables                = new ArrayList<>();
+    InstructionFunctionModel  instructionFunctionModel = getInstructionFunctionModel();
+    
+    for (String varName : variableNames)
+    {
+      if (varName.equals("pc"))
+      {
+        variables.add(new Expression.Variable("pc", DataTypeEnum.kInt, RegisterDataContainer.fromValue(getSavedPc())));
+        continue;
+      }
+      
+      InstructionFunctionModel.Argument argument = instructionFunctionModel.getArgumentByName(varName);
+      if (argument == null)
+      {
+        throw new IllegalStateException("Argument " + varName + " not found in " + instructionFunctionModel.getName());
+      }
+      
+      // Variable is an argument of the instruction (rs1/imm)
+      String name        = argument.name();
+      String renamedName = getArgumentByName(name).getValue();
+      // Check if value is register
+      RegisterModel register = registerFileBlock.getRegister(renamedName);
+      if (register != null)
+      {
+        // Register found (or its speculative rename)
+        variables.add(new Expression.Variable(name, argument.type(), register.getValueContainer()));
+      }
+      else
+      {
+        //It is an immediate - constant or a label
+        Expression.Variable parsed = Expression.parseConstant(renamedName);
+        if (parsed != null)
+        {
+          parsed.tag  = name;
+          parsed.type = argument.type();
+          variables.add(parsed);
+        }
+        else
+        {
+          // TODO: Handle labels: load their value or extract it in parse. Skip for now.
+          //throw new IllegalStateException("Could not parse " + renamedName + " as constant");
+        }
+      }
+    }
+    
+    return variables;
+  }
+  
+  /**
+   * @return Saved value of the PC, when instruction was fetched
+   */
+  public int getSavedPc()
+  {
+    return savedPc;
+  }
+  
+  public void setSavedPc(int savedPc)
+  {
+    this.savedPc = savedPc;
   }
 }

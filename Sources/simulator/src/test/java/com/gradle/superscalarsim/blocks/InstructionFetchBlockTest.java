@@ -1,14 +1,13 @@
 package com.gradle.superscalarsim.blocks;
 
 import com.gradle.superscalarsim.blocks.base.InstructionFetchBlock;
+import com.gradle.superscalarsim.blocks.base.InstructionMemoryBlock;
 import com.gradle.superscalarsim.blocks.branch.BranchTargetBuffer;
 import com.gradle.superscalarsim.blocks.branch.GShareUnit;
 import com.gradle.superscalarsim.blocks.branch.GlobalHistoryRegister;
 import com.gradle.superscalarsim.blocks.branch.PatternHistoryTable;
 import com.gradle.superscalarsim.builders.InputCodeModelBuilder;
-import com.gradle.superscalarsim.code.CodeParser;
 import com.gradle.superscalarsim.code.SimCodeModelAllocator;
-import com.gradle.superscalarsim.loader.InitLoader;
 import com.gradle.superscalarsim.models.InputCodeModel;
 import org.junit.Assert;
 import org.junit.Before;
@@ -19,7 +18,7 @@ import java.util.List;
 
 public class InstructionFetchBlockTest
 {
-  CodeParser codeParser;
+  InstructionMemoryBlock instructionMemoryBlock;
   BranchTargetBuffer branchTargetBuffer;
   GShareUnit gShareUnit;
   
@@ -28,21 +27,20 @@ public class InstructionFetchBlockTest
   @Before
   public void setUp()
   {
-    InitLoader initLoader = new InitLoader();
-    this.codeParser         = new CodeParser(initLoader);
-    this.branchTargetBuffer = new BranchTargetBuffer(1000);
-    this.gShareUnit         = new GShareUnit(1, new GlobalHistoryRegister(1000),
-                                             new PatternHistoryTable(10, new boolean[]{true, false},
-                                                                     PatternHistoryTable.PredictorType.TWO_BIT_PREDICTOR));
+    this.instructionMemoryBlock = new InstructionMemoryBlock(null, null);
+    this.branchTargetBuffer     = new BranchTargetBuffer(1000);
+    this.gShareUnit             = new GShareUnit(1, new GlobalHistoryRegister(1000),
+                                                 new PatternHistoryTable(10, new boolean[]{true, false},
+                                                                         PatternHistoryTable.PredictorType.TWO_BIT_PREDICTOR));
     SimCodeModelAllocator simCodeModelAllocator = new SimCodeModelAllocator();
-    this.instructionFetchBlock = new InstructionFetchBlock(simCodeModelAllocator, this.codeParser, this.gShareUnit,
-                                                           this.branchTargetBuffer);
+    this.instructionFetchBlock = new InstructionFetchBlock(simCodeModelAllocator, this.instructionMemoryBlock,
+                                                           this.gShareUnit, this.branchTargetBuffer);
   }
   
   @Test
   public void instructionFetchSimulateThreeWay_emptyCode_returnsThreeNops()
   {
-    codeParser.setParsedCode(Arrays.asList());
+    instructionMemoryBlock.setCode(Arrays.asList());
     
     this.instructionFetchBlock.simulate();
     
@@ -59,7 +57,7 @@ public class InstructionFetchBlockTest
     InputCodeModel       ins2         = new InputCodeModelBuilder().hasInstructionName("ins2").build();
     InputCodeModel       ins3         = new InputCodeModelBuilder().hasInstructionName("ins3").build();
     List<InputCodeModel> instructions = Arrays.asList(ins1, ins2, ins3);
-    codeParser.setParsedCode(instructions);
+    instructionMemoryBlock.setCode(instructions);
     
     this.instructionFetchBlock.simulate();
     
@@ -75,7 +73,7 @@ public class InstructionFetchBlockTest
     InputCodeModel       ins1         = new InputCodeModelBuilder().hasInstructionName("ins1").build();
     InputCodeModel       ins2         = new InputCodeModelBuilder().hasInstructionName("ins2").build();
     List<InputCodeModel> instructions = Arrays.asList(ins1, ins2);
-    codeParser.setParsedCode(instructions);
+    instructionMemoryBlock.setCode(instructions);
     
     this.instructionFetchBlock.simulate();
     
@@ -92,7 +90,7 @@ public class InstructionFetchBlockTest
     InputCodeModel       ins2         = new InputCodeModelBuilder().hasInstructionName("ins2").build();
     InputCodeModel       ins3         = new InputCodeModelBuilder().hasInstructionName("ins3").build();
     List<InputCodeModel> instructions = Arrays.asList(ins1, ins2, ins3);
-    codeParser.setParsedCode(instructions);
+    instructionMemoryBlock.setCode(instructions);
     
     this.instructionFetchBlock.setNumberOfWays(5);
     this.instructionFetchBlock.simulate();
@@ -112,7 +110,7 @@ public class InstructionFetchBlockTest
     InputCodeModel       ins2         = new InputCodeModelBuilder().hasInstructionName("ins2").build();
     InputCodeModel       ins3         = new InputCodeModelBuilder().hasInstructionName("ins3").build();
     List<InputCodeModel> instructions = Arrays.asList(ins1, ins2, ins3);
-    codeParser.setParsedCode(instructions);
+    instructionMemoryBlock.setCode(instructions);
     
     this.instructionFetchBlock.simulate();
     this.instructionFetchBlock.simulate();
@@ -130,7 +128,7 @@ public class InstructionFetchBlockTest
     InputCodeModel       ins2         = new InputCodeModelBuilder().hasInstructionName("ins2").build();
     InputCodeModel       ins3         = new InputCodeModelBuilder().hasInstructionName("ins3").build();
     List<InputCodeModel> instructions = Arrays.asList(ins1, ins2, ins3);
-    codeParser.setParsedCode(instructions);
+    instructionMemoryBlock.setCode(instructions);
     
     Assert.assertEquals(0, this.instructionFetchBlock.getPcCounter());
     Assert.assertEquals(0, this.instructionFetchBlock.getFetchedCode().size());

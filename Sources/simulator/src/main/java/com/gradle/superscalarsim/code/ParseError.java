@@ -144,4 +144,13 @@ public class ParseError
       output.write("]}");
     }
   }
+  
+  /**
+   * @brief String representation of the error for debugging
+   */
+  @Override
+  public String toString()
+  {
+    return "[" + line + ":" + columnStart + ":" + this.columnEnd + "] " + message;
+  }
 }

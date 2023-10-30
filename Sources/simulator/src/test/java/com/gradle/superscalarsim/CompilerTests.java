@@ -57,13 +57,51 @@ public class CompilerTests
     
     // Exercise
     GccCaller.CompileResult compileResult = GccCaller.compile(cCode, false);
-    CompiledProgram         program       = AsmParser.parse(compileResult.code, 1);
+    CompiledProgram         program       = AsmParser.parse(compileResult.code, cCode.split("\n").length);
     String                  asm           = String.join("\n", program.program);
-    boolean                 success       = parser.parse(asm);
+    parser.parseCode(asm);
     
     // Verify
     Assert.assertTrue(compileResult.success);
-    Assert.assertTrue(success);
-    Assert.assertFalse(parser.getParsedCode().isEmpty());
+    Assert.assertTrue(parser.success());
+    Assert.assertFalse(parser.getInstructions().isEmpty());
+  }
+  
+  @Test
+  public void test_validCProgramOptimized_produces_valid_riscv_asm()
+  {
+    // Setup
+    String cCode = """
+            int square(int num) {
+                double x = 5;
+                float y = x * x;
+                
+                int sh = num >> 7;
+                
+                int re = sh / 14;
+                int re2 = sh % (num+1);
+                
+                if(y > sh) {
+                    return num;
+                }
+                
+                return num * num;
+            }""";
+    InitLoader loader = new InitLoader();
+    CodeParser parser = new CodeParser(loader);
+    
+    // Exercise
+    GccCaller.CompileResult compileResult = GccCaller.compile(cCode, true);
+    CompiledProgram         program       = AsmParser.parse(compileResult.code, cCode.split("\n").length);
+    String                  asm           = String.join("\n", program.program);
+    parser.parseCode(asm);
+    
+    // TODO: Parser filters out constants
+    // .word   0x41c80000                      # float 25
+    
+    // Verify
+    Assert.assertTrue(compileResult.success);
+    Assert.assertTrue(parser.success());
+    Assert.assertFalse(parser.getInstructions().isEmpty());
   }
 }

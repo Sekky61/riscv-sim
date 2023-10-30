@@ -64,16 +64,26 @@ public class InputCodeModel implements IInputCodeModel
    * Type of the instruction
    */
   private final InstructionTypeEnum instructionTypeEnum;
-  /**
-   * Data type of the output
-   */
-  private final DataTypeEnum resultDataType;
   
   /**
    * @brief Instruction function model
    * Contains information about the instruction
    */
   private final InstructionFunctionModel instructionFunctionModel;
+  
+  
+  public InputCodeModel(InstructionFunctionModel instructionFunctionModel,
+                        final List<InputCodeArgument> arguments,
+                        int codeId)
+  {
+    // TODO: delete fields that are duplicate of instructionFunctionModel
+    this.instructionFunctionModel = instructionFunctionModel;
+    this.codeId                   = codeId;
+    this.instructionName          = instructionFunctionModel.getName();
+    this.arguments                = arguments == null ? new ArrayList<>() : arguments;
+    this.instructionTypeEnum      = instructionFunctionModel.getInstructionType();
+  }// end of Constructor
+  //------------------------------------------------------
   
   /**
    * @param [in] instructionName     - Name of the parsed instruction
@@ -89,7 +99,6 @@ public class InputCodeModel implements IInputCodeModel
                         final String instructionName,
                         final List<InputCodeArgument> arguments,
                         final InstructionTypeEnum instructionTypeEnum,
-                        final DataTypeEnum resultDataType,
                         int codeId)
   {
     this.instructionFunctionModel = instructionFunctionModel;
@@ -97,7 +106,6 @@ public class InputCodeModel implements IInputCodeModel
     this.instructionName          = instructionName;
     this.arguments                = arguments == null ? new ArrayList<>() : arguments;
     this.instructionTypeEnum      = instructionTypeEnum;
-    this.resultDataType           = resultDataType;
   }// end of Constructor
   //------------------------------------------------------
   
@@ -150,9 +158,9 @@ public class InputCodeModel implements IInputCodeModel
    * @brief Get output data type
    */
   @Override
-  public DataTypeEnum getResultDataType()
+  public DataTypeEnum getDataType()
   {
-    return resultDataType;
+    return instructionFunctionModel.getDataType();
   }// end of getResultDataType
   
   /**

@@ -35,6 +35,9 @@ package com.gradle.superscalarsim.models;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * @class InstructionFunctionModel
  * @brief Definition of instruction from instruction set
@@ -44,29 +47,38 @@ import com.gradle.superscalarsim.enums.InstructionTypeEnum;
  */
 public class InstructionFunctionModel
 {
-  /// Name of instruction
+  /**
+   * Name of the instruction
+   */
   private final String name;
-  /// Data type on which instruction operates
-  private final DataTypeEnum inputDataType;
-  /// Data type of output register/memory
-  private final DataTypeEnum outputDataType;
-  /// Type of the instruction
+  
+  /**
+   * Type of the instruction (arithmetic, load/store, branch)
+   */
   private final InstructionTypeEnum instructionType;
-  /// Syntax of instruction for validation
-  private final String instructionSyntax;
+  
+  /**
+   * Definition of instruction arguments for parsing and validation.
+   */
+  private final List<Argument> arguments;
+  
   /**
    * @brief Codified interpretation of instruction
    */
   private final String interpretableAs;
   
+  /**
+   * @brief Explicitly stated instruction data type. Most likely null and should be inferred from arguments.
+   */
+  private DataTypeEnum dataType;
+  
   public InstructionFunctionModel()
   {
-    this.name              = "";
-    this.inputDataType     = DataTypeEnum.kInt;
-    this.outputDataType    = DataTypeEnum.kInt;
-    this.instructionType   = InstructionTypeEnum.kArithmetic;
-    this.instructionSyntax = "";
-    this.interpretableAs   = "";
+    this.name            = "";
+    this.instructionType = InstructionTypeEnum.kArithmetic;
+    this.arguments       = new ArrayList<>();
+    this.interpretableAs = "";
+    this.dataType        = null;
   }
   
   /**
@@ -82,17 +94,13 @@ public class InstructionFunctionModel
    */
   public InstructionFunctionModel(String name,
                                   InstructionTypeEnum instructionType,
-                                  String inputDataType,
-                                  String outputDataType,
-                                  String instructionSyntax,
+                                  List<Argument> arguments,
                                   String interpretableAs)
   {
-    this.name              = name;
-    this.inputDataType     = DataTypeEnum.valueOf(inputDataType);
-    this.outputDataType    = DataTypeEnum.valueOf(outputDataType);
-    this.instructionType   = instructionType;
-    this.instructionSyntax = instructionSyntax;
-    this.interpretableAs   = interpretableAs;
+    this.name            = name;
+    this.instructionType = instructionType;
+    this.arguments       = arguments;
+    this.interpretableAs = interpretableAs;
   }// end of Constructor
   //------------------------------------------------------
   
@@ -103,7 +111,7 @@ public class InstructionFunctionModel
   @Override
   public String toString()
   {
-    return "Instruction: " + name + '\n' + "instruction type " + instructionType + '\n' + "input data type: " + inputDataType + '\n' + "output data type: " + outputDataType + '\n' + "syntax: " + instructionSyntax + '\n' + "interpretable as: " + interpretableAs + '\n';
+    return "Instruction: " + name + " " + arguments + " (" + interpretableAs + ")";
   }// end of toString
   //------------------------------------------------------
   
@@ -128,34 +136,64 @@ public class InstructionFunctionModel
   //------------------------------------------------------
   
   /**
-   * @return Instruction input data type
-   * @brief Get input data type of instruction
+   * Instruction data type is either explicitly stated or inferred from arguments
+   *
+   * @return Data type of the instruction
    */
-  public DataTypeEnum getInputDataType()
+  public DataTypeEnum getDataType()
   {
-    return inputDataType;
-  }// end of getInputDataType
+    if (this.dataType != null)
+    {
+      return this.dataType;
+    }
+    if (arguments.isEmpty())
+    {
+      return null;
+    }
+    else
+    {
+      return arguments.get(0).type;
+    }
+  }
+  
+  /**
+   * @return Instruction arguments
+   * @brief Get instruction arguments, used for parsing and validation
+   */
+  public List<Argument> getArguments()
+  {
+    return arguments;
+  }// end of getArguments
   //------------------------------------------------------
   
   /**
-   * @return Instruction output data type
-   * @brief Get output data type of instruction
+   * @return List of arguments, which are not silent
    */
-  public DataTypeEnum getOutputDataType()
+  public List<Argument> getAsmArguments()
   {
-    return outputDataType;
-  }// end of getOutputDataType
-  //------------------------------------------------------
+    List<Argument> asmArguments = new ArrayList<>();
+    for (Argument argument : arguments)
+    {
+      if (!argument.silent)
+      {
+        asmArguments.add(argument);
+      }
+    }
+    return asmArguments;
+  }
   
   /**
-   * @return Instruction syntax
-   * @brief Get syntax of an instruction for input assembly code verification
+   * @return Argument with given name
    */
-  public String getInstructionSyntax()
+  public Argument getArgumentByName(String name)
   {
-    return instructionSyntax;
-  }// end of getInstructionSyntax
-  //------------------------------------------------------
+    return arguments.stream().filter(argument -> argument.name.equals(name)).findFirst().orElse(null);
+  }
+  
+  public boolean hasDefaultArguments()
+  {
+    return arguments.stream().anyMatch(argument -> argument.defaultValue != null);
+  }
   
   /**
    * @return String of java code
@@ -168,10 +206,80 @@ public class InstructionFunctionModel
   //------------------------------------------------------
   
   /**
-   * @return True if instruction is a unconditional jump
+   * @return True if instruction is an unconditional jump
    */
   public boolean isUnconditionalJump()
   {
-    return interpretableAs.startsWith("jump");
+    return interpretableAs.endsWith("true");
   }// end of isUnconditionalJump
+  
+  /**
+   * @param name         Name of the argument (example: "rd")
+   * @param type         Data type of the argument (example: "kInt")
+   * @param defaultValue Default value of the argument (example: "0" or null)
+   * @param writeBack    True if the argument should be written back to register file on commit
+   *
+   * @brief Could be a record, but is not because of serialization issues
+   */
+  public static class Argument
+  {
+    private final String name;
+    private final DataTypeEnum type;
+    private final String defaultValue;
+    private final boolean writeBack;
+    
+    /**
+     * @brief If true, count this argument as data dependency, but is not allowed to be used in ASM code.
+     */
+    private final boolean silent;
+    
+    public Argument(String name, DataTypeEnum type, String defaultValue)
+    {
+      this.name         = name;
+      this.type         = type;
+      this.defaultValue = defaultValue;
+      this.writeBack    = false;
+      this.silent       = false;
+    }
+    
+    public Argument(String name, DataTypeEnum type, String defaultValue, boolean writeBack)
+    {
+      this.name         = name;
+      this.type         = type;
+      this.defaultValue = defaultValue;
+      this.writeBack    = writeBack;
+      this.silent       = false;
+    }
+    
+    public String name()
+    {
+      return name;
+    }
+    
+    public DataTypeEnum type()
+    {
+      return type;
+    }
+    
+    public String defaultValue()
+    {
+      return defaultValue;
+    }
+    
+    public boolean writeBack()
+    {
+      return writeBack;
+    }
+    
+    public boolean silent()
+    {
+      return silent;
+    }
+    
+    @Override
+    public String toString()
+    {
+      return name + ":" + type + (defaultValue != null ? ":" + defaultValue : "");
+    }
+  }
 }

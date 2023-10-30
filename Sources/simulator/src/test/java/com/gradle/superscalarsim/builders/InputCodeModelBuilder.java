@@ -85,9 +85,11 @@ public class InputCodeModelBuilder
     InstructionFunctionModel model;
     if (this.loader != null)
     {
-      model = this.loader.getInstructionFunctionModelList().stream()
-              .filter(instructionFunctionModel -> instructionFunctionModel.getName().equals(this.instructionName))
-              .findFirst().orElse(null);
+      model = this.loader.getInstructionFunctionModel(this.instructionName);
+      if (model == null)
+      {
+        throw new RuntimeException("Instruction " + this.instructionName + ": model not found");
+      }
     }
     else
     {
@@ -106,8 +108,7 @@ public class InputCodeModelBuilder
       temp.add(new InputCodeArgument("labelName", this.codeLine));
       this.arguments = temp;
     }
-    return new InputCodeModel(model, this.instructionName, this.arguments, this.instructionTypeEnum, this.dataTypeEnum,
-                              this.id);
+    return new InputCodeModel(model, this.instructionName, this.arguments, this.instructionTypeEnum, this.id);
   }
   
   

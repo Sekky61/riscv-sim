@@ -32,11 +32,11 @@
  */
 package com.gradle.superscalarsim.blocks.base;
 
-import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
+import com.gradle.superscalarsim.enums.RegisterTypeEnum;
 import com.gradle.superscalarsim.loader.InitLoader;
-import com.gradle.superscalarsim.models.RegisterFileModel;
-import com.gradle.superscalarsim.models.RegisterModel;
+import com.gradle.superscalarsim.models.register.RegisterFileModel;
+import com.gradle.superscalarsim.models.register.RegisterModel;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -54,17 +54,14 @@ public class UnifiedRegisterFileBlock
    * TODO: Take the total number of registers on construction
    */
   private static final int specRegisterMultiplier = 10;
+  
   /**
-   * InitLoader class holding information about instruction and registers
-   * TODO: remove this reference
-   */
-  private final InitLoader initLoader;
-  /**
-   * Mapping of names to register objects
-   * Allows to have multiple names for one register
-   * Also theoretically faster than searching through the list (O(1) vs O(n))
+   * Mapping of names to register objects.
+   * Allows to have multiple names for one register - it references the *same* objects as registerList.
+   * Also, theoretically faster than searching through the list (O(1) vs O(n)).
    */
   private final Map<String, RegisterModel> registerMap;
+  
   /**
    * List of all register files
    * TODO: Remove this list and use a field for each register file type (one for ints, ...)
@@ -72,36 +69,38 @@ public class UnifiedRegisterFileBlock
   private List<RegisterFileModel> registerList;
   
   /**
-   * @brief Default constructor - You need to call loadRegisters later
+   * Speculative register file. Holds all speculative registers.
+   */
+  private RegisterFileModel speculativeRegisterFile;
+  
+  /**
+   * Constructor for (de)serialization
    */
   public UnifiedRegisterFileBlock()
   {
-    this.initLoader   = null;
-    this.registerList = new ArrayList<>();
-    this.registerMap  = null;
-  }
+    registerMap = new HashMap<>();
+  }// end of Constructor
   
   /**
-   * @param [in] loader - InitLoader class holding information about instruction and registers
+   * @param loader InitLoader class holding information about instruction and registers. Only needed during initialization.
    *
    * @brief Constructor
    */
   public UnifiedRegisterFileBlock(final InitLoader loader)
   {
-    this.initLoader   = loader;
     this.registerList = new ArrayList<>();
     this.registerMap  = new HashMap<>();
-    loadRegisters(initLoader.getRegisterFileModelList());
-    loadAliases(initLoader.getRegisterAliases());
+    loadRegisters(loader.getRegisterFileModelList());
+    loadAliases(loader.getRegisterAliases());
   }// end of Constructor
   
   /**
    * The provided registers must be copied! Otherwise, the original register files will be modified,
-   * as the owner (initLoader) does not get destroyed during backwards simulation
+   * as the owner (initLoader) does not get destroyed during backwards simulation.
    *
-   * @param [in] registerFileModelList - List of all architectural register files
+   * @param registerFileModelList List of all architectural register files
    *
-   * @brief Load all register files to this class and create the speculative one
+   * @brief Load all register files to this class and create the speculative file
    */
   public void loadRegisters(final List<RegisterFileModel> registerFileModelList)
   {
@@ -118,7 +117,7 @@ public class UnifiedRegisterFileBlock
       }
       registerCount = registerCount + registerFile.getRegisterList().size();
     }
-    this.registerList.add(createSpeculativeRegisters(registerCount * specRegisterMultiplier));
+    createSpeculativeRegisters(registerCount * specRegisterMultiplier);
   }// end of loadRegisters
   //----------------------------------------------------------------------
   
@@ -133,28 +132,27 @@ public class UnifiedRegisterFileBlock
   //----------------------------------------------------------------------
   
   /**
-   * @param [in] size - Number of speculative registers
+   * @param size Number of speculative registers
    *
-   * @return New speculative register file
    * @brief Creates speculative register file
    */
-  private RegisterFileModel createSpeculativeRegisters(int size)
+  private void createSpeculativeRegisters(int size)
   {
     // TODO: Do not instantiate all speculative registers ahead of time
     List<RegisterModel> registerModelList = new ArrayList<>();
     for (int i = 0; i < size; i++)
     {
-      RegisterModel reg = new RegisterModel("tg" + i, false, DataTypeEnum.kSpeculative, 0, RegisterReadinessEnum.kFree);
+      RegisterModel reg = new RegisterModel("tg" + i, false, null, 0, RegisterReadinessEnum.kFree);
       registerModelList.add(reg);
       this.registerMap.put(reg.getName(), reg);
     }
     
-    return new RegisterFileModel("Speculative register file", "kSpeculative", registerModelList);
+    speculativeRegisterFile = new RegisterFileModel("Speculative register file", null, registerModelList);
   }// end of createSpeculativeRegisters
   //----------------------------------------------------------------------
   
   /**
-   * @param [in] registerName - Name (tag) of the register
+   * @param registerName Name (tag) of the register
    *
    * @return The register object
    * @brief Get object representation of register based on provided name (tag or arch. name)
@@ -172,25 +170,13 @@ public class UnifiedRegisterFileBlock
   //----------------------------------------------------------------------
   
   /**
-   * @brief Resets the register from the initial register file
-   */
-  public void refreshRegisters()
-  {
-    this.registerList.clear();
-    this.registerMap.clear();
-    initLoader.load();
-    loadRegisters(initLoader.getRegisterFileModelList());
-  }// end of refreshRegisters
-  //----------------------------------------------------------------------
-  
-  /**
-   * @param [in] dataType - Data type of searched register list
+   * @param dataType Data type of searched register list
    *
    * @return List of registers
    * @brief Get list of registers based on data type provided. Assumes that there is only one register file with
    * provided data type
    */
-  public final List<RegisterModel> getRegisterList(DataTypeEnum dataType)
+  public final List<RegisterModel> getRegisterList(RegisterTypeEnum dataType)
   {
     RegisterFileModel registerModelList = this.registerList.stream()
             .filter(registerFileModel -> registerFileModel.getDataType() == dataType).findFirst().orElse(null);
@@ -198,9 +184,14 @@ public class UnifiedRegisterFileBlock
   }// end of getRegisterList
   //----------------------------------------------------------------------
   
+  public RegisterFileModel getSpeculativeRegisterFile()
+  {
+    return speculativeRegisterFile;
+  }
+  
   /**
-   * @param [in] fromRegister
-   * @param [in] toRegister
+   * @param fromRegister Register to copy from
+   * @param toRegister   Register to copy to
    *
    * @brief Copies value from speculative register to architectural one and frees the mapping
    */

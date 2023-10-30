@@ -30,9 +30,9 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.gradle.superscalarsim.models;
+package com.gradle.superscalarsim.models.register;
 
-import com.gradle.superscalarsim.enums.DataTypeEnum;
+import com.gradle.superscalarsim.enums.RegisterTypeEnum;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,36 +40,44 @@ import java.util.List;
 /**
  * @class RegisterFileModel
  * @brief Definition of register file
- * @details Class contains definition of register file, which is used for displaying and storing simulation values
+ * @details Collection of registers of the same type (integer/floating point)
  */
 public class RegisterFileModel
 {
-  /// Name of register file
+  /**
+   * Name of register file. Used for logs/debug
+   */
   private final String name;
-  /// Data type of register file
-  private final DataTypeEnum dataType;
-  /// List of registers of register file
+  
+  /**
+   * Data type of register file.
+   */
+  private final RegisterTypeEnum dataType;
+  
+  /**
+   * List of registers of register file
+   */
   private final List<RegisterModel> registerList;
   
   // TODO: This acts as default values, meaning file reading does not fail on bad json file
   public RegisterFileModel()
   {
     this.name         = "";
-    this.dataType     = DataTypeEnum.kInt;
+    this.dataType     = RegisterTypeEnum.kInt;
     this.registerList = null;
   }
   
   /**
-   * @param [in] name         - Register file name
-   * @param [in] dataType     - Register file data type
-   * @param [in] registerList - List of registers of register file
+   * @param name         Register file name
+   * @param type         Register file type
+   * @param registerList List of registers of register file
    *
    * @brief Constructor
    */
-  public RegisterFileModel(String name, String dataType, List<RegisterModel> registerList)
+  public RegisterFileModel(String name, RegisterTypeEnum type, List<RegisterModel> registerList)
   {
     this.name         = name;
-    this.dataType     = DataTypeEnum.valueOf(dataType);
+    this.dataType     = type;
     this.registerList = registerList;
   }// end of Constructor
   //------------------------------------------------------
@@ -91,12 +99,12 @@ public class RegisterFileModel
   
   /**
    * @return String representation of the object
-   * @brief Overrides toString method with custom formating
+   * @brief Overrides toString method with custom formatting
    */
   @Override
   public String toString()
   {
-    return "Register file: " + name + '\n' + "data type: " + dataType + '\n' + "registers: " + '\n' + "------------------------------------" + '\n' + registerList + "------------------------------------" + '\n';
+    return "Register file: " + name + ", data type: " + dataType + ", " + registerList.size() + " registers";
   }// end of toString
   //------------------------------------------------------
   
@@ -114,7 +122,7 @@ public class RegisterFileModel
    * @return Data type of register file
    * @brief Get data type of register file
    */
-  public final DataTypeEnum getDataType()
+  public final RegisterTypeEnum getDataType()
   {
     return dataType;
   }// end of getDataType
@@ -131,22 +139,7 @@ public class RegisterFileModel
   //------------------------------------------------------
   
   /**
-   * @brief check if register exists in register file
-   */
-  public boolean hasRegister(String registerName)
-  {
-    for (RegisterModel register : registerList)
-    {
-      if (register.getName().equals(registerName))
-      {
-        return true;
-      }
-    }
-    return false;
-  }// end of hasRegister
-  
-  /**
-   * @param [in] registerName - Name of register
+   * @param registerName Name of register
    *
    * @return Register, or null if not found
    * @brief Get register by name

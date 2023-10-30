@@ -9,6 +9,9 @@
         <language minSize="200" name="Java" />
       </Languages>
     </inspection_tool>
+    <inspection_tool class="ExtractMethodRecommender" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="minLength" value="549" />
+    </inspection_tool>
     <inspection_tool class="JavaDoc" enabled="true" level="WARNING" enabled_by_default="true">
       <option name="TOP_LEVEL_CLASS_OPTIONS">
         <value>

@@ -3,7 +3,19 @@
   "dataType": "kInt",
   "bitSize": "kBit32",
   "registerList": [
-    {"name": "x0", "isConstant": true,"value": 0},
-    {"name": "x1", "isConstant": false,"value": 25}
+    {
+      "name": "x0",
+      "isConstant": true,
+      "value": {
+        "bits": 0
+      }
+    },
+    {
+      "name": "x1",
+      "isConstant": false,
+      "value": {
+        "bits": 25
+      }
+    }
   ]
 }

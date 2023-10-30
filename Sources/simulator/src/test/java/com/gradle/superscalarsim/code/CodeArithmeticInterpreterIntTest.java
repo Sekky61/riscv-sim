@@ -7,8 +7,14 @@ import com.gradle.superscalarsim.builders.InstructionFunctionModelBuilder;
 import com.gradle.superscalarsim.builders.RegisterFileModelBuilder;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
+import com.gradle.superscalarsim.enums.RegisterTypeEnum;
 import com.gradle.superscalarsim.loader.InitLoader;
-import com.gradle.superscalarsim.models.*;
+import com.gradle.superscalarsim.models.InputCodeArgument;
+import com.gradle.superscalarsim.models.InputCodeModel;
+import com.gradle.superscalarsim.models.InstructionFunctionModel;
+import com.gradle.superscalarsim.models.SimCodeModel;
+import com.gradle.superscalarsim.models.register.RegisterFileModel;
+import com.gradle.superscalarsim.models.register.RegisterModel;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -19,6 +25,9 @@ import org.mockito.MockitoAnnotations;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+
+import static org.mockito.ArgumentMatchers.any;
 
 public class CodeArithmeticInterpreterIntTest
 {
@@ -31,18 +40,142 @@ public class CodeArithmeticInterpreterIntTest
   public void setUp()
   {
     MockitoAnnotations.openMocks(this);
-    RegisterModel integer1 = new RegisterModel("x1", false, DataTypeEnum.kInt, 0, RegisterReadinessEnum.kAssigned);
-    RegisterModel integer2 = new RegisterModel("x2", false, DataTypeEnum.kInt, 25, RegisterReadinessEnum.kAssigned);
-    RegisterModel integer3 = new RegisterModel("x3", false, DataTypeEnum.kInt, 6, RegisterReadinessEnum.kAssigned);
-    RegisterModel integer4 = new RegisterModel("x4", false, DataTypeEnum.kInt, -2, RegisterReadinessEnum.kAssigned);
-    RegisterFileModel integerFile = new RegisterFileModelBuilder().hasName("integer").hasDataType(DataTypeEnum.kInt)
+    RegisterModel integer1 = new RegisterModel("x1", false, RegisterTypeEnum.kInt, 0, RegisterReadinessEnum.kAssigned);
+    RegisterModel integer2 = new RegisterModel("x2", false, RegisterTypeEnum.kInt, 25, RegisterReadinessEnum.kAssigned);
+    RegisterModel integer3 = new RegisterModel("x3", false, RegisterTypeEnum.kInt, 6, RegisterReadinessEnum.kAssigned);
+    RegisterModel integer4 = new RegisterModel("x4", false, RegisterTypeEnum.kInt, -2, RegisterReadinessEnum.kAssigned);
+    RegisterFileModel integerFile = new RegisterFileModelBuilder().hasName("integer").hasDataType(RegisterTypeEnum.kInt)
             .hasRegisterList(Arrays.asList(integer1, integer2, integer3, integer4)).build();
     
     Mockito.when(initLoader.getRegisterFileModelList()).thenReturn(Collections.singletonList(integerFile));
-    Mockito.when(initLoader.getInstructionFunctionModelList()).thenReturn(setUpInstructions());
+    Mockito.when(initLoader.getInstructionFunctionModels()).thenReturn(setUpInstructions());
+    Mockito.when(initLoader.getInstructionFunctionModel(any())).thenCallRealMethod();
     
-    this.codeArithmeticInterpreter = new CodeArithmeticInterpreter(new PrecedingTable(),
-                                                                   new UnifiedRegisterFileBlock(initLoader));
+    this.codeArithmeticInterpreter = new CodeArithmeticInterpreter(new UnifiedRegisterFileBlock(initLoader));
+  }
+  
+  private Map<String, InstructionFunctionModel> setUpInstructions()
+  {
+    InstructionFunctionModel instructionAdd = new InstructionFunctionModelBuilder().hasName("add")
+            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
+            .isInterpretedAs("\\rs1 \\rs2 + \\rd =").hasArguments(
+                    List.of(new InstructionFunctionModel.Argument("rd", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs1", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs2", DataTypeEnum.kInt, null))).build();
+    
+    InstructionFunctionModel instructionSub = new InstructionFunctionModelBuilder().hasName("sub")
+            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
+            .isInterpretedAs("\\rs1 \\rs2 - \\rd =").hasArguments(
+                    List.of(new InstructionFunctionModel.Argument("rd", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs1", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs2", DataTypeEnum.kInt, null))).build();
+    
+    InstructionFunctionModel instructionMul = new InstructionFunctionModelBuilder().hasName("mul")
+            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
+            .isInterpretedAs("\\rs1 \\rs2 * \\rd =").hasArguments(
+                    List.of(new InstructionFunctionModel.Argument("rd", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs1", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs2", DataTypeEnum.kInt, null))).build();
+    
+    InstructionFunctionModel instructionIntDiv = new InstructionFunctionModelBuilder().hasName("div")
+            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
+            .isInterpretedAs("\\rs1 \\rs2 / \\rd =").hasArguments(
+                    List.of(new InstructionFunctionModel.Argument("rd", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs1", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs2", DataTypeEnum.kInt, null))).build();
+    
+    InstructionFunctionModel instructionShiftLeft = new InstructionFunctionModelBuilder().hasName("shiftLeft")
+            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
+            .isInterpretedAs("\\rs1 \\rs2 << \\rd =").hasArguments(
+                    List.of(new InstructionFunctionModel.Argument("rd", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs1", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs2", DataTypeEnum.kInt, null))).build();
+    
+    InstructionFunctionModel instructionShiftRight = new InstructionFunctionModelBuilder().hasName("shiftRight")
+            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
+            .isInterpretedAs("\\rs1 \\rs2 >> \\rd =").hasArguments(
+                    List.of(new InstructionFunctionModel.Argument("rd", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs1", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs2", DataTypeEnum.kInt, null))).build();
+    
+    InstructionFunctionModel instructionLogShiftRight = new InstructionFunctionModelBuilder().hasName("shiftRightLog")
+            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
+            .isInterpretedAs("\\rs1 \\rs2 >>> \\rd =").hasArguments(
+                    List.of(new InstructionFunctionModel.Argument("rd", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs1", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs2", DataTypeEnum.kInt, null))).build();
+    
+    InstructionFunctionModel instructionMulAdd = new InstructionFunctionModelBuilder().hasName("mulAdd")
+            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
+            .isInterpretedAs("\\rs1 \\rs2 + \\rs1 * \\rd =").hasArguments(
+                    List.of(new InstructionFunctionModel.Argument("rd", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs1", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs2", DataTypeEnum.kInt, null))).build();
+    
+    InstructionFunctionModel instructionAddMul = new InstructionFunctionModelBuilder().hasName("addMul")
+            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
+            .isInterpretedAs("\\rs1 \\rs2 * \\rs1 + \\rd =").hasArguments(
+                    List.of(new InstructionFunctionModel.Argument("rd", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs1", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs2", DataTypeEnum.kInt, null))).build();
+    
+    InstructionFunctionModel instructionAnd = new InstructionFunctionModelBuilder().hasName("and")
+            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
+            .isInterpretedAs("\\rs1 \\rs2 & \\rd =").hasArguments(
+                    List.of(new InstructionFunctionModel.Argument("rd", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs1", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs2", DataTypeEnum.kInt, null))).build();
+    
+    InstructionFunctionModel instructionOr = new InstructionFunctionModelBuilder().hasName("or")
+            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
+            .isInterpretedAs("\\rs1 \\rs2 | \\rd =").hasArguments(
+                    List.of(new InstructionFunctionModel.Argument("rd", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs1", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs2", DataTypeEnum.kInt, null))).build();
+    
+    InstructionFunctionModel instructionCmpLt = new InstructionFunctionModelBuilder().hasName("cmpLt")
+            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
+            .isInterpretedAs("\\rs1 \\rs2 < \\rd =").hasArguments(
+                    List.of(new InstructionFunctionModel.Argument("rd", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs1", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs2", DataTypeEnum.kInt, null))).build();
+    
+    InstructionFunctionModel instructionCmpLe = new InstructionFunctionModelBuilder().hasName("cmpLe")
+            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
+            .isInterpretedAs("\\rs1 \\rs2 <= \\rd =").hasArguments(
+                    List.of(new InstructionFunctionModel.Argument("rd", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs1", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs2", DataTypeEnum.kInt, null))).build();
+    
+    InstructionFunctionModel instructionCmpEq = new InstructionFunctionModelBuilder().hasName("cmpEq")
+            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
+            .isInterpretedAs("\\rs1 \\rs2 == \\rd =").hasArguments(
+                    List.of(new InstructionFunctionModel.Argument("rd", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs1", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs2", DataTypeEnum.kInt, null))).build();
+    
+    InstructionFunctionModel instructionCmpGt = new InstructionFunctionModelBuilder().hasName("cmpGt")
+            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
+            .isInterpretedAs("\\rs1 \\rs2 > \\rd =").hasArguments(
+                    List.of(new InstructionFunctionModel.Argument("rd", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs1", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs2", DataTypeEnum.kInt, null))).build();
+    
+    InstructionFunctionModel instructionCmpGe = new InstructionFunctionModelBuilder().hasName("cmpGe")
+            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
+            .isInterpretedAs("\\rs1 \\rs2 >= \\rd =").hasArguments(
+                    List.of(new InstructionFunctionModel.Argument("rd", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs1", DataTypeEnum.kInt, null),
+                            new InstructionFunctionModel.Argument("rs2", DataTypeEnum.kInt, null))).build();
+    
+    return Map.ofEntries(Map.entry("add", instructionAdd), Map.entry("sub", instructionSub),
+                         Map.entry("mul", instructionMul), Map.entry("div", instructionIntDiv),
+                         Map.entry("shiftLeft", instructionShiftLeft), Map.entry("shiftRight", instructionShiftRight),
+                         Map.entry("shiftRightLog", instructionLogShiftRight), Map.entry("mulAdd", instructionMulAdd),
+                         Map.entry("addMul", instructionAddMul), Map.entry("and", instructionAnd),
+                         Map.entry("or", instructionOr), Map.entry("cmpLt", instructionCmpLt),
+                         Map.entry("cmpLe", instructionCmpLe), Map.entry("cmpEq", instructionCmpEq),
+                         Map.entry("cmpGt", instructionCmpGt), Map.entry("cmpGe", instructionCmpGe));
   }
   
   @Test
@@ -53,7 +186,10 @@ public class CodeArithmeticInterpreterIntTest
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x3").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("add")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    Assert.assertEquals(31, this.codeArithmeticInterpreter.interpretInstruction(inputCodeModel), 0.01);
+    SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
+    
+    Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel);
+    Assert.assertEquals(31, (int) v.value.getValue(DataTypeEnum.kInt));
   }
   
   @Test
@@ -64,7 +200,10 @@ public class CodeArithmeticInterpreterIntTest
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x2").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("sub")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    Assert.assertEquals(-19, this.codeArithmeticInterpreter.interpretInstruction(inputCodeModel), 0.0001);
+    SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
+    
+    Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel);
+    Assert.assertEquals(-19, (int) v.value.getValue(DataTypeEnum.kInt));
   }
   
   @Test
@@ -75,7 +214,10 @@ public class CodeArithmeticInterpreterIntTest
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x3").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("mul")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    Assert.assertEquals(150, this.codeArithmeticInterpreter.interpretInstruction(inputCodeModel), 0.0001);
+    SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
+    
+    Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel);
+    Assert.assertEquals(150, (int) v.value.getValue(DataTypeEnum.kInt));
   }
   
   @Test
@@ -86,7 +228,10 @@ public class CodeArithmeticInterpreterIntTest
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x3").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("div")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    Assert.assertEquals(4, this.codeArithmeticInterpreter.interpretInstruction(inputCodeModel), 0.0001);
+    SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
+    
+    Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel);
+    Assert.assertEquals(4, (int) v.value.getValue(DataTypeEnum.kInt));
   }
   
   @Test
@@ -97,7 +242,11 @@ public class CodeArithmeticInterpreterIntTest
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("2").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("shiftLeft")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    Assert.assertEquals(100, this.codeArithmeticInterpreter.interpretInstruction(inputCodeModel), 0.0001);
+    SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
+    
+    // TODO: Fails because rs2 is set to immediate value
+    Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel);
+    Assert.assertEquals(100, (int) v.value.getValue(DataTypeEnum.kInt));
   }
   
   @Test
@@ -108,7 +257,10 @@ public class CodeArithmeticInterpreterIntTest
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("2").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("shiftRight")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    Assert.assertEquals(6, this.codeArithmeticInterpreter.interpretInstruction(inputCodeModel), 0.0001);
+    SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
+    
+    Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel);
+    Assert.assertEquals(6, (int) v.value.getValue(DataTypeEnum.kInt));
   }
   
   @Test
@@ -119,7 +271,10 @@ public class CodeArithmeticInterpreterIntTest
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("1").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("shiftRight")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    Assert.assertEquals(-1, this.codeArithmeticInterpreter.interpretInstruction(inputCodeModel), 0.0001);
+    SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
+    
+    Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel);
+    Assert.assertEquals(-1, (int) v.value.getValue(DataTypeEnum.kInt));
   }
   
   @Test
@@ -130,7 +285,10 @@ public class CodeArithmeticInterpreterIntTest
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("1").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader)
             .hasInstructionName("shiftRightLog").hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    Assert.assertEquals(Integer.MAX_VALUE, this.codeArithmeticInterpreter.interpretInstruction(inputCodeModel), 0.0001);
+    SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
+    
+    Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel);
+    Assert.assertEquals(Integer.MAX_VALUE, (int) v.value.getValue(DataTypeEnum.kInt), 0.0001);
   }
   
   @Test
@@ -141,7 +299,10 @@ public class CodeArithmeticInterpreterIntTest
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x3").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("mulAdd")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    Assert.assertEquals(775, this.codeArithmeticInterpreter.interpretInstruction(inputCodeModel), 0.0001);
+    SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
+    
+    Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel);
+    Assert.assertEquals(775, (int) v.value.getValue(DataTypeEnum.kInt));
   }
   
   @Test
@@ -152,7 +313,10 @@ public class CodeArithmeticInterpreterIntTest
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x3").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("addMul")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    Assert.assertEquals(175, this.codeArithmeticInterpreter.interpretInstruction(inputCodeModel), 0.0001);
+    SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
+    
+    Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel);
+    Assert.assertEquals(175, (int) v.value.getValue(DataTypeEnum.kInt));
   }
   
   @Test
@@ -163,7 +327,10 @@ public class CodeArithmeticInterpreterIntTest
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x4").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("and")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    Assert.assertEquals(24, this.codeArithmeticInterpreter.interpretInstruction(inputCodeModel), 0.0001);
+    SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
+    
+    Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel);
+    Assert.assertEquals(24, (int) v.value.getValue(DataTypeEnum.kInt));
   }
   
   @Test
@@ -174,37 +341,10 @@ public class CodeArithmeticInterpreterIntTest
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x3").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("or")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    Assert.assertEquals(31, this.codeArithmeticInterpreter.interpretInstruction(inputCodeModel), 0.0001);
-  }
-  
-  @Test
-  public void interpretInstruction_intNotInstruction_returnValid()
-  {
-    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rd").hasValue("x1").build();
-    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x4").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("not")
-            .hasArguments(Arrays.asList(argument1, argument2)).build();
-    Assert.assertEquals(1, this.codeArithmeticInterpreter.interpretInstruction(inputCodeModel), 0.0001);
-  }
-  
-  @Test
-  public void interpretInstruction_intIncInstruction_returnValid()
-  {
-    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rd").hasValue("x1").build();
-    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x2").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("inc")
-            .hasArguments(Arrays.asList(argument1, argument2)).build();
-    Assert.assertEquals(26, this.codeArithmeticInterpreter.interpretInstruction(inputCodeModel), 0.0001);
-  }
-  
-  @Test
-  public void interpretInstruction_intDecInstruction_returnValid()
-  {
-    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rd").hasValue("x1").build();
-    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x2").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("dec")
-            .hasArguments(Arrays.asList(argument1, argument2)).build();
-    Assert.assertEquals(24, this.codeArithmeticInterpreter.interpretInstruction(inputCodeModel), 0.0001);
+    SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
+    
+    Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel);
+    Assert.assertEquals(31, (int) v.value.getValue(DataTypeEnum.kInt));
   }
   
   @Test
@@ -215,7 +355,10 @@ public class CodeArithmeticInterpreterIntTest
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x2").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("cmpLt")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    Assert.assertEquals(1, this.codeArithmeticInterpreter.interpretInstruction(inputCodeModel), 0.0001);
+    SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
+    
+    Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel);
+    Assert.assertEquals(1, (int) v.value.getValue(DataTypeEnum.kInt));
   }
   
   @Test
@@ -226,7 +369,10 @@ public class CodeArithmeticInterpreterIntTest
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x2").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("cmpLt")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    Assert.assertEquals(0, this.codeArithmeticInterpreter.interpretInstruction(inputCodeModel), 0.0001);
+    SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
+    
+    Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel);
+    Assert.assertEquals(0, (int) v.value.getValue(DataTypeEnum.kInt));
   }
   
   @Test
@@ -237,7 +383,10 @@ public class CodeArithmeticInterpreterIntTest
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x3").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("cmpLt")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    Assert.assertEquals(0, this.codeArithmeticInterpreter.interpretInstruction(inputCodeModel), 0.0001);
+    SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
+    
+    Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel);
+    Assert.assertEquals(0, (int) v.value.getValue(DataTypeEnum.kInt));
   }
   
   @Test
@@ -248,7 +397,10 @@ public class CodeArithmeticInterpreterIntTest
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x2").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("cmpLe")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    Assert.assertEquals(1, this.codeArithmeticInterpreter.interpretInstruction(inputCodeModel), 0.0001);
+    SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
+    
+    Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel);
+    Assert.assertEquals(1, (int) v.value.getValue(DataTypeEnum.kInt));
   }
   
   @Test
@@ -259,7 +411,10 @@ public class CodeArithmeticInterpreterIntTest
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x2").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("cmpLe")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    Assert.assertEquals(1, this.codeArithmeticInterpreter.interpretInstruction(inputCodeModel), 0.0001);
+    SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
+    
+    Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel);
+    Assert.assertEquals(1, (int) v.value.getValue(DataTypeEnum.kInt));
   }
   
   @Test
@@ -270,7 +425,10 @@ public class CodeArithmeticInterpreterIntTest
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x3").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("cmpLe")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    Assert.assertEquals(0, this.codeArithmeticInterpreter.interpretInstruction(inputCodeModel), 0.0001);
+    SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
+    
+    Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel);
+    Assert.assertEquals(0, (int) v.value.getValue(DataTypeEnum.kInt));
   }
   
   @Test
@@ -281,7 +439,10 @@ public class CodeArithmeticInterpreterIntTest
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x2").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("cmpEq")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    Assert.assertEquals(0, this.codeArithmeticInterpreter.interpretInstruction(inputCodeModel), 0.0001);
+    SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
+    
+    Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel);
+    Assert.assertEquals(0, (int) v.value.getValue(DataTypeEnum.kInt));
   }
   
   @Test
@@ -292,7 +453,10 @@ public class CodeArithmeticInterpreterIntTest
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x2").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("cmpEq")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    Assert.assertEquals(1, this.codeArithmeticInterpreter.interpretInstruction(inputCodeModel), 0.0001);
+    SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
+    
+    Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel);
+    Assert.assertEquals(1, (int) v.value.getValue(DataTypeEnum.kInt));
   }
   
   @Test
@@ -303,7 +467,10 @@ public class CodeArithmeticInterpreterIntTest
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x3").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("cmpEq")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    Assert.assertEquals(0, this.codeArithmeticInterpreter.interpretInstruction(inputCodeModel), 0.0001);
+    SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
+    
+    Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel);
+    Assert.assertEquals(0, (int) v.value.getValue(DataTypeEnum.kInt));
   }
   
   @Test
@@ -314,7 +481,10 @@ public class CodeArithmeticInterpreterIntTest
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x2").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("cmpGe")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    Assert.assertEquals(0, this.codeArithmeticInterpreter.interpretInstruction(inputCodeModel), 0.0001);
+    SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
+    
+    Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel);
+    Assert.assertEquals(0, (int) v.value.getValue(DataTypeEnum.kInt));
   }
   
   @Test
@@ -325,7 +495,10 @@ public class CodeArithmeticInterpreterIntTest
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x2").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("cmpGe")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    Assert.assertEquals(1, this.codeArithmeticInterpreter.interpretInstruction(inputCodeModel), 0.0001);
+    SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
+    
+    Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel);
+    Assert.assertEquals(1, (int) v.value.getValue(DataTypeEnum.kInt));
   }
   
   @Test
@@ -336,7 +509,10 @@ public class CodeArithmeticInterpreterIntTest
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x3").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("cmpGe")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    Assert.assertEquals(1, this.codeArithmeticInterpreter.interpretInstruction(inputCodeModel), 0.0001);
+    SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
+    
+    Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel);
+    Assert.assertEquals(1, (int) v.value.getValue(DataTypeEnum.kInt));
   }
   
   @Test
@@ -347,7 +523,10 @@ public class CodeArithmeticInterpreterIntTest
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x2").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("cmpGt")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    Assert.assertEquals(0, this.codeArithmeticInterpreter.interpretInstruction(inputCodeModel), 0.0001);
+    SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
+    
+    Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel);
+    Assert.assertEquals(0, (int) v.value.getValue(DataTypeEnum.kInt));
   }
   
   @Test
@@ -358,7 +537,10 @@ public class CodeArithmeticInterpreterIntTest
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x2").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("cmpGt")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    Assert.assertEquals(0, this.codeArithmeticInterpreter.interpretInstruction(inputCodeModel), 0.0001);
+    SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
+    
+    Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel);
+    Assert.assertEquals(0, (int) v.value.getValue(DataTypeEnum.kInt));
   }
   
   @Test
@@ -369,90 +551,9 @@ public class CodeArithmeticInterpreterIntTest
     InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x3").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("cmpGt")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    Assert.assertEquals(1, this.codeArithmeticInterpreter.interpretInstruction(inputCodeModel), 0.0001);
-  }
-  
-  private List<InstructionFunctionModel> setUpInstructions()
-  {
-    InstructionFunctionModel instructionAdd = new InstructionFunctionModelBuilder().hasName("add")
-            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt).isInterpretedAs("rd=rs1+rs2;")
-            .hasSyntax("add rd rs1 rs2").build();
+    SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
-    InstructionFunctionModel instructionSub = new InstructionFunctionModelBuilder().hasName("sub")
-            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt).isInterpretedAs("rd=rs1-rs2;")
-            .hasSyntax("sub rd rs1 rs2").build();
-    
-    InstructionFunctionModel instructionMul = new InstructionFunctionModelBuilder().hasName("mul")
-            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt).isInterpretedAs("rd=rs1*rs2;")
-            .hasSyntax("mul rd rs1 rs2").build();
-    
-    InstructionFunctionModel instructionIntDiv = new InstructionFunctionModelBuilder().hasName("div")
-            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt).isInterpretedAs("rd=rs1/rs2;")
-            .hasSyntax("div rd rs1 rs2").build();
-    
-    InstructionFunctionModel instructionShiftLeft = new InstructionFunctionModelBuilder().hasName("shiftLeft")
-            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
-            .isInterpretedAs("rd=rs1" + "<<rs2;").hasSyntax("shiftLeft rd " + "rs1" + " rs2").build();
-    
-    InstructionFunctionModel instructionShiftRight = new InstructionFunctionModelBuilder().hasName("shiftRight")
-            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
-            .isInterpretedAs("rd=rs1" + ">>rs2;").hasSyntax("shiftRight rd " + "rs1" + " rs2").build();
-    
-    InstructionFunctionModel instructionLogShiftRight = new InstructionFunctionModelBuilder().hasName("shiftRightLog")
-            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
-            .isInterpretedAs("rd=rs1" + ">>>rs2;").hasSyntax("shiftRight " + "rd " + "rs1 rs2").build();
-    
-    InstructionFunctionModel instructionMulAdd = new InstructionFunctionModelBuilder().hasName("mulAdd")
-            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
-            .isInterpretedAs("rd=rs1*" + "(rs1+rs2)").hasSyntax("mulAdd rd rs1 rs2").build();
-    
-    InstructionFunctionModel instructionAddMul = new InstructionFunctionModelBuilder().hasName("addMul")
-            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt)
-            .isInterpretedAs("rd=rs1+" + "(rs1*rs2)").hasSyntax("addMul rd rs1 rs2").build();
-    
-    InstructionFunctionModel instructionAnd = new InstructionFunctionModelBuilder().hasName("and")
-            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt).isInterpretedAs("rd=rs1&rs2")
-            .hasSyntax("and rd rs1 rs2").build();
-    
-    InstructionFunctionModel instructionOr = new InstructionFunctionModelBuilder().hasName("or")
-            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt).isInterpretedAs("rd=rs1|rs2")
-            .hasSyntax("and rd rs1 rs2").build();
-    
-    InstructionFunctionModel instructionNot = new InstructionFunctionModelBuilder().hasName("not")
-            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt).isInterpretedAs("rd=!rs1")
-            .hasSyntax("not rd rs1").build();
-    
-    InstructionFunctionModel instructionInc = new InstructionFunctionModelBuilder().hasName("inc")
-            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt).isInterpretedAs("rd=++rs1")
-            .hasSyntax("inc rd rs1").build();
-    
-    InstructionFunctionModel instructionDec = new InstructionFunctionModelBuilder().hasName("dec")
-            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt).isInterpretedAs("rd=--rs1")
-            .hasSyntax("dec rd rs1").build();
-    
-    InstructionFunctionModel instructionCmpLt = new InstructionFunctionModelBuilder().hasName("cmpLt")
-            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt).isInterpretedAs("rd=rs1<rs2")
-            .hasSyntax("cmpLt rd rs1 rs2").build();
-    
-    InstructionFunctionModel instructionCmpLe = new InstructionFunctionModelBuilder().hasName("cmpLe")
-            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt).isInterpretedAs("rd=rs1<=rs2")
-            .hasSyntax("cmpLe rd rs1 rs2").build();
-    
-    InstructionFunctionModel instructionCmpEq = new InstructionFunctionModelBuilder().hasName("cmpEq")
-            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt).isInterpretedAs("rd=rs1==rs2")
-            .hasSyntax("cmpEq rd rs1 rs2").build();
-    
-    InstructionFunctionModel instructionCmpGt = new InstructionFunctionModelBuilder().hasName("cmpGt")
-            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt).isInterpretedAs("rd=rs1>rs2")
-            .hasSyntax("cmpGt rd rs1 rs2").build();
-    
-    InstructionFunctionModel instructionCmpGe = new InstructionFunctionModelBuilder().hasName("cmpGe")
-            .hasInputDataType(DataTypeEnum.kInt).hasOutputDataType(DataTypeEnum.kInt).isInterpretedAs("rd=rs1>=rs2")
-            .hasSyntax("cmpGe rd rs1 rs2").build();
-    
-    return Arrays.asList(instructionAdd, instructionSub, instructionMul, instructionIntDiv, instructionShiftLeft,
-                         instructionShiftRight, instructionLogShiftRight, instructionMulAdd, instructionAddMul,
-                         instructionAnd, instructionOr, instructionNot, instructionInc, instructionDec,
-                         instructionCmpLt, instructionCmpLe, instructionCmpEq, instructionCmpGe, instructionCmpGt);
+    Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel);
+    Assert.assertEquals(1, (int) v.value.getValue(DataTypeEnum.kInt));
   }
 }

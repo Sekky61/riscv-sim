@@ -32,9 +32,99 @@ package com.gradle.superscalarsim.enums;
  */
 public enum DataTypeEnum
 {
-  kInt,         ///< 32bit Integer value
-  kLong,        ///< 64bit Integer value
-  kFloat,       ///< Float value
-  kDouble,      ///< Double value
-  kSpeculative  ///< Speculative value
+  /**
+   * 32bit signed integer
+   */
+  kInt,
+  
+  /**
+   * 32bit unsigned integer
+   */
+  kUInt,
+  
+  /**
+   * 64bit signed integer
+   */
+  kLong,
+  
+  /**
+   * 64bit unsigned integer
+   */
+  kULong,
+  
+  /**
+   * 32bit floating point
+   */
+  kFloat,
+  
+  /**
+   * 64bit floating point
+   */
+  kDouble,
+  
+  /**
+   * True/False. Used for expressions.
+   */
+  kBool;
+  
+  public static DataTypeEnum fromJavaClass(Class<?> aClass)
+  {
+    if (aClass == Integer.class)
+    {
+      return kInt;
+    }
+    else if (aClass == Long.class)
+    {
+      return kLong;
+    }
+    else if (aClass == Float.class)
+    {
+      return kFloat;
+    }
+    else if (aClass == Double.class)
+    {
+      return kDouble;
+    }
+    else if (aClass == Boolean.class)
+    {
+      return kBool;
+    }
+    else
+    {
+      return null;
+    }
+  }
+  
+  public Class<?> getJavaClass()
+  {
+    switch (this)
+    {
+      case kInt:
+        return Integer.class;
+      case kUInt:
+        return Integer.class;
+      case kLong:
+        return Long.class;
+      case kULong:
+        return Long.class;
+      case kFloat:
+        return Float.class;
+      case kDouble:
+        return Double.class;
+      case kBool:
+        return Boolean.class;
+      default:
+        return null;
+    }
+  }
+  
+  /**
+   * Relevant for loads that fill upper bits with sign bit.
+   *
+   * @return True if the data type is signed and upper bits should be filled with sign bit.
+   */
+  public boolean isSigned()
+  {
+    return this == kInt || this == kLong;
+  }
 }

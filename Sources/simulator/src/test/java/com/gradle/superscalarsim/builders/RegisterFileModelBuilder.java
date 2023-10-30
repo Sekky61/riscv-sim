@@ -1,15 +1,15 @@
 package com.gradle.superscalarsim.builders;
 
-import com.gradle.superscalarsim.enums.DataTypeEnum;
-import com.gradle.superscalarsim.models.RegisterFileModel;
-import com.gradle.superscalarsim.models.RegisterModel;
+import com.gradle.superscalarsim.enums.RegisterTypeEnum;
+import com.gradle.superscalarsim.models.register.RegisterFileModel;
+import com.gradle.superscalarsim.models.register.RegisterModel;
 
 import java.util.List;
 
 public class RegisterFileModelBuilder
 {
   private String name;
-  private DataTypeEnum dataType;
+  private RegisterTypeEnum dataType;
   private List<RegisterModel> registerList;
   
   public RegisterFileModelBuilder()
@@ -25,7 +25,7 @@ public class RegisterFileModelBuilder
     return this;
   }
   
-  public RegisterFileModelBuilder hasDataType(DataTypeEnum dataType)
+  public RegisterFileModelBuilder hasDataType(RegisterTypeEnum dataType)
   {
     this.dataType = dataType;
     return this;
@@ -39,6 +39,6 @@ public class RegisterFileModelBuilder
   
   public RegisterFileModel build()
   {
-    return new RegisterFileModel(this.name, this.dataType.toString(), this.registerList);
+    return new RegisterFileModel(this.name, this.dataType, this.registerList);
   }
 }
