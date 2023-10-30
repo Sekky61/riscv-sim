@@ -43,7 +43,7 @@ import { selectAsmCode } from '@/lib/redux/compilerSlice';
 import { selectActiveIsa } from '@/lib/redux/isaSlice';
 import type { RootState } from '@/lib/redux/store';
 import { callSimulationImpl } from '@/lib/serverCalls/callSimulation';
-import type { CpuState } from '@/lib/types/cpuApi';
+import type { CpuState, InputCodeModel } from '@/lib/types/cpuApi';
 import type {
   DecodeAndDispatchBlock,
   InstructionFetchBlock,
@@ -121,7 +121,8 @@ export const simStepBackward = createAsyncThunk<SimulationParsedResult>(
     const config = selectActiveIsa(state);
     const code = state.cpu.code;
     const currentTick = selectTick(state);
-    const response = await callSimulationImpl(currentTick - 1, {
+    const tick = Math.max(0, currentTick - 1);
+    const response = await callSimulationImpl(tick, {
       ...config,
       code,
     });
@@ -229,6 +230,35 @@ export const selectProgram = createSelector(
       code,
       labels,
     };
+  },
+);
+
+/**
+ * Returns program code with labels inserted before the instruction they point to.
+ */
+export const selectProgramWithLabels = createSelector(
+  [selectProgram],
+  (program): Array<InputCodeModel | string> | null => {
+    if (!program) {
+      return null;
+    }
+
+    // COPY code
+    const codeOrder: Array<InputCodeModel | string> = [...program.code];
+
+    // For each label, insert it before the instruction it points to
+    Object.entries(program.labels).forEach(([labelName, idx]) => {
+      let insertIndex = codeOrder.findIndex(
+        (instruction) =>
+          typeof instruction !== 'string' && instruction.codeId === idx,
+      );
+      if (insertIndex === -1) {
+        insertIndex = codeOrder.length;
+      }
+      codeOrder.splice(insertIndex, 0, labelName);
+    });
+
+    return codeOrder;
   },
 );
 

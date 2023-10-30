@@ -29,20 +29,32 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import clsx from 'clsx';
 import React, { useEffect } from 'react';
 
 import { getArrayItems } from '@/lib/cpuState/util';
-import { selectFetch, selectProgram } from '@/lib/redux/cpustateSlice';
+import {
+  selectFetch,
+  selectProgram,
+  selectProgramWithLabels,
+} from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
 import { InputCodeModel } from '@/lib/types/cpuApi';
+import { ReactClassName } from '@/lib/types/reactTypes';
 
 import Block from '@/components/simulation/Block';
 
+/**
+ * A block displaying the program instructions.
+ * Labels are displayed more prominently. PC is rendered as a red line pointing before the instruction.
+ */
 export default function Program() {
   const pcRef = React.useRef<HTMLDivElement>(null);
   const program = useAppSelector(selectProgram);
   const fetch = useAppSelector(selectFetch);
+  const codeOrder = useAppSelector(selectProgramWithLabels);
 
+  // Scroll to PC on every render
   useEffect(() => {
     if (!pcRef.current) {
       return;
@@ -50,22 +62,16 @@ export default function Program() {
     pcRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
   });
 
-  if (!program || !fetch) return null;
+  if (!program || !fetch || !codeOrder) return null;
 
-  const code = program.code;
   const pc = fetch.pc / 4;
-
-  // Sort instructions and labels together to a single array
-
-  // COPY code
-  const codeOrder: Array<InputCodeModel | string> = [...code];
 
   // A thin red line
   const pcPointer = (
     <div ref={pcRef} className='relative mr-8 flex items-center'>
       <div className='absolute w-full h-0.5 bg-red-500 rounded-full' />
       <div
-        className='absolute bg-red-500 text-white text-xs rectangle h-4 pl-1 -ml-2'
+        className='absolute bg-red-500 text-white text-xs rectangle h-4 pl-1'
         title={`PC: ${fetch.pc}`}
       >
         <div className='relative rectangle'>PC</div>
@@ -73,25 +79,13 @@ export default function Program() {
     </div>
   );
 
-  // For each label, insert it before the instruction it points to
-  Object.entries(program.labels).forEach(([labelName, idx]) => {
-    let insertIndex = codeOrder.findIndex(
-      (instruction) =>
-        typeof instruction !== 'string' && instruction.codeId === idx,
-    );
-    if (insertIndex === -1) {
-      insertIndex = codeOrder.length;
-    }
-    codeOrder.splice(insertIndex, 0, labelName);
-  });
-
   return (
     <Block title='Program'>
-      <div className='flex h-[600px] flex-col gap-1 overflow-y-auto'>
+      <div className='flex h-[600px] flex-col gap-1 overflow-y-auto pt-4'>
         {codeOrder.map((instructionOrLabel) => {
           if (typeof instructionOrLabel === 'string') {
             return (
-              <div key={instructionOrLabel} className='font-bold'>
+              <div key={instructionOrLabel} className='font-bold text-sm'>
                 {instructionOrLabel}:
               </div>
             );
@@ -101,7 +95,10 @@ export default function Program() {
           return (
             <div key={instructionOrLabel.codeId}>
               {isPointedTo && pcPointer}
-              <ProgramInstruction instruction={instructionOrLabel} />
+              <ProgramInstruction
+                instruction={instructionOrLabel}
+                className='ml-6'
+              />
             </div>
           );
         })}
@@ -110,7 +107,12 @@ export default function Program() {
   );
 }
 
-function ProgramInstruction({ instruction }: { instruction: InputCodeModel }) {
+function ProgramInstruction({
+  instruction,
+  className,
+}: {
+  instruction: InputCodeModel;
+} & ReactClassName) {
   const model = instruction.instructionFunctionModel;
 
   const argValues = getArrayItems(instruction.arguments);
@@ -135,9 +137,10 @@ function ProgramInstruction({ instruction }: { instruction: InputCodeModel }) {
     argsValues.push(arg);
   }
 
+  const cls = clsx(className, 'font-mono text-sm');
   return (
-    <div className='ml-5 font-mono text-sm'>
-      {model.name}
+    <div className={cls}>
+      <span title={model.interpretableAs}>{model.name}</span>
       {argsValues.map((arg, idx) => {
         return (
           <span key={arg.name}>
