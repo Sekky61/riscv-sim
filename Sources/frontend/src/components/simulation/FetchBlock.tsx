@@ -43,12 +43,15 @@ export default function FetchBlock() {
 
   const capacity = fetchObject.numberOfWays;
 
+  const fetchStats = (
+    <>
+      <div>PC: {fetchObject.pc}</div>
+      <div>{fetchObject.stallFlag ? 'Stalled' : null}</div>
+    </>
+  );
+
   return (
-    <Block title='Fetch Block'>
-      <div className='my-2 text-sm'>
-        <div>PC: {fetchObject.pc}</div>
-        <div>{fetchObject.stallFlag ? 'Stalled' : null}</div>
-      </div>
+    <Block title='Fetch Block' stats={fetchStats}>
       <InstructionListDisplay
         instructions={fetchObject.fetchedCode}
         limit={capacity}

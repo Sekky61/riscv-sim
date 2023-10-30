@@ -31,13 +31,18 @@
 
 // Source: https://stackoverflow.com/questions/35623656/how-can-i-display-a-modal-dialog-in-redux-that-performs-asynchronous-actions/35641680#35641680
 
+import { RefObject, useEffect } from 'react';
 import ReactModal from 'react-modal';
 
-import { useAppSelector } from '@/lib/redux/hooks';
-import { selectModalProps, selectModalType } from '@/lib/redux/modalSlice';
+import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
+import {
+  closeModal,
+  selectModalProps,
+  selectModalType,
+} from '@/lib/redux/modalSlice';
 
-import RobDetailsModal from '@/components/modals/RobDetailsModal';
-import SaveIsaChangesModal from '@/components/modals/SaveIsaChangesModal';
+import { RobDetailsModal } from '@/components/modals/RobDetailsModal';
+import { SaveIsaChangesModal } from '@/components/modals/SaveIsaChangesModal';
 
 /**
  * Modals to be rendered. They should define their size, padding from the edge of the modal and the content.
@@ -53,31 +58,53 @@ export type ModalProps<M extends ModalType = ModalType> = React.ComponentProps<
   (typeof MODAL_COMPONENTS)[M]
 >;
 
-const ModalRoot = () => {
+/**
+ * modal root component.
+ * Renders the modal based on the modalType in the redux store (modalSlice).
+ * Modal can be closed by clicking on the close button, by pressing ESC or by clicking outside of the modal.
+ *
+ * @param appRef reference to the app root element
+ */
+const ModalRoot = ({ appRef }: { appRef: RefObject<HTMLElement> }) => {
+  const dispatch = useAppDispatch();
   const modalType = useAppSelector(selectModalType);
   const modalPropsTemp = useAppSelector(selectModalProps);
 
-  if (!modalType) {
-    return null;
-  }
-
   // We are sure that modalProps exist
   const modalProps = modalPropsTemp as ModalProps;
+  const isOpen = modalType !== null;
 
-  const SpecificModal = MODAL_COMPONENTS[modalType];
+  const SpecificModal = isOpen ? MODAL_COMPONENTS[modalType] : 'div';
 
   // TODO: The type does not express, that the props are correct
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   /* @ts-ignore */
   const renderedModal = <SpecificModal {...modalProps} />;
 
+  const closeModalRequest = () => {
+    dispatch(closeModal());
+  };
+
+  // Give react-modal a reference to the app root.
+  // This is needed so that react-modal can add aria-hidden to the app root when the modal is open (accessibility)
+  useEffect(() => {
+    if (!appRef.current) {
+      throw new Error(`App ref is not set`);
+    }
+    ReactModal.setAppElement(appRef.current);
+  }, [appRef]);
+
   return (
     <ReactModal
-      isOpen={modalType !== null}
+      isOpen={isOpen}
       className='bg-neutral-99 rounded border'
       overlayClassName='fixed inset-0 bg-gray-500/40 flex justify-center items-center'
       bodyOpenClassName='react-modal-open'
+      onRequestClose={closeModalRequest}
     >
+      <div>
+        <button onClick={closeModalRequest}>Close</button>
+      </div>
       {renderedModal}
     </ReactModal>
   );

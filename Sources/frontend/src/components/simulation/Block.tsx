@@ -35,41 +35,42 @@
 import clsx from 'clsx';
 import { MoreVertical } from 'lucide-react';
 
-import { useAppDispatch } from '@/lib/redux/hooks';
-import { openModal } from '@/lib/redux/modalSlice';
 import { ReactChildren, ReactClassName } from '@/lib/types/reactTypes';
 
 export type BlockProps = {
+  title: string;
+  stats?: ReactChildren;
   children: ReactChildren;
   className?: ReactClassName;
-  title: string;
+  handleMore?: () => void;
 };
 
-export default function Block({ children, className, title }: BlockProps) {
-  const dispatch = useAppDispatch();
-  const classes = clsx(className, 'w-[184px] rounded border bg-white p-2');
-
-  const handleMore = () => {
-    dispatch(
-      openModal({
-        modalType: 'ROB_DETAILS_MODAL',
-        modalProps: {},
-      }),
-    );
-  };
-
+export default function Block({
+  children,
+  className,
+  title,
+  stats,
+  handleMore,
+}: BlockProps) {
+  const classes = clsx(
+    className,
+    'w-[184px] rounded border bg-white p-2 flex gap-2 flex-col',
+  );
   return (
     <div className={classes}>
       <div className='flex justify-between'>
-        <span>{title}</span>
-        <button
-          onClick={handleMore}
-          className='iconHighlight h-6 w-6 rounded-full'
-        >
-          <MoreVertical strokeWidth={1.5} />
-        </button>
+        <span className='font-bold'>{title}</span>
+        {handleMore && (
+          <button
+            onClick={handleMore}
+            className='iconHighlight h-6 w-6 rounded-full'
+          >
+            <MoreVertical strokeWidth={1.5} />
+          </button>
+        )}
       </div>
-      {children}
+      {stats && <div className='text-sm'>{stats}</div>}
+      <div>{children}</div>
     </div>
   );
 }

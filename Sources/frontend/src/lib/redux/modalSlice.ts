@@ -39,7 +39,7 @@ import type { ModalProps, ModalType } from '@/components/modals/ModalRoot';
 /**
  * Type that link a name of a modal to its props.
  */
-export type Modal<T extends ModalType = ModalType> = {
+export type Modal<T extends ModalType> = {
   modalType: T;
   modalProps: ModalProps<T>;
 };
@@ -62,7 +62,10 @@ export const shortcutsSlice = createSlice({
   // `createSlice` will infer the state type from the `initialState` argument
   initialState,
   reducers: {
-    openModal: (state, action: PayloadAction<Modal>) => {
+    openModal: <T extends ModalType>(
+      state: ModalState,
+      action: PayloadAction<Modal<T>>,
+    ) => {
       state.modalType = action.payload.modalType;
       state.modalProps = action.payload.modalProps;
     },

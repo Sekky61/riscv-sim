@@ -31,7 +31,7 @@
 
 'use client';
 
-import type { ReactNode } from 'react';
+import { type ReactNode, useRef } from 'react';
 import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
 
@@ -44,6 +44,8 @@ import Notifications from '@/components/Notifications';
 import SideBar from '@/components/SideBar';
 
 export default function RootLayout({ children }: { children: ReactNode }) {
+  const appRef = useRef<HTMLDivElement>(null);
+
   return (
     <html>
       <head>
@@ -56,10 +58,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body>
         <Provider store={store}>
           <PersistGate loading={null} persistor={persistor}>
-            <ModalRoot />
+            <ModalRoot appRef={appRef} />
             <div className='flex h-screen max-h-screen w-full'>
               <SideBar />
-              <div className='relative flex-grow overflow-y-auto'>
+              <div className='relative flex-grow overflow-y-auto' ref={appRef}>
                 {children}
               </div>
             </div>

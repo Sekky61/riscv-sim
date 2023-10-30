@@ -30,13 +30,15 @@
  */
 
 import { selectROB } from '@/lib/redux/cpustateSlice';
-import { useAppSelector } from '@/lib/redux/hooks';
+import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
+import { openModal } from '@/lib/redux/modalSlice';
 
 import Block from '@/components/simulation/Block';
 import InstructionField from '@/components/simulation/InstructionField';
 import { InstructionListDisplay } from '@/components/simulation/InstructionListDisplay';
 
 export default function ReorderBuffer() {
+  const dispatch = useAppDispatch();
   const rob = useAppSelector(selectROB);
 
   if (!rob) return null;
@@ -45,13 +47,25 @@ export default function ReorderBuffer() {
   const showLimit = 16;
   const showMore = used > showLimit;
 
-  return (
-    <Block title='Reorder Buffer'>
+  const robStats = (
+    <>
       <div>
-        <span>
-          {used}/{rob.bufferSize}
-        </span>
+        Capacity: {used}/{rob.bufferSize}
       </div>
+    </>
+  );
+
+  const handleMore = () => {
+    dispatch(
+      openModal({
+        modalType: 'ROB_DETAILS_MODAL',
+        modalProps: { robBlock: rob },
+      }),
+    );
+  };
+
+  return (
+    <Block title='Reorder Buffer' stats={robStats} handleMore={handleMore}>
       <InstructionListDisplay
         instructions={rob.reorderQueue}
         limit={showLimit}

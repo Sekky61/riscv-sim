@@ -43,11 +43,14 @@ export default function DecodeBlock() {
 
   const after = decode.afterRenameCodeList;
 
+  const decodeStats = (
+    <>
+      <div>Stalled: {decode.stallFlag ? 'Yes' : 'No'}</div>
+    </>
+  );
+
   return (
-    <Block title='Decode Block'>
-      <div className='my-2 text-sm'>
-        <div>Stalled: {decode.stallFlag}</div>
-      </div>
+    <Block title='Decode Block' stats={decodeStats}>
       <InstructionListDisplay
         instructions={after}
         limit={decode.decodeBufferSize}

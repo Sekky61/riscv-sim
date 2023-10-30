@@ -1,14 +1,14 @@
 /**
- * @file    RobDetailsModal.tsx
+ * @file    modal.test-d.ts
  *
  * @author  Michal Majer
  *          Faculty of Information Technology
  *          Brno University of Technology
  *          xmajer21@stud.fit.vutbr.cz
  *
- * @brief   Modal for displaying details about the Reorder Buffer
+ * @brief   Tests for some complex typescript types used in modal slice
  *
- * @date    19 September 2023, 22:00 (created)
+ * @date    26 September 2023, 17:00 (created)
  *
  * @section Licence
  * This file is part of the Superscalar simulator app
@@ -29,12 +29,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import type { ReorderBufferState } from '@/lib/types/cpuDeref';
+import { expectNotType, expectType } from 'tsd';
 
-export type RobDetailsModalProps = {
-  robBlock: ReorderBufferState;
-};
+import { ModalProps, ModalType } from '@/components/modals/ModalRoot';
+import { RobDetailsModalProps } from '@/components/modals/RobDetailsModal';
+import { SaveIsaChangesModalProps } from '@/components/modals/SaveIsaChangesModal';
 
-export const RobDetailsModal = ({ robBlock }: RobDetailsModalProps) => {
-  return <div>Details {robBlock.bufferSize}</div>;
-};
+function f<T extends ModalType>(): ModalProps<T> {
+  // @ts-expect-error just a dumb function to test the type
+  return {} as unknown;
+}
+
+describe('The ModalType and ModalProps type inference', () => {
+  expectType<SaveIsaChangesModalProps>(f<'CONFIRM_ISA_CHANGES_MODAL'>());
+  expectNotType<RobDetailsModalProps>(f<'CONFIRM_ISA_CHANGES_MODAL'>());
+
+  it('works', () => {
+    expect(true).toBe(true);
+  });
+});

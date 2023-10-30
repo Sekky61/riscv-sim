@@ -43,7 +43,10 @@ export type SaveIsaChangesModalProps = {
   oldName: string;
 };
 
-const SaveIsaChangesModal = ({ isa, oldName }: SaveIsaChangesModalProps) => {
+export const SaveIsaChangesModal = ({
+  isa,
+  oldName,
+}: SaveIsaChangesModalProps) => {
   const dispatch = useAppDispatch();
   return (
     <ConfirmModal
@@ -68,5 +71,3 @@ const SaveIsaChangesModal = ({ isa, oldName }: SaveIsaChangesModalProps) => {
     />
   );
 };
-
-export default SaveIsaChangesModal;
