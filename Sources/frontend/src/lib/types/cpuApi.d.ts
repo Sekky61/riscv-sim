@@ -126,7 +126,7 @@ export interface InstructionFunctionModel {
   instructionType: {
     name: string;
   };
-  arguments: InstructionFunctionModelArgument[];
+  arguments: ArrayList<InstructionFunctionModelArgument>;
   interpretableAs: string;
   dataType: string | null;
 }

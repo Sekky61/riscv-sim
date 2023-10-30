@@ -310,4 +310,12 @@
   .tlbutton-animation-inner {
     transform: translateY(2px);
   }
+
+  /* Right pointing red arrow */
+
+  .rectangle::after {
+    @apply border-l-red-500 border-y-transparent border-r-transparent absolute top-0 left-full;
+    content: "";
+    border-width: 0.5rem 0 0.5rem 0.5rem;
+  }
 }
