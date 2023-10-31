@@ -17,7 +17,7 @@ variables:
 build_frontend:
   stage: build
   script:
-    - cd Sources
+    - cd Sources/frontend
     - docker build -t sources_riscvsim-web .
     - docker run sources_riscvsim-web "npm run build"
   tags:
@@ -86,7 +86,7 @@ stop_review:
 build_backend:
   stage: build
   script:
-    - cd Sources
+    - cd Sources/simulator
     - docker build -t sources_riscvsim-server .
     - docker run sources_riscvsim-server "./gradlew assemble"
   tags:
