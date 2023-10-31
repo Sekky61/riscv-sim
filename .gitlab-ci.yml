@@ -1,3 +1,14 @@
+# Author: Michal Majer (xmajer21, misa@majer.cz)
+# Date: 2023-11-01
+
+# This file defines the CI/CD pipeline for the project.
+# It is used by GitLab to run the pipeline.
+#
+# It defines two tags:
+# - riscvsim: Can be ran in docker runner
+# - docker-deploy: Can be ran in shell runner. This runner has access to docker-compose and creates the deployment
+#
+# There are two stages: test and deploy
 
 default:
   image: docker:24.0.5
@@ -50,7 +61,6 @@ deploy_review:
   script:
     - cd Sources
     - docker-compose -f "docker-compose.yml" up -d --build # Runner uses older Docker
-    - echo (docker ps -a)
   environment:
     name: review/$CI_COMMIT_REF_SLUG
     url: https://sc-gpu1.fit.vutbr.cz:3120/
