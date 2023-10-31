@@ -1,4 +1,4 @@
-version: "3.8"
+version: "2.2"
 services:
   riscvsim-web:
     container_name: riscvsim-web
