@@ -49,7 +49,7 @@ deploy_review:
   stage: deploy
   script:
     - cd Sources
-    - sudo ./run_container.sh
+    - ./run_container.sh
   environment:
     name: review/$CI_COMMIT_REF_SLUG
     url: https://sc-gpu1.fit.vutbr.cz:3120/
