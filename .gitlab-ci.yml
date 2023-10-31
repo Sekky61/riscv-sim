@@ -32,16 +32,16 @@ deploy_development:
   stage: deploy
   script:
     - cd Sources
-    - sudo ./run_container.sh
+    - docker-compose -f "docker-compose.yml" up -d --build # Runner uses older Docker
   environment:
     name: development-env
-    url: https://sc-nas.fit.vutbr.cz:3120/
+    url: https://sc-gpu1.fit.vutbr.cz:3120/
   # Only deploy on development branch
   rules:
     - if: '$CI_COMMIT_BRANCH == "development"'
       when: always
   tags:
-    - riscvsim
+    - docker-deploy
 
 # Deploy a review app when a new merge request is created
 
@@ -59,7 +59,7 @@ deploy_review:
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
   tags:
-    - riscvsim
+    - docker-deploy
 
 stop_review:
   stage: deploy
@@ -74,7 +74,7 @@ stop_review:
     - if: $CI_MERGE_REQUEST_ID
       when: manual
   tags:
-    - riscvsim
+    - docker-deploy
 
 # Backend simulator
 
