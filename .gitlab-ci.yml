@@ -49,7 +49,7 @@ deploy_review:
   stage: deploy
   script:
     - cd Sources
-    - ./run_container.sh
+    - docker-compose -f "docker-compose.yml" up -d --build # Runner uses older Docker
   environment:
     name: review/$CI_COMMIT_REF_SLUG
     url: https://sc-gpu1.fit.vutbr.cz:3120/

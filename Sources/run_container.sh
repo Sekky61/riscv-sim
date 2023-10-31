@@ -7,4 +7,4 @@
 # You may need to run this script with sudo
 
 # Run docker-compose
-docker-compose -f "docker-compose.yml" up -d --build
+docker compose -f "docker-compose.yml" up -d --build
