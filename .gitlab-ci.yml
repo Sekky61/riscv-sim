@@ -19,8 +19,6 @@ variables:
 # Building the container already builds the app, so this is a build+test job
 test_frontend:
   stage: test
-  needs:
-    - job: build_frontend
   script:
     - cd Sources/frontend
     - docker build -t sources_riscvsim-web .
