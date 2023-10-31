@@ -1,4 +1,4 @@
-FROM gradle:8.4.0-jdk17-jammy AS base
+FROM gradle:8.4.0-jdk17-focal AS base
 
 # Install dependencies only when needed
 FROM base AS deps
