@@ -1,0 +1,84 @@
+
+# Frontend website
+
+build_frontend:
+  stage: build
+  image: node:18-alpine
+  script:
+    - cd Sources/frontend
+    - npm install
+    - npm run build
+  artifacts:
+    paths:
+      - Sources/frontend/node_modules/
+      - Sources/frontend/.next/
+
+# Run Tests
+test_frontend:
+  stage: test
+  image: node:18-alpine
+  needs:
+    - job: build_frontend
+      artifacts: true
+  script:
+    - cd Sources/frontend
+    - npm run test
+
+# Deploy the app
+# Runs on commit to development branch
+
+deploy_development:
+  stage: deploy
+  script:
+    - cd Sources
+    - sudo ./run_container.sh
+  environment:
+    name: development-env
+    url: https://sc-nas.fit.vutbr.cz:3120/
+  # Only deploy on development branch
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "development"'
+      when: always
+
+# Deploy a review app when a new merge request is created
+
+deploy_review:
+  stage: deploy
+  script:
+    - cd Sources
+    - sudo ./run_container.sh
+  environment:
+    name: review/$CI_COMMIT_REF_SLUG
+    url: https://$CI_ENVIRONMENT_SLUG.sc-nas.fit.vutbr.cz:3120/
+    on_stop: stop_review
+    auto_stop_in: 2 weeks
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+
+stop_review:
+  stage: deploy
+  script:
+    - echo "Remove review app"
+  environment:
+    name: review/$CI_COMMIT_REF_SLUG
+    action: stop
+  rules:
+    - if: $CI_MERGE_REQUEST_ID
+      when: manual
+
+# Backend simulator
+
+build_backend:
+  stage: build
+  image: gradle:8.3.0-jdk17
+  script:
+    - cd Sources/simulator
+    - ./gradlew assemble
+
+test_backend:
+  stage: test
+  image: gradle:8.3.0-jdk17
+  script:
+    - cd Sources/simulator
+    - ./gradlew test
+  allow_failure: true
