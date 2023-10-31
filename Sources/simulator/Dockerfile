@@ -2,7 +2,8 @@ FROM gradle:8.4.0-jdk17-jammy AS base
 
 # Install dependencies only when needed
 FROM base AS deps
-RUN apt-get update && apt-get install -y gcc-riscv64-linux-gnu
+# Ignore the error code from apt-get update - happens on old versions of docker
+RUN apt-get update && apt-get install -y gcc-riscv64-linux-gnu; exit 0
 WORKDIR /app
 
 FROM deps AS build
