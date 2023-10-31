@@ -6,4 +6,4 @@
 
 # You may need to run this script with sudo
 
-docker-compose -f "docker-compose.yml" down
+docker compose -f "docker-compose.yml" down
