@@ -11,6 +11,7 @@ const nextConfig = withBundleAnalyzer({
 
   reactStrictMode: true,
   swcMinify: true,
+  output: 'standalone',
 
   // Uncoment to add domain whitelist
   // images: {
