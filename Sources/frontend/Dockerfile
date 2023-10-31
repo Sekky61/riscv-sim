@@ -65,3 +65,9 @@ ENV PORT 3000
 ENV HOSTNAME "0.0.0.0"
 
 CMD ["node", "server.js"]
+
+FROM base as test
+ENV NODE_ENV test
+WORKDIR /app
+COPY --from=builder /app .
+RUN ["yarn", "test"]

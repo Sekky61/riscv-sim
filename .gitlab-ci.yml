@@ -21,8 +21,7 @@ test_frontend:
   stage: test
   script:
     - cd Sources/frontend
-    - docker build -t sources_riscvsim-web .
-    - docker run sources_riscvsim-web npm run test
+    - docker build -t sources_riscvsim-web --target test .
   tags:
     - riscvsim
 
