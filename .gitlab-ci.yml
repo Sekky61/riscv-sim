@@ -52,7 +52,7 @@ deploy_review:
     - sudo ./run_container.sh
   environment:
     name: review/$CI_COMMIT_REF_SLUG
-    url: https://$CI_ENVIRONMENT_SLUG.sc-nas.fit.vutbr.cz:3120/
+    url: https://sc-gpu1.fit.vutbr.cz:3120/
     on_stop: stop_review
     auto_stop_in: 2 weeks
   rules:
