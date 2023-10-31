@@ -10,10 +10,6 @@ build_frontend:
     - cd Sources/frontend
     - npm install
     - npm run build
-  artifacts:
-    paths:
-      - Sources/frontend/node_modules/
-      - Sources/frontend/.next/
   tags:
     - riscvsim
 
@@ -23,7 +19,6 @@ test_frontend:
   image: node:18-alpine
   needs:
     - job: build_frontend
-      artifacts: true
   script:
     - cd Sources/frontend
     - npm run test
