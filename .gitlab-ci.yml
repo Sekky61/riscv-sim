@@ -50,6 +50,7 @@ deploy_review:
   script:
     - cd Sources
     - docker-compose -f "docker-compose.yml" up -d --build # Runner uses older Docker
+    - echo (docker ps -a)
   environment:
     name: review/$CI_COMMIT_REF_SLUG
     url: https://sc-gpu1.fit.vutbr.cz:3120/
@@ -64,6 +65,8 @@ stop_review:
   stage: deploy
   script:
     - echo "Remove review app"
+    - cd Sources
+    - docker compose -f "docker-compose.yml" down
   environment:
     name: review/$CI_COMMIT_REF_SLUG
     action: stop
