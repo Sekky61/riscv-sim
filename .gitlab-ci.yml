@@ -1,27 +1,35 @@
 
+default:
+  image: docker:24.0.5
+  services:
+    - docker:24.0.5-dind
+  before_script:
+    - docker info
+
+# Source: https://docs.gitlab.com/ee/ci/docker/using_docker_build.html#use-docker-in-docker
+variables:
+  DOCKER_TLS_CERTDIR: "/certs"
+
 # Frontend website
 
 # tag: riscvsim
 
 build_frontend:
   stage: build
-  image: node:18-alpine
   script:
-    - cd Sources/frontend
-    - npm install
-    - npm run build
+    - cd Sources
+    - docker build -t sources_riscvsim-web .
+    - docker run sources_riscvsim-web "npm run build"
   tags:
     - riscvsim
 
 # Run Tests
 test_frontend:
   stage: test
-  image: node:18-alpine
   needs:
     - job: build_frontend
   script:
-    - cd Sources/frontend
-    - npm run test
+    - docker run sources_riscvsim-web "npm run test"
   tags:
     - riscvsim
 
@@ -77,19 +85,18 @@ stop_review:
 
 build_backend:
   stage: build
-  image: gradle:8.3.0-jdk17
   script:
-    - cd Sources/simulator
-    - ./gradlew assemble
+    - cd Sources
+    - docker build -t sources_riscvsim-server .
+    - docker run sources_riscvsim-server "./gradlew assemble"
   tags:
     - riscvsim
 
 test_backend:
   stage: test
-  image: gradle:8.3.0-jdk17
   script:
     - cd Sources/simulator
-    - ./gradlew test
+    - docker run sources_riscvsim-server "./gradlew test"
   allow_failure: true
   tags:
     - riscvsim
