@@ -19,7 +19,7 @@ build_frontend:
   script:
     - cd Sources/frontend
     - docker build -t sources_riscvsim-web .
-    - docker run sources_riscvsim-web "npm run build"
+    - docker run sources_riscvsim-web npm run build
   tags:
     - riscvsim
 
@@ -29,7 +29,7 @@ test_frontend:
   needs:
     - job: build_frontend
   script:
-    - docker run sources_riscvsim-web "npm run test"
+    - docker run sources_riscvsim-web npm run test
   tags:
     - riscvsim
 
@@ -88,7 +88,7 @@ build_backend:
   script:
     - cd Sources/simulator
     - docker build -t sources_riscvsim-server .
-    - docker run sources_riscvsim-server "./gradlew assemble"
+    - docker run sources_riscvsim-server ./gradlew assemble
   tags:
     - riscvsim
 
@@ -96,7 +96,7 @@ test_backend:
   stage: test
   script:
     - cd Sources/simulator
-    - docker run sources_riscvsim-server "./gradlew test"
+    - docker run sources_riscvsim-server ./gradlew test
   allow_failure: true
   tags:
     - riscvsim
