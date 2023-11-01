@@ -1,0 +1,22 @@
+version: "2.3"
+services:
+  riscvsim-web:
+    container_name: riscvsim-web
+    build:
+      context: ./frontend
+      target: runner
+      args:
+        NEXT_PUBLIC_SIMSERVER_URL: http://localhost:8120
+        DOCKER_BUILDKIT: 1
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_SIMSERVER_URL=http://localhost:8120
+    ports:
+      - 3120:3000
+  riscvsim-server:
+    container_name: riscvsim-server
+    build:
+      context: ./simulator
+      target: runner
+    ports:
+      - 8120:8000
