@@ -64,21 +64,29 @@ export default function Timeline({ className = '' }: TimelineProps) {
         <AnimatedButton
           shortCut='left'
           clickCallback={() => dispatch(simStepBackward())}
+          description='Step backward'
         >
           <ArrowBigLeft strokeWidth={1.5} />
         </AnimatedButton>
         <AnimatedButton
           shortCut='right'
           clickCallback={() => dispatch(simStepForward())}
+          description='Step forward'
         >
           <ArrowBigRight strokeWidth={1.5} />
         </AnimatedButton>
-        <AnimatedButton shortCut='ctrl+enter'>
+        <AnimatedButton
+          shortCut='ctrl+enter'
+          description='Skip to the end of simulation'
+        >
           <SkipForward strokeWidth={1.5} />
         </AnimatedButton>
       </div>
       <div className='p-1 border border-transparent'>
-        <AnimatedButton clickCallback={() => dispatch(reloadSimulation())}>
+        <AnimatedButton
+          clickCallback={() => dispatch(reloadSimulation())}
+          description='Reload simulation'
+        >
           <RefreshCcw strokeWidth={1.5} />
         </AnimatedButton>
       </div>

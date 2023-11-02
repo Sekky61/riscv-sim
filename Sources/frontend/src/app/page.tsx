@@ -142,6 +142,7 @@ const ScaleButtons = ({ scaleUp, scaleDown }: ScaleButtonsProps) => {
         shortCutOptions={{ combinationKey: '-', preventDefault: true }}
         clickCallback={scaleUp}
         className='bg-gray-100 rounded-full drop-shadow'
+        description='Zoom in'
       >
         <ZoomIn strokeWidth={1.5} />
       </AnimatedButton>
@@ -150,6 +151,7 @@ const ScaleButtons = ({ scaleUp, scaleDown }: ScaleButtonsProps) => {
         shortCutOptions={{ preventDefault: true }}
         clickCallback={scaleDown}
         className='bg-gray-100 rounded-full drop-shadow'
+        description='Zoom out'
       >
         <ZoomOut strokeWidth={1.5} />
       </AnimatedButton>

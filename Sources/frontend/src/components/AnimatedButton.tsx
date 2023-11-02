@@ -44,6 +44,7 @@ export type AnimatedButtonProps = {
   children: ReactChildren;
   animationLength?: number;
   className?: string;
+  description: string;
 };
 
 /**
@@ -57,6 +58,7 @@ const AnimatedButton = ({
   children,
   animationLength,
   className,
+  description,
 }: AnimatedButtonProps) => {
   const [isAnimating, setIsAnimating] = useState(false);
 
@@ -83,6 +85,7 @@ const AnimatedButton = ({
         isAnimating && 'tlbutton-animation-outer',
       )}
       onClick={onClick}
+      aria-label={description}
     >
       <div
         className={clsx(
