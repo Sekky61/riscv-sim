@@ -29,7 +29,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { hasId, isReference, resolveRefs } from '@/lib/cpuState/util';
+import {
+  collectIds,
+  hasId,
+  isReference,
+  resolveRefs,
+} from '@/lib/cpuState/util';
 
 describe('The isReference type guard', () => {
   it('Should return true for Reference', () => {
@@ -77,6 +82,36 @@ describe('The hasId type guard', () => {
   });
 });
 
+describe('The collectIds function', () => {
+  it('Should collect all ids from cpuState', () => {
+    const obj = {
+      a: {
+        '@id': 1,
+        b: {
+          '@id': 2,
+        },
+      },
+    };
+
+    const idMap = collectIds(obj);
+
+    expect(idMap).toEqual({
+      1: {
+        '@id': 1,
+        b: {
+          '@id': 2,
+        },
+      },
+      2: {
+        '@id': 2,
+      },
+    });
+
+    // Check that the references are correct
+    expect(idMap[1]).toBe(obj.a);
+  });
+});
+
 describe('The resolveRefs function', () => {
   it('Should resolve all references in the object', () => {
     const obj = {
@@ -110,47 +145,55 @@ describe('The resolveRefs function', () => {
     });
   });
 
-  it('Should resolve recursive references', () => {
+  it('Should resolve multiple degrees of references', () => {
     const obj = {
       '@id': 1,
+      third: {
+        '@id': 3,
+        foo: 'bar',
+      },
       a: {
         '@ref': 2,
       },
-    };
-
-    const map = {
-      1: {
-        '@id': 1,
-        a: {
-          '@ref': 2,
-        },
-      },
-      2: {
+      bb: {
         '@id': 2,
         bar: 'baz',
         b: {
           '@ref': 3,
         },
       },
-      3: {
-        '@id': 3,
-        foo: 'bar',
-      },
     };
+
+    const map = collectIds(obj);
 
     const resolved = resolveRefs(obj, map);
 
-    expect(resolved).toEqual({
+    expect(resolved.a).toBe(resolved.bb);
+  });
+
+  it('Should resolve circular references', () => {
+    const obj = {
       '@id': 1,
       a: {
-        '@id': 2,
-        bar: 'baz',
-        b: {
-          '@id': 3,
-          foo: 'bar',
+        '@id': 1,
+        baz: {
+          '@ref': 2,
         },
       },
-    });
+      b: {
+        '@id': 2,
+        bar: {
+          '@ref': 1,
+        },
+      },
+    };
+
+    const map = collectIds(obj);
+
+    const resolved = resolveRefs(obj, map);
+
+    expect(resolved.a).toBe(resolved.b.bar);
+    expect(resolved.a.baz).toBe(resolved.b);
   });
 
   it('Should keep arrays intact', () => {
@@ -185,26 +228,6 @@ describe('The resolveRefs function', () => {
         bar: 'baz',
       },
       b: [1, 2, 3],
-    });
-  });
-
-  it('Can resolve a root reference', () => {
-    const obj = {
-      '@ref': 1,
-    };
-
-    const map = {
-      1: {
-        '@id': 1,
-        foo: 'bar',
-      },
-    };
-
-    const resolved = resolveRefs(obj, map);
-
-    expect(resolved).toEqual({
-      '@id': 1,
-      foo: 'bar',
     });
   });
 });

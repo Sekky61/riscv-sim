@@ -38,7 +38,11 @@ import {
   PayloadAction,
 } from '@reduxjs/toolkit';
 
-import { collectIds, getArrayItems, resolveRefs } from '@/lib/cpuState/util';
+import {
+  collectIds,
+  getArrayItems,
+  resolveRefsCopy,
+} from '@/lib/cpuState/util';
 import { selectAsmCode } from '@/lib/redux/compilerSlice';
 import { selectActiveIsa } from '@/lib/redux/isaSlice';
 import type { RootState } from '@/lib/redux/store';
@@ -201,7 +205,7 @@ export const selectInputCodeModels = createSelector(
     if (!state || !map) {
       return null;
     }
-    return resolveRefs(state.instructionMemoryBlock, map);
+    return resolveRefsCopy(state.instructionMemoryBlock, map);
   },
 );
 
@@ -212,7 +216,7 @@ export const selectProgram = createSelector(
       return null;
     }
 
-    const program = resolveRefs(state.instructionMemoryBlock, map);
+    const program = resolveRefsCopy(state.instructionMemoryBlock, map);
 
     const code = getArrayItems(program.code);
 
@@ -270,7 +274,7 @@ export const selectFetch = createSelector(
     }
 
     const fetch = state.instructionFetchBlock;
-    const collectedFetchedCode = resolveRefs(
+    const collectedFetchedCode = resolveRefsCopy(
       getArrayItems(fetch.fetchedCode),
       map,
     );
@@ -292,8 +296,14 @@ export const selectDecode = createSelector(
     }
 
     const decode = state.decodeAndDispatchBlock;
-    const before = resolveRefs(getArrayItems(decode.beforeRenameCodeList), map);
-    const after = resolveRefs(getArrayItems(decode.afterRenameCodeList), map);
+    const before = resolveRefsCopy(
+      getArrayItems(decode.beforeRenameCodeList),
+      map,
+    );
+    const after = resolveRefsCopy(
+      getArrayItems(decode.afterRenameCodeList),
+      map,
+    );
     return {
       beforeRenameCodeList: before,
       afterRenameCodeList: after,
@@ -314,7 +324,7 @@ export const selectROB = createSelector(
     }
 
     const rob = state.reorderBufferState;
-    const robQueue = resolveRefs(rob.reorderQueue, map);
+    const robQueue = resolveRefsCopy(rob.reorderQueue, map);
     return {
       reorderQueue: robQueue,
       commitLimit: rob.commitLimit,

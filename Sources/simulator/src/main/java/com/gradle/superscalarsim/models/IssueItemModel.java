@@ -41,7 +41,7 @@ public class IssueItemModel
 {
   /// Register name
   private String tag;
-  /// Value inside of the register
+  /// Value inside of the register TODO change
   private double value;
   /// If register has correct value
   private boolean validityBit;
