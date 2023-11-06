@@ -43,9 +43,13 @@ import CanvasWindow from '@/components/CanvasWindow';
 import Placement from '@/components/Placement';
 import DecodeBlock from '@/components/simulation/DecodeBlock';
 import FetchBlock from '@/components/simulation/FetchBlock';
+import FunctionalUnit from '@/components/simulation/FunctionalUnit';
+import IssueWindow from '@/components/simulation/IssueWindow';
 import Line from '@/components/simulation/Line';
+import LoadBuffer from '@/components/simulation/LoadBuffer';
 import Program from '@/components/simulation/Program';
 import ReorderBuffer from '@/components/simulation/ReorderBuffer';
+import StoreBuffer from '@/components/simulation/StoreBuffer';
 import Timeline from '@/components/simulation/Timeline';
 
 export default function HomePage() {
@@ -74,6 +78,7 @@ export default function HomePage() {
   const firstCol = 50;
   const secondCol = firstCol + blockWidth + spaceBetweenBlocks;
   const thirdCol = secondCol + blockWidth + spaceBetweenBlocks;
+  const fourthCol = thirdCol + blockWidth + spaceBetweenBlocks;
 
   return (
     <>
@@ -96,6 +101,34 @@ export default function HomePage() {
 
         <Placement x={thirdCol} y={50}>
           <ReorderBuffer />
+        </Placement>
+
+        <Placement x={thirdCol + blockWidth} y={145}>
+          <Line length={500} />
+        </Placement>
+
+        <Placement x={fourthCol} y={150}>
+          <div className='flex gap-[50px]'>
+            <div className='flex flex-col items-center'>
+              <Line length={50} down />
+              <IssueWindow />
+              <Line length={50} down />
+              <FunctionalUnit />
+            </div>
+            <div className='flex flex-col items-center'>
+              <Line length={50} down />
+              <IssueWindow />
+              <Line length={50} down />
+              <FunctionalUnit />
+            </div>
+          </div>
+        </Placement>
+
+        <Placement x={fourthCol} y={600}>
+          <div className='flex gap-[50px]'>
+            <LoadBuffer />
+            <StoreBuffer />
+          </div>
         </Placement>
       </CanvasWindow>
       <div className='pointer-events-none absolute top-0 flex w-full justify-center pt-2'>

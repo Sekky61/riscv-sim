@@ -75,7 +75,10 @@ interface InstructionBubbleProps extends ReactClassName {
   children: ReactChildren;
 }
 
-function InstructionBubble({ children, className }: InstructionBubbleProps) {
+export function InstructionBubble({
+  children,
+  className,
+}: InstructionBubbleProps) {
   const cls = clsx('rounded-sm border h-8', className);
   return <div className={cls}>{children}</div>;
 }
