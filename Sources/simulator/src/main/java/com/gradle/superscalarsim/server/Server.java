@@ -29,7 +29,6 @@ package com.gradle.superscalarsim.server;
 
 import com.gradle.superscalarsim.server.checkConfig.CheckConfigHandler;
 import com.gradle.superscalarsim.server.compile.CompileHandler;
-import com.gradle.superscalarsim.server.getState.GetStateHandler;
 import com.gradle.superscalarsim.server.parseAsm.ParseAsmHandler;
 import com.gradle.superscalarsim.server.simulation.SimulationHandler;
 import io.undertow.Handlers;
@@ -72,7 +71,6 @@ public class Server
     HttpHandler pathHandler = Handlers.path().addPrefixPath("/compile", new MyRequestHandler<>(new CompileHandler()))
             .addPrefixPath("/parseAsm", new MyRequestHandler<>(new ParseAsmHandler()))
             .addPrefixPath("/checkConfig", new MyRequestHandler<>(new CheckConfigHandler()))
-            .addPrefixPath("/getState", new MyRequestHandler<>(new GetStateHandler()))
             .addPrefixPath("/simulation", new MyRequestHandler<>(new SimulationHandler()));
     HttpHandler baseHandler = pathHandler;
     
