@@ -27,19 +27,24 @@
 
 package com.gradle.superscalarsim.server.getState;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gradle.superscalarsim.code.ParseError;
 import com.gradle.superscalarsim.cpu.Cpu;
 import com.gradle.superscalarsim.cpu.CpuConfiguration;
 import com.gradle.superscalarsim.cpu.CpuState;
+import com.gradle.superscalarsim.serialization.Serialization;
+import com.gradle.superscalarsim.server.IRequestDeserializer;
 import com.gradle.superscalarsim.server.IRequestResolver;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
 /**
  * @brief Handler for the /getState endpoint
  * Accepts a CpuConfiguration and returns corresponding state
  */
-public class GetStateHandler implements IRequestResolver<GetStateRequest, GetStateResponse>
+public class GetStateHandler implements IRequestResolver<GetStateRequest, GetStateResponse>, IRequestDeserializer<GetStateRequest>
 {
   
   @Override
@@ -97,5 +102,12 @@ public class GetStateHandler implements IRequestResolver<GetStateRequest, GetSta
       codeErrors   = validationResult.codeErrors;
     }
     return new GetStateResponse(state, configErrors, codeErrors);
+  }
+  
+  @Override
+  public GetStateRequest deserialize(InputStream json) throws IOException
+  {
+    ObjectMapper deserializer = Serialization.getDeserializer();
+    return deserializer.readValue(json, GetStateRequest.class);
   }
 }

@@ -27,9 +27,15 @@
 
 package com.gradle.superscalarsim.server.simulation;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gradle.superscalarsim.cpu.Cpu;
 import com.gradle.superscalarsim.cpu.CpuConfiguration;
+import com.gradle.superscalarsim.serialization.Serialization;
+import com.gradle.superscalarsim.server.IRequestDeserializer;
 import com.gradle.superscalarsim.server.IRequestResolver;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * @brief Handler for /simulation requests
@@ -39,7 +45,7 @@ import com.gradle.superscalarsim.server.IRequestResolver;
  * - For getting initial state from a configuration, see
  * {@link com.gradle.superscalarsim.server.getState.GetStateHandler}
  */
-public class SimulationHandler implements IRequestResolver<SimulationRequest, SimulationResponse>
+public class SimulationHandler implements IRequestResolver<SimulationRequest, SimulationResponse>, IRequestDeserializer<SimulationRequest>
 {
   @Override
   public SimulationResponse resolve(SimulationRequest request)
@@ -76,18 +82,17 @@ public class SimulationHandler implements IRequestResolver<SimulationRequest, Si
   private SimulationResponse runSimulation(SimulationRequest request)
   {
     // If state is not provided, simulate from the beginning
-    Cpu cpu;
-    if (request.state == null)
-    {
-      cpu = new Cpu(request.config);
-    }
-    else
-    {
-      cpu = new Cpu(request.config, request.state);
-    }
+    Cpu cpu        = new Cpu(request.config);
     int tickBefore = cpu.cpuState.tick;
     cpu.simulateState(request.tick);
     int actualSteps = cpu.cpuState.tick - tickBefore;
     return new SimulationResponse(cpu.cpuState, actualSteps);
+  }
+  
+  @Override
+  public SimulationRequest deserialize(InputStream json) throws IOException
+  {
+    ObjectMapper deserializer = Serialization.getDeserializer();
+    return deserializer.readValue(json, SimulationRequest.class);
   }
 }

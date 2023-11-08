@@ -1,11 +1,11 @@
 /**
- * @file SimulationRequest.java
+ * @file IRequestDeserializer.java
  * @author Michal Majer
  * Faculty of Information Technology
  * Brno University of Technology
  * xmajer21@stud.fit.vutbr.cz
- * @brief Parameters for the /simulation endpoint request
- * @date 26 Sep      2023 10:00 (created)
+ * @brief Interface for requests
+ * @date 08 Nov      2023 20:00 (created)
  * @section Licence
  * This file is part of the Superscalar simulator app
  * <p>
@@ -25,22 +25,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.gradle.superscalarsim.server.simulation;
+package com.gradle.superscalarsim.server;
 
-import com.gradle.superscalarsim.cpu.CpuConfiguration;
+import com.fasterxml.jackson.core.JsonParseException;
 
-/**
- * Parameters for the /simulation endpoint request
- */
-public class SimulationRequest
+import java.io.IOException;
+import java.io.InputStream;
+
+public interface IRequestDeserializer<T>
 {
-  /**
-   * The requested tick to get the state of
-   */
-  int tick;
-  /**
-   * The configuration to use for the simulation
-   * Used for getting the initial state in case of a backwards simulation
-   */
-  CpuConfiguration config;
+  T deserialize(InputStream json) throws IOException, JsonParseException;
 }

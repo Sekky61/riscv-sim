@@ -27,9 +27,14 @@
 
 package com.gradle.superscalarsim.server.checkConfig;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gradle.superscalarsim.cpu.CpuConfiguration;
+import com.gradle.superscalarsim.serialization.Serialization;
+import com.gradle.superscalarsim.server.IRequestDeserializer;
 import com.gradle.superscalarsim.server.IRequestResolver;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,7 +42,7 @@ import java.util.List;
  * @brief Handler for the /checkConfig endpoint
  * Parses config and tells if it's valid
  */
-public class CheckConfigHandler implements IRequestResolver<CheckConfigRequest, CheckConfigResponse>
+public class CheckConfigHandler implements IRequestResolver<CheckConfigRequest, CheckConfigResponse>, IRequestDeserializer<CheckConfigRequest>
 {
   
   public CheckConfigResponse resolve(CheckConfigRequest request)
@@ -56,5 +61,12 @@ public class CheckConfigHandler implements IRequestResolver<CheckConfigRequest, 
       response = new CheckConfigResponse(res.valid, res.messages);
     }
     return response;
+  }
+  
+  @Override
+  public CheckConfigRequest deserialize(InputStream json) throws IOException
+  {
+    ObjectMapper deserializer = Serialization.getDeserializer();
+    return deserializer.readValue(json, CheckConfigRequest.class);
   }
 }

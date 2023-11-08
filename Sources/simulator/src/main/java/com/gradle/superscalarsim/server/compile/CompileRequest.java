@@ -38,6 +38,14 @@ public class CompileRequest
    */
   boolean optimize;
   
+  /**
+   * @brief Default constructor for deserialization
+   */
+  public CompileRequest()
+  {
+  
+  }
+  
   public CompileRequest(String code, boolean optimize)
   {
     this.code     = code;

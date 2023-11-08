@@ -260,8 +260,19 @@ public class SerializationTest
     //    B testB = new B(420, testA);
     //    testA.b = testB;
     
+    String cClassJson = """
+            {
+              "x" : 5
+              "t": 3
+            }
+            """;
+    
+    C testC = objectMapper.readValue(cClassJson, C.class);
+    
+    Assert.assertEquals(5, testC.x);
+    
     // Print cpu to the output stream, not as a string
-    objectMapper.writerWithDefaultPrettyPrinter().writeValue(System.out, cpu.cpuState);
+    //    objectMapper.writerWithDefaultPrettyPrinter().writeValue(System.out, cpu.cpuState);
   }
 }
 
@@ -302,4 +313,9 @@ class B
     this.a   = new HashMap<>();
     this.a.put("at4", a);
   }
+}
+
+class C
+{
+  int x = 5;
 }

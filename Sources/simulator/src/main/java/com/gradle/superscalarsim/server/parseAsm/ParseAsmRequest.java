@@ -34,6 +34,14 @@ public class ParseAsmRequest
    */
   String code;
   
+  /**
+   * @brief Default constructor for deserialization
+   */
+  public ParseAsmRequest()
+  {
+  
+  }
+  
   public ParseAsmRequest(String code)
   {
     this.code = code;

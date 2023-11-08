@@ -59,7 +59,7 @@ import java.util.Objects;
  */
 public class CpuState implements Serializable
 {
-  transient public ManagerRegistry managerRegistry;
+  public ManagerRegistry managerRegistry;
   
   public int tick;
   
@@ -154,8 +154,8 @@ public class CpuState implements Serializable
     }
     
     InstructionFunctionModel nopFM = initLoader.getInstructionFunctionModel("nop");
-    InputCodeModel           nop   = inputCodeModelFactory.createInstance(nopFM, new ArrayList<>(),
-                                                                          codeParser.getInstructions().size());
+    InputCodeModel nop = inputCodeModelFactory.createInstance(nopFM, new ArrayList<>(),
+                                                              codeParser.getInstructions().size());
     this.instructionMemoryBlock = new InstructionMemoryBlock(codeParser.getInstructions(), codeParser.getLabels(), nop);
     
     this.reorderBufferState        = new ReorderBufferState();
