@@ -29,20 +29,27 @@
 package com.gradle.superscalarsim.serialization;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.module.jsonSchema.JsonSchema;
+import com.fasterxml.jackson.module.jsonSchema.JsonSchemaGenerator;
 
+/**
+ * Factory for JSON serializer, deserializer and schema generator.
+ */
 public class Serialization
 {
+  /**
+   * @return ObjectMapper for serialization
+   */
   public static ObjectMapper getSerializer()
   {
     return createObjectMapper();
   }
   
-  public static ObjectMapper getDeserializer()
-  {
-    return createObjectMapper();
-  }
-  
+  /**
+   * Internal method for creating the ObjectMapper
+   */
   private static ObjectMapper createObjectMapper()
   {
     ObjectMapper objectMapper = new ObjectMapper();
@@ -54,5 +61,34 @@ public class Serialization
                                        .withCreatorVisibility(JsonAutoDetect.Visibility.NONE));
     objectMapper.registerModule(new CustomSerializerModule());
     return objectMapper;
+  }
+  
+  /**
+   * @return ObjectMapper for deserialization
+   */
+  public static ObjectMapper getDeserializer()
+  {
+    return createObjectMapper();
+  }
+  
+  /**
+   * @param cls The class to generate JSON schema for
+   *
+   * @return JSON schema for the given class
+   */
+  public static JsonSchema getSchema(Class<?> cls)
+  {
+    ObjectMapper        objectMapper = createObjectMapper();
+    JsonSchemaGenerator schemaGen    = new JsonSchemaGenerator(objectMapper);
+    JsonSchema          schema       = null;
+    try
+    {
+      schema = schemaGen.generateSchema(cls);
+    }
+    catch (JsonMappingException e)
+    {
+      return null;
+    }
+    return schema;
   }
 }

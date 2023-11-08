@@ -30,6 +30,7 @@ package com.gradle.superscalarsim.server;
 import com.gradle.superscalarsim.server.checkConfig.CheckConfigHandler;
 import com.gradle.superscalarsim.server.compile.CompileHandler;
 import com.gradle.superscalarsim.server.parseAsm.ParseAsmHandler;
+import com.gradle.superscalarsim.server.schema.SchemaHandler;
 import com.gradle.superscalarsim.server.simulate.SimulateHandler;
 import io.undertow.Handlers;
 import io.undertow.Undertow;
@@ -71,7 +72,8 @@ public class Server
     HttpHandler pathHandler = Handlers.path().addPrefixPath("/compile", new MyRequestHandler<>(new CompileHandler()))
             .addPrefixPath("/parseAsm", new MyRequestHandler<>(new ParseAsmHandler()))
             .addPrefixPath("/checkConfig", new MyRequestHandler<>(new CheckConfigHandler()))
-            .addPrefixPath("/simulate", new MyRequestHandler<>(new SimulateHandler()));
+            .addPrefixPath("/simulate", new MyRequestHandler<>(new SimulateHandler()))
+            .addPrefixPath("/schema", new MyRequestHandler<>(new SchemaHandler()));
     HttpHandler baseHandler = pathHandler;
     
     // Add gzip encoding

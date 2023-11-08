@@ -27,6 +27,9 @@ dependencies {
     // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-annotations
     implementation group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.15.3'
 
+    // https://mvnrepository.com/artifact/com.fasterxml.jackson.module/jackson-module-jsonSchema
+    implementation group: 'com.fasterxml.jackson.module', name: 'jackson-module-jsonSchema', version: '2.15.3'
+
     testImplementation group: 'junit', name: 'junit', version: '4.13.2'
     testImplementation 'org.mockito:mockito-core:5.5.0'
     testImplementation 'org.mockito:mockito-inline:5.2.0'
