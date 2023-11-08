@@ -46,6 +46,7 @@ import java.util.List;
  * @brief Represents a processed line of code
  * Should be used only for reading (referencing), not for writing
  */
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "codeId")
 public class InputCodeModel implements IInputCodeModel, Identifiable
 {
   /**
@@ -72,7 +73,6 @@ public class InputCodeModel implements IInputCodeModel, Identifiable
    * @brief Instruction function model
    * Contains information about the instruction
    */
-  @JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
   @JsonIdentityReference(alwaysAsId = true)
   private final InstructionFunctionModel instructionFunctionModel;
   

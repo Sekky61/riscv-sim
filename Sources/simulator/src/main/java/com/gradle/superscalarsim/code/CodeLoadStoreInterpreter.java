@@ -116,7 +116,7 @@ public class CodeLoadStoreInterpreter
       case "load" ->
       {
         boolean isSigned = instruction.getArgumentByName("rd").type().isSigned();
-        return processLoadOperation(sizeBits, address, isSigned, codeModel.getId(), currentCycle);
+        return processLoadOperation(sizeBits, address, isSigned, codeModel.getIntegerId(), currentCycle);
       }
       case "store" ->
       {
@@ -128,7 +128,7 @@ public class CodeLoadStoreInterpreter
           throw new IllegalStateException("Register " + regName + " not found");
         }
         long valueBits = (long) reg.getValue(DataTypeEnum.kLong);
-        int  delay     = processStoreOperation(sizeBits, address, valueBits, codeModel.getId(), currentCycle);
+        int  delay     = processStoreOperation(sizeBits, address, valueBits, codeModel.getIntegerId(), currentCycle);
         return new Pair<>(delay, valueBits);
       }
       default -> throw new IllegalStateException("Unexpected value: " + interpretableAsParams[0]);

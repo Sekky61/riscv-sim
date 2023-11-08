@@ -32,6 +32,7 @@
  */
 package com.gradle.superscalarsim.blocks.arithmetic;
 
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.gradle.superscalarsim.blocks.base.AbstractFunctionUnitBlock;
 import com.gradle.superscalarsim.blocks.base.AbstractIssueWindowBlock;
 import com.gradle.superscalarsim.blocks.base.ReorderBufferBlock;
@@ -51,8 +52,10 @@ public class ArithmeticFunctionUnitBlock extends AbstractFunctionUnitBlock
   /// Array of all supported operators by this FU
   private final String[] allowedOperators;
   /// Interpreter for interpreting executing instructions
+  @JsonIdentityReference(alwaysAsId = true)
   private CodeArithmeticInterpreter arithmeticInterpreter;
   /// Class containing all registers, that simulator uses
+  @JsonIdentityReference(alwaysAsId = true)
   private UnifiedRegisterFileBlock registerFileBlock;
   
   public ArithmeticFunctionUnitBlock()
@@ -134,7 +137,7 @@ public class ArithmeticFunctionUnitBlock extends AbstractFunctionUnitBlock
       reg.setValueContainer(result.value);
       reg.setReadiness(RegisterReadinessEnum.kExecuted);
       
-      this.reorderBufferBlock.getRobItem(this.simCodeModel.getId()).reorderFlags.setBusy(false);
+      this.reorderBufferBlock.getRobItem(this.simCodeModel.getIntegerId()).reorderFlags.setBusy(false);
       this.simCodeModel = null;
     }
     

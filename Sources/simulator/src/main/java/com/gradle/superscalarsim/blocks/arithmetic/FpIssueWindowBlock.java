@@ -32,6 +32,7 @@
  */
 package com.gradle.superscalarsim.blocks.arithmetic;
 
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.gradle.superscalarsim.blocks.base.AbstractFunctionUnitBlock;
 import com.gradle.superscalarsim.blocks.base.AbstractIssueWindowBlock;
 import com.gradle.superscalarsim.blocks.base.UnifiedRegisterFileBlock;
@@ -51,6 +52,7 @@ import java.util.List;
 public class FpIssueWindowBlock extends AbstractIssueWindowBlock
 {
   /// List for all function units associated with this window
+  @JsonIdentityReference(alwaysAsId = true)
   private List<ArithmeticFunctionUnitBlock> functionUnitBlockList;
   
   public FpIssueWindowBlock()

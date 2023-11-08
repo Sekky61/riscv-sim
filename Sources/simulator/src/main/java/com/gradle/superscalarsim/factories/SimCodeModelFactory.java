@@ -1,10 +1,10 @@
 /**
- * @file InputCodeModelFactory.java
+ * @file SimCodeModelFactory.java
  * @author Michal Majer
  * Faculty of Information Technology
  * Brno University of Technology
  * xmajer21@stud.fit.vutbr.cz
- * @brief File contains factory for InputCodeModel
+ * @brief File contains factory for SimCodeModel
  * @date 08 November  2023 18:00 (created)
  * @section Licence
  * This file is part of the Superscalar simulator app
@@ -27,43 +27,41 @@
 
 package com.gradle.superscalarsim.factories;
 
-import com.gradle.superscalarsim.managers.InputCodeModelManager;
-import com.gradle.superscalarsim.models.InputCodeArgument;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import com.gradle.superscalarsim.managers.SimCodeModelManager;
 import com.gradle.superscalarsim.models.InputCodeModel;
-import com.gradle.superscalarsim.models.InstructionFunctionModel;
-
-import java.util.List;
+import com.gradle.superscalarsim.models.SimCodeModel;
 
 /**
  * @class InputCodeModelFactory
  * @brief Factory for InputCodeModel
  */
-public class InputCodeModelFactory
+@JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
+public class SimCodeModelFactory
 {
-  InputCodeModelManager manager;
+  int id;
+  SimCodeModelManager manager;
   
-  public InputCodeModelFactory()
+  public SimCodeModelFactory()
   {
     this.manager = null;
   }
   
-  public InputCodeModelFactory(InputCodeModelManager manager)
+  public SimCodeModelFactory(SimCodeModelManager manager)
   {
     this.manager = manager;
   }
   
-  public InputCodeModel createInstance(InstructionFunctionModel instructionFunctionModel,
-                                       final List<InputCodeArgument> arguments,
-                                       int codeId)
+  public SimCodeModel createInstance(InputCodeModel inputCodeModel, int id, int instructionBulkNumber)
   {
-    InputCodeModel instance = new InputCodeModel(instructionFunctionModel, arguments, codeId);
+    SimCodeModel instance = new SimCodeModel(inputCodeModel, id, instructionBulkNumber);
     if (manager == null)
     {
-      System.err.println("InputCodeModelFactory: manager is null");
+      System.err.println("SimCodeModelFactory: manager is null");
     }
     else
     {
-      // TODO: if in debug mode, check uniqueness of codeId
       manager.addInstance(instance);
     }
     return instance;

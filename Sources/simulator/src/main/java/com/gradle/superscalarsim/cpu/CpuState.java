@@ -40,8 +40,11 @@ import com.gradle.superscalarsim.blocks.loadstore.*;
 import com.gradle.superscalarsim.code.*;
 import com.gradle.superscalarsim.enums.cache.ReplacementPoliciesEnum;
 import com.gradle.superscalarsim.factories.InputCodeModelFactory;
+import com.gradle.superscalarsim.factories.SimCodeModelFactory;
 import com.gradle.superscalarsim.loader.InitLoader;
 import com.gradle.superscalarsim.managers.ManagerRegistry;
+import com.gradle.superscalarsim.models.InputCodeModel;
+import com.gradle.superscalarsim.models.InstructionFunctionModel;
 import com.gradle.superscalarsim.serialization.GsonConfiguration;
 
 import java.io.Serializable;
@@ -61,7 +64,6 @@ public class CpuState implements Serializable
   public int tick;
   
   public InstructionMemoryBlock instructionMemoryBlock;
-  public SimCodeModelAllocator simCodeModelAllocator;
   
   public ReorderBufferState reorderBufferState;
   
@@ -136,6 +138,7 @@ public class CpuState implements Serializable
     
     // Factories (for tracking instances of models)
     InputCodeModelFactory inputCodeModelFactory = new InputCodeModelFactory(managerRegistry.inputCodeManager);
+    SimCodeModelFactory   simCodeModelFactory   = new SimCodeModelFactory(managerRegistry.simCodeManager);
     
     // Hack to load all function models to manager
     initLoader.getInstructionFunctionModels()
@@ -150,9 +153,10 @@ public class CpuState implements Serializable
       throw new IllegalStateException("Code parsing failed: " + codeParser.getErrorMessages());
     }
     
-    this.instructionMemoryBlock = new InstructionMemoryBlock(codeParser.getInstructions(), codeParser.getLabels());
-    
-    simCodeModelAllocator = new SimCodeModelAllocator();
+    InstructionFunctionModel nopFM = initLoader.getInstructionFunctionModel("nop");
+    InputCodeModel           nop   = inputCodeModelFactory.createInstance(nopFM, new ArrayList<>(),
+                                                                          codeParser.getInstructions().size());
+    this.instructionMemoryBlock = new InstructionMemoryBlock(codeParser.getInstructions(), codeParser.getLabels(), nop);
     
     this.reorderBufferState        = new ReorderBufferState();
     reorderBufferState.bufferSize  = config.robSize;
@@ -201,7 +205,7 @@ public class CpuState implements Serializable
     this.memoryModel          = new MemoryModel(cache, cacheStatisticsCounter);
     this.loadStoreInterpreter = new CodeLoadStoreInterpreter(memoryModel, unifiedRegisterFileBlock);
     
-    this.instructionFetchBlock = new InstructionFetchBlock(simCodeModelAllocator, instructionMemoryBlock, gShareUnit,
+    this.instructionFetchBlock = new InstructionFetchBlock(simCodeModelFactory, instructionMemoryBlock, gShareUnit,
                                                            branchTargetBuffer);
     instructionFetchBlock.setNumberOfWays(config.fetchWidth);
     
@@ -396,7 +400,7 @@ public class CpuState implements Serializable
     // Check which buffer contains older instruction at the top
     // Null check first, if any is empty, the order does not matter
     if (loadBufferBlock.getLoadQueueFirst() == null || storeBufferBlock.getStoreQueueFirst() == null || loadBufferBlock.getLoadQueueFirst()
-            .getId() < storeBufferBlock.getStoreQueueFirst().getId())
+            .getIntegerId() < storeBufferBlock.getStoreQueueFirst().getIntegerId())
     {
       loadBufferBlock.simulate();
       storeBufferBlock.simulate();
@@ -420,8 +424,5 @@ public class CpuState implements Serializable
     statisticsCounter.incrementClockCycles();
     
     this.tick++;
-    
-    // Clean up
-    simCodeModelAllocator.deleteOldReferences();
   }// end of run
 }

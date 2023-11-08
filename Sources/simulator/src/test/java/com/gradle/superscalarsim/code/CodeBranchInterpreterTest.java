@@ -12,6 +12,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -31,7 +32,9 @@ public class CodeBranchInterpreterTest
     this.initLoader = new InitLoader();
     List<InputCodeModel> inputCodeModels = setUpParsedCode();
     var                  labels          = setUpLabels();
-    instructionMemoryBlock = new InstructionMemoryBlock(inputCodeModels, labels);
+    var                  nopFM           = initLoader.getInstructionFunctionModel("nop");
+    InputCodeModel       nop             = new InputCodeModel(nopFM, new ArrayList<>(), 0);
+    instructionMemoryBlock = new InstructionMemoryBlock(inputCodeModels, labels, nop);
     
     UnifiedRegisterFileBlock unifiedRegisterFileBlock = new UnifiedRegisterFileBlock(initLoader);
     unifiedRegisterFileBlock.getRegister("x1").setValue(0);

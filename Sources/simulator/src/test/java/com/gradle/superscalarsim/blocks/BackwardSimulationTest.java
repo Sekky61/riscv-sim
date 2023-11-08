@@ -301,9 +301,9 @@ public class BackwardSimulationTest
     
     this.cpu.stepBack();
     Assert.assertTrue(this.cpu.cpuState.decodeAndDispatchBlock.getAfterRenameCodeList().isEmpty());
-    Assert.assertEquals(0, this.cpu.cpuState.aluIssueWindowBlock.getIssuedInstructions().get(0).getId());
-    Assert.assertEquals(1, this.cpu.cpuState.aluIssueWindowBlock.getIssuedInstructions().get(1).getId());
-    Assert.assertEquals(2, this.cpu.cpuState.aluIssueWindowBlock.getIssuedInstructions().get(2).getId());
+    Assert.assertEquals(0, this.cpu.cpuState.aluIssueWindowBlock.getIssuedInstructions().get(0).getIntegerId());
+    Assert.assertEquals(1, this.cpu.cpuState.aluIssueWindowBlock.getIssuedInstructions().get(1).getIntegerId());
+    Assert.assertEquals(2, this.cpu.cpuState.aluIssueWindowBlock.getIssuedInstructions().get(2).getIntegerId());
     Assert.assertEquals("add tg0,x4,x5",
                         this.cpu.cpuState.aluIssueWindowBlock.getIssuedInstructions().get(0).getRenamedCodeLine());
     Assert.assertEquals("add tg1,tg0,x4",
@@ -725,9 +725,9 @@ public class BackwardSimulationTest
     
     this.cpu.stepBack();
     Assert.assertTrue(this.cpu.cpuState.decodeAndDispatchBlock.getAfterRenameCodeList().isEmpty());
-    Assert.assertEquals(0, this.cpu.cpuState.fpIssueWindowBlock.getIssuedInstructions().get(0).getId());
-    Assert.assertEquals(1, this.cpu.cpuState.fpIssueWindowBlock.getIssuedInstructions().get(1).getId());
-    Assert.assertEquals(2, this.cpu.cpuState.fpIssueWindowBlock.getIssuedInstructions().get(2).getId());
+    Assert.assertEquals(0, this.cpu.cpuState.fpIssueWindowBlock.getIssuedInstructions().get(0).getIntegerId());
+    Assert.assertEquals(1, this.cpu.cpuState.fpIssueWindowBlock.getIssuedInstructions().get(1).getIntegerId());
+    Assert.assertEquals(2, this.cpu.cpuState.fpIssueWindowBlock.getIssuedInstructions().get(2).getIntegerId());
     Assert.assertEquals("fadd.s tg0,f4,f5",
                         this.cpu.cpuState.fpIssueWindowBlock.getIssuedInstructions().get(0).getRenamedCodeLine());
     Assert.assertEquals("fadd.s tg1,tg0,f4",

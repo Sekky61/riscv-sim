@@ -32,6 +32,9 @@
  */
 package com.gradle.superscalarsim.blocks.base;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.blocks.AbstractBlock;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
@@ -51,11 +54,13 @@ import java.util.Map;
  * @class AbstractIssueWindowBlock
  * @brief Abstract class, containing interface and shared logic for all Issuing windows
  */
+@JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
 public abstract class AbstractIssueWindowBlock implements AbstractBlock
 {
   /**
    * List of all instructions dispatched to this window
    */
+  @JsonIdentityReference(alwaysAsId = true)
   private final List<SimCodeModel> issuedInstructions;
   
   /**
@@ -65,6 +70,7 @@ public abstract class AbstractIssueWindowBlock implements AbstractBlock
   /**
    * Class containing all registers, that simulator uses
    */
+  @JsonIdentityReference(alwaysAsId = true)
   private UnifiedRegisterFileBlock registerFileBlock;
   
   /**
@@ -190,7 +196,7 @@ public abstract class AbstractIssueWindowBlock implements AbstractBlock
       functionUnitBlock.resetCounter();
       functionUnitBlock.setSimCodeModel(currentModel);
       removedCodeList.add(currentModel);
-      this.argumentValidityMap.remove(currentModel.getId());
+      this.argumentValidityMap.remove(currentModel.getIntegerId());
     }
     
     // Remove issued instructions from the window
@@ -260,7 +266,7 @@ public abstract class AbstractIssueWindowBlock implements AbstractBlock
         }
       }
     }
-    this.argumentValidityMap.put(codeModel.getId(), itemModelList);
+    this.argumentValidityMap.put(codeModel.getIntegerId(), itemModelList);
   }// end of createArgumentValidityEntry
   //----------------------------------------------------------------------
   
@@ -272,7 +278,7 @@ public abstract class AbstractIssueWindowBlock implements AbstractBlock
    */
   private boolean instructionReadyForIssue(SimCodeModel currentModel)
   {
-    List<IssueItemModel> items   = this.argumentValidityMap.get(currentModel.getId());
+    List<IssueItemModel> items   = this.argumentValidityMap.get(currentModel.getIntegerId());
     boolean              isReady = true;
     for (IssueItemModel item : items)
     {
@@ -330,7 +336,7 @@ public abstract class AbstractIssueWindowBlock implements AbstractBlock
       if (codeModel.hasFailed())
       {
         codeModel.setIssueWindowId(this.windowId);
-        this.argumentValidityMap.remove(codeModel.getId());
+        this.argumentValidityMap.remove(codeModel.getIntegerId());
         removedInstructions.add(codeModel);
       }
     }

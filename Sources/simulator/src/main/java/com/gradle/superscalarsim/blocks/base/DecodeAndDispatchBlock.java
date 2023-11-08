@@ -32,6 +32,9 @@
  */
 package com.gradle.superscalarsim.blocks.base;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.blocks.AbstractBlock;
 import com.gradle.superscalarsim.blocks.branch.BranchTargetBuffer;
 import com.gradle.superscalarsim.blocks.branch.GlobalHistoryRegister;
@@ -48,21 +51,29 @@ import java.util.OptionalInt;
  * @class DecodeAndDispatchBlock
  * @brief Class, which simulates instruction decode and renames registers
  */
+@JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
 public class DecodeAndDispatchBlock implements AbstractBlock
 {
   /// List holding code before renaming for difference highlight
+  @JsonIdentityReference(alwaysAsId = true)
   private final List<SimCodeModel> beforeRenameCodeList;
   /// List holding code with renamed registers ready for dispatch
+  @JsonIdentityReference(alwaysAsId = true)
   private final List<SimCodeModel> afterRenameCodeList;
   /// Instruction Fetch Block holding fetched instructions
+  @JsonIdentityReference(alwaysAsId = true)
   private final InstructionFetchBlock instructionFetchBlock;
   /// Class holding all mappings from architectural to speculative
+  @JsonIdentityReference(alwaysAsId = true)
   private final RenameMapTableBlock renameMapTableBlock;
   /// Bit register marking history of predictions
+  @JsonIdentityReference(alwaysAsId = true)
   private final GlobalHistoryRegister globalHistoryRegister;
   /// Buffer holding information about branch instructions targets
+  @JsonIdentityReference(alwaysAsId = true)
   private final BranchTargetBuffer branchTargetBuffer;
   /// Parser holding parsed instructions
+  @JsonIdentityReference(alwaysAsId = true)
   private final InstructionMemoryBlock instructionMemoryBlock;
   /// Counter giving out ids for instructions in order to correctly simulate backwards
   private int idCounter;
@@ -370,8 +381,7 @@ public class DecodeAndDispatchBlock implements AbstractBlock
       if (argument.writeBack())
       {
         InputCodeArgument destinationArgument = simCodeModel.getArgumentByName(argument.name());
-        String            mappedReg           = renameMapTableBlock.mapRegister(destinationArgument.getValue(),
-                                                                                simCodeModel.getId());
+        String mappedReg = renameMapTableBlock.mapRegister(destinationArgument.getValue(), simCodeModel.getIntegerId());
         destinationArgument.setValue(mappedReg);
       }
     }

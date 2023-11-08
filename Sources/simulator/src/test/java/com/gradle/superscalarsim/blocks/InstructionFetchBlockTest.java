@@ -7,7 +7,7 @@ import com.gradle.superscalarsim.blocks.branch.GShareUnit;
 import com.gradle.superscalarsim.blocks.branch.GlobalHistoryRegister;
 import com.gradle.superscalarsim.blocks.branch.PatternHistoryTable;
 import com.gradle.superscalarsim.builders.InputCodeModelBuilder;
-import com.gradle.superscalarsim.code.SimCodeModelAllocator;
+import com.gradle.superscalarsim.factories.SimCodeModelFactory;
 import com.gradle.superscalarsim.models.InputCodeModel;
 import org.junit.Assert;
 import org.junit.Before;
@@ -27,13 +27,13 @@ public class InstructionFetchBlockTest
   @Before
   public void setUp()
   {
-    this.instructionMemoryBlock = new InstructionMemoryBlock(null, null);
+    this.instructionMemoryBlock = new InstructionMemoryBlock(null, null, null);
     this.branchTargetBuffer     = new BranchTargetBuffer(1000);
     this.gShareUnit             = new GShareUnit(1, new GlobalHistoryRegister(1000),
                                                  new PatternHistoryTable(10, new boolean[]{true, false},
                                                                          PatternHistoryTable.PredictorType.TWO_BIT_PREDICTOR));
-    SimCodeModelAllocator simCodeModelAllocator = new SimCodeModelAllocator();
-    this.instructionFetchBlock = new InstructionFetchBlock(simCodeModelAllocator, this.instructionMemoryBlock,
+    SimCodeModelFactory simCodeModelFactory = new SimCodeModelFactory();
+    this.instructionFetchBlock = new InstructionFetchBlock(simCodeModelFactory, this.instructionMemoryBlock,
                                                            this.gShareUnit, this.branchTargetBuffer);
   }
   

@@ -105,13 +105,13 @@ public class LoadStoreFunctionUnit extends AbstractFunctionUnitBlock
         this.simCodeModel.setFunctionUnitId(this.functionUnitId);
       }
       long address = loadStoreInterpreter.interpretAddress(simCodeModel);
-      if (storeBufferBlock.getStoreMap().containsKey(simCodeModel.getId()))
+      if (storeBufferBlock.getStoreMap().containsKey(simCodeModel.getIntegerId()))
       {
-        storeBufferBlock.setAddress(simCodeModel.getId(), address);
+        storeBufferBlock.setAddress(simCodeModel.getIntegerId(), address);
       }
       else
       {
-        loadBufferBlock.setAddress(simCodeModel.getId(), address);
+        loadBufferBlock.setAddress(simCodeModel.getIntegerId(), address);
       }
       this.simCodeModel = null;
     }

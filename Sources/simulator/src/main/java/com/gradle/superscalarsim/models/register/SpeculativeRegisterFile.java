@@ -26,12 +26,16 @@
  */
 package com.gradle.superscalarsim.models.register;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.enums.RegisterTypeEnum;
 
 import java.util.Map;
 import java.util.TreeMap;
 
+@JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
 public class SpeculativeRegisterFile implements IRegisterFile
 {
   /**
@@ -47,6 +51,7 @@ public class SpeculativeRegisterFile implements IRegisterFile
   /**
    * Collection of registers
    */
+  @JsonIdentityReference(alwaysAsId = true)
   private final Map<String, RegisterModel> registers;
   
   /**

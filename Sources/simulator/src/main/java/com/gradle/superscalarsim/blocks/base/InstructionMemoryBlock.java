@@ -32,9 +32,11 @@
  */
 package com.gradle.superscalarsim.blocks.base;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.models.InputCodeModel;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -42,17 +44,21 @@ import java.util.Map;
  * @class InstructionMemoryBlock
  * @brief Holds instructions for simulation
  */
+@JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
 public class InstructionMemoryBlock
 {
   /**
    * Nop instruction is instantiated once and reused, to have all SimCodeModel objects point to the same object.
+   * TODO: @JsonIdentityReference(alwaysAsId = true)
    *
    * @brief Nop instruction
    */
+  
   private final InputCodeModel nop;
   /**
    * List of parsed instructions
    */
+  @JsonIdentityReference(alwaysAsId = true)
   private List<InputCodeModel> code;
   /**
    * The strings are without the colon at the end.
@@ -67,11 +73,11 @@ public class InstructionMemoryBlock
    *
    * @brief Constructor
    */
-  public InstructionMemoryBlock(List<InputCodeModel> code, Map<String, Integer> labels)
+  public InstructionMemoryBlock(List<InputCodeModel> code, Map<String, Integer> labels, InputCodeModel nop)
   {
     this.code   = code;
     this.labels = labels;
-    this.nop    = new InputCodeModel(null, "nop", new ArrayList<>(), null, 0);
+    this.nop    = nop;
   }// end of Constructor
   
   

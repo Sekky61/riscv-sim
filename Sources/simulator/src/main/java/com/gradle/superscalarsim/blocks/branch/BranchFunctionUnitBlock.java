@@ -32,6 +32,9 @@
  */
 package com.gradle.superscalarsim.blocks.branch;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.blocks.base.AbstractFunctionUnitBlock;
 import com.gradle.superscalarsim.blocks.base.AbstractIssueWindowBlock;
 import com.gradle.superscalarsim.blocks.base.ReorderBufferBlock;
@@ -43,11 +46,14 @@ import com.gradle.superscalarsim.models.register.RegisterModel;
 
 import java.util.OptionalInt;
 
+@JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
 public class BranchFunctionUnitBlock extends AbstractFunctionUnitBlock
 {
   /// Interpreter for interpreting executing instructions
+  @JsonIdentityReference(alwaysAsId = true)
   private CodeBranchInterpreter branchInterpreter;
   /// Class containing all registers, that simulator uses
+  @JsonIdentityReference(alwaysAsId = true)
   private UnifiedRegisterFileBlock registerFileBlock;
   
   public BranchFunctionUnitBlock()
@@ -139,7 +145,7 @@ public class BranchFunctionUnitBlock extends AbstractFunctionUnitBlock
         reg.setReadiness(RegisterReadinessEnum.kExecuted);
       }
       
-      this.reorderBufferBlock.getRobItem(this.simCodeModel.getId()).reorderFlags.setBusy(false);
+      this.reorderBufferBlock.getRobItem(this.simCodeModel.getIntegerId()).reorderFlags.setBusy(false);
       this.simCodeModel = null;
     }
     

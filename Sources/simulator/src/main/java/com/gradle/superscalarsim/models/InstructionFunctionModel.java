@@ -32,7 +32,9 @@
  */
 package com.gradle.superscalarsim.models;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.managers.InstructionFunctionModelManager;
@@ -48,6 +50,7 @@ import java.util.List;
  * Json file, which is used to create object of this class, follows same name structure for each variable.
  * ID is the name of the instruction.
  */
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "name")
 public class InstructionFunctionModel implements Identifiable
 {
   /**

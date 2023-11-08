@@ -32,6 +32,9 @@
  */
 package com.gradle.superscalarsim.models.register;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.enums.RegisterTypeEnum;
 
 import java.util.ArrayList;
@@ -42,6 +45,7 @@ import java.util.List;
  * @brief Definition of register file
  * @details Collection of registers of the same type (integer/floating point)
  */
+@JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
 public class RegisterFileModel implements IRegisterFile
 {
   /**
@@ -57,6 +61,7 @@ public class RegisterFileModel implements IRegisterFile
   /**
    * List of registers of register file
    */
+  @JsonIdentityReference(alwaysAsId = true)
   private final List<RegisterModel> registerList;
   
   // TODO: This acts as default values, meaning file reading does not fail on bad json file

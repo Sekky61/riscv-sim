@@ -27,10 +27,12 @@
 
 package com.gradle.superscalarsim.models;
 
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import org.jetbrains.annotations.NotNull;
 
 public class ReorderBufferItem implements Comparable<SimCodeModel>
 {
+  @JsonIdentityReference(alwaysAsId = true)
   public SimCodeModel simCodeModel;
   public ReorderFlags reorderFlags;
   
@@ -50,7 +52,7 @@ public class ReorderBufferItem implements Comparable<SimCodeModel>
    */
   public int compareTo(@NotNull SimCodeModel codeModel)
   {
-    return -Integer.compare(codeModel.getId(), this.simCodeModel.getId());
+    return -Integer.compare(codeModel.getIntegerId(), this.simCodeModel.getIntegerId());
   }// end of compareTo
   //------------------------------------------------------
 }

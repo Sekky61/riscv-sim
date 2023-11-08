@@ -1,10 +1,10 @@
 /**
- * @file ManagerRegistry.java
+ * @file SimCodeModelManager.java
  * @author Michal Majer
  * Faculty of Information Technology
  * Brno University of Technology
  * xmajer21@stud.fit.vutbr.cz
- * @brief File contains container of all managers
+ * @brief File contains manager for instructions in the program
  * @date 07 November  2023 18:00 (created)
  * @section Licence
  * This file is part of the Superscalar simulator app
@@ -25,32 +25,27 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+
 package com.gradle.superscalarsim.managers;
 
+import com.gradle.superscalarsim.models.SimCodeModel;
+
+import java.util.WeakHashMap;
+
 /**
- * Container of all managers
+ * Manages all instruction function models in the simulation
  */
-public class ManagerRegistry
+public class SimCodeModelManager implements IInstanceManager<SimCodeModel>
 {
-  /**
-   * Instruction function model manager
-   */
-  public InstructionFunctionModelManager instructionFunctionManager;
+  WeakHashMap<SimCodeModel, Object> instances = new WeakHashMap<>();
   
   /**
-   * Input code model manager
+   * @return WeakHashMap of instances
+   * @brief Get the instances
    */
-  public InputCodeModelManager inputCodeManager;
-  
-  /**
-   * Sim code model manager
-   */
-  public SimCodeModelManager simCodeManager;
-  
-  public ManagerRegistry()
+  @Override
+  public WeakHashMap<SimCodeModel, Object> getInstances()
   {
-    instructionFunctionManager = new InstructionFunctionModelManager();
-    inputCodeManager           = new InputCodeModelManager();
-    simCodeManager             = new SimCodeModelManager();
+    return instances;
   }
 }

@@ -32,6 +32,8 @@
  */
 package com.gradle.superscalarsim.blocks.base;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.loader.InitLoader;
 import com.gradle.superscalarsim.models.register.IRegisterFile;
@@ -47,6 +49,7 @@ import java.util.Map;
  * @class UnifiedRegisterFileBlock
  * @brief Class contains interface to interact with all register files and its registers
  */
+@JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
 public class UnifiedRegisterFileBlock
 {
   /**

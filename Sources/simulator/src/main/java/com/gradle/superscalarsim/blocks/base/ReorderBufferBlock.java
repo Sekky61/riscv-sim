@@ -32,6 +32,9 @@
  */
 package com.gradle.superscalarsim.blocks.base;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.blocks.AbstractBlock;
 import com.gradle.superscalarsim.blocks.StatisticsCounter;
 import com.gradle.superscalarsim.blocks.branch.BranchTargetBuffer;
@@ -50,49 +53,58 @@ import java.util.stream.Stream;
  * @class ReorderBufferBlock
  * @brief Class contains simulated implementation of Reorder buffer
  */
+@JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
 public class ReorderBufferBlock implements AbstractBlock
 {
   
   /**
    * Class holding mappings from architectural registers to speculative
    */
+  @JsonIdentityReference(alwaysAsId = true)
   private RenameMapTableBlock renameMapTableBlock;
   
   /**
    * Class, which simulates instruction decode and renames registers
    */
+  @JsonIdentityReference(alwaysAsId = true)
   private DecodeAndDispatchBlock decodeAndDispatchBlock;
   
   /**
    * Class for statistics gathering
    */
+  @JsonIdentityReference(alwaysAsId = true)
   private StatisticsCounter statisticsCounter;
   
   
   /**
    * GShare unit for getting correct prediction counters
    */
+  @JsonIdentityReference(alwaysAsId = true)
   private GShareUnit gShareUnit;
   
   /**
    * Buffer holding information about branch instructions targets
    */
+  @JsonIdentityReference(alwaysAsId = true)
   private BranchTargetBuffer branchTargetBuffer;
   
   /**
    * Class that fetches code from CodeParser
    */
+  @JsonIdentityReference(alwaysAsId = true)
   private InstructionFetchBlock instructionFetchBlock;
   
   
   /**
    * Buffer that tracks all in-flight load instructions
    */
+  @JsonIdentityReference(alwaysAsId = true)
   private LoadBufferBlock loadBufferBlock;
   
   /**
    * Buffer that tracks all in-flight store instructions
    */
+  @JsonIdentityReference(alwaysAsId = true)
   private StoreBufferBlock storeBufferBlock;
   
   /**
@@ -240,8 +252,8 @@ public class ReorderBufferBlock implements AbstractBlock
       {
         // Correct prediction
         statisticsCounter.incrementCorrectlyPredictedBranches();
-        this.gShareUnit.getPredictorFromOld(pc, codeModel.getId()).upTheProbability();
-        this.gShareUnit.getGlobalHistoryRegister().removeHistoryValue(codeModel.getId());
+        this.gShareUnit.getPredictorFromOld(pc, codeModel.getIntegerId()).upTheProbability();
+        this.gShareUnit.getGlobalHistoryRegister().removeHistoryValue(codeModel.getIntegerId());
         // Update committable status of subsequent instructions
         validateInstructions();
       }
@@ -250,7 +262,7 @@ public class ReorderBufferBlock implements AbstractBlock
         // Wrong prediction - feedback to predictor
         int resultPc = pc + codeModel.getBranchTargetOffset();
         // TODO: Why down? Shouldn't the feedback be in the opposite direction of the wrong prediction?
-        this.gShareUnit.getPredictorFromOld(pc, codeModel.getId()).downTheProbability();
+        this.gShareUnit.getPredictorFromOld(pc, codeModel.getIntegerId()).downTheProbability();
         this.branchTargetBuffer.setEntry(pc, codeModel, resultPc, -1, state.commitId);
         
         // Get the second instruction in the queue and invalidate it
@@ -263,7 +275,7 @@ public class ReorderBufferBlock implements AbstractBlock
         
         GlobalHistoryRegister activeRegister = gShareUnit.getGlobalHistoryRegister();
         // This also removes the value from the history stack
-        activeRegister.setHistoryValueAsCurrent(codeModel.getId());
+        activeRegister.setHistoryValueAsCurrent(codeModel.getIntegerId());
         activeRegister.shiftValue(false);
         
         this.instructionFetchBlock.setPc(resultPc);
@@ -344,7 +356,7 @@ public class ReorderBufferBlock implements AbstractBlock
       currentInstruction.setCommitId(this.state.commitId);
       if (currentInstruction.getInstructionTypeEnum() == InstructionTypeEnum.kJumpbranch)
       {
-        this.gShareUnit.getGlobalHistoryRegister().removeHistoryValue(currentInstruction.getId());
+        this.gShareUnit.getGlobalHistoryRegister().removeHistoryValue(currentInstruction.getIntegerId());
       }
       
       removeInstruction(currentInstruction);
@@ -474,7 +486,7 @@ public class ReorderBufferBlock implements AbstractBlock
   
   public ReorderBufferItem getRobItem(int simCodeId)
   {
-    return state.reorderQueue.stream().filter(robItem -> robItem.simCodeModel.getId() == simCodeId).findFirst()
+    return state.reorderQueue.stream().filter(robItem -> robItem.simCodeModel.getIntegerId() == simCodeId).findFirst()
             .orElse(null);
   }// end of getFlagsMap
   //----------------------------------------------------------------------

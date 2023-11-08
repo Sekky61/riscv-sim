@@ -121,13 +121,14 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
     
     if (!isFunctionUnitEmpty() && hasTimerStarted())
     {
-      if (this.loadBufferBlock.getLoadMap().containsKey(this.simCodeModel.getId()))
+      if (this.loadBufferBlock.getLoadMap().containsKey(this.simCodeModel.getIntegerId()))
       {
-        this.loadBufferBlock.getLoadMap().get(this.simCodeModel.getId()).setMemoryAccessId(this.functionUnitId);
+        this.loadBufferBlock.getLoadMap().get(this.simCodeModel.getIntegerId()).setMemoryAccessId(this.functionUnitId);
       }
-      else if (this.storeBufferBlock.getStoreMap().containsKey(this.simCodeModel.getId()))
+      else if (this.storeBufferBlock.getStoreMap().containsKey(this.simCodeModel.getIntegerId()))
       {
-        this.storeBufferBlock.getStoreMap().get(this.simCodeModel.getId()).setMemoryAccessId(this.functionUnitId);
+        this.storeBufferBlock.getStoreMap().get(this.simCodeModel.getIntegerId())
+                .setMemoryAccessId(this.functionUnitId);
       }
     }
     
@@ -155,20 +156,20 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
       {
         firstDelayPassed = false;
         this.setDelay(baseDelay);
-        this.reorderBufferBlock.getRobItem(this.simCodeModel.getId()).reorderFlags.setBusy(false);
-        if (this.loadBufferBlock.getLoadMap().containsKey(this.simCodeModel.getId()))
+        this.reorderBufferBlock.getRobItem(this.simCodeModel.getIntegerId()).reorderFlags.setBusy(false);
+        if (this.loadBufferBlock.getLoadMap().containsKey(this.simCodeModel.getIntegerId()))
         {
           InputCodeArgument destinationArgument = simCodeModel.getArgumentByName("rd");
           RegisterModel destRegister = registerFileBlock.getRegister(
                   Objects.requireNonNull(destinationArgument).getValue());
           destRegister.setBits(savedResult);
           destRegister.setReadiness(RegisterReadinessEnum.kExecuted);
-          this.loadBufferBlock.setDestinationAvailable(simCodeModel.getId());
-          this.loadBufferBlock.setMemoryAccessFinished(simCodeModel.getId());
+          this.loadBufferBlock.setDestinationAvailable(simCodeModel.getIntegerId());
+          this.loadBufferBlock.setMemoryAccessFinished(simCodeModel.getIntegerId());
         }
-        else if (this.storeBufferBlock.getStoreMap().containsKey(this.simCodeModel.getId()))
+        else if (this.storeBufferBlock.getStoreMap().containsKey(this.simCodeModel.getIntegerId()))
         {
-          this.storeBufferBlock.setMemoryAccessFinished(simCodeModel.getId());
+          this.storeBufferBlock.setMemoryAccessFinished(simCodeModel.getIntegerId());
         }
         
         this.simCodeModel = null;

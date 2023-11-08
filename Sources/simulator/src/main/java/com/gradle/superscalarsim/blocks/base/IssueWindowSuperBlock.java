@@ -32,6 +32,9 @@
  */
 package com.gradle.superscalarsim.blocks.base;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.blocks.AbstractBlock;
 import com.gradle.superscalarsim.blocks.arithmetic.AluIssueWindowBlock;
 import com.gradle.superscalarsim.blocks.arithmetic.FpIssueWindowBlock;
@@ -47,11 +50,13 @@ import java.util.List;
  * @class IssueWindowSuperBlock
  * @brief Class containing logic for dispatching instructions from decode stage to Issue windows
  */
+@JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
 public class IssueWindowSuperBlock implements AbstractBlock
 {
   /**
    * Class, which simulates instruction decode and renames registers.
    */
+  @JsonIdentityReference(alwaysAsId = true)
   private DecodeAndDispatchBlock decodeAndDispatchBlock;
   /**
    * List of all issue windows.

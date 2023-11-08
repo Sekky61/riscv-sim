@@ -30,11 +30,21 @@ package com.gradle.superscalarsim.cpu;
 
 import com.cedarsoftware.util.io.JsonReader;
 import com.cedarsoftware.util.io.JsonWriter;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
+import com.gradle.superscalarsim.serialization.CustomSerializerModule;
 import com.gradle.superscalarsim.serialization.GsonConfiguration;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 public class SerializationTest
 {
@@ -218,5 +228,78 @@ public class SerializationTest
     
     // Assert
     Mockito.verify(stateSpy, Mockito.times(2)).step();
+  }
+  
+  @Test
+  public void testManagerIncludesFunctionmodels() throws IOException
+  {
+    // Create cpu
+    CpuConfiguration cfg = CpuConfiguration.getDefaultConfiguration();
+    cfg.code = """
+            addi x3, x0, 10000
+            addi x6, x1, 1000
+            loop:
+            """;
+    
+    Cpu cpu = new Cpu(cfg);
+    cpu.step();
+    cpu.step();
+    cpu.step();
+    
+    // Exercise
+    ObjectMapper objectMapper = new ObjectMapper();
+    // Configure that all fields are serialized, but getters and setters are not
+    objectMapper.setVisibility(objectMapper.getSerializationConfig().getDefaultVisibilityChecker()
+                                       .withFieldVisibility(JsonAutoDetect.Visibility.ANY)
+                                       .withGetterVisibility(JsonAutoDetect.Visibility.NONE)
+                                       .withSetterVisibility(JsonAutoDetect.Visibility.NONE)
+                                       .withCreatorVisibility(JsonAutoDetect.Visibility.NONE));
+    objectMapper.registerModule(new CustomSerializerModule());
+    
+    //    A testA = new A(69);
+    //    B testB = new B(420, testA);
+    //    testA.b = testB;
+    
+    // Print cpu to the output stream, not as a string
+    objectMapper.writerWithDefaultPrettyPrinter().writeValue(System.out, cpu.cpuState);
+  }
+}
+
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "ida")
+class A
+{
+  int ida;
+  int x = 5;
+  
+  public B b;
+  
+  public A()
+  {
+  }
+  
+  public A(int id)
+  {
+    this.ida = id;
+  }
+}
+
+class B
+{
+  int idb;
+  int r = 5;
+  
+  @JsonIdentityReference(alwaysAsId = true)
+  Map<String, A> a;
+  
+  public B()
+  {
+  
+  }
+  
+  public B(int id, A a)
+  {
+    this.idb = id;
+    this.a   = new HashMap<>();
+    this.a.put("at4", a);
   }
 }

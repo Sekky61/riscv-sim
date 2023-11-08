@@ -32,6 +32,9 @@
  */
 package com.gradle.superscalarsim.blocks.branch;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -41,6 +44,7 @@ import java.util.Map;
  * @brief Class implements interface of manipulating with the bit array holding history of branching
  * (true if the branch was taken, false if the branch was not taken)
  */
+@JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
 public class GlobalHistoryRegister
 {
   /**

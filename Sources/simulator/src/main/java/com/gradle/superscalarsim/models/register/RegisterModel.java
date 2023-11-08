@@ -32,6 +32,8 @@
  */
 package com.gradle.superscalarsim.models.register;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.enums.RegisterTypeEnum;
@@ -40,6 +42,7 @@ import com.gradle.superscalarsim.enums.RegisterTypeEnum;
  * @class RegisterModel
  * @brief Definition of single register in register file
  */
+@JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
 public class RegisterModel
 {
   /**

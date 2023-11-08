@@ -32,6 +32,9 @@
  */
 package com.gradle.superscalarsim.blocks.base;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.models.RenameMapModel;
@@ -47,6 +50,7 @@ import java.util.TreeMap;
  * @brief Class that keeps track of mappings between speculative and architectural registers
  * and free speculative registers
  */
+@JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
 public class RenameMapTableBlock
 {
   /**
@@ -56,6 +60,7 @@ public class RenameMapTableBlock
   /**
    * Map of speculative to architectural registers
    */
+  @JsonIdentityReference(alwaysAsId = true)
   private final Map<String, RenameMapModel> registerMap;
   /**
    * Map of references to certain speculative register
@@ -64,6 +69,7 @@ public class RenameMapTableBlock
   /**
    * Class containing all registers, that simulator uses
    */
+  @JsonIdentityReference(alwaysAsId = true)
   private final UnifiedRegisterFileBlock registerFileBlock;
   
   /**
