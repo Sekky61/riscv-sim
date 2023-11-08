@@ -91,14 +91,11 @@ public class MyRequestHandler<T, U> implements HttpHandler
     ObjectMapper mapper = Serialization.getSerializer();
     
     // Deserialize
-    InputStream requestJson = exchange.getInputStream();
-    
-    T compileRequest = null;
+    InputStream requestJson    = exchange.getInputStream();
+    T           compileRequest = null;
     try
     {
-      
       compileRequest = deserializer.deserialize(requestJson);
-      
     }
     catch (Exception e)
     {
@@ -111,14 +108,9 @@ public class MyRequestHandler<T, U> implements HttpHandler
     U response = resolver.resolve(compileRequest);
     
     // Serialize
-    //    ObjectMapper mapper = SerializerFactory.getSerializer();
-    
     OutputStream outputStream = exchange.getOutputStream();
     mapper.writeValue(outputStream, response);
     exchange.endExchange();
-    
-    //    String out = JsonWriter.objectToJson(response, GsonConfiguration.getJsonWriterOptions());
-    //    exchange.getResponseSender().send(out);
   }
   
   /**

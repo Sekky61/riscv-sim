@@ -4,7 +4,7 @@
  * Faculty of Information Technology
  * Brno University of Technology
  * xmajer21@stud.fit.vutbr.cz
- * @brief Response for the /simulation endpoint
+ * @brief Response for the /simulate endpoint
  * @date 26 Sep      2023 10:00 (created)
  * @section Licence
  * This file is part of the Superscalar simulator app
@@ -25,11 +25,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.gradle.superscalarsim.server.simulation;
+package com.gradle.superscalarsim.server.simulate;
 
 import com.gradle.superscalarsim.cpu.CpuState;
 
-public class SimulationResponse
+public class SimulateResponse
 {
   /**
    * Delta of the executed steps
@@ -40,7 +40,7 @@ public class SimulationResponse
    */
   public CpuState state;
   
-  SimulationResponse(CpuState state, int executed_steps)
+  SimulateResponse(CpuState state, int executed_steps)
   {
     this.executedSteps = executed_steps;
     this.state         = state;

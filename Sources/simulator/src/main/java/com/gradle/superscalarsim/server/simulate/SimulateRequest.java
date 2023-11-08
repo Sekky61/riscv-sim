@@ -4,7 +4,7 @@
  * Faculty of Information Technology
  * Brno University of Technology
  * xmajer21@stud.fit.vutbr.cz
- * @brief Parameters for the /simulation endpoint request
+ * @brief Parameters for the /simulate endpoint request
  * @date 26 Sep      2023 10:00 (created)
  * @section Licence
  * This file is part of the Superscalar simulator app
@@ -25,14 +25,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.gradle.superscalarsim.server.simulation;
+package com.gradle.superscalarsim.server.simulate;
 
 import com.gradle.superscalarsim.cpu.CpuConfiguration;
 
 /**
- * Parameters for the /simulation endpoint request
+ * Parameters for the /simulate endpoint request
  */
-public class SimulationRequest
+public class SimulateRequest
 {
   /**
    * The requested tick to get the state of
