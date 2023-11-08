@@ -32,8 +32,10 @@
  */
 package com.gradle.superscalarsim.models;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
+import com.gradle.superscalarsim.managers.InstructionFunctionModelManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,8 +46,9 @@ import java.util.List;
  * @details Class contains definition of instruction, which is used to interpret and show real value in I-cache and to
  * interpret functionality of that instruction. Set (list) of instruction gives instruction set.
  * Json file, which is used to create object of this class, follows same name structure for each variable.
+ * ID is the name of the instruction.
  */
-public class InstructionFunctionModel
+public class InstructionFunctionModel implements Identifiable
 {
   /**
    * Name of the instruction
@@ -102,6 +105,17 @@ public class InstructionFunctionModel
     this.arguments       = arguments;
     this.interpretableAs = interpretableAs;
   }// end of Constructor
+  
+  public static InstructionFunctionModel createInstance(InstructionFunctionModelManager manager,
+                                                        String name,
+                                                        InstructionTypeEnum instructionType,
+                                                        List<Argument> arguments,
+                                                        String interpretableAs)
+  {
+    InstructionFunctionModel instance = new InstructionFunctionModel(name, instructionType, arguments, interpretableAs);
+    manager.addInstance(instance);
+    return instance;
+  }
   //------------------------------------------------------
   
   /**
@@ -214,6 +228,16 @@ public class InstructionFunctionModel
   }// end of isUnconditionalJump
   
   /**
+   * @return Unique identifier of the object
+   * @brief Get the identifier
+   */
+  @Override
+  public String getId()
+  {
+    return name;
+  }// end of getId
+  
+  /**
    * @param name         Name of the argument (example: "rd")
    * @param type         Data type of the argument (example: "kInt")
    * @param defaultValue Default value of the argument (example: "0" or null)
@@ -223,14 +247,19 @@ public class InstructionFunctionModel
    */
   public static class Argument
   {
+    @JsonProperty
     private final String name;
+    @JsonProperty
     private final DataTypeEnum type;
+    @JsonProperty
     private final String defaultValue;
+    @JsonProperty
     private final boolean writeBack;
     
     /**
      * @brief If true, count this argument as data dependency, but is not allowed to be used in ASM code.
      */
+    @JsonProperty
     private final boolean silent;
     
     public Argument(String name, DataTypeEnum type, String defaultValue)

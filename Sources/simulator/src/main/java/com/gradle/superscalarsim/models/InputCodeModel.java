@@ -32,6 +32,9 @@
  */
 package com.gradle.superscalarsim.models;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 
@@ -43,7 +46,7 @@ import java.util.List;
  * @brief Represents a processed line of code
  * Should be used only for reading (referencing), not for writing
  */
-public class InputCodeModel implements IInputCodeModel
+public class InputCodeModel implements IInputCodeModel, Identifiable
 {
   /**
    * ID - the index of the instruction in the code
@@ -69,8 +72,9 @@ public class InputCodeModel implements IInputCodeModel
    * @brief Instruction function model
    * Contains information about the instruction
    */
+  @JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
+  @JsonIdentityReference(alwaysAsId = true)
   private final InstructionFunctionModel instructionFunctionModel;
-  
   
   public InputCodeModel(InstructionFunctionModel instructionFunctionModel,
                         final List<InputCodeArgument> arguments,
@@ -110,6 +114,21 @@ public class InputCodeModel implements IInputCodeModel
   //------------------------------------------------------
   
   /**
+   * String representation of the object
+   */
+  @Override
+  public String toString()
+  {
+    StringBuilder genericLine = new StringBuilder(getInstructionName());
+    for (int i = 0; i < getArguments().size(); i++)
+    {
+      genericLine.append(" ").append(getArguments().get(i).getValue());
+    }
+    return genericLine.toString();
+  }
+  //------------------------------------------------------
+  
+  /**
    * @return Name of instruction
    * @brief Get name of instruction
    */
@@ -129,7 +148,6 @@ public class InputCodeModel implements IInputCodeModel
   {
     return arguments;
   }// end of getArguments
-  //------------------------------------------------------
   
   /**
    * @param name Name of the argument
@@ -141,6 +159,7 @@ public class InputCodeModel implements IInputCodeModel
   {
     return arguments.stream().filter(argument -> argument.getName().equals(name)).findFirst().orElse(null);
   }// end of getArgumentByName
+  //------------------------------------------------------
   
   /**
    * @return Enum value of instruction type
@@ -151,7 +170,6 @@ public class InputCodeModel implements IInputCodeModel
   {
     return instructionTypeEnum;
   }// end of getInstructionTypeEnum
-  //------------------------------------------------------
   
   /**
    * @return Enum value of output data type
@@ -162,6 +180,7 @@ public class InputCodeModel implements IInputCodeModel
   {
     return instructionFunctionModel.getDataType();
   }// end of getResultDataType
+  //------------------------------------------------------
   
   /**
    * @return ID of the instruction (index in the code)
@@ -171,7 +190,6 @@ public class InputCodeModel implements IInputCodeModel
   {
     return codeId;
   }
-  //------------------------------------------------------
   
   @Override
   public InstructionFunctionModel getInstructionFunctionModel()
@@ -180,16 +198,12 @@ public class InputCodeModel implements IInputCodeModel
   }
   
   /**
-   * String representation of the object
+   * @return Unique identifier of the object
+   * @brief Get the identifier
    */
   @Override
-  public String toString()
+  public String getId()
   {
-    StringBuilder genericLine = new StringBuilder(getInstructionName());
-    for (int i = 0; i < getArguments().size(); i++)
-    {
-      genericLine.append(" ").append(getArguments().get(i).getValue());
-    }
-    return genericLine.toString();
+    return String.valueOf(codeId);
   }
 }

@@ -39,7 +39,9 @@ import com.gradle.superscalarsim.blocks.branch.*;
 import com.gradle.superscalarsim.blocks.loadstore.*;
 import com.gradle.superscalarsim.code.*;
 import com.gradle.superscalarsim.enums.cache.ReplacementPoliciesEnum;
+import com.gradle.superscalarsim.factories.InputCodeModelFactory;
 import com.gradle.superscalarsim.loader.InitLoader;
+import com.gradle.superscalarsim.managers.ManagerRegistry;
 import com.gradle.superscalarsim.serialization.GsonConfiguration;
 
 import java.io.Serializable;
@@ -54,6 +56,8 @@ import java.util.Objects;
  */
 public class CpuState implements Serializable
 {
+  transient public ManagerRegistry managerRegistry;
+  
   public int tick;
   
   public InstructionMemoryBlock instructionMemoryBlock;
@@ -127,10 +131,18 @@ public class CpuState implements Serializable
    */
   public void initState(CpuConfiguration config, InitLoader initLoader)
   {
-    this.tick = 0;
+    this.tick            = 0;
+    this.managerRegistry = new ManagerRegistry();
+    
+    // Factories (for tracking instances of models)
+    InputCodeModelFactory inputCodeModelFactory = new InputCodeModelFactory(managerRegistry.inputCodeManager);
+    
+    // Hack to load all function models to manager
+    initLoader.getInstructionFunctionModels()
+            .forEach((name, model) -> managerRegistry.instructionFunctionManager.addInstance(model));
     
     // Parse code
-    CodeParser codeParser = new CodeParser(initLoader);
+    CodeParser codeParser = new CodeParser(initLoader, inputCodeModelFactory);
     codeParser.parseCode(config.code);
     
     if (!codeParser.success())

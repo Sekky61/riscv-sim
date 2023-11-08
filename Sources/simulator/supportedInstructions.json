@@ -19,7 +19,8 @@
         "defaultValue": "0"
       }
     ],
-    "interpretableAs": "\\rs1 \\imm +:true"
+    "interpretableAs": "\\rs1 \\imm +:true",
+    "id": 0
   },
   "bne": {
     "name": "bne",
@@ -38,7 +39,8 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "\\imm:\\rs1 \\rs2 !="
+    "interpretableAs": "\\imm:\\rs1 \\rs2 !=",
+    "id": 1
   },
   "add": {
     "name": "add",
@@ -58,7 +60,8 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "\\rs1 \\rs2 + \\rd ="
+    "interpretableAs": "\\rs1 \\rs2 + \\rd =",
+    "id": 2
   },
   "lh": {
     "name": "lh",
@@ -78,7 +81,8 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "load:16:\\rs1 \\imm +"
+    "interpretableAs": "load:16:\\rs1 \\imm +",
+    "id": 3
   },
   "inc": {
     "name": "inc",
@@ -94,7 +98,8 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "\\rs1 1 + \\rd ="
+    "interpretableAs": "\\rs1 1 + \\rd =",
+    "id": 4
   },
   "fdiv.s": {
     "name": "fdiv.s",
@@ -114,7 +119,8 @@
         "type": "kFloat"
       }
     ],
-    "interpretableAs": "\\rs1 \\rs2 / \\rd ="
+    "interpretableAs": "\\rs1 \\rs2 / \\rd =",
+    "id": 5
   },
   "beq": {
     "name": "beq",
@@ -133,7 +139,8 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "\\imm \\pc +:\\rs1 \\rs2 =="
+    "interpretableAs": "\\imm \\pc +:\\rs1 \\rs2 ==",
+    "id": 6
   },
   "dec": {
     "name": "dec",
@@ -149,7 +156,8 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "\\rs1 1 - \\rd ="
+    "interpretableAs": "\\rs1 1 - \\rd =",
+    "id": 7
   },
   "fcvt.l.s": {
     "name": "fcvt.l.s",
@@ -165,7 +173,8 @@
         "type": "kFloat"
       }
     ],
-    "interpretableAs": "\\rs1 \\rd ="
+    "interpretableAs": "\\rs1 \\rd =",
+    "id": 8
   },
   "bge": {
     "name": "bge",
@@ -184,7 +193,8 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "\\imm \\pc +:\\rs1 \\rs2 >="
+    "interpretableAs": "\\imm \\pc +:\\rs1 \\rs2 >=",
+    "id": 9
   },
   "nop": {
     "name": "nop",
@@ -195,7 +205,8 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "0"
+    "interpretableAs": "0",
+    "id": 10
   },
   "sw": {
     "name": "sw",
@@ -214,7 +225,8 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "store:32:\\rs1 \\imm +:rs2"
+    "interpretableAs": "store:32:\\rs1 \\imm +:rs2",
+    "id": 11
   },
   "sub": {
     "name": "sub",
@@ -234,7 +246,8 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "\\rs1 \\rs2 - \\rd ="
+    "interpretableAs": "\\rs1 \\rs2 - \\rd =",
+    "id": 12
   },
   "jal": {
     "name": "jal",
@@ -251,7 +264,8 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "\\imm \\pc +:true"
+    "interpretableAs": "\\imm \\pc +:true",
+    "id": 13
   },
   "srli": {
     "name": "srli",
@@ -271,7 +285,8 @@
         "type": "kUInt"
       }
     ],
-    "interpretableAs": "\\rs1 \\imm >>> \\rd ="
+    "interpretableAs": "\\rs1 \\imm >>> \\rd =",
+    "id": 14
   },
   "fmul.s": {
     "name": "fmul.s",
@@ -291,7 +306,8 @@
         "type": "kFloat"
       }
     ],
-    "interpretableAs": "\\rs1 \\rs2 * \\rd ="
+    "interpretableAs": "\\rs1 \\rs2 * \\rd =",
+    "id": 15
   },
   "blt": {
     "name": "blt",
@@ -310,7 +326,8 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "\\imm \\pc +:\\rs1 \\rs2 <"
+    "interpretableAs": "\\imm \\pc +:\\rs1 \\rs2 <",
+    "id": 16
   },
   "bltu": {
     "name": "bltu",
@@ -329,7 +346,8 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "\\imm:\\rs1 \\rs2 <"
+    "interpretableAs": "\\imm:\\rs1 \\rs2 <",
+    "id": 17
   },
   "fcvt.s.l": {
     "name": "fcvt.s.l",
@@ -345,7 +363,8 @@
         "type": "kLong"
       }
     ],
-    "interpretableAs": "\\rs1 \\rd ="
+    "interpretableAs": "\\rs1 \\rd =",
+    "id": 18
   },
   "ld": {
     "name": "ld",
@@ -365,7 +384,8 @@
         "type": "kLong"
       }
     ],
-    "interpretableAs": "load:64:\\rs1 \\imm +"
+    "interpretableAs": "load:64:\\rs1 \\imm +",
+    "id": 19
   },
   "div": {
     "name": "div",
@@ -385,7 +405,8 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "\\rs1 \\rs2 / \\rd ="
+    "interpretableAs": "\\rs1 \\rs2 / \\rd =",
+    "id": 20
   },
   "divu": {
     "name": "divu",
@@ -405,7 +426,8 @@
         "type": "kUInt"
       }
     ],
-    "interpretableAs": "\\rs1 \\rs2 / \\rd ="
+    "interpretableAs": "\\rs1 \\rs2 / \\rd =",
+    "id": 21
   },
   "rem": {
     "name": "rem",
@@ -425,7 +447,8 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "\\rs1 \\rs2 % \\rd ="
+    "interpretableAs": "\\rs1 \\rs2 % \\rd =",
+    "id": 22
   },
   "remu": {
     "name": "remu",
@@ -445,7 +468,8 @@
         "type": "kUInt"
       }
     ],
-    "interpretableAs": "\\rs1 \\rs2 % \\rd ="
+    "interpretableAs": "\\rs1 \\rs2 % \\rd =",
+    "id": 23
   },
   "lb": {
     "name": "lb",
@@ -465,7 +489,8 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "load:8:\\rs1 \\imm +"
+    "interpretableAs": "load:8:\\rs1 \\imm +",
+    "id": 24
   },
   "fcvt.w.s": {
     "name": "fcvt.w.s",
@@ -481,7 +506,8 @@
         "type": "kFloat"
       }
     ],
-    "interpretableAs": "\\rs1 \\rd ="
+    "interpretableAs": "\\rs1 \\rd =",
+    "id": 25
   },
   "subi": {
     "name": "subi",
@@ -501,7 +527,8 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "\\rs1 \\imm - \\rd ="
+    "interpretableAs": "\\rs1 \\imm - \\rd =",
+    "id": 26
   },
   "lw": {
     "name": "lw",
@@ -521,7 +548,8 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "load:32:\\rs1 \\imm +"
+    "interpretableAs": "load:32:\\rs1 \\imm +",
+    "id": 27
   },
   "addi": {
     "name": "addi",
@@ -541,7 +569,8 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "\\rs1 \\imm + \\rd ="
+    "interpretableAs": "\\rs1 \\imm + \\rd =",
+    "id": 28
   },
   "sb": {
     "name": "sb",
@@ -560,7 +589,8 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "store:8:\\rs1 \\imm +:rs2"
+    "interpretableAs": "store:8:\\rs1 \\imm +:rs2",
+    "id": 29
   },
   "srai": {
     "name": "srai",
@@ -580,7 +610,8 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "\\rs1 \\imm >> \\rd ="
+    "interpretableAs": "\\rs1 \\imm >> \\rd =",
+    "id": 30
   },
   "or": {
     "name": "or",
@@ -600,7 +631,8 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "\\rs1 \\rs2 | \\rd ="
+    "interpretableAs": "\\rs1 \\rs2 | \\rd =",
+    "id": 31
   },
   "sh": {
     "name": "sh",
@@ -619,7 +651,8 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "store:16:\\rs1 \\imm +:rs2"
+    "interpretableAs": "store:16:\\rs1 \\imm +:rs2",
+    "id": 32
   },
   "sd": {
     "name": "sd",
@@ -638,7 +671,8 @@
         "type": "kLong"
       }
     ],
-    "interpretableAs": "store:64:\\rs1 \\imm +:rs2"
+    "interpretableAs": "store:64:\\rs1 \\imm +:rs2",
+    "id": 33
   },
   "and": {
     "name": "and",
@@ -658,7 +692,8 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "\\rs1 \\rs2 & \\rd ="
+    "interpretableAs": "\\rs1 \\rs2 & \\rd =",
+    "id": 34
   },
   "flw": {
     "name": "flw",
@@ -678,7 +713,8 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "load:32:\\rs1 \\imm +"
+    "interpretableAs": "load:32:\\rs1 \\imm +",
+    "id": 35
   },
   "slli": {
     "name": "slli",
@@ -698,7 +734,8 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "\\rs1 \\imm << \\rd ="
+    "interpretableAs": "\\rs1 \\imm << \\rd =",
+    "id": 36
   },
   "fsqrt.s": {
     "name": "fsqrt.s",
@@ -714,7 +751,8 @@
         "type": "kFloat"
       }
     ],
-    "interpretableAs": "\\rs1 sqrt \\rd ="
+    "interpretableAs": "\\rs1 sqrt \\rd =",
+    "id": 37
   },
   "fsub.s": {
     "name": "fsub.s",
@@ -734,7 +772,8 @@
         "type": "kFloat"
       }
     ],
-    "interpretableAs": "\\rs1 \\rs2 - \\rd ="
+    "interpretableAs": "\\rs1 \\rs2 - \\rd =",
+    "id": 38
   },
   "not": {
     "name": "not",
@@ -750,7 +789,8 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "\\rs1 ! \\rd ="
+    "interpretableAs": "\\rs1 ! \\rd =",
+    "id": 39
   },
   "lwu": {
     "name": "lwu",
@@ -770,7 +810,8 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "load:32:\\rs1 \\imm +"
+    "interpretableAs": "load:32:\\rs1 \\imm +",
+    "id": 40
   },
   "lbu": {
     "name": "lbu",
@@ -790,7 +831,8 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "load:8:\\rs1 \\imm +"
+    "interpretableAs": "load:8:\\rs1 \\imm +",
+    "id": 41
   },
   "fadd.s": {
     "name": "fadd.s",
@@ -810,7 +852,8 @@
         "type": "kFloat"
       }
     ],
-    "interpretableAs": "\\rs1 \\rs2 + \\rd ="
+    "interpretableAs": "\\rs1 \\rs2 + \\rd =",
+    "id": 42
   },
   "fsd": {
     "name": "fsd",
@@ -829,7 +872,8 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "store:32:\\rs1 \\imm +:rs2"
+    "interpretableAs": "store:32:\\rs1 \\imm +:rs2",
+    "id": 43
   },
   "lhu": {
     "name": "lhu",
@@ -849,7 +893,8 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "load:16:\\rs1 \\imm +"
+    "interpretableAs": "load:16:\\rs1 \\imm +",
+    "id": 44
   },
   "fcvt.s.w": {
     "name": "fcvt.s.w",
@@ -865,7 +910,8 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "\\rs1 \\rd ="
+    "interpretableAs": "\\rs1 \\rd =",
+    "id": 45
   },
   "bgeu": {
     "name": "bgeu",
@@ -884,7 +930,8 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "\\imm \\pc +:\\rs1 \\rs2 >="
+    "interpretableAs": "\\imm \\pc +:\\rs1 \\rs2 >=",
+    "id": 46
   },
   "fld": {
     "name": "fld",
@@ -904,7 +951,8 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "load:32:\\rs1 \\imm +"
+    "interpretableAs": "load:32:\\rs1 \\imm +",
+    "id": 47
   },
   "fsw": {
     "name": "fsw",
@@ -923,7 +971,8 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "store:32:\\rs1 \\imm +:rs2"
+    "interpretableAs": "store:32:\\rs1 \\imm +:rs2",
+    "id": 48
   },
   "mul": {
     "name": "mul",
@@ -943,7 +992,8 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "\\rs1 \\rs2 * \\rd ="
+    "interpretableAs": "\\rs1 \\rs2 * \\rd =",
+    "id": 49
   },
   "xor": {
     "name": "xor",
@@ -963,7 +1013,8 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "\\rs1 \\rs2 ^ \\rd ="
+    "interpretableAs": "\\rs1 \\rs2 ^ \\rd =",
+    "id": 50
   },
   "xori": {
     "name": "xori",
@@ -983,7 +1034,8 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "\\rs1 \\imm ^ \\rd ="
+    "interpretableAs": "\\rs1 \\imm ^ \\rd =",
+    "id": 51
   },
   "sll": {
     "name": "sll",
@@ -1003,7 +1055,8 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "\\rs1 \\rs2 << \\rd ="
+    "interpretableAs": "\\rs1 \\rs2 << \\rd =",
+    "id": 52
   },
   "srl": {
     "name": "srl",
@@ -1023,7 +1076,8 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "\\rs1 \\rs2 >>> \\rd ="
+    "interpretableAs": "\\rs1 \\rs2 >>> \\rd =",
+    "id": 53
   },
   "sra": {
     "name": "sra",
@@ -1043,7 +1097,8 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "\\rs1 \\rs2 >> \\rd ="
+    "interpretableAs": "\\rs1 \\rs2 >> \\rd =",
+    "id": 54
   },
   "slt": {
     "name": "slt",
@@ -1063,7 +1118,8 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "\\rs1 \\rs2 < \\rd ="
+    "interpretableAs": "\\rs1 \\rs2 < \\rd =",
+    "id": 55
   },
   "slti": {
     "name": "slti",
@@ -1083,7 +1139,8 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "\\rs1 \\imm < \\rd ="
+    "interpretableAs": "\\rs1 \\imm < \\rd =",
+    "id": 56
   },
   "sltu": {
     "name": "sltu",
@@ -1103,7 +1160,8 @@
         "type": "kUInt"
       }
     ],
-    "interpretableAs": "\\rs1 \\rs2 < \\rd ="
+    "interpretableAs": "\\rs1 \\rs2 < \\rd =",
+    "id": 57
   },
   "sltiu": {
     "name": "sltiu",
@@ -1123,7 +1181,8 @@
         "type": "kUInt"
       }
     ],
-    "interpretableAs": "\\rs1 \\imm < \\rd ="
+    "interpretableAs": "\\rs1 \\imm < \\rd =",
+    "id": 58
   },
   "ori": {
     "name": "ori",
@@ -1143,7 +1202,8 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "\\rs1 \\imm | \\rd ="
+    "interpretableAs": "\\rs1 \\imm | \\rd =",
+    "id": 59
   },
   "andi": {
     "name": "andi",
@@ -1163,7 +1223,8 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "\\rs1 \\imm & \\rd ="
+    "interpretableAs": "\\rs1 \\imm & \\rd =",
+    "id": 60
   },
   "lui": {
     "name": "lui",
@@ -1179,7 +1240,8 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "\\imm 12 << \\rd ="
+    "interpretableAs": "\\imm 12 << \\rd =",
+    "id": 61
   },
   "auipc": {
     "name": "auipc",
@@ -1195,7 +1257,8 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "\\imm 12 << \\pc + \\rd ="
+    "interpretableAs": "\\imm 12 << \\pc + \\rd =",
+    "id": 62
   },
   "li": {
     "name": "li",
@@ -1211,7 +1274,8 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "\\imm \\rd ="
+    "interpretableAs": "\\imm \\rd =",
+    "id": 63
   },
   "mv": {
     "name": "mv",
@@ -1227,7 +1291,8 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "\\rs1 \\rd ="
+    "interpretableAs": "\\rs1 \\rd =",
+    "id": 64
   },
   "neg": {
     "name": "neg",
@@ -1243,7 +1308,8 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "0 \\rs1 - \\rd ="
+    "interpretableAs": "0 \\rs1 - \\rd =",
+    "id": 65
   },
   "seqz": {
     "name": "seqz",
@@ -1259,7 +1325,8 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "\\rs1 0 == \\rd ="
+    "interpretableAs": "\\rs1 0 == \\rd =",
+    "id": 66
   },
   "snez": {
     "name": "snez",
@@ -1275,7 +1342,8 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "\\rs1 0 != \\rd ="
+    "interpretableAs": "\\rs1 0 != \\rd =",
+    "id": 67
   },
   "sltz": {
     "name": "sltz",
@@ -1291,7 +1359,8 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "\\rs1 0 < \\rd ="
+    "interpretableAs": "\\rs1 0 < \\rd =",
+    "id": 68
   },
   "sgtz": {
     "name": "sgtz",
@@ -1307,7 +1376,8 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "\\rs1 0 > \\rd ="
+    "interpretableAs": "\\rs1 0 > \\rd =",
+    "id": 69
   },
   "beqz": {
     "name": "beqz",
@@ -1322,7 +1392,8 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "\\imm:\\rs1 0 =="
+    "interpretableAs": "\\imm:\\rs1 0 ==",
+    "id": 70
   },
   "bnez": {
     "name": "bnez",
@@ -1337,7 +1408,8 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "\\imm:\\rs1 0 !="
+    "interpretableAs": "\\imm:\\rs1 0 !=",
+    "id": 71
   },
   "blez": {
     "name": "blez",
@@ -1352,7 +1424,8 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "\\imm \\pc +:\\rs1 0 <="
+    "interpretableAs": "\\imm \\pc +:\\rs1 0 <=",
+    "id": 72
   },
   "bgez": {
     "name": "bgez",
@@ -1367,7 +1440,8 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "\\imm \\pc +:\\rs1 0 >="
+    "interpretableAs": "\\imm \\pc +:\\rs1 0 >=",
+    "id": 73
   },
   "bltz": {
     "name": "bltz",
@@ -1382,7 +1456,8 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "\\imm \\pc +:\\rs1 0 <"
+    "interpretableAs": "\\imm \\pc +:\\rs1 0 <",
+    "id": 74
   },
   "bgtz": {
     "name": "bgtz",
@@ -1397,7 +1472,8 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "\\imm \\pc +:\\rs1 0 >"
+    "interpretableAs": "\\imm \\pc +:\\rs1 0 >",
+    "id": 75
   },
   "bgt": {
     "name": "bgt",
@@ -1416,7 +1492,8 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "\\imm \\pc +:\\rs1 \\rs2 >"
+    "interpretableAs": "\\imm \\pc +:\\rs1 \\rs2 >",
+    "id": 76
   },
   "ble": {
     "name": "ble",
@@ -1435,7 +1512,8 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "\\imm \\pc +:\\rs1 \\rs2 <="
+    "interpretableAs": "\\imm \\pc +:\\rs1 \\rs2 <=",
+    "id": 77
   },
   "bgtu": {
     "name": "bgtu",
@@ -1454,7 +1532,8 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "\\imm \\pc +:\\rs1 \\rs2 >"
+    "interpretableAs": "\\imm \\pc +:\\rs1 \\rs2 >",
+    "id": 78
   },
   "bleu": {
     "name": "bleu",
@@ -1473,7 +1552,8 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "\\imm \\pc +:\\rs1 \\rs2 <="
+    "interpretableAs": "\\imm \\pc +:\\rs1 \\rs2 <=",
+    "id": 79
   },
   "j": {
     "name": "j",
@@ -1484,7 +1564,8 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "\\imm \\pc +:true"
+    "interpretableAs": "\\imm \\pc +:true",
+    "id": 80
   },
   "jr": {
     "name": "jr",
@@ -1495,7 +1576,8 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "\\rs1 \\pc +:true"
+    "interpretableAs": "\\rs1 \\pc +:true",
+    "id": 81
   },
   "ret": {
     "name": "ret",
@@ -1509,7 +1591,8 @@
         "silent": true
       }
     ],
-    "interpretableAs": "\\rd1:true"
+    "interpretableAs": "\\rd1:true",
+    "id": 82
   },
   "call": {
     "name": "call",
@@ -1527,7 +1610,8 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "\\pc 4 + \\rd1 = \\imm:true"
+    "interpretableAs": "\\pc 4 + \\rd1 = \\imm:true",
+    "id": 83
   },
   "tail": {
     "name": "tail",
@@ -1538,7 +1622,8 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "\\imm:true"
+    "interpretableAs": "\\imm:true",
+    "id": 84
   },
   "mulh": {
     "name": "mulh",
@@ -1558,7 +1643,8 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "\\rs1 \\rs2 * 32l >> \\rd ="
+    "interpretableAs": "\\rs1 \\rs2 * 32l >> \\rd =",
+    "id": 85
   },
   "mulhu": {
     "name": "mulhu",
@@ -1578,7 +1664,8 @@
         "type": "kUInt"
       }
     ],
-    "interpretableAs": "\\rs1 \\rs2 * 32l >> \\rd ="
+    "interpretableAs": "\\rs1 \\rs2 * 32l >> \\rd =",
+    "id": 86
   },
   "mulhsu": {
     "name": "mulhsu",
@@ -1598,7 +1685,8 @@
         "type": "kUInt"
       }
     ],
-    "interpretableAs": "\\rs1 \\rs2 * 32l >> \\rd ="
+    "interpretableAs": "\\rs1 \\rs2 * 32l >> \\rd =",
+    "id": 87
   },
   "fmin.s": {
     "name": "fmin.s",
@@ -1618,7 +1706,8 @@
         "type": "kFloat"
       }
     ],
-    "interpretableAs": "\\rs1 \\rs2 \\rs1 \\rs2 > pick \\rd ="
+    "interpretableAs": "\\rs1 \\rs2 \\rs1 \\rs2 > pick \\rd =",
+    "id": 88
   },
   "fmax.s": {
     "name": "fmax.s",
@@ -1638,7 +1727,8 @@
         "type": "kFloat"
       }
     ],
-    "interpretableAs": "\\rs1 \\rs2 \\rs1 \\rs2 < pick \\rd ="
+    "interpretableAs": "\\rs1 \\rs2 \\rs1 \\rs2 < pick \\rd =",
+    "id": 89
   },
   "fmadd.s": {
     "name": "fmadd.s",
@@ -1662,7 +1752,8 @@
         "type": "kFloat"
       }
     ],
-    "interpretableAs": "\\rs1 \\rs2 * \\rs3 + \\rd ="
+    "interpretableAs": "\\rs1 \\rs2 * \\rs3 + \\rd =",
+    "id": 90
   },
   "fmsub.s": {
     "name": "fmsub.s",
@@ -1686,7 +1777,8 @@
         "type": "kFloat"
       }
     ],
-    "interpretableAs": "\\rs1 \\rs2 * \\rs3 - \\rd ="
+    "interpretableAs": "\\rs1 \\rs2 * \\rs3 - \\rd =",
+    "id": 91
   },
   "fnmadd.s": {
     "name": "fnmadd.s",
@@ -1710,7 +1802,8 @@
         "type": "kFloat"
       }
     ],
-    "interpretableAs": "0.0f \\rs1 - \\rs2 * \\rs3 - \\rd ="
+    "interpretableAs": "0.0f \\rs1 - \\rs2 * \\rs3 - \\rd =",
+    "id": 92
   },
   "fnmsub.s": {
     "name": "fnmsub.s",
@@ -1734,7 +1827,8 @@
         "type": "kFloat"
       }
     ],
-    "interpretableAs": "0.0f \\rs1 - \\rs2 * \\rs3 + \\rd ="
+    "interpretableAs": "0.0f \\rs1 - \\rs2 * \\rs3 + \\rd =",
+    "id": 93
   },
   "fsgnj.s": {
     "name": "fsgnj.s",
@@ -1754,7 +1848,8 @@
         "type": "kFloat"
       }
     ],
-    "interpretableAs": "\\rs1 bits 0x7fffffff & \\rs2 bits 0x80000000 & | float \\rd ="
+    "interpretableAs": "\\rs1 bits 0x7fffffff & \\rs2 bits 0x80000000 & | float \\rd =",
+    "id": 94
   },
   "fsgnjn.s": {
     "name": "fsgnjn.s",
@@ -1774,7 +1869,8 @@
         "type": "kFloat"
       }
     ],
-    "interpretableAs": "\\rs1 bits 0x7fffffff & \\rs2 bits ! 0x80000000 & | float \\rd ="
+    "interpretableAs": "\\rs1 bits 0x7fffffff & \\rs2 bits ! 0x80000000 & | float \\rd =",
+    "id": 95
   },
   "fsgnjx.s": {
     "name": "fsgnjx.s",
@@ -1794,7 +1890,8 @@
         "type": "kFloat"
       }
     ],
-    "interpretableAs": "\\rs1 bits \\rs2 bits 0x80000000 & ^ float \\rd ="
+    "interpretableAs": "\\rs1 bits \\rs2 bits 0x80000000 & ^ float \\rd =",
+    "id": 96
   },
   "fmv.s": {
     "name": "fmv.s",
@@ -1810,7 +1907,8 @@
         "type": "kFloat"
       }
     ],
-    "interpretableAs": "\\rs1 \\rd ="
+    "interpretableAs": "\\rs1 \\rd =",
+    "id": 97
   },
   "fneg.s": {
     "name": "fneg.s",
@@ -1826,7 +1924,8 @@
         "type": "kFloat"
       }
     ],
-    "interpretableAs": "0.0f \\rs1 - \\rd ="
+    "interpretableAs": "0.0f \\rs1 - \\rd =",
+    "id": 98
   },
   "fabs.s": {
     "name": "fabs.s",
@@ -1842,7 +1941,8 @@
         "type": "kFloat"
       }
     ],
-    "interpretableAs": "\\rs1 bits 0x7fffffff & float \\rd ="
+    "interpretableAs": "\\rs1 bits 0x7fffffff & float \\rd =",
+    "id": 99
   },
   "fmv.x.w": {
     "name": "fmv.x.w",
@@ -1858,7 +1958,8 @@
         "type": "kFloat"
       }
     ],
-    "interpretableAs": "\\rs1 bits \\rd ="
+    "interpretableAs": "\\rs1 bits \\rd =",
+    "id": 100
   },
   "fmv.w.x": {
     "name": "fmv.w.x",
@@ -1874,7 +1975,8 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "\\rs2 float \\rd ="
+    "interpretableAs": "\\rs2 float \\rd =",
+    "id": 101
   },
   "flt.s": {
     "name": "flt.s",
@@ -1894,7 +1996,8 @@
         "type": "kFloat"
       }
     ],
-    "interpretableAs": "\\rs1 \\rs2 < \\rd ="
+    "interpretableAs": "\\rs1 \\rs2 < \\rd =",
+    "id": 102
   },
   "fle.s": {
     "name": "fle.s",
@@ -1914,7 +2017,8 @@
         "type": "kFloat"
       }
     ],
-    "interpretableAs": "\\rs1 \\rs2 <= \\rd ="
+    "interpretableAs": "\\rs1 \\rs2 <= \\rd =",
+    "id": 103
   },
   "feq.s": {
     "name": "feq.s",
@@ -1934,7 +2038,8 @@
         "type": "kFloat"
       }
     ],
-    "interpretableAs": "\\rs1 \\rs2 == \\rd ="
+    "interpretableAs": "\\rs1 \\rs2 == \\rd =",
+    "id": 104
   },
   "fclass.s": {
     "name": "fclass.s",
@@ -1951,6 +2056,7 @@
         "type": "kFloat"
       }
     ],
-    "interpretableAs": "\\rs1 fclass \\rd ="
+    "interpretableAs": "\\rs1 fclass \\rd =",
+    "id": 105
   }
 }

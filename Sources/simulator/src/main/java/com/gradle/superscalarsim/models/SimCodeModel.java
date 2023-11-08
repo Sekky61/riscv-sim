@@ -116,39 +116,6 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>
   private int branchTargetOffset;
   
   /**
-   * @param [in] instructionFunctionModel - Instruction function model
-   * @param [in] instructionName       - Name of the parsed instruction
-   * @param [in] codeLine              - Unparsed line of code
-   * @param [in] arguments             - Arguments of the instruction
-   * @param [in] instructionBulkNumber - Id marking when was code accepted
-   *
-   * @brief Constructor - not used anymore
-   */
-  public SimCodeModel(InstructionFunctionModel instructionFunctionModel,
-                      String instructionName,
-                      InstructionTypeEnum instructionTypeEnum,
-                      DataTypeEnum dataTypeEnum,
-                      List<InputCodeArgument> arguments,
-                      int id,
-                      int instructionBulkNumber)
-  {
-    this.inputCodeModel        = new InputCodeModel(instructionFunctionModel, instructionName, arguments,
-                                                    instructionTypeEnum, 0);
-    this.id                    = id;
-    this.commitId              = -1;
-    this.isFinished            = false;
-    this.instructionBulkNumber = instructionBulkNumber;
-    this.hasFailed             = false;
-    // Copy arguments
-    this.renamedArguments = new ArrayList<>();
-    for (InputCodeArgument argument : arguments)
-    {
-      this.renamedArguments.add(new InputCodeArgument(argument));
-    }
-  }// end of Constructor
-  //------------------------------------------------------
-  
-  /**
    * @param [in] inputCodeModel - Original code model
    * @param [in] id             - Number marking when was code accepted
    *
