@@ -33,7 +33,7 @@ import com.gradle.superscalarsim.models.register.RegisterModel;
 import java.util.WeakHashMap;
 
 /**
- * Manages all instruction function models in the simulation
+ * Manages all register models in the simulation
  */
 public class RegisterModelManager implements IInstanceManager<RegisterModel>
 {

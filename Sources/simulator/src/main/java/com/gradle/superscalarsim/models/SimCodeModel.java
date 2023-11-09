@@ -172,16 +172,6 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
   //------------------------------------------------------
   
   /**
-   * @return Integer value of ID
-   * @brief for priority queue
-   */
-  public String getId()
-  {
-    return Integer.toString(this.id);
-  }
-  //------------------------------------------------------
-  
-  /**
    * @return ID of the model
    * @brief Gets ID of the model
    */
@@ -189,6 +179,16 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
   {
     return this.id;
   }// end of getId
+  //------------------------------------------------------
+  
+  /**
+   * @return Integer value of ID
+   * @brief for priority queue
+   */
+  public String getId()
+  {
+    return Integer.toString(this.id);
+  }
   
   /**
    * @return Integer value of bulk number
@@ -201,7 +201,7 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
   //------------------------------------------------------
   
   /**
-   * @return Id, when was instruction accepted to issue window, 0 if not yet processed
+   * @return tick when the instruction was accepted to issue window, 0 if not yet processed
    * @brief Gets accepted id to issue window
    */
   public int getIssueWindowId()
@@ -222,7 +222,7 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
   //------------------------------------------------------
   
   /**
-   * @return Id of function block, which processed this instruction, 0 if not yet processed
+   * @return ID of function block, which processed this instruction, 0 if not yet processed
    * @brief Gets id of function block, which processed this instruction
    */
   public int getFunctionUnitId()
@@ -232,7 +232,7 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
   //------------------------------------------------------
   
   /**
-   * @param [in] functionUnitId - Id of function block, which processed this instruction
+   * @param functionUnitId ID of function block, which processed this instruction
    *
    * @brief Sets id of function block, which processed this instruction
    */
@@ -243,7 +243,7 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
   //------------------------------------------------------
   
   /**
-   * @return Id of when was instruction's result ready, 0 if not yet processed
+   * @return ID of when was instruction's result ready, 0 if not yet processed
    * @brief Gets id of when was instruction's result ready
    */
   public int getReadyId()
@@ -347,7 +347,7 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
    * Used for testing
    *
    * @return String with renamed code line
-   * @brief Gets renamed code line
+   * @brief Gets string representation of the instruction with renamed arguments
    */
   public String getRenamedCodeLine()
   {
@@ -392,7 +392,7 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
   
   /**
    * @return Renamed arguments of the instruction
-   * @brief Gets arguments of the instruction, copied so they are rewritable
+   * @brief Gets arguments of the instruction, copied, so they are rewritable
    */
   @Override
   public List<InputCodeArgument> getArguments()

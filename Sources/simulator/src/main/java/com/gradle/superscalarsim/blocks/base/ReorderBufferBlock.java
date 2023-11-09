@@ -349,6 +349,7 @@ public class ReorderBufferBlock implements AbstractBlock
    */
   public void flushInvalidInstructions()
   {
+    // Iterate the queue from the end, remove until first valid instruction
     Iterator<ReorderBufferItem> it = this.state.reorderQueue.descendingIterator();
     while (it.hasNext())
     {

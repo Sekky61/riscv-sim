@@ -53,17 +53,20 @@ public class InputCodeModel implements IInputCodeModel, Identifiable
    * ID - the index of the instruction in the code
    */
   private final int codeId;
+  
   /**
    * Name of the parsed instruction, matches name from InstructionFunctionLoader
    * Example: "addi"
    */
   private final String instructionName;
+  
   /**
    * Arguments of the instruction
    * The order of arguments is the same as in the original code line and tests depend on this order.
    * Labels use `labelName` as argument to store the name of the label.
    */
   private final List<InputCodeArgument> arguments;
+  
   /**
    * Type of the instruction
    */
@@ -76,6 +79,13 @@ public class InputCodeModel implements IInputCodeModel, Identifiable
   @JsonIdentityReference(alwaysAsId = true)
   private final InstructionFunctionModel instructionFunctionModel;
   
+  /**
+   * @param instructionFunctionModel Instruction function model
+   * @param arguments                Arguments of the instruction
+   * @param codeId                   ID of the instruction (index in the code)
+   *
+   * @brief Constructor
+   */
   public InputCodeModel(InstructionFunctionModel instructionFunctionModel,
                         final List<InputCodeArgument> arguments,
                         int codeId)
@@ -90,14 +100,14 @@ public class InputCodeModel implements IInputCodeModel, Identifiable
   //------------------------------------------------------
   
   /**
-   * @param [in] instructionName     - Name of the parsed instruction
-   * @param [in] codeLine            - Unparsed line of code
-   * @param [in] arguments           - Arguments of the instruction
-   * @param [in] instructionTypeEnum - Type of the instruction
-   * @param [in] resultDataType      - Data type of the output
-   * @param [in] id                  - ID of the instruction (index in the code)
+   * @param instructionName     Name of the parsed instruction
+   * @param codeLine            Unparsed line of code
+   * @param arguments           Arguments of the instruction
+   * @param instructionTypeEnum Type of the instruction
+   * @param resultDataType      Data type of the output
+   * @param id                  ID of the instruction (index in the code)
    *
-   * @brief Constructor
+   * @brief Constructor used in tests
    */
   public InputCodeModel(InstructionFunctionModel instructionFunctionModel,
                         final String instructionName,

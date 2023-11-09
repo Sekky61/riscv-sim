@@ -35,6 +35,7 @@ import java.util.WeakHashMap;
  * The references are weak, so they will be garbage collected when no other references exist.
  * The purpose of this is to serialize all instances together, in normalized form.
  * The managers should be per Cpu, so that the instances are not shared between Cpus.
+ * The manager is usually filled by a factory for the given type.
  *
  * @param <T> Type of the instances
  *

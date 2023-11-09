@@ -35,6 +35,10 @@ import com.gradle.superscalarsim.models.InstructionFunctionModel;
 import java.util.List;
 
 /**
+ * The factory pattern is used to create instances of InputCodeModel.
+ * The factory is used to keep track of all instances of InputCodeModel using the manager.
+ * See {@link com.gradle.superscalarsim.managers.ManagerRegistry} for more details.
+ *
  * @class InputCodeModelFactory
  * @brief Factory for InputCodeModel
  */
@@ -52,6 +56,15 @@ public class InputCodeModelFactory
     this.manager = manager;
   }
   
+  /**
+   * Factory method for InputCodeModel. See the constructor of InputCodeModel for more details.
+   *
+   * @param instructionFunctionModel Instruction function model
+   * @param arguments                Arguments of the instruction
+   * @param codeId                   ID of the instruction
+   *
+   * @return A new instance of InputCodeModel
+   */
   public InputCodeModel createInstance(InstructionFunctionModel instructionFunctionModel,
                                        final List<InputCodeArgument> arguments,
                                        int codeId)

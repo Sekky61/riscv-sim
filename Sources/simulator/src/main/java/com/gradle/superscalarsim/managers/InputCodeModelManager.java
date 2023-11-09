@@ -33,7 +33,7 @@ import com.gradle.superscalarsim.models.InputCodeModel;
 import java.util.WeakHashMap;
 
 /**
- * Manages all instruction function models in the simulation
+ * Manages all input code models in the simulation.
  */
 public class InputCodeModelManager implements IInstanceManager<InputCodeModel>
 {

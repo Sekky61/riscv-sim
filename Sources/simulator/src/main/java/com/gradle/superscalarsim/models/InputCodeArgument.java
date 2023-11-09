@@ -39,19 +39,19 @@ package com.gradle.superscalarsim.models;
 public class InputCodeArgument
 {
   /**
-   * Name of the argument
-   * Example: rs1, imm, labelName
+   * Name of the argument.
+   * Example: rs1, imm, labelName.
    */
   private String name;
   /**
-   * Value of the argument
-   * Example: x5, 10, name of a label
+   * Value of the argument.
+   * Example: x5, 10, name of a label.
    */
   private String value;
   
   /**
-   * @param [in] name  - Name of the argument
-   * @param [in] value - Value of the argument
+   * @param name  Name of the argument
+   * @param value Value of the argument
    *
    * @brief Constructor
    */
@@ -63,7 +63,7 @@ public class InputCodeArgument
   //------------------------------------------------------
   
   /**
-   * @param [in] argument - Object to be copied
+   * @param argument Object to be copied
    *
    * @brief Copy constructor
    */
@@ -85,17 +85,6 @@ public class InputCodeArgument
   //------------------------------------------------------
   
   /**
-   * @param [in] name - New name for argument
-   *
-   * @brief Sets new name to argument
-   */
-  public void setName(final String name)
-  {
-    this.name = name;
-  }// end of setName
-  //------------------------------------------------------
-  
-  /**
    * @return Argument value
    * @brief Get value of the argument
    */
@@ -106,7 +95,7 @@ public class InputCodeArgument
   //------------------------------------------------------
   
   /**
-   * @param [in] value - New value of argument
+   * @param value New value of argument
    *
    * @brief Sets new value of the argument
    */

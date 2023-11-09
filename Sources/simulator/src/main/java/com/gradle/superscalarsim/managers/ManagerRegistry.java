@@ -28,7 +28,11 @@
 package com.gradle.superscalarsim.managers;
 
 /**
- * Container of all managers
+ * The class keeps track (through managers) of all instances of certain classes.
+ * This is useful for serialization - the JSON can be normalized and the references
+ * easily resolved.
+ *
+ * @brief Container of all managers.
  */
 public class ManagerRegistry
 {
