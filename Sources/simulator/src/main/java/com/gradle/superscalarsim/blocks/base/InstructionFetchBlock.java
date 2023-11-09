@@ -32,11 +32,14 @@
  */
 package com.gradle.superscalarsim.blocks.base;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.blocks.AbstractBlock;
 import com.gradle.superscalarsim.blocks.branch.BranchTargetBuffer;
 import com.gradle.superscalarsim.blocks.branch.GShareUnit;
-import com.gradle.superscalarsim.code.SimCodeModelAllocator;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
+import com.gradle.superscalarsim.factories.SimCodeModelFactory;
 import com.gradle.superscalarsim.models.SimCodeModel;
 
 import java.util.ArrayList;
@@ -46,21 +49,25 @@ import java.util.List;
  * @class InstructionFetchBlock
  * @brief Class that fetches code from CodeParser
  */
+@JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
 public class InstructionFetchBlock implements AbstractBlock
 {
   /**
    * Allocator for SimCodeModels
    */
-  private final SimCodeModelAllocator simCodeModelAllocator;
+  @JsonIdentityReference(alwaysAsId = true)
+  private final SimCodeModelFactory simCodeModelFactory;
   
   /**
    * GShare unit for getting correct prediction counters
    */
+  @JsonIdentityReference(alwaysAsId = true)
   private final GShareUnit gShareUnit;
   
   /**
    * Buffer holding information about branch instructions targets
    */
+  @JsonIdentityReference(alwaysAsId = true)
   private final BranchTargetBuffer branchTargetBuffer;
   
   /**
@@ -71,11 +78,13 @@ public class InstructionFetchBlock implements AbstractBlock
   /**
    * Class containing parsed code
    */
+  @JsonIdentityReference(alwaysAsId = true)
   public InstructionMemoryBlock instructionMemoryBlock;
   
   /**
    * List for storing fetched code
    */
+  @JsonIdentityReference(alwaysAsId = true)
   private List<SimCodeModel> fetchedCode;
   
   /**
@@ -106,12 +115,12 @@ public class InstructionFetchBlock implements AbstractBlock
    *
    * @brief Constructor
    */
-  public InstructionFetchBlock(SimCodeModelAllocator simCodeModelAllocator,
+  public InstructionFetchBlock(SimCodeModelFactory simCodeModelAllocator,
                                InstructionMemoryBlock parser,
                                GShareUnit gShareUnit,
                                BranchTargetBuffer branchTargetBuffer)
   {
-    this.simCodeModelAllocator  = simCodeModelAllocator;
+    this.simCodeModelFactory    = simCodeModelAllocator;
     this.instructionMemoryBlock = parser;
     this.gShareUnit             = gShareUnit;
     this.branchTargetBuffer     = branchTargetBuffer;
@@ -202,8 +211,8 @@ public class InstructionFetchBlock implements AbstractBlock
     {
       // Unique ID of the instruction
       int simCodeId = this.cycleId * numberOfWays + i;
-      SimCodeModel codeModel = this.simCodeModelAllocator.createSimCodeModel(
-              instructionMemoryBlock.getInstructionAt(pc), simCodeId, cycleId);
+      SimCodeModel codeModel = this.simCodeModelFactory.createInstance(instructionMemoryBlock.getInstructionAt(pc),
+                                                                       simCodeId, cycleId);
       
       codeModel.setSavedPc(pc);
       
@@ -218,8 +227,8 @@ public class InstructionFetchBlock implements AbstractBlock
           codeModel.setBranchPredicted(false);
           for (int j = i; j < numberOfWays; j++)
           {
-            SimCodeModel nopCodeModel = this.simCodeModelAllocator.createSimCodeModel(instructionMemoryBlock.getNop(),
-                                                                                      simCodeId, cycleId);
+            SimCodeModel nopCodeModel = this.simCodeModelFactory.createInstance(instructionMemoryBlock.getNop(),
+                                                                                simCodeId, cycleId);
             nopCodeModel.setSavedPc(pc);
             fetchedCode.add(nopCodeModel);
           }

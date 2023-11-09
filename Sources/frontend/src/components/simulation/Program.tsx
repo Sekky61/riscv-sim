@@ -32,14 +32,15 @@
 import clsx from 'clsx';
 import React, { useEffect } from 'react';
 
-import { getArrayItems } from '@/lib/cpuState/util';
 import {
   selectFetch,
+  selectInputCodeModelById,
+  selectInstructionFunctionModelById,
   selectProgram,
   selectProgramWithLabels,
 } from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
-import { InputCodeModel } from '@/lib/types/cpuApi';
+import { Reference } from '@/lib/types/cpuApi';
 import { ReactClassName } from '@/lib/types/reactTypes';
 
 import Block from '@/components/simulation/Block';
@@ -85,18 +86,21 @@ export default function Program() {
         {codeOrder.map((instructionOrLabel) => {
           if (typeof instructionOrLabel === 'string') {
             return (
-              <div key={instructionOrLabel} className='font-bold text-sm'>
+              <div
+                key={`lab-${instructionOrLabel}`}
+                className='font-bold text-sm'
+              >
                 {instructionOrLabel}:
               </div>
             );
           }
-          const isPointedTo = instructionOrLabel.codeId === pc;
+          const isPointedTo = instructionOrLabel === pc;
           // Instruction
           return (
-            <div key={instructionOrLabel.codeId}>
+            <div key={`ins-${instructionOrLabel}`}>
               {isPointedTo && pcPointer}
               <ProgramInstruction
-                instruction={instructionOrLabel}
+                instructionId={instructionOrLabel}
                 className='ml-6'
               />
             </div>
@@ -108,15 +112,26 @@ export default function Program() {
 }
 
 function ProgramInstruction({
-  instruction,
+  instructionId,
   className,
 }: {
-  instruction: InputCodeModel;
+  instructionId: Reference;
 } & ReactClassName) {
-  const model = instruction.instructionFunctionModel;
+  const instruction = useAppSelector((state) =>
+    selectInputCodeModelById(state, instructionId),
+  );
 
-  const argValues = getArrayItems(instruction.arguments);
-  const modelArgs = getArrayItems(model.arguments);
+  const model = useAppSelector((state) =>
+    selectInstructionFunctionModelById(
+      state,
+      instruction?.instructionFunctionModel ?? '',
+    ),
+  );
+
+  if (!instruction || !model) return null;
+
+  const argValues = instruction.arguments;
+  const modelArgs = model.arguments;
 
   const argsNames = [];
   for (const arg of modelArgs) {

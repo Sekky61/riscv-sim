@@ -31,19 +31,45 @@
 
 import clsx from 'clsx';
 
-import { getArrayItems } from '@/lib/cpuState/util';
-import { SimCodeModel } from '@/lib/types/cpuDeref';
+import {
+  highlightSimCode,
+  selectHighlightedSimCode,
+  selectInputCodeModelById,
+  selectRegisterById,
+  selectSimCodeModelById,
+  unhighlight,
+} from '@/lib/redux/cpustateSlice';
+import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
+import { Reference } from '@/lib/types/cpuApi';
 import { ReactChildren, ReactClassName } from '@/lib/types/reactTypes';
 
 export type InstructionFieldProps = {
-  instruction?: SimCodeModel;
+  instructionId?: Reference;
 };
 
 export default function InstructionField({
-  instruction,
+  instructionId,
 }: InstructionFieldProps) {
-  // Empty field
-  if (!instruction) {
+  const dispatch = useAppDispatch();
+
+  const simCodeId = instructionId === undefined ? 'INVALID' : instructionId;
+  const instruction = useAppSelector((state) =>
+    selectSimCodeModelById(state, simCodeId),
+  );
+
+  const inputCodeId =
+    instruction?.inputCodeModel == undefined
+      ? 'INVALID'
+      : instruction?.inputCodeModel;
+  const inputCodeModel = useAppSelector((state) =>
+    selectInputCodeModelById(state, inputCodeId),
+  );
+
+  const highlightedId = useAppSelector((state) =>
+    selectHighlightedSimCode(state),
+  );
+
+  if (!instruction || !inputCodeModel) {
     return (
       <InstructionBubble className='flex justify-center px-2 py-1 font-mono'>
         <span className='text-gray-400'>empty</span>
@@ -51,20 +77,38 @@ export default function InstructionField({
     );
   }
 
-  const args = getArrayItems(instruction.renamedArguments);
+  const args = instruction.renamedArguments;
+  const highlighted = highlightedId === simCodeId;
+
+  const handleMouseEnter = () => {
+    console.log('InstructionField: handleMouseEnter', simCodeId);
+    dispatch(highlightSimCode(simCodeId));
+  };
+
+  const handleMouseLeave = () => {
+    console.log('InstructionField: handleMouseLeave', simCodeId);
+    dispatch(unhighlight(simCodeId));
+  };
+
+  const cls = clsx(
+    'flex justify-between items-center gap-4 font-mono px-2',
+    highlighted ? 'bg-gray-200' : '',
+  );
 
   return (
-    <InstructionBubble className='flex justify-between items-center gap-4 font-mono px-2'>
-      <InstructionName mnemonic={instruction.inputCodeModel.instructionName} />
+    <InstructionBubble
+      className={cls}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      <InstructionName mnemonic={inputCodeModel.instructionName} />
       <div className='flex gap-2'>
         {args.map((arg) => (
-          <div
+          <InstructionArgument
+            argName={arg.name}
+            idOrLiteral={arg.value}
             key={arg.name}
-            className='rounded hover:bg-gray-200 w-6 h-6 flex justify-center items-center leading-4'
-            title={`Argument ${arg.name}: ${arg.value}`}
-          >
-            {arg.value}
-          </div>
+          />
         ))}
       </div>
     </InstructionBubble>
@@ -73,20 +117,62 @@ export default function InstructionField({
 
 interface InstructionBubbleProps extends ReactClassName {
   children: ReactChildren;
+  [key: string]: any;
 }
 
 export function InstructionBubble({
   children,
   className,
+  ...props
 }: InstructionBubbleProps) {
   const cls = clsx('rounded-sm border h-8', className);
-  return <div className={cls}>{children}</div>;
+  return (
+    <div className={cls} {...props}>
+      {children}
+    </div>
+  );
 }
 
 function InstructionName({ mnemonic }: { mnemonic: string }) {
   return (
     <div className='font-mono hover:cursor-pointer hover:underline leading-4'>
       {mnemonic}
+    </div>
+  );
+}
+
+export interface InstructionArgumentProps {
+  argName: string;
+  idOrLiteral: string;
+}
+
+function InstructionArgument({
+  argName,
+  idOrLiteral,
+}: InstructionArgumentProps) {
+  const register = useAppSelector((state) =>
+    selectRegisterById(state, idOrLiteral),
+  );
+
+  const isRegister = register !== undefined;
+
+  let displayText;
+  let hoverText;
+
+  if (isRegister) {
+    displayText = register?.name;
+    hoverText = `${register?.name} (${register?.value.bits})`;
+  } else {
+    displayText = idOrLiteral;
+    hoverText = idOrLiteral;
+  }
+
+  return (
+    <div
+      className='rounded hover:bg-gray-200 w-6 h-6 flex justify-center items-center leading-4'
+      title={hoverText}
+    >
+      {displayText}
     </div>
   );
 }

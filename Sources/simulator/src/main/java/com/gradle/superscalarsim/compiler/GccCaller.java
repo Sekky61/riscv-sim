@@ -27,15 +27,11 @@
 
 package com.gradle.superscalarsim.compiler;
 
-import com.google.gson.Gson;
-import com.google.gson.internal.LinkedTreeMap;
-import com.google.gson.reflect.TypeToken;
-import com.gradle.superscalarsim.serialization.GsonConfiguration;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gradle.superscalarsim.serialization.Serialization;
 
-import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @brief Class to call GCC
@@ -96,16 +92,15 @@ public class GccCaller
     if (exitValue != 0)
     {
       // Take error from stderr
-      List<Map<String, Object>> error = null;
+      List<Object> error = null;
       try
       {
         String error_string = new String(p.getErrorStream().readAllBytes());
         // error should be a JSON string. Parse it to an object
-        Gson gson = GsonConfiguration.getGson();
-        Type gccErrorType = new TypeToken<ArrayList<LinkedTreeMap<String, Object>>>()
+        ObjectMapper deserializer = Serialization.getDeserializer();
+        error = deserializer.readValue(error_string, new TypeReference<>()
         {
-        }.getType();
-        error = gson.fromJson(error_string, gccErrorType);
+        });
         System.err.println("Error from GCC: " + error);
       }
       catch (Exception e)
@@ -131,9 +126,9 @@ public class GccCaller
     public boolean success;
     public String code;
     public String error;
-    public List<Map<String, Object>> compilerErrors;
+    public List<Object> compilerErrors;
     
-    private CompileResult(boolean success, String code, String error, List<Map<String, Object>> compilerErrors)
+    private CompileResult(boolean success, String code, String error, List<Object> compilerErrors)
     {
       this.success        = success;
       this.code           = code;
@@ -146,7 +141,7 @@ public class GccCaller
       return new CompileResult(true, code, null, null);
     }
     
-    public static CompileResult failure(String error, List<Map<String, Object>> compilerErrors)
+    public static CompileResult failure(String error, List<Object> compilerErrors)
     {
       return new CompileResult(false, null, error, compilerErrors);
     }

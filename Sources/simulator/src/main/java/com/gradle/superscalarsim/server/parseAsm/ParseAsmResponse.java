@@ -27,6 +27,7 @@
 
 package com.gradle.superscalarsim.server.parseAsm;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gradle.superscalarsim.code.ParseError;
 
 import java.util.List;
@@ -36,10 +37,12 @@ public class ParseAsmResponse
   /**
    * @brief True if the compilation was successful
    */
+  @JsonProperty(required = true)
   public boolean success;
   /**
    * @brief Error messages from the compiler
    */
+  @JsonProperty(required = true)
   public List<ParseError> errors;
   
   public ParseAsmResponse()

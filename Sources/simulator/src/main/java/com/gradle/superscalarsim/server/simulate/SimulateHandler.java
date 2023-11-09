@@ -4,7 +4,7 @@
  * Faculty of Information Technology
  * Brno University of Technology
  * xmajer21@stud.fit.vutbr.cz
- * @brief Handler for /simulation requests
+ * @brief Handler for /simulate requests
  * @date 26 Sep      2023 10:00 (created)
  * @section Licence
  * This file is part of the Superscalar simulator app
@@ -25,30 +25,35 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.gradle.superscalarsim.server.simulation;
+package com.gradle.superscalarsim.server.simulate;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gradle.superscalarsim.cpu.Cpu;
 import com.gradle.superscalarsim.cpu.CpuConfiguration;
+import com.gradle.superscalarsim.serialization.Serialization;
+import com.gradle.superscalarsim.server.IRequestDeserializer;
 import com.gradle.superscalarsim.server.IRequestResolver;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 /**
- * @brief Handler for /simulation requests
+ * @brief Handler for /simulate requests
  * Gets a Configuration and a tick and returns the state of the cpu at that tick
  * - For better performance, a state can be provided
  * - For backwards simulation, pass a tick lower than the current tick
- * - For getting initial state from a configuration, see
- * {@link com.gradle.superscalarsim.server.getState.GetStateHandler}
+ * - For getting initial state from a configuration, run with tick 0
  */
-public class SimulationHandler implements IRequestResolver<SimulationRequest, SimulationResponse>
+public class SimulateHandler implements IRequestResolver<SimulateRequest, SimulateResponse>, IRequestDeserializer<SimulateRequest>
 {
   @Override
-  public SimulationResponse resolve(SimulationRequest request)
+  public SimulateResponse resolve(SimulateRequest request)
   {
-    SimulationResponse response;
+    SimulateResponse response;
     if (request == null || request.config == null || request.tick < 0)
     {
       // Send error
-      response = new SimulationResponse(null, 0);
+      response = new SimulateResponse(null, 0);
     }
     else
     {
@@ -61,7 +66,7 @@ public class SimulationHandler implements IRequestResolver<SimulationRequest, Si
       }
       else
       {
-        response = new SimulationResponse(null, 0);
+        response = new SimulateResponse(null, 0);
       }
     }
     return response;
@@ -73,21 +78,20 @@ public class SimulationHandler implements IRequestResolver<SimulationRequest, Si
    * @return Response with the state and the number of steps simulated
    * @brief Run the simulation
    */
-  private SimulationResponse runSimulation(SimulationRequest request)
+  private SimulateResponse runSimulation(SimulateRequest request)
   {
     // If state is not provided, simulate from the beginning
-    Cpu cpu;
-    if (request.state == null)
-    {
-      cpu = new Cpu(request.config);
-    }
-    else
-    {
-      cpu = new Cpu(request.config, request.state);
-    }
+    Cpu cpu        = new Cpu(request.config);
     int tickBefore = cpu.cpuState.tick;
     cpu.simulateState(request.tick);
     int actualSteps = cpu.cpuState.tick - tickBefore;
-    return new SimulationResponse(cpu.cpuState, actualSteps);
+    return new SimulateResponse(cpu.cpuState, actualSteps);
+  }
+  
+  @Override
+  public SimulateRequest deserialize(InputStream json) throws IOException
+  {
+    ObjectMapper deserializer = Serialization.getDeserializer();
+    return deserializer.readValue(json, SimulateRequest.class);
   }
 }

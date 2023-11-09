@@ -8,6 +8,7 @@ import com.gradle.superscalarsim.builders.RegisterFileModelBuilder;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.enums.RegisterTypeEnum;
+import com.gradle.superscalarsim.factories.RegisterModelFactory;
 import com.gradle.superscalarsim.loader.InitLoader;
 import com.gradle.superscalarsim.models.InputCodeArgument;
 import com.gradle.superscalarsim.models.InputCodeModel;
@@ -68,7 +69,8 @@ public class CodeLoadStoreInterpreterTest
     Mockito.when(initLoader.getInstructionFunctionModel(any())).thenCallRealMethod();
     
     this.codeLoadStoreInterpreter = new CodeLoadStoreInterpreter(new MemoryModel(new SimulatedMemory()),
-                                                                 new UnifiedRegisterFileBlock(initLoader));
+                                                                 new UnifiedRegisterFileBlock(initLoader,
+                                                                                              new RegisterModelFactory()));
   }
   
   private Map<String, InstructionFunctionModel> setUpInstructions()

@@ -32,6 +32,9 @@
  */
 package com.gradle.superscalarsim.models;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.blocks.base.UnifiedRegisterFileBlock;
 import com.gradle.superscalarsim.code.Expression;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
@@ -48,67 +51,82 @@ import java.util.List;
  * @brief Instruction execution data (renaming)
  * Ids are zero if not yet processed
  */
-public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
+public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, Identifiable
 {
   /**
    * Reference to original code model
    */
+  @JsonIdentityReference(alwaysAsId = true)
   private final InputCodeModel inputCodeModel;
+  
   /**
-   * Id of order of instructions processed by the fetch
+   * ID of order of instructions processed by the fetch
    */
   private final int id;
+  
   /**
    * A copy of arguments, which are used for renaming.
    * The order of arguments is the same as in the original code line and tests depend on this order.
    */
   private final List<InputCodeArgument> renamedArguments;
+  
   /**
    * Number marking bulk of instructions, which was fetched together
    */
   private int instructionBulkNumber;
+  
   /**
-   * Id, when was instructions accepted by the issue window
+   * ID, when was instructions accepted by the issue window
    */
   private int issueWindowId;
+  
   /**
-   * Id of the function block, which processed this instruction
+   * ID of the function block, which processed this instruction
    */
   private int functionUnitId;
+  
   /**
-   * Id marking when was result ready
+   * ID marking when was result ready
    */
   private int readyId;
+  
   /**
-   * Id marking when was instruction committed from ROB
+   * ID marking when was instruction committed from ROB
    */
   private int commitId;
+  
   /**
    * True if simcodemodel has left the system (committed, flushed).
    * A finished simcodemodel can be safely deleted.
    */
   private boolean isFinished;
+  
   /**
    * Bit value marking failure due to wrong branch prediction
    */
   private boolean hasFailed;
+  
   /**
    * Saved value of the PC, when instruction was fetched
    * Used for load/store and branch instructions
    * TODO: Optional
    */
   private int savedPc;
+  
   /**
    * Prediction made by branch predictor at the time of fetching.
    * Used for branch instructions.
    */
   private boolean branchPredicted;
+  
   /**
    * Result of the branch computation.
    * Used to check for mispredictions.
    * True means branch was taken.
    */
   private boolean branchLogicResult;
+  
   /**
    * Target of the branch instruction (offset from the savedPc).
    * Used to fix BTB and PC in misprediction.
@@ -116,41 +134,9 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>
   private int branchTargetOffset;
   
   /**
-   * @param [in] instructionFunctionModel - Instruction function model
-   * @param [in] instructionName       - Name of the parsed instruction
-   * @param [in] codeLine              - Unparsed line of code
-   * @param [in] arguments             - Arguments of the instruction
-   * @param [in] instructionBulkNumber - Id marking when was code accepted
-   *
-   * @brief Constructor - not used anymore
-   */
-  public SimCodeModel(InstructionFunctionModel instructionFunctionModel,
-                      String instructionName,
-                      InstructionTypeEnum instructionTypeEnum,
-                      DataTypeEnum dataTypeEnum,
-                      List<InputCodeArgument> arguments,
-                      int id,
-                      int instructionBulkNumber)
-  {
-    this.inputCodeModel        = new InputCodeModel(instructionFunctionModel, instructionName, arguments,
-                                                    instructionTypeEnum, 0);
-    this.id                    = id;
-    this.commitId              = -1;
-    this.isFinished            = false;
-    this.instructionBulkNumber = instructionBulkNumber;
-    this.hasFailed             = false;
-    // Copy arguments
-    this.renamedArguments = new ArrayList<>();
-    for (InputCodeArgument argument : arguments)
-    {
-      this.renamedArguments.add(new InputCodeArgument(argument));
-    }
-  }// end of Constructor
-  //------------------------------------------------------
-  
-  /**
-   * @param [in] inputCodeModel - Original code model
-   * @param [in] id             - Number marking when was code accepted
+   * @param inputCodeModel        Original code model
+   * @param id                    Number marking when was code accepted
+   * @param instructionBulkNumber Number marking bulk of instructions, which was fetched together
    *
    * @brief Constructor which copies original InputCodeModel
    * This constructor can be used only through the SimCodeModelAllocator
@@ -173,7 +159,7 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>
   //------------------------------------------------------
   
   /**
-   * @param [in] codeModel - Model to be compared to
+   * @param codeModel Model to be compared to
    *
    * @return -1 if <, 0 if ==, > if 1
    * @brief Comparator function for assigning to priorityQueue
@@ -181,19 +167,28 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>
   @Override
   public int compareTo(@NotNull SimCodeModel codeModel)
   {
-    return -Integer.compare(codeModel.getId(), this.id);
+    return -Integer.compare(codeModel.getIntegerId(), this.id);
   }// end of compareTo
   //------------------------------------------------------
   
   /**
-   * @return Id of the model
-   * @brief Gets Id of the model
+   * @return ID of the model
+   * @brief Gets ID of the model
    */
-  public int getId()
+  public int getIntegerId()
   {
-    return id;
+    return this.id;
   }// end of getId
   //------------------------------------------------------
+  
+  /**
+   * @return Integer value of ID
+   * @brief for priority queue
+   */
+  public String getId()
+  {
+    return Integer.toString(this.id);
+  }
   
   /**
    * @return Integer value of bulk number
@@ -206,7 +201,7 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>
   //------------------------------------------------------
   
   /**
-   * @return Id, when was instruction accepted to issue window, 0 if not yet processed
+   * @return tick when the instruction was accepted to issue window, 0 if not yet processed
    * @brief Gets accepted id to issue window
    */
   public int getIssueWindowId()
@@ -227,7 +222,7 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>
   //------------------------------------------------------
   
   /**
-   * @return Id of function block, which processed this instruction, 0 if not yet processed
+   * @return ID of function block, which processed this instruction, 0 if not yet processed
    * @brief Gets id of function block, which processed this instruction
    */
   public int getFunctionUnitId()
@@ -237,7 +232,7 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>
   //------------------------------------------------------
   
   /**
-   * @param [in] functionUnitId - Id of function block, which processed this instruction
+   * @param functionUnitId ID of function block, which processed this instruction
    *
    * @brief Sets id of function block, which processed this instruction
    */
@@ -248,7 +243,7 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>
   //------------------------------------------------------
   
   /**
-   * @return Id of when was instruction's result ready, 0 if not yet processed
+   * @return ID of when was instruction's result ready, 0 if not yet processed
    * @brief Gets id of when was instruction's result ready
    */
   public int getReadyId()
@@ -257,7 +252,7 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>
   }// end of getReadyId
   
   /**
-   * @param [in] readyId - Id of when was instruction's result ready
+   * @param readyId ID of when was instruction's result ready
    *
    * @brief Sets id of when was instruction's result ready
    */
@@ -268,7 +263,7 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>
   //------------------------------------------------------
   
   /**
-   * @return Id of when was instruction committed, 0 if not yet processed
+   * @return ID of when was instruction committed, 0 if not yet processed
    * @brief Gets id of when was instruction committed
    */
   public int getCommitId()
@@ -278,7 +273,7 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>
   //------------------------------------------------------
   
   /**
-   * @param [in] commitId - Id of when was instruction committed
+   * @param commitId ID of when was instruction committed
    *
    * @brief Sets id of when was instruction's result ready
    */
@@ -352,7 +347,7 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>
    * Used for testing
    *
    * @return String with renamed code line
-   * @brief Gets renamed code line
+   * @brief Gets string representation of the instruction with renamed arguments
    */
   public String getRenamedCodeLine()
   {
@@ -397,7 +392,7 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>
   
   /**
    * @return Renamed arguments of the instruction
-   * @brief Gets arguments of the instruction, copied so they are rewritable
+   * @brief Gets arguments of the instruction, copied, so they are rewritable
    */
   @Override
   public List<InputCodeArgument> getArguments()

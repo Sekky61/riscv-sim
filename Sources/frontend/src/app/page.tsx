@@ -35,7 +35,11 @@ import { ZoomIn, ZoomOut } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 
-import { reloadSimulation, selectCpu } from '@/lib/redux/cpustateSlice';
+import {
+  pullCodeFromCompiler,
+  reloadSimulation,
+  selectCpu,
+} from '@/lib/redux/cpustateSlice';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 
 import AnimatedButton from '@/components/AnimatedButton';
@@ -60,6 +64,7 @@ export default function HomePage() {
   useEffect(() => {
     if (!state) {
       // TODO: calls multiple times unnecessarily
+      dispatch(pullCodeFromCompiler());
       dispatch(reloadSimulation());
     }
   }, [state, dispatch]);

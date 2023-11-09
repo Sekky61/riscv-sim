@@ -32,6 +32,11 @@
  */
 package com.gradle.superscalarsim.blocks.branch;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonValue;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -39,6 +44,7 @@ import java.util.TreeMap;
  * @class PatternHistoryTable
  * @brief Class contains Pattern history table, which holds separate bit predictors
  */
+@JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
 public class PatternHistoryTable
 {
   /**
@@ -46,14 +52,17 @@ public class PatternHistoryTable
    * This collection is sparse, new predictors are added only when needed
    */
   private final Map<Integer, IBitPredictor> predictorMap;
+  
   /**
    * Size of the PHT
    */
   private final int size;
+  
   /**
    * Default type of the predictor, used for creating new predictors
    */
   PredictorType defaultPredictorClass;
+  
   /**
    * Default state of the predictors, used for creating new predictors
    */
@@ -100,6 +109,7 @@ public class PatternHistoryTable
    * @return Bit predictor
    * @brief Get predictor on specified index
    */
+  @JsonIgnore
   public IBitPredictor getPredictor(int index)
   {
     boolean hasPredictor = this.predictorMap.containsKey(index % size);
@@ -134,6 +144,7 @@ public class PatternHistoryTable
   {
     ZERO_BIT_PREDICTOR(0), ONE_BIT_PREDICTOR(1), TWO_BIT_PREDICTOR(2);
     
+    @JsonValue
     private final int value;
     
     PredictorType(int value)

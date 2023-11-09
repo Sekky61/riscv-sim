@@ -32,60 +32,129 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
 import {
+  Action,
   createAsyncThunk,
   createSelector,
   createSlice,
   PayloadAction,
+  ThunkAction,
 } from '@reduxjs/toolkit';
 
-import {
-  collectIds,
-  getArrayItems,
-  resolveRefsCopy,
-} from '@/lib/cpuState/util';
 import { selectAsmCode } from '@/lib/redux/compilerSlice';
 import { selectActiveIsa } from '@/lib/redux/isaSlice';
 import type { RootState } from '@/lib/redux/store';
-import { callSimulationImpl } from '@/lib/serverCalls/callSimulation';
-import type { CpuState, InputCodeModel } from '@/lib/types/cpuApi';
-import type {
-  DecodeAndDispatchBlock,
-  InstructionFetchBlock,
-  InstructionMemoryBlock,
-  ReorderBufferState,
-} from '@/lib/types/cpuDeref';
+import { callSimulationImpl } from '@/lib/serverCalls/callCompiler';
+import type { CpuState, Reference, RegisterModel } from '@/lib/types/cpuApi';
 
-// Define a type for the slice state
+/**
+ * Redux state for CPU
+ */
 interface CpuSlice {
+  /**
+   * CPU state, loaded from the server
+   */
   state: CpuState | null;
+  /**
+   * Code that is currently being simulated. Pulled from the compiler state.
+   */
   code: string;
+  /**
+   * Reference to the currently highlighted line in the input code.
+   * Used to highlight the corresponding objects in visualizations.
+   */
+  highlightedInputCode: Reference | null;
+  /**
+   * Reference to the currently highlighted line in the simulation code.
+   * Used to highlight the corresponding objects in visualizations.
+   */
+  highlightedSimCode: Reference | null;
 }
 
-// Define the initial state using that type
+/**
+ * The initial state
+ */
 const initialState: CpuSlice = {
   state: null,
   code: '',
+  highlightedInputCode: null,
+  highlightedSimCode: null,
 };
 
+/**
+ * The result of a simulation API call
+ */
 type SimulationParsedResult = {
   state: CpuState;
 };
 
-// Call example: dispatch(reloadSimulation());
-export const reloadSimulation = createAsyncThunk<SimulationParsedResult>(
-  'cpu/reloadSimulation',
-  async (_, { getState, dispatch }) => {
-    // @ts-ignore
+/**
+ * Copy the code from code editor to the simulation
+ */
+export const pullCodeFromCompiler = (): ThunkAction<
+  void,
+  RootState,
+  unknown,
+  Action<string>
+> => {
+  return async (dispatch, getState) => {
     const state: RootState = getState();
-    const config = selectActiveIsa(state);
     const code = selectAsmCode(state);
     dispatch(setSimulationCode(code));
-    const response = await callSimulationImpl(0, { ...config, code });
-    return { state: response.state };
-  },
-);
+  };
+};
 
-// Call example: dispatch(callSimulation());
+/**
+ * Reload the simulation (reset it to the step 0)
+ */
+export const reloadSimulation = (): ThunkAction<
+  void,
+  RootState,
+  unknown,
+  Action<string>
+> => {
+  return async (dispatch) => {
+    dispatch(callSimulation(0));
+  };
+};
+
+/**
+ * Step the simulation forward by one tick
+ */
+export const simStepForward = (): ThunkAction<
+  void,
+  RootState,
+  unknown,
+  Action<string>
+> => {
+  return async (dispatch, getState) => {
+    const state: RootState = getState();
+    const currentTick = selectTick(state);
+    dispatch(callSimulation(currentTick + 1));
+  };
+};
+
+/**
+ * Step the simulation backward by one tick
+ */
+export const simStepBackward = (): ThunkAction<
+  void,
+  RootState,
+  unknown,
+  Action<string>
+> => {
+  return async (dispatch, getState) => {
+    const state: RootState = getState();
+    const currentTick = selectTick(state);
+    dispatch(callSimulation(currentTick - 1));
+  };
+};
+
+/**
+ * Call the simulation API
+ * Call example: dispatch(callSimulation(5));
+ *
+ * @param tick The tick to simulate to
+ */
 export const callSimulation = createAsyncThunk<SimulationParsedResult, number>(
   'cpu/callSimulation',
   async (arg, { getState }) => {
@@ -99,41 +168,6 @@ export const callSimulation = createAsyncThunk<SimulationParsedResult, number>(
   },
 );
 
-// Call example: dispatch(simStepForward());
-export const simStepForward = createAsyncThunk<SimulationParsedResult>(
-  'cpu/simStepForward',
-  async (_, { getState }) => {
-    // @ts-ignore
-    const state: RootState = getState();
-    const config = selectActiveIsa(state);
-    const code = state.cpu.code;
-    const currentTick = selectTick(state);
-    const response = await callSimulationImpl(currentTick + 1, {
-      ...config,
-      code,
-    });
-    return { state: response.state };
-  },
-);
-
-// Call example: dispatch(simStepForward());
-export const simStepBackward = createAsyncThunk<SimulationParsedResult>(
-  'cpu/simStepBackward',
-  async (_, { getState }) => {
-    // @ts-ignore
-    const state: RootState = getState();
-    const config = selectActiveIsa(state);
-    const code = state.cpu.code;
-    const currentTick = selectTick(state);
-    const tick = Math.max(0, currentTick - 1);
-    const response = await callSimulationImpl(tick, {
-      ...config,
-      code,
-    });
-    return { state: response.state };
-  },
-);
-
 export const cpuSlice = createSlice({
   name: 'cpu',
   // `createSlice` will infer the state type from the `initialState` argument
@@ -142,18 +176,19 @@ export const cpuSlice = createSlice({
     setSimulationCode: (state, action: PayloadAction<string>) => {
       state.code = action.payload;
     },
+    highlightSimCode: (state, action: PayloadAction<Reference | null>) => {
+      state.highlightedSimCode = action.payload;
+    },
+    unhighlight: (state, action: PayloadAction<Reference | null>) => {
+      // Do not unhighlight somebody else's highlight
+      if (state.highlightedSimCode === action.payload) {
+        state.highlightedSimCode = null;
+        state.highlightedInputCode = null;
+      }
+    },
   },
   extraReducers: (builder) => {
     builder
-      .addCase(reloadSimulation.fulfilled, (state, action) => {
-        state.state = action.payload.state;
-      })
-      .addCase(reloadSimulation.rejected, (state, _action) => {
-        state.state = null;
-      })
-      .addCase(reloadSimulation.pending, (_state, _action) => {
-        // nothing
-      })
       .addCase(callSimulation.fulfilled, (state, action) => {
         state.state = action.payload.state;
       })
@@ -162,99 +197,58 @@ export const cpuSlice = createSlice({
       })
       .addCase(callSimulation.pending, (_state, _action) => {
         // nothing
-      })
-      .addCase(simStepForward.fulfilled, (state, action) => {
-        state.state = action.payload.state;
-      })
-      .addCase(simStepForward.rejected, (state, _action) => {
-        state.state = null;
-      })
-      .addCase(simStepForward.pending, (_state, _action) => {
-        // nothing
-      })
-      .addCase(simStepBackward.fulfilled, (state, action) => {
-        state.state = action.payload.state;
-      })
-      .addCase(simStepBackward.rejected, (state, _action) => {
-        state.state = null;
-      })
-      .addCase(simStepBackward.pending, (_state, _action) => {
-        // nothing
       });
   },
 });
 
-export const { setSimulationCode } = cpuSlice.actions;
+export const { setSimulationCode, highlightSimCode, unhighlight } =
+  cpuSlice.actions;
+
+//
+// Selectors
+//
 
 export const selectCpu = (state: RootState) => state.cpu.state;
 export const selectTick = (state: RootState) => state.cpu.state?.tick ?? 0;
 
-/**
- * Collects all objects with ID into a map
- */
-export const selectIdMap = createSelector([selectCpu], (state) => {
-  if (!state) {
-    return null;
-  }
-  return collectIds(state);
-});
+export const selectAllInstructionFunctionModels = (state: RootState) =>
+  state.cpu.state?.managerRegistry.instructionFunctionManager;
+export const selectInstructionFunctionModelById = (
+  state: RootState,
+  id: Reference,
+) => state.cpu.state?.managerRegistry.instructionFunctionManager[id];
 
-export const selectInputCodeModels = createSelector(
-  [selectCpu, selectIdMap],
-  (state, map) => {
-    if (!state || !map) {
-      return null;
-    }
-    return resolveRefsCopy(state.instructionMemoryBlock, map);
-  },
-);
+export const selectAllInputCodeModels = (state: RootState) =>
+  state.cpu.state?.managerRegistry.inputCodeManager;
+export const selectInputCodeModelById = (state: RootState, id: Reference) =>
+  state.cpu.state?.managerRegistry.inputCodeManager[id];
 
-export const selectProgram = createSelector(
-  [selectCpu, selectIdMap],
-  (state, map): InstructionMemoryBlock | null => {
-    if (!state || !map) {
-      return null;
-    }
+export const selectSimCodeModelById = (state: RootState, id: Reference) =>
+  state.cpu.state?.managerRegistry.simCodeManager[id];
 
-    const program = resolveRefsCopy(state.instructionMemoryBlock, map);
+export const selectProgram = (state: RootState) =>
+  state.cpu.state?.instructionMemoryBlock;
 
-    const code = getArrayItems(program.code);
-
-    const labels: Record<string, number> = {};
-    Object.entries(program.labels).forEach(([key, value]) => {
-      // Filter out @type entry, TODO handle generally
-      if (key === '@type') {
-        return;
-      }
-      labels[key] = value.value;
-    });
-
-    return {
-      nop: program.nop,
-      code,
-      labels,
-    };
-  },
-);
+export const selectHighlightedSimCode = (state: RootState) =>
+  state.cpu.highlightedSimCode;
 
 /**
  * Returns program code with labels inserted before the instruction they point to.
  */
 export const selectProgramWithLabels = createSelector(
   [selectProgram],
-  (program): Array<InputCodeModel | string> | null => {
+  (program): Array<Reference | string> | null => {
     if (!program) {
       return null;
     }
 
     // COPY code
-    const codeOrder: Array<InputCodeModel | string> = [...program.code];
+    const codeOrder: Array<Reference | string> = [...program.code];
 
     // For each label, insert it before the instruction it points to
     Object.entries(program.labels).forEach(([labelName, idx]) => {
       let insertIndex = codeOrder.findIndex(
-        (instruction) =>
-          typeof instruction !== 'string' && instruction.codeId === idx,
+        (instruction) => typeof instruction !== 'string' && instruction === idx,
       );
       if (insertIndex === -1) {
         insertIndex = codeOrder.length;
@@ -266,73 +260,48 @@ export const selectProgramWithLabels = createSelector(
   },
 );
 
-export const selectFetch = createSelector(
-  [selectCpu, selectIdMap],
-  (state, map): InstructionFetchBlock | null => {
-    if (!state || !map) {
+export const selectAllRegisters = (state: RootState) =>
+  state.cpu.state?.managerRegistry.registerModelManager;
+export const selectRegisterIdMap = (state: RootState) =>
+  state.cpu.state?.unifiedRegisterFileBlock.registerMap;
+
+/**
+ * Add aliases to the map of registers.
+ */
+export const selectRegisterMap = createSelector(
+  [selectAllRegisters, selectRegisterIdMap],
+  (registers, map): Record<string, RegisterModel> | null => {
+    // Go through the map of ids and join the register models with the ids
+    if (!registers || !map) {
       return null;
     }
 
-    const fetch = state.instructionFetchBlock;
-    const collectedFetchedCode = resolveRefsCopy(
-      getArrayItems(fetch.fetchedCode),
-      map,
-    );
-    return {
-      numberOfWays: fetch.numberOfWays,
-      fetchedCode: collectedFetchedCode,
-      pc: fetch.pc,
-      stallFlag: fetch.stallFlag,
-      cycleId: fetch.cycleId,
-    };
+    // Copy the registers
+    const registerMap: Record<string, RegisterModel> = { ...registers };
+
+    // Assign aliases (not in the map at the moment)
+    Object.entries(map).forEach(([alias, id]) => {
+      const register = registers[id];
+      if (!register) {
+        throw new Error(`Register ${id} not found`);
+      }
+      registerMap[alias] ??= register;
+    });
+
+    return registerMap;
   },
 );
 
-export const selectDecode = createSelector(
-  [selectCpu, selectIdMap],
-  (state, map): DecodeAndDispatchBlock | null => {
-    if (!state || !map) {
-      return null;
-    }
+export const selectRegisterById = (state: RootState, id: Reference) =>
+  selectRegisterMap(state)?.[id];
 
-    const decode = state.decodeAndDispatchBlock;
-    const before = resolveRefsCopy(
-      getArrayItems(decode.beforeRenameCodeList),
-      map,
-    );
-    const after = resolveRefsCopy(
-      getArrayItems(decode.afterRenameCodeList),
-      map,
-    );
-    return {
-      beforeRenameCodeList: before,
-      afterRenameCodeList: after,
-      idCounter: decode.idCounter,
-      flush: decode.flush,
-      stallFlag: decode.stallFlag,
-      stalledPullCount: decode.stalledPullCount,
-      decodeBufferSize: decode.decodeBufferSize,
-    };
-  },
-);
+export const selectFetch = (state: RootState) =>
+  state.cpu.state?.instructionFetchBlock;
 
-export const selectROB = createSelector(
-  [selectCpu, selectIdMap],
-  (state, map): ReorderBufferState | null => {
-    if (!state || !map) {
-      return null;
-    }
+export const selectDecode = (state: RootState) =>
+  state.cpu.state?.decodeAndDispatchBlock;
 
-    const rob = state.reorderBufferState;
-    const robQueue = resolveRefsCopy(rob.reorderQueue, map);
-    return {
-      reorderQueue: robQueue,
-      commitLimit: rob.commitLimit,
-      commitId: rob.commitId,
-      speculativePulls: rob.speculativePulls,
-      bufferSize: rob.bufferSize,
-    };
-  },
-);
+export const selectROB = (state: RootState) =>
+  state.cpu.state?.reorderBufferState;
 
 export default cpuSlice.reducer;

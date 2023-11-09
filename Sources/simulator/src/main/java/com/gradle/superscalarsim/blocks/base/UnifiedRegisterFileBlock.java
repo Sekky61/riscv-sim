@@ -32,7 +32,11 @@
  */
 package com.gradle.superscalarsim.blocks.base;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
+import com.gradle.superscalarsim.factories.RegisterModelFactory;
 import com.gradle.superscalarsim.loader.InitLoader;
 import com.gradle.superscalarsim.models.register.IRegisterFile;
 import com.gradle.superscalarsim.models.register.RegisterFileModel;
@@ -47,6 +51,7 @@ import java.util.Map;
  * @class UnifiedRegisterFileBlock
  * @brief Class contains interface to interact with all register files and its registers
  */
+@JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
 public class UnifiedRegisterFileBlock
 {
   /**
@@ -61,6 +66,7 @@ public class UnifiedRegisterFileBlock
    * Speculative registers are not included in this map.
    * Also, theoretically faster than searching through the list (O(1) vs O(n)).
    */
+  @JsonIdentityReference(alwaysAsId = true)
   private final Map<String, RegisterModel> registerMap;
   
   /**
@@ -77,14 +83,15 @@ public class UnifiedRegisterFileBlock
   }// end of Constructor
   
   /**
-   * @param loader InitLoader class holding information about instruction and registers. Only needed during initialization.
+   * @param loader               InitLoader class holding information about instruction and registers. Only needed during initialization.
+   * @param registerModelFactory Factory for creating register models.
    *
    * @brief Constructor
    */
-  public UnifiedRegisterFileBlock(final InitLoader loader)
+  public UnifiedRegisterFileBlock(final InitLoader loader, RegisterModelFactory registerModelFactory)
   {
     this.registerMap = new HashMap<>();
-    loadRegisters(loader.getRegisterFileModelList());
+    loadRegisters(loader.getRegisterFileModelList(), registerModelFactory);
     loadAliases(loader.getRegisterAliases());
   }// end of Constructor
   
@@ -96,7 +103,8 @@ public class UnifiedRegisterFileBlock
    *
    * @brief Load all register files to this class and create the speculative file
    */
-  public void loadRegisters(final List<RegisterFileModel> registerFileModelList)
+  public void loadRegisters(final List<RegisterFileModel> registerFileModelList,
+                            RegisterModelFactory registerModelFactory)
   {
     int registerCount = 0;
     for (RegisterFileModel registerFile : registerFileModelList)
@@ -109,7 +117,7 @@ public class UnifiedRegisterFileBlock
       }
       registerCount = registerCount + registerFile.getRegisterList().size();
     }
-    speculativeRegisterFile = new SpeculativeRegisterFile(registerCount * specRegisterMultiplier);
+    speculativeRegisterFile = new SpeculativeRegisterFile(registerCount * specRegisterMultiplier, registerModelFactory);
   }// end of loadRegisters
   //----------------------------------------------------------------------
   

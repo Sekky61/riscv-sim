@@ -27,41 +27,48 @@
 
 package com.gradle.superscalarsim.server.compile;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.List;
-import java.util.Map;
 
 public class CompileResponse
 {
   /**
    * @brief Whether the compilation was successful
    */
+  @JsonProperty(required = true)
   public boolean success;
   
   /**
    * The RISC-V assembly code
    */
+  @JsonProperty(required = true)
   public String program;
   
   /**
    * Indexes of C lines that have corresponding assembly code
    */
+  @JsonProperty(required = true)
   public Integer[] cLines;
   
   /**
    * Mapping from ASM lines to C lines.
    * The length of this list is the same as the length of the program
    */
+  @JsonProperty(required = true)
   public Integer[] asmToC;
   
   /**
    * @brief A general, short error message
    */
+  @JsonProperty(required = true)
   public String error;
   
   /**
    * @brief A detailed list of compiler errors
    */
-  public List<Map<String, Object>> compilerError;
+  @JsonProperty(required = true)
+  public List<Object> compilerError;
   
   public CompileResponse()
   {
@@ -77,7 +84,7 @@ public class CompileResponse
                          List<Integer> cLines,
                          List<Integer> asmToC,
                          String error,
-                         List<Map<String, Object>> compilerError)
+                         List<Object> compilerError)
   {
     this.success       = success;
     this.program       = program;
@@ -87,7 +94,7 @@ public class CompileResponse
     this.compilerError = compilerError;
   }
   
-  public static CompileResponse failure(String error, List<Map<String, Object>> compilerError)
+  public static CompileResponse failure(String error, List<Object> compilerError)
   {
     CompileResponse res = new CompileResponse();
     res.error         = error;

@@ -1,15 +1,15 @@
 /**
- * @file SimulationResponse.java
+ * @file InputCodeModelManager.java
  * @author Michal Majer
  * Faculty of Information Technology
  * Brno University of Technology
  * xmajer21@stud.fit.vutbr.cz
- * @brief Response for the /simulation endpoint
- * @date 26 Sep      2023 10:00 (created)
+ * @brief File contains manager for instructions in the program
+ * @date 07 November  2023 18:00 (created)
  * @section Licence
  * This file is part of the Superscalar simulator app
  * <p>
- * Copyright (C) 2023 Michal Majer
+ * Copyright (C) 2020  Jan Vavra
  * <p>
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -25,24 +25,27 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.gradle.superscalarsim.server.simulation;
 
-import com.gradle.superscalarsim.cpu.CpuState;
+package com.gradle.superscalarsim.managers;
 
-public class SimulationResponse
+import com.gradle.superscalarsim.models.InputCodeModel;
+
+import java.util.WeakHashMap;
+
+/**
+ * Manages all input code models in the simulation.
+ */
+public class InputCodeModelManager implements IInstanceManager<InputCodeModel>
 {
-  /**
-   * Delta of the executed steps
-   */
-  public int executedSteps;
-  /**
-   * State of the CPU at the requested tick, or at the end of the simulation, whichever comes first
-   */
-  public CpuState state;
+  WeakHashMap<InputCodeModel, Object> instances = new WeakHashMap<>();
   
-  SimulationResponse(CpuState state, int executed_steps)
+  /**
+   * @return WeakHashMap of instances
+   * @brief Get the instances
+   */
+  @Override
+  public WeakHashMap<InputCodeModel, Object> getInstances()
   {
-    this.executedSteps = executed_steps;
-    this.state         = state;
+    return instances;
   }
 }

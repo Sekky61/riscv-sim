@@ -1,11 +1,11 @@
 /**
- * @file GetStateResponse.java
+ * @file EndpointName.java
  * @author Michal Majer
  * Faculty of Information Technology
  * Brno University of Technology
  * xmajer21@stud.fit.vutbr.cz
- * @brief Response for the /getState endpoint
- * @date 26 Sep      2023 10:00 (created)
+ * @brief Enumerates all endpoints
+ * @date 09 Nov      2023 9:00 (created)
  * @section Licence
  * This file is part of the Superscalar simulator app
  * <p>
@@ -25,40 +25,39 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.gradle.superscalarsim.server.getState;
+package com.gradle.superscalarsim.server;
 
-import com.gradle.superscalarsim.code.ParseError;
-import com.gradle.superscalarsim.cpu.CpuState;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.util.List;
-
-public class GetStateResponse
+/**
+ * Enumerates all endpoints
+ */
+public enum EndpointName
 {
-  /**
-   * @brief List of errors concerning configuration validation
-   */
-  public List<String> configErrors;
-  /**
-   * @brief List of errors concerning code validation
-   */
-  public List<ParseError> codeErrors;
-  /**
-   * @brief State of the CPU
-   * Returned even if there are errors in the code
-   */
-  public CpuState state;
+  compile("compile"), parseAsm("parseAsm"), checkConfig("checkConfig"), simulate("simulate"), schema("schema");
   
-  GetStateResponse(CpuState state)
+  private final String pathName;
+  
+  EndpointName(String pathName)
   {
-    this.state        = state;
-    this.configErrors = null;
-    this.codeErrors   = null;
+    this.pathName = pathName;
   }
   
-  GetStateResponse(CpuState state, List<String> configErrors, List<ParseError> codeErrors)
+  /**
+   * @return The path of the endpoint
+   */
+  public String getPath()
   {
-    this.state        = state;
-    this.configErrors = configErrors;
-    this.codeErrors   = codeErrors;
+    return "/" + pathName;
+  }
+  
+  /**
+   * @return The name of the endpoint
+   */
+  @JsonProperty("endpoint")
+  public String getName()
+  {
+    return pathName;
   }
 }
+

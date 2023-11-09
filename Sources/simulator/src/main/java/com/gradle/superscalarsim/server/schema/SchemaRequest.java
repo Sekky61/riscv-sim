@@ -1,10 +1,10 @@
 /**
- * @file GetStateRequest.java
+ * @file SchemaRequest.java
  * @author Michal Majer
  * Faculty of Information Technology
  * Brno University of Technology
  * xmajer21@stud.fit.vutbr.cz
- * @brief Parameters for the /getState endpoint request
+ * @brief Handler for /simulate requests
  * @date 26 Sep      2023 10:00 (created)
  * @section Licence
  * This file is part of the Superscalar simulator app
@@ -25,15 +25,31 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.gradle.superscalarsim.server.getState;
+package com.gradle.superscalarsim.server.schema;
 
-import com.gradle.superscalarsim.cpu.CpuConfiguration;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.gradle.superscalarsim.server.EndpointName;
 
-public class GetStateRequest
+/**
+ * Parameters for the /schema endpoint request
+ */
+public class SchemaRequest
 {
+  /**
+   * Name of the endpoint to get the schema for.
+   * Example: "simulate" for the "/simulate" endpoint
+   */
+  @JsonProperty(required = true)
+  EndpointName endpoint;
   
   /**
-   * @brief Configuration of the CPU
+   * Request to get the schema for. Either "request" or "response".
    */
-  CpuConfiguration config;
+  @JsonProperty(required = true)
+  RequestResponse requestResponse;
+  
+  public enum RequestResponse
+  {
+    request, response
+  }
 }

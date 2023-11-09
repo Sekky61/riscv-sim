@@ -32,11 +32,11 @@
  */
 package com.gradle.superscalarsim.loader;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonSyntaxException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.models.register.RegisterFileModel;
 import com.gradle.superscalarsim.models.register.RegisterModel;
+import com.gradle.superscalarsim.serialization.Serialization;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -71,9 +71,9 @@ public class RegisterSubloader
     RegisterFileModel registerFileModel = null;
     try
     {
-      Gson   gson   = new Gson();
-      Reader reader = Files.newBufferedReader(Paths.get(filePath));
-      registerFileModel = gson.fromJson(reader, RegisterFileModel.class);
+      ObjectMapper deserializer = Serialization.getDeserializer();
+      Reader       reader       = Files.newBufferedReader(Paths.get(filePath));
+      registerFileModel = deserializer.readValue(reader, RegisterFileModel.class);
       // Arch. registers are assigned by default
       for (RegisterModel register : registerFileModel.getRegisterList())
       {
@@ -81,7 +81,7 @@ public class RegisterSubloader
       }
       registerFileModel = validateModel(registerFileModel) ? registerFileModel : null;
     }
-    catch (IOException | JsonSyntaxException e)
+    catch (IOException e)
     {
       e.printStackTrace();
     }

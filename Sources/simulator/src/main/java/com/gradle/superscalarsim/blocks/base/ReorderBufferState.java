@@ -41,7 +41,7 @@ public class ReorderBufferState
   /**
    * Queue of scheduled instruction in backend
    */
-  public final ArrayDeque<ReorderBufferItem> reorderQueue;
+  public ArrayDeque<ReorderBufferItem> reorderQueue;
   
   /**
    * Numerical limit, how many instruction can be committed in a single tick

@@ -32,6 +32,7 @@
  */
 package com.gradle.superscalarsim.blocks.loadstore;
 
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.gradle.superscalarsim.blocks.AbstractBlock;
 import com.gradle.superscalarsim.blocks.base.DecodeAndDispatchBlock;
 import com.gradle.superscalarsim.blocks.base.ReorderBufferBlock;
@@ -53,6 +54,7 @@ import java.util.*;
 public class StoreBufferBlock implements AbstractBlock
 {
   /// Queue with all uncommitted store instructions
+  @JsonIdentityReference(alwaysAsId = true)
   private final Queue<SimCodeModel> storeQueue;
   /// Map with additional infos for specific store instructions
   private final Map<Integer, StoreBufferItem> storeMap;
@@ -205,7 +207,7 @@ public class StoreBufferBlock implements AbstractBlock
                                                               if (isInstructionStore(codeModel))
                                                               {
                                                                 boolean isPresent = this.reorderBufferBlock.getRobItem(
-                                                                        codeModel.getId()) != null;
+                                                                        codeModel.getIntegerId()) != null;
                                                                 if (isBufferFull(1) || !isPresent)
                                                                 {
                                                                   return;
@@ -213,11 +215,11 @@ public class StoreBufferBlock implements AbstractBlock
                                                                 this.storeQueue.add(codeModel);
                                                                 InputCodeArgument argument = codeModel.getArgumentByName(
                                                                         "rs2");
-                                                                this.storeMap.put(codeModel.getId(),
+                                                                this.storeMap.put(codeModel.getIntegerId(),
                                                                                   new StoreBufferItem(
                                                                                           Objects.requireNonNull(
                                                                                                   argument).getValue(),
-                                                                                          codeModel.getId()));
+                                                                                          codeModel.getIntegerId()));
                                                               }
                                                             });
   }// end of pullStoreInstructionsFromDecode
@@ -234,11 +236,11 @@ public class StoreBufferBlock implements AbstractBlock
       if (simCodeModel.hasFailed())
       {
         removedInstructions.add(simCodeModel);
-        if (this.storeMap.get(simCodeModel.getId()).isAccessingMemory())
+        if (this.storeMap.get(simCodeModel.getIntegerId()).isAccessingMemory())
         {
           this.memoryAccessUnitList.forEach(ma -> ma.tryRemoveCodeModel(simCodeModel));
         }
-        this.storeMap.remove(simCodeModel.getId());
+        this.storeMap.remove(simCodeModel.getIntegerId());
       }
     }
     this.storeQueue.removeAll(removedInstructions);
@@ -268,7 +270,7 @@ public class StoreBufferBlock implements AbstractBlock
     SimCodeModel codeModel = null;
     for (SimCodeModel simCodeModel : this.storeQueue)
     {
-      StoreBufferItem item = this.storeMap.get(simCodeModel.getId());
+      StoreBufferItem item = this.storeMap.get(simCodeModel.getIntegerId());
       
       //If there is store without address computed stop - there could be WaW hazard
       if (item.getAddress() == -1)
@@ -276,18 +278,21 @@ public class StoreBufferBlock implements AbstractBlock
         break;
       }
       
-      boolean isSpeculative    = reorderBufferBlock.getRobItem(simCodeModel.getId()).reorderFlags.isSpeculative();
+      assert !simCodeModel.hasFailed();
+      
+      boolean isSpeculative    = reorderBufferBlock.getRobItem(
+              simCodeModel.getIntegerId()).reorderFlags.isSpeculative();
       boolean isAvailableForMA = item.getAddress() != -1 && !item.isAccessingMemory() && item.getAccessingMemoryId() == -1 && item.isSourceReady() && !isSpeculative;
       if (isAvailableForMA)
       {
         for (SimCodeModel previousStore : this.storeQueue)
         {
           //Check if we haven't reached current statement
-          if (simCodeModel.getId() == previousStore.getId())
+          if (simCodeModel.getIntegerId() == previousStore.getIntegerId())
           {
             break;
           }
-          else if ((this.storeMap.get(previousStore.getId()).getAddress() & ~3L) == (item.getAddress() & ~3L))
+          else if ((this.storeMap.get(previousStore.getIntegerId()).getAddress() & ~3L) == (item.getAddress() & ~3L))
           {
             //If there is WaW hazard - stop
             isAvailableForMA = false;
@@ -319,8 +324,9 @@ public class StoreBufferBlock implements AbstractBlock
       {
         memoryAccessUnit.resetCounter();
         memoryAccessUnit.setSimCodeModel(codeModel);
-        this.storeMap.get(codeModel.getId()).setAccessingMemory(true);
-        this.storeMap.get(codeModel.getId()).setAccessingMemoryId(this.commitId);
+        this.storeMap.get(codeModel.getIntegerId()).setAccessingMemory(true);
+        this.storeMap.get(codeModel.getIntegerId()).setAccessingMemoryId(this.commitId);
+        // todo: return here??
       }
     }
   }// end of selectLoadForDataAccess
@@ -422,14 +428,14 @@ public class StoreBufferBlock implements AbstractBlock
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Release store instruction on top of the queue and commits it
+   * @brief Release store instruction on top of the queue (instruction has been committed)
    */
   public void releaseStoreFirst()
   {
     if (!this.storeQueue.isEmpty())
     {
       SimCodeModel codeModel = storeQueue.poll();
-      this.storeMap.remove(codeModel.getId());
+      this.storeMap.remove(codeModel.getIntegerId());
     }
     else
     {

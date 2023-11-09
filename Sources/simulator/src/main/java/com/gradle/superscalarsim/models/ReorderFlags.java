@@ -29,7 +29,7 @@ package com.gradle.superscalarsim.models;
 
 /**
  * @class ReorderFlags
- * @brief Flag container for instructions inside of ROB marking their state
+ * @brief Flag container for instructions inside ROB marking their state
  */
 public class ReorderFlags
 {

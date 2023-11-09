@@ -17,6 +17,7 @@ import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.enums.RegisterTypeEnum;
+import com.gradle.superscalarsim.factories.RegisterModelFactory;
 import com.gradle.superscalarsim.loader.InitLoader;
 import com.gradle.superscalarsim.models.InputCodeArgument;
 import com.gradle.superscalarsim.models.InputCodeModel;
@@ -156,7 +157,6 @@ public class ForwardSimulationTest
     this.branchTargetBuffer        = cpuState.branchTargetBuffer;
     this.memoryModel               = cpuState.memoryModel;
     this.loadStoreInterpreter      = cpuState.loadStoreInterpreter;
-    this.simCodeModelAllocator     = cpuState.simCodeModelAllocator;
     this.instructionFetchBlock     = cpuState.instructionFetchBlock;
     this.decodeAndDispatchBlock    = cpuState.decodeAndDispatchBlock;
     this.reorderBufferBlock        = cpuState.reorderBufferBlock;
@@ -188,7 +188,7 @@ public class ForwardSimulationTest
     
     // This adds the reg files, but also creates speculative registers!
     this.unifiedRegisterFileBlock.setRegistersWithList(new ArrayList<>());
-    this.unifiedRegisterFileBlock.loadRegisters(this.initLoader.getRegisterFileModelList());
+    this.unifiedRegisterFileBlock.loadRegisters(this.initLoader.getRegisterFileModelList(), new RegisterModelFactory());
   }
   
   ///////////////////////////////////////////////////////////
@@ -327,9 +327,9 @@ public class ForwardSimulationTest
     
     this.cpu.step();
     Assert.assertTrue(this.decodeAndDispatchBlock.getAfterRenameCodeList().isEmpty());
-    Assert.assertEquals(0, this.aluIssueWindowBlock.getIssuedInstructions().get(0).getId());
-    Assert.assertEquals(1, this.aluIssueWindowBlock.getIssuedInstructions().get(1).getId());
-    Assert.assertEquals(2, this.aluIssueWindowBlock.getIssuedInstructions().get(2).getId());
+    Assert.assertEquals(0, this.aluIssueWindowBlock.getIssuedInstructions().get(0).getIntegerId());
+    Assert.assertEquals(1, this.aluIssueWindowBlock.getIssuedInstructions().get(1).getIntegerId());
+    Assert.assertEquals(2, this.aluIssueWindowBlock.getIssuedInstructions().get(2).getIntegerId());
     Assert.assertEquals("add tg0,x4,x5", this.aluIssueWindowBlock.getIssuedInstructions().get(0).getRenamedCodeLine());
     Assert.assertEquals("add tg1,tg0,x4", this.aluIssueWindowBlock.getIssuedInstructions().get(1).getRenamedCodeLine());
     Assert.assertEquals("add tg2,tg1,tg0",
@@ -722,9 +722,9 @@ public class ForwardSimulationTest
     
     this.cpu.step();
     Assert.assertTrue(this.decodeAndDispatchBlock.getAfterRenameCodeList().isEmpty());
-    Assert.assertEquals(0, this.fpIssueWindowBlock.getIssuedInstructions().get(0).getId());
-    Assert.assertEquals(1, this.fpIssueWindowBlock.getIssuedInstructions().get(1).getId());
-    Assert.assertEquals(2, this.fpIssueWindowBlock.getIssuedInstructions().get(2).getId());
+    Assert.assertEquals(0, this.fpIssueWindowBlock.getIssuedInstructions().get(0).getIntegerId());
+    Assert.assertEquals(1, this.fpIssueWindowBlock.getIssuedInstructions().get(1).getIntegerId());
+    Assert.assertEquals(2, this.fpIssueWindowBlock.getIssuedInstructions().get(2).getIntegerId());
     Assert.assertEquals("fadd.s tg0,f4,f5",
                         this.fpIssueWindowBlock.getIssuedInstructions().get(0).getRenamedCodeLine());
     Assert.assertEquals("fadd.s tg1,tg0,f4",

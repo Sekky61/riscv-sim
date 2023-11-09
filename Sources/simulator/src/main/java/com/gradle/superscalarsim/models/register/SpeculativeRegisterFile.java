@@ -26,12 +26,17 @@
  */
 package com.gradle.superscalarsim.models.register;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.enums.RegisterTypeEnum;
+import com.gradle.superscalarsim.factories.RegisterModelFactory;
 
 import java.util.Map;
 import java.util.TreeMap;
 
+@JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
 public class SpeculativeRegisterFile implements IRegisterFile
 {
   /**
@@ -47,24 +52,31 @@ public class SpeculativeRegisterFile implements IRegisterFile
   /**
    * Collection of registers
    */
+  @JsonIdentityReference(alwaysAsId = true)
   private final Map<String, RegisterModel> registers;
+  
+  /**
+   * Factory for creating speculative registers
+   */
+  private final RegisterModelFactory registerModelFactory;
   
   /**
    * Constructor
    */
-  public SpeculativeRegisterFile(int numberOfRegisters)
+  public SpeculativeRegisterFile(int numberOfRegisters, RegisterModelFactory registerModelFactory)
   {
-    this.numberOfRegisters = numberOfRegisters;
-    this.registers         = new TreeMap<>();
+    this.numberOfRegisters    = numberOfRegisters;
+    this.registerModelFactory = registerModelFactory;
+    this.registers            = new TreeMap<>();
   }
   
   /**
    * Default register file constructor.
    * Used for lazy initialization of register file.
    */
-  private static RegisterModel createRegister(int id)
+  private RegisterModel createRegister(int id)
   {
-    return new RegisterModel("tg" + id, false, null, 0, RegisterReadinessEnum.kFree);
+    return registerModelFactory.createInstance("tg" + id, false, null, 0, RegisterReadinessEnum.kFree);
   }
   
   

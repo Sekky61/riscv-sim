@@ -27,8 +27,8 @@
 
 package com.gradle.superscalarsim.cpu;
 
-import com.cedarsoftware.util.io.JsonReader;
-import com.cedarsoftware.util.io.JsonWriter;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gradle.superscalarsim.blocks.CacheStatisticsCounter;
 import com.gradle.superscalarsim.blocks.StatisticsCounter;
 import com.gradle.superscalarsim.blocks.arithmetic.AluIssueWindowBlock;
@@ -39,8 +39,14 @@ import com.gradle.superscalarsim.blocks.branch.*;
 import com.gradle.superscalarsim.blocks.loadstore.*;
 import com.gradle.superscalarsim.code.*;
 import com.gradle.superscalarsim.enums.cache.ReplacementPoliciesEnum;
+import com.gradle.superscalarsim.factories.InputCodeModelFactory;
+import com.gradle.superscalarsim.factories.RegisterModelFactory;
+import com.gradle.superscalarsim.factories.SimCodeModelFactory;
 import com.gradle.superscalarsim.loader.InitLoader;
-import com.gradle.superscalarsim.serialization.GsonConfiguration;
+import com.gradle.superscalarsim.managers.ManagerRegistry;
+import com.gradle.superscalarsim.models.InputCodeModel;
+import com.gradle.superscalarsim.models.InstructionFunctionModel;
+import com.gradle.superscalarsim.serialization.Serialization;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -54,10 +60,11 @@ import java.util.Objects;
  */
 public class CpuState implements Serializable
 {
+  public ManagerRegistry managerRegistry;
+  
   public int tick;
   
   public InstructionMemoryBlock instructionMemoryBlock;
-  public SimCodeModelAllocator simCodeModelAllocator;
   
   public ReorderBufferState reorderBufferState;
   
@@ -127,10 +134,22 @@ public class CpuState implements Serializable
    */
   public void initState(CpuConfiguration config, InitLoader initLoader)
   {
-    this.tick = 0;
+    this.tick            = 0;
+    this.managerRegistry = new ManagerRegistry();
+    
+    // Factories (for tracking instances of models)
+    InputCodeModelFactory inputCodeModelFactory = new InputCodeModelFactory(managerRegistry.inputCodeManager);
+    SimCodeModelFactory   simCodeModelFactory   = new SimCodeModelFactory(managerRegistry.simCodeManager);
+    RegisterModelFactory  registerModelFactory  = new RegisterModelFactory(managerRegistry.registerModelManager);
+    
+    // Hack to load all function models and registers to manager
+    initLoader.getInstructionFunctionModels()
+            .forEach((name, model) -> managerRegistry.instructionFunctionManager.addInstance(model));
+    initLoader.getRegisterFileModelList().forEach(registerFileModel -> registerFileModel.getRegisterList()
+            .forEach(registerModel -> managerRegistry.registerModelManager.addInstance(registerModel)));
     
     // Parse code
-    CodeParser codeParser = new CodeParser(initLoader);
+    CodeParser codeParser = new CodeParser(initLoader, inputCodeModelFactory);
     codeParser.parseCode(config.code);
     
     if (!codeParser.success())
@@ -138,9 +157,10 @@ public class CpuState implements Serializable
       throw new IllegalStateException("Code parsing failed: " + codeParser.getErrorMessages());
     }
     
-    this.instructionMemoryBlock = new InstructionMemoryBlock(codeParser.getInstructions(), codeParser.getLabels());
-    
-    simCodeModelAllocator = new SimCodeModelAllocator();
+    InstructionFunctionModel nopFM = initLoader.getInstructionFunctionModel("nop");
+    InputCodeModel nop = inputCodeModelFactory.createInstance(nopFM, new ArrayList<>(),
+                                                              codeParser.getInstructions().size());
+    this.instructionMemoryBlock = new InstructionMemoryBlock(codeParser.getInstructions(), codeParser.getLabels(), nop);
     
     this.reorderBufferState        = new ReorderBufferState();
     reorderBufferState.bufferSize  = config.robSize;
@@ -149,7 +169,7 @@ public class CpuState implements Serializable
     this.statisticsCounter      = new StatisticsCounter();
     this.cacheStatisticsCounter = new CacheStatisticsCounter();
     
-    this.unifiedRegisterFileBlock = new UnifiedRegisterFileBlock(initLoader);
+    this.unifiedRegisterFileBlock = new UnifiedRegisterFileBlock(initLoader, registerModelFactory);
     this.renameMapTableBlock      = new RenameMapTableBlock(unifiedRegisterFileBlock);
     
     this.globalHistoryRegister = new GlobalHistoryRegister(10);
@@ -189,7 +209,7 @@ public class CpuState implements Serializable
     this.memoryModel          = new MemoryModel(cache, cacheStatisticsCounter);
     this.loadStoreInterpreter = new CodeLoadStoreInterpreter(memoryModel, unifiedRegisterFileBlock);
     
-    this.instructionFetchBlock = new InstructionFetchBlock(simCodeModelAllocator, instructionMemoryBlock, gShareUnit,
+    this.instructionFetchBlock = new InstructionFetchBlock(simCodeModelFactory, instructionMemoryBlock, gShareUnit,
                                                            branchTargetBuffer);
     instructionFetchBlock.setNumberOfWays(config.fetchWidth);
     
@@ -331,13 +351,20 @@ public class CpuState implements Serializable
   
   public String serialize()
   {
-    return JsonWriter.objectToJson(this, GsonConfiguration.getJsonWriterOptions());
+    ObjectMapper serializer = Serialization.getSerializer();
+    try
+    {
+      return serializer.writeValueAsString(this);
+    }
+    catch (JsonProcessingException e)
+    {
+      throw new RuntimeException(e);
+    }
   }
   
   public static CpuState deserialize(String json)
   {
-    CpuState state = (CpuState) JsonReader.jsonToJava(json, GsonConfiguration.getJsonReaderOptions());
-    return state;
+    throw new UnsupportedOperationException("Not implemented");
   }
   
   /**
@@ -361,8 +388,8 @@ public class CpuState implements Serializable
     CpuState myObject = (CpuState) obj;
     
     // Compare:
-    String meJson    = JsonWriter.objectToJson(this, GsonConfiguration.getJsonWriterOptions());
-    String otherJson = JsonWriter.objectToJson(myObject, GsonConfiguration.getJsonWriterOptions());
+    String meJson    = this.serialize();
+    String otherJson = myObject.serialize();
     
     return meJson.equals(otherJson);
   }
@@ -384,7 +411,7 @@ public class CpuState implements Serializable
     // Check which buffer contains older instruction at the top
     // Null check first, if any is empty, the order does not matter
     if (loadBufferBlock.getLoadQueueFirst() == null || storeBufferBlock.getStoreQueueFirst() == null || loadBufferBlock.getLoadQueueFirst()
-            .getId() < storeBufferBlock.getStoreQueueFirst().getId())
+            .getIntegerId() < storeBufferBlock.getStoreQueueFirst().getIntegerId())
     {
       loadBufferBlock.simulate();
       storeBufferBlock.simulate();
@@ -408,8 +435,5 @@ public class CpuState implements Serializable
     statisticsCounter.incrementClockCycles();
     
     this.tick++;
-    
-    // Clean up
-    simCodeModelAllocator.deleteOldReferences();
   }// end of run
 }

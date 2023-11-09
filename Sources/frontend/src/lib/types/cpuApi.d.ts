@@ -30,10 +30,10 @@
  */
 
 export interface CpuState {
+  managerRegistry: ManagerRegistry;
   tick: number;
-  instructionMemoryBlock: InstructionMemoryBlockRef;
-  simCodeModelAllocator: SimCodeModelAllocator;
-  reorderBufferState: ReorderBufferStateRef;
+  instructionMemoryBlock: InstructionMemoryBlock;
+  reorderBufferState: ReorderBufferState;
   statisticsCounter: StatisticsCounter;
   cacheStatisticsCounter: CacheStatisticsCounter;
   branchTargetBuffer: BranchTargetBuffer;
@@ -42,8 +42,8 @@ export interface CpuState {
   gShareUnit: GShareUnit;
   unifiedRegisterFileBlock: UnifiedRegisterFileBlock;
   renameMapTableBlock: RenameMapTableBlock;
-  instructionFetchBlock: InstructionFetchBlockRef;
-  decodeAndDispatchBlock: DecodeAndDispatchBlockRef;
+  instructionFetchBlock: InstructionFetchBlock;
+  decodeAndDispatchBlock: DecodeAndDispatchBlock;
   cache: Cache;
   memoryModel: MemoryModel;
   loadStoreInterpreter: CodeLoadStoreInterpreter;
@@ -65,55 +65,48 @@ export interface CpuState {
   reorderBufferBlock: ReorderBufferBlock;
 }
 
-/**
- * If an object is a reference, it will have a property '@ref' with a number value.
- * Another object with the same '@id' value will be the original object.
- */
-export interface Reference {
-  '@ref': number;
+export type Reference = number | string;
+
+export interface ManagerRegistry {
+  instructionFunctionManager: Record<string, InstructionFunctionModel>;
+  inputCodeManager: Record<string, InputCodeModel>;
+  simCodeManager: Record<string, SimCodeModel>;
+  registerModelManager: Record<string, RegisterModel>;
 }
 
-export type MaybeReference<T> = T | Reference;
-
-/**
- * '@items' not being present means that there are no items
- */
-export interface ArrayList<T> {
-  '@type': 'ArrayList';
-  '@items'?: Array<T>;
+export interface InstructionMemoryBlock {
+  nop: Reference;
+  code: Reference[];
+  labels: {
+    [k: string]: number;
+  };
 }
 
-export interface PriorityQueue<T> {
-  '@type': 'java.util.PriorityQueue';
-  '@items'?: Array<T>;
-}
+export type InstructionTypeEnum = 'kArithmetic' | 'kLoadstore' | 'kJumpbranch';
 
-export interface JavaHashMap<K, V> {
-  '@type': 'java.util.HashMap';
-  '@keys'?: Array<K>;
-  '@items'?: Array<V>;
-}
+export type DataTypeEnum =
+  | 'kInt'
+  | 'kUInt'
+  | 'kLong'
+  | 'kULong'
+  | 'kFloat'
+  | 'kDouble'
+  | 'kBool';
 
-export interface WithId {
-  '@id': number;
-}
+export type RegisterReadinessEnum =
+  | 'kFree'
+  | 'kAllocated'
+  | 'kExecuted'
+  | 'kAssigned';
 
-export interface NumberObject {
-  value: number;
-}
-
-export interface InstructionMemoryBlockRef {
-  nop: InputCodeModel;
-  code: ArrayList<InputCodeModel>;
-  labels: Record<string, NumberObject>;
-}
+export type RegisterTypeEnum = 'kInt' | 'kFloat';
 
 export interface InputCodeModel {
   codeId: number;
   instructionName: string;
-  arguments: ArrayList<InputCodeArgument>;
+  arguments: InputCodeArgument[];
   instructionTypeEnum: InstructionTypeEnum;
-  instructionFunctionModel: InstructionFunctionModel;
+  instructionFunctionModel: Reference;
 }
 
 export interface InputCodeArgument {
@@ -123,69 +116,43 @@ export interface InputCodeArgument {
 
 export interface InstructionFunctionModel {
   name: string;
-  instructionType: {
-    name: string;
-  };
-  arguments: ArrayList<InstructionFunctionModelArgument>;
+  instructionType: InstructionTypeEnum;
+  arguments: Argument[];
   interpretableAs: string;
-  dataType: string | null;
+  dataType:
+    | 'kInt'
+    | 'kUInt'
+    | 'kLong'
+    | 'kULong'
+    | 'kFloat'
+    | 'kDouble'
+    | 'kBool';
+  unconditionalJump: boolean;
 }
 
-export interface InstructionFunctionModelArgument {
+export interface Argument {
   name: string;
-  type: {
-    name: string;
-  };
-  defaultValue: string | null;
-  writeBack: boolean;
-  silent: boolean;
+  type: DataTypeEnum;
+  defaultValue?: string;
+  writeBack?: boolean;
+  silent?: boolean;
 }
 
-export interface InstructionTypeEnum {
-  name: string;
-}
-
-export interface InstructionFetchBlockRef {
-  fetchedCode: ArrayList<MaybeReference<SimCodeModelRef>>;
-  numberOfWays: number;
-  pc: number;
-  stallFlag: boolean;
-  cycleId: number;
-}
-
-export interface DecodeAndDispatchBlockRef {
-  beforeRenameCodeList: ArrayList<MaybeReference<SimCodeModelRef>>;
-  afterRenameCodeList: ArrayList<MaybeReference<SimCodeModelRef>>;
-  idCounter: number;
-  flush: boolean;
-  stallFlag: boolean;
-  stalledPullCount: number;
-  decodeBufferSize: number;
-}
-
-export interface ReorderBufferStateRef {
-  reorderQueue: Array<ReorderBufferItemRef>;
+export interface ReorderBufferState {
+  reorderQueue: ReorderBufferItem[];
   commitLimit: number;
   commitId: number;
   speculativePulls: boolean;
   bufferSize: number;
 }
-
-export interface ReorderBufferItemRef {
-  simCodeModel: SimCodeModelRef;
+export interface ReorderBufferItem {
+  simCodeModel: Reference;
   reorderFlags: ReorderFlags;
 }
-
-export interface ReorderFlags {
-  isValid: boolean;
-  isBusy: boolean;
-  isSpeculative: boolean;
-}
-
-export interface SimCodeModelRef {
-  inputCodeModel: MaybeReference<InputCodeModel>;
+export interface SimCodeModel {
   id: number;
-  renamedArguments: ArrayList<InputCodeArgument>;
+  inputCodeModel: Reference;
+  renamedArguments: InputCodeArgument[];
   instructionBulkNumber: number;
   issueWindowId: number;
   functionUnitId: number;
@@ -197,32 +164,83 @@ export interface SimCodeModelRef {
   branchPredicted: boolean;
   branchLogicResult: boolean;
   branchTargetOffset: number;
+  finished: boolean;
+}
+export interface ReorderFlags {
+  isValid: boolean;
+  isBusy: boolean;
+  isSpeculative: boolean;
+  valid: boolean;
+  speculative: boolean;
+  readyToBeCommitted: boolean;
+  readyToBeRemoved: boolean;
+  busy: boolean;
+}
+export interface GShareUnit {
+  patternHistoryTable?: PatternHistoryTable;
+  globalHistoryRegister?: GlobalHistoryRegister;
+  size: number;
+}
+export interface UnifiedRegisterFileBlock {
+  registerMap: {
+    [k: string]: Reference;
+  };
+  speculativeRegisterFile?: SpeculativeRegisterFile;
+}
+export interface RegisterModel {
+  name: string;
+  isConstant: boolean;
+  type: RegisterTypeEnum;
+  value: RegisterDataContainer;
+  readiness: RegisterReadinessEnum;
+  constant: boolean;
+}
+export interface RegisterDataContainer {
+  bits: number;
+  currentType: DataTypeEnum;
 }
 
-/**
- * - kArithmetic - Instruction is arithmetic
- * - kLoadstore - Instruction does load/store operation
- * - kJumpbranch - Instruction does un/conditional jump in code
- */
-export type InstructionTypeEnum = {
-  name: 'kArithmetic' | 'kLoadstore' | 'kJumpbranch';
-};
-
-export type DataTypeEnum = {
-  name: 'kInt' | 'kLong' | 'kFloat' | 'kDouble' | 'kBool' | 'kUInt' | 'kULong';
-};
-
-/**
- * Instruction argument
- */
-export interface InputCodeArgument {
-  '@type': 'com.gradle.superscalarsim.models.InputCodeArgument';
-  /**
-   * The name of the argument (e.g. "rd")
-   */
-  name: string;
-  /**
-   * The value of the argument (e.g. "x1")
-   */
-  value: string;
+export interface RenameMapTableBlock {
+  freeList: string[];
+  registerMap: {
+    [k: string]: Reference;
+  };
+  referenceMap: {
+    [k: string]: number;
+  };
+  registerFileBlock?: UnifiedRegisterFileBlock;
+}
+export interface RenameMapModel {
+  architecturalRegister?: string;
+  order: number;
+}
+export interface InstructionFetchBlock {
+  simCodeModelFactory?: SimCodeModelFactory;
+  gShareUnit?: GShareUnit;
+  branchTargetBuffer?: BranchTargetBuffer;
+  branchFollowLimit: number;
+  instructionMemoryBlock?: InstructionMemoryBlock;
+  fetchedCode: Reference[];
+  numberOfWays: number;
+  pc: number;
+  stallFlag: boolean;
+  cycleId: number;
+}
+export interface SimCodeModelFactory {
+  id: number;
+  manager?: unknown;
+}
+export interface DecodeAndDispatchBlock {
+  beforeRenameCodeList: Reference[];
+  afterRenameCodeList: Reference[];
+  instructionFetchBlock?: InstructionFetchBlock;
+  renameMapTableBlock?: RenameMapTableBlock;
+  globalHistoryRegister?: GlobalHistoryRegister;
+  branchTargetBuffer?: BranchTargetBuffer;
+  instructionMemoryBlock?: InstructionMemoryBlock;
+  idCounter: number;
+  flush: boolean;
+  stallFlag: boolean;
+  stalledPullCount: number;
+  decodeBufferSize: number;
 }

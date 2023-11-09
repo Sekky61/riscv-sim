@@ -1,12 +1,11 @@
 /**
- * @file DialogFunctionUnitTypeEnum.java
- * @author Jan Vavra \n
- * Faculty of Information Technology \n
- * Brno University of Technology \n
- * xvavra20@fit.vutbr.cz
- * @brief File contains enumeration definition for function unit type
- * @date 14 April  2020 15:00 (created) \n
- * 28 April  2020 17:30 (revised)
+ * @file Identifiable.java
+ * @author Michal Majer
+ * Faculty of Information Technology
+ * Brno University of Technology
+ * xmajer21@stud.fit.vutbr.cz
+ * @brief File contains interface for identifiable objects
+ * @date 07 November  2023 18:00 (created)
  * @section Licence
  * This file is part of the Superscalar simulator app
  * <p>
@@ -25,13 +24,20 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.gradle.superscalarsim.enums;
 
-public enum DialogFunctionUnitTypeEnum
+package com.gradle.superscalarsim.models;
+
+/**
+ * Implemented by models that have unique identifier.
+ * Used for serialization.
+ *
+ * @brief Interface for identifiable objects
+ */
+public interface Identifiable
 {
-  kAlu,           ///< ALU function unit
-  kFloatingPoint, ///< FP function unit
-  kBranch,        ///< Branch function unit
-  kLoadStore,     ///< Load/Store function unit
-  kMemoryAccess   ///< Memory access (function) unit
+  /**
+   * @return Unique identifier of the object
+   * @brief Get the identifier
+   */
+  String getId();
 }

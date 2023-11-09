@@ -1,12 +1,11 @@
 /**
- * @file PrecedingPriorityEnum.java
- * @author Jan Vavra \n
- * Faculty of Information Technology \n
- * Brno University of Technology \n
- * xvavra20@fit.vutbr.cz
- * @brief File contains enumeration values for preceding table
- * @date 12 November  2020 18:00 (created) \n
- * 27 November  2020 10:12 (revised)
+ * @file RegisterModelManager.java
+ * @author Michal Majer
+ * Faculty of Information Technology
+ * Brno University of Technology
+ * xmajer21@stud.fit.vutbr.cz
+ * @brief File contains manager for RegisterModel instances
+ * @date 09 November  2023 16:00 (created)
  * @section Licence
  * This file is part of the Superscalar simulator app
  * <p>
@@ -25,14 +24,28 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.gradle.superscalarsim.enums;
+
+
+package com.gradle.superscalarsim.managers;
+
+import com.gradle.superscalarsim.models.register.RegisterModel;
+
+import java.util.WeakHashMap;
 
 /**
- * @brief Enumeration values for preceding table priorities
+ * Manages all register models in the simulation
  */
-public enum PrecedingPriorityEnum
+public class RegisterModelManager implements IInstanceManager<RegisterModel>
 {
-  kError,   ///< Combination of operators is invalid
-  kPush,    ///< Combination of operators, where loaded one has bigger priority than the one on top of stack
-  kEvaluate ///< Combination of operators, where loaded one has smaller priority than the one on top of stack
+  WeakHashMap<RegisterModel, Object> instances = new WeakHashMap<>();
+  
+  /**
+   * @return WeakHashMap of instances
+   * @brief Get the instances
+   */
+  @Override
+  public WeakHashMap<RegisterModel, Object> getInstances()
+  {
+    return instances;
+  }
 }

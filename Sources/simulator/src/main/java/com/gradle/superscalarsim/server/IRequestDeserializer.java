@@ -1,15 +1,15 @@
 /**
- * @file ValueTypeEnum.java
- * @author Jakub Horky \n
- * Faculty of Information Technology \n
- * Brno University of Technology \n
- * xhorky28@stud.fit.vutbr.cz
- * @brief File contains enumeration of type of values in 3 address code
- * @date 09 February  2023 18:00 (created)
+ * @file IRequestDeserializer.java
+ * @author Michal Majer
+ * Faculty of Information Technology
+ * Brno University of Technology
+ * xmajer21@stud.fit.vutbr.cz
+ * @brief Interface for requests
+ * @date 08 Nov      2023 20:00 (created)
  * @section Licence
  * This file is part of the Superscalar simulator app
  * <p>
- * Copyright (C) 2023  Jakub Horky
+ * Copyright (C) 2023 Michal Majer
  * <p>
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -24,14 +24,15 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.gradle.superscalarsim.enums.compiler;
 
-/**
- * @brief Type of value in internal representation
- */
-public enum ValueTypeEnum
+package com.gradle.superscalarsim.server;
+
+import com.fasterxml.jackson.core.JsonParseException;
+
+import java.io.IOException;
+import java.io.InputStream;
+
+public interface IRequestDeserializer<T>
 {
-  kReg, ///< Value is register - uses it's own enum
-  kImm, ///< Value is immediate
-  kVar ///< Value is variable name
+  T deserialize(InputStream json) throws IOException, JsonParseException;
 }
