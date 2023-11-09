@@ -64,7 +64,9 @@ public class RegisterFileModel implements IRegisterFile
   @JsonIdentityReference(alwaysAsId = true)
   private final List<RegisterModel> registerList;
   
-  // TODO: This acts as default values, meaning file reading does not fail on bad json file
+  /**
+   * Constructor for deserialization
+   */
   public RegisterFileModel()
   {
     this.name         = "";

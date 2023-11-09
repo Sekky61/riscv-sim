@@ -14,6 +14,7 @@ import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.enums.RegisterTypeEnum;
+import com.gradle.superscalarsim.factories.RegisterModelFactory;
 import com.gradle.superscalarsim.loader.InitLoader;
 import com.gradle.superscalarsim.models.InputCodeArgument;
 import com.gradle.superscalarsim.models.InputCodeModel;
@@ -177,7 +178,8 @@ public class BackwardSimulationTest
     
     // This adds the reg files, but also creates speculative registers!
     this.cpu.cpuState.unifiedRegisterFileBlock.setRegistersWithList(new ArrayList<>());
-    this.cpu.cpuState.unifiedRegisterFileBlock.loadRegisters(initLoader.getRegisterFileModelList());
+    this.cpu.cpuState.unifiedRegisterFileBlock.loadRegisters(initLoader.getRegisterFileModelList(),
+                                                             new RegisterModelFactory());
   }
   
   private ArithmeticFunctionUnitBlock getAddFunctionBlock(Cpu cpu)

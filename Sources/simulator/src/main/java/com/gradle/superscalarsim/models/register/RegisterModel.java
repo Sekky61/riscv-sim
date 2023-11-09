@@ -37,16 +37,17 @@ import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.enums.RegisterTypeEnum;
+import com.gradle.superscalarsim.models.Identifiable;
 
 /**
  * @class RegisterModel
  * @brief Definition of single register in register file
  */
-@JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
-public class RegisterModel
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "name")
+public class RegisterModel implements Identifiable
 {
   /**
-   * Name of register
+   * Name of register. Assumed to be unique by the serialization.
    */
   private String name;
   
@@ -160,6 +161,7 @@ public class RegisterModel
   
   /**
    * Copy constructor
+   * TODO: test
    */
   public RegisterModel(RegisterModel register)
   {
@@ -282,5 +284,15 @@ public class RegisterModel
   public void setValueContainer(RegisterDataContainer container)
   {
     this.value = container;
+  }
+  
+  /**
+   * @return Unique identifier of the object
+   * @brief Get the identifier
+   */
+  @Override
+  public String getId()
+  {
+    return name;
   }
 }

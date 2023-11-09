@@ -8,6 +8,7 @@ import com.gradle.superscalarsim.builders.RegisterFileModelBuilder;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.enums.RegisterTypeEnum;
+import com.gradle.superscalarsim.factories.RegisterModelFactory;
 import com.gradle.superscalarsim.loader.InitLoader;
 import com.gradle.superscalarsim.models.InputCodeArgument;
 import com.gradle.superscalarsim.models.InputCodeModel;
@@ -51,7 +52,8 @@ public class CodeArithmeticInterpreterIntTest
     Mockito.when(initLoader.getInstructionFunctionModels()).thenReturn(setUpInstructions());
     Mockito.when(initLoader.getInstructionFunctionModel(any())).thenCallRealMethod();
     
-    this.codeArithmeticInterpreter = new CodeArithmeticInterpreter(new UnifiedRegisterFileBlock(initLoader));
+    this.codeArithmeticInterpreter = new CodeArithmeticInterpreter(
+            new UnifiedRegisterFileBlock(initLoader, new RegisterModelFactory()));
   }
   
   private Map<String, InstructionFunctionModel> setUpInstructions()

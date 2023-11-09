@@ -40,6 +40,7 @@ import com.gradle.superscalarsim.blocks.loadstore.*;
 import com.gradle.superscalarsim.code.*;
 import com.gradle.superscalarsim.enums.cache.ReplacementPoliciesEnum;
 import com.gradle.superscalarsim.factories.InputCodeModelFactory;
+import com.gradle.superscalarsim.factories.RegisterModelFactory;
 import com.gradle.superscalarsim.factories.SimCodeModelFactory;
 import com.gradle.superscalarsim.loader.InitLoader;
 import com.gradle.superscalarsim.managers.ManagerRegistry;
@@ -139,10 +140,13 @@ public class CpuState implements Serializable
     // Factories (for tracking instances of models)
     InputCodeModelFactory inputCodeModelFactory = new InputCodeModelFactory(managerRegistry.inputCodeManager);
     SimCodeModelFactory   simCodeModelFactory   = new SimCodeModelFactory(managerRegistry.simCodeManager);
+    RegisterModelFactory  registerModelFactory  = new RegisterModelFactory(managerRegistry.registerModelManager);
     
-    // Hack to load all function models to manager
+    // Hack to load all function models and registers to manager
     initLoader.getInstructionFunctionModels()
             .forEach((name, model) -> managerRegistry.instructionFunctionManager.addInstance(model));
+    initLoader.getRegisterFileModelList().forEach(registerFileModel -> registerFileModel.getRegisterList()
+            .forEach(registerModel -> managerRegistry.registerModelManager.addInstance(registerModel)));
     
     // Parse code
     CodeParser codeParser = new CodeParser(initLoader, inputCodeModelFactory);
@@ -165,7 +169,7 @@ public class CpuState implements Serializable
     this.statisticsCounter      = new StatisticsCounter();
     this.cacheStatisticsCounter = new CacheStatisticsCounter();
     
-    this.unifiedRegisterFileBlock = new UnifiedRegisterFileBlock(initLoader);
+    this.unifiedRegisterFileBlock = new UnifiedRegisterFileBlock(initLoader, registerModelFactory);
     this.renameMapTableBlock      = new RenameMapTableBlock(unifiedRegisterFileBlock);
     
     this.globalHistoryRegister = new GlobalHistoryRegister(10);

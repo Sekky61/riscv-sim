@@ -4,6 +4,7 @@ import com.gradle.superscalarsim.blocks.base.InstructionMemoryBlock;
 import com.gradle.superscalarsim.blocks.base.UnifiedRegisterFileBlock;
 import com.gradle.superscalarsim.builders.InputCodeArgumentBuilder;
 import com.gradle.superscalarsim.builders.InputCodeModelBuilder;
+import com.gradle.superscalarsim.factories.RegisterModelFactory;
 import com.gradle.superscalarsim.loader.InitLoader;
 import com.gradle.superscalarsim.models.InputCodeArgument;
 import com.gradle.superscalarsim.models.InputCodeModel;
@@ -36,7 +37,8 @@ public class CodeBranchInterpreterTest
     InputCodeModel       nop             = new InputCodeModel(nopFM, new ArrayList<>(), 0);
     instructionMemoryBlock = new InstructionMemoryBlock(inputCodeModels, labels, nop);
     
-    UnifiedRegisterFileBlock unifiedRegisterFileBlock = new UnifiedRegisterFileBlock(initLoader);
+    UnifiedRegisterFileBlock unifiedRegisterFileBlock = new UnifiedRegisterFileBlock(initLoader,
+                                                                                     new RegisterModelFactory());
     unifiedRegisterFileBlock.getRegister("x1").setValue(0);
     unifiedRegisterFileBlock.getRegister("x2").setValue(25);
     unifiedRegisterFileBlock.getRegister("x3").setValue(6);
