@@ -42,7 +42,7 @@ import { selectAsmCode } from '@/lib/redux/compilerSlice';
 import { selectActiveIsa } from '@/lib/redux/isaSlice';
 import type { RootState } from '@/lib/redux/store';
 import { callSimulationImpl } from '@/lib/serverCalls/callCompiler';
-import type { CpuState, Reference } from '@/lib/types/cpuApi';
+import type { CpuState, Reference, RegisterModel } from '@/lib/types/cpuApi';
 
 // Define a type for the slice state
 interface CpuSlice {
@@ -223,6 +223,41 @@ export const selectProgramWithLabels = createSelector(
     return codeOrder;
   },
 );
+
+export const selectAllRegisters = (state: RootState) =>
+  state.cpu.state?.managerRegistry.registerModelManager;
+export const selectRegisterIdMap = (state: RootState) =>
+  state.cpu.state?.unifiedRegisterFileBlock.registerMap;
+
+/**
+ * Add aliases to the map of registers.
+ */
+export const selectRegisterMap = createSelector(
+  [selectAllRegisters, selectRegisterIdMap],
+  (registers, map): Record<string, RegisterModel> | null => {
+    // Go through the map of ids and join the register models with the ids
+    if (!registers || !map) {
+      return null;
+    }
+
+    // Copy the registers
+    const registerMap: Record<string, RegisterModel> = { ...registers };
+
+    // Assign aliases (not in the map at the moment)
+    Object.entries(map).forEach(([alias, id]) => {
+      const register = registers[id];
+      if (!register) {
+        throw new Error(`Register ${id} not found`);
+      }
+      registerMap[alias] ??= register;
+    });
+
+    return registerMap;
+  },
+);
+
+export const selectRegisterById = (state: RootState, id: Reference) =>
+  selectRegisterMap(state)?.[id];
 
 export const selectFetch = (state: RootState) =>
   state.cpu.state?.instructionFetchBlock;

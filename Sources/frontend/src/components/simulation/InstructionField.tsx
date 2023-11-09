@@ -33,6 +33,7 @@ import clsx from 'clsx';
 
 import {
   selectInputCodeModelById,
+  selectRegisterById,
   selectSimCodeModelById,
 } from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
@@ -74,13 +75,11 @@ export default function InstructionField({
       <InstructionName mnemonic={inputCodeModel.instructionName} />
       <div className='flex gap-2'>
         {args.map((arg) => (
-          <div
+          <InstructionArgument
+            argName={arg.name}
+            idOrLiteral={arg.value}
             key={arg.name}
-            className='rounded hover:bg-gray-200 w-6 h-6 flex justify-center items-center leading-4'
-            title={`Argument ${arg.name}: ${arg.value}`}
-          >
-            {arg.value}
-          </div>
+          />
         ))}
       </div>
     </InstructionBubble>
@@ -103,6 +102,42 @@ function InstructionName({ mnemonic }: { mnemonic: string }) {
   return (
     <div className='font-mono hover:cursor-pointer hover:underline leading-4'>
       {mnemonic}
+    </div>
+  );
+}
+
+export interface InstructionArgumentProps {
+  argName: string;
+  idOrLiteral: string;
+}
+
+function InstructionArgument({
+  argName,
+  idOrLiteral,
+}: InstructionArgumentProps) {
+  const register = useAppSelector((state) =>
+    selectRegisterById(state, idOrLiteral),
+  );
+
+  const isRegister = register !== undefined;
+
+  let displayText;
+  let hoverText;
+
+  if (isRegister) {
+    displayText = register?.name;
+    hoverText = `${register?.name} (${register?.value.bits})`;
+  } else {
+    displayText = idOrLiteral;
+    hoverText = idOrLiteral;
+  }
+
+  return (
+    <div
+      className='rounded hover:bg-gray-200 w-6 h-6 flex justify-center items-center leading-4'
+      title={hoverText}
+    >
+      {displayText}
     </div>
   );
 }

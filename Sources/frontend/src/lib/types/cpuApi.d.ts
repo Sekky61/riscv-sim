@@ -71,6 +71,7 @@ export interface ManagerRegistry {
   instructionFunctionManager: Record<string, InstructionFunctionModel>;
   inputCodeManager: Record<string, InputCodeModel>;
   simCodeManager: Record<string, SimCodeModel>;
+  registerModelManager: Record<string, RegisterModel>;
 }
 
 export interface InstructionMemoryBlock {
@@ -81,11 +82,30 @@ export interface InstructionMemoryBlock {
   };
 }
 
+export type InstructionTypeEnum = 'kArithmetic' | 'kLoadstore' | 'kJumpbranch';
+
+export type DataTypeEnum =
+  | 'kInt'
+  | 'kUInt'
+  | 'kLong'
+  | 'kULong'
+  | 'kFloat'
+  | 'kDouble'
+  | 'kBool';
+
+export type RegisterReadinessEnum =
+  | 'kFree'
+  | 'kAllocated'
+  | 'kExecuted'
+  | 'kAssigned';
+
+export type RegisterTypeEnum = 'kInt' | 'kFloat';
+
 export interface InputCodeModel {
   codeId: number;
   instructionName: string;
   arguments: InputCodeArgument[];
-  instructionTypeEnum: 'kArithmetic' | 'kLoadstore' | 'kJumpbranch';
+  instructionTypeEnum: InstructionTypeEnum;
   instructionFunctionModel: Reference;
 }
 
@@ -96,7 +116,7 @@ export interface InputCodeArgument {
 
 export interface InstructionFunctionModel {
   name: string;
-  instructionType: 'kArithmetic' | 'kLoadstore' | 'kJumpbranch';
+  instructionType: InstructionTypeEnum;
   arguments: Argument[];
   interpretableAs: string;
   dataType:
@@ -109,13 +129,15 @@ export interface InstructionFunctionModel {
     | 'kBool';
   unconditionalJump: boolean;
 }
+
 export interface Argument {
-  name?: string;
-  type?: 'kInt' | 'kUInt' | 'kLong' | 'kULong' | 'kFloat' | 'kDouble' | 'kBool';
+  name: string;
+  type: DataTypeEnum;
   defaultValue?: string;
-  writeBack: boolean;
-  silent: boolean;
+  writeBack?: boolean;
+  silent?: boolean;
 }
+
 export interface ReorderBufferState {
   reorderQueue: ReorderBufferItem[];
   commitLimit: number;
@@ -160,37 +182,30 @@ export interface GShareUnit {
   size: number;
 }
 export interface UnifiedRegisterFileBlock {
-  registerMap?: {
-    [k: string]: RegisterModel;
+  registerMap: {
+    [k: string]: Reference;
   };
   speculativeRegisterFile?: SpeculativeRegisterFile;
 }
 export interface RegisterModel {
-  name?: string;
+  name: string;
   isConstant: boolean;
-  type?: 'kInt' | 'kFloat';
-  value?: RegisterDataContainer;
-  readiness?: 'kFree' | 'kAllocated' | 'kExecuted' | 'kAssigned';
+  type: RegisterTypeEnum;
+  value: RegisterDataContainer;
+  readiness: RegisterReadinessEnum;
   constant: boolean;
 }
 export interface RegisterDataContainer {
   bits: number;
-  currentType?:
-    | 'kInt'
-    | 'kUInt'
-    | 'kLong'
-    | 'kULong'
-    | 'kFloat'
-    | 'kDouble'
-    | 'kBool';
+  currentType: DataTypeEnum;
 }
 
 export interface RenameMapTableBlock {
-  freeList?: string[];
-  registerMap?: {
-    [k: string]: RenameMapModel;
+  freeList: string[];
+  registerMap: {
+    [k: string]: Reference;
   };
-  referenceMap?: {
+  referenceMap: {
     [k: string]: number;
   };
   registerFileBlock?: UnifiedRegisterFileBlock;

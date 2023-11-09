@@ -33,6 +33,7 @@
 package com.gradle.superscalarsim.blocks.base;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.factories.RegisterModelFactory;
@@ -65,6 +66,7 @@ public class UnifiedRegisterFileBlock
    * Speculative registers are not included in this map.
    * Also, theoretically faster than searching through the list (O(1) vs O(n)).
    */
+  @JsonIdentityReference(alwaysAsId = true)
   private final Map<String, RegisterModel> registerMap;
   
   /**
