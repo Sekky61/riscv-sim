@@ -34,9 +34,9 @@ import com.gradle.superscalarsim.server.schema.SchemaHandler;
 import com.gradle.superscalarsim.server.simulate.SimulateHandler;
 import io.undertow.Handlers;
 import io.undertow.Undertow;
-import io.undertow.predicate.Predicates;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.handlers.encoding.ContentEncodingRepository;
+import io.undertow.server.handlers.encoding.DeflateEncodingProvider;
 import io.undertow.server.handlers.encoding.EncodingHandler;
 import io.undertow.server.handlers.encoding.GzipEncodingProvider;
 
@@ -81,9 +81,8 @@ public class Server
     if (useGzip)
     {
       baseHandler = new EncodingHandler(
-              new ContentEncodingRepository().addEncodingHandler("gzip", new GzipEncodingProvider(), 50,
-                                                                 Predicates.parse("max-content-size(5)"))).setNext(
-              pathHandler);
+              new ContentEncodingRepository().addEncodingHandler("gzip", new GzipEncodingProvider(), 50)
+                      .addEncodingHandler("deflate", new DeflateEncodingProvider(), 10)).setNext(pathHandler);
     }
     
     Undertow server = Undertow.builder().addHttpListener(port, host).setHandler(baseHandler).build();
