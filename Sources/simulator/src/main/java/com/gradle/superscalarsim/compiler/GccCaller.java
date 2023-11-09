@@ -32,7 +32,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gradle.superscalarsim.serialization.Serialization;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * @brief Class to call GCC
@@ -93,7 +92,7 @@ public class GccCaller
     if (exitValue != 0)
     {
       // Take error from stderr
-      List<Map<String, Object>> error = null;
+      List<Object> error = null;
       try
       {
         String error_string = new String(p.getErrorStream().readAllBytes());
@@ -127,9 +126,9 @@ public class GccCaller
     public boolean success;
     public String code;
     public String error;
-    public List<Map<String, Object>> compilerErrors;
+    public List<Object> compilerErrors;
     
-    private CompileResult(boolean success, String code, String error, List<Map<String, Object>> compilerErrors)
+    private CompileResult(boolean success, String code, String error, List<Object> compilerErrors)
     {
       this.success        = success;
       this.code           = code;
@@ -142,7 +141,7 @@ public class GccCaller
       return new CompileResult(true, code, null, null);
     }
     
-    public static CompileResult failure(String error, List<Map<String, Object>> compilerErrors)
+    public static CompileResult failure(String error, List<Object> compilerErrors)
     {
       return new CompileResult(false, null, error, compilerErrors);
     }

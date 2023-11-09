@@ -27,15 +27,19 @@
 
 package com.gradle.superscalarsim.server.compile;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class CompileRequest
 {
   /**
    * @brief The C code to compile
    */
+  @JsonProperty(required = true)
   String code;
   /**
    * @brief True if the code should be optimized
    */
+  @JsonProperty(required = true)
   boolean optimize;
   
   /**

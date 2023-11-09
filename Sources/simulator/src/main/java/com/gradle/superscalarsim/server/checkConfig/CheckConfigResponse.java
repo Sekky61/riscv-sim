@@ -27,6 +27,8 @@
 
 package com.gradle.superscalarsim.server.checkConfig;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.List;
 
 /**
@@ -37,11 +39,13 @@ public class CheckConfigResponse
   /**
    * True if the configuration is valid
    */
+  @JsonProperty(required = true)
   public boolean valid;
   
   /**
    * List of messages describing the errors in the configuration.
    */
+  @JsonProperty(required = true)
   public List<String> messages;
   
   public CheckConfigResponse(boolean valid, List<String> messages)

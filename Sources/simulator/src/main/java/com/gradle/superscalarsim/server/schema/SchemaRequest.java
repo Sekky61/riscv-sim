@@ -27,6 +27,9 @@
 
 package com.gradle.superscalarsim.server.schema;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.gradle.superscalarsim.server.EndpointName;
+
 /**
  * Parameters for the /schema endpoint request
  */
@@ -36,10 +39,17 @@ public class SchemaRequest
    * Name of the endpoint to get the schema for.
    * Example: "simulate" for the "/simulate" endpoint
    */
-  String endpoint;
+  @JsonProperty(required = true)
+  EndpointName endpoint;
   
   /**
    * Request to get the schema for. Either "request" or "response".
    */
-  String requestResponse;
+  @JsonProperty(required = true)
+  RequestResponse requestResponse;
+  
+  public enum RequestResponse
+  {
+    request, response
+  }
 }

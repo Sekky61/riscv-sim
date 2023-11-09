@@ -27,6 +27,7 @@
 
 package com.gradle.superscalarsim.server.checkConfig;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gradle.superscalarsim.cpu.CpuConfiguration;
 
 /**
@@ -37,5 +38,6 @@ public class CheckConfigRequest
   /**
    * The configuration to check
    */
+  @JsonProperty(required = true)
   CpuConfiguration config;
 }

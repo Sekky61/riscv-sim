@@ -1,11 +1,11 @@
 /**
- * @file CompileRequest.java
+ * @file EndpointName.java
  * @author Michal Majer
  * Faculty of Information Technology
  * Brno University of Technology
  * xmajer21@stud.fit.vutbr.cz
- * @brief Request for the /compile endpoint
- * @date 26 Sep      2023 10:00 (created)
+ * @brief Enumerates all endpoints
+ * @date 09 Nov      2023 9:00 (created)
  * @section Licence
  * This file is part of the Superscalar simulator app
  * <p>
@@ -25,28 +25,39 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.gradle.superscalarsim.server.parseAsm;
+package com.gradle.superscalarsim.server;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class ParseAsmRequest
+/**
+ * Enumerates all endpoints
+ */
+public enum EndpointName
 {
-  /**
-   * @brief The ASM code to parse
-   */
-  @JsonProperty(required = true)
-  String code;
+  compile("compile"), parseAsm("parseAsm"), checkConfig("checkConfig"), simulate("simulate"), schema("schema");
   
-  /**
-   * @brief Default constructor for deserialization
-   */
-  public ParseAsmRequest()
+  private final String pathName;
+  
+  EndpointName(String pathName)
   {
-  
+    this.pathName = pathName;
   }
   
-  public ParseAsmRequest(String code)
+  /**
+   * @return The path of the endpoint
+   */
+  public String getPath()
   {
-    this.code = code;
+    return "/" + pathName;
+  }
+  
+  /**
+   * @return The name of the endpoint
+   */
+  @JsonProperty("endpoint")
+  public String getName()
+  {
+    return pathName;
   }
 }
+

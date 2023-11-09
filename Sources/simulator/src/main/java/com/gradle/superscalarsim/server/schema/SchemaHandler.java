@@ -27,8 +27,8 @@
 
 package com.gradle.superscalarsim.server.schema;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.module.jsonSchema.JsonSchema;
 import com.gradle.superscalarsim.serialization.Serialization;
 import com.gradle.superscalarsim.server.IRequestDeserializer;
 import com.gradle.superscalarsim.server.IRequestResolver;
@@ -45,11 +45,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Objects;
 
-public class SchemaHandler implements IRequestResolver<SchemaRequest, JsonSchema>, IRequestDeserializer<SchemaRequest>
+public class SchemaHandler implements IRequestResolver<SchemaRequest, JsonNode>, IRequestDeserializer<SchemaRequest>
 {
-  
-  static String REQUEST = "request";
-  static String RESPONSE = "response";
   
   @Override
   public SchemaRequest deserialize(InputStream json) throws IOException
@@ -65,27 +62,21 @@ public class SchemaHandler implements IRequestResolver<SchemaRequest, JsonSchema
    * @brief Find the correct schema for the request
    */
   @Override
-  public JsonSchema resolve(SchemaRequest request)
+  public JsonNode resolve(SchemaRequest request)
   {
     System.out.println("SchemaHandler.resolve " + request);
     
-    boolean isRequest = Objects.equals(request.requestResponse, REQUEST);
+    boolean isRequest = Objects.equals(request.requestResponse, SchemaRequest.RequestResponse.request);
     
     // Match the request to the correct handler
     Class<?> handler = switch (request.endpoint)
     {
-      case "simulate" -> isRequest ? SimulateRequest.class : SimulateResponse.class;
-      case "parseAsm" -> isRequest ? ParseAsmRequest.class : ParseAsmResponse.class;
-      case "compile" -> isRequest ? CompileRequest.class : CompileResponse.class;
-      case "schema" -> isRequest ? SchemaRequest.class : JsonSchema.class;
-      case "checkConfig" -> isRequest ? CheckConfigRequest.class : CheckConfigResponse.class;
-      default -> null;
+      case simulate -> isRequest ? SimulateRequest.class : SimulateResponse.class;
+      case parseAsm -> isRequest ? ParseAsmRequest.class : ParseAsmResponse.class;
+      case compile -> isRequest ? CompileRequest.class : CompileResponse.class;
+      case schema -> isRequest ? SchemaRequest.class : JsonNode.class;
+      case checkConfig -> isRequest ? CheckConfigRequest.class : CheckConfigResponse.class;
     };
-    
-    if (handler == null)
-    {
-      return null;
-    }
     
     // Get the schema for the handler
     return Serialization.getSchema(handler);

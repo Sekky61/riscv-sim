@@ -69,11 +69,12 @@ public class Server
   public void start() throws IOException
   {
     // Register handlers
-    HttpHandler pathHandler = Handlers.path().addPrefixPath("/compile", new MyRequestHandler<>(new CompileHandler()))
-            .addPrefixPath("/parseAsm", new MyRequestHandler<>(new ParseAsmHandler()))
-            .addPrefixPath("/checkConfig", new MyRequestHandler<>(new CheckConfigHandler()))
-            .addPrefixPath("/simulate", new MyRequestHandler<>(new SimulateHandler()))
-            .addPrefixPath("/schema", new MyRequestHandler<>(new SchemaHandler()));
+    HttpHandler pathHandler = Handlers.path()
+            .addPrefixPath(EndpointName.compile.getPath(), new MyRequestHandler<>(new CompileHandler()))
+            .addPrefixPath(EndpointName.parseAsm.getPath(), new MyRequestHandler<>(new ParseAsmHandler()))
+            .addPrefixPath(EndpointName.checkConfig.getPath(), new MyRequestHandler<>(new CheckConfigHandler()))
+            .addPrefixPath(EndpointName.simulate.getPath(), new MyRequestHandler<>(new SimulateHandler()))
+            .addPrefixPath(EndpointName.schema.getPath(), new MyRequestHandler<>(new SchemaHandler()));
     HttpHandler baseHandler = pathHandler;
     
     // Add gzip encoding
