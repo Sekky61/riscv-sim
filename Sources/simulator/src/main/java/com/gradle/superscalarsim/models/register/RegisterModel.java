@@ -48,17 +48,17 @@ public class RegisterModel
   /**
    * Name of register
    */
-  private final String name;
+  private String name;
   
   /**
    * True if the value of register is constant (example: register x0 from risc-v spec)
    */
-  private final boolean isConstant;
+  private boolean isConstant;
   
   /**
    * Data type of register (int, float)
    */
-  private final RegisterTypeEnum type;
+  private RegisterTypeEnum type;
   
   /**
    * Value inside the register
@@ -70,6 +70,13 @@ public class RegisterModel
    * Architecture registers are `kAssigned` by default, speculative ones are `kFree`
    */
   private RegisterReadinessEnum readiness;
+  
+  /**
+   * @brief Default constructor for deserialization
+   */
+  public RegisterModel()
+  {
+  }
   
   /**
    * @param name       Register name

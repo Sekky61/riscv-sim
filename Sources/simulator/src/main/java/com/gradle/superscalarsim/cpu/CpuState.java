@@ -27,8 +27,8 @@
 
 package com.gradle.superscalarsim.cpu;
 
-import com.cedarsoftware.util.io.JsonReader;
-import com.cedarsoftware.util.io.JsonWriter;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gradle.superscalarsim.blocks.CacheStatisticsCounter;
 import com.gradle.superscalarsim.blocks.StatisticsCounter;
 import com.gradle.superscalarsim.blocks.arithmetic.AluIssueWindowBlock;
@@ -45,7 +45,7 @@ import com.gradle.superscalarsim.loader.InitLoader;
 import com.gradle.superscalarsim.managers.ManagerRegistry;
 import com.gradle.superscalarsim.models.InputCodeModel;
 import com.gradle.superscalarsim.models.InstructionFunctionModel;
-import com.gradle.superscalarsim.serialization.GsonConfiguration;
+import com.gradle.superscalarsim.serialization.Serialization;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -347,13 +347,20 @@ public class CpuState implements Serializable
   
   public String serialize()
   {
-    return JsonWriter.objectToJson(this, GsonConfiguration.getJsonWriterOptions());
+    ObjectMapper serializer = Serialization.getSerializer();
+    try
+    {
+      return serializer.writeValueAsString(this);
+    }
+    catch (JsonProcessingException e)
+    {
+      throw new RuntimeException(e);
+    }
   }
   
   public static CpuState deserialize(String json)
   {
-    CpuState state = (CpuState) JsonReader.jsonToJava(json, GsonConfiguration.getJsonReaderOptions());
-    return state;
+    throw new UnsupportedOperationException("Not implemented");
   }
   
   /**
@@ -377,8 +384,8 @@ public class CpuState implements Serializable
     CpuState myObject = (CpuState) obj;
     
     // Compare:
-    String meJson    = JsonWriter.objectToJson(this, GsonConfiguration.getJsonWriterOptions());
-    String otherJson = JsonWriter.objectToJson(myObject, GsonConfiguration.getJsonWriterOptions());
+    String meJson    = this.serialize();
+    String otherJson = myObject.serialize();
     
     return meJson.equals(otherJson);
   }

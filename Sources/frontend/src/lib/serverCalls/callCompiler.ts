@@ -33,14 +33,12 @@ import { CompilerOptions } from '../redux/compilerSlice';
 
 export type CompilerAPIResponse =
   | {
-      '@type': string;
       success: true;
       program: string;
       cLines: number[];
       asmToC: number[];
     }
   | {
-      '@type': string;
       success: false;
       error: string;
       compilerError: {
@@ -73,7 +71,6 @@ export async function callCompilerImpl(code: string, options: CompilerOptions) {
   // fetch from :8000/compile
   // payload:
   // {
-  //   "@type": "com.gradle.superscalarsim.server.compile.CompileRequest",
   //   "code": string
   //   "optimize": boolean
   // }
@@ -87,7 +84,6 @@ export async function callCompilerImpl(code: string, options: CompilerOptions) {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      '@type': 'com.gradle.superscalarsim.server.compile.CompileRequest',
       code,
       optimize: options.optimize,
     }),

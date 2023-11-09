@@ -251,19 +251,26 @@ public class InstructionFunctionModel implements Identifiable
   public static class Argument
   {
     @JsonProperty
-    private final String name;
+    private String name;
     @JsonProperty
-    private final DataTypeEnum type;
+    private DataTypeEnum type;
     @JsonProperty
-    private final String defaultValue;
+    private String defaultValue;
     @JsonProperty
-    private final boolean writeBack;
+    private boolean writeBack;
     
     /**
      * @brief If true, count this argument as data dependency, but is not allowed to be used in ASM code.
      */
     @JsonProperty
-    private final boolean silent;
+    private boolean silent;
+    
+    /**
+     * @brief Default Constructor for deserialization
+     */
+    Argument()
+    {
+    }
     
     public Argument(String name, DataTypeEnum type, String defaultValue)
     {
