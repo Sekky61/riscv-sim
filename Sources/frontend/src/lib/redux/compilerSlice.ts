@@ -266,7 +266,7 @@ export const compilerSlice = createSlice({
         state.asmDirty = false;
         if (!action.payload.success) {
           state.compileStatus = 'failed';
-          state.cErrors = action.payload.compilerError['@items'];
+          state.cErrors = action.payload.compilerError;
           // Delete mapping
           state.cLines = [];
           state.asmToC = [];
@@ -295,7 +295,7 @@ export const compilerSlice = createSlice({
       .addCase(callParseAsm.fulfilled, (state, action) => {
         state.asmDirty = false;
         if (!action.payload.success) {
-          state.asmErrors = action.payload.errors['@items'];
+          state.asmErrors = action.payload.errors;
           return;
         }
         state.asmErrors = [];
@@ -379,7 +379,36 @@ export const selectAsmCodeMirrorErrors = createSelector(
     if (dirty) {
       return [];
     }
-    return transformErrors(errors, asmCode);
+    // Transform simple to complex errors
+    const simpleErrors: Array<ComplexErrorItem> = errors.map((err) => {
+      const c: ComplexErrorItem = {
+        kind: err.kind,
+        message: err.message,
+        locations: [
+          {
+            caret: {
+              line: err.line,
+              'display-column': err.columnStart,
+            },
+          },
+        ],
+      };
+
+      if (err.columnEnd && c.locations.length > 0) {
+        const loc = c.locations[0];
+        if (!loc) {
+          throw new Error('Unexpected error');
+        }
+        loc.finish = {
+          line: err.line,
+          'display-column': err.columnEnd,
+        };
+      }
+
+      return c;
+    });
+
+    return transformErrors(simpleErrors, asmCode);
   },
 );
 

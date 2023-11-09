@@ -65,7 +65,7 @@ export interface CpuState {
   reorderBufferBlock: ReorderBufferBlock;
 }
 
-export type Reference = number;
+export type Reference = number | string;
 
 export interface ManagerRegistry {
   instructionFunctionManager: Record<string, InstructionFunctionModel>;
@@ -85,8 +85,8 @@ export interface InputCodeModel {
   codeId: number;
   instructionName: string;
   arguments: InputCodeArgument[];
-  instructionTypeEnum?: 'kArithmetic' | 'kLoadstore' | 'kJumpbranch';
-  instructionFunctionModel?: InstructionFunctionModel;
+  instructionTypeEnum: 'kArithmetic' | 'kLoadstore' | 'kJumpbranch';
+  instructionFunctionModel: Reference;
 }
 
 export interface InputCodeArgument {
@@ -95,11 +95,11 @@ export interface InputCodeArgument {
 }
 
 export interface InstructionFunctionModel {
-  name?: string;
-  instructionType?: 'kArithmetic' | 'kLoadstore' | 'kJumpbranch';
-  arguments?: Argument[];
-  interpretableAs?: string;
-  dataType?:
+  name: string;
+  instructionType: 'kArithmetic' | 'kLoadstore' | 'kJumpbranch';
+  arguments: Argument[];
+  interpretableAs: string;
+  dataType:
     | 'kInt'
     | 'kUInt'
     | 'kLong'
@@ -117,20 +117,20 @@ export interface Argument {
   silent: boolean;
 }
 export interface ReorderBufferState {
-  reorderQueue?: ReorderBufferItem[];
+  reorderQueue: ReorderBufferItem[];
   commitLimit: number;
   commitId: number;
   speculativePulls: boolean;
   bufferSize: number;
 }
 export interface ReorderBufferItem {
-  simCodeModel?: SimCodeModel;
-  reorderFlags?: ReorderFlags;
+  simCodeModel: Reference;
+  reorderFlags: ReorderFlags;
 }
 export interface SimCodeModel {
   id: number;
-  inputCodeModel?: InputCodeModel;
-  renamedArguments?: InputCodeArgument[];
+  inputCodeModel: Reference;
+  renamedArguments: InputCodeArgument[];
   instructionBulkNumber: number;
   issueWindowId: number;
   functionUnitId: number;
@@ -205,7 +205,7 @@ export interface InstructionFetchBlock {
   branchTargetBuffer?: BranchTargetBuffer;
   branchFollowLimit: number;
   instructionMemoryBlock?: InstructionMemoryBlock;
-  fetchedCode?: SimCodeModel[];
+  fetchedCode: Reference[];
   numberOfWays: number;
   pc: number;
   stallFlag: boolean;
@@ -216,8 +216,8 @@ export interface SimCodeModelFactory {
   manager?: unknown;
 }
 export interface DecodeAndDispatchBlock {
-  beforeRenameCodeList?: SimCodeModel[];
-  afterRenameCodeList?: SimCodeModel[];
+  beforeRenameCodeList: Reference[];
+  afterRenameCodeList: Reference[];
   instructionFetchBlock?: InstructionFetchBlock;
   renameMapTableBlock?: RenameMapTableBlock;
   globalHistoryRegister?: GlobalHistoryRegister;

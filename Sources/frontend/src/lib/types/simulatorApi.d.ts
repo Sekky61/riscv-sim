@@ -141,7 +141,7 @@ export type ParseAsmResponse =
     };
 
 export interface SimpleParseError {
-  kind: string;
+  kind: 'error' | 'warning';
   message: string;
   line: number;
   columnStart: number;

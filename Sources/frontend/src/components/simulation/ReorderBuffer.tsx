@@ -74,7 +74,7 @@ export default function ReorderBuffer() {
           const isConfirmed = !(item?.reorderFlags.isSpeculative ?? false);
           return (
             <div className='relative'>
-              <InstructionField instruction={item?.simCodeModel} />
+              <InstructionField instructionId={item?.simCodeModel} />
               {isPresent && isConfirmed && (
                 <span className='absolute right-0 top-0 w-1 h-full bg-green-300' />
               )}

@@ -31,19 +31,35 @@
 
 import clsx from 'clsx';
 
-import { getArrayItems } from '@/lib/cpuState/util';
-import { SimCodeModel } from '@/lib/types/cpuDeref';
+import {
+  selectInputCodeModelById,
+  selectSimCodeModelById,
+} from '@/lib/redux/cpustateSlice';
+import { useAppSelector } from '@/lib/redux/hooks';
+import { Reference } from '@/lib/types/cpuApi';
 import { ReactChildren, ReactClassName } from '@/lib/types/reactTypes';
 
 export type InstructionFieldProps = {
-  instruction?: SimCodeModel;
+  instructionId?: Reference;
 };
 
 export default function InstructionField({
-  instruction,
+  instructionId,
 }: InstructionFieldProps) {
-  // Empty field
-  if (!instruction) {
+  const simCodeId = instructionId === undefined ? 'INVALID' : instructionId;
+  const instruction = useAppSelector((state) =>
+    selectSimCodeModelById(state, simCodeId),
+  );
+
+  const inputCodeId =
+    instruction?.inputCodeModel == undefined
+      ? 'INVALID'
+      : instruction?.inputCodeModel;
+  const inputCodeModel = useAppSelector((state) =>
+    selectInputCodeModelById(state, inputCodeId),
+  );
+
+  if (!instruction || !inputCodeModel) {
     return (
       <InstructionBubble className='flex justify-center px-2 py-1 font-mono'>
         <span className='text-gray-400'>empty</span>
@@ -51,11 +67,11 @@ export default function InstructionField({
     );
   }
 
-  const args = getArrayItems(instruction.renamedArguments);
+  const args = instruction.renamedArguments;
 
   return (
     <InstructionBubble className='flex justify-between items-center gap-4 font-mono px-2'>
-      <InstructionName mnemonic={instruction.inputCodeModel.instructionName} />
+      <InstructionName mnemonic={inputCodeModel.instructionName} />
       <div className='flex gap-2'>
         {args.map((arg) => (
           <div
