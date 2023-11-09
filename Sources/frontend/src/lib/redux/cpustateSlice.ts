@@ -46,7 +46,7 @@ import {
 import { selectAsmCode } from '@/lib/redux/compilerSlice';
 import { selectActiveIsa } from '@/lib/redux/isaSlice';
 import type { RootState } from '@/lib/redux/store';
-import { callSimulationImpl } from '@/lib/serverCalls/callSimulation';
+import { callSimulationImpl } from '@/lib/serverCalls/callCompiler';
 import type { CpuState, InputCodeModel } from '@/lib/types/cpuApi';
 import type {
   DecodeAndDispatchBlock,

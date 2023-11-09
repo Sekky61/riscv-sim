@@ -41,15 +41,15 @@ import { notify } from 'reapop';
 import { transformErrors } from '@/lib/editor/transformErrors';
 import type { RootState } from '@/lib/redux/store';
 import {
-  callParseAsmImpl,
-  ParseAsmAPIResponse,
-} from '@/lib/serverCalls/callParseAsm';
-
-import {
   callCompilerImpl,
-  CompilerAPIResponse,
-  ErrorItem,
-} from '../serverCalls/callCompiler';
+  callParseAsmImpl,
+} from '@/lib/serverCalls/callCompiler';
+import {
+  CompileResponse,
+  ComplexErrorItem,
+  ParseAsmResponse,
+  SimpleParseError,
+} from '@/lib/types/simulatorApi';
 
 export interface CompilerOptions {
   optimize: boolean;
@@ -75,8 +75,8 @@ interface CompilerState extends CompilerOptions {
   cDirty: boolean;
   asmDirty: boolean;
   asmManuallyEdited: boolean;
-  cErrors: Array<ErrorItem>;
-  asmErrors: Array<ErrorItem>;
+  cErrors: Array<ComplexErrorItem>;
+  asmErrors: Array<SimpleParseError>;
 }
 
 // Define the initial state using that type
@@ -101,7 +101,7 @@ const initialState: CompilerState = {
 };
 
 // Call example: dispatch(callCompiler());
-export const callCompiler = createAsyncThunk<CompilerAPIResponse>(
+export const callCompiler = createAsyncThunk<CompileResponse>(
   'compiler/callCompiler',
   async (arg, { getState, dispatch }) => {
     // @ts-ignore
@@ -148,7 +148,7 @@ export const callCompiler = createAsyncThunk<CompilerAPIResponse>(
 );
 
 // Call example: dispatch(callParseAsm());
-export const callParseAsm = createAsyncThunk<ParseAsmAPIResponse>(
+export const callParseAsm = createAsyncThunk<ParseAsmResponse>(
   'compiler/callParseAsm',
   async (arg, { getState, dispatch }) => {
     // @ts-ignore

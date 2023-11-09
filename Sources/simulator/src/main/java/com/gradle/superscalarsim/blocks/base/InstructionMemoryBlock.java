@@ -49,11 +49,10 @@ public class InstructionMemoryBlock
 {
   /**
    * Nop instruction is instantiated once and reused, to have all SimCodeModel objects point to the same object.
-   * TODO: @JsonIdentityReference(alwaysAsId = true)
    *
    * @brief Nop instruction
    */
-  
+  @JsonIdentityReference(alwaysAsId = true)
   private final InputCodeModel nop;
   /**
    * List of parsed instructions

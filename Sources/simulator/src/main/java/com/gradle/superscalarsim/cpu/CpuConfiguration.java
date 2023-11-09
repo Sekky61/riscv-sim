@@ -27,6 +27,7 @@
 
 package com.gradle.superscalarsim.cpu;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.gradle.superscalarsim.code.CodeParser;
 import com.gradle.superscalarsim.code.ParseError;
 import com.gradle.superscalarsim.loader.InitLoader;
@@ -71,14 +72,12 @@ import java.util.Objects;
 //    };
 
 /**
- * @author Michal Majer
- * Faculty of Information Technology
- * Brno University of Technology
- * xmajer21@stud.fit.vutbr.cz
+ * @details @JsonIgnoreProperties makes deserialization ignore any extra properties (client sends 'name' of config)
  * @class CpuConfiguration
  * @brief Class representing the CPU configuration
  * Can be used to create a CpuState
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class CpuConfiguration implements Serializable
 {
   /**
