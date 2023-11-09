@@ -27,14 +27,6 @@
 
 package com.gradle.superscalarsim.code;
 
-
-import com.cedarsoftware.util.io.JsonWriter;
-import org.apache.commons.text.StringEscapeUtils;
-
-import java.io.IOException;
-import java.io.Writer;
-import java.util.Map;
-
 /**
  * Assumes an error is associated with a single location and a single line;
  *
@@ -95,57 +87,6 @@ public class ParseError
   }
   
   /**
-   * The JSON serializes the object as a subset of the GCC error format.
-   * One difference compared to GCC is that GCC serializes file indexes as floats.
-   *
-   * @brief a custom JSON serializer to mimic the GCC error format
-   */
-  public static class CustomParseErrorWriter implements JsonWriter.JsonClassWriterEx
-  {
-    public void write(Object o, boolean showType, Writer output, Map<String, Object> args) throws IOException
-    {
-      // Simplified JSON representation of the error:
-      //
-      // {
-      //   "kind": "error",
-      //   "message": "msg",
-      //   "locations": {
-      //     "@items": [
-      //       "finish": {
-      //         "display-column": 15,
-      //         "line": 2,
-      //       },
-      //       "caret": {
-      //         "display-column": 14,
-      //         "line": 2,
-      //       },
-      //     ]
-      //   },
-      // }
-      ParseError e = (ParseError) o;
-      output.write("\"kind\":\"");
-      output.write(StringEscapeUtils.escapeJson(e.kind));
-      output.write("\",\"message\":\"");
-      // This string must be escaped, otherwise it will break the JSON
-      String escapedMessage = StringEscapeUtils.escapeJson(e.message);
-      output.write(escapedMessage);
-      output.write("\",\"locations\":{");
-      output.write("\"@items\":[");
-      output.write("{\"finish\":{\"display-column\":");
-      output.write(Integer.toString(e.columnEnd));
-      output.write(",\"line\":");
-      output.write(Integer.toString(e.line));
-      output.write("},");
-      output.write("\"caret\":{\"display-column\":");
-      output.write(Integer.toString(e.columnStart));
-      output.write(",\"line\":");
-      output.write(Integer.toString(e.line));
-      output.write("}}");
-      output.write("]}");
-    }
-  }
-  
-  /**
    * @brief String representation of the error for debugging
    */
   @Override
@@ -153,4 +94,5 @@ public class ParseError
   {
     return "[" + line + ":" + columnStart + ":" + this.columnEnd + "] " + message;
   }
+  
 }

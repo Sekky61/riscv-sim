@@ -27,34 +27,15 @@
 
 package com.gradle.superscalarsim.server.checkConfig;
 
-import com.cedarsoftware.util.io.JsonReader;
-import com.cedarsoftware.util.io.JsonWriter;
 import com.gradle.superscalarsim.cpu.CpuConfiguration;
 
+/**
+ * Parameters for the /checkConfig endpoint request
+ */
 public class CheckConfigRequest
 {
-  CpuConfiguration config;
-  
   /**
-   * @brief Deserialize request from JSON
+   * The configuration to check
    */
-  static CheckConfigRequest deserialize(String body)
-  {
-    try
-    {
-      return (CheckConfigRequest) JsonReader.jsonToJava(body);
-    }
-    catch (Exception e)
-    {
-      System.out.println("Error parsing request");
-      System.out.println(body);
-      System.out.println(e);
-      return null;
-    }
-  }
-  
-  static String serialize(CheckConfigRequest request)
-  {
-    return JsonWriter.objectToJson(request);
-  }
+  CpuConfiguration config;
 }

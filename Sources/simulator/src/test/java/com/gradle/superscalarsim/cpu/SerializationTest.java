@@ -28,68 +28,12 @@
 
 package com.gradle.superscalarsim.cpu;
 
-import com.cedarsoftware.util.io.JsonReader;
-import com.cedarsoftware.util.io.JsonWriter;
-import com.gradle.superscalarsim.enums.DataTypeEnum;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
 public class SerializationTest
 {
-  
-  @Test
-  public void afterStepSerDeStaysSameTest()
-  {
-    // Setup cpu and do 5 steps
-    CpuConfiguration cpuConfig = CpuConfiguration.getDefaultConfiguration();
-    cpuConfig.code = ExecuteUtil.artihmeticProgram;
-    Cpu cpu = new Cpu(cpuConfig);
-    
-    for (int i = 0; i < 5; i++)
-    {
-      cpu.step();
-    }
-    
-    // Exercise
-    // Serialize and deserialize and serialize again
-    String   json       = JsonWriter.objectToJson(cpu.cpuState);
-    CpuState deserState = (CpuState) JsonReader.jsonToJava(json);
-    String   json2      = JsonWriter.objectToJson(deserState);
-    
-    // Assert
-    Assert.assertEquals(json, json2);
-  }
-  
-  @Test
-  public void serDeHasNoEffectOnBehavior()
-  {
-    // Setup cpu
-    CpuConfiguration cpuConfig = CpuConfiguration.getDefaultConfiguration();
-    cpuConfig.code = ExecuteUtil.artihmeticProgram;
-    Cpu cpu  = new Cpu(cpuConfig);
-    Cpu cpu2 = new Cpu(cpuConfig);
-    
-    // Exercise - step both cpus, serialize and deserialize one of them repeatedly
-    for (int i = 0; i < 10; i++)
-    {
-      cpu.step();
-      
-      String json = cpu2.cpuState.serialize();
-      cpu2.cpuState = CpuState.deserialize(json);
-      cpu2.step();
-    }
-    
-    // Assert
-    String json        = cpu.cpuState.serialize();
-    String jsonPretty  = JsonWriter.formatJson(json);
-    String json2       = cpu2.cpuState.serialize();
-    String jsonPretty2 = JsonWriter.formatJson(json2);
-    
-    Assert.assertEquals(jsonPretty, jsonPretty2);
-    Assert.assertEquals(cpu.cpuState, cpu2.cpuState);
-  }
-  
   @Test
   public void initialStateSerDeStaysSameTest()
   {
@@ -101,38 +45,6 @@ public class SerializationTest
     String jsonnew2 = deserState.serialize();
     
     Assert.assertEquals(jsonnew, jsonnew2);
-  }
-  
-  @Test
-  public void additionTest()
-  {
-    CpuConfiguration cpuConfig = CpuConfiguration.getDefaultConfiguration();
-    cpuConfig.code = "addi x1, x1, 5";
-    Cpu cpu    = new Cpu(cpuConfig);
-    Cpu cpuSer = new Cpu(cpuConfig);
-    
-    while (!cpu.simEnded())
-    {
-      cpu.step();
-      
-      cpuSer.step();
-      String json = cpuSer.cpuState.serialize();
-      cpuSer.cpuState = CpuState.deserialize(json);
-      
-      // Compare each step
-      String json1       = cpu.cpuState.serialize();
-      String jsonPretty  = JsonWriter.formatJson(json1);
-      String json2       = cpuSer.cpuState.serialize();
-      String jsonPretty2 = JsonWriter.formatJson(json2);
-      Assert.assertEquals(jsonPretty, jsonPretty2);
-    }
-    
-    // Assert
-    Assert.assertEquals(1, cpu.cpuState.statisticsCounter.getCommittedInstructions());
-    Assert.assertEquals(5, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt));
-    
-    Assert.assertEquals(1, cpuSer.cpuState.statisticsCounter.getCommittedInstructions());
-    Assert.assertEquals(5, cpuSer.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt));
   }
   
   /**

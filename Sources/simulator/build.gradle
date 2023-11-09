@@ -38,9 +38,6 @@ dependencies {
     implementation "org.openjdk.jmh:jmh-core:1.36"
     implementation "org.openjdk.jmh:jmh-generator-annprocess:1.36"
 
-    // https://mvnrepository.com/artifact/com.cedarsoftware/json-io
-    implementation group: 'com.cedarsoftware', name: 'json-io', version: '4.14.0'
-
     // https://mvnrepository.com/artifact/io.undertow/undertow-servlet
     implementation group: 'io.undertow', name: 'undertow-servlet', version: '2.3.8.Final'
 }
