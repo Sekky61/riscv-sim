@@ -124,7 +124,7 @@ function ProgramInstruction({
   const model = useAppSelector((state) =>
     selectInstructionFunctionModelById(
       state,
-      instruction!.instructionFunctionModel,
+      instruction?.instructionFunctionModel ?? '',
     ),
   );
 

@@ -32,10 +32,12 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
 import {
+  Action,
   createAsyncThunk,
   createSelector,
   createSlice,
   PayloadAction,
+  ThunkAction,
 } from '@reduxjs/toolkit';
 
 import { selectAsmCode } from '@/lib/redux/compilerSlice';
@@ -44,15 +46,33 @@ import type { RootState } from '@/lib/redux/store';
 import { callSimulationImpl } from '@/lib/serverCalls/callCompiler';
 import type { CpuState, Reference, RegisterModel } from '@/lib/types/cpuApi';
 
-// Define a type for the slice state
+/**
+ * Redux state for CPU
+ */
 interface CpuSlice {
+  /**
+   * CPU state, loaded from the server
+   */
   state: CpuState | null;
+  /**
+   * Code that is currently being simulated. Pulled from the compiler state.
+   */
   code: string;
+  /**
+   * Reference to the currently highlighted line in the input code.
+   * Used to highlight the corresponding objects in visualizations.
+   */
   highlightedInputCode: Reference | null;
+  /**
+   * Reference to the currently highlighted line in the simulation code.
+   * Used to highlight the corresponding objects in visualizations.
+   */
   highlightedSimCode: Reference | null;
 }
 
-// Define the initial state using that type
+/**
+ * The initial state
+ */
 const initialState: CpuSlice = {
   state: null,
   code: '',
@@ -60,25 +80,81 @@ const initialState: CpuSlice = {
   highlightedSimCode: null,
 };
 
+/**
+ * The result of a simulation API call
+ */
 type SimulationParsedResult = {
   state: CpuState;
 };
 
-// Call example: dispatch(reloadSimulation());
-export const reloadSimulation = createAsyncThunk<SimulationParsedResult>(
-  'cpu/reloadSimulation',
-  async (_, { getState, dispatch }) => {
-    // @ts-ignore
+/**
+ * Copy the code from code editor to the simulation
+ */
+export const pullCodeFromCompiler = (): ThunkAction<
+  void,
+  RootState,
+  unknown,
+  Action<string>
+> => {
+  return async (dispatch, getState) => {
     const state: RootState = getState();
-    const config = selectActiveIsa(state);
     const code = selectAsmCode(state);
     dispatch(setSimulationCode(code));
-    const response = await callSimulationImpl(0, { ...config, code });
-    return { state: response.state };
-  },
-);
+  };
+};
 
-// Call example: dispatch(callSimulation());
+/**
+ * Reload the simulation (reset it to the step 0)
+ */
+export const reloadSimulation = (): ThunkAction<
+  void,
+  RootState,
+  unknown,
+  Action<string>
+> => {
+  return async (dispatch) => {
+    dispatch(callSimulation(0));
+  };
+};
+
+/**
+ * Step the simulation forward by one tick
+ */
+export const simStepForward = (): ThunkAction<
+  void,
+  RootState,
+  unknown,
+  Action<string>
+> => {
+  return async (dispatch, getState) => {
+    const state: RootState = getState();
+    const currentTick = selectTick(state);
+    dispatch(callSimulation(currentTick + 1));
+  };
+};
+
+/**
+ * Step the simulation backward by one tick
+ */
+export const simStepBackward = (): ThunkAction<
+  void,
+  RootState,
+  unknown,
+  Action<string>
+> => {
+  return async (dispatch, getState) => {
+    const state: RootState = getState();
+    const currentTick = selectTick(state);
+    dispatch(callSimulation(currentTick - 1));
+  };
+};
+
+/**
+ * Call the simulation API
+ * Call example: dispatch(callSimulation(5));
+ *
+ * @param tick The tick to simulate to
+ */
 export const callSimulation = createAsyncThunk<SimulationParsedResult, number>(
   'cpu/callSimulation',
   async (arg, { getState }) => {
@@ -88,41 +164,6 @@ export const callSimulation = createAsyncThunk<SimulationParsedResult, number>(
     const code = state.cpu.code;
     const tick = arg;
     const response = await callSimulationImpl(tick, { ...config, code });
-    return { state: response.state };
-  },
-);
-
-// Call example: dispatch(simStepForward());
-export const simStepForward = createAsyncThunk<SimulationParsedResult>(
-  'cpu/simStepForward',
-  async (_, { getState }) => {
-    // @ts-ignore
-    const state: RootState = getState();
-    const config = selectActiveIsa(state);
-    const code = state.cpu.code;
-    const currentTick = selectTick(state);
-    const response = await callSimulationImpl(currentTick + 1, {
-      ...config,
-      code,
-    });
-    return { state: response.state };
-  },
-);
-
-// Call example: dispatch(simStepForward());
-export const simStepBackward = createAsyncThunk<SimulationParsedResult>(
-  'cpu/simStepBackward',
-  async (_, { getState }) => {
-    // @ts-ignore
-    const state: RootState = getState();
-    const config = selectActiveIsa(state);
-    const code = state.cpu.code;
-    const currentTick = selectTick(state);
-    const tick = Math.max(0, currentTick - 1);
-    const response = await callSimulationImpl(tick, {
-      ...config,
-      code,
-    });
     return { state: response.state };
   },
 );
@@ -148,15 +189,6 @@ export const cpuSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(reloadSimulation.fulfilled, (state, action) => {
-        state.state = action.payload.state;
-      })
-      .addCase(reloadSimulation.rejected, (state, _action) => {
-        state.state = null;
-      })
-      .addCase(reloadSimulation.pending, (_state, _action) => {
-        // nothing
-      })
       .addCase(callSimulation.fulfilled, (state, action) => {
         state.state = action.payload.state;
       })
@@ -165,30 +197,16 @@ export const cpuSlice = createSlice({
       })
       .addCase(callSimulation.pending, (_state, _action) => {
         // nothing
-      })
-      .addCase(simStepForward.fulfilled, (state, action) => {
-        state.state = action.payload.state;
-      })
-      .addCase(simStepForward.rejected, (state, _action) => {
-        state.state = null;
-      })
-      .addCase(simStepForward.pending, (_state, _action) => {
-        // nothing
-      })
-      .addCase(simStepBackward.fulfilled, (state, action) => {
-        state.state = action.payload.state;
-      })
-      .addCase(simStepBackward.rejected, (state, _action) => {
-        state.state = null;
-      })
-      .addCase(simStepBackward.pending, (_state, _action) => {
-        // nothing
       });
   },
 });
 
 export const { setSimulationCode, highlightSimCode, unhighlight } =
   cpuSlice.actions;
+
+//
+// Selectors
+//
 
 export const selectCpu = (state: RootState) => state.cpu.state;
 export const selectTick = (state: RootState) => state.cpu.state?.tick ?? 0;
