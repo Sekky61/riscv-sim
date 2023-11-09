@@ -48,12 +48,16 @@ import type { CpuState, Reference, RegisterModel } from '@/lib/types/cpuApi';
 interface CpuSlice {
   state: CpuState | null;
   code: string;
+  highlightedInputCode: Reference | null;
+  highlightedSimCode: Reference | null;
 }
 
 // Define the initial state using that type
 const initialState: CpuSlice = {
   state: null,
   code: '',
+  highlightedInputCode: null,
+  highlightedSimCode: null,
 };
 
 type SimulationParsedResult = {
@@ -131,6 +135,16 @@ export const cpuSlice = createSlice({
     setSimulationCode: (state, action: PayloadAction<string>) => {
       state.code = action.payload;
     },
+    highlightSimCode: (state, action: PayloadAction<Reference | null>) => {
+      state.highlightedSimCode = action.payload;
+    },
+    unhighlight: (state, action: PayloadAction<Reference | null>) => {
+      // Do not unhighlight somebody else's highlight
+      if (state.highlightedSimCode === action.payload) {
+        state.highlightedSimCode = null;
+        state.highlightedInputCode = null;
+      }
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -173,7 +187,8 @@ export const cpuSlice = createSlice({
   },
 });
 
-export const { setSimulationCode } = cpuSlice.actions;
+export const { setSimulationCode, highlightSimCode, unhighlight } =
+  cpuSlice.actions;
 
 export const selectCpu = (state: RootState) => state.cpu.state;
 export const selectTick = (state: RootState) => state.cpu.state?.tick ?? 0;
@@ -195,6 +210,9 @@ export const selectSimCodeModelById = (state: RootState, id: Reference) =>
 
 export const selectProgram = (state: RootState) =>
   state.cpu.state?.instructionMemoryBlock;
+
+export const selectHighlightedSimCode = (state: RootState) =>
+  state.cpu.highlightedSimCode;
 
 /**
  * Returns program code with labels inserted before the instruction they point to.
