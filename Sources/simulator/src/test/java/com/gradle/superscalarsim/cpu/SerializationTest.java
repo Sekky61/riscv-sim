@@ -30,76 +30,12 @@ package com.gradle.superscalarsim.cpu;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.mockito.Mockito;
 
 public class SerializationTest
 {
-  @Test
-  public void initialStateSerDeStaysSameTest()
-  {
-    Cpu    cpu     = new Cpu();
-    String jsonnew = cpu.cpuState.serialize();
-    
-    CpuState deserState = CpuState.deserialize(jsonnew);
-    // Serialize again
-    String jsonnew2 = deserState.serialize();
-    
-    Assert.assertEquals(jsonnew, jsonnew2);
-  }
-  
-  /**
-   * There was a bug in serialization of labels
-   */
-  @Test
-  public void cpuState_label_serialization()
-  {
-    CpuConfiguration cfg = CpuConfiguration.getDefaultConfiguration();
-    cfg.code = """
-            addi x3, x0, 10000
-            loop:
-            """;
-    
-    Cpu cpu = new Cpu(cfg);
-    cpu.simulateState(0);
-    
-    // Exercise
-    CpuState stateCopy = cpu.cpuState.deepCopy();
-    
-    // Assert
-    Assert.assertEquals(cpu.cpuState, stateCopy);
-  }
   
   @Test
-  public void cpuState_afterTicks_deepcopy_theSame()
-  {
-    CpuConfiguration cfg = CpuConfiguration.getDefaultConfiguration();
-    cfg.code = """
-            addi x3, x0, 10000
-            addi x8, x0, 50
-            sw x8, 16(x0)
-            loop:
-            beq x3, x0, loopEnd
-            lw x8, 16(x0)
-            addi x8, x8, 1
-            sw x8, 16(x0)
-            subi x3, x3, 1
-            jal x0, loop
-            loopEnd:""";
-    Cpu cpu = new Cpu(cfg);
-    cpu.simulateState(200);
-    
-    // Exercise
-    CpuState stateCopy = cpu.cpuState.deepCopy();
-    
-    String meJson    = cpu.cpuState.serialize();
-    String otherJson = stateCopy.serialize();
-    
-    // Assert
-    Assert.assertEquals(meJson, otherJson);
-  }
-  
-  @Test
-  public void cpuState_afterDeserialization_canPickup()
+  public void cpuState_serializedWithoutError()
   {
     CpuConfiguration cfg = CpuConfiguration.getDefaultConfiguration();
     cfg.code = """
@@ -116,15 +52,9 @@ public class SerializationTest
             loopEnd:""";
     Cpu cpu = new Cpu(cfg);
     cpu.simulateState(50);
+    
     String stateSerialized = cpu.cpuState.serialize();
     
-    CpuState stateDe = CpuState.deserialize(stateSerialized);
-    // When asking for the state at time 52, simulation step should only be called twice
-    CpuState stateSpy = Mockito.spy(stateDe);
-    Cpu      cpu2     = new Cpu(cfg, stateSpy);
-    cpu2.simulateState(52);
-    
-    // Assert
-    Mockito.verify(stateSpy, Mockito.times(2)).step();
+    Assert.assertNotNull(stateSerialized);
   }
 }

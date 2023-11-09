@@ -27,7 +27,8 @@ public class InstructionFetchBlockTest
   @Before
   public void setUp()
   {
-    this.instructionMemoryBlock = new InstructionMemoryBlock(null, null, null);
+    InputCodeModel nop = new InputCodeModelBuilder().hasInstructionName("nop").build();
+    this.instructionMemoryBlock = new InstructionMemoryBlock(null, null, nop);
     this.branchTargetBuffer     = new BranchTargetBuffer(1000);
     this.gShareUnit             = new GShareUnit(1, new GlobalHistoryRegister(1000),
                                                  new PatternHistoryTable(10, new boolean[]{true, false},

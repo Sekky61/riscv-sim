@@ -45,6 +45,7 @@ import com.gradle.superscalarsim.blocks.loadstore.StoreBufferBlock;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.models.*;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -196,7 +197,9 @@ public class ReorderBufferBlock implements AbstractBlock
       
       commitCount++;
       processCommittableInstruction(robItem.simCodeModel);
-      removeInstruction(robItem.simCodeModel);
+      removeInstruction(robItem);
+      // Remove item from the front of the queue
+      this.state.reorderQueue.remove();
     }
     
     // Check all instructions if after commit some can be removed, remove them in other units
@@ -317,9 +320,10 @@ public class ReorderBufferBlock implements AbstractBlock
    *
    * @brief Handles removal of instruction from the system
    */
-  private void removeInstruction(SimCodeModel simCodeModel)
+  private void removeInstruction(ReorderBufferItem queueItem)
   {
-    this.state.reorderQueue.poll();
+    SimCodeModel simCodeModel = queueItem.simCodeModel;
+    
     // Reduce references to speculative registers
     for (InputCodeArgument argument : simCodeModel.getArguments())
     {
@@ -339,27 +343,31 @@ public class ReorderBufferBlock implements AbstractBlock
   
   /**
    * It does not stop at the first valid instruction, but flushes all invalid instructions.
+   * Assumes that every instruction after the first invalid instruction is invalid.
    *
    * @brief Removes all invalid (ready to removed) instructions from ROB
    */
   public void flushInvalidInstructions()
   {
-    for (ReorderBufferItem robItem : this.state.reorderQueue)
+    Iterator<ReorderBufferItem> it = this.state.reorderQueue.descendingIterator();
+    while (it.hasNext())
     {
+      ReorderBufferItem robItem = it.next();
       if (!robItem.reorderFlags.isReadyToBeRemoved())
       {
-        continue;
+        break;
       }
       
+      // Notify all that instruction is invalid
       statisticsCounter.incrementFailedInstructions();
       SimCodeModel currentInstruction = robItem.simCodeModel;
-      currentInstruction.setCommitId(this.state.commitId);
+      currentInstruction.setCommitId(this.state.commitId); // todo: is this correct?
       if (currentInstruction.getInstructionTypeEnum() == InstructionTypeEnum.kJumpbranch)
       {
         this.gShareUnit.getGlobalHistoryRegister().removeHistoryValue(currentInstruction.getIntegerId());
       }
-      
-      removeInstruction(currentInstruction);
+      removeInstruction(robItem);
+      this.state.reorderQueue.removeLast();
     }
   }// end of flushInvalidInstructions
   //----------------------------------------------------------------------

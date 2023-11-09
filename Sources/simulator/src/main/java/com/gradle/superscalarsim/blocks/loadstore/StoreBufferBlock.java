@@ -32,6 +32,7 @@
  */
 package com.gradle.superscalarsim.blocks.loadstore;
 
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.gradle.superscalarsim.blocks.AbstractBlock;
 import com.gradle.superscalarsim.blocks.base.DecodeAndDispatchBlock;
 import com.gradle.superscalarsim.blocks.base.ReorderBufferBlock;
@@ -53,6 +54,7 @@ import java.util.*;
 public class StoreBufferBlock implements AbstractBlock
 {
   /// Queue with all uncommitted store instructions
+  @JsonIdentityReference(alwaysAsId = true)
   private final Queue<SimCodeModel> storeQueue;
   /// Map with additional infos for specific store instructions
   private final Map<Integer, StoreBufferItem> storeMap;
@@ -276,6 +278,8 @@ public class StoreBufferBlock implements AbstractBlock
         break;
       }
       
+      assert !simCodeModel.hasFailed();
+      
       boolean isSpeculative    = reorderBufferBlock.getRobItem(
               simCodeModel.getIntegerId()).reorderFlags.isSpeculative();
       boolean isAvailableForMA = item.getAddress() != -1 && !item.isAccessingMemory() && item.getAccessingMemoryId() == -1 && item.isSourceReady() && !isSpeculative;
@@ -322,6 +326,7 @@ public class StoreBufferBlock implements AbstractBlock
         memoryAccessUnit.setSimCodeModel(codeModel);
         this.storeMap.get(codeModel.getIntegerId()).setAccessingMemory(true);
         this.storeMap.get(codeModel.getIntegerId()).setAccessingMemoryId(this.commitId);
+        // todo: return here??
       }
     }
   }// end of selectLoadForDataAccess
@@ -423,7 +428,7 @@ public class StoreBufferBlock implements AbstractBlock
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Release store instruction on top of the queue and commits it
+   * @brief Release store instruction on top of the queue (instruction has been committed)
    */
   public void releaseStoreFirst()
   {
