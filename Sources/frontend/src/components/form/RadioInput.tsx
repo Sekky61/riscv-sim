@@ -36,12 +36,12 @@
 // - react-hook-form (using `register` and `name` props), or
 // - a simple `value` and `onNewValue` props
 
-import clsx from 'clsx';
 import React from 'react';
 import { useId } from 'react';
 import { FieldValues, Path, UseFormRegister } from 'react-hook-form';
 
 import { ReactClassName } from '@/lib/types/reactTypes';
+import { cn } from '@/lib/utils';
 
 interface RadioInputBaseProps extends ReactClassName {
   choices: readonly string[];
@@ -91,9 +91,10 @@ export function RadioInput<T extends FieldValues, U extends string>({
 
   return (
     <div
-      className={
-        className + ' radio-field flex overflow-hidden rounded border divide-x'
-      }
+      className={cn(
+        'radio-field flex h-10 items-center justify-stretch rounded-md bg-muted p-1 text-muted-foreground',
+        className,
+      )}
     >
       {choices.map((choice, i) => {
         const inputId = `${radioId}-${choice}`;
@@ -112,8 +113,8 @@ export function RadioInput<T extends FieldValues, U extends string>({
             />
             <label
               htmlFor={inputId}
-              className={clsx(
-                'button-interactions flex-1 whitespace-nowrap button-shape text-center',
+              className={cn(
+                'flex-grow inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
                 active && 'radio-selected',
               )}
             >

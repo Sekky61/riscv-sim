@@ -333,7 +333,7 @@
   }
 
   .radio-selected {
-    @apply bg-gray-300;
+    @apply bg-background text-foreground shadow-sm;
   }
 
   /* radio input */

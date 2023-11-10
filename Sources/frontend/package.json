@@ -20,6 +20,8 @@
     "@codemirror/lint": "^6.4.2",
     "@codemirror/state": "^6.2.1",
     "@hookform/resolvers": "^3.3.0",
+    "@radix-ui/react-slot": "^1.0.2",
+    "@radix-ui/react-tabs": "^1.0.4",
     "@reduxjs/toolkit": "^1.9.5",
     "@svgdotjs/svg.js": "^3.2.0",
     "@uiw/codemirror-extensions-langs": "^4.21.9",
