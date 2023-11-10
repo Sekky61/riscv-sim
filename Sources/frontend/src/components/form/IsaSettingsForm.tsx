@@ -65,6 +65,12 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/base/ui/card';
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@/components/base/ui/tabs';
 
 import { FormInput } from './FormInput';
 import { RadioInput, RadioInputWithTitle } from './RadioInput';
@@ -191,97 +197,110 @@ export default function IsaSettingsForm({
 
   return (
     <form>
-      <div className='grid grid-cols-2 gap-12'>
-        <Card>
-          <CardHeader>
-            <CardTitle>Buffers</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <fieldset disabled={disabled}>
-              <FormInput {...simpleRegister('robSize')} type='number' />
-              <FormInput {...simpleRegister('lbSize')} type='number' />
-              <FormInput {...simpleRegister('sbSize')} type='number' />
-            </fieldset>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Fetch</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <fieldset disabled={disabled}>
-              <FormInput {...simpleRegister('fetchWidth')} type='number' />
-              <FormInput {...simpleRegister('commitWidth')} type='number' />
-            </fieldset>
-          </CardContent>
-        </Card>
-        <FunctionalUnitInput control={control} disabled={disabled} />
-        <Card>
-          <CardHeader>
-            <CardTitle>Cache</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <fieldset disabled={disabled}>
-              <FormInput {...simpleRegister('cacheLines')} type='number' />
-              <FormInput {...simpleRegister('cacheLineSize')} type='number' />
-              <FormInput {...simpleRegister('cacheAssoc')} type='number' />
-              <div className='mb-6 flex justify-evenly'>
-                <RadioInputWithTitle
-                  {...radioRegister('cacheReplacement')}
-                  choices={cacheReplacementTypes}
+      <Tabs defaultValue='buffers' className='w-[600px]'>
+        <TabsList className='w-full'>
+          <TabsTrigger value='buffers'>Buffers</TabsTrigger>
+          <TabsTrigger value='fetch'>Fetch</TabsTrigger>
+          <TabsTrigger value='functional'>Functional Units</TabsTrigger>
+          <TabsTrigger value='cache'>Cache</TabsTrigger>
+          <TabsTrigger value='branch'>Branch</TabsTrigger>
+        </TabsList>
+        <TabsContent value='buffers'>
+          <Card>
+            <CardHeader>
+              <CardTitle>Buffers</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <fieldset disabled={disabled}>
+                <FormInput {...simpleRegister('robSize')} type='number' />
+                <FormInput {...simpleRegister('lbSize')} type='number' />
+                <FormInput {...simpleRegister('sbSize')} type='number' />
+              </fieldset>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value='fetch'>
+          <Card>
+            <CardHeader>
+              <CardTitle>Fetch</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <fieldset disabled={disabled}>
+                <FormInput {...simpleRegister('fetchWidth')} type='number' />
+                <FormInput {...simpleRegister('commitWidth')} type='number' />
+              </fieldset>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value='functional'>
+          <FunctionalUnitInput control={control} disabled={disabled} />
+        </TabsContent>
+        <TabsContent value='cache'>
+          <Card>
+            <CardHeader>
+              <CardTitle>Cache</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <fieldset disabled={disabled}>
+                <FormInput {...simpleRegister('cacheLines')} type='number' />
+                <FormInput {...simpleRegister('cacheLineSize')} type='number' />
+                <FormInput {...simpleRegister('cacheAssoc')} type='number' />
+                <div className='mb-6 flex justify-evenly'>
+                  <RadioInputWithTitle
+                    {...radioRegister('cacheReplacement')}
+                    choices={cacheReplacementTypes}
+                  />
+                  <RadioInputWithTitle
+                    {...radioRegister('storeBehavior')}
+                    choices={storeBehaviorTypes}
+                  />
+                </div>
+                <FormInput {...simpleRegister('storeLatency')} type='number' />
+                <FormInput {...simpleRegister('loadLatency')} type='number' />
+                <FormInput
+                  {...simpleRegister('laneReplacementDelay')}
+                  type='number'
                 />
-                <RadioInputWithTitle
-                  {...radioRegister('storeBehavior')}
-                  choices={storeBehaviorTypes}
+                <input
+                  id='addRemainingDelay'
+                  type='checkbox'
+                  {...register('addRemainingDelay')}
+                  className='mr-2'
                 />
-              </div>
-              <FormInput {...simpleRegister('storeLatency')} type='number' />
-              <FormInput {...simpleRegister('loadLatency')} type='number' />
-              <FormInput
-                {...simpleRegister('laneReplacementDelay')}
-                type='number'
-              />
-              <input
-                id='addRemainingDelay'
-                type='checkbox'
-                {...register('addRemainingDelay')}
-                className='mr-2'
-              />
-              <label htmlFor='addRemainingDelay'>
-                {isaFormMetadata.addRemainingDelay.title}
-              </label>
-            </fieldset>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Predictors</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <fieldset disabled={disabled}>
-              <FormInput {...simpleRegister('btbSize')} type='number' />
-              <FormInput {...simpleRegister('phtSize')} type='number' />
-              <div className='mb-6 flex justify-evenly'>
-                <RadioInputWithTitle
-                  {...radioRegister('predictorType')}
-                  choices={predictorTypes}
-                />
-                <RadioInputWithTitle
-                  {...radioRegister('predictorDefault')}
-                  choices={predictorDefaults}
-                />
-              </div>
-            </fieldset>
-          </CardContent>
-        </Card>
-      </div>
+                <label htmlFor='addRemainingDelay'>
+                  {isaFormMetadata.addRemainingDelay.title}
+                </label>
+              </fieldset>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value='branch'>
+          <Card>
+            <CardHeader>
+              <CardTitle>Predictors</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <fieldset disabled={disabled}>
+                <FormInput {...simpleRegister('btbSize')} type='number' />
+                <FormInput {...simpleRegister('phtSize')} type='number' />
+                <div className='mb-6 flex justify-evenly'>
+                  <RadioInputWithTitle
+                    {...radioRegister('predictorType')}
+                    choices={predictorTypes}
+                  />
+                  <RadioInputWithTitle
+                    {...radioRegister('predictorDefault')}
+                    choices={predictorDefaults}
+                  />
+                </div>
+              </fieldset>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </form>
   );
 }
-
-type FuOpMetadata = {
-  name: string;
-};
 
 const fuOpsMetadata: { [key in FuOps]: FuOpMetadata } = {
   '+': { name: 'Add' },

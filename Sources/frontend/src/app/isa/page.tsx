@@ -33,7 +33,7 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import clsx from 'clsx';
-import { ChevronDown } from 'lucide-react';
+import { Check, ChevronsUpDown } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import React from 'react';
 import { useForm } from 'react-hook-form';
@@ -58,10 +58,26 @@ import {
   updateIsa,
 } from '@/lib/redux/isaSlice';
 import { openModal } from '@/lib/redux/modalSlice';
+import { cn } from '@/lib/utils';
 
+import { Button } from '@/components/base/ui/button';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandSeparator,
+} from '@/components/base/ui/command';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/base/ui/popover';
 import IsaSettingsForm from '@/components/form/IsaSettingsForm';
 import { SaveIsaChangesModalProps } from '@/components/modals/SaveIsaChangesModal';
 
+// TODO: delete configuration
 export default function Page() {
   // Redux
   const dispatch = useAppDispatch();
@@ -176,55 +192,65 @@ export default function Page() {
   return (
     <div>
       <h1 className='mb-8 text-2xl'>ISA Configuration</h1>
-      <div className='mb-2'>Pick a configuration</div>
-      <div className='mb-8 flex gap-4'>
-        <div
-          onClick={configBoxClicked}
-          className={
-            'relative flex w-80 items-center justify-between gap-4 border p-3 hover:cursor-pointer hover:bg-gray-100 active:bg-gray-200 ' +
-            (savesOpen ? 'rounded-t-md' : 'rounded-md')
-          }
-        >
-          <input
-            className='form-input'
-            {...form.register('name')}
-            disabled={blockEditing}
-          />
-          <ChevronDown
-            className={
-              'pointer-events-none h-6 w-6 ' +
-              (savesOpen ? 'rotate-180 transform' : '')
-            }
-          />
-          <div
-            className={
-              'absolute left-0 top-full z-10 w-full rounded-b-md border border-t-0 bg-white ' +
-              (savesOpen ? '' : 'hidden')
-            }
-          >
-            <IsaLocalStorageItems onIsaSavePicked={onChangeSelected} />
-            <button
-              onClick={createNewIsa}
-              className='button w-full border-t p-1'
+      <div className='mb-4 flex justify-center items-center gap-4 border-b pb-4'>
+        <span className='font-bold'>Active configuration</span>
+        <Popover open={savesOpen} onOpenChange={(op) => setSavesOpen(op)}>
+          <PopoverTrigger asChild>
+            <Button
+              variant='outline'
+              role='combobox'
+              aria-expanded={savesOpen}
+              className='w-[200px] justify-between'
             >
-              Create new ISA
-            </button>
-          </div>
-        </div>
-        <button
-          onClick={persistIsaChanges}
-          disabled={!hasUnsavedChanges}
-          className='button'
-        >
+              {activeIsa.name}
+              <ChevronsUpDown className='ml-2 h-4 w-4 shrink-0 opacity-50' />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className='w-[200px] p-0'>
+            <Command>
+              <CommandInput placeholder='Search framework...' />
+              <CommandEmpty>No framework found.</CommandEmpty>
+              <CommandGroup>
+                {isas.map((isa) => (
+                  <CommandItem
+                    key={isa.name}
+                    value={isa.name}
+                    onSelect={(_currentValue) => {
+                      // _currentValue converts to lowercase
+                      onChangeSelected(isa.name);
+                    }}
+                  >
+                    <Check
+                      className={cn(
+                        'mr-2 h-4 w-4',
+                        activeIsa.name === isa.name
+                          ? 'opacity-100'
+                          : 'opacity-0',
+                      )}
+                    />
+                    {isa.name}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+              <CommandSeparator />
+              <CommandGroup>
+                <CommandItem onSelect={createNewIsa}>
+                  Create new ISA
+                </CommandItem>
+              </CommandGroup>
+            </Command>
+          </PopoverContent>
+        </Popover>
+        <Button onClick={persistIsaChanges} disabled={!hasUnsavedChanges}>
           Save Changes
-        </button>
+        </Button>
       </div>
       <div
-        className={
-          blockEditing
-            ? 'pointer-events-none opacity-60 hover:cursor-not-allowed'
-            : ''
-        }
+        className={cn(
+          blockEditing &&
+            'pointer-events-none opacity-60 hover:cursor-not-allowed',
+          'flex justify-center',
+        )}
       >
         <IsaSettingsForm form={form} disabled={blockEditing} />
       </div>
