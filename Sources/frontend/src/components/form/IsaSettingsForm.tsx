@@ -59,6 +59,13 @@ import {
   storeBehaviorTypes,
 } from '@/lib/forms/Isa';
 
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/components/base/ui/card';
+
 import { FormInput } from './FormInput';
 import { RadioInput, RadioInputWithTitle } from './RadioInput';
 
@@ -185,64 +192,88 @@ export default function IsaSettingsForm({
   return (
     <form>
       <div className='grid grid-cols-2 gap-12'>
-        <fieldset className='rounded-md border p-4' disabled={disabled}>
-          <legend className='mb-2 px-1 text-xl'>Buffers</legend>
-          <FormInput {...simpleRegister('robSize')} type='number' />
-          <FormInput {...simpleRegister('lbSize')} type='number' />
-          <FormInput {...simpleRegister('sbSize')} type='number' />
-        </fieldset>
-        <fieldset className='rounded-md border p-4' disabled={disabled}>
-          <legend className='mb-2 px-1 text-xl'>Fetch</legend>
-          <FormInput {...simpleRegister('fetchWidth')} type='number' />
-          <FormInput {...simpleRegister('commitWidth')} type='number' />
-        </fieldset>
+        <Card>
+          <CardHeader>
+            <CardTitle>Buffers</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <fieldset disabled={disabled}>
+              <FormInput {...simpleRegister('robSize')} type='number' />
+              <FormInput {...simpleRegister('lbSize')} type='number' />
+              <FormInput {...simpleRegister('sbSize')} type='number' />
+            </fieldset>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Fetch</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <fieldset disabled={disabled}>
+              <FormInput {...simpleRegister('fetchWidth')} type='number' />
+              <FormInput {...simpleRegister('commitWidth')} type='number' />
+            </fieldset>
+          </CardContent>
+        </Card>
         <FunctionalUnitInput control={control} disabled={disabled} />
-        <fieldset className='rounded-md border p-4' disabled={disabled}>
-          <legend className='mb-2 px-1 text-xl'>Cache</legend>
-          <FormInput {...simpleRegister('cacheLines')} type='number' />
-          <FormInput {...simpleRegister('cacheLineSize')} type='number' />
-          <FormInput {...simpleRegister('cacheAssoc')} type='number' />
-          <div className='mb-6 flex justify-evenly'>
-            <RadioInputWithTitle
-              {...radioRegister('cacheReplacement')}
-              choices={cacheReplacementTypes}
-            />
-            <RadioInputWithTitle
-              {...radioRegister('storeBehavior')}
-              choices={storeBehaviorTypes}
-            />
-          </div>
-          <FormInput {...simpleRegister('storeLatency')} type='number' />
-          <FormInput {...simpleRegister('loadLatency')} type='number' />
-          <FormInput
-            {...simpleRegister('laneReplacementDelay')}
-            type='number'
-          />
-          <input
-            id='addRemainingDelay'
-            type='checkbox'
-            {...register('addRemainingDelay')}
-            className='mr-2'
-          />
-          <label htmlFor='addRemainingDelay'>
-            {isaFormMetadata.addRemainingDelay.title}
-          </label>
-        </fieldset>
-        <fieldset className='rounded-md border p-4' disabled={disabled}>
-          <legend className='mb-2 px-1 text-xl'>Branch</legend>
-          <FormInput {...simpleRegister('btbSize')} type='number' />
-          <FormInput {...simpleRegister('phtSize')} type='number' />
-          <div className='mb-6 flex justify-evenly'>
-            <RadioInputWithTitle
-              {...radioRegister('predictorType')}
-              choices={predictorTypes}
-            />
-            <RadioInputWithTitle
-              {...radioRegister('predictorDefault')}
-              choices={predictorDefaults}
-            />
-          </div>
-        </fieldset>
+        <Card>
+          <CardHeader>
+            <CardTitle>Cache</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <fieldset disabled={disabled}>
+              <FormInput {...simpleRegister('cacheLines')} type='number' />
+              <FormInput {...simpleRegister('cacheLineSize')} type='number' />
+              <FormInput {...simpleRegister('cacheAssoc')} type='number' />
+              <div className='mb-6 flex justify-evenly'>
+                <RadioInputWithTitle
+                  {...radioRegister('cacheReplacement')}
+                  choices={cacheReplacementTypes}
+                />
+                <RadioInputWithTitle
+                  {...radioRegister('storeBehavior')}
+                  choices={storeBehaviorTypes}
+                />
+              </div>
+              <FormInput {...simpleRegister('storeLatency')} type='number' />
+              <FormInput {...simpleRegister('loadLatency')} type='number' />
+              <FormInput
+                {...simpleRegister('laneReplacementDelay')}
+                type='number'
+              />
+              <input
+                id='addRemainingDelay'
+                type='checkbox'
+                {...register('addRemainingDelay')}
+                className='mr-2'
+              />
+              <label htmlFor='addRemainingDelay'>
+                {isaFormMetadata.addRemainingDelay.title}
+              </label>
+            </fieldset>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Predictors</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <fieldset disabled={disabled}>
+              <FormInput {...simpleRegister('btbSize')} type='number' />
+              <FormInput {...simpleRegister('phtSize')} type='number' />
+              <div className='mb-6 flex justify-evenly'>
+                <RadioInputWithTitle
+                  {...radioRegister('predictorType')}
+                  choices={predictorTypes}
+                />
+                <RadioInputWithTitle
+                  {...radioRegister('predictorDefault')}
+                  choices={predictorDefaults}
+                />
+              </div>
+            </fieldset>
+          </CardContent>
+        </Card>
       </div>
     </form>
   );
@@ -301,51 +332,62 @@ function FunctionalUnitInput({
   };
 
   return (
-    <fieldset className='flex flex-col rounded-md border' disabled={disabled}>
-      <legend className='mb-2 ml-4 px-1 text-xl'>Functional Units</legend>
-      <div className='h-0 flex-grow overflow-y-auto bg-gray-100'>
-        <div className='neutral-bg grid auto-rows-fr grid-cols-[fit-content(0px)_fit-content(0px)_1fr_fit-content(0px)] divide-y'>
-          <div className='neutral-bg sticky top-0 border-t px-2 py-1'>Name</div>
-          <div className='neutral-bg sticky top-0 px-2 py-1'>Latency</div>
-          <div className='neutral-bg sticky top-0 flex-grow px-2 py-1'>
-            Operations
-          </div>
-          <div className='neutral-bg sticky top-0' />
-          {funits.map((fu, i) => {
-            let third = null;
-            if (isArithmeticUnitConfig(fu)) {
-              third = fu.operations.map((op) => {
-                const meta = fuOpsMetadata[op];
+    <Card>
+      <CardHeader>
+        <CardTitle>Functional Units</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <fieldset disabled={disabled}>
+          <div className='bg-gray-100'>
+            <div className='neutral-bg grid auto-rows-fr grid-cols-[fit-content(0px)_fit-content(0px)_1fr_fit-content(0px)] divide-y'>
+              <div className='neutral-bg sticky top-0 border-t px-2 py-1'>
+                Name
+              </div>
+              <div className='neutral-bg sticky top-0 px-2 py-1'>Latency</div>
+              <div className='neutral-bg sticky top-0 flex-grow px-2 py-1'>
+                Operations
+              </div>
+              <div className='neutral-bg sticky top-0' />
+              {funits.map((fu, i) => {
+                let third = null;
+                if (isArithmeticUnitConfig(fu)) {
+                  third = fu.operations.map((op) => {
+                    const meta = fuOpsMetadata[op];
+                    return (
+                      <div
+                        key={op}
+                        title={meta.name}
+                        className='rounded bg-gray-200 px-1 py-0.5'
+                      >
+                        {op}
+                      </div>
+                    );
+                  });
+                }
                 return (
-                  <div
-                    key={op}
-                    title={meta.name}
-                    className='rounded bg-gray-200 px-1 py-0.5'
-                  >
-                    {op}
-                  </div>
+                  <React.Fragment key={fu.id}>
+                    <div className='px-2 py-1'>{fu.fuType}</div>
+                    <div className='px-2 py-1'>{fu.latency}</div>
+                    <div className='flex flex-grow gap-1 truncate px-2 py-1 text-sm'>
+                      {third}
+                    </div>
+                    <button
+                      onClick={() => removeUnit(i)}
+                      className='shrink-0 px-1'
+                    >
+                      <X className='rounded-full stroke-red-400 duration-100 hover:bg-red-500/60 hover:stroke-red-600' />
+                    </button>
+                  </React.Fragment>
                 );
-              });
-            }
-            return (
-              <React.Fragment key={fu.id}>
-                <div className='px-2 py-1'>{fu.fuType}</div>
-                <div className='px-2 py-1'>{fu.latency}</div>
-                <div className='flex flex-grow gap-1 truncate px-2 py-1 text-sm'>
-                  {third}
-                </div>
-                <button onClick={() => removeUnit(i)} className='shrink-0 px-1'>
-                  <X className='rounded-full stroke-red-400 duration-100 hover:bg-red-500/60 hover:stroke-red-600' />
-                </button>
-              </React.Fragment>
-            );
-          })}
-        </div>
-      </div>
-      <div className='border-t p-4'>
-        <FUAdder control={control} />
-      </div>
-    </fieldset>
+              })}
+            </div>
+          </div>
+          <div className='border-t p-4'>
+            <FUAdder control={control} />
+          </div>
+        </fieldset>
+      </CardContent>
+    </Card>
   );
 }
 
