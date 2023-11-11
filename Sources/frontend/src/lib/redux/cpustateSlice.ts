@@ -280,6 +280,11 @@ export const selectRegisterMap = createSelector(
     // Copy the registers
     const registerMap: Record<string, RegisterModel> = { ...registers };
 
+    if (registers['f8'] === undefined) {
+      console.warn('f8 is undefined', registers);
+      return registerMap;
+    }
+
     // Assign aliases (not in the map at the moment)
     Object.entries(map).forEach(([alias, id]) => {
       const register = registers[id];
@@ -331,5 +336,19 @@ export const selectFpFunctionUnitBlocks = (state: RootState) =>
 
 export const selectBranchFunctionUnitBlocks = (state: RootState) =>
   state.cpu.state?.branchFunctionUnitBlocks;
+
+// Load store
+
+export const selectStoreBuffer = (state: RootState) =>
+  state.cpu.state?.storeBufferBlock;
+
+export const selectStoreBufferItemById = (state: RootState, id: Reference) =>
+  selectStoreBuffer(state)?.storeMap[id];
+
+export const selectLoadBuffer = (state: RootState) =>
+  state.cpu.state?.loadBufferBlock;
+
+export const selectLoadBufferItemById = (state: RootState, id: Reference) =>
+  selectLoadBuffer(state)?.loadMap[id];
 
 export default cpuSlice.reducer;

@@ -29,19 +29,32 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import {
+  selectLoadBuffer,
+  selectLoadBufferItemById,
+} from '@/lib/redux/cpustateSlice';
+import { useAppSelector } from '@/lib/redux/hooks';
+import { Reference } from '@/lib/types/cpuApi';
+
 import Block from '@/components/simulation/Block';
 import { InstructionBubble } from '@/components/simulation/InstructionField';
 import { InstructionListDisplay } from '@/components/simulation/InstructionListDisplay';
 
 export default function LoadBuffer() {
-  // const decode = useAppSelector(selectDecode);
+  const loadBuffer = useAppSelector(selectLoadBuffer);
+
+  if (!loadBuffer) return null;
+
+  const limit = Math.min(16, loadBuffer.bufferSize);
 
   return (
-    <Block title='Load Buffer'>
+    <Block title='Store Buffer'>
       <InstructionListDisplay
-        instructions={[]}
-        limit={4}
-        instructionRenderer={(_instruction) => <LoadBufferItem />}
+        instructions={loadBuffer.loadQueue}
+        limit={limit}
+        instructionRenderer={(storeItemId) => (
+          <LoadBufferItem loadItemId={storeItemId} />
+        )}
       />
     </Block>
   );
@@ -50,11 +63,29 @@ export default function LoadBuffer() {
 /**
  * Displays address and loaded value of a single item in the Load Buffer
  */
-export function LoadBufferItem() {
+export function LoadBufferItem({ loadItemId }: { loadItemId?: Reference }) {
+  const id = loadItemId === undefined ? 'INVALID' : loadItemId;
+  const item = useAppSelector((state) => selectLoadBufferItemById(state, id));
+
+  if (!item) {
+    return (
+      <InstructionBubble className='flex justify-center px-2 py-1 font-mono'>
+        <span className='text-gray-400'>empty</span>
+      </InstructionBubble>
+    );
+  }
+
+  // If address is -1, it is not known yet
+  const displayAddress = item.address === -1 ? '???' : item.address;
+
   return (
     <InstructionBubble className='flex divide-x'>
-      <div className='flex-grow flex justify-center items-center'>0x01</div>
-      <div className='flex-grow flex justify-center items-center'>value</div>
+      <div className='flex-grow flex justify-center items-center'>
+        {displayAddress}
+      </div>
+      <div className='flex-grow flex justify-center items-center'>
+        {item.hasBypassed}
+      </div>
     </InstructionBubble>
   );
 }

@@ -29,19 +29,32 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import {
+  selectStoreBuffer,
+  selectStoreBufferItemById,
+} from '@/lib/redux/cpustateSlice';
+import { useAppSelector } from '@/lib/redux/hooks';
+import { Reference } from '@/lib/types/cpuApi';
+
 import Block from '@/components/simulation/Block';
 import { InstructionBubble } from '@/components/simulation/InstructionField';
 import { InstructionListDisplay } from '@/components/simulation/InstructionListDisplay';
 
 export default function StoreBuffer() {
-  // const decode = useAppSelector(selectDecode);
+  const storeBuffer = useAppSelector(selectStoreBuffer);
+
+  if (!storeBuffer) return null;
+
+  const limit = Math.min(16, storeBuffer.bufferSize);
 
   return (
     <Block title='Store Buffer'>
       <InstructionListDisplay
-        instructions={[]}
-        limit={4}
-        instructionRenderer={(_instruction) => <StoreBufferItem />}
+        instructions={storeBuffer.storeQueue}
+        limit={limit}
+        instructionRenderer={(storeItemId) => (
+          <StoreBufferItem storeItemId={storeItemId} />
+        )}
       />
     </Block>
   );
@@ -50,11 +63,29 @@ export default function StoreBuffer() {
 /**
  * Displays address and loaded value of a single item in the Load Buffer
  */
-export function StoreBufferItem() {
+export function StoreBufferItem({ storeItemId }: { storeItemId?: Reference }) {
+  const id = storeItemId === undefined ? 'INVALID' : storeItemId;
+  const item = useAppSelector((state) => selectStoreBufferItemById(state, id));
+
+  if (!item) {
+    return (
+      <InstructionBubble className='flex justify-center px-2 py-1 font-mono'>
+        <span className='text-gray-400'>empty</span>
+      </InstructionBubble>
+    );
+  }
+
+  // If address is -1, it is not known yet
+  const displayAddress = item.address === -1 ? '???' : item.address;
+
   return (
     <InstructionBubble className='flex divide-x'>
-      <div className='flex-grow flex justify-center items-center'>0x01</div>
-      <div className='flex-grow flex justify-center items-center'>value</div>
+      <div className='flex-grow flex justify-center items-center'>
+        {displayAddress}
+      </div>
+      <div className='flex-grow flex justify-center items-center'>
+        {item.sourceRegister}
+      </div>
     </InstructionBubble>
   );
 }

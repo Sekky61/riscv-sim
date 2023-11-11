@@ -285,3 +285,54 @@ export interface FunctionUnitBlock {
 
 export type ArithmeticFunctionUnitBlock = FunctionUnitBlock;
 export type BranchFunctionUnitBlock = FunctionUnitBlock;
+
+// L/S
+
+export interface LoadBufferBlock {
+  loadQueue: Reference[]; // SimCodeModel
+  loadMap: Record<string, LoadBufferItem>;
+  possibleNewEntries: number;
+  bufferSize: number;
+  commitId: number;
+  storeBufferBlock?: StoreBufferBlock;
+  decodeAndDispatchBlock?: DecodeAndDispatchBlock;
+  registerFileBlock?: UnifiedRegisterFileBlock;
+  reorderBufferBlock?: ReorderBufferBlock;
+  instructionFetchBlock?: InstructionFetchBlock;
+  memoryAccessUnitList?: MemoryAccessUnit[];
+}
+export interface LoadBufferItem {
+  destinationRegister: string;
+  destinationReady: boolean;
+  address: number;
+  isAccessingMemory: boolean;
+  accessingMemoryId: number;
+  memoryAccessId: number;
+  hasBypassed: boolean;
+  memoryFailedId: number;
+  accessingMemory: boolean;
+}
+
+export interface StoreBufferBlock {
+  storeQueue: Reference[]; // SimCodeModel
+  storeMap: Record<string, StoreBufferItem>;
+  possibleNewEntries: number;
+  bufferSize: number;
+  commitId: number;
+  loadStoreInterpreter?: CodeLoadStoreInterpreter;
+  decodeAndDispatchBlock?: DecodeAndDispatchBlock;
+  registerFileBlock?: UnifiedRegisterFileBlock;
+  reorderBufferBlock?: ReorderBufferBlock;
+  memoryAccessUnitList?: MemoryAccessUnit[];
+}
+export interface StoreBufferItem {
+  sourceRegister: string;
+  sourceResultId: number;
+  sourceReady: boolean;
+  address: number;
+  isAccessingMemory: boolean;
+  accessingMemoryId: number;
+  memoryAccessId: number;
+  memoryFailedId: number;
+  accessingMemory: boolean;
+}
