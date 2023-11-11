@@ -31,6 +31,7 @@
 
 'use client';
 
+import { Inter as FontSans } from 'next/font/google';
 import { type ReactNode, useRef } from 'react';
 import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
@@ -38,10 +39,16 @@ import { PersistGate } from 'redux-persist/integration/react';
 import '@/styles/globals.css';
 
 import { persistor, store } from '@/lib/redux/store';
+import { cn } from '@/lib/utils';
 
 import ModalRoot from '@/components/modals/ModalRoot';
 import Notifications from '@/components/Notifications';
 import SideBar from '@/components/SideBar';
+
+export const fontSans = FontSans({
+  subsets: ['latin'],
+  variable: '--font-sans',
+});
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   const appRef = useRef<HTMLDivElement>(null);
@@ -55,7 +62,12 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         />
         <title>RISC-V Simulator</title>
       </head>
-      <body>
+      <body
+        className={cn(
+          'min-h-screen bg-background font-sans antialiased',
+          fontSans.variable,
+        )}
+      >
         <Provider store={store}>
           <PersistGate loading={null} persistor={persistor}>
             <ModalRoot appRef={appRef} />
