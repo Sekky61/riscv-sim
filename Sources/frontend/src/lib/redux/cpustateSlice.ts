@@ -113,6 +113,7 @@ export const reloadSimulation = (): ThunkAction<
   Action<string>
 > => {
   return async (dispatch) => {
+    dispatch(pullCodeFromCompiler());
     dispatch(callSimulation(0));
   };
 };
