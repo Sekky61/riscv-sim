@@ -244,3 +244,44 @@ export interface DecodeAndDispatchBlock {
   stalledPullCount: number;
   decodeBufferSize: number;
 }
+
+// Issue window blocks
+
+export interface IssueWindowBlock {
+  issuedInstructions: Reference[];
+  argumentValidityMap: Record<Reference, IssueItemModel[]>;
+  registerFileBlock?: Reference;
+  windowId: number;
+  functionUnitBlockList?: Reference[];
+}
+
+export interface IssueItemModel {
+  tag: string;
+  value: number;
+  validityBit: boolean;
+}
+
+export type AluIssueWindowBlock = IssueWindowBlock;
+export type FpIssueWindowBlock = IssueWindowBlock;
+export type BranchIssueWindowBlock = IssueWindowBlock;
+export type LoadStoreIssueWindowBlock = IssueWindowBlock;
+
+// Function unit blocks
+
+export interface FunctionUnitBlock {
+  reorderBufferBlock?: Reference;
+  simCodeModel: Reference;
+  functionUnitId: number;
+  functionUnitCount: number;
+  issueWindowBlock?: Reference;
+  delay: number;
+  counter: number;
+  name: string;
+  allowedOperators: string[];
+  arithmeticInterpreter?: Reference;
+  registerFileBlock?: Reference;
+  functionUnitEmpty: boolean;
+}
+
+export type ArithmeticFunctionUnitBlock = FunctionUnitBlock;
+export type BranchFunctionUnitBlock = FunctionUnitBlock;

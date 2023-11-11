@@ -29,20 +29,60 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import {
+  selectAluIssueWindowBlock,
+  selectBranchIssueWindowBlock,
+  selectFpIssueWindowBlock,
+  selectLoadStoreIssueWindowBlock,
+} from '@/lib/redux/cpustateSlice';
+import { useAppSelector } from '@/lib/redux/hooks';
+
 import Block from '@/components/simulation/Block';
 import InstructionField from '@/components/simulation/InstructionField';
 import { InstructionListDisplay } from '@/components/simulation/InstructionListDisplay';
 
-export default function IssueWindow() {
-  // const decode = useAppSelector(selectDecode);
+type IssueType = 'alu' | 'fp' | 'branch' | 'ls';
 
+export type IssueWindowProps = {
+  type: IssueType;
+};
+
+function getSelector(type: IssueType) {
+  if (type == 'alu') return selectAluIssueWindowBlock;
+  if (type == 'fp') return selectFpIssueWindowBlock;
+  if (type == 'branch') return selectBranchIssueWindowBlock;
+  if (type == 'ls') return selectLoadStoreIssueWindowBlock;
+  throw new Error(`Invalid type ${type}`);
+}
+
+function getTitle(type: IssueType) {
+  if (type == 'alu') return 'ALU Issue Window';
+  if (type == 'fp') return 'FP Issue Window';
+  if (type == 'branch') return 'Branch Issue Window';
+  if (type == 'ls') return 'Load/Store Issue Window';
+  throw new Error(`Invalid type ${type}`);
+}
+
+export default function IssueWindow({ type }: IssueWindowProps) {
+  const issue = useAppSelector(getSelector(type));
+
+  if (!issue) return null;
+
+  const validity = issue.argumentValidityMap;
+  const instructionIds = [];
+  for (const key in validity) {
+    instructionIds.push(key);
+  }
+
+  const title = getTitle(type);
+
+  // TODO: has no limit
   return (
-    <Block title='Issue Block'>
+    <Block title={title}>
       <InstructionListDisplay
-        instructions={[]}
-        limit={4}
+        instructions={instructionIds}
         instructionRenderer={(instruction) => (
-          <InstructionField instruction={instruction} />
+          <InstructionField instructionId={instruction} />
         )}
       />
     </Block>

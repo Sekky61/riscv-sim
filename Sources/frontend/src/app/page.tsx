@@ -47,7 +47,7 @@ import CanvasWindow from '@/components/CanvasWindow';
 import Placement from '@/components/Placement';
 import DecodeBlock from '@/components/simulation/DecodeBlock';
 import FetchBlock from '@/components/simulation/FetchBlock';
-import FunctionalUnit from '@/components/simulation/FunctionalUnit';
+import FunctionUnitGroup from '@/components/simulation/FunctionUnitGroup';
 import IssueWindow from '@/components/simulation/IssueWindow';
 import Line from '@/components/simulation/Line';
 import LoadBuffer from '@/components/simulation/LoadBuffer';
@@ -109,22 +109,28 @@ export default function HomePage() {
         </Placement>
 
         <Placement x={thirdCol + blockWidth} y={145}>
-          <Line length={500} />
+          <Line length={610} />
         </Placement>
 
         <Placement x={fourthCol} y={150}>
           <div className='flex gap-[50px]'>
             <div className='flex flex-col items-center'>
               <Line length={50} down />
-              <IssueWindow />
+              <IssueWindow type='alu' />
+              <Line length={10} down />
+              <IssueWindow type='fp' />
               <Line length={50} down />
-              <FunctionalUnit />
+              <FunctionUnitGroup type='alu' />
             </div>
             <div className='flex flex-col items-center'>
               <Line length={50} down />
-              <IssueWindow />
+              <IssueWindow type='branch' />
               <Line length={50} down />
-              <FunctionalUnit />
+              <FunctionUnitGroup type='branch' />
+            </div>
+            <div className='flex flex-col items-center'>
+              <Line length={50} down />
+              <IssueWindow type='ls' />
             </div>
           </div>
         </Placement>

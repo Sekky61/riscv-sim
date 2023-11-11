@@ -296,6 +296,8 @@ export const selectRegisterMap = createSelector(
 export const selectRegisterById = (state: RootState, id: Reference) =>
   selectRegisterMap(state)?.[id];
 
+// Stages
+
 export const selectFetch = (state: RootState) =>
   state.cpu.state?.instructionFetchBlock;
 
@@ -304,5 +306,30 @@ export const selectDecode = (state: RootState) =>
 
 export const selectROB = (state: RootState) =>
   state.cpu.state?.reorderBufferState;
+
+// Issue window blocks
+
+export const selectAluIssueWindowBlock = (state: RootState) =>
+  state.cpu.state?.aluIssueWindowBlock;
+
+export const selectFpIssueWindowBlock = (state: RootState) =>
+  state.cpu.state?.fpIssueWindowBlock;
+
+export const selectBranchIssueWindowBlock = (state: RootState) =>
+  state.cpu.state?.branchIssueWindowBlock;
+
+export const selectLoadStoreIssueWindowBlock = (state: RootState) =>
+  state.cpu.state?.loadStoreIssueWindowBlock;
+
+// Function units
+
+export const selectArithmeticFunctionUnitBlocks = (state: RootState) =>
+  state.cpu.state?.arithmeticFunctionUnitBlocks;
+
+export const selectFpFunctionUnitBlocks = (state: RootState) =>
+  state.cpu.state?.fpFunctionUnitBlocks;
+
+export const selectBranchFunctionUnitBlocks = (state: RootState) =>
+  state.cpu.state?.branchFunctionUnitBlocks;
 
 export default cpuSlice.reducer;
