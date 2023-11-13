@@ -51,7 +51,6 @@ import {
   FuOps,
   fuOps,
   fuTypes,
-  IsaConfig,
   IsaNamedConfig,
   isArithmeticUnitConfig,
   predictorDefaults,
@@ -76,7 +75,7 @@ import { FormInput } from './FormInput';
 import { RadioInput, RadioInputWithTitle } from './RadioInput';
 
 type IsaArrayFields = 'fUnits';
-type IsaSimpleFields = keyof Omit<IsaConfig, IsaArrayFields>;
+type IsaSimpleFields = keyof Omit<IsaNamedConfig, IsaArrayFields>;
 type IsaKeys = IsaSimpleFields | IsaArrayFields;
 
 type IsaFormMetadata = {
@@ -86,7 +85,15 @@ type IsaFormMetadata = {
   };
 };
 
+/**
+ * Metadata for ISA form fields
+ * Displayed as title above the input and an icon with hint on hover
+ */
 const isaFormMetadata: IsaFormMetadata = {
+  name: {
+    title: 'Name',
+    hint: 'Name of the ISA configuration.',
+  },
   robSize: {
     title: 'Re-order buffer size',
     hint: 'Instruction capacity of re-order buffer (ROB).',
@@ -199,12 +206,25 @@ export default function IsaSettingsForm({
     <form>
       <Tabs defaultValue='buffers' className='w-[600px]'>
         <TabsList className='w-full'>
+          <TabsTrigger value='name'>Name</TabsTrigger>
           <TabsTrigger value='buffers'>Buffers</TabsTrigger>
           <TabsTrigger value='fetch'>Fetch</TabsTrigger>
           <TabsTrigger value='functional'>Functional Units</TabsTrigger>
           <TabsTrigger value='cache'>Cache</TabsTrigger>
           <TabsTrigger value='branch'>Branch</TabsTrigger>
         </TabsList>
+        <TabsContent value='name'>
+          <Card>
+            <CardHeader>
+              <CardTitle>Name</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <fieldset disabled={disabled}>
+                <FormInput {...simpleRegister('name')} />
+              </fieldset>
+            </CardContent>
+          </Card>
+        </TabsContent>
         <TabsContent value='buffers'>
           <Card>
             <CardHeader>

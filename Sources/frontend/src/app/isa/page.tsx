@@ -32,7 +32,6 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import clsx from 'clsx';
 import { Check, ChevronsUpDown } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import React from 'react';
@@ -43,18 +42,14 @@ import {
   isaFormDefaultValues,
   isaNamed,
   IsaNamedConfig,
-  isArithmeticUnitConfig,
 } from '@/lib/forms/Isa';
-import { IsaConfig } from '@/lib/forms/Isa';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import {
   createIsa,
   IsaSaveChecked,
   newActiveIsa,
   selectActiveIsa,
-  selectActiveIsaName,
   selectIsas,
-  selectValidatedIsas,
   updateIsa,
 } from '@/lib/redux/isaSlice';
 import { openModal } from '@/lib/redux/modalSlice';
@@ -182,13 +177,6 @@ export default function Page() {
     );
   };
 
-  const configBoxClicked: React.MouseEventHandler<HTMLDivElement> = (e) => {
-    // Ignore clicks from the input
-    if (!(e.target instanceof HTMLInputElement)) {
-      setSavesOpen(!savesOpen);
-    }
-  };
-
   return (
     <div>
       <h1 className='mb-8 text-2xl'>ISA Configuration</h1>
@@ -208,8 +196,8 @@ export default function Page() {
           </PopoverTrigger>
           <PopoverContent className='w-[200px] p-0'>
             <Command>
-              <CommandInput placeholder='Search framework...' />
-              <CommandEmpty>No framework found.</CommandEmpty>
+              <CommandInput placeholder='Search...' />
+              <CommandEmpty>No ISA found.</CommandEmpty>
               <CommandGroup>
                 {isas.map((isa) => (
                   <CommandItem
@@ -264,85 +252,4 @@ export type IsaItemsProps = {
   onIsaSavePicked: (name: string) => void;
 };
 
-function IsaLocalStorageItems({ onIsaSavePicked }: IsaItemsProps) {
-  const validatedIsas = useAppSelector(selectValidatedIsas);
-  return (
-    <>
-      {validatedIsas.map((isa) => (
-        <IsaItem key={isa.name} isa={isa} onIsaSavePicked={onIsaSavePicked} />
-      ))}
-    </>
-  );
-}
-
 export type IsaItemProps = IsaItemsProps & { isa: IsaSaveChecked };
-
-function IsaItem({ isa, onIsaSavePicked }: IsaItemProps) {
-  const [hover, setHover] = useState(false);
-  const activeIsaName = useAppSelector(selectActiveIsaName);
-  const isActiveIsa = activeIsaName === isa.name;
-  const classes = clsx(
-    'flex p-2 relative',
-    isa.valid &&
-      !isActiveIsa &&
-      'hover:bg-gray-100 active:bg-gray-300 hover:cursor-pointer',
-    isActiveIsa && 'bg-gray-200',
-  );
-  return (
-    <div
-      onClick={() => onIsaSavePicked(isa.name)}
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => setHover(false)}
-      className={classes}
-    >
-      {isa.name}
-      {hover && <IsaSettingsDisplay isa={isa} />}
-    </div>
-  );
-}
-
-interface IsaSettingsDisplayProps {
-  isa: IsaConfig;
-}
-
-function IsaSettingsDisplay({ isa }: IsaSettingsDisplayProps) {
-  return (
-    <div className='tooltiptext neutral-bg ml-2 rounded border p-4'>
-      <h3 className='my-1'>Fetch</h3>
-      <ul className='list-disc ml-4'>
-        <li>
-          <b>Fetch width:</b> {isa.fetchWidth}
-        </li>
-        <li>
-          <b>Commit width:</b> {isa.commitWidth}
-        </li>
-      </ul>
-      <h3 className='my-1'>Buffers</h3>
-      <ul className='list-disc ml-4'>
-        <li>
-          <b>ROB size:</b> {isa.robSize}
-        </li>
-        <li>
-          <b>LB size:</b> {isa.lbSize}
-        </li>
-        <li>
-          <b>SB size:</b> {isa.sbSize}
-        </li>
-      </ul>
-      <h3 className='my-1'>Functional Units ({isa.fUnits.length})</h3>
-      <ul className='list-decimal ml-4'>
-        {isa.fUnits.map((unit) => {
-          let nOfOps = null;
-          if (isArithmeticUnitConfig(unit)) {
-            nOfOps = ` - (${unit.operations.length}) operations`;
-          }
-          return (
-            <li key={unit.id}>
-              <b>{unit.fuType}</b> - Latency: {unit.latency} {nOfOps}
-            </li>
-          );
-        })}
-      </ul>
-    </div>
-  );
-}
