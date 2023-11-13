@@ -113,6 +113,18 @@ public class Expression
   
   public static String[] allOperators;
   
+  public static String[] baseOperators = new String[]{"bits", "=", "pick", "!", ">", ">=", "<", "<=", "==", "!="};
+  
+  public static String[] bitwiseOperators = new String[]{"&", "|", "^", "<<", ">>", ">>>"};
+  
+  public static String[] additionOperators = new String[]{"+", "-"};
+  
+  public static String[] multiplicationOperators = new String[]{"*", "*w", "%"};
+  
+  public static String[] divisionOperators = new String[]{"/"};
+  
+  public static String[] specialOperators = new String[]{"sqrt", "float", "fclass"};
+  
   static
   {
     intPattern         = Pattern.compile("-?\\d+[li]?");

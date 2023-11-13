@@ -133,16 +133,26 @@ public class ForwardSimulationTest
     // 2 branch: (delay 3)
     // 1 mem: (delay 1)
     cpuCfg.fUnits    = new CpuConfiguration.FUnit[10];
-    cpuCfg.fUnits[0] = new CpuConfiguration.FUnit(1, "FX", 2, new String[]{"+", "="});
-    cpuCfg.fUnits[1] = new CpuConfiguration.FUnit(2, "FX", 2, new String[]{"+", "="});
-    cpuCfg.fUnits[2] = new CpuConfiguration.FUnit(3, "FX", 2, new String[]{"-", "="});
-    cpuCfg.fUnits[3] = new CpuConfiguration.FUnit(4, "FP", 2, new String[]{"+", "="});
-    cpuCfg.fUnits[4] = new CpuConfiguration.FUnit(5, "FP", 2, new String[]{"+", "="});
-    cpuCfg.fUnits[5] = new CpuConfiguration.FUnit(6, "FP", 2, new String[]{"-", "="});
-    cpuCfg.fUnits[6] = new CpuConfiguration.FUnit(7, "L/S", 1, new String[]{});
-    cpuCfg.fUnits[7] = new CpuConfiguration.FUnit(8, "Branch", 3, new String[]{});
-    cpuCfg.fUnits[8] = new CpuConfiguration.FUnit(9, "Branch", 3, new String[]{});
-    cpuCfg.fUnits[9] = new CpuConfiguration.FUnit(10, "Memory", 1, new String[]{});
+    cpuCfg.fUnits[0] = new CpuConfiguration.FUnit(1, CpuConfiguration.FUnit.Type.FX, 2,
+                                                  new CpuConfiguration.FUnit.Capability[]{CpuConfiguration.FUnit.Capability.addition});
+    cpuCfg.fUnits[1] = new CpuConfiguration.FUnit(2, CpuConfiguration.FUnit.Type.FX, 2,
+                                                  new CpuConfiguration.FUnit.Capability[]{CpuConfiguration.FUnit.Capability.addition});
+    cpuCfg.fUnits[2] = new CpuConfiguration.FUnit(3, CpuConfiguration.FUnit.Type.FX, 2,
+                                                  new CpuConfiguration.FUnit.Capability[]{CpuConfiguration.FUnit.Capability.addition});
+    cpuCfg.fUnits[3] = new CpuConfiguration.FUnit(4, CpuConfiguration.FUnit.Type.FP, 2,
+                                                  new CpuConfiguration.FUnit.Capability[]{CpuConfiguration.FUnit.Capability.addition});
+    cpuCfg.fUnits[4] = new CpuConfiguration.FUnit(5, CpuConfiguration.FUnit.Type.FP, 2,
+                                                  new CpuConfiguration.FUnit.Capability[]{CpuConfiguration.FUnit.Capability.addition});
+    cpuCfg.fUnits[5] = new CpuConfiguration.FUnit(6, CpuConfiguration.FUnit.Type.FP, 2,
+                                                  new CpuConfiguration.FUnit.Capability[]{CpuConfiguration.FUnit.Capability.addition});
+    cpuCfg.fUnits[6] = new CpuConfiguration.FUnit(7, CpuConfiguration.FUnit.Type.L_S, 1,
+                                                  new CpuConfiguration.FUnit.Capability[]{});
+    cpuCfg.fUnits[7] = new CpuConfiguration.FUnit(8, CpuConfiguration.FUnit.Type.Branch, 3,
+                                                  new CpuConfiguration.FUnit.Capability[]{});
+    cpuCfg.fUnits[8] = new CpuConfiguration.FUnit(9, CpuConfiguration.FUnit.Type.Branch, 3,
+                                                  new CpuConfiguration.FUnit.Capability[]{});
+    cpuCfg.fUnits[9] = new CpuConfiguration.FUnit(10, CpuConfiguration.FUnit.Type.Memory, 1,
+                                                  new CpuConfiguration.FUnit.Capability[]{});
     cpuCfg.code      = "";
     
     this.cpu = new Cpu(cpuCfg);
@@ -171,11 +181,19 @@ public class ForwardSimulationTest
     this.branchIssueWindowBlock    = cpuState.branchIssueWindowBlock;
     
     // FU
-    this.addFunctionBlock         = cpuState.arithmeticFunctionUnitBlocks.get(0);
-    this.addSecondFunctionBlock   = cpuState.arithmeticFunctionUnitBlocks.get(1);
-    this.subFunctionBlock         = cpuState.arithmeticFunctionUnitBlocks.get(2);
-    this.faddFunctionBlock        = cpuState.fpFunctionUnitBlocks.get(0);
-    this.faddSecondFunctionBlock  = cpuState.fpFunctionUnitBlocks.get(1);
+    this.addFunctionBlock = cpuState.arithmeticFunctionUnitBlocks.get(0);
+    // Remove subtract
+    addFunctionBlock.getAllowedOperators().remove("-");
+    this.addSecondFunctionBlock = cpuState.arithmeticFunctionUnitBlocks.get(1);
+    // Remove subtract
+    addSecondFunctionBlock.getAllowedOperators().remove("-");
+    this.subFunctionBlock  = cpuState.arithmeticFunctionUnitBlocks.get(2);
+    this.faddFunctionBlock = cpuState.fpFunctionUnitBlocks.get(0);
+    // Remove subtract
+    faddFunctionBlock.getAllowedOperators().remove("-");
+    this.faddSecondFunctionBlock = cpuState.fpFunctionUnitBlocks.get(1);
+    // Remove subtract
+    faddSecondFunctionBlock.getAllowedOperators().remove("-");
     this.fsubFunctionBlock        = cpuState.fpFunctionUnitBlocks.get(2);
     this.loadStoreFunctionUnit    = cpuState.loadStoreFunctionUnits.get(0);
     this.memoryAccessUnit         = cpuState.memoryAccessUnits.get(0);

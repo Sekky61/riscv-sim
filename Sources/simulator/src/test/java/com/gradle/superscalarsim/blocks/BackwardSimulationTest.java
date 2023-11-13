@@ -9,6 +9,7 @@ import com.gradle.superscalarsim.builders.InputCodeModelBuilder;
 import com.gradle.superscalarsim.builders.RegisterFileModelBuilder;
 import com.gradle.superscalarsim.cpu.Cpu;
 import com.gradle.superscalarsim.cpu.CpuConfiguration;
+import com.gradle.superscalarsim.cpu.CpuConfiguration.FUnit.Type;
 import com.gradle.superscalarsim.cpu.CpuState;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
@@ -157,16 +158,22 @@ public class BackwardSimulationTest
     // 2 branch: (delay 3)
     // 1 mem: (delay 1)
     cpuCfg.fUnits    = new CpuConfiguration.FUnit[10];
-    cpuCfg.fUnits[0] = new CpuConfiguration.FUnit(1, "FX", 2, new String[]{"+", "="});
-    cpuCfg.fUnits[1] = new CpuConfiguration.FUnit(2, "FX", 2, new String[]{"+", "="});
-    cpuCfg.fUnits[2] = new CpuConfiguration.FUnit(3, "FX", 2, new String[]{"-", "="});
-    cpuCfg.fUnits[3] = new CpuConfiguration.FUnit(4, "FP", 2, new String[]{"+", "="});
-    cpuCfg.fUnits[4] = new CpuConfiguration.FUnit(5, "FP", 2, new String[]{"+", "="});
-    cpuCfg.fUnits[5] = new CpuConfiguration.FUnit(6, "FP", 2, new String[]{"-", "="});
-    cpuCfg.fUnits[6] = new CpuConfiguration.FUnit(7, "L/S", 1, new String[]{});
-    cpuCfg.fUnits[7] = new CpuConfiguration.FUnit(8, "Branch", 3, new String[]{});
-    cpuCfg.fUnits[8] = new CpuConfiguration.FUnit(9, "Branch", 3, new String[]{});
-    cpuCfg.fUnits[9] = new CpuConfiguration.FUnit(10, "Memory", 1, new String[]{});
+    cpuCfg.fUnits[0] = new CpuConfiguration.FUnit(1, Type.FX, 2,
+                                                  new CpuConfiguration.FUnit.Capability[]{CpuConfiguration.FUnit.Capability.addition});
+    cpuCfg.fUnits[1] = new CpuConfiguration.FUnit(2, Type.FX, 2,
+                                                  new CpuConfiguration.FUnit.Capability[]{CpuConfiguration.FUnit.Capability.addition});
+    cpuCfg.fUnits[2] = new CpuConfiguration.FUnit(3, Type.FX, 2,
+                                                  new CpuConfiguration.FUnit.Capability[]{CpuConfiguration.FUnit.Capability.addition});
+    cpuCfg.fUnits[3] = new CpuConfiguration.FUnit(4, Type.FP, 2,
+                                                  new CpuConfiguration.FUnit.Capability[]{CpuConfiguration.FUnit.Capability.addition});
+    cpuCfg.fUnits[4] = new CpuConfiguration.FUnit(5, Type.FP, 2,
+                                                  new CpuConfiguration.FUnit.Capability[]{CpuConfiguration.FUnit.Capability.addition});
+    cpuCfg.fUnits[5] = new CpuConfiguration.FUnit(6, Type.FP, 2,
+                                                  new CpuConfiguration.FUnit.Capability[]{CpuConfiguration.FUnit.Capability.addition});
+    cpuCfg.fUnits[6] = new CpuConfiguration.FUnit(7, Type.L_S, 1, new CpuConfiguration.FUnit.Capability[]{});
+    cpuCfg.fUnits[7] = new CpuConfiguration.FUnit(8, Type.Branch, 3, new CpuConfiguration.FUnit.Capability[]{});
+    cpuCfg.fUnits[8] = new CpuConfiguration.FUnit(9, Type.Branch, 3, new CpuConfiguration.FUnit.Capability[]{});
+    cpuCfg.fUnits[9] = new CpuConfiguration.FUnit(10, Type.Memory, 1, new CpuConfiguration.FUnit.Capability[]{});
     
     this.cpu = new Cpu(cpuCfg);
     CpuState cpuState = this.cpu.cpuState;
@@ -180,6 +187,12 @@ public class BackwardSimulationTest
     this.cpu.cpuState.unifiedRegisterFileBlock.setRegistersWithList(new ArrayList<>());
     this.cpu.cpuState.unifiedRegisterFileBlock.loadRegisters(initLoader.getRegisterFileModelList(),
                                                              new RegisterModelFactory());
+    
+    // Remove sub to get control over FU allocation
+    cpu.cpuState.arithmeticFunctionUnitBlocks.get(0).getAllowedOperators().remove("-");
+    cpu.cpuState.arithmeticFunctionUnitBlocks.get(1).getAllowedOperators().remove("-");
+    cpu.cpuState.fpFunctionUnitBlocks.get(0).getAllowedOperators().remove("-");
+    cpu.cpuState.fpFunctionUnitBlocks.get(1).getAllowedOperators().remove("-");
   }
   
   private ArithmeticFunctionUnitBlock getAddFunctionBlock(Cpu cpu)

@@ -43,6 +43,9 @@ import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.models.InputCodeArgument;
 import com.gradle.superscalarsim.models.register.RegisterModel;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * @class ArithmeticFunctionUnitBlock
  * @brief Specific function unit class for executing arithmetic instructions
@@ -50,7 +53,7 @@ import com.gradle.superscalarsim.models.register.RegisterModel;
 public class ArithmeticFunctionUnitBlock extends AbstractFunctionUnitBlock
 {
   /// Array of all supported operators by this FU
-  private final String[] allowedOperators;
+  private final List<String> allowedOperators;
   /// Interpreter for interpreting executing instructions
   @JsonIdentityReference(alwaysAsId = true)
   private CodeArithmeticInterpreter arithmeticInterpreter;
@@ -61,7 +64,7 @@ public class ArithmeticFunctionUnitBlock extends AbstractFunctionUnitBlock
   public ArithmeticFunctionUnitBlock()
   {
     // Empty
-    this.allowedOperators = new String[0];
+    this.allowedOperators = new ArrayList<>();
   }
   
   /**
@@ -75,7 +78,7 @@ public class ArithmeticFunctionUnitBlock extends AbstractFunctionUnitBlock
   public ArithmeticFunctionUnitBlock(ReorderBufferBlock reorderBufferBlock,
                                      int delay,
                                      AbstractIssueWindowBlock issueWindowBlock,
-                                     String[] allowedOperators)
+                                     List<String> allowedOperators)
   {
     super(reorderBufferBlock, delay, issueWindowBlock);
     this.allowedOperators = allowedOperators;
@@ -150,12 +153,14 @@ public class ArithmeticFunctionUnitBlock extends AbstractFunctionUnitBlock
   //----------------------------------------------------------------------
   
   /**
-   * @return Array of allowed operators
+   * @return List of allowed operators
    * @brief Get all allowed operators by this FU
    */
-  public String[] getAllowedOperators()
+  public List<String> getAllowedOperators()
   {
     return allowedOperators;
   }// end of getAllowedOperators
   //----------------------------------------------------------------------
+  
+  
 }

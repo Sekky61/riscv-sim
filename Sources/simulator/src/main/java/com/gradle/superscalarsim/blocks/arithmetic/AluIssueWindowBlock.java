@@ -84,16 +84,26 @@ public class AluIssueWindowBlock extends AbstractIssueWindowBlock
   @Override
   public AbstractFunctionUnitBlock selectSufficientFunctionUnit(InstructionFunctionModel instruction)
   {
-    // TODO: distinguish between busy FUs and no compatible FUs
+    boolean                     anySupported         = false;
+    ArithmeticFunctionUnitBlock selectedFunctionUnit = null;
     for (ArithmeticFunctionUnitBlock functionBlock : this.functionUnitBlockList)
     {
-      if (functionBlock.isFunctionUnitEmpty() && isInstructionSupported(functionBlock.getAllowedOperators(),
-                                                                        instruction.getInterpretableAs()))
+      boolean isEmpty = functionBlock.isFunctionUnitEmpty();
+      boolean isSupported = isInstructionSupported(functionBlock.getAllowedOperators(),
+                                                   instruction.getInterpretableAs());
+      anySupported = anySupported || isSupported;
+      if (isEmpty && isSupported)
       {
-        return functionBlock;
+        selectedFunctionUnit = functionBlock;
+        break;
       }
     }
-    return null;
+    
+    if (!anySupported)
+    {
+      throw new RuntimeException("No supported FUs for instruction: " + instruction.getInterpretableAs());
+    }
+    return selectedFunctionUnit;
   }// end of selectSufficientFunctionUnit
   //----------------------------------------------------------------------
   
@@ -137,6 +147,37 @@ public class AluIssueWindowBlock extends AbstractIssueWindowBlock
   //----------------------------------------------------------------------
   
   /**
+   * @param allowedInstructions      Array of allowed instructions by the FU
+   * @param interpretableInstruction String containing the description of the instruction in interpretable form
+   *
+   * @return True if FU instruction pool supports instruction, false otherwise
+   * @brief Checks if provided instruction can be executed by any function unit
+   */
+  private boolean isInstructionSupported(List<String> allowedInstructions, String interpretableInstruction)
+  {
+    List<String> requiredOperators = new ArrayList<>();
+    for (String token : interpretableInstruction.split(" "))
+    {
+      // Compare it with all operators
+      if (Arrays.asList(Expression.allOperators).contains(token))
+      {
+        requiredOperators.add(token);
+      }
+    }
+    
+    // Check if all required operators are supported by FU
+    for (String requiredOperator : requiredOperators)
+    {
+      if (!allowedInstructions.contains(requiredOperator))
+      {
+        return false;
+      }
+    }
+    return true;
+  }// end of isInstructionSupported
+  //----------------------------------------------------------------------
+  
+  /**
    * @param [in] functionUnitBlock - FU to bind with this window
    *
    * @brief Associate function block with this window
@@ -147,32 +188,5 @@ public class AluIssueWindowBlock extends AbstractIssueWindowBlock
     this.functionUnitBlockList.add(functionUnitBlock);
     this.setFunctionUnitCountInUnits();
   }// end of setFunctionUnitBlock
-  //----------------------------------------------------------------------
-  
-  /**
-   * @param [in] allowedInstructions      - Array of allowed instructions by the FU
-   * @param [in] interpretableInstruction - String containing all operations used to calculate instruction
-   *
-   * @return True if FU instruction pool supports instruction, false otherwise
-   * @brief Checks if provided instruction can be executed by any function unit
-   */
-  private boolean isInstructionSupported(String[] allowedInstructions, String interpretableInstruction)
-  {
-    String[]     allInstructions   = Expression.allOperators;
-    List<String> foundInstructions = new ArrayList<>();
-    String       instruction       = String.copyValueOf(interpretableInstruction.toCharArray());
-    for (String operation : allInstructions)
-    {
-      if (instruction.contains(operation))
-      {
-        foundInstructions.add(operation);
-        instruction = instruction.replace(operation, "");
-      }
-    }
-    
-    Arrays.stream(allowedInstructions).forEach(foundInstructions::remove);
-    
-    return foundInstructions.isEmpty();
-  }// end of isInstructionSupported
   //----------------------------------------------------------------------
 }
