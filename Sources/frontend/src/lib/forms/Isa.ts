@@ -44,63 +44,18 @@ export const storeBehaviorTypes = ['write-back'] as const;
 export type StoreBehaviorType = (typeof storeBehaviorTypes)[number];
 
 export const arithmeticUnits = ['FX', 'FP'] as const;
-export const otherUnits = ['L/S', 'Branch', 'Memory'] as const;
+export const otherUnits = ['L_S', 'Branch', 'Memory'] as const;
 export const fuTypes = [...arithmeticUnits, ...otherUnits] as const;
 export type FuTypes = (typeof fuTypes)[number];
 
-/**
- * <ul>
- *   <li>'+' - Addition</li>
- *   <li>'-' - Subtraction</li>
- *   <li>'*' - Multiplication</li>
- *   <li>'%' - Modulo</li>
- *   <li>'/' - Division</li>
- *   <li>'&' - Bitwise AND</li>
- *   <li>'|' - Bitwise OR</li>
- *   <li>'^' - Bitwise XOR</li>
- *   <li>'<<' - Bitwise left shift</li>
- *   <li>'>>' - Bitwise right shift</li>
- *   <li>'>>>' - Bitwise unsigned right shift</li>
- *   <li>'sqrt' - Square root</li>
- *   <li>'!' - Bitwise NOT</li>
- *   <li>'>' - Greater than signed</li>
- *   <li>'>=' - Greater than or equal</li>
- *   <li>'<' - Less than</li>
- *   <li>'<=' - Less than or equal</li>
- *   <li>'==' - Equal</li>
- *   <li>'!=' - Not equal</li>
- *   <li>'=' - Assign (left to the right)</li>
- *   <li>'pick' - Pick one of the two variables based on the value of the third variable (false picks the left one)</li>
- *   <li>'float' - Convert to float (does not change the bits, interpret cast)</li>
- *   <li>'bits' - Convert to bits (does not change the bits, interpret cast)</li>
- *   <li>'fclass' - Classify float (returns an int)</li>
- * </ul>
- */
-export const fuOps = [
-  '!',
-  'bits',
-  '+',
-  '-',
-  '*',
-  '/',
-  '%',
-  '&',
-  '|',
-  '^',
-  '>>>',
-  '<<',
-  '>>',
-  '<=',
-  '>=',
-  '==',
-  '<',
-  '>',
-  '=',
-  'sqrt',
-  'float',
-  'fclass',
+export const operations = [
+  'bitwise',
+  'addition',
+  'multiplication',
+  'division',
+  'special',
 ] as const;
-export type FuOps = (typeof fuOps)[number];
+export type Operations = (typeof operations)[number];
 
 export const lsUnitSchema = z.object({
   id: z.number(),
@@ -111,7 +66,7 @@ export type LsUnitConfig = z.infer<typeof lsUnitSchema>;
 
 export const arithmeticUnitSchema = lsUnitSchema.extend({
   fuType: z.enum(arithmeticUnits), // Field overwrite
-  operations: z.array(z.enum(fuOps)),
+  operations: z.array(z.enum(operations)),
 });
 export type ArithmeticUnitConfig = z.infer<typeof arithmeticUnitSchema>;
 
@@ -176,25 +131,11 @@ export const isaFormDefaultValues: IsaNamedConfig = {
       fuType: 'FX',
       latency: 2,
       operations: [
-        '!',
-        'bits',
-        '+',
-        '-',
-        '*',
-        '/',
-        '%',
-        '&',
-        '|',
-        '^',
-        '>>>',
-        '<<',
-        '>>',
-        '<=',
-        '>=',
-        '==',
-        '<',
-        '>',
-        '=',
+        'bitwise',
+        'addition',
+        'multiplication',
+        'division',
+        'special',
       ],
     },
     {
@@ -202,33 +143,16 @@ export const isaFormDefaultValues: IsaNamedConfig = {
       fuType: 'FP',
       latency: 2,
       operations: [
-        '!',
-        'bits',
-        '+',
-        '-',
-        '*',
-        '/',
-        '%',
-        '&',
-        '|',
-        '^',
-        '>>>',
-        '<<',
-        '>>',
-        '<=',
-        '>=',
-        '==',
-        '<',
-        '>',
-        '=',
-        'sqrt',
-        'float',
-        'fclass',
+        'bitwise',
+        'addition',
+        'multiplication',
+        'division',
+        'special',
       ],
     },
     {
       id: 2,
-      fuType: 'L/S',
+      fuType: 'L_S',
       latency: 2,
     },
     {

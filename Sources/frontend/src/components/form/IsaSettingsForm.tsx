@@ -33,7 +33,7 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { X } from 'lucide-react';
-import { MouseEventHandler, useState } from 'react';
+import { MouseEventHandler } from 'react';
 import React from 'react';
 import {
   Control,
@@ -48,11 +48,11 @@ import {
   cacheReplacementTypes,
   FUnitConfig,
   fUnitSchema,
-  FuOps,
-  fuOps,
   fuTypes,
   IsaNamedConfig,
   isArithmeticUnitConfig,
+  Operations,
+  operations,
   predictorDefaults,
   predictorTypes,
   storeBehaviorTypes,
@@ -64,6 +64,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/base/ui/card';
+import { Checkbox } from '@/components/base/ui/checkbox';
 import {
   Tabs,
   TabsContent,
@@ -322,29 +323,16 @@ export default function IsaSettingsForm({
   );
 }
 
-const fuOpsMetadata: { [key in FuOps]: FuOpMetadata } = {
-  '+': { name: 'Add' },
-  '-': { name: 'Subtract' },
-  '*': { name: 'Multiply' },
-  '/': { name: 'Divide' },
-  '%': { name: 'Modulo' },
-  '&': { name: 'Bitwise and' },
-  '|': { name: 'Bitwise or' },
-  '>>': { name: 'Shift right' },
-  '<<': { name: 'Shift left' },
-  '>>>': { name: 'Unsigned shift' },
-  '<': { name: 'Less than' },
-  '>': { name: 'Greater than' },
-  '<=': { name: 'Less than or equal' },
-  '>=': { name: 'Greater than or equal' },
-  '==': { name: 'Equal' },
-  '!': { name: 'Not' },
-  bits: { name: 'Convert to bits' },
-  '^': { name: 'Bitwise xor' },
-  '=': { name: 'Assign' },
-  sqrt: { name: 'Square root' },
-  float: { name: 'Convert to float' },
-  fclass: { name: 'Classify float' },
+type OpMetadata = {
+  name: string;
+};
+
+const opsMetadata: { [key in Operations]: OpMetadata } = {
+  addition: { name: 'Addition' },
+  bitwise: { name: 'Bitwise' },
+  division: { name: 'Division' },
+  multiplication: { name: 'Multiplication' },
+  special: { name: 'Special' },
 };
 
 interface FunctionalUnitInputProps {
@@ -391,7 +379,7 @@ function FunctionalUnitInput({
                 let third = null;
                 if (isArithmeticUnitConfig(fu)) {
                   third = fu.operations.map((op) => {
-                    const meta = fuOpsMetadata[op];
+                    const meta = opsMetadata[op];
                     return (
                       <div
                         key={op}
@@ -483,14 +471,45 @@ function FUAdder({ control }: { control: Control<IsaNamedConfig> }) {
           />
         </div>
         <div className={enableOps ? '' : 'invisible'}>
-          <label className='mb-1 text-sm font-medium'>
+          <label className='mb-2 text-sm font-medium'>
             Supported operations
           </label>
           <div className='flex gap-1'>
-            <OpPicker control={subControl} />
-            <button type='button' onClick={addFU} className='small-button'>
-              Select all
-            </button>
+            <Controller
+              control={subControl}
+              name='operations'
+              render={({ field: { onChange, value } }) => {
+                return (
+                  <div className='flex flex-col gap-2'>
+                    {operations.map((op) => {
+                      const id = `chkbx-${op}`;
+                      return (
+                        <div key={op} className='flex items-center space-x-2'>
+                          <Checkbox
+                            id={id}
+                            value={op}
+                            checked={value.includes(op)}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                onChange([...value, op]);
+                              } else {
+                                onChange(value.filter((item) => item !== op));
+                              }
+                            }}
+                          />
+                          <label
+                            htmlFor={id}
+                            className='text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70'
+                          >
+                            {op}
+                          </label>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              }}
+            />
           </div>
         </div>
       </div>
@@ -498,64 +517,5 @@ function FUAdder({ control }: { control: Control<IsaNamedConfig> }) {
         Add Unit
       </button>
     </div>
-  );
-}
-
-function OpPicker({ control }: { control: Control<FUnitConfig> }) {
-  const [isOpen, setIsOpen] = useState(false);
-
-  const toggleDropdown: MouseEventHandler = (e) => {
-    if (e.target !== e.currentTarget) return;
-    setIsOpen(!isOpen);
-  };
-
-  return (
-    <Controller
-      control={control}
-      name='operations'
-      render={({ field: { onChange, value } }) => {
-        return (
-          <div
-            className='relative flex w-48 items-center justify-center rounded-md border bg-gray-100 p-1'
-            onClick={toggleDropdown}
-          >
-            <div className='pointer-events-none'>
-              <span>Selected: {value.length}</span>
-              <span>{isOpen ? '▲' : '▼'}</span>
-            </div>
-            {isOpen && (
-              <div className='absolute top-full flex h-32 flex-col overflow-y-scroll rounded-b-md border bg-white'>
-                {fuOps.map((op) => {
-                  const meta = fuOpsMetadata[op];
-                  return (
-                    <label
-                      key={op}
-                      className='grid grid-cols-[20px_40px_1fr] items-center gap-2 hover:bg-gray-200 active:bg-gray-300'
-                    >
-                      <input
-                        className='ml-1 mr-2 h-4 w-4'
-                        type='checkbox'
-                        value={op}
-                        checked={value.includes(op)}
-                        onChange={(e) => {
-                          const val = e.target.value as FuOps;
-                          if (value.includes(val)) {
-                            onChange(value.filter((item) => item !== val));
-                          } else {
-                            onChange([...value, val]);
-                          }
-                        }}
-                      />
-                      <span className='font-bold'>{op}</span>
-                      <span>{meta.name}</span>
-                    </label>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        );
-      }}
-    />
   );
 }
