@@ -100,7 +100,11 @@ const initialState: CompilerState = {
   asmErrors: [],
 };
 
-// Call example: dispatch(callCompiler());
+/**
+ * Call the compiler on the C code.
+ *
+ * Example: dispatch(callCompiler());
+ */
 export const callCompiler = createAsyncThunk<CompileResponse>(
   'compiler/callCompiler',
   async (arg, { getState, dispatch }) => {
@@ -147,7 +151,11 @@ export const callCompiler = createAsyncThunk<CompileResponse>(
   },
 );
 
-// Call example: dispatch(callParseAsm());
+/**
+ * Call the compiler on the asm code. Detects errors in the asm code.
+ *
+ * Example: dispatch(callParseAsm());
+ */
 export const callParseAsm = createAsyncThunk<ParseAsmResponse>(
   'compiler/callParseAsm',
   async (arg, { getState, dispatch }) => {
@@ -189,6 +197,29 @@ export const callParseAsm = createAsyncThunk<ParseAsmResponse>(
         throw err;
       });
     return response;
+  },
+);
+
+/**
+ * Save the active code to a file. A dialog is shown to the user, they can choose the file name.
+ *
+ * Example: dispatch(saveToFile());
+ */
+export const saveToFile = createAsyncThunk<void>(
+  'compiler/saveToFile',
+  async (arg, { getState }) => {
+    // @ts-ignore
+    const state: RootState = getState();
+    const code = selectActiveCode(state);
+    const suggestedFileName =
+      selectEditorMode(state) === 'c' ? 'code.c' : 'code.asm';
+
+    const blob = new Blob([code], { type: 'text/plain;charset=utf-8' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = suggestedFileName;
+    link.click();
   },
 );
 
@@ -331,6 +362,13 @@ export const selectCDirty = (state: RootState) => state.compiler.cDirty;
 export const selectAsmDirty = (state: RootState) => state.compiler.asmDirty;
 export const selectAsmManuallyEdited = (state: RootState) =>
   state.compiler.asmManuallyEdited;
+
+export const selectActiveCode = (state: RootState) => {
+  if (state.compiler.editorMode === 'c') {
+    return state.compiler.cCode;
+  }
+  return state.compiler.asmCode;
+};
 
 export interface Instruction {
   // Id of instruction in program. ~line number

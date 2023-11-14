@@ -31,11 +31,11 @@
 
 import clsx from 'clsx';
 import { CheckCircle, Circle, XCircle } from 'lucide-react';
-import { ChangeEvent } from 'react';
 
 import {
   callParseAsm,
   openFile,
+  saveToFile,
   selectAsmDirty,
   selectAsmErrors,
   selectCDirty,
@@ -48,30 +48,49 @@ type EditorBarProps = {
   mode: 'c' | 'asm';
 };
 
+/**
+ * Show dialog and calls callback with file contents
+ */
+function loadFile(callback: (contents: string) => void) {
+  // Show dialog
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.onchange = () => {
+    if (!input.files) {
+      console.warn('No file selected');
+      return;
+    }
+    const file = input.files[0];
+    if (file === undefined) {
+      console.warn('No file selected');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const contents = e.target?.result;
+      if (typeof contents === 'string') {
+        callback(contents);
+      }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
+
 export default function EditorBar({ mode }: EditorBarProps) {
   const dispatch = useAppDispatch();
   const editorMode = useAppSelector(selectEditorMode);
-  const _isActive = editorMode == mode;
   const editorName = mode == 'c' ? 'C Code' : 'ASM Code';
-  const inputId = 'file-input-' + mode;
 
-  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      // Read the file and set C code
-      const file = e.target.files[0];
-      if (file === undefined) {
-        console.warn('No file selected');
-        return;
-      }
-      const reader = new FileReader();
-      reader.onload = (ee) => {
-        const contents = ee.target?.result;
-        if (typeof contents === 'string') {
-          dispatch(openFile({ code: contents, type: mode }));
-        }
-      };
-      reader.readAsText(file);
-    }
+  // Load file and set it as C/ASM code
+  const handleLoadFile = () => {
+    loadFile((contents) => {
+      dispatch(openFile({ code: contents, type: mode }));
+    });
+  };
+
+  const handleSaveFile = () => {
+    dispatch(saveToFile());
   };
 
   const errorDisplay = mode == 'c' ? <CErrorsDisplay /> : <AsmErrorsDisplay />;
@@ -80,18 +99,18 @@ export default function EditorBar({ mode }: EditorBarProps) {
     <div className='pl-3 text-sm flex items-center gap-1 bg-[#f5f5f5]'>
       <div className='py-1 px-0.5 font-bold'>{editorName}</div>
       {errorDisplay}
-      <label htmlFor={inputId}>
-        <button className='button-interactions px-2 rounded py-0.5 my-0.5'>
+      <label>
+        <button
+          onClick={handleLoadFile}
+          className='button-interactions px-2 rounded py-0.5 my-0.5'
+        >
           Load
         </button>
-        <input
-          type='file'
-          id={inputId}
-          className='hidden'
-          onChange={handleFileChange}
-        />
       </label>
-      <button className='button-interactions px-2 rounded py-0.5 my-0.5'>
+      <button
+        onClick={handleSaveFile}
+        className='button-interactions px-2 rounded py-0.5 my-0.5'
+      >
         Save
       </button>
     </div>
