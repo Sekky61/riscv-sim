@@ -49,6 +49,7 @@ export type AnimatedButtonProps = {
 
 /**
  * The click callback is called when the button is clicked or when the shortcut is pressed.
+ * By default, the shortcut is prevented from bubbling up to the browser.
  */
 const AnimatedButton = ({
   active = false,
@@ -67,7 +68,7 @@ const AnimatedButton = ({
     () => {
       onClick();
     },
-    shortCutOptions,
+    { preventDefault: true, ...shortCutOptions },
   );
 
   const onClick = () => {

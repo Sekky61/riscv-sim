@@ -65,7 +65,8 @@ export interface CpuState {
   reorderBufferBlock: ReorderBufferBlock;
 }
 
-export type Reference = number | string;
+export type Reference = number;
+export type StringReference = string;
 
 export interface ManagerRegistry {
   instructionFunctionManager: Record<string, InstructionFunctionModel>;
@@ -283,7 +284,7 @@ export type BranchFunctionUnitBlock = FunctionUnitBlock;
 
 export interface LoadBufferBlock {
   loadQueue: Reference[]; // SimCodeModel
-  loadMap: Record<string, LoadBufferItem>;
+  loadMap: Record<StringReference, LoadBufferItem>;
   possibleNewEntries: number;
   bufferSize: number;
   commitId: number;
@@ -308,7 +309,7 @@ export interface LoadBufferItem {
 
 export interface StoreBufferBlock {
   storeQueue: Reference[]; // SimCodeModel
-  storeMap: Record<string, StoreBufferItem>;
+  storeMap: Record<StringReference, StoreBufferItem>;
   possibleNewEntries: number;
   bufferSize: number;
   commitId: number;

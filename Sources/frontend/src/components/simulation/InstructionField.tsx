@@ -34,9 +34,8 @@ import clsx from 'clsx';
 import {
   highlightSimCode,
   selectHighlightedSimCode,
-  selectInputCodeModelById,
   selectRegisterById,
-  selectSimCodeModelById,
+  selectSimCodeModel,
   unhighlight,
 } from '@/lib/redux/cpustateSlice';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
@@ -49,36 +48,23 @@ export type InstructionFieldProps = {
 };
 
 export default function InstructionField({
-  instructionId,
+  instructionId: simCodeId,
 }: InstructionFieldProps) {
   const dispatch = useAppDispatch();
-
-  const simCodeId = instructionId === undefined ? 'INVALID' : instructionId;
-  const instruction = useAppSelector((state) =>
-    selectSimCodeModelById(state, simCodeId),
-  );
-
-  const inputCodeId =
-    instruction?.inputCodeModel == undefined
-      ? 'INVALID'
-      : instruction?.inputCodeModel;
-  const inputCodeModel = useAppSelector((state) =>
-    selectInputCodeModelById(state, inputCodeId),
-  );
-
+  const q = useAppSelector((state) => selectSimCodeModel(state, simCodeId));
   const highlightedId = useAppSelector((state) =>
     selectHighlightedSimCode(state),
   );
-
-  if (!instruction || !inputCodeModel) {
+  if (!q || simCodeId === undefined) {
     return (
       <InstructionBubble className='flex justify-center px-2 py-1 font-mono'>
         <span className='text-gray-400'>empty</span>
       </InstructionBubble>
     );
   }
+  const { simCodeModel, inputCodeModel, functionModel } = q;
 
-  const args = instruction.renamedArguments;
+  const args = simCodeModel.renamedArguments;
   const highlighted = highlightedId === simCodeId;
 
   const handleMouseEnter = () => {

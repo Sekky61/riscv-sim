@@ -63,8 +63,7 @@ export default function LoadBuffer() {
 /**
  * Displays address and loaded value of a single item in the Load Buffer
  */
-export function LoadBufferItem({ loadItemId }: { loadItemId?: Reference }) {
-  const id = loadItemId === undefined ? 'INVALID' : loadItemId;
+export function LoadBufferItem({ loadItemId: id }: { loadItemId?: Reference }) {
   const item = useAppSelector((state) => selectLoadBufferItemById(state, id));
 
   if (!item) {

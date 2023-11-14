@@ -45,6 +45,7 @@ import { selectActiveIsa } from '@/lib/redux/isaSlice';
 import type { RootState } from '@/lib/redux/store';
 import { callSimulationImpl } from '@/lib/serverCalls/callCompiler';
 import type { CpuState, Reference, RegisterModel } from '@/lib/types/cpuApi';
+import { isValidReference } from '@/lib/utils';
 
 /**
  * Redux state for CPU
@@ -236,7 +237,10 @@ export const selectHighlightedSimCode = (state: RootState) =>
 /**
  * Select simcodemodel, inputcodemodel and instructionfunctionmodel for a given simcode id.
  */
-export const selectSimCodeModel = (state: RootState, id: Reference) => {
+export const selectSimCodeModel = (state: RootState, id?: Reference) => {
+  if (!isValidReference(id)) {
+    return null;
+  }
   const simCodeModel = selectSimCodeModelById(state, id);
   if (!simCodeModel) {
     return null;
@@ -374,13 +378,21 @@ export const selectBranchFunctionUnitBlocks = (state: RootState) =>
 export const selectStoreBuffer = (state: RootState) =>
   state.cpu.state?.storeBufferBlock;
 
-export const selectStoreBufferItemById = (state: RootState, id: Reference) =>
-  selectStoreBuffer(state)?.storeMap[id];
+export const selectStoreBufferItemById = (state: RootState, id?: Reference) => {
+  if (!isValidReference(id)) {
+    return null;
+  }
+  return selectStoreBuffer(state)?.storeMap[id];
+};
 
 export const selectLoadBuffer = (state: RootState) =>
   state.cpu.state?.loadBufferBlock;
 
-export const selectLoadBufferItemById = (state: RootState, id: Reference) =>
-  selectLoadBuffer(state)?.loadMap[id];
+export const selectLoadBufferItemById = (state: RootState, id?: Reference) => {
+  if (!isValidReference(id)) {
+    return null;
+  }
+  return selectLoadBuffer(state)?.loadMap[id];
+};
 
 export default cpuSlice.reducer;

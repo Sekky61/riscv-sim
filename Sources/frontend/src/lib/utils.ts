@@ -32,6 +32,18 @@
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
+import { Reference } from '@/lib/types/cpuApi';
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
+}
+
+/**
+ * Reference is valid if it is present and has non-negative value. A type guard.
+ *
+ * @param ref  Reference to check
+ * @returns True if reference present and valid, false otherwise
+ */
+export function isValidReference(ref?: Reference): ref is Reference {
+  return typeof ref == 'number' && ref >= 0;
 }

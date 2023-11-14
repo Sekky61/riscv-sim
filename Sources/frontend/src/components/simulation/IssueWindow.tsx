@@ -36,6 +36,7 @@ import {
   selectLoadStoreIssueWindowBlock,
 } from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
+import { Reference } from '@/lib/types/cpuApi';
 
 import Block from '@/components/simulation/Block';
 import InstructionField from '@/components/simulation/InstructionField';
@@ -69,9 +70,11 @@ export default function IssueWindow({ type }: IssueWindowProps) {
   if (!issue) return null;
 
   const validity = issue.argumentValidityMap;
-  const instructionIds = [];
+  const instructionIds: Reference[] = [];
   for (const key in validity) {
-    instructionIds.push(key);
+    // Cast to number
+    const numericKey = Number(key);
+    instructionIds.push(numericKey);
   }
 
   const title = getTitle(type);
