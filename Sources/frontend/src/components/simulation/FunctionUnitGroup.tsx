@@ -52,6 +52,13 @@ function getSelector(type: FUType) {
   throw new Error(`Invalid type ${type}`);
 }
 
+function getNameFromType(type: FUType) {
+  if (type == 'alu') return 'ALU';
+  if (type == 'fp') return 'FP';
+  if (type == 'branch') return 'Branch';
+  throw new Error(`Invalid type ${type}`);
+}
+
 export default function FunctionUnitGroup({ type }: FunctionUnitGroupProps) {
   const fus = useAppSelector(getSelector(type));
 
@@ -62,7 +69,7 @@ export default function FunctionUnitGroup({ type }: FunctionUnitGroupProps) {
     <>
       {fus.map((fu) => (
         <Block
-          title={fu.name}
+          title={fu.name || getNameFromType(type)}
           key={fu.name}
           stats={`${fu.counter}/${fu.delay}`}
         >

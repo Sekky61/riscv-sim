@@ -276,7 +276,7 @@ export interface FunctionUnitBlock {
   issueWindowBlock?: Reference;
   delay: number;
   counter: number;
-  name: string;
+  name?: string;
   allowedOperators: string[];
   arithmeticInterpreter?: Reference;
   registerFileBlock?: Reference;

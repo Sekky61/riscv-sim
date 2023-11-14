@@ -392,16 +392,14 @@ function FunctionalUnitInput({
       </CardHeader>
       <CardContent>
         <fieldset disabled={disabled}>
-          <div className='bg-gray-100'>
-            <div className='neutral-bg grid auto-rows-fr grid-cols-[fit-content(0px)_fit-content(0px)_1fr_fit-content(0px)] divide-y'>
-              <div className='neutral-bg sticky top-0 border-t px-2 py-1'>
-                Name
-              </div>
-              <div className='neutral-bg sticky top-0 px-2 py-1'>Latency</div>
-              <div className='neutral-bg sticky top-0 flex-grow px-2 py-1'>
-                Operations
-              </div>
-              <div className='neutral-bg sticky top-0' />
+          <div className='fu-grid'>
+            <div className='contents font-bold'>
+              <div>Name</div>
+              <div>Latency</div>
+              <div>Operations</div>
+              <div />
+            </div>
+            <div className='contents'>
               {funits.map((fu, i) => {
                 let third = null;
                 if (isArithmeticUnitConfig(fu)) {
@@ -419,24 +417,28 @@ function FunctionalUnitInput({
                   });
                 }
                 return (
-                  <React.Fragment key={fu.id}>
-                    <div className='px-2 py-1'>{fu.name || fu.fuType}</div>
-                    <div className='px-2 py-1'>{fu.latency}</div>
-                    <div className='flex flex-grow gap-1 truncate px-2 py-1 text-sm'>
+                  <div className='contents' key={fu.id}>
+                    <div className='whitespace-nowrap'>
+                      {fu.name || fu.fuType}
+                    </div>
+                    <div>{fu.latency}</div>
+                    <div className='flex flex-grow gap-1 items-center truncate text-sm overflow-x-auto'>
                       {third}
                     </div>
-                    <button
-                      onClick={() => removeUnit(i)}
-                      className='shrink-0 px-1'
-                    >
-                      <X className='rounded-full stroke-red-400 duration-100 hover:bg-red-500/60 hover:stroke-red-600' />
-                    </button>
-                  </React.Fragment>
+                    <div>
+                      <button
+                        onClick={() => removeUnit(i)}
+                        className='shrink-0 px-1'
+                      >
+                        <X className='rounded-full stroke-red-400 duration-100 hover:bg-red-500/60 hover:stroke-red-600' />
+                      </button>
+                    </div>
+                  </div>
                 );
               })}
             </div>
           </div>
-          <div className='border-t p-4'>
+          <div className='border-t p-8 mt-6'>
             <FUAdder control={control} />
           </div>
         </fieldset>
@@ -493,7 +495,7 @@ function FUAdder({ control }: { control: Control<IsaNamedConfig> }) {
             register={register}
             name='name'
             title='Name'
-            error={errors.latency}
+            error={errors.name}
           />
           <FormInput
             register={register}

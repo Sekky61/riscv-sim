@@ -120,13 +120,17 @@ export default function HomePage() {
               <Line length={10} down />
               <IssueWindow type='fp' />
               <Line length={50} down />
-              <FunctionUnitGroup type='alu' />
+              <div className='flex gap-2 flex-col'>
+                <FunctionUnitGroup type='alu' />
+              </div>
             </div>
             <div className='flex flex-col items-center'>
               <Line length={50} down />
               <IssueWindow type='branch' />
               <Line length={50} down />
-              <FunctionUnitGroup type='branch' />
+              <div className='flex gap-2 flex-col'>
+                <FunctionUnitGroup type='branch' />
+              </div>
             </div>
             <div className='flex flex-col items-center'>
               <Line length={50} down />
