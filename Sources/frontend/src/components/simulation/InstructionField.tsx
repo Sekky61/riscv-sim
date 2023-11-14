@@ -40,6 +40,7 @@ import {
   unhighlight,
 } from '@/lib/redux/cpustateSlice';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
+import { openModal } from '@/lib/redux/modalSlice';
 import { Reference } from '@/lib/types/cpuApi';
 import { ReactChildren, ReactClassName } from '@/lib/types/reactTypes';
 
@@ -81,25 +82,33 @@ export default function InstructionField({
   const highlighted = highlightedId === simCodeId;
 
   const handleMouseEnter = () => {
-    console.log('InstructionField: handleMouseEnter', simCodeId);
     dispatch(highlightSimCode(simCodeId));
   };
 
   const handleMouseLeave = () => {
-    console.log('InstructionField: handleMouseLeave', simCodeId);
     dispatch(unhighlight(simCodeId));
   };
 
   const cls = clsx(
-    'flex justify-between items-center gap-4 font-mono px-2',
+    'flex justify-between items-center gap-4 font-mono px-2 hover:cursor-pointer',
     highlighted ? 'bg-gray-200' : '',
   );
+
+  const showDetail = () => {
+    dispatch(
+      openModal({
+        modalType: 'SIMCODE_DETAILS_MODAL',
+        modalProps: { instructionId },
+      }),
+    );
+  };
 
   return (
     <InstructionBubble
       className={cls}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
+      onClick={showDetail}
     >
       <InstructionName mnemonic={inputCodeModel.instructionName} />
       <div className='flex gap-2'>
@@ -117,7 +126,7 @@ export default function InstructionField({
 
 interface InstructionBubbleProps extends ReactClassName {
   children: ReactChildren;
-  [key: string]: any;
+  [x: string]: unknown;
 }
 
 export function InstructionBubble({
@@ -169,7 +178,7 @@ function InstructionArgument({
 
   return (
     <div
-      className='rounded hover:bg-gray-200 w-6 h-6 flex justify-center items-center leading-4'
+      className='rounded hover:bg-gray-300 w-6 h-6 flex justify-center items-center leading-4'
       title={hoverText}
     >
       {displayText}

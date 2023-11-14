@@ -38,11 +38,14 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/base/ui/card';
+import InstructionTable from '@/components/simulation/InstructionTable';
 
 export const RobDetailsModal = () => {
   const rob = useAppSelector(selectROB);
 
   if (!rob) throw new Error('ROB not found');
+
+  const instructionIds = rob.reorderQueue.map((i) => i.simCodeModel);
 
   return (
     <>
@@ -55,6 +58,7 @@ export const RobDetailsModal = () => {
         <div>
           Capacity: {rob.reorderQueue.length}/{rob.bufferSize}
         </div>
+        <InstructionTable instructions={instructionIds} />
       </CardContent>
     </>
   );

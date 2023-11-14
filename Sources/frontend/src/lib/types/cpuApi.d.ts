@@ -119,14 +119,7 @@ export interface InstructionFunctionModel {
   instructionType: InstructionTypeEnum;
   arguments: Argument[];
   interpretableAs: string;
-  dataType:
-    | 'kInt'
-    | 'kUInt'
-    | 'kLong'
-    | 'kULong'
-    | 'kFloat'
-    | 'kDouble'
-    | 'kBool';
+  // dataType: never; // TODO
   unconditionalJump: boolean;
 }
 

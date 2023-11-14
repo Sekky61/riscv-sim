@@ -32,7 +32,8 @@
 import { useState } from 'react';
 
 import { selectSimCodeModel } from '@/lib/redux/cpustateSlice';
-import { useAppSelector } from '@/lib/redux/hooks';
+import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
+import { openModal } from '@/lib/redux/modalSlice';
 import { Reference } from '@/lib/types/cpuApi';
 
 import { Button } from '@/components/base/ui/button';
@@ -112,6 +113,7 @@ type InstructionRowProps = {
  */
 function InstructionRow({ instructionId }: InstructionRowProps) {
   const q = useAppSelector((state) => selectSimCodeModel(state, instructionId));
+  const dispatch = useAppDispatch();
   if (!q) throw new Error('Instruction not found');
   const { simCodeModel, inputCodeModel, functionModel } = q;
 
@@ -128,8 +130,17 @@ function InstructionRow({ instructionId }: InstructionRowProps) {
       break;
   }
 
+  const showDetail = () => {
+    dispatch(
+      openModal({
+        modalType: 'SIMCODE_DETAILS_MODAL',
+        modalProps: { instructionId },
+      }),
+    );
+  };
+
   return (
-    <tr>
+    <tr onClick={showDetail} className='hover:bg-gray-100 hover:cursor-pointer'>
       <td>{simCodeModel.id}</td>
       <td>{inputCodeModel.instructionName}</td>
       <td>{instructionType}</td>

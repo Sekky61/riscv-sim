@@ -46,6 +46,7 @@ import { Card, CardFooter } from '@/components/base/ui/card';
 import { FetchDetailsModal } from '@/components/modals/FetchDetailsModal';
 import { RobDetailsModal } from '@/components/modals/RobDetailsModal';
 import { SaveIsaChangesModal } from '@/components/modals/SaveIsaChangesModal';
+import { SimCodeDetailModal } from '@/components/modals/SimCodeDetailModal';
 
 /**
  * Modals to be rendered. They should define their size, padding from the edge of the modal and the content.
@@ -55,6 +56,7 @@ const MODAL_COMPONENTS = {
   CONFIRM_ISA_CHANGES_MODAL: SaveIsaChangesModal,
   ROB_DETAILS_MODAL: RobDetailsModal,
   FETCH_DETAILS_MODAL: FetchDetailsModal,
+  SIMCODE_DETAILS_MODAL: SimCodeDetailModal,
 };
 
 export type ModalType = keyof typeof MODAL_COMPONENTS;
