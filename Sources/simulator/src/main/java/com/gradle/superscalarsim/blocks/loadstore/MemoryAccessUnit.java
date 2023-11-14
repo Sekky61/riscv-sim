@@ -74,6 +74,7 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
   }
   
   /**
+   * @param name                 Name of function unit
    * @param reorderBufferBlock   Class containing simulated Reorder Buffer
    * @param delay                Delay for function unit
    * @param issueWindowBlock     Issue window block for comparing instruction and data types
@@ -84,7 +85,8 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
    *
    * @brief Constructor
    */
-  public MemoryAccessUnit(ReorderBufferBlock reorderBufferBlock,
+  public MemoryAccessUnit(String name,
+                          ReorderBufferBlock reorderBufferBlock,
                           int delay,
                           AbstractIssueWindowBlock issueWindowBlock,
                           LoadBufferBlock loadBufferBlock,
@@ -92,7 +94,7 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
                           CodeLoadStoreInterpreter loadStoreInterpreter,
                           UnifiedRegisterFileBlock registerFileBlock)
   {
-    super(reorderBufferBlock, delay, issueWindowBlock);
+    super(name, delay, issueWindowBlock, reorderBufferBlock);
     this.loadBufferBlock      = loadBufferBlock;
     this.storeBufferBlock     = storeBufferBlock;
     this.loadStoreInterpreter = loadStoreInterpreter;

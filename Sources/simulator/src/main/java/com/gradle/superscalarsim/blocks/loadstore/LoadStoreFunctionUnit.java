@@ -56,23 +56,25 @@ public class LoadStoreFunctionUnit extends AbstractFunctionUnitBlock
   }
   
   /**
-   * @param [in] blockScheduleTask  - Task class, where blocks are periodically triggered by the GlobalTimer
-   * @param [in] reorderBufferBlock - Class containing simulated Reorder Buffer
-   * @param [in] delay              - Delay for function unit
-   * @param [in] issueWindowBlock   - Issue window block for comparing instruction and data types
-   * @param [in] loadBufferBlock    - Load buffer with all load instruction entries
-   * @param [in] storeBufferBlock   - Store buffer with all store instruction entries
+   * @param name                 Name of function unit
+   * @param reorderBufferBlock   Class containing simulated Reorder Buffer
+   * @param delay                Delay for function unit
+   * @param issueWindowBlock     Issue window block for comparing instruction and data types
+   * @param loadBufferBlock      Load buffer with all load instruction entries
+   * @param storeBufferBlock     Store buffer with all store instruction entries
+   * @param loadStoreInterpreter Interpreter for processing load store instructions
    *
    * @brief Constructor
    */
-  public LoadStoreFunctionUnit(ReorderBufferBlock reorderBufferBlock,
+  public LoadStoreFunctionUnit(String name,
+                               ReorderBufferBlock reorderBufferBlock,
                                int delay,
                                AbstractIssueWindowBlock issueWindowBlock,
                                LoadBufferBlock loadBufferBlock,
                                StoreBufferBlock storeBufferBlock,
                                CodeLoadStoreInterpreter loadStoreInterpreter)
   {
-    super(reorderBufferBlock, delay, issueWindowBlock);
+    super(name, delay, issueWindowBlock, reorderBufferBlock);
     this.loadBufferBlock      = loadBufferBlock;
     this.storeBufferBlock     = storeBufferBlock;
     this.loadStoreInterpreter = loadStoreInterpreter;

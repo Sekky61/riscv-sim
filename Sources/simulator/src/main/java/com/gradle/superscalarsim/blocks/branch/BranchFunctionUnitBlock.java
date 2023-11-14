@@ -62,18 +62,19 @@ public class BranchFunctionUnitBlock extends AbstractFunctionUnitBlock
   }
   
   /**
-   * @param [in] blockScheduleTask     - Task class, where blocks are periodically triggered by the GlobalTimer
-   * @param [in] reorderBufferBlock    - Class containing simulated Reorder Buffer
-   * @param [in] delay                 - Delay for function unit
-   * @param [in] issueWindowBlock   - Issue window block for comparing instruction and data types
+   * @param name               Name of the function unit
+   * @param issueWindowBlock   Issue window block for comparing instruction and data types
+   * @param delay              Delay for function unit
+   * @param reorderBufferBlock Class containing simulated Reorder Buffer
    *
    * @brief Constructor
    */
-  public BranchFunctionUnitBlock(ReorderBufferBlock reorderBufferBlock,
+  public BranchFunctionUnitBlock(String name,
                                  AbstractIssueWindowBlock issueWindowBlock,
-                                 int delay)
+                                 int delay,
+                                 ReorderBufferBlock reorderBufferBlock)
   {
-    super(reorderBufferBlock, delay, issueWindowBlock);
+    super(name, delay, issueWindowBlock, reorderBufferBlock);
   }// end of Constructor
   //----------------------------------------------------------------------
   

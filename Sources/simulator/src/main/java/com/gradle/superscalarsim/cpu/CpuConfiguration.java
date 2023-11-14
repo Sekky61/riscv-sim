@@ -389,11 +389,34 @@ public class CpuConfiguration implements Serializable
     }
   }
   
+  /**
+   * @brief Function unit description
+   */
   public static class FUnit
   {
+    /**
+     * AFAIK not used
+     */
     public int id;
+    
+    /**
+     * Optional name of the FUnit. Shows up in simulation visualisation, also used for debugging
+     */
+    public String name;
+    
+    /**
+     * Type of the FUnit
+     */
     public Type fuType;
+    
+    /**
+     * Latency of the FUnit
+     */
     public int latency;
+    
+    /**
+     * Classes of operations that this FUnit can perform
+     */
     public Capability[] operations;
     
     public FUnit()
@@ -401,16 +424,26 @@ public class CpuConfiguration implements Serializable
     
     }
     
+    public FUnit(int id, Type fuType, int latency, Capability[] operations, String name)
+    {
+      this.id         = id;
+      this.name       = name;
+      this.fuType     = fuType;
+      this.latency    = latency;
+      this.operations = operations;
+    }
+    
     public FUnit(int id, Type fuType, int latency, Capability[] operations)
     {
       this.id         = id;
+      this.name       = "FUnit " + id;
       this.fuType     = fuType;
       this.latency    = latency;
       this.operations = operations;
     }
     
     /**
-     * @return Array of operations that this FUnit can perform based on its capabilities
+     * @return List of operations that this FUnit can perform based on its capabilities
      * {@link Expression}
      */
     public List<String> getAllowedOperations()

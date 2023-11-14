@@ -70,23 +70,24 @@ public abstract class AbstractFunctionUnitBlock implements AbstractBlock
   }
   
   /**
-   * @param [in] blockScheduleTask  - Task class, where blocks are periodically triggered by the GlobalTimer
-   * @param [in] reorderBufferBlock - Class containing simulated Reorder Buffer
-   * @param [in] delay              - Delay for function unit
-   * @param [in] issueWindowBlock   - Issue window block for comparing instruction and data types
+   * @param name               Name of the function unit
+   * @param delay              Delay for function unit
+   * @param issueWindowBlock   Issue window block for comparing instruction and data types
+   * @param reorderBufferBlock Class containing simulated Reorder Buffer
    *
    * @brief Constructor
    */
-  public AbstractFunctionUnitBlock(ReorderBufferBlock reorderBufferBlock,
+  public AbstractFunctionUnitBlock(String name,
                                    int delay,
-                                   AbstractIssueWindowBlock issueWindowBlock)
+                                   AbstractIssueWindowBlock issueWindowBlock,
+                                   ReorderBufferBlock reorderBufferBlock)
   {
     this.reorderBufferBlock = reorderBufferBlock;
     this.delay              = delay;
     this.counter            = 0;
     this.simCodeModel       = null;
     this.issueWindowBlock   = issueWindowBlock;
-    this.name               = "Function Unit";
+    this.name               = name;
   }// end of Constructor
   //----------------------------------------------------------------------
   

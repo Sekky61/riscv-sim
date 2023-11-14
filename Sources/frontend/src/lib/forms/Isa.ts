@@ -59,6 +59,7 @@ export type Operations = (typeof operations)[number];
 
 export const lsUnitSchema = z.object({
   id: z.number(),
+  name: z.optional(z.string()),
   fuType: z.enum(otherUnits),
   latency: z.number().min(1).max(16),
 });
@@ -128,6 +129,7 @@ export const isaFormDefaultValues: IsaNamedConfig = {
   fUnits: [
     {
       id: 0,
+      name: 'FX Universal',
       fuType: 'FX',
       latency: 2,
       operations: [
@@ -140,6 +142,7 @@ export const isaFormDefaultValues: IsaNamedConfig = {
     },
     {
       id: 1,
+      name: 'FP',
       fuType: 'FP',
       latency: 2,
       operations: [

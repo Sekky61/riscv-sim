@@ -255,9 +255,10 @@ public class CpuState implements Serializable
         case FX ->
         {
           List<String> allowedOperators = fu.getAllowedOperations();
-          ArithmeticFunctionUnitBlock functionBlock = new ArithmeticFunctionUnitBlock(reorderBufferBlock, fu.latency,
+          ArithmeticFunctionUnitBlock functionBlock = new ArithmeticFunctionUnitBlock(fu.name, fu.latency,
                                                                                       fpIssueWindowBlock,
-                                                                                      allowedOperators);
+                                                                                      allowedOperators,
+                                                                                      reorderBufferBlock);
           functionBlock.addArithmeticInterpreter(arithmeticInterpreter);
           functionBlock.addRegisterFileBlock(unifiedRegisterFileBlock);
           this.aluIssueWindowBlock.setFunctionUnitBlock(functionBlock);
@@ -266,9 +267,10 @@ public class CpuState implements Serializable
         case FP ->
         {
           List<String> allowedOperators = fu.getAllowedOperations();
-          ArithmeticFunctionUnitBlock functionBlock = new ArithmeticFunctionUnitBlock(reorderBufferBlock, fu.latency,
+          ArithmeticFunctionUnitBlock functionBlock = new ArithmeticFunctionUnitBlock(fu.name, fu.latency,
                                                                                       fpIssueWindowBlock,
-                                                                                      allowedOperators);
+                                                                                      allowedOperators,
+                                                                                      reorderBufferBlock);
           functionBlock.addArithmeticInterpreter(arithmeticInterpreter);
           functionBlock.addRegisterFileBlock(unifiedRegisterFileBlock);
           this.fpIssueWindowBlock.setFunctionUnitBlock(functionBlock);
@@ -276,8 +278,8 @@ public class CpuState implements Serializable
         }
         case L_S ->
         {
-          LoadStoreFunctionUnit loadStoreFunctionUnit = new LoadStoreFunctionUnit(reorderBufferBlock, fu.latency,
-                                                                                  loadStoreIssueWindowBlock,
+          LoadStoreFunctionUnit loadStoreFunctionUnit = new LoadStoreFunctionUnit(fu.name, reorderBufferBlock,
+                                                                                  fu.latency, loadStoreIssueWindowBlock,
                                                                                   loadBufferBlock, storeBufferBlock,
                                                                                   loadStoreInterpreter);
           this.loadStoreIssueWindowBlock.setFunctionUnitBlock(loadStoreFunctionUnit);
@@ -285,9 +287,8 @@ public class CpuState implements Serializable
         }
         case Branch ->
         {
-          BranchFunctionUnitBlock branchFunctionUnitBlock = new BranchFunctionUnitBlock(reorderBufferBlock,
-                                                                                        branchIssueWindowBlock,
-                                                                                        fu.latency);
+          BranchFunctionUnitBlock branchFunctionUnitBlock = new BranchFunctionUnitBlock(fu.name, branchIssueWindowBlock,
+                                                                                        fu.latency, reorderBufferBlock);
           branchFunctionUnitBlock.addBranchInterpreter(branchInterpreter);
           branchFunctionUnitBlock.addRegisterFileBlock(unifiedRegisterFileBlock);
           this.branchIssueWindowBlock.setFunctionUnitBlock(branchFunctionUnitBlock);
@@ -295,7 +296,7 @@ public class CpuState implements Serializable
         }
         case Memory ->
         {
-          MemoryAccessUnit memoryAccessUnit = new MemoryAccessUnit(reorderBufferBlock, fu.latency,
+          MemoryAccessUnit memoryAccessUnit = new MemoryAccessUnit(fu.name, reorderBufferBlock, fu.latency,
                                                                    loadStoreIssueWindowBlock, loadBufferBlock,
                                                                    storeBufferBlock, loadStoreInterpreter,
                                                                    unifiedRegisterFileBlock);

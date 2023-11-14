@@ -58,6 +58,7 @@ import {
   storeBehaviorTypes,
 } from '@/lib/forms/Isa';
 
+import { Button } from '@/components/base/ui/button';
 import {
   Card,
   CardContent,
@@ -65,6 +66,7 @@ import {
   CardTitle,
 } from '@/components/base/ui/card';
 import { Checkbox } from '@/components/base/ui/checkbox';
+import { Label } from '@/components/base/ui/label';
 import {
   Tabs,
   TabsContent,
@@ -164,6 +166,31 @@ const isaFormMetadata: IsaFormMetadata = {
   },
   fUnits: {
     title: 'Functional units',
+  },
+};
+
+const capabilitiesMetadata: {
+  [key in Operations]: { name: string; additional: string };
+} = {
+  addition: {
+    name: 'Addition',
+    additional: 'Addition (+)',
+  },
+  bitwise: {
+    name: 'Bitwise',
+    additional: 'Bitwise (and, or, xor)',
+  },
+  division: {
+    name: 'Division',
+    additional: 'Division (/)',
+  },
+  multiplication: {
+    name: 'Multiplication',
+    additional: 'Multiplication (*)',
+  },
+  special: {
+    name: 'Special',
+    additional: 'Special (sqrt, ...)',
   },
 };
 
@@ -386,14 +413,14 @@ function FunctionalUnitInput({
                         title={meta.name}
                         className='rounded bg-gray-200 px-1 py-0.5'
                       >
-                        {op}
+                        {capabilitiesMetadata[op].name}
                       </div>
                     );
                   });
                 }
                 return (
                   <React.Fragment key={fu.id}>
-                    <div className='px-2 py-1'>{fu.fuType}</div>
+                    <div className='px-2 py-1'>{fu.name || fu.fuType}</div>
                     <div className='px-2 py-1'>{fu.latency}</div>
                     <div className='flex flex-grow gap-1 truncate px-2 py-1 text-sm'>
                       {third}
@@ -460,8 +487,14 @@ function FUAdder({ control }: { control: Control<IsaNamedConfig> }) {
       <div className=''>
         <RadioInput register={register} name='fuType' choices={fuTypes} />
       </div>
-      <div className='mt-4 flex justify-between'>
+      <div className='mt-4 flex justify-evenly'>
         <div>
+          <FormInput
+            register={register}
+            name='name'
+            title='Name'
+            error={errors.latency}
+          />
           <FormInput
             register={register}
             name='latency'
@@ -471,9 +504,7 @@ function FUAdder({ control }: { control: Control<IsaNamedConfig> }) {
           />
         </div>
         <div className={enableOps ? '' : 'invisible'}>
-          <label className='mb-2 text-sm font-medium'>
-            Supported operations
-          </label>
+          <Label>Supported operations</Label>
           <div className='flex gap-1'>
             <Controller
               control={subControl}
@@ -497,12 +528,12 @@ function FUAdder({ control }: { control: Control<IsaNamedConfig> }) {
                               }
                             }}
                           />
-                          <label
+                          <Label
                             htmlFor={id}
                             className='text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70'
                           >
-                            {op}
-                          </label>
+                            {capabilitiesMetadata[op].additional}
+                          </Label>
                         </div>
                       );
                     })}
@@ -513,9 +544,9 @@ function FUAdder({ control }: { control: Control<IsaNamedConfig> }) {
           </div>
         </div>
       </div>
-      <button type='button' onClick={addFU} className='button'>
+      <Button type='button' onClick={addFU}>
         Add Unit
-      </button>
+      </Button>
     </div>
   );
 }

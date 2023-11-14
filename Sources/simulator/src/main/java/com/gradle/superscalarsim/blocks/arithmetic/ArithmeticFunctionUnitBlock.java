@@ -68,19 +68,20 @@ public class ArithmeticFunctionUnitBlock extends AbstractFunctionUnitBlock
   }
   
   /**
-   * @param [in] blockScheduleTask  - Task class, where blocks are periodically triggered by the GlobalTimer
-   * @param [in] reorderBufferBlock - Class containing simulated Reorder Buffer
-   * @param [in] delay              - Delay for function unit
-   * @param [in] allowedOperators   - Array of all supported operators by this FU
+   * @param name
+   * @param delay              Delay for function unit
+   * @param allowedOperators   Array of all supported operators by this FU
+   * @param reorderBufferBlock Class containing simulated Reorder Buffer
    *
    * @brief Constructor
    */
-  public ArithmeticFunctionUnitBlock(ReorderBufferBlock reorderBufferBlock,
+  public ArithmeticFunctionUnitBlock(String name,
                                      int delay,
                                      AbstractIssueWindowBlock issueWindowBlock,
-                                     List<String> allowedOperators)
+                                     List<String> allowedOperators,
+                                     ReorderBufferBlock reorderBufferBlock)
   {
-    super(reorderBufferBlock, delay, issueWindowBlock);
+    super(name, delay, issueWindowBlock, reorderBufferBlock);
     this.allowedOperators = allowedOperators;
   }// end of Constructor
   //----------------------------------------------------------------------
