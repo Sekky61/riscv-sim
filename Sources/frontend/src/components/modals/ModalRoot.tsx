@@ -41,15 +41,20 @@ import {
   selectModalType,
 } from '@/lib/redux/modalSlice';
 
+import { Button } from '@/components/base/ui/button';
+import { Card, CardFooter } from '@/components/base/ui/card';
+import { FetchDetailsModal } from '@/components/modals/FetchDetailsModal';
 import { RobDetailsModal } from '@/components/modals/RobDetailsModal';
 import { SaveIsaChangesModal } from '@/components/modals/SaveIsaChangesModal';
 
 /**
  * Modals to be rendered. They should define their size, padding from the edge of the modal and the content.
+ * A modal should return a fragment with CardHeader and CardContent components.
  */
 const MODAL_COMPONENTS = {
   CONFIRM_ISA_CHANGES_MODAL: SaveIsaChangesModal,
   ROB_DETAILS_MODAL: RobDetailsModal,
+  FETCH_DETAILS_MODAL: FetchDetailsModal,
 };
 
 export type ModalType = keyof typeof MODAL_COMPONENTS;
@@ -97,15 +102,17 @@ const ModalRoot = ({ appRef }: { appRef: RefObject<HTMLElement> }) => {
   return (
     <ReactModal
       isOpen={isOpen}
-      className='bg-neutral-99 rounded border'
+      className='min-w-[300px]'
       overlayClassName='fixed inset-0 bg-gray-500/40 flex justify-center items-center'
       bodyOpenClassName='react-modal-open'
       onRequestClose={closeModalRequest}
     >
-      <div>
-        <button onClick={closeModalRequest}>Close</button>
-      </div>
-      {renderedModal}
+      <Card>
+        {renderedModal}
+        <CardFooter>
+          <Button onClick={closeModalRequest}>Close</Button>
+        </CardFooter>
+      </Card>
     </ReactModal>
   );
 };

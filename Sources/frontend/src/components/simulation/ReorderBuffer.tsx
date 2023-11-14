@@ -59,7 +59,7 @@ export default function ReorderBuffer() {
     dispatch(
       openModal({
         modalType: 'ROB_DETAILS_MODAL',
-        modalProps: { robBlock: rob },
+        modalProps: null,
       }),
     );
   };

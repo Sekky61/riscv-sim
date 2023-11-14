@@ -30,7 +30,8 @@
  */
 
 import { selectFetch } from '@/lib/redux/cpustateSlice';
-import { useAppSelector } from '@/lib/redux/hooks';
+import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
+import { openModal } from '@/lib/redux/modalSlice';
 
 import Block from '@/components/simulation/Block';
 import InstructionField from '@/components/simulation/InstructionField';
@@ -38,6 +39,7 @@ import { InstructionListDisplay } from '@/components/simulation/InstructionListD
 
 export default function FetchBlock() {
   const fetchObject = useAppSelector(selectFetch);
+  const dispatch = useAppDispatch();
 
   if (!fetchObject) return null;
 
@@ -50,8 +52,17 @@ export default function FetchBlock() {
     </>
   );
 
+  const handleMore = () => {
+    dispatch(
+      openModal({
+        modalType: 'FETCH_DETAILS_MODAL',
+        modalProps: null,
+      }),
+    );
+  };
+
   return (
-    <Block title='Fetch Block' stats={fetchStats}>
+    <Block title='Fetch Block' stats={fetchStats} handleMore={handleMore}>
       <InstructionListDisplay
         instructions={fetchObject.fetchedCode}
         limit={capacity}

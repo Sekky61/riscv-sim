@@ -1,12 +1,12 @@
 /**
- * @file    RobDetailsModal.tsx
+ * @file    FetchDetailsModal.tsx
  *
  * @author  Michal Majer
  *          Faculty of Information Technology
  *          Brno University of Technology
  *          xmajer21@stud.fit.vutbr.cz
  *
- * @brief   Modal for displaying details about the Reorder Buffer
+ * @brief   Modal for displaying details about the Fetch block
  *
  * @date    19 September 2023, 22:00 (created)
  *
@@ -29,7 +29,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { selectROB } from '@/lib/redux/cpustateSlice';
+import { selectFetch } from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
 
 import {
@@ -38,23 +38,40 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/base/ui/card';
+import InstructionTable from '@/components/simulation/InstructionTable';
 
-export const RobDetailsModal = () => {
-  const rob = useAppSelector(selectROB);
+export const FetchDetailsModal = () => {
+  const fetch = useAppSelector(selectFetch);
 
-  if (!rob) throw new Error('ROB not found');
+  if (!fetch) throw new Error('Fetch unit not found');
 
   return (
     <>
       <CardHeader>
-        <CardTitle>Reorder Buffer</CardTitle>
+        <CardTitle>Fetch Block</CardTitle>
         <CardDescription>Detailed view</CardDescription>
       </CardHeader>
       <CardContent>
-        <h2>Buffer</h2>
-        <div>
-          Capacity: {rob.reorderQueue.length}/{rob.bufferSize}
-        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>PC</th>
+              <th>Number of ways</th>
+              <th>Stall</th>
+              <th>Branch follow limit</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>{fetch.pc}</td>
+              <td>{fetch.numberOfWays}</td>
+              <td>{fetch.stallFlag ? 'Stalled' : 'Not stalled'}</td>
+              <td>{fetch.branchFollowLimit}</td>
+            </tr>
+          </tbody>
+        </table>
+        <h2 className='text-xl mt-4 mb-2'>Buffer</h2>
+        <InstructionTable instructions={fetch.fetchedCode} />
       </CardContent>
     </>
   );

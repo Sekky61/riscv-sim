@@ -234,6 +234,38 @@ export const selectHighlightedSimCode = (state: RootState) =>
   state.cpu.highlightedSimCode;
 
 /**
+ * Select simcodemodel, inputcodemodel and instructionfunctionmodel for a given simcode id.
+ */
+export const selectSimCodeModel = (state: RootState, id: Reference) => {
+  const simCodeModel = selectSimCodeModelById(state, id);
+  if (!simCodeModel) {
+    return null;
+  }
+
+  const inputCodeModel = selectInputCodeModelById(
+    state,
+    simCodeModel.inputCodeModel,
+  );
+  if (!inputCodeModel) {
+    return null;
+  }
+
+  const instructionFunctionModel = selectInstructionFunctionModelById(
+    state,
+    inputCodeModel.instructionFunctionModel,
+  );
+  if (!instructionFunctionModel) {
+    return null;
+  }
+
+  return {
+    simCodeModel,
+    inputCodeModel,
+    functionModel: instructionFunctionModel,
+  };
+};
+
+/**
  * Returns program code with labels inserted before the instruction they point to.
  */
 export const selectProgramWithLabels = createSelector(
