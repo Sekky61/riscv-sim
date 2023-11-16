@@ -234,6 +234,12 @@ export const selectProgram = (state: RootState) =>
 export const selectHighlightedSimCode = (state: RootState) =>
   state.cpu.highlightedSimCode;
 
+export type ParsedArgument = {
+  name: string;
+  value: string;
+  arch: RegisterModel | null;
+};
+
 /**
  * Select simcodemodel, inputcodemodel and instructionfunctionmodel for a given simcode id.
  */
@@ -262,10 +268,24 @@ export const selectSimCodeModel = (state: RootState, id?: Reference) => {
     return null;
   }
 
+  // Get arguments and their arch names
+  const args = [];
+  for (const renamedArg of simCodeModel.renamedArguments) {
+    const arg: ParsedArgument = { arch: null, ...renamedArg };
+    const isSpeculative = arg.value.startsWith('tg');
+    if (isSpeculative) {
+      arg.arch = selectArchRegisterBySpeculative(state, arg.value);
+    } else {
+      arg.arch = selectRegisterById(state, arg.value);
+    }
+    args.push(arg);
+  }
+
   return {
     simCodeModel,
     inputCodeModel,
     functionModel: instructionFunctionModel,
+    args,
   };
 };
 
@@ -334,8 +354,32 @@ export const selectRegisterMap = createSelector(
   },
 );
 
-export const selectRegisterById = (state: RootState, id: Reference) =>
-  selectRegisterMap(state)?.[id];
+/**
+ * ID is a register name or alias.
+ */
+export const selectRegisterById = (state: RootState, regName: string) =>
+  selectRegisterMap(state)?.[regName] ?? null;
+
+/**
+ * Get architectural register for a given speculative register.
+ */
+export const selectArchRegisterBySpeculative = (
+  state: RootState,
+  regName: string,
+): RegisterModel | null => {
+  const map = state.cpu.state?.renameMapTableBlock.registerMap;
+  if (!map) {
+    return null;
+  }
+
+  const register = map[regName];
+  const archName = register?.architecturalRegister;
+  if (!archName) {
+    return null;
+  }
+
+  return selectRegisterById(state, archName);
+};
 
 // Stages
 

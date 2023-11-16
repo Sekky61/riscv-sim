@@ -84,7 +84,7 @@ export default function InstructionField({
     dispatch(
       openModal({
         modalType: 'SIMCODE_DETAILS_MODAL',
-        modalProps: { instructionId },
+        modalProps: { simCodeId },
       }),
     );
   };
@@ -149,17 +149,15 @@ function InstructionArgument({
     selectRegisterById(state, idOrLiteral),
   );
 
-  const isRegister = register !== undefined;
+  const isRegister = register !== null;
 
-  let displayText;
+  const displayText = idOrLiteral;
   let hoverText;
 
   if (isRegister) {
-    displayText = register?.name;
-    hoverText = `${register?.name} (${register?.value.bits})`;
+    hoverText = `Argument ${argName}: ${register.name} (${register.value.bits})`;
   } else {
-    displayText = idOrLiteral;
-    hoverText = idOrLiteral;
+    hoverText = `Argument ${argName}: ${idOrLiteral}`;
   }
 
   return (

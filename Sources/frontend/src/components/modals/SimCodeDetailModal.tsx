@@ -40,15 +40,13 @@ import {
 } from '@/components/base/ui/card';
 
 type SimCodeDetailModalProps = {
-  instructionId: number;
+  simCodeId: number;
 };
 
-export const SimCodeDetailModal = ({
-  instructionId,
-}: SimCodeDetailModalProps) => {
-  const q = useAppSelector((state) => selectSimCodeModel(state, instructionId));
-  if (!q) throw new Error('Instruction not found');
-  const { simCodeModel, inputCodeModel, functionModel } = q;
+export const SimCodeDetailModal = ({ simCodeId }: SimCodeDetailModalProps) => {
+  const q = useAppSelector((state) => selectSimCodeModel(state, simCodeId));
+  if (!q) throw new Error(`InstructionId ${simCodeId} not found`);
+  const { simCodeModel, inputCodeModel, functionModel, args } = q;
 
   return (
     <>
@@ -69,9 +67,9 @@ export const SimCodeDetailModal = ({
             </ul>
             <h2 className='text-xl mt-2'>Operands</h2>
             <ul>
-              {simCodeModel.renamedArguments.map((operand) => (
+              {args.map((operand) => (
                 <li key={operand.name}>
-                  {operand.name} {operand.value}
+                  {operand.name} {operand.value} {operand.arch?.name}
                 </li>
               ))}
             </ul>

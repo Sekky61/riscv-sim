@@ -197,7 +197,7 @@ export interface RegisterDataContainer {
 export interface RenameMapTableBlock {
   freeList: string[];
   registerMap: {
-    [k: string]: Reference;
+    [k: string]: RenameMapModel;
   };
   referenceMap: {
     [k: string]: number;
@@ -205,7 +205,7 @@ export interface RenameMapTableBlock {
   registerFileBlock?: UnifiedRegisterFileBlock;
 }
 export interface RenameMapModel {
-  architecturalRegister?: string;
+  architecturalRegister: StringReference;
   order: number;
 }
 export interface InstructionFetchBlock {
