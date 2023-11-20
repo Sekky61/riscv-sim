@@ -62,7 +62,12 @@ export default function FetchBlock() {
   };
 
   return (
-    <Block title='Fetch Block' stats={fetchStats} handleMore={handleMore}>
+    <Block
+      title='Fetch Block'
+      stats={fetchStats}
+      handleMore={handleMore}
+      className='fetch'
+    >
       <InstructionListDisplay
         instructions={fetchObject.fetchedCode}
         limit={capacity}

@@ -60,7 +60,15 @@ function getTitle(type: IssueType) {
   if (type == 'alu') return 'ALU Issue Window';
   if (type == 'fp') return 'FP Issue Window';
   if (type == 'branch') return 'Branch Issue Window';
-  if (type == 'ls') return 'Load/Store Issue Window';
+  if (type == 'ls') return 'L/S Issue Window';
+  throw new Error(`Invalid type ${type}`);
+}
+
+function getGridClassName(type: IssueType) {
+  if (type == 'alu') return 'aluIssue';
+  if (type == 'fp') return 'fpIssue';
+  if (type == 'branch') return 'branchIssue';
+  if (type == 'ls') return 'lsIssue';
   throw new Error(`Invalid type ${type}`);
 }
 
@@ -79,10 +87,20 @@ export default function IssueWindow({ type }: IssueWindowProps) {
 
   const title = getTitle(type);
 
-  // TODO: has no limit
+  const instrCount = instructionIds.length;
+  const stats = (
+    <>
+      <div>
+        {instrCount} {instrCount === 1 ? 'instruction' : 'instructions'}
+      </div>
+    </>
+  );
+
+  // TODO: Is this limit suitable?
   return (
-    <Block title={title}>
+    <Block title={title} stats={stats} className={getGridClassName(type)}>
       <InstructionListDisplay
+        limit={6}
         instructions={instructionIds}
         instructionRenderer={(instruction) => (
           <InstructionField instructionId={instruction} />

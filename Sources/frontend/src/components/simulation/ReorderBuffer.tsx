@@ -65,7 +65,12 @@ export default function ReorderBuffer() {
   };
 
   return (
-    <Block title='Reorder Buffer' stats={robStats} handleMore={handleMore}>
+    <Block
+      title='Reorder Buffer'
+      stats={robStats}
+      handleMore={handleMore}
+      className='rob'
+    >
       <InstructionListDisplay
         instructions={rob.reorderQueue}
         limit={showLimit}

@@ -29,15 +29,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {
-  selectStoreBuffer,
-  selectStoreBufferItemById,
-} from '@/lib/redux/cpustateSlice';
+import { selectStoreBuffer } from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
-import { Reference } from '@/lib/types/cpuApi';
+import { Reference, StoreBufferItem } from '@/lib/types/cpuApi';
 
 import Block from '@/components/simulation/Block';
-import { InstructionBubble } from '@/components/simulation/InstructionField';
+import InstructionField, {
+  InstructionBubble,
+} from '@/components/simulation/InstructionField';
 import { InstructionListDisplay } from '@/components/simulation/InstructionListDisplay';
 
 export default function StoreBuffer() {
@@ -48,28 +47,37 @@ export default function StoreBuffer() {
   const limit = Math.min(16, storeBuffer.bufferSize);
 
   return (
-    <Block title='Store Buffer'>
+    <Block title='Store Buffer' className='storeBuffer'>
       <InstructionListDisplay
         instructions={storeBuffer.storeQueue}
         limit={limit}
-        instructionRenderer={(storeItemId) => (
-          <StoreBufferItem storeItemId={storeItemId} />
+        instructionRenderer={(simCodeId) => (
+          <StoreBufferItem
+            simCodeId={simCodeId}
+            storeItem={
+              simCodeId !== undefined
+                ? storeBuffer.storeMap[simCodeId]
+                : undefined
+            }
+          />
         )}
       />
     </Block>
   );
 }
 
+type StoreBufferItemProps = {
+  simCodeId?: Reference;
+  storeItem?: StoreBufferItem;
+};
+
 /**
  * Displays address and loaded value of a single item in the Load Buffer
  */
 export function StoreBufferItem({
-  storeItemId: id,
-}: {
-  storeItemId?: Reference;
-}) {
-  const item = useAppSelector((state) => selectStoreBufferItemById(state, id));
-
+  simCodeId,
+  storeItem: item,
+}: StoreBufferItemProps) {
   if (!item) {
     return (
       <InstructionBubble className='flex justify-center px-2 py-1 font-mono'>
@@ -82,13 +90,14 @@ export function StoreBufferItem({
   const displayAddress = item.address === -1 ? '???' : item.address;
 
   return (
-    <InstructionBubble className='flex divide-x'>
-      <div className='flex-grow flex justify-center items-center'>
-        {displayAddress}
-      </div>
-      <div className='flex-grow flex justify-center items-center'>
-        {item.sourceRegister}
-      </div>
-    </InstructionBubble>
+    <div className='flex gap-1'>
+      <InstructionField instructionId={simCodeId} />
+      <InstructionBubble className='flex-grow flex divide-x'>
+        <div className='w-1/2 flex justify-center items-center'>
+          {displayAddress}
+        </div>
+        <div className='w-1/2 flex justify-center items-center'>Data</div>
+      </InstructionBubble>
+    </div>
   );
 }

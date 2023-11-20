@@ -41,9 +41,8 @@ export type BlockProps = {
   title: string;
   stats?: ReactChildren;
   children: ReactChildren;
-  className?: ReactClassName;
   handleMore?: () => void;
-};
+} & ReactClassName;
 
 export default function Block({
   children,
@@ -54,8 +53,9 @@ export default function Block({
 }: BlockProps) {
   const classes = clsx(
     className,
-    'w-[184px] rounded border bg-white p-2 flex gap-2 flex-col',
+    'rounded border bg-white p-2 flex gap-2 flex-col',
   );
+
   return (
     <div className={classes}>
       <div className='flex justify-between'>
@@ -70,7 +70,7 @@ export default function Block({
         )}
       </div>
       {stats && <div className='text-sm'>{stats}</div>}
-      <div>{children}</div>
+      {children}
     </div>
   );
 }

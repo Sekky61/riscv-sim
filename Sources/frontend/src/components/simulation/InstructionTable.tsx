@@ -134,7 +134,7 @@ function InstructionRow({ instructionId }: InstructionRowProps) {
     dispatch(
       openModal({
         modalType: 'SIMCODE_DETAILS_MODAL',
-        modalProps: { instructionId },
+        modalProps: { simCodeId: instructionId },
       }),
     );
   };

@@ -29,6 +29,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import clsx from 'clsx';
+
 import {
   selectArithmeticFunctionUnitBlocks,
   selectBranchFunctionUnitBlocks,
@@ -40,6 +42,16 @@ import Block from '@/components/simulation/Block';
 import InstructionField from '@/components/simulation/InstructionField';
 
 type FUType = 'alu' | 'fp' | 'branch';
+
+const rowPosition = [
+  'row-start-1',
+  'row-start-2',
+  'row-start-3',
+  'row-start-4',
+  'row-start-5',
+  'row-start-6',
+  'row-start-7',
+];
 
 export type FunctionUnitGroupProps = {
   type: FUType;
@@ -59,22 +71,34 @@ function getNameFromType(type: FUType) {
   throw new Error(`Invalid type ${type}`);
 }
 
+function getGridClassName(type: FUType) {
+  if (type == 'alu') return 'aluFu';
+  if (type == 'fp') return 'fpFu';
+  if (type == 'branch') return 'branchFu';
+  throw new Error(`Invalid type ${type}`);
+}
+
 export default function FunctionUnitGroup({ type }: FunctionUnitGroupProps) {
   const fus = useAppSelector(getSelector(type));
 
   if (!fus) return null;
 
+  const cl = getGridClassName(type);
+
   // TODO: has no limit
   return (
     <>
-      {fus.map((fu) => (
-        <Block
-          title={fu.name || getNameFromType(type)}
-          key={fu.name}
-          stats={`${fu.counter}/${fu.delay}`}
-        >
-          <InstructionField instructionId={fu.simCodeModel} />
-        </Block>
+      {fus.map((fu, i) => (
+        <>
+          <Block
+            title={fu.name || getNameFromType(type)}
+            key={fu.name}
+            stats={`${fu.counter}/${fu.delay}`}
+            className={clsx(cl, 'row-span-1', rowPosition[i + 2])}
+          >
+            <InstructionField instructionId={fu.simCodeModel} />
+          </Block>
+        </>
       ))}
     </>
   );

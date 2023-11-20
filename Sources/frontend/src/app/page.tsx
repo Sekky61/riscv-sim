@@ -44,12 +44,10 @@ import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 
 import AnimatedButton from '@/components/AnimatedButton';
 import CanvasWindow from '@/components/CanvasWindow';
-import Placement from '@/components/Placement';
 import DecodeBlock from '@/components/simulation/DecodeBlock';
 import FetchBlock from '@/components/simulation/FetchBlock';
 import FunctionUnitGroup from '@/components/simulation/FunctionUnitGroup';
 import IssueWindow from '@/components/simulation/IssueWindow';
-import Line from '@/components/simulation/Line';
 import LoadBuffer from '@/components/simulation/LoadBuffer';
 import Program from '@/components/simulation/Program';
 import ReorderBuffer from '@/components/simulation/ReorderBuffer';
@@ -84,67 +82,26 @@ export default function HomePage() {
   const secondCol = firstCol + blockWidth + spaceBetweenBlocks;
   const thirdCol = secondCol + blockWidth + spaceBetweenBlocks;
   const fourthCol = thirdCol + blockWidth + spaceBetweenBlocks;
+  const fifthCol = fourthCol + blockWidth + spaceBetweenBlocks;
+  const sixthCol = fifthCol + blockWidth + spaceBetweenBlocks;
 
   return (
     <>
       <CanvasWindow scale={scale}>
-        <Placement x={firstCol} y={50}>
+        <div className='sim-grid'>
           <Program />
-        </Placement>
-
-        {/* Fetch block, line program--fetch */}
-        <Placement x={firstCol + blockWidth} y={100}>
-          <Line length={50} />
-        </Placement>
-
-        {/* Fetch, Decode block, line fetch--decode */}
-        <Placement x={secondCol} y={50} className='flex flex-col items-center'>
           <FetchBlock />
-          <Line length={50} down />
           <DecodeBlock />
-        </Placement>
-
-        <Placement x={thirdCol} y={50}>
           <ReorderBuffer />
-        </Placement>
-
-        <Placement x={thirdCol + blockWidth} y={145}>
-          <Line length={610} />
-        </Placement>
-
-        <Placement x={fourthCol} y={150}>
-          <div className='flex gap-[50px]'>
-            <div className='flex flex-col items-center'>
-              <Line length={50} down />
-              <IssueWindow type='alu' />
-              <Line length={10} down />
-              <IssueWindow type='fp' />
-              <Line length={50} down />
-              <div className='flex gap-2 flex-col'>
-                <FunctionUnitGroup type='alu' />
-              </div>
-            </div>
-            <div className='flex flex-col items-center'>
-              <Line length={50} down />
-              <IssueWindow type='branch' />
-              <Line length={50} down />
-              <div className='flex gap-2 flex-col'>
-                <FunctionUnitGroup type='branch' />
-              </div>
-            </div>
-            <div className='flex flex-col items-center'>
-              <Line length={50} down />
-              <IssueWindow type='ls' />
-            </div>
-          </div>
-        </Placement>
-
-        <Placement x={fourthCol} y={600}>
-          <div className='flex gap-[50px]'>
-            <LoadBuffer />
-            <StoreBuffer />
-          </div>
-        </Placement>
+          <IssueWindow type='alu' />
+          <FunctionUnitGroup type='alu' />
+          <IssueWindow type='fp' />
+          <FunctionUnitGroup type='fp' />
+          <IssueWindow type='branch' />
+          <FunctionUnitGroup type='branch' />
+          <LoadBuffer />
+          <StoreBuffer />
+        </div>
       </CanvasWindow>
       <div className='pointer-events-none absolute top-0 flex w-full justify-center pt-2'>
         <Timeline className='pointer-events-auto' />

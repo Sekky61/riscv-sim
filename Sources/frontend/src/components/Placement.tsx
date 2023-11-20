@@ -39,6 +39,7 @@ export type PlacementProps = {
   children?: React.ReactNode;
   x: number;
   y: number;
+  [key: string]: unknown;
 } & ReactClassName;
 
 export default function Placement({
@@ -46,10 +47,11 @@ export default function Placement({
   x = 0,
   y = 0,
   className,
+  ...props
 }: PlacementProps) {
   const cls = clsx('absolute', className);
   return (
-    <div className={cls} style={{ left: `${x}px`, top: `${y}px` }}>
+    <div className={cls} style={{ left: `${x}px`, top: `${y}px` }} {...props}>
       {children}
     </div>
   );

@@ -81,8 +81,8 @@ export default function Program() {
   );
 
   return (
-    <Block title='Program'>
-      <div className='flex h-[600px] flex-col gap-1 overflow-y-auto pt-4'>
+    <Block title='Program' className='program' rows={4}>
+      <div className='flex h-96 flex-col gap-1 overflow-y-auto pt-4'>
         {codeOrder.map((instructionOrLabel) => {
           if (typeof instructionOrLabel === 'string') {
             return (

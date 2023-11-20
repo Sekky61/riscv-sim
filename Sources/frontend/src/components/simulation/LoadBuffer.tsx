@@ -48,7 +48,7 @@ export default function LoadBuffer() {
   const limit = Math.min(16, loadBuffer.bufferSize);
 
   return (
-    <Block title='Load Buffer'>
+    <Block title='Load Buffer' className='loadBuffer'>
       <InstructionListDisplay
         instructions={loadBuffer.loadQueue}
         limit={limit}
