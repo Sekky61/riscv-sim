@@ -51,6 +51,14 @@ export default function StoreBuffer() {
       <InstructionListDisplay
         instructions={storeBuffer.storeQueue}
         limit={limit}
+        columns={3}
+        legend={
+          <>
+            <div>Instruction</div>
+            <div>Address</div>
+            <div>Data</div>
+          </>
+        }
         instructionRenderer={(simCodeId) => (
           <StoreBufferItem
             simCodeId={simCodeId}
@@ -90,14 +98,10 @@ export function StoreBufferItem({
   const displayAddress = item.address === -1 ? '???' : item.address;
 
   return (
-    <div className='flex gap-1'>
+    <>
       <InstructionField instructionId={simCodeId} />
-      <InstructionBubble className='flex-grow flex divide-x'>
-        <div className='w-1/2 flex justify-center items-center'>
-          {displayAddress}
-        </div>
-        <div className='w-1/2 flex justify-center items-center'>Data</div>
-      </InstructionBubble>
-    </div>
+      <InstructionBubble>{displayAddress}</InstructionBubble>
+      <InstructionBubble>Data</InstructionBubble>
+    </>
   );
 }

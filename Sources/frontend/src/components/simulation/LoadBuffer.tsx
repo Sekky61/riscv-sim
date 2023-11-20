@@ -29,15 +29,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {
-  selectLoadBuffer,
-  selectLoadBufferItemById,
-} from '@/lib/redux/cpustateSlice';
+import { selectLoadBuffer } from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
-import { Reference } from '@/lib/types/cpuApi';
+import { LoadBufferItem, Reference } from '@/lib/types/cpuApi';
 
 import Block from '@/components/simulation/Block';
-import { InstructionBubble } from '@/components/simulation/InstructionField';
+import InstructionField, {
+  InstructionBubble,
+} from '@/components/simulation/InstructionField';
 import { InstructionListDisplay } from '@/components/simulation/InstructionListDisplay';
 
 export default function LoadBuffer() {
@@ -52,20 +51,42 @@ export default function LoadBuffer() {
       <InstructionListDisplay
         instructions={loadBuffer.loadQueue}
         limit={limit}
-        instructionRenderer={(storeItemId) => (
-          <LoadBufferItem loadItemId={storeItemId} />
+        columns={4}
+        legend={
+          <>
+            <div>Instruction</div>
+            <div>Address</div>
+            <div>Data</div>
+            <div>Bypass</div>
+          </>
+        }
+        instructionRenderer={(simCodeId) => (
+          <LoadBufferItem
+            simCodeId={simCodeId}
+            loadItem={
+              simCodeId !== undefined
+                ? loadBuffer.loadMap[simCodeId]
+                : undefined
+            }
+          />
         )}
       />
     </Block>
   );
 }
 
+type LoadBufferItemProps = {
+  simCodeId?: Reference;
+  loadItem?: LoadBufferItem;
+};
+
 /**
  * Displays address and loaded value of a single item in the Load Buffer
  */
-export function LoadBufferItem({ loadItemId: id }: { loadItemId?: Reference }) {
-  const item = useAppSelector((state) => selectLoadBufferItemById(state, id));
-
+export function LoadBufferItem({
+  simCodeId,
+  loadItem: item,
+}: LoadBufferItemProps) {
   if (!item) {
     return (
       <InstructionBubble className='flex justify-center px-2 py-1 font-mono'>
@@ -78,13 +99,13 @@ export function LoadBufferItem({ loadItemId: id }: { loadItemId?: Reference }) {
   const displayAddress = item.address === -1 ? '???' : item.address;
 
   return (
-    <InstructionBubble className='flex divide-x'>
-      <div className='flex-grow flex justify-center items-center'>
-        {displayAddress}
-      </div>
-      <div className='flex-grow flex justify-center items-center'>
-        {item.hasBypassed}
-      </div>
-    </InstructionBubble>
+    <>
+      <InstructionField instructionId={simCodeId} />
+      <InstructionBubble>{displayAddress}</InstructionBubble>
+      <InstructionBubble>Data</InstructionBubble>
+      <InstructionBubble>
+        {item.hasBypassed ? 'True' : 'False'}
+      </InstructionBubble>
+    </>
   );
 }

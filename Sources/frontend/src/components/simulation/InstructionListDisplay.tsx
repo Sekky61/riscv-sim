@@ -33,24 +33,43 @@ export type InstructionListDisplayProps<T> = {
   instructions: Array<T>;
   limit?: number;
   instructionRenderer: (item?: T) => React.ReactNode;
+  legend?: React.ReactNode;
+  columns?: number;
 };
 
 export function InstructionListDisplay<T>({
   instructions,
   limit,
   instructionRenderer,
+  legend,
+  columns = 1,
 }: InstructionListDisplayProps<T>) {
   let displayLimit = instructions.length;
+  let emptyCount = 0;
   if (limit !== undefined) {
     displayLimit = limit;
+    emptyCount = limit - instructions.length;
   }
 
+  const codeModels = instructions.slice(0, displayLimit);
+
   return (
-    <ul className='flex flex-col gap-1'>
-      {[...Array(displayLimit)].map((_, i) => {
-        const codeModel = i < displayLimit ? instructions[i] : undefined;
-        return <li key={`pad-${i}`}>{instructionRenderer(codeModel)}</li>;
-      })}
+    <ul
+      className='grid gap-1'
+      style={{ gridTemplateColumns: `repeat(${columns}, auto)` }}
+    >
+      {legend && <li className='contents'>{legend}</li>}
+      {codeModels.map((inst) => (
+        <li key={`pad-${inst}`} className='contents'>
+          {instructionRenderer(inst)}
+        </li>
+      ))}
+      {emptyCount > 0 &&
+        [...Array(emptyCount)].map((_, i) => (
+          <li key={`pad-${i}`} className='contents'>
+            {instructionRenderer(undefined)}
+          </li>
+        ))}
     </ul>
   );
 }
