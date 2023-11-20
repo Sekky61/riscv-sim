@@ -59,17 +59,9 @@ export function InstructionListDisplay<T>({
       style={{ gridTemplateColumns: `repeat(${columns}, auto)` }}
     >
       {legend && <li className='contents'>{legend}</li>}
-      {codeModels.map((inst) => (
-        <li key={`pad-${inst}`} className='contents'>
-          {instructionRenderer(inst)}
-        </li>
-      ))}
+      {codeModels.map((inst) => instructionRenderer(inst))}
       {emptyCount > 0 &&
-        [...Array(emptyCount)].map((_, i) => (
-          <li key={`pad-${i}`} className='contents'>
-            {instructionRenderer(undefined)}
-          </li>
-        ))}
+        [...Array(emptyCount)].map((_, i) => instructionRenderer(undefined))}
     </ul>
   );
 }

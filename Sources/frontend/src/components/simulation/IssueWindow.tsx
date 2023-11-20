@@ -29,6 +29,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import clsx from 'clsx';
+
 import {
   selectAluIssueWindowBlock,
   selectBranchIssueWindowBlock,
@@ -36,10 +38,12 @@ import {
   selectLoadStoreIssueWindowBlock,
 } from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
-import { Reference } from '@/lib/types/cpuApi';
+import { IssueItemModel, Reference } from '@/lib/types/cpuApi';
 
 import Block from '@/components/simulation/Block';
-import InstructionField from '@/components/simulation/InstructionField';
+import InstructionField, {
+  InstructionBubble,
+} from '@/components/simulation/InstructionField';
 import { InstructionListDisplay } from '@/components/simulation/InstructionListDisplay';
 
 type IssueType = 'alu' | 'fp' | 'branch' | 'ls';
@@ -101,11 +105,53 @@ export default function IssueWindow({ type }: IssueWindowProps) {
     <Block title={title} stats={stats} className={getGridClassName(type)}>
       <InstructionListDisplay
         limit={6}
+        columns={3}
         instructions={instructionIds}
         instructionRenderer={(instruction) => (
-          <InstructionField instructionId={instruction} />
+          <IssueWindowItem
+            simCodeId={instruction}
+            items={
+              instruction !== undefined ? validity[instruction] : undefined
+            }
+          />
         )}
       />
     </Block>
+  );
+}
+
+type IssueWindowItemProps = {
+  simCodeId?: Reference;
+  items?: IssueItemModel[];
+};
+
+/**
+ * Displays a single item in the Issue Window
+ */
+export function IssueWindowItem({ simCodeId, items }: IssueWindowItemProps) {
+  if (!items) {
+    return (
+      <div className='col-span-3'>
+        <InstructionField instructionId={simCodeId} />
+      </div>
+    );
+  }
+
+  const item1 = items[0] || { value: '-', validityBit: false };
+  const item2 = items[1] || { value: '-', validityBit: false };
+
+  const item1Style = clsx('flex', item1.validityBit && 'text-green-500');
+  const item2Style = clsx('flex', item2.validityBit && 'text-green-500');
+
+  return (
+    <>
+      <InstructionField instructionId={simCodeId} />
+      <InstructionBubble className={item1Style}>
+        {item1.value}
+      </InstructionBubble>
+      <InstructionBubble className={item2Style}>
+        {item2.value}
+      </InstructionBubble>
+    </>
   );
 }

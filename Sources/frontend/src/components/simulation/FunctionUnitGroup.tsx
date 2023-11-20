@@ -30,6 +30,7 @@
  */
 
 import clsx from 'clsx';
+import { Fragment } from 'react';
 
 import {
   selectArithmeticFunctionUnitBlocks,
@@ -89,7 +90,7 @@ export default function FunctionUnitGroup({ type }: FunctionUnitGroupProps) {
   return (
     <>
       {fus.map((fu, i) => (
-        <>
+        <Fragment key={fu.functionUnitId}>
           <Block
             title={fu.name || getNameFromType(type)}
             key={fu.name}
@@ -98,7 +99,7 @@ export default function FunctionUnitGroup({ type }: FunctionUnitGroupProps) {
           >
             <InstructionField instructionId={fu.simCodeModel} />
           </Block>
-        </>
+        </Fragment>
       ))}
     </>
   );

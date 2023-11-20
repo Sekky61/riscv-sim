@@ -405,10 +405,6 @@
     grid-auto-rows: auto;
   }
 
-  .sim-grid * {
-    grid-row-end: span 2;
-  }
-
   .program {
     @apply w-full h-full;
     grid-column: 1 / span 1;
