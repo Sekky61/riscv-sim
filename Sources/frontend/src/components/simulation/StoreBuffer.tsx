@@ -47,7 +47,7 @@ export default function StoreBuffer() {
   const limit = Math.min(16, storeBuffer.bufferSize);
 
   return (
-    <Block title='Store Buffer' className='storeBuffer'>
+    <Block title='Store Buffer' className='storeBuffer w-96'>
       <InstructionListDisplay
         instructions={storeBuffer.storeQueue}
         limit={limit}

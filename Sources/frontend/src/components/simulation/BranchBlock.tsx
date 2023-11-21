@@ -60,7 +60,7 @@ export default function BranchBlock() {
     const entry = btb.buffer[address];
     if (!entry) return null;
     btbEntries.push(
-      <InstructionBubble key={address} className='flex'>
+      <InstructionBubble key={address} className='flex text-sm'>
         <div className='w-1/2'>Address: {`0x${address.toString(16)}`}</div>
         <div className='w-1/2'>Target: {`0x${entry.target.toString(16)}`}</div>
       </InstructionBubble>,
@@ -68,7 +68,7 @@ export default function BranchBlock() {
   });
 
   return (
-    <Block title='Branch Block'>
+    <Block title='Branch Block' className='h-20'>
       {btbEntries.length > 0 ? btbEntries : <div>No relevant entries</div>}
     </Block>
   );
