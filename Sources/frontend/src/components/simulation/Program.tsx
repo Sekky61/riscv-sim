@@ -34,6 +34,7 @@ import React, { useEffect } from 'react';
 
 import {
   selectFetch,
+  selectHighlightedInputCode,
   selectInputCodeModelById,
   selectInstructionFunctionModelById,
   selectProgram,
@@ -55,6 +56,7 @@ export default function Program() {
   const program = useAppSelector(selectProgram);
   const fetch = useAppSelector(selectFetch);
   const codeOrder = useAppSelector(selectProgramWithLabels);
+  const highlightedInputCodeId = useAppSelector(selectHighlightedInputCode);
 
   // Scroll to PC on every render
   useEffect(() => {
@@ -102,12 +104,14 @@ export default function Program() {
             );
           }
           const isPointedTo = instructionOrLabel === pc;
+          const highlighted = instructionOrLabel === highlightedInputCodeId;
+          const cls = clsx('ml-6 rounded-sm', highlighted && 'bg-gray-200');
           // Instruction
           return (
             <ProgramInstruction
               key={`ins-${instructionOrLabel}`}
               instructionId={instructionOrLabel}
-              className='ml-6'
+              className={cls}
             >
               {isPointedTo && pcPointer}
             </ProgramInstruction>

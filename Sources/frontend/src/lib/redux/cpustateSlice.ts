@@ -76,6 +76,10 @@ interface CpuSlice {
    * Used to highlight the corresponding objects in visualizations.
    */
   highlightedSimCode: Reference | null;
+  /**
+   * Reference to the currently highlighted register.
+   */
+  highlightedRegister: string | null;
 }
 
 /**
@@ -86,6 +90,7 @@ const initialState: CpuSlice = {
   code: '',
   highlightedInputCode: null,
   highlightedSimCode: null,
+  highlightedRegister: null,
 };
 
 /**
@@ -186,13 +191,30 @@ export const cpuSlice = createSlice({
       state.code = action.payload;
     },
     highlightSimCode: (state, action: PayloadAction<Reference | null>) => {
+      if (action.payload === null) {
+        throw new Error('highlightSimCode: action.payload === null');
+      }
       state.highlightedSimCode = action.payload;
+      const simCodeModel =
+        state.state?.managerRegistry.simCodeManager[action.payload];
+      if (simCodeModel) {
+        state.highlightedInputCode = simCodeModel.inputCodeModel;
+      }
     },
-    unhighlight: (state, action: PayloadAction<Reference | null>) => {
+    unhighlightSimCode: (state, action: PayloadAction<Reference | null>) => {
       // Do not unhighlight somebody else's highlight
       if (state.highlightedSimCode === action.payload) {
         state.highlightedSimCode = null;
         state.highlightedInputCode = null;
+      }
+    },
+    highlightRegister: (state, action: PayloadAction<string | null>) => {
+      state.highlightedRegister = action.payload;
+    },
+    unhighlightRegister: (state, action: PayloadAction<string | null>) => {
+      // Do not unhighlight somebody else's highlight
+      if (state.highlightedRegister === action.payload) {
+        state.highlightedRegister = null;
       }
     },
   },
@@ -210,8 +232,13 @@ export const cpuSlice = createSlice({
   },
 });
 
-export const { setSimulationCode, highlightSimCode, unhighlight } =
-  cpuSlice.actions;
+export const {
+  setSimulationCode,
+  highlightSimCode,
+  unhighlightSimCode,
+  highlightRegister,
+  unhighlightRegister,
+} = cpuSlice.actions;
 
 //
 // Selectors
@@ -242,6 +269,12 @@ export const selectProgram = (state: RootState) =>
 
 export const selectHighlightedSimCode = (state: RootState) =>
   state.cpu.highlightedSimCode;
+
+export const selectHighlightedInputCode = (state: RootState) =>
+  state.cpu.highlightedInputCode;
+
+export const selectHighlightedRegister = (state: RootState) =>
+  state.cpu.highlightedRegister;
 
 export type ParsedArgument = {
   name: string;
