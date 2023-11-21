@@ -33,7 +33,6 @@ export interface CpuState {
   managerRegistry: ManagerRegistry;
   tick: number;
   instructionMemoryBlock: InstructionMemoryBlock;
-  reorderBufferState: ReorderBufferState;
   statisticsCounter: StatisticsCounter;
   cacheStatisticsCounter: CacheStatisticsCounter;
   branchTargetBuffer: BranchTargetBuffer;
@@ -63,6 +62,22 @@ export interface CpuState {
   simulatedMemory: SimulatedMemory;
   issueWindowSuperBlock: IssueWindowSuperBlock;
   reorderBufferBlock: ReorderBufferBlock;
+}
+
+export interface ReorderBufferBlock {
+  reorderQueue: ReorderBufferItem[];
+  commitLimit: number;
+  commitId: number;
+  speculativePulls: boolean;
+  bufferSize: number;
+  renameMapTableBlock?: RenameMapTableBlock;
+  decodeAndDispatchBlock?: DecodeAndDispatchBlock;
+  statisticsCounter?: StatisticsCounter;
+  gShareUnit?: GShareUnit;
+  branchTargetBuffer?: BranchTargetBuffer;
+  instructionFetchBlock?: InstructionFetchBlock;
+  loadBufferBlock?: LoadBufferBlock;
+  storeBufferBlock?: StoreBufferBlock;
 }
 
 export type Reference = number;
@@ -132,13 +147,6 @@ export interface Argument {
   silent?: boolean;
 }
 
-export interface ReorderBufferState {
-  reorderQueue: ReorderBufferItem[];
-  commitLimit: number;
-  commitId: number;
-  speculativePulls: boolean;
-  bufferSize: number;
-}
 export interface ReorderBufferItem {
   simCodeModel: Reference;
   reorderFlags: ReorderFlags;

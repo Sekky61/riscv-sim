@@ -58,7 +58,7 @@ public class LoadBufferBlock implements AbstractBlock
   @JsonIdentityReference(alwaysAsId = true)
   private final Queue<SimCodeModel> loadQueue;
   /**
-   * Map with additional infos for specific load instructions
+   * Map with additional info for specific load instructions
    * The actual buffer of the load buffer
    */
   private final Map<Integer, LoadBufferItem> loadMap;

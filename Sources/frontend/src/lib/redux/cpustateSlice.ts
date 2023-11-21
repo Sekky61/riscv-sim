@@ -390,7 +390,7 @@ export const selectDecode = (state: RootState) =>
   state.cpu.state?.decodeAndDispatchBlock;
 
 export const selectROB = (state: RootState) =>
-  state.cpu.state?.reorderBufferState;
+  state.cpu.state?.reorderBufferBlock;
 
 // Issue window blocks
 

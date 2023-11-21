@@ -66,8 +66,6 @@ public class CpuState implements Serializable
   
   public InstructionMemoryBlock instructionMemoryBlock;
   
-  public ReorderBufferState reorderBufferState;
-  
   // Housekeeping
   
   public StatisticsCounter statisticsCounter;
@@ -162,10 +160,6 @@ public class CpuState implements Serializable
                                                               codeParser.getInstructions().size());
     this.instructionMemoryBlock = new InstructionMemoryBlock(codeParser.getInstructions(), codeParser.getLabels(), nop);
     
-    this.reorderBufferState        = new ReorderBufferState();
-    reorderBufferState.bufferSize  = config.robSize;
-    reorderBufferState.commitLimit = config.commitWidth;
-    
     this.statisticsCounter      = new StatisticsCounter();
     this.cacheStatisticsCounter = new CacheStatisticsCounter();
     
@@ -217,11 +211,14 @@ public class CpuState implements Serializable
                                                              globalHistoryRegister, branchTargetBuffer,
                                                              instructionMemoryBlock, config.fetchWidth);
     this.reorderBufferBlock     = new ReorderBufferBlock(renameMapTableBlock, decodeAndDispatchBlock, gShareUnit,
-                                                         branchTargetBuffer, instructionFetchBlock, statisticsCounter,
-                                                         reorderBufferState);
-    this.issueWindowSuperBlock  = new IssueWindowSuperBlock(decodeAndDispatchBlock);
-    this.arithmeticInterpreter  = new CodeArithmeticInterpreter(unifiedRegisterFileBlock);
-    this.branchInterpreter      = new CodeBranchInterpreter(instructionMemoryBlock, unifiedRegisterFileBlock);
+                                                         branchTargetBuffer, instructionFetchBlock, statisticsCounter);
+    // ROB state
+    reorderBufferBlock.bufferSize  = config.robSize;
+    reorderBufferBlock.commitLimit = config.commitWidth;
+    
+    this.issueWindowSuperBlock = new IssueWindowSuperBlock(decodeAndDispatchBlock);
+    this.arithmeticInterpreter = new CodeArithmeticInterpreter(unifiedRegisterFileBlock);
+    this.branchInterpreter     = new CodeBranchInterpreter(instructionMemoryBlock, unifiedRegisterFileBlock);
     
     this.storeBufferBlock = new StoreBufferBlock(loadStoreInterpreter, decodeAndDispatchBlock, unifiedRegisterFileBlock,
                                                  reorderBufferBlock);
