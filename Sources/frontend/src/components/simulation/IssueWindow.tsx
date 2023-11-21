@@ -107,6 +107,13 @@ export default function IssueWindow({ type }: IssueWindowProps) {
         limit={6}
         columns={3}
         instructions={instructionIds}
+        legend={
+          <>
+            <div>Instruction</div>
+            <div>Arg 1</div>
+            <div>Arg 2</div>
+          </>
+        }
         instructionRenderer={(instruction) => (
           <IssueWindowItem
             simCodeId={instruction}
@@ -140,8 +147,8 @@ export function IssueWindowItem({ simCodeId, items }: IssueWindowItemProps) {
   const item1 = items[0] || { value: '-', validityBit: false };
   const item2 = items[1] || { value: '-', validityBit: false };
 
-  const item1Style = clsx('flex', item1.validityBit && 'text-green-500');
-  const item2Style = clsx('flex', item2.validityBit && 'text-green-500');
+  const item1Style = clsx('flex px-2', item1.validityBit && 'text-green-500');
+  const item2Style = clsx('flex px-2', item2.validityBit && 'text-green-500');
 
   return (
     <>

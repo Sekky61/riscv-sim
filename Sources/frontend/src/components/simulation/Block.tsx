@@ -53,7 +53,7 @@ export default function Block({
 }: BlockProps) {
   const classes = clsx(
     className,
-    'rounded border bg-white p-2 flex gap-2 flex-col',
+    'rounded border bg-white p-2 flex gap-2 flex-col min-w-[13rem]',
   );
 
   return (

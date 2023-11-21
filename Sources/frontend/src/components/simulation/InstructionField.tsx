@@ -76,7 +76,7 @@ export default function InstructionField({
   };
 
   const cls = clsx(
-    'flex justify-between items-center gap-4 font-mono px-2 hover:cursor-pointer',
+    'flex justify-between items-center gap-2 font-mono px-2 hover:cursor-pointer',
     highlighted ? 'bg-gray-200' : '',
   );
 
@@ -162,7 +162,7 @@ function InstructionArgument({
 
   return (
     <div
-      className='rounded hover:bg-gray-300 w-6 h-6 flex justify-center items-center leading-4'
+      className='rounded hover:bg-gray-300 min-w-[2em] h-6 flex justify-center items-center leading-4'
       title={hoverText}
     >
       {displayText}

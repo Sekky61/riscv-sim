@@ -88,7 +88,7 @@ export function StoreBufferItem({
 }: StoreBufferItemProps) {
   if (!item) {
     return (
-      <InstructionBubble className='flex justify-center px-2 py-1 font-mono'>
+      <InstructionBubble className='flex justify-center px-2 py-1 font-mono col-span-3'>
         <span className='text-gray-400'>empty</span>
       </InstructionBubble>
     );

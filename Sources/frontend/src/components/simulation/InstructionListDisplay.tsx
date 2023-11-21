@@ -54,14 +54,16 @@ export function InstructionListDisplay<T>({
   const codeModels = instructions.slice(0, displayLimit);
 
   return (
-    <ul
-      className='grid gap-1'
-      style={{ gridTemplateColumns: `repeat(${columns}, auto)` }}
-    >
-      {legend && <li className='contents'>{legend}</li>}
-      {codeModels.map((inst) => instructionRenderer(inst))}
-      {emptyCount > 0 &&
-        [...Array(emptyCount)].map((_, i) => instructionRenderer(undefined))}
-    </ul>
+    <div>
+      <ul
+        className='grid gap-1'
+        style={{ gridTemplateColumns: `repeat(${columns}, auto)` }}
+      >
+        {legend && <li className='contents'>{legend}</li>}
+        {codeModels.map((inst) => instructionRenderer(inst))}
+        {emptyCount > 0 &&
+          [...Array(emptyCount)].map((_, i) => instructionRenderer(undefined))}
+      </ul>
+    </div>
   );
 }

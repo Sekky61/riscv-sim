@@ -89,7 +89,7 @@ export function LoadBufferItem({
 }: LoadBufferItemProps) {
   if (!item) {
     return (
-      <InstructionBubble className='flex justify-center px-2 py-1 font-mono'>
+      <InstructionBubble className='flex justify-center px-2 py-1 font-mono col-span-4'>
         <span className='text-gray-400'>empty</span>
       </InstructionBubble>
     );

@@ -78,29 +78,30 @@ export default function HomePage() {
   const blockWidth = 184;
   const spaceBetweenBlocks = 50;
 
-  const firstCol = 50;
-  const secondCol = firstCol + blockWidth + spaceBetweenBlocks;
-  const thirdCol = secondCol + blockWidth + spaceBetweenBlocks;
-  const fourthCol = thirdCol + blockWidth + spaceBetweenBlocks;
-  const fifthCol = fourthCol + blockWidth + spaceBetweenBlocks;
-  const sixthCol = fifthCol + blockWidth + spaceBetweenBlocks;
-
   return (
     <>
       <CanvasWindow scale={scale}>
-        <div className='sim-grid'>
-          <Program />
-          <FetchBlock />
-          <DecodeBlock />
-          <ReorderBuffer />
-          <IssueWindow type='alu' />
-          <FunctionUnitGroup type='alu' />
-          <IssueWindow type='fp' />
-          <FunctionUnitGroup type='fp' />
-          <IssueWindow type='branch' />
-          <FunctionUnitGroup type='branch' />
-          <LoadBuffer />
-          <StoreBuffer />
+        <div className='global-grid'>
+          <div className='col-grid'>
+            <Program />
+            <div className='flex flex-col gap-4'>
+              <FetchBlock />
+              <DecodeBlock />
+            </div>
+            <ReorderBuffer />
+          </div>
+          <div className='sim-grid'>
+            <IssueWindow type='alu' />
+            <FunctionUnitGroup type='alu' />
+            <IssueWindow type='fp' />
+            <FunctionUnitGroup type='fp' />
+            <IssueWindow type='branch' />
+            <FunctionUnitGroup type='branch' />
+          </div>
+          <div className='sim-grid'>
+            <StoreBuffer />
+            <LoadBuffer />
+          </div>
         </div>
       </CanvasWindow>
       <div className='pointer-events-none absolute top-0 flex w-full justify-center pt-2'>

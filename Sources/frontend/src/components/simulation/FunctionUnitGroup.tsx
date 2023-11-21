@@ -95,7 +95,7 @@ export default function FunctionUnitGroup({ type }: FunctionUnitGroupProps) {
             title={fu.name || getNameFromType(type)}
             key={fu.name}
             stats={`${fu.counter}/${fu.delay}`}
-            className={clsx(cl, 'row-span-1', rowPosition[i + 2])}
+            className={clsx(cl, 'row-span-1', rowPosition[i + 1])}
           >
             <InstructionField instructionId={fu.simCodeModel} />
           </Block>

@@ -81,7 +81,10 @@ export default function Program() {
   );
 
   return (
-    <Block title='Program' className='program' rows={4}>
+    <Block
+      title='Program'
+      className='program justify-self-stretch self-stretch'
+    >
       <div className='flex h-96 flex-col gap-1 overflow-y-auto pt-4'>
         {codeOrder.map((instructionOrLabel) => {
           if (typeof instructionOrLabel === 'string') {
@@ -124,7 +127,7 @@ function ProgramInstruction({
   const model = useAppSelector((state) =>
     selectInstructionFunctionModelById(
       state,
-      instruction?.instructionFunctionModel ?? '',
+      instruction?.instructionFunctionModel ?? 0,
     ),
   );
 
