@@ -32,6 +32,9 @@
  */
 package com.gradle.superscalarsim.code;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -39,6 +42,7 @@ import java.util.Map;
  * @class SimulatedMemory
  * @brief Class simulating memory with read/write capabilities
  */
+@JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
 public class SimulatedMemory
 {
   /// Hash map with stored values, serves as memory

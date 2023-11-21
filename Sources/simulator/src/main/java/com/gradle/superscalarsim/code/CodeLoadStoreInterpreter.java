@@ -32,6 +32,9 @@
  */
 package com.gradle.superscalarsim.code;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.blocks.base.UnifiedRegisterFileBlock;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.models.InstructionFunctionModel;
@@ -49,16 +52,19 @@ import java.util.List;
  * @class CodeLoadStoreInterpreter
  * @brief Interprets load/store instruction provided in InputCodeModel class
  */
+@JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
 public class CodeLoadStoreInterpreter
 {
   /**
    * Memory. Used for load/store operations
    */
+  @JsonIdentityReference(alwaysAsId = true)
   private final MemoryModel memoryModel;
   
   /**
    * Register file. Used for calculating addresses and getting values for store operations.
    */
+  @JsonIdentityReference(alwaysAsId = true)
   private final UnifiedRegisterFileBlock registerFileBlock;
   
   /**

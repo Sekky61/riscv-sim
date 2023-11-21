@@ -30,6 +30,9 @@
  */
 package com.gradle.superscalarsim.code;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.blocks.CacheStatisticsCounter;
 import com.gradle.superscalarsim.blocks.loadstore.Cache;
 import com.gradle.superscalarsim.models.MemoryAccess;
@@ -44,13 +47,16 @@ import java.util.Map;
  * @class MemoryModel
  * @brief Class implementing common functions for accessing cache or memory, holds the cache or memory
  */
+@JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
 public class MemoryModel
 {
   private CacheStatisticsCounter cacheStatisticsCounter;
   
   /// Cache implementation
+  @JsonIdentityReference(alwaysAsId = true)
   Cache cache;
   /// Memory - only when there is no cache - cache holds it's own memory
+  @JsonIdentityReference(alwaysAsId = true)
   SimulatedMemory memory;
   /// Last access - doesn't account for reverting history - use cache for this
   private MemoryAccess lastAccess;

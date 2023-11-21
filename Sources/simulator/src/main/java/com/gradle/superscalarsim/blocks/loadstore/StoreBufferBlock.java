@@ -32,7 +32,9 @@
  */
 package com.gradle.superscalarsim.blocks.loadstore;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.blocks.AbstractBlock;
 import com.gradle.superscalarsim.blocks.base.DecodeAndDispatchBlock;
 import com.gradle.superscalarsim.blocks.base.ReorderBufferBlock;
@@ -51,6 +53,7 @@ import java.util.*;
  * @class StoreBufferBlock
  * @brief Class that holds all in-flight store instructions
  */
+@JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
 public class StoreBufferBlock implements AbstractBlock
 {
   /// Queue with all uncommitted store instructions
@@ -59,20 +62,25 @@ public class StoreBufferBlock implements AbstractBlock
   /// Map with additional infos for specific store instructions
   private final Map<Integer, StoreBufferItem> storeMap;
   /// List holding all allocated memory access units
+  @JsonIdentityReference(alwaysAsId = true)
   private final List<MemoryAccessUnit> memoryAccessUnitList;
   /// Counter, which is used to calculate if buffer can hold instructions pulled into ROB
   public int possibleNewEntries;
   /// Interpreter for processing load store instructions
+  @JsonIdentityReference(alwaysAsId = true)
   private CodeLoadStoreInterpreter loadStoreInterpreter;
   /// Class, which simulates instruction decode and renames registers
+  @JsonIdentityReference(alwaysAsId = true)
   private DecodeAndDispatchBlock decodeAndDispatchBlock;
   /// Class containing all registers, that simulator uses
+  @JsonIdentityReference(alwaysAsId = true)
   private UnifiedRegisterFileBlock registerFileBlock;
   /// Class contains simulated implementation of Reorder buffer
+  @JsonIdentityReference(alwaysAsId = true)
   private ReorderBufferBlock reorderBufferBlock;
   /// Store Buffer size
   private int bufferSize;
-  /// Id counter matching the one in ROB
+  /// ID counter matching the one in ROB
   private int commitId;
   
   public StoreBufferBlock()
@@ -280,8 +288,7 @@ public class StoreBufferBlock implements AbstractBlock
       
       assert !simCodeModel.hasFailed();
       
-      boolean isSpeculative    = reorderBufferBlock.getRobItem(
-              simCodeModel.getIntegerId()).reorderFlags.isSpeculative();
+      boolean isSpeculative = reorderBufferBlock.getRobItem(simCodeModel.getIntegerId()).reorderFlags.isSpeculative();
       boolean isAvailableForMA = item.getAddress() != -1 && !item.isAccessingMemory() && item.getAccessingMemoryId() == -1 && item.isSourceReady() && !isSpeculative;
       if (isAvailableForMA)
       {

@@ -31,6 +31,9 @@
 
 package com.gradle.superscalarsim.blocks.loadstore;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.blocks.CacheStatisticsCounter;
 import com.gradle.superscalarsim.code.SimulatedMemory;
 import com.gradle.superscalarsim.enums.cache.ReplacementPoliciesEnum;
@@ -49,8 +52,10 @@ import java.util.Stack;
  * @brief Implements cache functionality
  * @details Implementation of the cache with various settings of sizes and replacement policies
  */
+@JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
 public class Cache
 {
+  @JsonIdentityReference(alwaysAsId = true)
   private CacheStatisticsCounter cacheStatisticsCounter;
   
   ///Number of cache lines
@@ -81,6 +86,7 @@ public class Cache
   /// Type of replacement policy used in the cache
   private ReplacementPoliciesEnum replacementPolicyType;
   ///Handler to memory
+  @JsonIdentityReference(alwaysAsId = true)
   private SimulatedMemory memory;
   /// Cycle in which the last line will stop replacing
   private int cycleEndOfReplacement;

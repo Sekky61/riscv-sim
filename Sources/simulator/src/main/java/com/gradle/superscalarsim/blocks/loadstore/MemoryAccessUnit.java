@@ -32,6 +32,7 @@
  */
 package com.gradle.superscalarsim.blocks.loadstore;
 
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.gradle.superscalarsim.blocks.base.AbstractFunctionUnitBlock;
 import com.gradle.superscalarsim.blocks.base.AbstractIssueWindowBlock;
 import com.gradle.superscalarsim.blocks.base.ReorderBufferBlock;
@@ -52,12 +53,16 @@ import java.util.Objects;
 public class MemoryAccessUnit extends AbstractFunctionUnitBlock
 {
   /// Load buffer with all load instruction entries
+  @JsonIdentityReference(alwaysAsId = true)
   private LoadBufferBlock loadBufferBlock;
   /// Store buffer with all Store instruction entries
+  @JsonIdentityReference(alwaysAsId = true)
   private StoreBufferBlock storeBufferBlock;
   /// Interpreter for processing load store instructions
+  @JsonIdentityReference(alwaysAsId = true)
   private CodeLoadStoreInterpreter loadStoreInterpreter;
   /// Class containing all registers, that simulator uses
+  @JsonIdentityReference(alwaysAsId = true)
   private UnifiedRegisterFileBlock registerFileBlock;
   /// Clock cycle counter
   private int cycleCount;

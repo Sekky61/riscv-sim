@@ -32,6 +32,9 @@
  */
 package com.gradle.superscalarsim.blocks.loadstore;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.blocks.AbstractBlock;
 import com.gradle.superscalarsim.blocks.base.DecodeAndDispatchBlock;
 import com.gradle.superscalarsim.blocks.base.InstructionFetchBlock;
@@ -48,9 +51,11 @@ import java.util.*;
  * @class LoadBufferBlock
  * @brief Class that holds all in-flight load instructions
  */
+@JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
 public class LoadBufferBlock implements AbstractBlock
 {
   /// Queue with all uncommitted load instructions
+  @JsonIdentityReference(alwaysAsId = true)
   private final Queue<SimCodeModel> loadQueue;
   /**
    * Map with additional infos for specific load instructions
@@ -60,20 +65,26 @@ public class LoadBufferBlock implements AbstractBlock
   /// Counter, which is used to calculate if buffer can hold instructions pulled into ROB
   public int possibleNewEntries;
   /// List holding all allocated memory access units
+  @JsonIdentityReference(alwaysAsId = true)
   private List<MemoryAccessUnit> memoryAccessUnitList;
   /// Block keeping all in-flight store instructions
+  @JsonIdentityReference(alwaysAsId = true)
   private StoreBufferBlock storeBufferBlock;
   /// Class, which simulates instruction decode and renames registers
+  @JsonIdentityReference(alwaysAsId = true)
   private DecodeAndDispatchBlock decodeAndDispatchBlock;
   /// Class containing all registers, that simulator uses
+  @JsonIdentityReference(alwaysAsId = true)
   private UnifiedRegisterFileBlock registerFileBlock;
   /// Class contains simulated implementation of Reorder buffer
+  @JsonIdentityReference(alwaysAsId = true)
   private ReorderBufferBlock reorderBufferBlock;
   /// Class that fetches code from CodeParser
+  @JsonIdentityReference(alwaysAsId = true)
   private InstructionFetchBlock instructionFetchBlock;
   /// Load Buffer size
   private int bufferSize;
-  /// Id counter matching the one in ROB
+  /// ID counter matching the one in ROB
   private int commitId;
   
   public LoadBufferBlock()
