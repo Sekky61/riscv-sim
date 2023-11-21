@@ -47,3 +47,11 @@ export function cn(...inputs: ClassValue[]) {
 export function isValidReference(ref?: Reference): ref is Reference {
   return typeof ref == 'number' && ref >= 0;
 }
+
+/**
+ * Converts InputCodeId to hex string representing the address.
+ * Does not pad with zeros.
+ */
+export function inputCodeAddress(instructionId: number): string {
+  return `0x${(instructionId * 4).toString(16)}`;
+}

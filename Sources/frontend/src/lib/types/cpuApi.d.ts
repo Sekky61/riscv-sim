@@ -287,6 +287,7 @@ export interface FunctionUnitBlock {
 
 export type ArithmeticFunctionUnitBlock = FunctionUnitBlock;
 export type BranchFunctionUnitBlock = FunctionUnitBlock;
+export type MemoryAccessUnit = FunctionUnitBlock;
 
 // L/S
 
@@ -337,4 +338,42 @@ export interface StoreBufferItem {
   memoryAccessId: number;
   memoryFailedId: number;
   accessingMemory: boolean;
+}
+
+// Branch predictor
+
+export interface BranchTargetBuffer {
+  buffer: {
+    [address: number]: BranchTargetEntryModel;
+  };
+  size: number;
+}
+
+export interface BranchTargetEntryModel {
+  pcTag: number;
+  isConditional: boolean;
+  target: number;
+  instructionId: number;
+  commitId: number;
+  conditional: boolean;
+}
+
+export interface GlobalHistoryRegister {
+  shiftRegister: boolean[];
+  history: {
+    [k: string]: boolean[];
+  };
+  size: number;
+}
+export interface PatternHistoryTable {
+  predictorMap: {
+    [address: number]: IBitPredictor;
+  };
+  size: number;
+  defaultPredictorClass: '0' | '1' | '2';
+  defaultTaken: boolean[];
+}
+
+export interface IBitPredictor {
+  state: null | [boolean] | [boolean, boolean]; // todo, how does 0bit predictor look like?
 }

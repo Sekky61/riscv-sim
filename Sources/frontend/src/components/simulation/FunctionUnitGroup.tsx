@@ -36,13 +36,14 @@ import {
   selectArithmeticFunctionUnitBlocks,
   selectBranchFunctionUnitBlocks,
   selectFpFunctionUnitBlocks,
+  selectMemoryAccessUnitBlocks,
 } from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
 
 import Block from '@/components/simulation/Block';
 import InstructionField from '@/components/simulation/InstructionField';
 
-type FUType = 'alu' | 'fp' | 'branch';
+type FUType = 'alu' | 'fp' | 'branch' | 'memory';
 
 const rowPosition = [
   'row-start-1',
@@ -62,6 +63,7 @@ function getSelector(type: FUType) {
   if (type == 'alu') return selectArithmeticFunctionUnitBlocks;
   if (type == 'fp') return selectFpFunctionUnitBlocks;
   if (type == 'branch') return selectBranchFunctionUnitBlocks;
+  if (type == 'memory') return selectMemoryAccessUnitBlocks;
   throw new Error(`Invalid type ${type}`);
 }
 
@@ -69,6 +71,7 @@ function getNameFromType(type: FUType) {
   if (type == 'alu') return 'ALU';
   if (type == 'fp') return 'FP';
   if (type == 'branch') return 'Branch';
+  if (type == 'memory') return 'Memory Access';
   throw new Error(`Invalid type ${type}`);
 }
 
@@ -76,6 +79,7 @@ function getGridClassName(type: FUType) {
   if (type == 'alu') return 'aluFu';
   if (type == 'fp') return 'fpFu';
   if (type == 'branch') return 'branchFu';
+  if (type == 'memory') return 'memoryFu';
   throw new Error(`Invalid type ${type}`);
 }
 

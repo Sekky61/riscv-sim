@@ -29,10 +29,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import type { ReactElement } from 'react';
+
 export type InstructionListDisplayProps<T> = {
   instructions: Array<T>;
   limit?: number;
-  instructionRenderer: (item?: T) => React.ReactNode;
+  instructionRenderer: (item?: T) => ReactElement<{ key: string }>;
   legend?: React.ReactNode;
   columns?: number;
 };

@@ -44,6 +44,7 @@ import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 
 import AnimatedButton from '@/components/AnimatedButton';
 import CanvasWindow from '@/components/CanvasWindow';
+import BranchBlock from '@/components/simulation/BranchBlock';
 import DecodeBlock from '@/components/simulation/DecodeBlock';
 import FetchBlock from '@/components/simulation/FetchBlock';
 import FunctionUnitGroup from '@/components/simulation/FunctionUnitGroup';
@@ -75,9 +76,6 @@ export default function HomePage() {
     setScale(scale - 0.2);
   };
 
-  const blockWidth = 184;
-  const spaceBetweenBlocks = 50;
-
   return (
     <>
       <CanvasWindow scale={scale}>
@@ -85,12 +83,13 @@ export default function HomePage() {
           <div className='col-grid'>
             <Program />
             <div className='flex flex-col gap-4'>
+              <BranchBlock />
               <FetchBlock />
               <DecodeBlock />
             </div>
             <ReorderBuffer />
           </div>
-          <div className='sim-grid'>
+          <div className='sim-grid justify-items-center'>
             <IssueWindow type='alu' />
             <FunctionUnitGroup type='alu' />
             <IssueWindow type='fp' />
@@ -101,6 +100,9 @@ export default function HomePage() {
           <div className='sim-grid'>
             <StoreBuffer />
             <LoadBuffer />
+          </div>
+          <div>
+            <FunctionUnitGroup type='memory' />
           </div>
         </div>
       </CanvasWindow>

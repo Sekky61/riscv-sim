@@ -411,7 +411,7 @@
 
   .global-grid {
     @apply grid justify-items-start items-start;
-    grid-template-columns: repeat(2, auto);
+    grid-template-columns: repeat(2, max-content);
   }
 
   .program {

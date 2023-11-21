@@ -392,6 +392,17 @@ export const selectDecode = (state: RootState) =>
 export const selectROB = (state: RootState) =>
   state.cpu.state?.reorderBufferBlock;
 
+// Branch prediction
+
+export const selectBranchTargetBuffer = (state: RootState) =>
+  state.cpu.state?.branchTargetBuffer;
+
+export const selectGlobalHistoryRegister = (state: RootState) =>
+  state.cpu.state?.globalHistoryRegister;
+
+export const selectPatternHistoryTable = (state: RootState) =>
+  state.cpu.state?.patternHistoryTable;
+
 // Issue window blocks
 
 export const selectAluIssueWindowBlock = (state: RootState) =>
@@ -416,6 +427,9 @@ export const selectFpFunctionUnitBlocks = (state: RootState) =>
 
 export const selectBranchFunctionUnitBlocks = (state: RootState) =>
   state.cpu.state?.branchFunctionUnitBlocks;
+
+export const selectMemoryAccessUnitBlocks = (state: RootState) =>
+  state.cpu.state?.memoryAccessUnits; // todo: inconsistent name
 
 // Load store
 
