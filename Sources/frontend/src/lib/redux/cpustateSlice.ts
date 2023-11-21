@@ -44,7 +44,14 @@ import { selectAsmCode } from '@/lib/redux/compilerSlice';
 import { selectActiveIsa } from '@/lib/redux/isaSlice';
 import type { RootState } from '@/lib/redux/store';
 import { callSimulationImpl } from '@/lib/serverCalls/callCompiler';
-import type { CpuState, Reference, RegisterModel } from '@/lib/types/cpuApi';
+import type {
+  CpuState,
+  InputCodeModel,
+  InstructionFunctionModel,
+  Reference,
+  RegisterModel,
+  SimCodeModel,
+} from '@/lib/types/cpuApi';
 import { isValidReference } from '@/lib/utils';
 
 /**
@@ -225,6 +232,8 @@ export const selectAllInputCodeModels = (state: RootState) =>
 export const selectInputCodeModelById = (state: RootState, id: Reference) =>
   state.cpu.state?.managerRegistry.inputCodeManager[id];
 
+export const selectAllSimCodeModels = (state: RootState) =>
+  state.cpu.state?.managerRegistry.simCodeManager;
 export const selectSimCodeModelById = (state: RootState, id: Reference) =>
   state.cpu.state?.managerRegistry.simCodeManager[id];
 
@@ -240,53 +249,18 @@ export type ParsedArgument = {
   arch: RegisterModel | null;
 };
 
-/**
- * Select simcodemodel, inputcodemodel and instructionfunctionmodel for a given simcode id.
- */
+type DetailedSimCodeModel = {
+  simCodeModel: SimCodeModel;
+  inputCodeModel: InputCodeModel;
+  functionModel: InstructionFunctionModel;
+  args: Array<ParsedArgument>;
+};
+
 export const selectSimCodeModel = (state: RootState, id?: Reference) => {
   if (!isValidReference(id)) {
     return null;
   }
-  const simCodeModel = selectSimCodeModelById(state, id);
-  if (!simCodeModel) {
-    return null;
-  }
-
-  const inputCodeModel = selectInputCodeModelById(
-    state,
-    simCodeModel.inputCodeModel,
-  );
-  if (!inputCodeModel) {
-    return null;
-  }
-
-  const instructionFunctionModel = selectInstructionFunctionModelById(
-    state,
-    inputCodeModel.instructionFunctionModel,
-  );
-  if (!instructionFunctionModel) {
-    return null;
-  }
-
-  // Get arguments and their arch names
-  const args = [];
-  for (const renamedArg of simCodeModel.renamedArguments) {
-    const arg: ParsedArgument = { arch: null, ...renamedArg };
-    const isSpeculative = arg.value.startsWith('tg');
-    if (isSpeculative) {
-      arg.arch = selectArchRegisterBySpeculative(state, arg.value);
-    } else {
-      arg.arch = selectRegisterById(state, arg.value);
-    }
-    args.push(arg);
-  }
-
-  return {
-    simCodeModel,
-    inputCodeModel,
-    functionModel: instructionFunctionModel,
-    args,
-  };
+  return selectDetailedSimCodeModels(state)?.[id];
 };
 
 /**
@@ -351,6 +325,68 @@ export const selectRegisterMap = createSelector(
     });
 
     return registerMap;
+  },
+);
+
+/**
+ * Select simcodemodel, inputcodemodel and instructionfunctionmodel for a given simcode id.
+ */
+const selectDetailedSimCodeModels = createSelector(
+  [
+    selectAllInputCodeModels,
+    selectAllInstructionFunctionModels,
+    selectAllSimCodeModels,
+    selectRegisterMap,
+  ],
+  (
+    inputCodeModels,
+    instructionFunctionModels,
+    simCodeModels,
+    registers,
+  ): Record<Reference, DetailedSimCodeModel> | null => {
+    if (
+      !inputCodeModels ||
+      !instructionFunctionModels ||
+      !simCodeModels ||
+      !registers
+    ) {
+      return null;
+    }
+
+    // Create a lookup table with entry for each simcode
+    const lookup: Record<Reference, DetailedSimCodeModel> = {};
+    Object.entries(simCodeModels).forEach(([id, simCodeModel]) => {
+      const reference = parseInt(id, 10);
+      if (isNaN(reference)) {
+        throw new Error(`Invalid simcode id: ${id}`);
+      }
+      const inputCodeModel = inputCodeModels[simCodeModel.inputCodeModel];
+      if (!inputCodeModel) {
+        throw new Error(`Invalid simcode id: ${id}`);
+      }
+      const functionModel =
+        instructionFunctionModels[inputCodeModel.instructionFunctionModel];
+      if (!functionModel || !inputCodeModel || !simCodeModel) {
+        throw new Error(`Invalid simcode id: ${id}`);
+      }
+      const detail: DetailedSimCodeModel = {
+        simCodeModel,
+        inputCodeModel,
+        functionModel,
+        args: [],
+      };
+      for (const renamedArg of simCodeModel.renamedArguments) {
+        const arg: ParsedArgument = { arch: null, ...renamedArg };
+        const registerExpected = renamedArg.name.startsWith('r');
+        const a = registers[arg.value];
+        if (a === undefined && registerExpected) {
+          throw new Error(`Register ${arg.value} not found`);
+        }
+        detail.args.push(arg);
+      }
+      lookup[reference] = detail;
+    });
+    return lookup;
   },
 );
 
