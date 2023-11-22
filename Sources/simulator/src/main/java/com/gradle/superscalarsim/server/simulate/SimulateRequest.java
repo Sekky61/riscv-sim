@@ -27,6 +27,7 @@
 
 package com.gradle.superscalarsim.server.simulate;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gradle.superscalarsim.cpu.CpuConfiguration;
 
 /**
@@ -42,5 +43,6 @@ public class SimulateRequest
    * The configuration to use for the simulation
    * Used for getting the initial state in case of a backwards simulation
    */
+  @JsonProperty(required = true)
   CpuConfiguration config;
 }

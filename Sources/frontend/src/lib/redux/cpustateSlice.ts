@@ -39,6 +39,7 @@ import {
   PayloadAction,
   ThunkAction,
 } from '@reduxjs/toolkit';
+import { notify } from 'reapop';
 
 import { selectAsmCode } from '@/lib/redux/compilerSlice';
 import { selectActiveIsa } from '@/lib/redux/isaSlice';
@@ -171,14 +172,30 @@ export const simStepBackward = (): ThunkAction<
  */
 export const callSimulation = createAsyncThunk<SimulationParsedResult, number>(
   'cpu/callSimulation',
-  async (arg, { getState }) => {
+  async (arg, { getState, dispatch }) => {
     // @ts-ignore
     const state: RootState = getState();
     const config = selectActiveIsa(state);
     const code = state.cpu.code;
     const tick = arg;
-    const response = await callSimulationImpl(tick, { ...config, code });
-    return { state: response.state };
+    try {
+      const response = await callSimulationImpl(tick, { ...config, code });
+      return { state: response.state };
+    } catch (err) {
+      // Log error and show simple error message to the user
+      console.error(err);
+      console.warn(
+        `Try clearing the local storage (application tab) and reloading the page`,
+      );
+      dispatch(
+        notify({
+          title: `API call failed`,
+          message: `See the console for more details`,
+          status: 'error',
+        }),
+      );
+      throw err;
+    }
   },
 );
 

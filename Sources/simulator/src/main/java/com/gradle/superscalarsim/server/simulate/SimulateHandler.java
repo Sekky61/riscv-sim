@@ -53,7 +53,8 @@ public class SimulateHandler implements IRequestResolver<SimulateRequest, Simula
     if (request == null || request.config == null || request.tick < 0)
     {
       // Send error
-      response = new SimulateResponse(null, 0);
+      // TODO: Add proper error handling
+      throw new IllegalArgumentException("Invalid request");
     }
     else
     {
@@ -66,7 +67,8 @@ public class SimulateHandler implements IRequestResolver<SimulateRequest, Simula
       }
       else
       {
-        response = new SimulateResponse(null, 0);
+        // TODO: Add proper error handling
+        throw new IllegalArgumentException("Invalid request");
       }
     }
     return response;
