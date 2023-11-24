@@ -39,13 +39,18 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * Memory representation: continuous array of bytes
+ * TODO Custom serialization is used to avoid transmitting the whole memory
+ *
  * @class SimulatedMemory
  * @brief Class simulating memory with read/write capabilities
  */
 @JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
 public class SimulatedMemory
 {
-  /// Hash map with stored values, serves as memory
+  /**
+   * Hash map with stored values, serves as memory
+   */
   private final Map<Long, Byte> memoryMap;
   
   /**
@@ -58,8 +63,8 @@ public class SimulatedMemory
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @param [in] address - Hashmap key, pointing into specific place in memory
-   * @param [in] value - Value to be saved into memory (hashmap)
+   * @param address Hashmap key, pointing into specific place in memory
+   * @param value   Value to be saved into memory (hashmap)
    *
    * @brief Insert byte value into memory
    */
@@ -70,7 +75,7 @@ public class SimulatedMemory
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @param [in] address - Hashmap key, pointing into specific place in memory
+   * @param address Hashmap key, pointing into specific place in memory
    *
    * @return Value from hashmap pointed by key
    * @brief Get value from memory
@@ -89,9 +94,9 @@ public class SimulatedMemory
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @param [in] address - Hashmap key, pointing into specific place in memory
+   * @param address Hashmap key, pointing into specific place in memory
    *
-   * @return True if key has been set in past, false otherwise
+   * @return True if key has been set in the past, false otherwise
    * @brief Check if some memory space is filled with data
    */
   public boolean isInMemory(Long address)
@@ -110,7 +115,7 @@ public class SimulatedMemory
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @return Map<Long, Byte> - Hasmap holding memory data
+   * @return Map<Long, Byte> - Hashmap holding memory data
    * @brief Gets memory content
    */
   public Map<Long, Byte> getMemoryMap()

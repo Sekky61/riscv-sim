@@ -26,57 +26,97 @@
  */
 package com.gradle.superscalarsim.models.cache;
 
-import java.util.Stack;
-
 /**
  * @class CacheLineModel
  * @brief Container class for cache line
  */
 public class CacheLineModel
 {
-  /// If this line contains valid data
+  /**
+   * True if this line contains valid data
+   */
   boolean valid;
-  ///If this line holds modified data
-  boolean dirty;
-  ///Top of the address to correctly and uniquely identify line
-  long tag;
-  ///Held data
-  int[] line;
-  ///Size of the line in bytes
-  int lineSize;
-  ///Index of the index line inside cache (multiple lines can have same index)
-  int index;
-  /// baseAddress of this line (Address of first byte)
-  long baseAddress;
-  
-  Stack<CacheLineModel> lineHistory;
-  Stack<Integer> lineIdHistory;
   
   /**
-   * @param lineSize - size of the line in bytes - must be multiple of 4
+   * True if this line holds modified data
+   */
+  boolean dirty;
+  
+  /**
+   * Top bits of the address to identify the line
+   */
+  long tag;
+  
+  /**
+   * Data stored in the line
+   */
+  byte[] line;
+  
+  /**
+   * Size of the line in bytes
+   */
+  int lineSize;
+  
+  /**
+   * Index of the index line inside cache.
+   * Multiple lines can have same index.
+   */
+  int index;
+  
+  /**
+   * Address of the first byte
+   */
+  long baseAddress;
+  
+  /**
+   * @param lineSize size of the line in bytes - must be multiple of 4
+   * @param index    index of the memory line
    *
    * @brief Constructor
    */
   public CacheLineModel(int lineSize, int index)
   {
-    this.valid         = false;
-    this.dirty         = false;
-    this.tag           = 0;
-    this.line          = new int[lineSize / 4];
-    this.lineSize      = lineSize;
-    this.lineIdHistory = new Stack<>();
-    this.lineHistory   = new Stack<>();
-    this.index         = index;
-    this.baseAddress   = 0;
+    assert lineSize % 4 == 0;
+    
+    this.valid       = false;
+    this.dirty       = false;
+    this.tag         = 0;
+    this.line        = new byte[lineSize];
+    this.lineSize    = lineSize;
+    this.index       = index;
+    this.baseAddress = 0;
   }
   
   /**
-   * @return boolean - dirty
-   * @brief get if the line is dirty
+   * @param index Index inside the line
+   * @param size  Size of requested data - 1,2,4
+   * @param data  Data to be stored
+   *
+   * @brief Sets data on the index
    */
-  public boolean isDirty()
+  public void setData(int index, int size, int data)
   {
-    return dirty;
+    for (int i = 0; i < size; i++)
+    {
+      line[index + i] = (byte) ((data >>> (i * 8)) & 0xFF);
+    }
+  }
+  
+  /**
+   * @param index Index inside the line
+   * @param size  Size of requested data - 1,2,4
+   *
+   * @return int - data
+   * @brief Get data on the index
+   */
+  public int getData(int index, int size)
+  {
+    int data = 0;
+    for (int i = 0; i < size; i++)
+    {
+      data = data | ((line[index + i] & 0xFF) << (i * 8));
+    }
+    return data;
   }
   
   /**
@@ -89,109 +129,21 @@ public class CacheLineModel
   }
   
   /**
+   * @return boolean - dirty
+   * @brief get if the line is dirty
+   */
+  public boolean isDirty()
+  {
+    return dirty;
+  }
+  
+  /**
    * @return long - tag
    * @brief get the tag of the line
    */
   public long getTag()
   {
     return tag;
-  }
-  
-  /**
-   * @param index Index inside the line
-   * @param size  Size of requested data - 1,2,4
-   *
-   * @return int - data
-   * @brief Get data on the index
-   */
-  public int getData(int index, int size)
-  {
-    int targetIndex = index / 4;
-    int indexOffset = index % 4;
-    int mask;
-    if (size == 4)
-    {
-      mask = -1;
-    }
-    else if (size == 2)
-    {
-      mask = (1 << 16) - 1;
-    }
-    else if (size == 1)
-    {
-      mask = (1 << 8) - 1;
-    }
-    else
-    {
-      throw new RuntimeException("Misaligned load in cache line is not supported");
-    }
-    if ((size == 4 && indexOffset != 0) || (size == 2 && indexOffset % 2 != 0))
-    {
-      throw new RuntimeException("Misaligned load in cache line is not supported");
-    }
-    
-    return (line[targetIndex] >>> (indexOffset * 8)) & mask;
-  }
-  
-  /**
-   * @param index Index inside the line
-   * @param size  Size of requested data - 1,2,4
-   * @param data  Data to be stored
-   *
-   * @brief Sets data on the index
-   */
-  public void setData(int index, int size, int data)
-  {
-    int targetIndex = index / 4;
-    int indexOffset = index % 4;
-    int mask;
-    //The value is aligned to the start of the block
-    if (size == 4)
-    {
-      mask = ~(-1);
-    }
-    else if (size == 2)
-    {
-      mask = ~((-(1 << 16)) >>> ((4 - size - indexOffset) * 8));
-    }
-    else if (size == 1)
-    {
-      mask = ~((-(1 << 24)) >>> ((4 - size - indexOffset) * 8));
-    }
-    else
-    {
-      throw new RuntimeException("Misaligned store in cache line is not supported");
-    }
-    if ((size == 4 && indexOffset != 0) || (size == 2 && indexOffset % 2 != 0))
-    {
-      throw new RuntimeException("Misaligned store in cache line is not supported");
-    }
-    
-    //OriginalData with place for new data zeroed out
-    int originalData = line[targetIndex] & mask;
-    //New data in place of zeroed out original ORED with the original ones
-    line[targetIndex] = originalData | ((data << indexOffset * 8) & ~mask);
-  }
-  
-  
-  /**
-   * @param valid - if line is valid
-   *
-   * @brief Sets if this line contains valid data
-   */
-  public void setValid(boolean valid)
-  {
-    this.valid = valid;
-  }
-  
-  /**
-   * @param dirty - if line is dirty
-   *
-   * @brief Sets if this line contains dirty data
-   */
-  public void setDirty(boolean dirty)
-  {
-    this.dirty = dirty;
   }
   
   /**
@@ -205,55 +157,23 @@ public class CacheLineModel
   }
   
   /**
-   * @param id - Current clock cycle
+   * @param dirty - if line is dirty
    *
-   * @brief Saves current line to history
+   * @brief Sets if this line contains dirty data
    */
-  public void saveToHistory(int id)
+  public void setDirty(boolean dirty)
   {
-    CacheLineModel backupLine = new CacheLineModel(lineSize, index);
-    for (int i = 0; i < lineSize; i += 4)
-    {
-      backupLine.setData(i, 4, getData(i, 4));
-    }
-    backupLine.setValid(isValid());
-    backupLine.setDirty(isDirty());
-    backupLine.setTag(getTag());
-    
-    lineHistory.add(backupLine);
-    lineIdHistory.add(id);
+    this.dirty = dirty;
   }
   
   /**
-   * @param id - Current clock cycle
+   * @param valid - if line is valid
    *
-   * @brief Restores current line from history
+   * @brief Sets if this line contains valid data
    */
-  public void revertHistory(int id)
+  public void setValid(boolean valid)
   {
-    while (!lineIdHistory.isEmpty() && (lineIdHistory.peek() == id))
-    {
-      CacheLineModel backupLine = lineHistory.peek();
-      
-      setValid(backupLine.isValid());
-      setDirty(backupLine.isDirty());
-      setTag(backupLine.getTag());
-      for (int i = 0; i < lineSize; i += 4)
-      {
-        setData(i, 4, backupLine.getData(i, 4));
-      }
-      lineIdHistory.pop();
-      lineHistory.pop();
-    }
-  }
-  
-  /**
-   * @return int[] - array of words in cache line
-   * @brief Gets the whole line with stored data
-   */
-  public int[] getLine()
-  {
-    return line;
+    this.valid = valid;
   }
   
   public int getIndex()
@@ -261,13 +181,13 @@ public class CacheLineModel
     return index;
   }
   
-  public void setBaseAddress(long baseAddress)
-  {
-    this.baseAddress = baseAddress;
-  }
-  
   public long getBaseAddress()
   {
     return baseAddress;
+  }
+  
+  public void setBaseAddress(long baseAddress)
+  {
+    this.baseAddress = baseAddress;
   }
 }

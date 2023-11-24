@@ -40,7 +40,8 @@ import com.gradle.superscalarsim.enums.DataTypeEnum;
 public class RegisterDataContainer
 {
   /**
-   * A bit representation of the register value
+   * A bit representation of the register value.
+   * Did not use java.nio.ByteBuffer because there is a problem with serialization.
    */
   private long bits;
   

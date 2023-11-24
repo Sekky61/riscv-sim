@@ -58,37 +58,78 @@ public class Cache
   @JsonIdentityReference(alwaysAsId = true)
   private CacheStatisticsCounter cacheStatisticsCounter;
   
-  ///Number of cache lines
+  /**
+   * Number of cache lines
+   */
   private int numberOfLines;
-  ///Number of lines per index
+  
+  /**
+   * Number of lines per index
+   */
   private int associativity;
-  ///Size of line in bytes in multiple of 4
+  
+  /**
+   * Size of line in bytes. Must be a multiple of 4
+   */
   private int lineSize;
-  ///Cache implementation 1st direction is index, second are specific lines depending on associativity
+  
+  /**
+   * Cache storage.
+   * First direction is index.
+   * Second is specific lines depending on associativity
+   */
   private CacheLineModel[][] cache;
-  ///Replacement policy implementation
+  
+  /**
+   * Replacement policy implementation
+   */
   private ReplacementPolicyModel replacementPolicy;
-  ///Is the cache write back or write through?
+  
+  /**
+   * True if the cache write back, false if write through
+   */
   private boolean writeBack;
+  
   /**
    * Stack of last accesses in the cache - used in printing the memory
    * TODO: Maybe move this to statistics?
    */
   private Stack<CacheAccess> lastAccess;
-  /// Delay of store access
+  
+  /**
+   * Delay of store access
+   */
   private int storeDelay;
-  /// Delay of load access
+  
+  /**
+   * Delay of load access
+   */
   private int loadDelay;
-  /// How long does it take to replace a line
+  
+  /**
+   * How long does it take to replace a line
+   */
   private int lineReplacementDelay;
-  /// Should the line replacement delay be added to store?
+  
+  /**
+   * True if the line replacement delay should be added to store
+   */
   private boolean addRemainingDelayToStore;
-  /// Type of replacement policy used in the cache
+  
+  /**
+   * The replacement policy used in the cache
+   */
   private ReplacementPoliciesEnum replacementPolicyType;
-  ///Handler to memory
+  
+  /**
+   * Reference to memory
+   */
   @JsonIdentityReference(alwaysAsId = true)
   private SimulatedMemory memory;
-  /// Cycle in which the last line will stop replacing
+  
+  /**
+   * Cycle in which the last line will stop replacing
+   */
   private int cycleEndOfReplacement;
   
   /**
@@ -99,16 +140,16 @@ public class Cache
   }
   
   /**
-   * @param memory                   - Simulated memory
-   * @param numberOfLines            - Number of cache lines
-   * @param associativity            - Number of lines per index
-   * @param lineSize                 - Size of line in bytes in multiple of 4
-   * @param replacementPolicy        - replacement policy used in the cache
-   * @param writeBack                - Is the cache write back or write through?
-   * @param addRemainingDelayToStore - Should the store's delay include line replacement
-   * @param storeDelay               - Delay of the store operation
-   * @param loadDelay                - Delay of the load operation
-   * @param lineReplacementDelay     - How long does it take to replace line
+   * @param memory                   Simulated memory
+   * @param numberOfLines            Number of cache lines
+   * @param associativity            Number of lines per index
+   * @param lineSize                 Size of line in bytes in multiple of 4
+   * @param replacementPolicy        replacement policy used in the cache
+   * @param writeBack                Is the cache write back or write through?
+   * @param addRemainingDelayToStore Should the store's delay include line replacement
+   * @param storeDelay               Delay of the store operation
+   * @param loadDelay                Delay of the load operation
+   * @param lineReplacementDelay     How long does it take to replace line
    *
    * @brief Constructor
    */
@@ -124,15 +165,28 @@ public class Cache
                int lineReplacementDelay,
                CacheStatisticsCounter cacheStatisticsCounter)
   {
-    if (!checkCorrectSettings(numberOfLines, associativity, lineSize))
+    if (!areSettingsCorrect(numberOfLines, associativity, lineSize))
     {
-      throw new IllegalArgumentException();
+      throw new IllegalArgumentException("Invalid cache settings");
     }
-    this.numberOfLines = numberOfLines;
-    this.associativity = associativity;
-    this.lineSize      = lineSize;
-    cache              = new CacheLineModel[numberOfLines / associativity][associativity];
+    
+    this.numberOfLines            = numberOfLines;
+    this.associativity            = associativity;
+    this.lineSize                 = lineSize;
+    this.replacementPolicyType    = replacementPolicy;
+    this.memory                   = memory;
+    this.writeBack                = writeBack;
+    this.storeDelay               = storeDelay;
+    this.loadDelay                = loadDelay;
+    this.lineReplacementDelay     = lineReplacementDelay;
+    this.addRemainingDelayToStore = addRemainingDelayToStore;
+    this.cycleEndOfReplacement    = 0;
+    this.cacheStatisticsCounter   = cacheStatisticsCounter;
+    this.replacementPolicy        = ReplacementPolicyModel.getReplacementPolicyModel(replacementPolicy, numberOfLines,
+                                                                                     associativity);
+    
     //Initialize cache - everything is invalid and clean with value zero for data and tag
+    this.cache = new CacheLineModel[numberOfLines / associativity][associativity];
     for (int i = 0; i < numberOfLines / associativity; i++)
     {
       for (int j = 0; j < associativity; j++)
@@ -140,45 +194,27 @@ public class Cache
         cache[i][j] = new CacheLineModel(lineSize, i * associativity + j);
       }
     }
-    this.replacementPolicyType = replacementPolicy;
-    this.replacementPolicy     = ReplacementPolicyModel.getReplacementPolicyModel(replacementPolicy, numberOfLines,
-                                                                                  associativity);
-    this.memory                = memory;
-    this.writeBack             = writeBack;
-    this.lastAccess            = new Stack<>();
+    this.lastAccess = new Stack<>();
     this.lastAccess.add(new CacheAccess(0, 0, 0, new Boolean[0], false, 0, 0, 0, 0, new Integer[0], new Integer[0]));
-    
-    this.storeDelay               = storeDelay;
-    this.loadDelay                = loadDelay;
-    this.lineReplacementDelay     = lineReplacementDelay;
-    this.addRemainingDelayToStore = addRemainingDelayToStore;
-    this.cycleEndOfReplacement    = 0;
-    
-    this.cacheStatisticsCounter = cacheStatisticsCounter;
   }
   
   /**
-   * @param numberOfLines - Number of cache lines
-   * @param associativity - Number of lines per index
-   * @param lineSize      - Size of line in bytes, must be multiple of 4
+   * @param numberOfLines Number of cache lines
+   * @param associativity Number of lines per index
+   * @param lineSize      Size of line in bytes
    *
-   * @return boolean - Are these settings valid?
-   * @brief Checks if the values of the cache are set valid
+   * @return boolean - True if the values are valid, false otherwise
+   * @brief Checks if the cache parameters are valid
    */
-  public boolean checkCorrectSettings(int numberOfLines, int associativity, int lineSize)
+  public boolean areSettingsCorrect(int numberOfLines, int associativity, int lineSize)
   {
     return numberOfLines % associativity == 0 && lineSize % 4 == 0 && numberOfLines % 2 == 0;
   }
   
-  public void setMemory(SimulatedMemory memory)
-  {
-    this.memory = memory;
-  }
-  
   /**
-   * @param isHit         - Was this access cache hit or cache miss
-   * @param matchedAccess - Access which matched this one (dummy one in case the access didn't match anything)
-   * @param currentCycle  - Current cycle of execution
+   * @param isHit         True if this access was a hit, false (miss) otherwise
+   * @param matchedAccess Access which matched this one (dummy one in case the access didn't match anything)
+   * @param currentCycle  Current cycle of execution
    *
    * @return delay of this access coming from line replacement
    * @brief Computes the remaining delay with info from last access to the same line
@@ -186,7 +222,8 @@ public class Cache
   private int remainingDelay(boolean isHit, CacheAccess matchedAccess, int currentCycle)
   {
     if (isHit)
-    {//Add remaining delay of the previous access if this was a hit
+    {
+      //Add remaining delay of the previous access if this was a hit
       return Math.max(0, matchedAccess.getClockCycle() + matchedAccess.getDelay() - currentCycle);
     }
     else
@@ -198,11 +235,11 @@ public class Cache
   }
   
   /**
-   * @param isHit        - Was this access cache hit or cache miss
-   * @param isStore      - Store or Load
-   * @param currentCycle - Current cycle of execution
-   * @param tag          - Tag of the access - to uniquely identify line
-   * @param index        - index to uniquely identify line
+   * @param isHit        Was this access cache hit or cache miss
+   * @param isStore      Store or Load
+   * @param currentCycle Current cycle of execution
+   * @param tag          Tag of the access - to uniquely identify line
+   * @param index        index to uniquely identify line
    *
    * @return delay of this access coming from line replacement
    * @brief Computes the remaining delay of line replacement influencing this access
@@ -260,9 +297,10 @@ public class Cache
   
   
   /**
-   * @param address - Size of line in bytes, must be multiple of 4
+   * @param address Size of line in bytes, must be multiple of 4
    *
    * @return Triplet of tag, index, offset
+   * @details Highest bits are tag, then index, then offset
    * @brief Splits address of cache access to tag, index, offset
    */
   public Triplet<Long, Integer, Integer> splitAddress(long address)
@@ -274,9 +312,9 @@ public class Cache
   }
   
   /**
-   * @param line   - get data from selected line
-   * @param offset - starting byte of the access (can be misaligned)
-   * @param size   - Size of the access in bytes (1-8)
+   * @param line   get data from selected line
+   * @param offset starting byte of the access (can be misaligned)
+   * @param size   Size of the access in bytes (1-8)
    *
    * @return Data
    * @brief Gets data from specific line
@@ -303,11 +341,11 @@ public class Cache
   }
   
   /**
-   * @param line         - get data from selected line
-   * @param address      - starting byte of the access (can be misaligned)
-   * @param size         - Size of the access in bytes (1-8)
-   * @param id           - Id of accessing instruction
-   * @param currentCycle - Cycle in which the access happened
+   * @param line         get data from selected line
+   * @param address      starting byte of the access (can be misaligned)
+   * @param size         Size of the access in bytes (1-8)
+   * @param id           ID of accessing instruction
+   * @param currentCycle Cycle in which the access happened
    *
    * @return Pair of delay of this access and data
    * @brief Gets data from multiple lines (minimum one)
@@ -333,10 +371,10 @@ public class Cache
   }
   
   /**
-   * @param address      - starting byte of the access (can be misaligned)
-   * @param size         - Size of the access in bytes (1-8)
-   * @param id           - Id of accessing instruction
-   * @param currentCycle - Cycle in which the access happened
+   * @param address      starting byte of the access (can be misaligned)
+   * @param size         Size of the access in bytes (1-8)
+   * @param id           ID of accessing instruction
+   * @param currentCycle Cycle in which the access happened
    *
    * @return Pair of delay of this access and data
    * @brief Gets data from cache
@@ -397,9 +435,6 @@ public class Cache
     }
     cacheStatisticsCounter.incrementMisses(currentCycle);
     
-    //Store current cache line in history for backward simulation
-    cache[splittedAddress.getSecond()][selectedLine].saveToHistory(id);
-    
     long baseMemoryAddress = address & -(1L << getLog(lineSize, 2));
     //Load new line from memory
     for (int i = 0; i < lineSize; i++)
@@ -423,17 +458,17 @@ public class Cache
   }
   
   /**
-   * @param line    - set data to this line
-   * @param address - starting byte of the access (can be misaligned)
-   * @param size    - Size of the access in bytes (1-8)
-   * @param offset  - starting byte of the access inside the line
-   * @param id      - Id of accessing instruction
+   * @param line    set data to this line
+   * @param address starting byte of the access (can be misaligned)
+   * @param size    Size of the access in bytes (1-8)
+   * @param offset  starting byte of the access inside the line
+   * @param id      ID of accessing instruction
    *
    * @brief Sets data to selected line
    */
   private void setDataToLine(CacheLineModel line, long address, final int offset, long data, final int size, int id)
   {
-    //If the cache is write through also store data to memory
+    // If the cache is write-through also store data to memory
     if (!writeBack)
     {
       long memoryData = data;
@@ -444,14 +479,14 @@ public class Cache
       }
     }
     
-    //Is address aligned?
+    // Is address aligned?
     if (offset % size == 0 && Set.of(1, 2, 4).contains(size))
     {
       line.setData(offset, size, (int) data);
     }
-    //Address is misaligned or bigger than int
     else
     {
+      // Address is misaligned or bigger than int
       long mask = 255L;
       for (int j = 0; j < size; j++)
       {
@@ -463,128 +498,128 @@ public class Cache
   
   
   /**
-   * @param line         - set data to this line
-   * @param address      - starting byte of the access (can be misaligned)
-   * @param size         - Size of the access in bytes (1-8)
-   * @param id           - Id of accessing instruction
-   * @param currentCycle - Cycle in which this access is happening
+   * @param line         set data to this line
+   * @param address      starting byte of the access (can be misaligned)
+   * @param size         Size of the access in bytes (1-8)
+   * @param id           ID of accessing instruction
+   * @param currentCycle Cycle in which this access is happening
    *
    * @return delay caused by this access
    * @brief Sets data to selected line (accesses another line in case the access spans two lines)
    */
   private int setDataToLines(CacheLineModel line, long address, long data, int size, int id, int currentCycle)
   {
-    Triplet<Long, Integer, Integer> splittedAddress = splitAddress(address);
+    Triplet<Long, Integer, Integer> splitAddress = splitAddress(address);
+    
+    int offset = splitAddress.getThird();
     
     if (writeBack)
     {
       line.setDirty(true);
     }
     
-    //Access is inside a single cache line
     if ((address % lineSize) + size <= lineSize)
     {
-      setDataToLine(line, address, splittedAddress.getThird(), data, size, id);
+      // Access is inside a single cache line
+      setDataToLine(line, address, offset, data, size, id);
       return 0;
     }
-    //Access spans two cache lines
     else
     {
+      // Access spans two cache lines
       long sizeInsideCurrentLine = (lineSize - (address % lineSize));
-      setDataToLine(line, address, splittedAddress.getThird(), data, (int) sizeInsideCurrentLine, id);
+      setDataToLine(line, address, offset, data, (int) sizeInsideCurrentLine, id);
       return storeData(address + sizeInsideCurrentLine, data >> sizeInsideCurrentLine * 8,
                        size - (int) sizeInsideCurrentLine, id, currentCycle);
     }
   }
   
   /**
-   * @param address      - starting byte of the access (can be misaligned)
-   * @param data         - data to be stored
-   * @param size         - Size of the access in bytes (1-8)
-   * @param id           - Id of accessing instruction
-   * @param currentCycle - Cycle in which this access is happening
+   * @param address      starting byte of the access (can be misaligned)
+   * @param data         data to be stored
+   * @param size         Size of the access in bytes (1-8)
+   * @param id           ID of accessing instruction
+   * @param currentCycle Cycle in which this access is happening
    *
    * @return delay caused by this access
    * @brief Sets data to cache
    */
   public int storeData(long address, long data, int size, int id, int currentCycle)
   {
-    Triplet<Long, Integer, Integer> splittedAddress = splitAddress(address);
+    Triplet<Long, Integer, Integer> splitAddress = splitAddress(address);
     
-    //Save last access for visualization
+    long tag    = splitAddress.getFirst();
+    int  index  = splitAddress.getSecond();
+    int  offset = splitAddress.getThird();
+    
+    // Save last access for visualization
     if (lastAccess.peek().getId() != id)
     {
       cacheStatisticsCounter.incrementAccesses();
-      lastAccess.add(new CacheAccess(currentCycle, cycleEndOfReplacement, id, new Boolean[0], true, splittedAddress, 0,
+      lastAccess.add(new CacheAccess(currentCycle, cycleEndOfReplacement, id, new Boolean[0], true, splitAddress, 0,
                                      new Integer[0], new Integer[0]));
     }
     
-    //Go through all lines - compare if tag matches
+    // Go through all lines in the index - compare if tag matches
     int emptyLine = -1;
     for (int i = 0; i < associativity; i++)
     {
-      CacheLineModel line = cache[splittedAddress.getSecond()][i];
-      if (line.getTag() == splittedAddress.getFirst() && line.isValid())
+      CacheLineModel line = cache[index][i];
+      if (line.getTag() == tag && line.isValid())
       {
+        // Found the line
         cacheStatisticsCounter.incrementHits(currentCycle);
         
-        //Store current cache line in history for backward simulation
-        line.saveToHistory(id);
-        
-        replacementPolicy.updatePolicy(id, splittedAddress.getSecond(), i);
-        lastAccess.peek()
-                .addLineAccess(true, splittedAddress.getSecond() * associativity + i, splittedAddress.getThird());
+        replacementPolicy.updatePolicy(id, index, i);
+        lastAccess.peek().addLineAccess(true, index * associativity + i, offset);
         int tmpReturn = setDataToLines(line, address, data, size, id, currentCycle);
-        return storeDelay + tmpReturn + computeRemainingDelay(true, true, currentCycle, splittedAddress.getFirst(),
-                                                              splittedAddress.getSecond());
+        return storeDelay + tmpReturn + computeRemainingDelay(true, true, currentCycle, tag, index);
       }
       if (emptyLine == -1 && !line.isValid())
       {
         emptyLine = i;
       }
     }
+    
+    // Line not found - miss
     int selectedLine;
-    if (emptyLine == -1)
+    if (emptyLine != -1)
     {
-      selectedLine = replacementPolicy.getLineToReplace(id, splittedAddress.getSecond());
-      if (cache[splittedAddress.getSecond()][selectedLine].isDirty())
+      // Empty line - use it
+      selectedLine = emptyLine;
+    }
+    else
+    {
+      // No empty line - replace one according to replacement policy
+      selectedLine = replacementPolicy.getLineToReplace(id, index);
+      if (cache[index][selectedLine].isDirty())
       {
         //Store victim line into memory
         for (int i = 0; i < lineSize; i++)
         {
-          memory.insertIntoMemory(cache[splittedAddress.getSecond()][selectedLine].getBaseAddress() + i,
-                                  (byte) cache[splittedAddress.getSecond()][selectedLine].getData(i, 1), id);
+          memory.insertIntoMemory(cache[index][selectedLine].getBaseAddress() + i,
+                                  (byte) cache[index][selectedLine].getData(i, 1), id);
         }
       }
     }
-    else
-    {
-      selectedLine = emptyLine;
-    }
     cacheStatisticsCounter.incrementMisses(currentCycle);
     
-    //Store current cache line in history for backward simulation
-    cache[splittedAddress.getSecond()][selectedLine].saveToHistory(id);
-    
     long baseMemoryAddress = address & -(1L << getLog(lineSize, 2));
-    //Load new line from memory
+    // Load new line from memory
     for (int i = 0; i < lineSize; i++)
     {
-      cache[splittedAddress.getSecond()][selectedLine].setData(i, 1, memory.getFromMemory(baseMemoryAddress + i));
+      cache[index][selectedLine].setData(i, 1, memory.getFromMemory(baseMemoryAddress + i));
     }
-    cache[splittedAddress.getSecond()][selectedLine].setValid(true);
-    cache[splittedAddress.getSecond()][selectedLine].setDirty(false);
-    cache[splittedAddress.getSecond()][selectedLine].setTag(splittedAddress.getFirst());
-    cache[splittedAddress.getSecond()][selectedLine].setBaseAddress(baseMemoryAddress);
+    cache[index][selectedLine].setValid(true);
+    cache[index][selectedLine].setDirty(false);
+    cache[index][selectedLine].setTag(tag);
+    cache[index][selectedLine].setBaseAddress(baseMemoryAddress);
     
-    replacementPolicy.updatePolicy(id, splittedAddress.getSecond(), selectedLine);
-    lastAccess.peek().addLineAccess(false, splittedAddress.getSecond() * associativity + selectedLine,
-                                    splittedAddress.getThird());
+    replacementPolicy.updatePolicy(id, index, selectedLine);
+    lastAccess.peek().addLineAccess(false, index * associativity + selectedLine, offset);
     
-    int tmpReturn = setDataToLines(cache[splittedAddress.getSecond()][selectedLine], address, data, size, id,
-                                   currentCycle);
-    return storeDelay + tmpReturn + computeRemainingDelay(false, true, currentCycle, splittedAddress.getFirst(),
-                                                          splittedAddress.getSecond());
+    int tmpReturn = setDataToLines(cache[index][selectedLine], address, data, size, id, currentCycle);
+    return storeDelay + tmpReturn + computeRemainingDelay(false, true, currentCycle, tag, index);
   }
   
   /**
