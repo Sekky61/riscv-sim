@@ -35,9 +35,6 @@ package com.gradle.superscalarsim.code;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * Memory representation: continuous array of bytes
  * TODO Custom serialization is used to avoid transmitting the whole memory
@@ -51,14 +48,14 @@ public class SimulatedMemory
   /**
    * Hash map with stored values, serves as memory
    */
-  private final Map<Long, Byte> memoryMap;
+  private byte[] memory;
   
   /**
    * @brief Constructor
    */
   public SimulatedMemory()
   {
-    this.memoryMap = new HashMap<>();
+    this.memory = new byte[0];
   }// end of Constructor
   //-------------------------------------------------------------------------------------------
   
@@ -70,7 +67,13 @@ public class SimulatedMemory
    */
   public void insertIntoMemory(Long address, byte value, int id)
   {
-    this.memoryMap.put(address, value);
+    if (this.memory.length < address + 1)
+    {
+      byte[] newMemory = new byte[(int) (address + 1)];
+      System.arraycopy(this.memory, 0, newMemory, 0, this.memory.length);
+      this.memory = newMemory;
+    }
+    this.memory[address.intValue()] = value;
   }// end of insertIntoMemory
   //-------------------------------------------------------------------------------------------
   
@@ -84,7 +87,7 @@ public class SimulatedMemory
   {
     if (this.isInMemory(address))
     {
-      return this.memoryMap.get(address);
+      return this.memory[address.intValue()];
     }
     else
     {
@@ -101,7 +104,7 @@ public class SimulatedMemory
    */
   public boolean isInMemory(Long address)
   {
-    return this.memoryMap.containsKey(address);
+    return address < this.memory.length;
   }// end of isInMemory
   //-------------------------------------------------------------------------------------------
   
@@ -110,17 +113,7 @@ public class SimulatedMemory
    */
   public void reset()
   {
-    this.memoryMap.clear();
+    this.memory = new byte[0];
   }// end of reset
-  //-------------------------------------------------------------------------------------------
-  
-  /**
-   * @return Map<Long, Byte> - Hashmap holding memory data
-   * @brief Gets memory content
-   */
-  public Map<Long, Byte> getMemoryMap()
-  {
-    return memoryMap;
-  }// end of deleteFromMemory
   //-------------------------------------------------------------------------------------------
 }

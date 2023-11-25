@@ -37,11 +37,9 @@ import com.gradle.superscalarsim.blocks.CacheStatisticsCounter;
 import com.gradle.superscalarsim.blocks.loadstore.Cache;
 import com.gradle.superscalarsim.models.MemoryAccess;
 import com.gradle.superscalarsim.models.Pair;
-import com.gradle.superscalarsim.models.cache.CacheLineModel;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.Map;
 
 /**
  * @class MemoryModel
@@ -163,29 +161,6 @@ public class MemoryModel
     }
   }
   
-  /**
-   * @brief Gets data stored in memory
-   */
-  public Map<Long, Byte> getMemoryMap()
-  {
-    if (memory != null)
-    {
-      return memory.getMemoryMap();
-    }
-    else
-    {
-      return cache.getMemoryMap();
-    }
-  }
-  
-  /**
-   * @brief Gets data stored in cache
-   */
-  public CacheLineModel[][] getCacheContent()
-  {
-    return cache.getCacheContent();
-  }
-  
   public Cache getCache()
   {
     return cache;
@@ -194,10 +169,5 @@ public class MemoryModel
   public void setCache(Cache cache)
   {
     this.cache = cache;
-  }
-  
-  public MemoryAccess getLastAccess()
-  {
-    return lastAccess;
   }
 }

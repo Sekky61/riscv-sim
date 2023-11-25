@@ -43,7 +43,6 @@ import com.gradle.superscalarsim.models.cache.CacheAccess;
 import com.gradle.superscalarsim.models.cache.CacheLineModel;
 import com.gradle.superscalarsim.models.cache.ReplacementPolicyModel;
 
-import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
@@ -639,92 +638,5 @@ public class Cache
     cycleEndOfReplacement = 0;
     lastAccess.clear();
     this.lastAccess.add(new CacheAccess(0, 0, 0, new Boolean[0], false, 0, 0, 0, 0, new Integer[0], new Integer[0]));
-  }
-  
-  /**
-   * @brief Gets full cache data
-   */
-  public CacheLineModel[][] getCacheContent()
-  {
-    return cache;
-  }
-  
-  /**
-   * @brief Gets full memory
-   */
-  public Map<Long, Byte> getMemoryMap()
-  {
-    return memory.getMemoryMap();
-  }
-  
-  public int getNumberOfLines()
-  {
-    return numberOfLines;
-  }
-  
-  public int getAssociativity()
-  {
-    return associativity;
-  }
-  
-  public CacheAccess getLastAccess()
-  {
-    return lastAccess.peek();
-  }
-  
-  /**
-   * @brief Gets size of the lines in bytes (magnitude of 4)
-   */
-  public int getLineSize()
-  {
-    return lineSize;
-  }
-  
-  /**
-   * @brief Gets setup delay of store access
-   */
-  public int getStoreDelay()
-  {
-    return storeDelay;
-  }
-  
-  /**
-   * @brief Gets setup delay of load access
-   */
-  public int getLoadDelay()
-  {
-    return loadDelay;
-  }
-  
-  /**
-   * @brief Gets how long does it take to replace a line
-   */
-  public int getLineReplacementDelay()
-  {
-    return lineReplacementDelay;
-  }
-  
-  /**
-   * @brief Gets if line replacement delay should be added to store
-   */
-  public boolean getAddRemainingDelayToStore()
-  {
-    return addRemainingDelayToStore;
-  }
-  
-  /**
-   * @brief Gets current replacement policy
-   */
-  public ReplacementPoliciesEnum getReplacementPolicyType()
-  {
-    return replacementPolicyType;
-  }
-  
-  /**
-   * @brief Is store behaviour set to write-back or write-through?
-   */
-  public boolean isWriteBack()
-  {
-    return writeBack;
   }
 }
