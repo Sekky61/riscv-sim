@@ -402,16 +402,34 @@ public class ReorderBufferBlock implements AbstractBlock
   
   /**
    * Stalls decode block if there is no room for new instructions.
+   * It takes until it can't take anymore.
    *
    * @brief Takes decoded instructions from decoder and orders them
    */
   private void pullNewDecodedInstructions()
   {
     int pulledCount = 0;
+    int loadCount   = 0;
+    int storeCount  = 0;
     for (SimCodeModel codeModel : this.decodeAndDispatchBlock.getAfterRenameCodeList())
     {
-      if (!instructionHasRoom(codeModel))
+      if (codeModel.isLoad())
       {
+        loadCount++;
+      }
+      else if (codeModel.isStore())
+      {
+        storeCount++;
+      }
+      
+      boolean robFull   = this.bufferSize < (this.reorderQueue.size() + 1);
+      boolean loadFull  = this.loadBufferBlock.isBufferFull(loadCount);
+      boolean storeFull = this.storeBufferBlock.isBufferFull(storeCount);
+      
+      boolean instructionHasRoom = !robFull && !loadFull && !storeFull;
+      if (!instructionHasRoom)
+      {
+        // No more space, stop
         this.decodeAndDispatchBlock.setStallFlag(true);
         this.decodeAndDispatchBlock.setStalledPullCount(pulledCount);
         return;
@@ -420,6 +438,11 @@ public class ReorderBufferBlock implements AbstractBlock
       ReorderBufferItem reorderBufferItem = new ReorderBufferItem(codeModel, new ReorderFlags(this.speculativePulls));
       this.reorderQueue.add(reorderBufferItem);
       this.speculativePulls = this.speculativePulls || codeModel.getInstructionTypeEnum() == InstructionTypeEnum.kJumpbranch;
+      if (codeModel.isLoad())
+      {
+        this.loadBufferBlock.addLoadToBuffer(codeModel);
+      }
+      // TODO: What about stores?
       pulledCount++;
     }
   }// end of pullNewDecodedInstructions
@@ -492,31 +515,6 @@ public class ReorderBufferBlock implements AbstractBlock
     boolean lastKeptSpeculative = keptAnyInstruction && this.reorderQueue.getLast().reorderFlags.isSpeculative();
     this.speculativePulls = keptAnyInstruction && lastKeptSpeculative;
   }// end of invalidateInstructions
-  //----------------------------------------------------------------------
-  
-  /**
-   * @param codeModel Code model to be added into the buffers
-   *
-   * @return True if there is a space, false if one of the buffers does not have room
-   * @brief Verifies if Reorder/Load/Store buffers have space for newly decoded instructions
-   */
-  private boolean instructionHasRoom(SimCodeModel codeModel)
-  {
-    if (loadBufferBlock.isInstructionLoad(codeModel))
-    {
-      this.loadBufferBlock.incrementPossibleNewEntries();
-    }
-    else if (storeBufferBlock.isInstructionStore(codeModel))
-    {
-      this.storeBufferBlock.incrementPossibleNewEntries();
-    }
-    
-    boolean robFull   = this.bufferSize < (this.reorderQueue.size() + 1);
-    boolean loadFull  = this.loadBufferBlock.isBufferFull(0);
-    boolean storeFull = this.storeBufferBlock.isBufferFull(0);
-    
-    return !robFull && !loadFull && !storeFull;
-  }// end of checkIfInstructionsHaveRoom
   //----------------------------------------------------------------------
   
   public ReorderBufferItem getRobItem(int simCodeId)

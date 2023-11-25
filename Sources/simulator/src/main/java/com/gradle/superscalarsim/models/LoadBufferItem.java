@@ -33,29 +33,56 @@ package com.gradle.superscalarsim.models;
  */
 public class LoadBufferItem
 {
-  /// Name of the destination register (result)
+  /**
+   * Name of the destination register (result)
+   */
   private final String destinationRegister;
-  /// Is the register ready for load instruction
+  
+  /**
+   * The instruction itself
+   */
+  private SimCodeModel simCodeModel;
+  
+  /**
+   * Is the register ready for load instruction
+   */
   private boolean destinationReady;
-  /// Calculated load address
+  
+  /**
+   * Calculated load address
+   */
   private long address;
-  /// Is instruction accessing memory
+  
+  /**
+   * Is instruction accessing memory
+   */
   private boolean isAccessingMemory;
+  
   private int accessingMemoryId;
-  /// Id of the MA block in which was memory access done
+  
+  /**
+   * ID of the MA block in which was memory access done
+   */
   private int memoryAccessId;
-  /// Has instruction bypassed MA?
+  
+  /**
+   * Has instruction bypassed MA?
+   */
   private boolean hasBypassed;
-  /// Id when the instruction failed
+  
+  /**
+   * ID when the instruction failed
+   */
   private int memoryFailedId;
   
   /**
-   * @param [in] destinationRegister - Register name where the result will be stored
+   * @param destinationRegister Register name where the result will be stored
    *
    * @brief Constructor
    */
-  public LoadBufferItem(String destinationRegister)
+  public LoadBufferItem(SimCodeModel simCodeModel, String destinationRegister)
   {
+    this.simCodeModel        = simCodeModel;
     this.destinationRegister = destinationRegister;
     this.destinationReady    = false;
     this.address             = -1;
@@ -88,7 +115,7 @@ public class LoadBufferItem
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @param [in] destinationReady - boolean value marking readiness of that register
+   * @param destinationReady boolean value marking readiness of that register
    *
    * @brief Set if destination register is ready
    */
@@ -109,7 +136,7 @@ public class LoadBufferItem
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @param [in] address - Address from where load data
+   * @param address Address from where load data
    *
    * @brief Set load address
    */
@@ -117,17 +144,6 @@ public class LoadBufferItem
   {
     this.address = address;
   }// end of setAddress
-  //-------------------------------------------------------------------------------------------
-  
-  /**
-   * @param [in] isAccessingMemory - Flag marking memory access
-   *
-   * @brief Set flag if instruction is accessing memory (MA block)
-   */
-  public void setAccessingMemory(boolean isAccessingMemory)
-  {
-    this.isAccessingMemory = isAccessingMemory;
-  }// end of setAccessingMemory
   //-------------------------------------------------------------------------------------------
   
   /**
@@ -141,6 +157,17 @@ public class LoadBufferItem
   //-------------------------------------------------------------------------------------------
   
   /**
+   * @param isAccessingMemory Flag marking memory access
+   *
+   * @brief Set flag if instruction is accessing memory (MA block)
+   */
+  public void setAccessingMemory(boolean isAccessingMemory)
+  {
+    this.isAccessingMemory = isAccessingMemory;
+  }// end of setAccessingMemory
+  //-------------------------------------------------------------------------------------------
+  
+  /**
    * @return MA release id
    * @brief Get MA id when was instruction released
    */
@@ -151,7 +178,7 @@ public class LoadBufferItem
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @param [in] memoryAccessId - MA id when was instruction released
+   * @param memoryAccessId MA id when was instruction released
    *
    * @brief Set MA id when was instruction released
    */
@@ -172,7 +199,7 @@ public class LoadBufferItem
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @param [in] hasBypassed - flag if instruction bypassed MA
+   * @param hasBypassed flag if instruction bypassed MA
    *
    * @brief Set flag if instruction bypassed MA
    */
@@ -183,7 +210,7 @@ public class LoadBufferItem
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @return Id when instruction has failed
+   * @return ID when instruction has failed
    * @brief Get id when instruction has failed
    */
   public int getMemoryFailedId()
@@ -193,7 +220,7 @@ public class LoadBufferItem
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @param [in] memoryFailedId - Id when instruction has failed
+   * @param memoryFailedId ID when instruction has failed
    *
    * @brief Set id when instruction has failed
    */
@@ -204,7 +231,7 @@ public class LoadBufferItem
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @return Id of the time, when instruction got into MA
+   * @return ID of the time, when instruction got into MA
    * @brief Get id when the load instruction got into MA from load buffer
    */
   public int getAccessingMemoryId()
@@ -214,7 +241,7 @@ public class LoadBufferItem
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @param [in] accessingMemoryId - New id when the load instruction got into MA from load buffer
+   * @param accessingMemoryId New id when the load instruction got into MA from load buffer
    *
    * @brief Set id when the load instruction got into MA from load buffer
    */
@@ -222,5 +249,14 @@ public class LoadBufferItem
   {
     this.accessingMemoryId = accessingMemoryId;
   }// end of setAccessingMemoryId
+  
+  /**
+   * @return Instruction itself
+   * @brief Get instruction itself
+   */
+  public SimCodeModel getSimCodeModel()
+  {
+    return simCodeModel;
+  }
   //-------------------------------------------------------------------------------------------
 }

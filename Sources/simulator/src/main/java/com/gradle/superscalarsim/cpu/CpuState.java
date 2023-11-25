@@ -410,7 +410,7 @@ public class CpuState implements Serializable
     branchFunctionUnitBlocks.forEach(BranchFunctionUnitBlock::simulate);
     // Check which buffer contains older instruction at the top
     // Null check first, if any is empty, the order does not matter
-    if (loadBufferBlock.getLoadQueueFirst() == null || storeBufferBlock.getStoreQueueFirst() == null || loadBufferBlock.getLoadQueueFirst()
+    if (loadBufferBlock.getQueueSize() == 0 || storeBufferBlock.getStoreQueueFirst() == null || loadBufferBlock.getLoadQueueFirst()
             .getIntegerId() < storeBufferBlock.getStoreQueueFirst().getIntegerId())
     {
       loadBufferBlock.simulate();

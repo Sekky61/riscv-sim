@@ -45,24 +45,47 @@ import com.gradle.superscalarsim.models.SimCodeModel;
 @JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
 public abstract class AbstractFunctionUnitBlock implements AbstractBlock
 {
-  /// Class containing simulated Reorder Buffer
+  /**
+   * Class containing simulated Reorder Buffer
+   */
   @JsonIdentityReference(alwaysAsId = true)
   protected ReorderBufferBlock reorderBufferBlock;
-  /// Class containing logic of Instruction decode stage
+  
+  /**
+   * Class containing logic of Instruction decode stage
+   */
   @JsonIdentityReference(alwaysAsId = true)
   protected SimCodeModel simCodeModel;
-  /// ID specifying when instruction passed specified FU
+  
+  /**
+   * ID specifying when instruction passed specified FU
+   */
   protected int functionUnitId;
-  /// Overall count of FUs in assigned issue window
+  
+  /**
+   * Overall count of FUs in assigned issue window
+   */
   protected int functionUnitCount;
-  /// Issue window block for comparing instruction and data types
+  
+  /**
+   * Issue window block for comparing instruction and data types
+   */
   @JsonIdentityReference(alwaysAsId = true)
   protected AbstractIssueWindowBlock issueWindowBlock;
-  /// Delay for function unit, representing how many ticks does it take to generate result
+  
+  /**
+   * Delay for function unit, representing how many ticks does it take to generate result
+   */
   private int delay;
-  /// Counter variable
+  
+  /**
+   * Counter variable
+   */
   private int counter;
-  /// Name of the function unit
+  
+  /**
+   * Name of the function unit
+   */
   private String name;
   
   public AbstractFunctionUnitBlock()
@@ -113,7 +136,7 @@ public abstract class AbstractFunctionUnitBlock implements AbstractBlock
   //----------------------------------------------------------------------
   
   /**
-   * @param [in] name - New name for the function unit
+   * @param name New name for the function unit
    *
    * @brief Sets the name of the function unit
    */
@@ -134,9 +157,9 @@ public abstract class AbstractFunctionUnitBlock implements AbstractBlock
   //----------------------------------------------------------------------
   
   /**
-   * @param [in] delay - Integer, representing how many ticks does it take to generate result
+   * @param delay Integer, representing how many ticks does it take to generate result
    *
-   * @brief Sets delay of an function unit
+   * @brief Sets delay of the function unit
    */
   public void setDelay(int delay)
   {
@@ -200,7 +223,7 @@ public abstract class AbstractFunctionUnitBlock implements AbstractBlock
   //----------------------------------------------------------------------
   
   /**
-   * @param [in] decodeCodeModel - Instruction to be executed
+   * @param decodeCodeModel Instruction to be executed
    *
    * @brief Sets instruction to be executed
    */
@@ -221,7 +244,7 @@ public abstract class AbstractFunctionUnitBlock implements AbstractBlock
   //----------------------------------------------------------------------
   
   /**
-   * @param [in] functionUnitId - Id for this function unit
+   * @param functionUnitId ID for this function unit
    *
    * @brief Sets id for this function unit
    */
@@ -232,7 +255,7 @@ public abstract class AbstractFunctionUnitBlock implements AbstractBlock
   //----------------------------------------------------------------------
   
   /**
-   * @param [in] functionUnitCount - Number of function units in same issue window
+   * @param functionUnitCount Number of function units in same issue window
    *
    * @brief Sets number of function units, which share same issue window
    */

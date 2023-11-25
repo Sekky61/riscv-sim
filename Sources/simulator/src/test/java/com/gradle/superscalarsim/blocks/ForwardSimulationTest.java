@@ -1780,8 +1780,8 @@ public class ForwardSimulationTest
     Assert.assertEquals(1, this.loadBufferBlock.getQueueSize());
     Assert.assertEquals(0, this.storeBufferBlock.getQueueSize());
     Assert.assertEquals("lw tg0,0(x2)", this.loadBufferBlock.getLoadQueueFirst().getRenamedCodeLine());
-    Assert.assertEquals(-1, this.loadBufferBlock.getLoadMap().get(0).getAddress());
-    Assert.assertFalse(this.loadBufferBlock.getLoadMap().get(0).isDestinationReady());
+    Assert.assertEquals(-1, this.loadBufferBlock.getLoadBufferItem(0).getAddress());
+    Assert.assertFalse(this.loadBufferBlock.getLoadBufferItem(0).isDestinationReady());
     Assert.assertEquals("lw tg0,0(x2)",
                         this.loadStoreIssueWindowBlock.getIssuedInstructions().get(0).getRenamedCodeLine());
     
@@ -1789,24 +1789,24 @@ public class ForwardSimulationTest
     Assert.assertEquals(1, this.loadBufferBlock.getQueueSize());
     Assert.assertEquals(0, this.storeBufferBlock.getQueueSize());
     Assert.assertEquals("lw tg0,0(x2)", this.loadStoreFunctionUnit.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertEquals(-1, this.loadBufferBlock.getLoadMap().get(0).getAddress());
-    Assert.assertFalse(this.loadBufferBlock.getLoadMap().get(0).isDestinationReady());
+    Assert.assertEquals(-1, this.loadBufferBlock.getLoadBufferItem(0).getAddress());
+    Assert.assertFalse(this.loadBufferBlock.getLoadBufferItem(0).isDestinationReady());
     
     this.cpu.step();
     Assert.assertEquals(1, this.loadBufferBlock.getQueueSize());
     Assert.assertEquals(0, this.storeBufferBlock.getQueueSize());
     Assert.assertNull(this.loadStoreFunctionUnit.getSimCodeModel());
     Assert.assertEquals("lw tg0,0(x2)", this.memoryAccessUnit.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertEquals(25, this.loadBufferBlock.getLoadMap().get(0).getAddress());
-    Assert.assertFalse(this.loadBufferBlock.getLoadMap().get(0).isDestinationReady());
+    Assert.assertEquals(25, this.loadBufferBlock.getLoadBufferItem(0).getAddress());
+    Assert.assertFalse(this.loadBufferBlock.getLoadBufferItem(0).isDestinationReady());
     
     this.cpu.step();
     Assert.assertEquals(1, this.loadBufferBlock.getQueueSize());
     Assert.assertEquals(0, this.storeBufferBlock.getQueueSize());
     Assert.assertNull(this.loadStoreFunctionUnit.getSimCodeModel());
     Assert.assertNull(this.memoryAccessUnit.getSimCodeModel());
-    Assert.assertEquals(25, this.loadBufferBlock.getLoadMap().get(0).getAddress());
-    Assert.assertTrue(this.loadBufferBlock.getLoadMap().get(0).isDestinationReady());
+    Assert.assertEquals(25, this.loadBufferBlock.getLoadBufferItem(0).getAddress());
+    Assert.assertTrue(this.loadBufferBlock.getLoadBufferItem(0).isDestinationReady());
     Assert.assertTrue(this.reorderBufferBlock.getRobItem(0).reorderFlags.isReadyToBeCommitted());
     
     this.cpu.step();
@@ -1889,7 +1889,7 @@ public class ForwardSimulationTest
     Assert.assertEquals("sw x3,0(x2)", this.storeBufferBlock.getStoreQueueFirst().getRenamedCodeLine());
     Assert.assertEquals("lw tg1,0(x2)", this.loadBufferBlock.getLoadQueueFirst().getRenamedCodeLine());
     Assert.assertEquals("lw tg1,0(x2)", this.loadStoreFunctionUnit.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertFalse(this.loadBufferBlock.getLoadMap().get(2).isDestinationReady());
+    Assert.assertFalse(this.loadBufferBlock.getLoadBufferItem(2).isDestinationReady());
     Assert.assertFalse(this.reorderBufferBlock.getRobItem(2).reorderFlags.isReadyToBeCommitted());
     Assert.assertTrue(this.storeBufferBlock.getStoreMap().get(1).isSourceReady());
     Assert.assertEquals(25, this.storeBufferBlock.getStoreMap().get(1).getAddress());
@@ -1903,8 +1903,8 @@ public class ForwardSimulationTest
     Assert.assertNull(this.loadStoreFunctionUnit.getSimCodeModel());
     Assert.assertEquals("sw x3,0(x2)", this.storeBufferBlock.getStoreQueueFirst().getRenamedCodeLine());
     Assert.assertEquals("lw tg1,0(x2)", this.loadBufferBlock.getLoadQueueFirst().getRenamedCodeLine());
-    Assert.assertEquals(25, this.loadBufferBlock.getLoadMap().get(2).getAddress());
-    Assert.assertTrue(this.loadBufferBlock.getLoadMap().get(2).isDestinationReady());
+    Assert.assertEquals(25, this.loadBufferBlock.getLoadBufferItem(2).getAddress());
+    Assert.assertTrue(this.loadBufferBlock.getLoadBufferItem(2).isDestinationReady());
     Assert.assertTrue(this.reorderBufferBlock.getRobItem(2).reorderFlags.isReadyToBeCommitted());
     
     this.cpu.step();

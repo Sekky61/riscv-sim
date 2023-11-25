@@ -38,21 +38,35 @@ package com.gradle.superscalarsim.models;
  */
 public class StoreBufferItem
 {
-  /// Name of the source register from where store takes the result
+  /**
+   * Name of the source register from where store takes the result
+   */
   private final String sourceRegister;
-  /// Id used when getting correct store for bypassing
+  /**
+   * Id used when getting correct store for bypassing
+   */
   private final int sourceResultId;
-  /// Is the register ready for store instruction
+  /**
+   * Is the register ready for store instruction
+   */
   private boolean sourceReady;
-  /// Store result address
+  /**
+   * Store result address
+   */
   private long address;
   
-  /// Is instruction accessing memory
+  /**
+   * Is instruction accessing memory
+   */
   private boolean isAccessingMemory;
   private int accessingMemoryId;
-  /// Id of the MA block in which was memory access done
+  /**
+   * Id of the MA block in which was memory access done
+   */
   private int memoryAccessId;
-  /// Id when the instruction failed
+  /**
+   * Id when the instruction failed
+   */
   private int memoryFailedId;
   
   /**
@@ -76,6 +90,16 @@ public class StoreBufferItem
   //-------------------------------------------------------------------------------------------
   
   /**
+   * @return True if yes, false if no
+   * @brief Is instruction in the MA block
+   */
+  public boolean isAccessingMemory()
+  {
+    return isAccessingMemory;
+  }// end of isAccessingMemory
+  //-------------------------------------------------------------------------------------------
+  
+  /**
    * @param [in] isAccessingMemory - Flag marking memory access
    *
    * @brief Set flag if instruction is accessing memory (MA block)
@@ -84,16 +108,6 @@ public class StoreBufferItem
   {
     this.isAccessingMemory = isAccessingMemory;
   }// end of setAccessingMemory
-  //-------------------------------------------------------------------------------------------
-  
-  /**
-   * @return True if yes, false if no
-   * @brief Is instruction in the MA block
-   */
-  public boolean isAccessingMemory()
-  {
-    return isAccessingMemory;
-  }// end of isAccessingMemory
   //-------------------------------------------------------------------------------------------
   
   /**

@@ -520,9 +520,38 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
   {
     return savedPc;
   }
+  //-------------------------------------------------------------------------------------------
   
   public void setSavedPc(int savedPc)
   {
     this.savedPc = savedPc;
   }
+  
+  /**
+   * @return True if the model is load instruction, false otherwise
+   * @brief Checks if specified code model is load instruction
+   */
+  public boolean isLoad()
+  {
+    if (getInstructionTypeEnum() != InstructionTypeEnum.kLoadstore)
+    {
+      return false;
+    }
+    InstructionFunctionModel instruction = getInstructionFunctionModel();
+    return instruction != null && instruction.getInterpretableAs().startsWith("load");
+  }// end of isInstructionLoad
+  
+  /**
+   * @return True if the model is store instruction, false otherwise
+   * @brief Checks if specified code model is store instruction
+   */
+  public boolean isStore()
+  {
+    if (getInstructionTypeEnum() != InstructionTypeEnum.kLoadstore)
+    {
+      return false;
+    }
+    InstructionFunctionModel instruction = getInstructionFunctionModel();
+    return instruction != null && instruction.getInterpretableAs().startsWith("store");
+  }// end of isInstructionStore
 }

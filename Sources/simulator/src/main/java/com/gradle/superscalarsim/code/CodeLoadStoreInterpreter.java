@@ -93,7 +93,7 @@ public class CodeLoadStoreInterpreter
    * @param codeModel    code to be interpreted
    * @param currentCycle current cycle
    *
-   * @return Returns the bits to be assigned to register.
+   * @return Returns pair - delay of this access and data
    * @brief Interprets load/store instruction from codeModel, returns loaded/stored data.
    */
   public Pair<Integer, Long> interpretInstruction(final SimCodeModel codeModel, int currentCycle)
