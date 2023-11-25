@@ -115,7 +115,12 @@ public class AsmParser
     return new CompiledProgram(finalLines, cLines, asmToC);
   }
   
-  private static List<String> splitLines(String program)
+  /**
+   * Split the program into lines, remove comments, replace \t with spaces, trim
+   *
+   * @return List of lines
+   */
+  public static List<String> splitLines(String program)
   {
     List<String> lines = Arrays.asList(program.split("\n"));
     lines = new ArrayList<>(lines);

@@ -32,6 +32,7 @@ package com.gradle.superscalarsim.enums;
  */
 public enum DataTypeEnum
 {
+  kByte, kShort,
   /**
    * 32bit signed integer
    */
@@ -97,25 +98,16 @@ public enum DataTypeEnum
   
   public Class<?> getJavaClass()
   {
-    switch (this)
+    return switch (this)
     {
-      case kInt:
-        return Integer.class;
-      case kUInt:
-        return Integer.class;
-      case kLong:
-        return Long.class;
-      case kULong:
-        return Long.class;
-      case kFloat:
-        return Float.class;
-      case kDouble:
-        return Double.class;
-      case kBool:
-        return Boolean.class;
-      default:
-        return null;
-    }
+      case kByte -> Byte.class;
+      case kShort -> Short.class;
+      case kInt, kUInt -> Integer.class;
+      case kLong, kULong -> Long.class;
+      case kFloat -> Float.class;
+      case kDouble -> Double.class;
+      case kBool -> Boolean.class;
+    };
   }
   
   /**
@@ -126,5 +118,111 @@ public enum DataTypeEnum
   public boolean isSigned()
   {
     return this == kInt || this == kLong;
+  }
+  
+  /**
+   * @return The bytes of the data type in little endian from the string representation
+   */
+  public byte[] getBytes(String value)
+  {
+    int    radix    = 10;
+    String cutValue = value;
+    if (value.startsWith("0x"))
+    {
+      radix    = 16;
+      cutValue = value.substring(2);
+    }
+    else if (value.startsWith("0b"))
+    {
+      radix    = 2;
+      cutValue = value.substring(2);
+    }
+    else if (value.startsWith("0"))
+    {
+      radix    = 8;
+      cutValue = value.substring(1);
+    }
+    byte[] bytes = new byte[getSize()];
+    switch (this)
+    {
+      case kBool, kByte -> bytes[0] = Byte.parseByte(value);
+      case kShort ->
+      {
+        short shortValue = Short.decode(value);
+        bytes[0] = (byte) (shortValue & 0xFF);
+        bytes[1] = (byte) ((shortValue >> 8) & 0xFF);
+      }
+      case kInt, kUInt ->
+      {
+        int intValue = 0;
+        try
+        {
+          intValue = Integer.decode(value);
+        }
+        catch (NumberFormatException e)
+        {
+          intValue = Integer.parseUnsignedInt(cutValue, radix);
+        }
+        bytes[0] = (byte) (intValue & 0xFF);
+        bytes[1] = (byte) ((intValue >> 8) & 0xFF);
+        bytes[2] = (byte) ((intValue >> 16) & 0xFF);
+        bytes[3] = (byte) ((intValue >> 24) & 0xFF);
+      }
+      case kLong, kULong ->
+      {
+        long longValue = 0;
+        try
+        {
+          longValue = Long.decode(value);
+        }
+        catch (NumberFormatException e)
+        {
+          longValue = Long.parseUnsignedLong(cutValue, radix);
+        }
+        bytes[0] = (byte) (longValue & 0xFF);
+        bytes[1] = (byte) ((longValue >> 8) & 0xFF);
+        bytes[2] = (byte) ((longValue >> 16) & 0xFF);
+        bytes[3] = (byte) ((longValue >> 24) & 0xFF);
+        bytes[4] = (byte) ((longValue >> 32) & 0xFF);
+        bytes[5] = (byte) ((longValue >> 40) & 0xFF);
+        bytes[6] = (byte) ((longValue >> 48) & 0xFF);
+        bytes[7] = (byte) ((longValue >> 56) & 0xFF);
+      }
+      case kFloat ->
+      {
+        int intValue = Float.floatToIntBits(Float.parseFloat(value));
+        bytes[0] = (byte) (intValue & 0xFF);
+        bytes[1] = (byte) ((intValue >> 8) & 0xFF);
+        bytes[2] = (byte) ((intValue >> 16) & 0xFF);
+        bytes[3] = (byte) ((intValue >> 24) & 0xFF);
+      }
+      case kDouble ->
+      {
+        long longValue = Double.doubleToLongBits(Double.parseDouble(value));
+        bytes[0] = (byte) (longValue & 0xFF);
+        bytes[1] = (byte) ((longValue >> 8) & 0xFF);
+        bytes[2] = (byte) ((longValue >> 16) & 0xFF);
+        bytes[3] = (byte) ((longValue >> 24) & 0xFF);
+        bytes[4] = (byte) ((longValue >> 32) & 0xFF);
+        bytes[5] = (byte) ((longValue >> 40) & 0xFF);
+        bytes[6] = (byte) ((longValue >> 48) & 0xFF);
+        bytes[7] = (byte) ((longValue >> 56) & 0xFF);
+      }
+    }
+    return bytes;
+  }
+  
+  /**
+   * @return The size of the data type in bytes
+   */
+  public int getSize()
+  {
+    return switch (this)
+    {
+      case kBool, kByte -> 1;
+      case kShort -> 2;
+      case kInt, kUInt, kFloat -> 4;
+      case kLong, kULong, kDouble -> 8;
+    };
   }
 }

@@ -1,5 +1,7 @@
 package com.gradle.superscalarsim.code;
 
+import com.gradle.superscalarsim.cpu.MemoryLocation;
+import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.loader.InitLoader;
 import org.junit.Assert;
 import org.junit.Before;
@@ -397,5 +399,139 @@ public class CodeParserTest
     codeParser.parseCode(code);
     
     Assert.assertTrue(codeParser.success());
+  }
+  
+  @Test
+  public void parseCode_single_byte_parses()
+  {
+    String code = """
+            N:
+            .byte 25
+            """;
+    codeParser.parseCode(code);
+    
+    Assert.assertTrue(codeParser.success());
+    Assert.assertEquals(1, codeParser.getMemoryLocations().size());
+    MemoryLocation n = codeParser.getMemoryLocations().get(0);
+    Assert.assertEquals("N", n.name);
+    Assert.assertEquals(DataTypeEnum.kByte, n.dataType);
+    Assert.assertEquals(1, n.getSize());
+    Assert.assertEquals((byte) 25, (byte) n.value.get(0));
+  }
+  
+  @Test
+  public void parseCode_single_hword_parses()
+  {
+    String code = """
+            N:
+            .hword 0x1234
+            """;
+    codeParser.parseCode(code);
+    
+    Assert.assertTrue(codeParser.success());
+    Assert.assertEquals(1, codeParser.getMemoryLocations().size());
+    MemoryLocation n = codeParser.getMemoryLocations().get(0);
+    Assert.assertEquals("N", n.name);
+    Assert.assertEquals(DataTypeEnum.kShort, n.dataType);
+    Assert.assertEquals(2, n.getSize());
+    Assert.assertEquals((byte) 0x34, (byte) n.value.get(0));
+    Assert.assertEquals((byte) 0x12, (byte) n.value.get(1));
+  }
+  
+  @Test
+  public void parseCode_single_word_parses()
+  {
+    String code = """
+            N:
+            .word 0xaabbccdd
+            """;
+    codeParser.parseCode(code);
+    
+    Assert.assertTrue(codeParser.success());
+    Assert.assertEquals(1, codeParser.getMemoryLocations().size());
+    MemoryLocation n = codeParser.getMemoryLocations().get(0);
+    Assert.assertEquals("N", n.name);
+    Assert.assertEquals(DataTypeEnum.kInt, n.dataType);
+    
+    Assert.assertEquals(4, n.getSize());
+    Assert.assertEquals((byte) 0xdd, (byte) n.value.get(0));
+    Assert.assertEquals((byte) 0xcc, (byte) n.value.get(1));
+    Assert.assertEquals((byte) 0xbb, (byte) n.value.get(2));
+    Assert.assertEquals((byte) 0xaa, (byte) n.value.get(3));
+  }
+  
+  @Test
+  public void parseCode_single_negative_word_parses()
+  {
+    String code = """
+            N:
+            .word -1
+            """;
+    codeParser.parseCode(code);
+    
+    Assert.assertTrue(codeParser.success());
+    Assert.assertEquals(1, codeParser.getMemoryLocations().size());
+    MemoryLocation n = codeParser.getMemoryLocations().get(0);
+    Assert.assertEquals("N", n.name);
+    Assert.assertEquals(DataTypeEnum.kInt, n.dataType);
+    
+    Assert.assertEquals(4, n.getSize());
+    Assert.assertEquals((byte) 0xff, (byte) n.value.get(0));
+    Assert.assertEquals((byte) 0xff, (byte) n.value.get(1));
+    Assert.assertEquals((byte) 0xff, (byte) n.value.get(2));
+    Assert.assertEquals((byte) 0xff, (byte) n.value.get(3));
+  }
+  
+  @Test
+  public void parseCode_two_bytes_parses()
+  {
+    String code = """
+            N:
+            .byte 25,26
+            """;
+    codeParser.parseCode(code);
+    
+    Assert.assertTrue(codeParser.success());
+    Assert.assertEquals(1, codeParser.getMemoryLocations().size());
+    MemoryLocation n = codeParser.getMemoryLocations().get(0);
+    Assert.assertEquals("N", n.name);
+    Assert.assertEquals(DataTypeEnum.kByte, n.dataType);
+    Assert.assertEquals(2, n.getSize());
+    Assert.assertEquals((byte) 25, (byte) n.value.get(0));
+    Assert.assertEquals((byte) 26, (byte) n.value.get(1));
+  }
+  
+  @Test
+  public void parseCode_align()
+  {
+    String code = """
+            .align 3
+            N:
+            .byte 25,26
+            """;
+    codeParser.parseCode(code);
+    
+    Assert.assertTrue(codeParser.success());
+    Assert.assertEquals(1, codeParser.getMemoryLocations().size());
+    MemoryLocation n = codeParser.getMemoryLocations().get(0);
+    Assert.assertEquals(3, n.alignment);
+  }
+  
+  @Test
+  public void parseCode_alignReset()
+  {
+    String code = """
+            .align 3
+            N:
+            .byte 25,26
+            M:
+            .byte 32
+            """;
+    codeParser.parseCode(code);
+    
+    Assert.assertTrue(codeParser.success());
+    MemoryLocation m = codeParser.getMemoryLocations().get(1);
+    // Alignment should be reset after the label
+    Assert.assertEquals(1, m.alignment);
   }
 }

@@ -27,6 +27,7 @@
 
 package com.gradle.superscalarsim.code;
 
+import com.gradle.superscalarsim.cpu.MemoryLocation;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.enums.RegisterTypeEnum;
@@ -44,6 +45,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import static com.gradle.superscalarsim.compiler.AsmParser.splitLines;
+
 /**
  * @brief Transforms tokens from the lexer into instructions and labels
  * @details Class which provides parsing logic for code written in assembly. Code shall contain instructions loaded
@@ -56,59 +59,52 @@ public class CodeParser
    * Descriptions of all instructions
    */
   Map<String, InstructionFunctionModel> instructionModels;
-  
+  /**
+   * Descriptions of all memory locations defined in code
+   */
+  List<MemoryLocation> memoryLocations;
   /**
    * Descriptions of all register files
    */
   List<RegisterFileModel> registerFileModelList;
-  
   /**
    * Factory for creating instances of InputCodeModel
    */
   InputCodeModelFactory inputCodeModelFactory;
-  
   /**
    * Lexer for parsing the code
    */
   Lexer lexer;
-  
   /**
    * Current token
    */
   CodeToken currentToken;
-  
   /**
    * Peek token
    */
   CodeToken peekToken;
-  
   /**
    * Result of the parsing - list of instructions.
    */
   List<InputCodeModel> instructions;
-  
   /**
    * Result of the parsing - list of labels.
    */
   Map<String, Integer> labels;
-  
   /**
    * Unconfirmed labels
    */
   List<CodeToken> unconfirmedLabels;
-  
   /**
    * Error messages from parsing ASM code.
    *
    * @brief List of error messages
    */
   List<ParseError> errorMessages;
-  
   Pattern decimalPattern;
   Pattern hexadecimalPattern;
   Pattern registerPattern;
   Pattern immediatePattern;
-  
   /**
    * The aliases between registers.
    * The key is the architecture name (x0), the value is the alias (zero).
@@ -147,6 +143,8 @@ public class CodeParser
     this.errorMessages         = new ArrayList<>();
     this.unconfirmedLabels     = new ArrayList<>();
     
+    this.memoryLocations = new ArrayList<>();
+    
     this.decimalPattern     = Pattern.compile("-?\\d+(\\.\\d+)?");
     this.hexadecimalPattern = Pattern.compile("0x\\p{XDigit}+");
     this.registerPattern    = Pattern.compile("r[d,s]\\d*");
@@ -166,13 +164,26 @@ public class CodeParser
   }
   
   /**
+   * @return List of memory locations defined in the code
+   */
+  public List<MemoryLocation> getMemoryLocations()
+  {
+    return memoryLocations;
+  }
+  
+  /**
    * After calling this method, the results can be collected from the instance.
    *
    * @param code ASM Code to parse
    */
   public void parseCode(String code)
   {
-    this.lexer             = new Lexer(code);
+    // First, scan the code for directives like .asciiz, .word, etc. and note their locations and values
+    // Then filter them out so lexer only sees instructions and labels
+    collectMemoryLocations(code);
+    String filteredCode = filterDirectives(code);
+    
+    this.lexer             = new Lexer(filteredCode);
     this.currentToken      = this.lexer.nextToken();
     this.peekToken         = this.lexer.nextToken();
     this.errorMessages     = new ArrayList<>();
@@ -187,6 +198,100 @@ public class CodeParser
       this.instructions = new ArrayList<>();
       this.labels       = new HashMap<>();
     }
+  }
+  
+  /**
+   * Fills the memoryLocations list with memory locations defined in the code.
+   *
+   * @param code ASM code
+   */
+  private void collectMemoryLocations(String code)
+  {
+    List<String> lines          = splitLines(code);
+    int          alignmentState = 1;
+    
+    // Go through the program
+    // Take note of .byte, .hword, .word, .align, .ascii, .asciiz, .skip
+    for (int i = 0; i < lines.size(); i++)
+    {
+      String line = lines.get(i);
+      if (!isDirective(line))
+      {
+        continue;
+      }
+      String[] tokens = line.split("[\\s,]+");
+      if (tokens.length < 2)
+      {
+        continue;
+      }
+      
+      String directive    = tokens[0];
+      int    argCount     = tokens.length - 1;
+      String previousLine = i > 0 ? lines.get(i - 1) : "";
+      String name         = previousLine.split(":")[0];
+      MemoryLocation memoryLocation = switch (directive)
+      {
+        case ".byte", ".hword", ".word" ->
+        {
+          DataTypeEnum dataType = switch (directive)
+          {
+            case ".byte" -> DataTypeEnum.kByte;
+            case ".hword" -> DataTypeEnum.kShort;
+            case ".word" -> DataTypeEnum.kInt;
+            default -> null;
+          };
+          List<Byte> values = new ArrayList<>();
+          for (int j = 1; j < tokens.length; j++)
+          {
+            byte[] bytes = dataType.getBytes(tokens[j]);
+            for (byte b : bytes)
+            {
+              values.add(b);
+            }
+          }
+          int alignment = alignmentState;
+          alignmentState = 1;
+          yield new MemoryLocation(name, alignment, values, dataType);
+        }
+        case ".align" ->
+        {
+          if (argCount != 1)
+          {
+            addError(new CodeToken(0, 0, directive, CodeToken.Type.EOF), ".align expected 1 argument, got " + argCount);
+            yield null;
+          }
+          alignmentState = Integer.parseInt(tokens[1]);
+          yield null;
+        }
+        case ".ascii" ->
+        {
+          yield null;
+        }
+        default -> null;
+      };
+      
+      if (memoryLocation != null)
+      {
+        memoryLocations.add(memoryLocation);
+      }
+    }
+  }
+  
+  private String filterDirectives(String code)
+  {
+    List<String>  lines   = splitLines(code);
+    StringBuilder builder = new StringBuilder();
+    for (String line : lines)
+    {
+      // do not filter out labels
+      if (line.startsWith(".") && !line.endsWith(":"))
+      {
+        // Directive
+        continue;
+      }
+      builder.append(line).append("\n");
+    }
+    return builder.toString();
   }
   
   /**
@@ -239,6 +344,14 @@ public class CodeParser
     {
       addError(unconfirmedLabel, "Label '" + unconfirmedLabel.text() + "' is not defined");
     }
+  }
+  
+  /**
+   * @return True if the line is a directive, false otherwise
+   */
+  private boolean isDirective(String line)
+  {
+    return line.startsWith(".") && !line.endsWith(":");
   }
   
   /**
@@ -642,8 +755,9 @@ public class CodeParser
   {
     return switch (argumentDataType)
     {
-      case kInt, kUInt, kLong, kULong, kBool -> registerDataType == RegisterTypeEnum.kInt;
+      case kInt, kUInt, kLong, kULong, kBool, kByte, kShort -> registerDataType == RegisterTypeEnum.kInt;
       case kFloat, kDouble -> registerDataType == RegisterTypeEnum.kFloat;
+      
     };
   }// end of checkDatatype
   //-------------------------------------------------------------------------------------------

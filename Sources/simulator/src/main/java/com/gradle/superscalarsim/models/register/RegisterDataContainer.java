@@ -144,6 +144,8 @@ public class RegisterDataContainer
     }
     return switch (type)
     {
+      case kByte -> cls.cast((byte) bits);
+      case kShort -> cls.cast((short) bits);
       case kInt, kUInt -> cls.cast((int) bits);
       case kLong, kULong -> cls.cast(bits);
       case kFloat -> cls.cast(Float.intBitsToFloat((int) bits));
