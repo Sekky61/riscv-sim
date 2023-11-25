@@ -177,37 +177,27 @@ public abstract class AbstractFunctionUnitBlock implements AbstractBlock
   //----------------------------------------------------------------------
   
   /**
-   * @brief Sets the counter to the delay value decremented by one
-   */
-  public void resetReverseCounter()
-  {
-    this.counter = this.delay - 1;
-  }// end of resetReverseCounter
-  //----------------------------------------------------------------------
-  
-  /**
    * @return True if delay has passed, false otherwise
    * @brief Moves to counter up and checks if delay has passed
    */
   protected boolean hasDelayPassed()
   {
-    this.counter = Math.min(this.counter + 1, this.delay);
     return this.counter == this.delay;
   }// end of hasDelayPassed
   //----------------------------------------------------------------------
   
   /**
-   * @return True if counter is at 0, false otherwise
-   * @brief Moves the counter down and checks if counter reached 0
+   * @brief tick the counter one step
    */
-  public boolean hasReversedDelayPassed()
+  public void tickCounter()
   {
-    this.counter = Math.max(this.counter - 1, 0);
-    return this.counter == 0;
-  }// end of hasReversedDelayPassed
-  //----------------------------------------------------------------------
+    this.counter = Math.min(this.counter + 1, this.delay);
+  }// end of tickCounter
   
-  public boolean hasTimerStarted()
+  /**
+   * @return True if timer has started this cycle, false otherwise
+   */
+  public boolean hasTimerStartedThisTick()
   {
     return this.counter == 0;
   }

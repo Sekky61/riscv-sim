@@ -40,17 +40,26 @@ import com.gradle.superscalarsim.code.CodeLoadStoreInterpreter;
 
 /**
  * @class ArithmeticFunctionUnitBlock
- * @brief Specific function unit class for executing load/store instructions
+ * @brief Specific function unit class for executing load/store instructions (computing address)
  */
 public class LoadStoreFunctionUnit extends AbstractFunctionUnitBlock
 {
-  /// Load buffer with all load instruction entries
+  
+  /**
+   * Load buffer with all load instruction entries
+   */
   @JsonIdentityReference(alwaysAsId = true)
   private LoadBufferBlock loadBufferBlock;
-  /// Store buffer with all store instruction entries
+  
+  /**
+   * Store buffer with all store instruction entries
+   */
   @JsonIdentityReference(alwaysAsId = true)
   private StoreBufferBlock storeBufferBlock;
-  /// Interpreter for processing load store instructions
+  
+  /**
+   * Interpreter for processing load store instructions
+   */
   private CodeLoadStoreInterpreter loadStoreInterpreter;
   
   public LoadStoreFunctionUnit()
@@ -90,42 +99,55 @@ public class LoadStoreFunctionUnit extends AbstractFunctionUnitBlock
   @Override
   public void simulate()
   {
-    if (!isFunctionUnitEmpty() && this.simCodeModel.hasFailed())
+    if (!isFunctionUnitEmpty())
     {
-      hasDelayPassed();
-      this.simCodeModel.setFunctionUnitId(this.functionUnitId);
-      this.simCodeModel = null;
-      this.zeroTheCounter();
+      handleInstruction();
     }
-    
-    if (!isFunctionUnitEmpty() && hasTimerStarted())
-    {
-      this.simCodeModel.setFunctionUnitId(this.functionUnitId);
-    }
-    
-    if (!isFunctionUnitEmpty() && hasDelayPassed())
-    {
-      if (hasTimerStarted())
-      {
-        this.simCodeModel.setFunctionUnitId(this.functionUnitId);
-      }
-      long address = loadStoreInterpreter.interpretAddress(simCodeModel);
-      if (storeBufferBlock.getStoreBufferItem(simCodeModel.getIntegerId()) != null)
-      {
-        storeBufferBlock.setAddress(simCodeModel.getIntegerId(), address);
-      }
-      else
-      {
-        loadBufferBlock.setAddress(simCodeModel.getIntegerId(), address);
-      }
-      this.simCodeModel = null;
-    }
-    
     
     if (isFunctionUnitEmpty())
     {
       this.functionUnitId += this.functionUnitCount;
     }
   }// end of simulate
+  
+  /**
+   * Assumes there is an active instruction in the function unit.
+   *
+   * @brief Handles instruction in the function unit (Computes address).
+   */
+  private void handleInstruction()
+  {
+    if (this.simCodeModel.hasFailed())
+    {
+      this.simCodeModel.setFunctionUnitId(this.functionUnitId);
+      this.simCodeModel = null;
+      this.zeroTheCounter();
+      return;
+    }
+    
+    if (hasTimerStartedThisTick())
+    {
+      this.simCodeModel.setFunctionUnitId(this.functionUnitId);
+    }
+    
+    tickCounter();
+    if (!hasDelayPassed())
+    {
+      return;
+    }
+    
+    // Execute
+    long address = loadStoreInterpreter.interpretAddress(simCodeModel);
+    if (simCodeModel.isStore())
+    {
+      storeBufferBlock.setAddress(simCodeModel.getIntegerId(), address);
+    }
+    else
+    {
+      // A load
+      loadBufferBlock.setAddress(simCodeModel.getIntegerId(), address);
+    }
+    this.simCodeModel = null;
+  }
   //----------------------------------------------------------------------
 }

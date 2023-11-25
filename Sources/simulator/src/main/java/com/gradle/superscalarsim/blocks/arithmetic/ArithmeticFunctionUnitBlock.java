@@ -68,8 +68,9 @@ public class ArithmeticFunctionUnitBlock extends AbstractFunctionUnitBlock
   }
   
   /**
-   * @param name
+   * @param name               Name of the function unit
    * @param delay              Delay for function unit
+   * @param issueWindowBlock   Issue window block for comparing instruction and data types
    * @param allowedOperators   Array of all supported operators by this FU
    * @param reorderBufferBlock Class containing simulated Reorder Buffer
    *
@@ -87,7 +88,7 @@ public class ArithmeticFunctionUnitBlock extends AbstractFunctionUnitBlock
   //----------------------------------------------------------------------
   
   /**
-   * @param [in] arithmeticInterpreter - Arithmetic interpreter object
+   * @param arithmeticInterpreter Arithmetic interpreter object
    *
    * @brief Injects Arithmetic interpreter to the FU
    */
@@ -99,7 +100,7 @@ public class ArithmeticFunctionUnitBlock extends AbstractFunctionUnitBlock
   
   
   /**
-   * @param [in] registerFileBlock - UnifiedRegisterFileBlock object with all registers
+   * @param registerFileBlock UnifiedRegisterFileBlock object with all registers
    *
    * @brief Injects UnifiedRegisterFileBlock to the FU
    */
@@ -115,42 +116,55 @@ public class ArithmeticFunctionUnitBlock extends AbstractFunctionUnitBlock
   @Override
   public void simulate()
   {
-    if (!isFunctionUnitEmpty() && this.simCodeModel.hasFailed())
+    if (!isFunctionUnitEmpty())
     {
-      hasDelayPassed();
-      this.simCodeModel.setFunctionUnitId(this.functionUnitId);
-      this.simCodeModel = null;
-      this.zeroTheCounter();
-    }
-    if (!isFunctionUnitEmpty() && hasTimerStarted())
-    {
-      this.simCodeModel.setFunctionUnitId(this.functionUnitId);
+      handleInstruction();
     }
     
-    if (!isFunctionUnitEmpty() && hasDelayPassed())
-    {
-      // Write result to the destination register
-      if (hasTimerStarted())
-      {
-        this.simCodeModel.setFunctionUnitId(this.functionUnitId);
-      }
-      InputCodeArgument   destinationArgument = simCodeModel.getArgumentByName("rd");
-      Expression.Variable result              = arithmeticInterpreter.interpretInstruction(this.simCodeModel);
-      RegisterModel       reg                 = registerFileBlock.getRegister(destinationArgument.getValue());
-      // TODO redundant?
-      reg.setValueContainer(result.value);
-      reg.setReadiness(RegisterReadinessEnum.kExecuted);
-      
-      this.reorderBufferBlock.getRobItem(this.simCodeModel.getIntegerId()).reorderFlags.setBusy(false);
-      this.simCodeModel = null;
-    }
-    
-    
+    // The state may have changed during the handling of the instruction
     if (isFunctionUnitEmpty())
     {
       this.functionUnitId += this.functionUnitCount;
     }
   }// end of simulate
+  
+  /**
+   * Assumes that there is an instruction in the function unit
+   *
+   * @brief Handle the instruction inside FU
+   */
+  private void handleInstruction()
+  {
+    if (this.simCodeModel.hasFailed())
+    {
+      this.simCodeModel.setFunctionUnitId(this.functionUnitId);
+      this.simCodeModel = null;
+      this.zeroTheCounter();
+      return;
+    }
+    if (hasTimerStartedThisTick())
+    {
+      this.simCodeModel.setFunctionUnitId(this.functionUnitId);
+    }
+    
+    tickCounter();
+    if (!hasDelayPassed())
+    {
+      return;
+    }
+    
+    // Instruction computed
+    // Write result to the destination register
+    InputCodeArgument   destinationArgument = simCodeModel.getArgumentByName("rd");
+    Expression.Variable result              = arithmeticInterpreter.interpretInstruction(this.simCodeModel);
+    RegisterModel       reg                 = registerFileBlock.getRegister(destinationArgument.getValue());
+    // TODO redundant?
+    reg.setValueContainer(result.value);
+    reg.setReadiness(RegisterReadinessEnum.kExecuted);
+    
+    this.reorderBufferBlock.getRobItem(this.simCodeModel.getIntegerId()).reorderFlags.setBusy(false);
+    this.simCodeModel = null;
+  }
   //----------------------------------------------------------------------
   
   /**
