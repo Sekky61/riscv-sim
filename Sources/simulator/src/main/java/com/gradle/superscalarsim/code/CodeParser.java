@@ -180,13 +180,13 @@ public class CodeParser
   {
     // First, scan the code for directives like .asciiz, .word, etc. and note their locations and values
     // Then filter them out so lexer only sees instructions and labels
+    this.errorMessages = new ArrayList<>();
     collectMemoryLocations(code);
     String filteredCode = filterDirectives(code);
     
     this.lexer             = new Lexer(filteredCode);
     this.currentToken      = this.lexer.nextToken();
     this.peekToken         = this.lexer.nextToken();
-    this.errorMessages     = new ArrayList<>();
     this.instructions      = new ArrayList<>();
     this.labels            = new HashMap<>();
     this.unconfirmedLabels = new ArrayList<>();
@@ -220,10 +220,6 @@ public class CodeParser
         continue;
       }
       String[] tokens = line.split("[\\s,]+");
-      if (tokens.length < 2)
-      {
-        continue;
-      }
       
       String directive    = tokens[0];
       int    argCount     = tokens.length - 1;
@@ -233,6 +229,12 @@ public class CodeParser
       {
         case ".byte", ".hword", ".word" ->
         {
+          if (argCount == 0)
+          {
+            addError(new CodeToken(0, 0, directive, CodeToken.Type.EOF),
+                     directive + " expected at least 1 argument, got " + argCount);
+            yield null;
+          }
           DataTypeEnum dataType = switch (directive)
           {
             case ".byte" -> DataTypeEnum.kByte;
@@ -263,9 +265,59 @@ public class CodeParser
           alignmentState = Integer.parseInt(tokens[1]);
           yield null;
         }
-        case ".ascii" ->
+        case ".ascii", ".asciiz" ->
         {
-          yield null;
+          if (argCount == 0)
+          {
+            addError(new CodeToken(0, 0, directive, CodeToken.Type.EOF),
+                     ".ascii expected at least 1 argument, got " + argCount);
+            yield null;
+          }
+          
+          List<Byte> values = new ArrayList<>();
+          for (int j = 1; j < tokens.length; j++)
+          {
+            String token = tokens[j];
+            if (!token.startsWith("\"") || !token.endsWith("\""))
+            {
+              addError(new CodeToken(0, 0, token, CodeToken.Type.EOF), "Expected string literal, got " + token);
+              yield null;
+            }
+            token = token.substring(1, token.length() - 1);
+            for (char c : token.toCharArray())
+            {
+              values.add((byte) c);
+            }
+            if (directive.equals(".asciiz"))
+            {
+              values.add((byte) 0);
+            }
+          }
+          int alignment = alignmentState;
+          alignmentState = 1;
+          yield new MemoryLocation(name, alignment, values, DataTypeEnum.kByte);
+        }
+        case ".skip" ->
+        {
+          if (argCount != 1 && argCount != 2)
+          {
+            addError(new CodeToken(0, 0, directive, CodeToken.Type.EOF), ".skip expected 1 argument, got " + argCount);
+            yield null;
+          }
+          int  size = Integer.parseInt(tokens[1]);
+          byte fill = 0;
+          if (argCount == 2)
+          {
+            fill = Byte.decode(tokens[2]);
+          }
+          int alignment = alignmentState;
+          alignmentState = 1;
+          ArrayList<Byte> values = new ArrayList<>();
+          for (int j = 0; j < size; j++)
+          {
+            values.add(fill);
+          }
+          yield new MemoryLocation(name, alignment, values, DataTypeEnum.kByte);
         }
         default -> null;
       };

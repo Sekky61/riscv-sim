@@ -461,6 +461,121 @@ public class CodeParserTest
   }
   
   @Test
+  public void parseCode_single_ascii()
+  {
+    String code = """
+            hello:
+            .ascii "abc"
+            """;
+    codeParser.parseCode(code);
+    
+    Assert.assertTrue(codeParser.success());
+    Assert.assertEquals(1, codeParser.getMemoryLocations().size());
+    MemoryLocation hello = codeParser.getMemoryLocations().get(0);
+    Assert.assertEquals("hello", hello.name);
+    Assert.assertEquals(DataTypeEnum.kByte, hello.dataType);
+    
+    Assert.assertEquals(3, hello.getSize());
+    Assert.assertEquals((byte) 'a', (byte) hello.value.get(0));
+    Assert.assertEquals((byte) 'b', (byte) hello.value.get(1));
+    Assert.assertEquals((byte) 'c', (byte) hello.value.get(2));
+  }
+  
+  @Test
+  public void parseCode_wrong_ascii()
+  {
+    String code = """
+            hello:
+            .ascii 5
+            """;
+    codeParser.parseCode(code);
+    
+    Assert.assertFalse(codeParser.success());
+  }
+  
+  @Test
+  public void parseCode_wrong_word()
+  {
+    String code = """
+            hello:
+            .word
+            """;
+    codeParser.parseCode(code);
+    
+    Assert.assertFalse(codeParser.success());
+  }
+  
+  @Test
+  public void parseCode_multiple_ascii()
+  {
+    String code = """
+            hello:
+            .ascii "abc", "def"
+            """;
+    codeParser.parseCode(code);
+    
+    Assert.assertTrue(codeParser.success());
+    Assert.assertEquals(1, codeParser.getMemoryLocations().size());
+    MemoryLocation hello = codeParser.getMemoryLocations().get(0);
+    Assert.assertEquals("hello", hello.name);
+    Assert.assertEquals(DataTypeEnum.kByte, hello.dataType);
+    
+    Assert.assertEquals(6, hello.getSize());
+    Assert.assertEquals((byte) 'a', (byte) hello.value.get(0));
+    Assert.assertEquals((byte) 'b', (byte) hello.value.get(1));
+    Assert.assertEquals((byte) 'c', (byte) hello.value.get(2));
+    Assert.assertEquals((byte) 'd', (byte) hello.value.get(3));
+    Assert.assertEquals((byte) 'e', (byte) hello.value.get(4));
+    Assert.assertEquals((byte) 'f', (byte) hello.value.get(5));
+  }
+  
+  @Test
+  public void parseCode_single_asciiz()
+  {
+    String code = """
+            hello:
+            .asciiz "abc"
+            """;
+    codeParser.parseCode(code);
+    
+    Assert.assertTrue(codeParser.success());
+    Assert.assertEquals(1, codeParser.getMemoryLocations().size());
+    MemoryLocation hello = codeParser.getMemoryLocations().get(0);
+    Assert.assertEquals("hello", hello.name);
+    Assert.assertEquals(DataTypeEnum.kByte, hello.dataType);
+    
+    Assert.assertEquals(4, hello.getSize());
+    Assert.assertEquals((byte) 'a', (byte) hello.value.get(0));
+    Assert.assertEquals((byte) 'b', (byte) hello.value.get(1));
+    Assert.assertEquals((byte) 'c', (byte) hello.value.get(2));
+    Assert.assertEquals((byte) 0, (byte) hello.value.get(3));
+  }
+  
+  @Test
+  public void parseCode_multiple_asciiz()
+  {
+    String code = """
+            hello:
+            .asciiz "abc", "a"
+            """;
+    codeParser.parseCode(code);
+    
+    Assert.assertTrue(codeParser.success());
+    Assert.assertEquals(1, codeParser.getMemoryLocations().size());
+    MemoryLocation hello = codeParser.getMemoryLocations().get(0);
+    Assert.assertEquals("hello", hello.name);
+    Assert.assertEquals(DataTypeEnum.kByte, hello.dataType);
+    
+    Assert.assertEquals(6, hello.getSize());
+    Assert.assertEquals((byte) 'a', (byte) hello.value.get(0));
+    Assert.assertEquals((byte) 'b', (byte) hello.value.get(1));
+    Assert.assertEquals((byte) 'c', (byte) hello.value.get(2));
+    Assert.assertEquals((byte) 0, (byte) hello.value.get(3));
+    Assert.assertEquals((byte) 'a', (byte) hello.value.get(4));
+    Assert.assertEquals((byte) 0, (byte) hello.value.get(5));
+  }
+  
+  @Test
   public void parseCode_single_negative_word_parses()
   {
     String code = """
@@ -533,5 +648,47 @@ public class CodeParserTest
     MemoryLocation m = codeParser.getMemoryLocations().get(1);
     // Alignment should be reset after the label
     Assert.assertEquals(1, m.alignment);
+  }
+  
+  @Test
+  public void parseCode_skip()
+  {
+    String code = """
+            N:
+            .skip 8
+            """;
+    codeParser.parseCode(code);
+    
+    Assert.assertTrue(codeParser.success());
+    Assert.assertEquals(1, codeParser.getMemoryLocations().size());
+    MemoryLocation n = codeParser.getMemoryLocations().get(0);
+    Assert.assertEquals("N", n.name);
+    Assert.assertEquals(DataTypeEnum.kByte, n.dataType);
+    Assert.assertEquals(8, n.getSize());
+    for (int i = 0; i < 8; i++)
+    {
+      Assert.assertEquals((byte) 0, (byte) n.value.get(i));
+    }
+  }
+  
+  @Test
+  public void parseCode_skip_fill()
+  {
+    String code = """
+            N:
+            .skip 5, 2
+            """;
+    codeParser.parseCode(code);
+    
+    Assert.assertTrue(codeParser.success());
+    Assert.assertEquals(1, codeParser.getMemoryLocations().size());
+    MemoryLocation n = codeParser.getMemoryLocations().get(0);
+    Assert.assertEquals("N", n.name);
+    Assert.assertEquals(DataTypeEnum.kByte, n.dataType);
+    Assert.assertEquals(5, n.getSize());
+    for (int i = 0; i < 5; i++)
+    {
+      Assert.assertEquals((byte) 2, (byte) n.value.get(i));
+    }
   }
 }
