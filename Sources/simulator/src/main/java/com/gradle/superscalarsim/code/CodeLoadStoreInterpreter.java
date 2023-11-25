@@ -224,6 +224,7 @@ public class CodeLoadStoreInterpreter
    */
   private int processStoreOperation(int sizeBits, long address, long valueBits, int id, int currentCycle)
   {
+    assert sizeBits <= 64 && sizeBits % 8 == 0;
     int numberOfBytes = sizeBits / 8;
     return memoryModel.store(address, valueBits, numberOfBytes, id, currentCycle);
   }// end of processStoreOperation

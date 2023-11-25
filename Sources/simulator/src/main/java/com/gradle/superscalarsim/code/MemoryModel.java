@@ -108,10 +108,7 @@ public class MemoryModel
     byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
     byteBuffer.putLong(data);
     byte[] bytes = byteBuffer.array();
-    for (int i = 0; i < size; i++)
-    {
-      memory.insertIntoMemory(address + i, bytes[i], id);
-    }
+    memory.insertIntoMemory(address, bytes);
     return 0;
   }
   
@@ -126,24 +123,25 @@ public class MemoryModel
    */
   public Pair<Integer, Long> load(long address, int size, int id, int currentCycle)
   {
-    this.lastAccess = new MemoryAccess(false, address, 0, size);
+    byte[] bytes = new byte[8];
+    int    delay = 0;
     if (cache != null)
     {
-      Pair<Integer, Long> returnVal = cache.getData(address, size, id, currentCycle);
-      this.lastAccess.setData(returnVal.getSecond());
+      // Use cache
+      Pair<Integer, byte[]> returnVal = cache.getDataBytes(address, size, id, currentCycle);
+      delay = returnVal.getFirst();
+      System.arraycopy(returnVal.getSecond(), 0, bytes, 0, returnVal.getSecond().length);
       cacheStatisticsCounter.incrementTotalDelay(currentCycle, returnVal.getFirst());
-      return returnVal;
     }
-    
-    // Load without cache
-    long returnVal = ((long) memory.getFromMemory(address + size - 1) & ((1 << 8) - 1));
-    for (int i = size - 1; i > 0; i--)
+    else
     {
-      returnVal = returnVal << 8;
-      returnVal = returnVal | ((long) memory.getFromMemory(address + i - 1) & ((1 << 8) - 1));
+      // Use memory
+      byte[] readBytes = memory.getFromMemory(address, size);
+      System.arraycopy(readBytes, 0, bytes, 0, readBytes.length);
     }
-    this.lastAccess.setData(returnVal);
-    return new Pair<>(0, returnVal);
+    long returnValLong = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN).getLong();
+    this.lastAccess = new MemoryAccess(false, address, returnValLong, size);
+    return new Pair<>(delay, returnValLong);
   }
   
   /**

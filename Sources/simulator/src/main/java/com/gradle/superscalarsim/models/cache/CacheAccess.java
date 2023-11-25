@@ -39,30 +39,66 @@ import java.util.List;
  */
 public class CacheAccess
 {
-  /// Clock cycle in which the access executed
+  
+  /**
+   * Clock cycle in which the access executed
+   */
   private int clockCycle;
-  /// Id of instruction which executed the access
+  
+  /**
+   * ID of instruction which executed the access
+   */
   private int id;
-  /// List of hits/misses for all accessed lines
+  
+  /**
+   * List of hits/misses for all accessed lines
+   */
   private List<Boolean> isHit;
-  /// Is the access store or load?
+  
+  /**
+   * Is the access store or load?
+   */
   private boolean isStore;
-  /// Tag of the access - from address
+  
+  /**
+   * Tag of the access - from address
+   */
   private long tag;
-  /// Index of the access - from address
+  
+  /**
+   * Index of the access - from address
+   */
   private int index;
-  /// Parsed offset of the access
+  
+  /**
+   * Parsed offset of the access
+   */
   private int offset;
-  /// Data of the access (for store)
+  
+  /**
+   * Data of the access (for store)
+   */
   private long data;
-  ///Index in whole cache (as if there was no associativity) for all accessed lines
+  
+  /**
+   * Index in whole cache (as if there was no associativity) for all accessed lines
+   */
   private List<Integer> cacheIndex;
-  ///Offset inside line for all accessed lines
+  
+  /**
+   * Offset inside line for all accessed lines
+   */
   private List<Integer> lineOffset;
-  ///Delay this access had
+  
+  /**
+   * Delay this access had
+   */
   private int delay;
   
-  ///Current end of replacement before this access happened
+  
+  /**
+   * Current end of replacement before this access happened
+   */
   private int endOfReplacement;
   
   public CacheAccess()
@@ -134,9 +170,19 @@ public class CacheAccess
     return id;
   }
   
+  public void setId(int id)
+  {
+    this.id = id;
+  }
+  
   public int getClockCycle()
   {
     return clockCycle;
+  }
+  
+  public void setClockCycle(int clockCycle)
+  {
+    this.clockCycle = clockCycle;
   }
   
   public Boolean[] isHit()
@@ -154,9 +200,19 @@ public class CacheAccess
     return tag;
   }
   
+  public void setTag(long tag)
+  {
+    this.tag = tag;
+  }
+  
   public int getIndex()
   {
     return index;
+  }
+  
+  public void setIndex(int index)
+  {
+    this.index = index;
   }
   
   public int getOffset()
@@ -164,9 +220,19 @@ public class CacheAccess
     return offset;
   }
   
+  public void setOffset(int offset)
+  {
+    this.offset = offset;
+  }
+  
   public Integer[] getCacheIndex()
   {
     return cacheIndex.toArray(Integer[]::new);
+  }
+  
+  public void setCacheIndex(Integer[] cacheIndex)
+  {
+    this.cacheIndex.addAll(Arrays.asList(cacheIndex));
   }
   
   public Integer[] getLineOffset()
@@ -174,19 +240,19 @@ public class CacheAccess
     return lineOffset.toArray(Integer[]::new);
   }
   
+  public void setLineOffset(Integer[] lineOffset)
+  {
+    this.lineOffset.addAll(Arrays.asList(lineOffset));
+  }
+  
   public long getData()
   {
     return data;
   }
   
-  public void setClockCycle(int clockCycle)
+  public void setData(long data)
   {
-    this.clockCycle = clockCycle;
-  }
-  
-  public void setId(int id)
-  {
-    this.id = id;
+    this.data = data;
   }
   
   public void setLoadStore(boolean isStore)
@@ -199,36 +265,6 @@ public class CacheAccess
     this.isHit.addAll(Arrays.asList(isHit));
   }
   
-  public void setTag(long tag)
-  {
-    this.tag = tag;
-  }
-  
-  public void setIndex(int index)
-  {
-    this.index = index;
-  }
-  
-  public void setOffset(int offset)
-  {
-    this.offset = offset;
-  }
-  
-  public void setData(long data)
-  {
-    this.data = data;
-  }
-  
-  public void setCacheIndex(Integer[] cacheIndex)
-  {
-    this.cacheIndex.addAll(Arrays.asList(cacheIndex));
-  }
-  
-  public void setLineOffset(Integer[] lineOffset)
-  {
-    this.lineOffset.addAll(Arrays.asList(lineOffset));
-  }
-  
   public void addLineAccess(boolean isHit, int cacheIndex, int lineOffset)
   {
     this.isHit.add(isHit);
@@ -236,14 +272,14 @@ public class CacheAccess
     this.lineOffset.add(lineOffset);
   }
   
-  public void setDelay(int delay)
-  {
-    this.delay = delay;
-  }
-  
   public int getDelay()
   {
     return delay;
+  }
+  
+  public void setDelay(int delay)
+  {
+    this.delay = delay;
   }
   
   public int getEndOfReplacement()

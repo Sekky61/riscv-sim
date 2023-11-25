@@ -106,7 +106,7 @@ public class CacheLineModel
    * @param index Index inside the line
    * @param size  Size of requested data - 1,2,4
    *
-   * @return int - data
+   * @return Data converted to int
    * @brief Get data on the index
    */
   public int getData(int index, int size)
@@ -116,6 +116,13 @@ public class CacheLineModel
     {
       data = data | ((line[index + i] & 0xFF) << (i * 8));
     }
+    return data;
+  }
+  
+  public byte[] getDataBytes(int index, int size)
+  {
+    byte[] data = new byte[size];
+    System.arraycopy(line, index, data, 0, size);
     return data;
   }
   
@@ -189,5 +196,15 @@ public class CacheLineModel
   public void setBaseAddress(long baseAddress)
   {
     this.baseAddress = baseAddress;
+  }
+  
+  public byte[] getLineData()
+  {
+    return line;
+  }
+  
+  public void setLineData(byte[] line)
+  {
+    this.line = line;
   }
 }

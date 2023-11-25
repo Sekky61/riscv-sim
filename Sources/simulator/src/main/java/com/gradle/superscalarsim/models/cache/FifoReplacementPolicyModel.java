@@ -29,7 +29,6 @@ package com.gradle.superscalarsim.models.cache;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Stack;
 
 /**
  * @class FifoReplacementPolicyModel
@@ -37,14 +36,16 @@ import java.util.Stack;
  */
 public class FifoReplacementPolicyModel extends ReplacementPolicyModel
 {
+  /**
+   * Associativity of cache
+   */
   private final int associativity;
   
-  /// Indexes of cache-lines
+  
+  /**
+   * Indexes of cache-lines
+   */
   private final List<Integer>[] fifo;
-  /// id History
-  private final Stack<Integer> history;
-  /// id History
-  private final Stack<Integer> idHistory;
   
   /**
    * @brief Constructor
@@ -61,8 +62,6 @@ public class FifoReplacementPolicyModel extends ReplacementPolicyModel
         fifo[i].add(j);
       }
     }
-    idHistory = new Stack<>();
-    history   = new Stack<>();
   }
   
   /**
@@ -70,7 +69,6 @@ public class FifoReplacementPolicyModel extends ReplacementPolicyModel
    */
   public int getLineToReplace(int id, int index)
   {
-    idHistory.add(id);
     int indexToReplace = fifo[index].get(0);
     fifo[index].add(indexToReplace);
     fifo[index].remove(0);
@@ -83,16 +81,4 @@ public class FifoReplacementPolicyModel extends ReplacementPolicyModel
   public void updatePolicy(int id, int index, int line)
   {
   }
-  
-  public void revertHistory(int id)
-  {
-    if (!idHistory.isEmpty() && idHistory.peek() == id)
-    {
-      idHistory.pop();
-      int index = history.pop();
-      fifo[index].add(0, fifo[index].get(associativity - 1));
-      fifo[index].remove(associativity);
-    }
-  }
-  
 }

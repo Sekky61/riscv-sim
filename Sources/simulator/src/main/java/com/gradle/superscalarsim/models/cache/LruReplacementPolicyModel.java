@@ -26,11 +26,8 @@
  */
 package com.gradle.superscalarsim.models.cache;
 
-import com.gradle.superscalarsim.models.Pair;
-
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Stack;
 
 /**
  * @class LruReplacementPolicyModel
@@ -38,13 +35,15 @@ import java.util.Stack;
  */
 public class LruReplacementPolicyModel extends ReplacementPolicyModel
 {
-  
+  /**
+   * Associativity of cache
+   */
   private final int associativity;
+  
+  /**
+   * Indexes of cache-lines
+   */
   private final List<Integer>[] lru;
-  /// History triplet in format: parsed index, old position in lru
-  private final Stack<Pair<Integer, Integer>> history;
-  /// id History
-  private final Stack<Integer> idHistory;
   
   public LruReplacementPolicyModel(final int numberOfLines, final int associativity)
   {
@@ -58,8 +57,6 @@ public class LruReplacementPolicyModel extends ReplacementPolicyModel
         lru[i].add(j);
       }
     }
-    history   = new Stack<>();
-    idHistory = new Stack<>();
   }
   
   public int getLineToReplace(int id, int index)
@@ -72,8 +69,6 @@ public class LruReplacementPolicyModel extends ReplacementPolicyModel
    */
   public void updatePolicy(int id, int index, int line)
   {
-    history.add(new Pair<>(index, lru[index].indexOf(line)));
-    idHistory.add(id);
     if (!lru[index].contains(line))
     {
       if (lru[index].size() == associativity)
@@ -87,19 +82,4 @@ public class LruReplacementPolicyModel extends ReplacementPolicyModel
     }
     lru[index].add(line);
   }
-  
-  /**
-   * @brief Reverts history if index changed in current id
-   */
-  public void revertHistory(int id)
-  {
-    if (!idHistory.isEmpty() && idHistory.peek() == id)
-    {
-      idHistory.pop();
-      Pair<Integer, Integer> lastUpdate = history.pop();
-      lru[lastUpdate.getFirst()].add(lastUpdate.getSecond(), lru[lastUpdate.getFirst()].get(associativity - 1));
-      lru[lastUpdate.getFirst()].remove(associativity);
-    }
-  }
-  
 }

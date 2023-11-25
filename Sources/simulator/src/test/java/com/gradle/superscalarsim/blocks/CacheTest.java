@@ -35,8 +35,8 @@ public class CacheTest
     memory = new SimulatedMemory();
     cache  = new Cache(memory, 16, 2, 16, ReplacementPoliciesEnum.RANDOM, true, true, 1, 1, 1,
                        new CacheStatisticsCounter());
-    cache.storeData(128, 123456789L, 4, 0, 0);
-    Assert.assertEquals(123456789L, (long) cache.getData(128, 4, 0, 0).getSecond());
+    cache.storeData(128, 0x01020304, 4, 0, 0);
+    Assert.assertEquals(0x01020304, (long) cache.getData(128, 4, 0, 0).getSecond());
   }
   
   @Test

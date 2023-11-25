@@ -47,10 +47,6 @@ public class RandomReplacementPolicyModel extends ReplacementPolicyModel
   
   public void updatePolicy(int id, int index, int line)
   {
+    // no-op
   }
-  
-  public void revertHistory(int id)
-  {
-  }
-  
 }

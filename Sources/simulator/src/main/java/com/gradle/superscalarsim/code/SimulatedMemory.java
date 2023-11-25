@@ -37,7 +37,7 @@ import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
 /**
  * Memory representation: continuous array of bytes
- * TODO Custom serialization is used to avoid transmitting the whole memory
+ * TODO Custom serialization to avoid transmitting the whole memory
  *
  * @class SimulatedMemory
  * @brief Class simulating memory with read/write capabilities
@@ -65,7 +65,7 @@ public class SimulatedMemory
    *
    * @brief Insert byte value into memory
    */
-  public void insertIntoMemory(Long address, byte value, int id)
+  public void insertIntoMemory(Long address, byte value)
   {
     if (this.memory.length < address + 1)
     {
@@ -76,6 +76,23 @@ public class SimulatedMemory
     this.memory[address.intValue()] = value;
   }// end of insertIntoMemory
   //-------------------------------------------------------------------------------------------
+  
+  /**
+   * @param address Address to write to
+   * @param value   Value to write
+   *
+   * @brief Insert a chunk of data into memory
+   */
+  public void insertIntoMemory(Long address, byte[] data)
+  {
+    if (this.memory.length < address + data.length)
+    {
+      byte[] newMemory = new byte[(int) (address + data.length)];
+      System.arraycopy(this.memory, 0, newMemory, 0, this.memory.length);
+      this.memory = newMemory;
+    }
+    System.arraycopy(data, 0, this.memory, address.intValue(), data.length);
+  }// end of insertIntoMemory
   
   /**
    * @param address Hashmap key, pointing into specific place in memory
@@ -95,6 +112,27 @@ public class SimulatedMemory
     }
   }// end of getFromMemory
   //-------------------------------------------------------------------------------------------
+  
+  public byte[] getFromMemory(Long address, int size)
+  {
+    if (isInMemory(address + size - 1))
+    {
+      byte[] returnVal = new byte[size];
+      System.arraycopy(this.memory, address.intValue(), returnVal, 0, size);
+      return returnVal;
+    }
+    else if (isInMemory(address))
+    {
+      // Read part, rest fill with zeros
+      byte[] returnVal = new byte[size];
+      System.arraycopy(this.memory, address.intValue(), returnVal, 0, this.memory.length - address.intValue());
+      return returnVal;
+    }
+    else
+    {
+      return new byte[size];
+    }
+  }// end of getFromMemory
   
   /**
    * @param address Hashmap key, pointing into specific place in memory

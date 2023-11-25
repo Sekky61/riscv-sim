@@ -149,7 +149,6 @@ public class RegisterDataContainer
       case kFloat -> cls.cast(Float.intBitsToFloat((int) bits));
       case kDouble -> cls.cast(Double.longBitsToDouble(bits));
       case kBool -> cls.cast(bits != 0);
-      default -> throw new IllegalArgumentException("Unsupported type: " + type);
     };
   }
   

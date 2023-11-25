@@ -42,29 +42,16 @@ public abstract class ReplacementPolicyModel
                                                                  int numberOfLines,
                                                                  int associativity)
   {
-    switch (replacementPolicy)
+    return switch (replacementPolicy)
     {
-      case RANDOM ->
-      {
-        return new RandomReplacementPolicyModel(numberOfLines, associativity);
-      }
-      case LRU ->
-      {
-        return new LruReplacementPolicyModel(numberOfLines, associativity);
-      }
-      case FIFO ->
-      {
-        return new FifoReplacementPolicyModel(numberOfLines, associativity);
-      }
-    }
-    return null;
+      case RANDOM -> new RandomReplacementPolicyModel(numberOfLines, associativity);
+      case LRU -> new LruReplacementPolicyModel(numberOfLines, associativity);
+      case FIFO -> new FifoReplacementPolicyModel(numberOfLines, associativity);
+    };
   }
   
   public abstract int getLineToReplace(int id, int index);
   
   public abstract void updatePolicy(int id, int index, int line);
-  
-  public abstract void revertHistory(int id);
-  
 }
 
