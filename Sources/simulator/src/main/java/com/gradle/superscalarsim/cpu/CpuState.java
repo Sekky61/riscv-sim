@@ -180,7 +180,6 @@ public class CpuState implements Serializable
     this.patternHistoryTable = new PatternHistoryTable(config.phtSize, defaultTaken, predictorType);
     this.gShareUnit          = new GShareUnit(1024, this.globalHistoryRegister, this.patternHistoryTable);
     this.branchTargetBuffer  = new BranchTargetBuffer(config.btbSize);
-    this.simulatedMemory     = new SimulatedMemory();
     
     ReplacementPoliciesEnum replacementPoliciesEnum = switch (config.cacheReplacement)
     {
@@ -190,17 +189,24 @@ public class CpuState implements Serializable
       default -> throw new IllegalStateException("Unexpected value for cache replacement: " + config.cacheReplacement);
     };
     
+    // Define memory
     boolean writeBack = true;
     if (!Objects.equals(config.storeBehavior, "write-back"))
     {
       throw new IllegalStateException("Unexpected value for store behavior: " + config.storeBehavior);
     }
     
+    this.simulatedMemory = new SimulatedMemory();
+    // Fill memory with data
+    MemoryInitializer memoryInitializer = new MemoryInitializer(128, 512);
+    memoryInitializer.initializeMemory(simulatedMemory, codeParser.getMemoryLocations());
     this.cache = new Cache(simulatedMemory, config.cacheLines, config.cacheAssoc, config.cacheLineSize,
                            replacementPoliciesEnum, writeBack, config.addRemainingDelay, config.storeLatency,
                            config.loadLatency, config.laneReplacementDelay, this.cacheStatisticsCounter);
     
-    this.memoryModel          = new MemoryModel(cache, cacheStatisticsCounter);
+    this.memoryModel = new MemoryModel(cache, cacheStatisticsCounter);
+    
+    
     this.loadStoreInterpreter = new CodeLoadStoreInterpreter(memoryModel, unifiedRegisterFileBlock);
     
     this.instructionFetchBlock = new InstructionFetchBlock(simCodeModelFactory, instructionMemoryBlock, gShareUnit,

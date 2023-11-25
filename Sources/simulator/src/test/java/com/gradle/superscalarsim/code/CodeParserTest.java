@@ -1,5 +1,6 @@
 package com.gradle.superscalarsim.code;
 
+import com.gradle.superscalarsim.cpu.MemoryInitializer;
 import com.gradle.superscalarsim.cpu.MemoryLocation;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.loader.InitLoader;
@@ -690,5 +691,70 @@ public class CodeParserTest
     {
       Assert.assertEquals((byte) 2, (byte) n.value.get(i));
     }
+  }
+  
+  @Test
+  public void memoryInitializer_allocate_byte()
+  {
+    String code = """
+            N:
+            .byte 25
+            """;
+    codeParser.parseCode(code);
+    
+    Assert.assertTrue(codeParser.success());
+    Assert.assertEquals(1, codeParser.getMemoryLocations().size());
+    
+    MemoryInitializer memoryInitializer = new MemoryInitializer(0, 0);
+    SimulatedMemory   memory            = new SimulatedMemory();
+    memoryInitializer.initializeMemory(memory, codeParser.getMemoryLocations());
+    
+    Assert.assertEquals((byte) 25, memory.getFromMemory(0L));
+  }
+  
+  @Test
+  public void memoryInitializer_allocate_word()
+  {
+    String code = """
+            N:
+            .word 0x1234
+            """;
+    codeParser.parseCode(code);
+    
+    Assert.assertTrue(codeParser.success());
+    Assert.assertEquals(1, codeParser.getMemoryLocations().size());
+    
+    MemoryInitializer memoryInitializer = new MemoryInitializer(0, 0);
+    SimulatedMemory   memory            = new SimulatedMemory();
+    memoryInitializer.initializeMemory(memory, codeParser.getMemoryLocations());
+    
+    Assert.assertEquals((byte) 0x34, memory.getFromMemory(0L));
+    Assert.assertEquals((byte) 0x12, memory.getFromMemory(1L));
+    Assert.assertEquals((byte) 0, memory.getFromMemory(2L));
+    Assert.assertEquals((byte) 0, memory.getFromMemory(3L));
+  }
+  
+  @Test
+  public void memoryInitializer_allocate_word_aligned()
+  {
+    // Align to 8 bytes!!
+    String code = """
+            .align 3
+            N:
+            .word 0x1234
+            """;
+    codeParser.parseCode(code);
+    
+    Assert.assertTrue(codeParser.success());
+    Assert.assertEquals(1, codeParser.getMemoryLocations().size());
+    
+    MemoryInitializer memoryInitializer = new MemoryInitializer(1, 0);
+    SimulatedMemory   memory            = new SimulatedMemory();
+    memoryInitializer.initializeMemory(memory, codeParser.getMemoryLocations());
+    
+    Assert.assertEquals((byte) 0x34, memory.getFromMemory(8L));
+    Assert.assertEquals((byte) 0x12, memory.getFromMemory(9L));
+    Assert.assertEquals((byte) 0, memory.getFromMemory(10L));
+    Assert.assertEquals((byte) 0, memory.getFromMemory(11L));
   }
 }

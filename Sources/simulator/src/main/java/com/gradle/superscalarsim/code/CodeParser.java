@@ -202,6 +202,7 @@ public class CodeParser
   
   /**
    * Fills the memoryLocations list with memory locations defined in the code.
+   * Does not understand expressions and many obscure directives.
    *
    * @param code ASM code
    */
