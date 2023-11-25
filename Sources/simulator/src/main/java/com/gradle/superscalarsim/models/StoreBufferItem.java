@@ -43,9 +43,13 @@ public class StoreBufferItem
    */
   private final String sourceRegister;
   /**
-   * Id used when getting correct store for bypassing
+   * ID used when getting correct store for bypassing
    */
   private final int sourceResultId;
+  /**
+   * The instruction itself
+   */
+  SimCodeModel simCodeModel;
   /**
    * Is the register ready for store instruction
    */
@@ -61,22 +65,23 @@ public class StoreBufferItem
   private boolean isAccessingMemory;
   private int accessingMemoryId;
   /**
-   * Id of the MA block in which was memory access done
+   * ID of the MA block in which was memory access done
    */
   private int memoryAccessId;
   /**
-   * Id when the instruction failed
+   * ID when the instruction failed
    */
   private int memoryFailedId;
   
   /**
-   * @param [in] sourceRegister - Name of the source register from where store takes the result
-   * @param [in] sourceId       - Id used when getting correct store for bypassing
+   * @param sourceRegister Name of the source register from where store takes the result
+   * @param sourceId       ID used when getting correct store for bypassing
    *
    * @brief Constructor
    */
-  public StoreBufferItem(String sourceRegister, int sourceId)
+  public StoreBufferItem(SimCodeModel simCodeModel, String sourceRegister, int sourceId)
   {
+    this.simCodeModel   = simCodeModel;
     this.sourceRegister = sourceRegister;
     this.sourceReady    = false;
     this.address        = -1;
@@ -100,7 +105,7 @@ public class StoreBufferItem
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @param [in] isAccessingMemory - Flag marking memory access
+   * @param isAccessingMemory Flag marking memory access
    *
    * @brief Set flag if instruction is accessing memory (MA block)
    */
@@ -121,7 +126,7 @@ public class StoreBufferItem
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @param [in] memoryAccessId - MA id when was instruction released
+   * @param memoryAccessId MA id when was instruction released
    *
    * @brief Set MA id when was instruction released
    */
@@ -132,7 +137,7 @@ public class StoreBufferItem
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @return Id when instruction has failed
+   * @return ID when instruction has failed
    * @brief Get id when instruction has failed
    */
   public int getMemoryFailedId()
@@ -142,7 +147,7 @@ public class StoreBufferItem
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @param [in] memoryFailedId - Id when instruction has failed
+   * @param memoryFailedId ID when instruction has failed
    *
    * @brief Set id when instruction has failed
    */
@@ -153,7 +158,7 @@ public class StoreBufferItem
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @return Id of the time, when instruction got into MA
+   * @return ID of the time, when instruction got into MA
    * @brief Get id when the load instruction got into MA from load buffer
    */
   public int getAccessingMemoryId()
@@ -163,7 +168,7 @@ public class StoreBufferItem
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @param [in] accessingMemoryId - New id when the load instruction got into MA from load buffer
+   * @param accessingMemoryId New id when the load instruction got into MA from load buffer
    *
    * @brief Set id when the load instruction got into MA from load buffer
    */
@@ -194,7 +199,7 @@ public class StoreBufferItem
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @param [in] destinationReady - Flag if source register is ready for reading from
+   * @param destinationReady Flag if source register is ready for reading from
    *
    * @brief Sets flag if source register is ready for reading from
    */
@@ -215,7 +220,7 @@ public class StoreBufferItem
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @param [in] address - Address to store result into
+   * @param address Address to store result into
    *
    * @brief Set store address
    */
@@ -226,13 +231,21 @@ public class StoreBufferItem
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @return Id used when getting correct store for bypassing
+   * @return ID used when getting correct store for bypassing
    * @brief Get id used when getting correct store for bypassing
    */
   public int getSourceResultId()
   {
     return sourceResultId;
   }// end of getSourceResultId
+  
+  /**
+   * @return Instruction itself
+   */
+  public SimCodeModel getSimCodeModel()
+  {
+    return simCodeModel;
+  }
   //-------------------------------------------------------------------------------------------
   
 }

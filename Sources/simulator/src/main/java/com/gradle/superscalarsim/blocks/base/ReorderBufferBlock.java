@@ -60,80 +60,66 @@ public class ReorderBufferBlock implements AbstractBlock
 {
   
   /**
-   * Class holding mappings from architectural registers to speculative
-   */
-  @JsonIdentityReference(alwaysAsId = true)
-  private RenameMapTableBlock renameMapTableBlock;
-  
-  /**
-   * Class, which simulates instruction decode and renames registers
-   */
-  @JsonIdentityReference(alwaysAsId = true)
-  private DecodeAndDispatchBlock decodeAndDispatchBlock;
-  
-  /**
-   * Class for statistics gathering
-   */
-  @JsonIdentityReference(alwaysAsId = true)
-  private StatisticsCounter statisticsCounter;
-  
-  
-  /**
-   * GShare unit for getting correct prediction counters
-   */
-  @JsonIdentityReference(alwaysAsId = true)
-  private GShareUnit gShareUnit;
-  
-  /**
-   * Buffer holding information about branch instructions targets
-   */
-  @JsonIdentityReference(alwaysAsId = true)
-  private BranchTargetBuffer branchTargetBuffer;
-  
-  /**
-   * Class that fetches code from CodeParser
-   */
-  @JsonIdentityReference(alwaysAsId = true)
-  private InstructionFetchBlock instructionFetchBlock;
-  
-  
-  /**
-   * Buffer that tracks all in-flight load instructions
-   */
-  @JsonIdentityReference(alwaysAsId = true)
-  private LoadBufferBlock loadBufferBlock;
-  
-  /**
-   * Buffer that tracks all in-flight store instructions
-   */
-  @JsonIdentityReference(alwaysAsId = true)
-  private StoreBufferBlock storeBufferBlock;
-  
-  /**
    * Queue of scheduled instruction in backend
    */
   public ArrayDeque<ReorderBufferItem> reorderQueue;
-  
   /**
    * Numerical limit, how many instruction can be committed in a single tick
    */
   public int commitLimit;
-  
   /**
    * ID (tick( counter for marking when an instruction was committed/ready
    */
   public int commitId;
-  
   /**
    * Flag to mark newly added instructions as speculative.
    * This flag is set after encountering branch instruction.
    */
   public boolean speculativePulls;
-  
   /**
    * Reorder buffer size limit.
    */
   public int bufferSize;
+  /**
+   * Class holding mappings from architectural registers to speculative
+   */
+  @JsonIdentityReference(alwaysAsId = true)
+  private RenameMapTableBlock renameMapTableBlock;
+  /**
+   * Class, which simulates instruction decode and renames registers
+   */
+  @JsonIdentityReference(alwaysAsId = true)
+  private DecodeAndDispatchBlock decodeAndDispatchBlock;
+  /**
+   * Class for statistics gathering
+   */
+  @JsonIdentityReference(alwaysAsId = true)
+  private StatisticsCounter statisticsCounter;
+  /**
+   * GShare unit for getting correct prediction counters
+   */
+  @JsonIdentityReference(alwaysAsId = true)
+  private GShareUnit gShareUnit;
+  /**
+   * Buffer holding information about branch instructions targets
+   */
+  @JsonIdentityReference(alwaysAsId = true)
+  private BranchTargetBuffer branchTargetBuffer;
+  /**
+   * Class that fetches code from CodeParser
+   */
+  @JsonIdentityReference(alwaysAsId = true)
+  private InstructionFetchBlock instructionFetchBlock;
+  /**
+   * Buffer that tracks all in-flight load instructions
+   */
+  @JsonIdentityReference(alwaysAsId = true)
+  private LoadBufferBlock loadBufferBlock;
+  /**
+   * Buffer that tracks all in-flight store instructions
+   */
+  @JsonIdentityReference(alwaysAsId = true)
+  private StoreBufferBlock storeBufferBlock;
   
   public ReorderBufferBlock()
   {
@@ -442,7 +428,10 @@ public class ReorderBufferBlock implements AbstractBlock
       {
         this.loadBufferBlock.addLoadToBuffer(codeModel);
       }
-      // TODO: What about stores?
+      else if (codeModel.isStore())
+      {
+        this.storeBufferBlock.addStoreToBuffer(codeModel);
+      }
       pulledCount++;
     }
   }// end of pullNewDecodedInstructions

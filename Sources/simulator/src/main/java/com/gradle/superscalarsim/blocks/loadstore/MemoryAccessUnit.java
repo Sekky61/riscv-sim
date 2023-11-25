@@ -159,8 +159,7 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
       }
       else if (simCodeModel.isStore())
       {
-        this.storeBufferBlock.getStoreMap().get(this.simCodeModel.getIntegerId())
-                .setMemoryAccessId(this.functionUnitId);
+        this.storeBufferBlock.getStoreBufferItem(simCodeModel.getIntegerId()).setMemoryAccessId(this.functionUnitId);
       }
       else
       {
@@ -208,7 +207,7 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
           this.loadBufferBlock.setDestinationAvailable(simCodeId);
           this.loadBufferBlock.setMemoryAccessFinished(simCodeId);
         }
-        else if (this.storeBufferBlock.getStoreMap().containsKey(simCodeId))
+        else if (this.simCodeModel.isStore())
         {
           this.storeBufferBlock.setMemoryAccessFinished(simCodeId);
         }

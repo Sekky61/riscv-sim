@@ -36,7 +36,6 @@ import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.blocks.AbstractBlock;
-import com.gradle.superscalarsim.blocks.base.DecodeAndDispatchBlock;
 import com.gradle.superscalarsim.blocks.base.InstructionFetchBlock;
 import com.gradle.superscalarsim.blocks.base.ReorderBufferBlock;
 import com.gradle.superscalarsim.blocks.base.UnifiedRegisterFileBlock;
@@ -73,12 +72,6 @@ public class LoadBufferBlock implements AbstractBlock
    */
   @JsonIdentityReference(alwaysAsId = true)
   private StoreBufferBlock storeBufferBlock;
-  
-  /**
-   * Class, which simulates instruction decode and renames registers
-   */
-  @JsonIdentityReference(alwaysAsId = true)
-  private DecodeAndDispatchBlock decodeAndDispatchBlock;
   
   /**
    * Class containing all registers, that simulator uses
@@ -123,18 +116,16 @@ public class LoadBufferBlock implements AbstractBlock
    * @brief Constructor
    */
   public LoadBufferBlock(StoreBufferBlock storeBufferBlock,
-                         DecodeAndDispatchBlock decodeAndDispatchBlock,
                          UnifiedRegisterFileBlock registerFileBlock,
                          ReorderBufferBlock reorderBufferBlock,
                          InstructionFetchBlock instructionFetchBlock)
   {
-    this.storeBufferBlock       = storeBufferBlock;
-    this.decodeAndDispatchBlock = decodeAndDispatchBlock;
-    this.registerFileBlock      = registerFileBlock;
-    this.reorderBufferBlock     = reorderBufferBlock;
-    this.instructionFetchBlock  = instructionFetchBlock;
-    this.bufferSize             = 64;
-    this.commitId               = 0;
+    this.storeBufferBlock      = storeBufferBlock;
+    this.registerFileBlock     = registerFileBlock;
+    this.reorderBufferBlock    = reorderBufferBlock;
+    this.instructionFetchBlock = instructionFetchBlock;
+    this.bufferSize            = 64;
+    this.commitId              = 0;
     
     this.loadQueue            = new ArrayDeque<>();
     this.memoryAccessUnitList = new ArrayList<>();

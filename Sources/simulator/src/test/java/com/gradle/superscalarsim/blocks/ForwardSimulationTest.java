@@ -1723,8 +1723,8 @@ public class ForwardSimulationTest
     Assert.assertEquals(0, this.loadBufferBlock.getQueueSize());
     Assert.assertEquals(1, this.storeBufferBlock.getQueueSize());
     Assert.assertEquals("sw x3,0(x2)", this.storeBufferBlock.getStoreQueueFirst().getRenamedCodeLine());
-    Assert.assertEquals(-1, this.storeBufferBlock.getStoreMap().get(0).getAddress());
-    Assert.assertTrue(this.storeBufferBlock.getStoreMap().get(0).isSourceReady());
+    Assert.assertEquals(-1, this.storeBufferBlock.getStoreBufferItem(0).getAddress());
+    Assert.assertTrue(this.storeBufferBlock.getStoreBufferItem(0).isSourceReady());
     Assert.assertEquals("sw x3,0(x2)",
                         this.loadStoreIssueWindowBlock.getIssuedInstructions().get(0).getRenamedCodeLine());
     
@@ -1732,15 +1732,15 @@ public class ForwardSimulationTest
     Assert.assertEquals(0, this.loadBufferBlock.getQueueSize());
     Assert.assertEquals(1, this.storeBufferBlock.getQueueSize());
     Assert.assertEquals("sw x3,0(x2)", this.loadStoreFunctionUnit.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertEquals(-1, this.storeBufferBlock.getStoreMap().get(0).getAddress());
-    Assert.assertTrue(this.storeBufferBlock.getStoreMap().get(0).isSourceReady());
+    Assert.assertEquals(-1, this.storeBufferBlock.getStoreBufferItem(0).getAddress());
+    Assert.assertTrue(this.storeBufferBlock.getStoreBufferItem(0).isSourceReady());
     
     this.cpu.step();
     Assert.assertEquals(0, this.loadBufferBlock.getQueueSize());
     Assert.assertEquals(1, this.storeBufferBlock.getQueueSize());
     Assert.assertNull(this.loadStoreFunctionUnit.getSimCodeModel());
-    Assert.assertEquals(25, this.storeBufferBlock.getStoreMap().get(0).getAddress());
-    Assert.assertTrue(this.storeBufferBlock.getStoreMap().get(0).isSourceReady());
+    Assert.assertEquals(25, this.storeBufferBlock.getStoreBufferItem(0).getAddress());
+    Assert.assertTrue(this.storeBufferBlock.getStoreBufferItem(0).isSourceReady());
     Assert.assertFalse(this.reorderBufferBlock.getRobItem(0).reorderFlags.isReadyToBeCommitted());
     this.cpu.step();
     Assert.assertTrue(this.reorderBufferBlock.getRobItem(0).reorderFlags.isReadyToBeCommitted());
@@ -1891,8 +1891,8 @@ public class ForwardSimulationTest
     Assert.assertEquals("lw tg1,0(x2)", this.loadStoreFunctionUnit.getSimCodeModel().getRenamedCodeLine());
     Assert.assertFalse(this.loadBufferBlock.getLoadBufferItem(2).isDestinationReady());
     Assert.assertFalse(this.reorderBufferBlock.getRobItem(2).reorderFlags.isReadyToBeCommitted());
-    Assert.assertTrue(this.storeBufferBlock.getStoreMap().get(1).isSourceReady());
-    Assert.assertEquals(25, this.storeBufferBlock.getStoreMap().get(1).getAddress());
+    Assert.assertTrue(this.storeBufferBlock.getStoreBufferItem(1).isSourceReady());
+    Assert.assertEquals(25, this.storeBufferBlock.getStoreBufferItem(1).getAddress());
     Assert.assertFalse(this.reorderBufferBlock.getRobItem(1).reorderFlags.isReadyToBeCommitted());
     Assert.assertEquals("subi tg0,x4,5", this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
     

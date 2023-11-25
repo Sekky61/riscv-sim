@@ -220,12 +220,11 @@ public class CpuState implements Serializable
     this.arithmeticInterpreter = new CodeArithmeticInterpreter(unifiedRegisterFileBlock);
     this.branchInterpreter     = new CodeBranchInterpreter(instructionMemoryBlock, unifiedRegisterFileBlock);
     
-    this.storeBufferBlock = new StoreBufferBlock(loadStoreInterpreter, decodeAndDispatchBlock, unifiedRegisterFileBlock,
-                                                 reorderBufferBlock);
+    this.storeBufferBlock = new StoreBufferBlock(loadStoreInterpreter, unifiedRegisterFileBlock, reorderBufferBlock);
     storeBufferBlock.setBufferSize(config.sbSize);
     
-    this.loadBufferBlock = new LoadBufferBlock(storeBufferBlock, decodeAndDispatchBlock, unifiedRegisterFileBlock,
-                                               reorderBufferBlock, instructionFetchBlock);
+    this.loadBufferBlock = new LoadBufferBlock(storeBufferBlock, unifiedRegisterFileBlock, reorderBufferBlock,
+                                               instructionFetchBlock);
     loadBufferBlock.setBufferSize(config.lbSize);
     
     // FUs
@@ -410,7 +409,7 @@ public class CpuState implements Serializable
     branchFunctionUnitBlocks.forEach(BranchFunctionUnitBlock::simulate);
     // Check which buffer contains older instruction at the top
     // Null check first, if any is empty, the order does not matter
-    if (loadBufferBlock.getQueueSize() == 0 || storeBufferBlock.getStoreQueueFirst() == null || loadBufferBlock.getLoadQueueFirst()
+    if (loadBufferBlock.getQueueSize() == 0 || storeBufferBlock.getQueueSize() == 0 || loadBufferBlock.getLoadQueueFirst()
             .getIntegerId() < storeBufferBlock.getStoreQueueFirst().getIntegerId())
     {
       loadBufferBlock.simulate();
