@@ -684,10 +684,9 @@ public class CodeParser
     
     if (this.immediatePattern.matcher(argumentName).matches())
     {
-      //if instruction is jump/branch, expected imm value can be a label or a direct value in the +-1MiB range
+      // if instruction is jump/branch, expected imm value can be a label or a direct value in the +-1MiB range
       // numeral values are already checked in the previous step
-      boolean isBranch = instructionType == InstructionTypeEnum.kJumpbranch;
-      return checkImmediateArgument(argumentValue, isLValue, isDirectValue, isBranch, token);
+      return checkImmediateArgument(argumentValue, isLValue, isDirectValue, token);
     }
     else if (this.registerPattern.matcher(argumentName).matches())
     {
@@ -715,18 +714,11 @@ public class CodeParser
   private boolean checkImmediateArgument(final String argumentValue,
                                          final boolean isLValue,
                                          final boolean isDirectValue,
-                                         boolean isBranch,
                                          CodeToken token)
   {
     if (isLValue)
     {
       this.addError(token, "LValue cannot be immediate value.");
-      return false;
-    }
-    
-    if (!isDirectValue && !isBranch)
-    {
-      this.addError(token, "Expecting immediate value, got : \"" + argumentValue + "\".");
       return false;
     }
     

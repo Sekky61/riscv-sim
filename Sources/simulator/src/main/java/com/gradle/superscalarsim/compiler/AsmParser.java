@@ -86,7 +86,7 @@ public class AsmParser
     for (int i = lines.size() - 1; i >= 0; i--)
     {
       String line = lines.get(i).asmLine;
-      if (line.startsWith("."))
+      if (line.startsWith(".") && !line.endsWith(":"))
       {
         // Check last line
         if (i == 0)

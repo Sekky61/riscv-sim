@@ -147,6 +147,7 @@ public class CompilerTests
     
     // TODO: Parser filters out constants
     // .word   0x41c80000                      # float 25
+    // [4:9:12] Expecting immediate value, got : ".LC0".
     
     // Verify
     Assert.assertTrue(compileResult.success);
