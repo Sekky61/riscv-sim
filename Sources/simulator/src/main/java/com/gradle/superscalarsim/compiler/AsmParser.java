@@ -27,24 +27,26 @@
 
 package com.gradle.superscalarsim.compiler;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Pattern;
 
 /**
- * @brief Parser for RISC-V assembly code
- * Produces clean assembly to be used by the simulator - only relevant lines, labels
- * Also produces mapping from C code to assembly
+ * The output of GCC has a lot of irrelevant information. This class filters out the irrelevant information.
+ * <ul>
+ *   <li>Remove comments</li>
+ *   <li>Produce mapping</li>
+ *   <li>Filter unused labels</li>
+ *   <li>Filter directives not pointed to by remaining labels</li>
+ * </ul>
+ *
+ * @brief Parser for RISC-V assembly code. Filter assembly and produce mapping to C code
  */
 public class AsmParser
 {
-  
   /**
-   * List of prefixes of lines that should be removed
+   * Regex for labels
    */
-  static List<String> badPrefixes = new ArrayList<>(
-          Arrays.asList("#", ".loc", ".LCFI", ".Ltext", ".file", ".LFB", ".LFE", ".align", ".globl", ".type"));
+  static String labelRegex = "^[a-zA-Z0-9_.]+:";
   
   /**
    * @param program       - The output of GCC
@@ -57,6 +59,64 @@ public class AsmParser
   public static CompiledProgram parse(String program, int lengthOfCCode)
   {
     // Split into lines, remove comments, replace \t with spaces, trim
+    List<String> stringLines = splitLines(program);
+    
+    // Go through the program
+    // Take note of .loc [file index] [line] [column]
+    List<Line> lines = markCMapping(stringLines);
+    
+    // Collect used labels
+    Set<String> usedLabels = collectUsedLabels(stringLines);
+    
+    // Remove unused labels
+    for (int i = lines.size() - 1; i >= 0; i--)
+    {
+      String line = lines.get(i).asmLine;
+      if (Pattern.matches(labelRegex, line))
+      {
+        String labelName = line.split(":")[0];
+        if (!usedLabels.contains(labelName))
+        {
+          lines.remove(i);
+        }
+      }
+    }
+    
+    // Remove directives not pointed to by labels
+    for (int i = lines.size() - 1; i >= 0; i--)
+    {
+      String line = lines.get(i).asmLine;
+      if (line.startsWith("."))
+      {
+        // Check last line
+        if (i == 0)
+        {
+          lines.remove(i);
+          continue;
+        }
+        Line lastLine = lines.get(i - 1);
+        if (!Pattern.matches(labelRegex, lastLine.asmLine))
+        {
+          lines.remove(i);
+        }
+      }
+    }
+    
+    List<String>  finalLines = new ArrayList<>();
+    List<Integer> cLines     = new ArrayList<>();
+    List<Integer> asmToC     = new ArrayList<>();
+    
+    for (Line line : lines)
+    {
+      finalLines.add(line.asmLine);
+      asmToC.add(line.cLine);
+    }
+    
+    return new CompiledProgram(finalLines, cLines, asmToC);
+  }
+  
+  private static List<String> splitLines(String program)
+  {
     List<String> lines = Arrays.asList(program.split("\n"));
     lines = new ArrayList<>(lines);
     for (int i = 0; i < lines.size(); i++)
@@ -65,52 +125,48 @@ public class AsmParser
     }
     // Remove empty lines
     lines.removeIf(String::isEmpty);
-    
-    // Determine the starting and ending line of the program, filter out the rest
-    int[]        span         = programSpan(lines);
-    List<String> programLines = lines.subList(span[0], span[1]);
-    
-    // Go through the program
-    // Take note of .loc [file index] [line] [column]
-    int           currentCLine = 0;
-    List<String>  cleanProgram = new ArrayList<>();
-    List<Integer> cLines       = new ArrayList<>();
-    for (int i = 0; i <= lengthOfCCode; i++)
-    {
-      cLines.add(0);
-    }
-    List<Integer> asmToC = new ArrayList<>();
-    
-    // This if handles the case where the ASM output is empty (has been filtered out)
-    if (!programLines.isEmpty())
-    {
-      asmToC.add(0);
-    }
-    
-    for (String line : programLines)
+    return lines;
+  }
+  
+  private static List<Line> markCMapping(List<String> lines)
+  {
+    int        currentCLine = 0;
+    List<Line> cleanProgram = new ArrayList<>();
+    for (String line : lines)
     {
       // If the line is a .loc, update the current C line
       if (isMappingLine(line))
       {
         // 1 indexed C file, and code editor
         currentCLine = parseMappingLine(line);
-        cLines.set(currentCLine, currentCLine);
       }
-      
-      // Decide whether to add the line to the clean program
-      if (keepLine(line))
-      {
-        // Add tab to the start of the line if it is not a label
-        if (!isEntityStart(line))
-        {
-          line = "\t" + line;
-        }
-        cleanProgram.add(line);
-        asmToC.add(currentCLine);
-      }
-      
+      cleanProgram.add(new Line(currentCLine, line));
     }
-    return new CompiledProgram(cleanProgram, cLines, asmToC);
+    return cleanProgram;
+  }
+  
+  private static Set<String> collectUsedLabels(List<String> program)
+  {
+    Set<String> labels     = collectLabels(program);
+    Set<String> usedLabels = new HashSet<>();
+    for (String line : program)
+    {
+      String[] parts = line.split("[ ,()]+");
+      // Do not regard the line if it is a directive
+      // But do regard it if it is a ".type label, @function"
+      if (line.startsWith(".") && !line.contains("@function"))
+      {
+        continue;
+      }
+      for (String part : parts)
+      {
+        if (labels.contains(part))
+        {
+          usedLabels.add(part);
+        }
+      }
+    }
+    return usedLabels;
   }
   
   /**
@@ -119,36 +175,6 @@ public class AsmParser
   private static String removeComment(String s)
   {
     return s.split("#")[0];
-  }
-  
-  /**
-   * @param program - The output of GCC
-   *
-   * @return The starting and ending line of the program (inclusive and exclusive)
-   * @brief Determines the starting and ending line of the program. Anything outside of this range is removed.
-   */
-  public static int[] programSpan(List<String> program)
-  {
-    int     start    = 0;
-    int     end      = program.size();
-    boolean foundEnd = false;
-    for (int i = 0; i < program.size(); i++)
-    {
-      if (isEntityStart(program.get(i)) && start == 0)
-      {
-        start = i;
-      }
-      if (isEntityEnd(program.get(i)))
-      {
-        end      = i;
-        foundEnd = true;
-      }
-    }
-    if (!foundEnd)
-    {
-      return new int[]{0, 0};
-    }
-    return new int[]{start, end};
   }
   
   /**
@@ -173,41 +199,25 @@ public class AsmParser
   }
   
   /**
-   * @param line - The line to check
+   * @param program The program to look for labels in
    *
-   * @return True if the line should be kept
-   * @brief Assembly filter
+   * @return List of labels in the program
    */
-  private static boolean keepLine(String line)
+  private static Set<String> collectLabels(List<String> program)
   {
-    // Keep the line if it doesn't start with a bad prefix
-    for (String prefix : badPrefixes)
+    Set<String> labels = new HashSet<>();
+    for (String line : program)
     {
-      if (line.startsWith(prefix))
+      if (Pattern.matches(labelRegex, line))
       {
-        return false;
+        String labelName = line.split(":")[0];
+        labels.add(labelName);
       }
     }
-    return true;
+    return labels;
   }
   
-  /**
-   * @param line - The line to check
-   *
-   * @return True if the line is the start of an entity (relevant part of the program)
-   */
-  public static boolean isEntityStart(String line)
+  record Line(int cLine, String asmLine)
   {
-    return Pattern.matches("^\\S+:$", line);
-  }
-  
-  /**
-   * @param line - The line to check
-   *
-   * @return True if the line is the end of an entity
-   */
-  public static boolean isEntityEnd(String line)
-  {
-    return line.startsWith(".size");
   }
 }

@@ -31,6 +31,55 @@ public class CompilerTests
   }
   
   @Test
+  public void test_asmParserFiltersLabels()
+  {
+    String asmCode = """
+            A:
+            subi  sp, sp, 16
+            B:
+            addi   a0, a0, 1
+            j     B
+            """;
+    
+    // Exercise
+    CompiledProgram program = AsmParser.parse(asmCode, 0);
+    
+    // Verify
+    System.out.println(program.program);
+    
+    for (String line : program.program)
+    {
+      Assert.assertFalse(line.contains("A:"));
+    }
+  }
+  
+  @Test
+  public void test_asmParserRemovesDirectives()
+  {
+    String asmCode = """
+            .file   "test.c"
+            N:
+            .word 25
+            M:
+            .word 32
+            A:
+            subi  sp, sp, 16
+            lw    a0, 0(N)
+            """;
+    
+    // Exercise
+    CompiledProgram program = AsmParser.parse(asmCode, 0);
+    
+    // Verify
+    System.out.println(program.program);
+    
+    for (String line : program.program)
+    {
+      Assert.assertFalse(line.contains("A:"));
+    }
+  }
+  
+  @Test
   public void test_invalidCProgram_produces_error()
   {
     // Setup
@@ -48,7 +97,7 @@ public class CompilerTests
   }
   
   @Test
-  public void test_validCProgram_produces_valid_riscv_asm()
+  public void test_simpleCProgram_produces_valid_riscv_asm()
   {
     // Setup
     String     cCode  = "int f(int a) { int x = a*2; return x+1; }";

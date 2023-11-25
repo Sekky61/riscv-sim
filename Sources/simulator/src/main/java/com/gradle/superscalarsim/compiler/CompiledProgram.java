@@ -31,12 +31,20 @@ import java.util.List;
 
 public class CompiledProgram
 {
-  /// The RISC-V assembly code
+  /**
+   * The RISC-V assembly code
+   */
   public List<String> program;
-  /// Indexes of C lines that have corresponding assembly code
+  
+  /**
+   * Indexes of C lines that have corresponding assembly code
+   */
   public List<Integer> cLines;
-  /// Mapping from ASM lines to C lines
-  /// The length of this list is the same as the length of the program
+  
+  /**
+   * Mapping from ASM lines to C lines.
+   * The length of this list is the same as the length of the program
+   */
   public List<Integer> asmToC;
   
   public CompiledProgram(List<String> program, List<Integer> cLines, List<Integer> asmToC)
