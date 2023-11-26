@@ -90,7 +90,6 @@ export type CompileResponse =
   | {
       success: true;
       program: string;
-      cLines: number[];
       asmToC: number[];
     }
   | {

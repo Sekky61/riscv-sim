@@ -37,20 +37,14 @@ public class CompiledProgram
   public List<String> program;
   
   /**
-   * Indexes of C lines that have corresponding assembly code
-   */
-  public List<Integer> cLines;
-  
-  /**
    * Mapping from ASM lines to C lines.
    * The length of this list is the same as the length of the program
    */
   public List<Integer> asmToC;
   
-  public CompiledProgram(List<String> program, List<Integer> cLines, List<Integer> asmToC)
+  public CompiledProgram(List<String> program, List<Integer> asmToC)
   {
     this.program = program;
-    this.cLines  = cLines;
     this.asmToC  = asmToC;
   }
 }

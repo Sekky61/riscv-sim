@@ -46,12 +46,6 @@ public class CompileResponse
   public String program;
   
   /**
-   * Indexes of C lines that have corresponding assembly code
-   */
-  @JsonProperty(required = true)
-  public Integer[] cLines;
-  
-  /**
    * Mapping from ASM lines to C lines.
    * The length of this list is the same as the length of the program
    */
@@ -74,21 +68,18 @@ public class CompileResponse
   {
     this.success       = false;
     this.program       = null;
-    this.cLines        = null;
     this.asmToC        = null;
     this.compilerError = null;
   }
   
   public CompileResponse(boolean success,
                          String program,
-                         List<Integer> cLines,
                          List<Integer> asmToC,
                          String error,
                          List<Object> compilerError)
   {
     this.success       = success;
     this.program       = program;
-    this.cLines        = cLines.toArray(new Integer[0]);
     this.asmToC        = asmToC.toArray(new Integer[0]);
     this.error         = error;
     this.compilerError = compilerError;

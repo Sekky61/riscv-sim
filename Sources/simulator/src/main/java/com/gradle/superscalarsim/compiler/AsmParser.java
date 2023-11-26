@@ -71,8 +71,17 @@ public class AsmParser
     // Filter, mutates the lines
     List<Line> filteredLines = filterAsm(lines, usedLabels);
     
+    // Add 4 spaces to the start of each line that is not a label
+    for (int i = 0; i < filteredLines.size(); i++)
+    {
+      String line = filteredLines.get(i).asmLine;
+      if (!Pattern.matches(labelRegex, line))
+      {
+        filteredLines.set(i, new Line(filteredLines.get(i).cLine, "    " + line));
+      }
+    }
+    
     List<String>  finalLines = new ArrayList<>();
-    List<Integer> cLines     = new ArrayList<>();
     List<Integer> asmToC     = new ArrayList<>();
     
     for (Line line : filteredLines)
@@ -81,7 +90,7 @@ public class AsmParser
       asmToC.add(line.cLine);
     }
     
-    return new CompiledProgram(finalLines, cLines, asmToC);
+    return new CompiledProgram(finalLines, asmToC);
   }
   
   /**
