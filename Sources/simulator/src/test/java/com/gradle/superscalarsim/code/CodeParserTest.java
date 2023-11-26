@@ -81,8 +81,8 @@ public class CodeParserTest
     
     // Parser does not deal in bytes, but index offsets
     Assert.assertEquals(0, (int) codeParser.getLabels().get("one"));
-    Assert.assertEquals(1, (int) codeParser.getLabels().get("two"));
-    Assert.assertEquals(3, (int) codeParser.getLabels().get("three"));
+    Assert.assertEquals(4, (int) codeParser.getLabels().get("two"));
+    Assert.assertEquals(12, (int) codeParser.getLabels().get("three"));
   }
   
   @Test
@@ -107,8 +107,8 @@ public class CodeParserTest
     Assert.assertEquals("fadd.s", codeParser.getInstructions().get(2).getInstructionName());
     
     Assert.assertEquals(0, (int) codeParser.getLabels().get("one"));
-    Assert.assertEquals(1, (int) codeParser.getLabels().get("two"));
-    Assert.assertEquals(2, (int) codeParser.getLabels().get("three"));
+    Assert.assertEquals(4, (int) codeParser.getLabels().get("two"));
+    Assert.assertEquals(8, (int) codeParser.getLabels().get("three"));
   }
   
   @Test

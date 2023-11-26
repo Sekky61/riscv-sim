@@ -200,6 +200,8 @@ public class CpuState implements Serializable
     // Fill memory with data
     MemoryInitializer memoryInitializer = new MemoryInitializer(128, 512);
     memoryInitializer.initializeMemory(simulatedMemory, codeParser.getMemoryLocations());
+    memoryInitializer.initializeMemory(simulatedMemory, config.memoryLocations);
+    
     this.cache = new Cache(simulatedMemory, config.cacheLines, config.cacheAssoc, config.cacheLineSize,
                            replacementPoliciesEnum, writeBack, config.addRemainingDelay, config.storeLatency,
                            config.loadLatency, config.laneReplacementDelay, this.cacheStatisticsCounter);
@@ -207,7 +209,8 @@ public class CpuState implements Serializable
     this.memoryModel = new MemoryModel(cache, cacheStatisticsCounter);
     
     
-    this.loadStoreInterpreter = new CodeLoadStoreInterpreter(memoryModel, unifiedRegisterFileBlock);
+    this.loadStoreInterpreter = new CodeLoadStoreInterpreter(memoryModel, unifiedRegisterFileBlock,
+                                                             instructionMemoryBlock);
     
     this.instructionFetchBlock = new InstructionFetchBlock(simCodeModelFactory, instructionMemoryBlock, gShareUnit,
                                                            branchTargetBuffer);
@@ -216,25 +219,27 @@ public class CpuState implements Serializable
     this.decodeAndDispatchBlock = new DecodeAndDispatchBlock(instructionFetchBlock, renameMapTableBlock,
                                                              globalHistoryRegister, branchTargetBuffer,
                                                              instructionMemoryBlock, config.fetchWidth);
-    this.reorderBufferBlock     = new ReorderBufferBlock(renameMapTableBlock, decodeAndDispatchBlock, gShareUnit,
-                                                         branchTargetBuffer, instructionFetchBlock, statisticsCounter);
-    // ROB state
+    
+    // ROB
+    this.reorderBufferBlock        = new ReorderBufferBlock(renameMapTableBlock, decodeAndDispatchBlock, gShareUnit,
+                                                            branchTargetBuffer, instructionFetchBlock,
+                                                            statisticsCounter);
     reorderBufferBlock.bufferSize  = config.robSize;
     reorderBufferBlock.commitLimit = config.commitWidth;
     
+    // Issue
     this.issueWindowSuperBlock = new IssueWindowSuperBlock(decodeAndDispatchBlock);
-    this.arithmeticInterpreter = new CodeArithmeticInterpreter(unifiedRegisterFileBlock);
-    this.branchInterpreter     = new CodeBranchInterpreter(instructionMemoryBlock, unifiedRegisterFileBlock);
+    this.arithmeticInterpreter = new CodeArithmeticInterpreter(unifiedRegisterFileBlock, instructionMemoryBlock);
+    this.branchInterpreter     = new CodeBranchInterpreter(unifiedRegisterFileBlock, instructionMemoryBlock);
     
+    // Memory blocks
     this.storeBufferBlock = new StoreBufferBlock(loadStoreInterpreter, unifiedRegisterFileBlock, reorderBufferBlock);
     storeBufferBlock.setBufferSize(config.sbSize);
-    
     this.loadBufferBlock = new LoadBufferBlock(storeBufferBlock, unifiedRegisterFileBlock, reorderBufferBlock,
                                                instructionFetchBlock);
     loadBufferBlock.setBufferSize(config.lbSize);
     
     // FUs
-    
     this.aluIssueWindowBlock       = new AluIssueWindowBlock(unifiedRegisterFileBlock);
     this.branchIssueWindowBlock    = new BranchIssueWindowBlock(unifiedRegisterFileBlock);
     this.fpIssueWindowBlock        = new FpIssueWindowBlock(unifiedRegisterFileBlock);

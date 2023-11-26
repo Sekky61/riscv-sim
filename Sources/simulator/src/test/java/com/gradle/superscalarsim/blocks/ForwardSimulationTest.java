@@ -132,28 +132,29 @@ public class ForwardSimulationTest
     // 1 L/S: (delay 1)
     // 2 branch: (delay 3)
     // 1 mem: (delay 1)
-    cpuCfg.fUnits    = new CpuConfiguration.FUnit[10];
-    cpuCfg.fUnits[0] = new CpuConfiguration.FUnit(1, CpuConfiguration.FUnit.Type.FX, 2,
-                                                  new CpuConfiguration.FUnit.Capability[]{CpuConfiguration.FUnit.Capability.addition});
-    cpuCfg.fUnits[1] = new CpuConfiguration.FUnit(2, CpuConfiguration.FUnit.Type.FX, 2,
-                                                  new CpuConfiguration.FUnit.Capability[]{CpuConfiguration.FUnit.Capability.addition});
-    cpuCfg.fUnits[2] = new CpuConfiguration.FUnit(3, CpuConfiguration.FUnit.Type.FX, 2,
-                                                  new CpuConfiguration.FUnit.Capability[]{CpuConfiguration.FUnit.Capability.addition});
-    cpuCfg.fUnits[3] = new CpuConfiguration.FUnit(4, CpuConfiguration.FUnit.Type.FP, 2,
-                                                  new CpuConfiguration.FUnit.Capability[]{CpuConfiguration.FUnit.Capability.addition});
-    cpuCfg.fUnits[4] = new CpuConfiguration.FUnit(5, CpuConfiguration.FUnit.Type.FP, 2,
-                                                  new CpuConfiguration.FUnit.Capability[]{CpuConfiguration.FUnit.Capability.addition});
-    cpuCfg.fUnits[5] = new CpuConfiguration.FUnit(6, CpuConfiguration.FUnit.Type.FP, 2,
-                                                  new CpuConfiguration.FUnit.Capability[]{CpuConfiguration.FUnit.Capability.addition});
-    cpuCfg.fUnits[6] = new CpuConfiguration.FUnit(7, CpuConfiguration.FUnit.Type.L_S, 1,
-                                                  new CpuConfiguration.FUnit.Capability[]{});
-    cpuCfg.fUnits[7] = new CpuConfiguration.FUnit(8, CpuConfiguration.FUnit.Type.Branch, 3,
-                                                  new CpuConfiguration.FUnit.Capability[]{});
-    cpuCfg.fUnits[8] = new CpuConfiguration.FUnit(9, CpuConfiguration.FUnit.Type.Branch, 3,
-                                                  new CpuConfiguration.FUnit.Capability[]{});
-    cpuCfg.fUnits[9] = new CpuConfiguration.FUnit(10, CpuConfiguration.FUnit.Type.Memory, 1,
-                                                  new CpuConfiguration.FUnit.Capability[]{});
-    cpuCfg.code      = "";
+    cpuCfg.fUnits          = new CpuConfiguration.FUnit[10];
+    cpuCfg.fUnits[0]       = new CpuConfiguration.FUnit(1, CpuConfiguration.FUnit.Type.FX, 2,
+                                                        new CpuConfiguration.FUnit.Capability[]{CpuConfiguration.FUnit.Capability.addition});
+    cpuCfg.fUnits[1]       = new CpuConfiguration.FUnit(2, CpuConfiguration.FUnit.Type.FX, 2,
+                                                        new CpuConfiguration.FUnit.Capability[]{CpuConfiguration.FUnit.Capability.addition});
+    cpuCfg.fUnits[2]       = new CpuConfiguration.FUnit(3, CpuConfiguration.FUnit.Type.FX, 2,
+                                                        new CpuConfiguration.FUnit.Capability[]{CpuConfiguration.FUnit.Capability.addition});
+    cpuCfg.fUnits[3]       = new CpuConfiguration.FUnit(4, CpuConfiguration.FUnit.Type.FP, 2,
+                                                        new CpuConfiguration.FUnit.Capability[]{CpuConfiguration.FUnit.Capability.addition});
+    cpuCfg.fUnits[4]       = new CpuConfiguration.FUnit(5, CpuConfiguration.FUnit.Type.FP, 2,
+                                                        new CpuConfiguration.FUnit.Capability[]{CpuConfiguration.FUnit.Capability.addition});
+    cpuCfg.fUnits[5]       = new CpuConfiguration.FUnit(6, CpuConfiguration.FUnit.Type.FP, 2,
+                                                        new CpuConfiguration.FUnit.Capability[]{CpuConfiguration.FUnit.Capability.addition});
+    cpuCfg.fUnits[6]       = new CpuConfiguration.FUnit(7, CpuConfiguration.FUnit.Type.L_S, 1,
+                                                        new CpuConfiguration.FUnit.Capability[]{});
+    cpuCfg.fUnits[7]       = new CpuConfiguration.FUnit(8, CpuConfiguration.FUnit.Type.Branch, 3,
+                                                        new CpuConfiguration.FUnit.Capability[]{});
+    cpuCfg.fUnits[8]       = new CpuConfiguration.FUnit(9, CpuConfiguration.FUnit.Type.Branch, 3,
+                                                        new CpuConfiguration.FUnit.Capability[]{});
+    cpuCfg.fUnits[9]       = new CpuConfiguration.FUnit(10, CpuConfiguration.FUnit.Type.Memory, 1,
+                                                        new CpuConfiguration.FUnit.Capability[]{});
+    cpuCfg.code            = "";
+    cpuCfg.memoryLocations = new ArrayList<>();
     
     this.cpu = new Cpu(cpuCfg);
     CpuState cpuState = this.cpu.cpuState;
@@ -1056,7 +1057,7 @@ public class ForwardSimulationTest
     
     List<InputCodeModel> instructions = Arrays.asList(ins1, ins2, ins3, ins4);
     instructionMemoryBlock.setCode(instructions);
-    instructionMemoryBlock.setLabels(Map.of("lab1", 1, "lab2", 2, "lab3", 3, "labFinal", 4));
+    instructionMemoryBlock.setLabels(Map.of("lab1", 4, "lab2", 2 * 4, "lab3", 3 * 4, "labFinal", 4 * 4));
     
     this.cpu.step();
     Assert.assertEquals("jal", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
@@ -1211,7 +1212,7 @@ public class ForwardSimulationTest
     
     List<InputCodeModel> instructions = Arrays.asList(ins1, ins2, ins3);
     instructionMemoryBlock.setCode(instructions);
-    instructionMemoryBlock.setLabels(Map.of("loop", 0, "loopEnd", 3));
+    instructionMemoryBlock.setLabels(Map.of("loop", 0, "loopEnd", 3 * 4));
     
     // First fetch (3)
     this.cpu.step();
@@ -1485,7 +1486,7 @@ public class ForwardSimulationTest
     
     List<InputCodeModel> instructions = Arrays.asList(ins1, ins2, ins3, ins4);
     instructionMemoryBlock.setCode(instructions);
-    instructionMemoryBlock.setLabels(Map.of("labelIf", 3, "labelFin", 4));
+    instructionMemoryBlock.setLabels(Map.of("labelIf", 3 * 4, "labelFin", 4 * 4));
     
     // First fetch
     this.cpu.step();
@@ -1615,7 +1616,7 @@ public class ForwardSimulationTest
     
     List<InputCodeModel> instructions = Arrays.asList(ins1, ins2, ins3, ins4);
     instructionMemoryBlock.setCode(instructions);
-    instructionMemoryBlock.setLabels(Map.of("labelIf", 3, "labelFin", 4));
+    instructionMemoryBlock.setLabels(Map.of("labelIf", 3 * 4, "labelFin", 4 * 4));
     // Code:
     //
     // beq x3 x0 labelIf

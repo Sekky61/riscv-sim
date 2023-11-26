@@ -1,5 +1,6 @@
 package com.gradle.superscalarsim.code;
 
+import com.gradle.superscalarsim.blocks.base.InstructionMemoryBlock;
 import com.gradle.superscalarsim.blocks.base.UnifiedRegisterFileBlock;
 import com.gradle.superscalarsim.builders.InputCodeArgumentBuilder;
 import com.gradle.superscalarsim.builders.InputCodeModelBuilder;
@@ -23,10 +24,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.mockito.ArgumentMatchers.any;
 
@@ -52,8 +50,10 @@ public class CodeArithmeticInterpreterIntTest
     Mockito.when(initLoader.getInstructionFunctionModels()).thenReturn(setUpInstructions());
     Mockito.when(initLoader.getInstructionFunctionModel(any())).thenCallRealMethod();
     
+    InstructionMemoryBlock instructionMemoryBlock = new InstructionMemoryBlock(new ArrayList<>(), new HashMap<>(),
+                                                                               null);
     this.codeArithmeticInterpreter = new CodeArithmeticInterpreter(
-            new UnifiedRegisterFileBlock(initLoader, new RegisterModelFactory()));
+            new UnifiedRegisterFileBlock(initLoader, new RegisterModelFactory()), instructionMemoryBlock);
   }
   
   private Map<String, InstructionFunctionModel> setUpInstructions()

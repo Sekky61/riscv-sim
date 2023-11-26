@@ -44,7 +44,7 @@ public class CodeBranchInterpreterTest
     unifiedRegisterFileBlock.getRegister("x3").setValue(6);
     unifiedRegisterFileBlock.getRegister("x4").setValue(-2);
     
-    this.codeBranchInterpreter = new CodeBranchInterpreter(instructionMemoryBlock, unifiedRegisterFileBlock);
+    this.codeBranchInterpreter = new CodeBranchInterpreter(unifiedRegisterFileBlock, instructionMemoryBlock);
   }
   
   private List<InputCodeModel> setUpParsedCode()
@@ -79,7 +79,7 @@ public class CodeBranchInterpreterTest
   
   private Map<String, Integer> setUpLabels()
   {
-    return Map.of("one", 0, "two", 1, "three", 2);
+    return Map.of("one", 0, "two", 4, "three", 8);
   }
   
   @Test

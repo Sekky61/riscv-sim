@@ -35,6 +35,7 @@ package com.gradle.superscalarsim.code;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import com.gradle.superscalarsim.blocks.base.InstructionMemoryBlock;
 import com.gradle.superscalarsim.blocks.base.UnifiedRegisterFileBlock;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.models.InstructionFunctionModel;
@@ -68,15 +69,25 @@ public class CodeLoadStoreInterpreter
   private final UnifiedRegisterFileBlock registerFileBlock;
   
   /**
-   * @param [in] initLoader - Initial loader of interpretable instructions and register files
-   * @param [in] memoryModel - Class simulating memory
+   * Storage of labels and their addresses
+   */
+  @JsonIdentityReference(alwaysAsId = true)
+  private final InstructionMemoryBlock instructionMemoryBlock;
+  
+  /**
+   * @param memoryModel       Memory model
+   * @param registerFileBlock Register file block
+   * @param labelMap          Label map
    *
    * @brief Constructor
    */
-  public CodeLoadStoreInterpreter(final MemoryModel memoryModel, final UnifiedRegisterFileBlock registerFileBlock)
+  public CodeLoadStoreInterpreter(final MemoryModel memoryModel,
+                                  final UnifiedRegisterFileBlock registerFileBlock,
+                                  InstructionMemoryBlock instructionMemoryBlock)
   {
-    this.memoryModel       = memoryModel;
-    this.registerFileBlock = registerFileBlock;
+    this.memoryModel            = memoryModel;
+    this.registerFileBlock      = registerFileBlock;
+    this.instructionMemoryBlock = instructionMemoryBlock;
   }// end of Constructor
   //-------------------------------------------------------------------------------------------
   
@@ -163,7 +174,8 @@ public class CodeLoadStoreInterpreter
     String addressExpr = interpretableAsParams[2];
     
     List<String>              varNames  = Expression.getVariableNames(addressExpr);
-    List<Expression.Variable> variables = codeModel.getVariables(varNames, registerFileBlock);
+    List<Expression.Variable> variables = codeModel.getVariables(varNames, registerFileBlock,
+                                                                 instructionMemoryBlock.getLabels());
     
     Expression.Variable addressResult = Expression.interpret(addressExpr, variables);
     if (addressResult == null)

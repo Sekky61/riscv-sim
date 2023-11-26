@@ -118,6 +118,8 @@ public class CpuConfiguration implements Serializable
   public int laneReplacementDelay;
   public boolean addRemainingDelay;
   
+  public List<MemoryLocation> memoryLocations;
+  
   public static CpuConfiguration getDefaultConfiguration()
   {
     CpuConfiguration config = new CpuConfiguration();
@@ -172,6 +174,7 @@ public class CpuConfiguration implements Serializable
     config.loadLatency          = 1;
     config.laneReplacementDelay = 10;
     config.addRemainingDelay    = false;
+    config.memoryLocations      = new ArrayList<>();
     return config;
   }
   
@@ -376,6 +379,30 @@ public class CpuConfiguration implements Serializable
           }
         }
         default -> errorMessages.add("Unknown FU type: " + fu.fuType);
+      }
+    }
+    
+    // Memory allocations
+    if (memoryLocations == null)
+    {
+      errorMessages.add("Memory locations must not be null");
+    }
+    else
+    {
+      for (MemoryLocation memoryLocation : memoryLocations)
+      {
+        if (memoryLocation.alignment < 0)
+        {
+          errorMessages.add("Memory location alignment must be greater than 0");
+        }
+        if (memoryLocation.value == null)
+        {
+          errorMessages.add("Memory location value must not be null");
+        }
+        if (memoryLocation.name == null || memoryLocation.name.isEmpty())
+        {
+          errorMessages.add("Memory location name must not be empty");
+        }
       }
     }
     

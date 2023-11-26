@@ -32,6 +32,8 @@
  */
 package com.gradle.superscalarsim.code;
 
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.gradle.superscalarsim.blocks.base.InstructionMemoryBlock;
 import com.gradle.superscalarsim.blocks.base.UnifiedRegisterFileBlock;
 import com.gradle.superscalarsim.models.InstructionFunctionModel;
 import com.gradle.superscalarsim.models.SimCodeModel;
@@ -46,18 +48,30 @@ import java.util.List;
  */
 public class CodeArithmeticInterpreter
 {
+  /**
+   * Register file block for getting register values
+   */
+  @JsonIdentityReference(alwaysAsId = true)
   private final UnifiedRegisterFileBlock registerFileBlock;
   
   /**
-   * @param [in] PrecedingTable.getInstance() - Preceding table for operation priorities
+   * Storage of labels and their addresses
+   */
+  @JsonIdentityReference(alwaysAsId = true)
+  private final InstructionMemoryBlock instructionMemoryBlock;
+  
+  /**
+   * @param registerFileBlock Preceding table for operation priorities
+   * @param labelMap          Map of labels and their addresses
    *
    * @brief Constructor
    */
-  public CodeArithmeticInterpreter(final UnifiedRegisterFileBlock registerFileBlock)
+  public CodeArithmeticInterpreter(final UnifiedRegisterFileBlock registerFileBlock,
+                                   InstructionMemoryBlock instructionMemoryBlock)
   {
-    this.registerFileBlock = registerFileBlock;
+    this.registerFileBlock      = registerFileBlock;
+    this.instructionMemoryBlock = instructionMemoryBlock;
   }// end of Constructor
-  //-------------------------------------------------------------------------------------------
   
   /**
    * @param simCodeModel Executed instruction
@@ -74,9 +88,10 @@ public class CodeArithmeticInterpreter
     }
     
     // Evaluate expression
-    String                    expression = instruction.getInterpretableAs();
-    List<String>              varNames   = Expression.getVariableNames(expression);
-    List<Expression.Variable> variables  = simCodeModel.getVariables(varNames, registerFileBlock);
+    String       expression = instruction.getInterpretableAs();
+    List<String> varNames   = Expression.getVariableNames(expression);
+    List<Expression.Variable> variables = simCodeModel.getVariables(varNames, registerFileBlock,
+                                                                    instructionMemoryBlock.getLabels());
     Expression.interpret(expression, variables);
     
     // return "rd"

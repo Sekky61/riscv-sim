@@ -1951,5 +1951,37 @@
       }
     ],
     "interpretableAs": "\\rs1 fclass \\rd ="
+  },
+  "la": {
+    "name": "la",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kInt",
+        "writeBack": true
+      },
+      {
+        "name": "imm",
+        "type": "kInt"
+      }
+    ],
+    "interpretableAs": "\\imm \\rd ="
+  },
+  "lla": {
+    "name": "lla",
+    "instructionType": "kArithmetic",
+    "arguments": [
+      {
+        "name": "rd",
+        "type": "kInt",
+        "writeBack": true
+      },
+      {
+        "name": "imm",
+        "type": "kInt"
+      }
+    ],
+    "interpretableAs": "\\imm \\rd ="
   }
 }

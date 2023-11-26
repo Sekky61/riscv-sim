@@ -1820,4 +1820,25 @@ public class InstructionTests
     Assert.assertEquals(0x11, (long) cpu.cpuState.memoryModel.load(0x102, 1, 0, 0).getSecond());
     Assert.assertEquals(0xff, (long) cpu.cpuState.memoryModel.load(0x103, 1, 0, 0).getSecond());
   }
+  
+  /**
+   * LA loads the address of the label into the register
+   */
+  @Test
+  public void testLA()
+  {
+    // Setup + exercise
+    cpuConfig.code = """
+            l1:
+            la x1, l1
+            l2:
+            la x2, l2
+            """;
+    Cpu cpu = new Cpu(cpuConfig);
+    cpu.execute();
+    
+    // Assert
+    Assert.assertEquals(0x00, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt));
+    Assert.assertEquals(0x04, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").getValue(DataTypeEnum.kInt));
+  }
 }

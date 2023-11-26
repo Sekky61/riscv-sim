@@ -45,6 +45,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @class SimCodeModel
@@ -463,7 +464,9 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
    * @return Variables used in the instruction in the form for expression evaluation
    * @brief reads current register values (including speculative values), the PC, constants
    */
-  public List<Expression.Variable> getVariables(List<String> variableNames, UnifiedRegisterFileBlock registerFileBlock)
+  public List<Expression.Variable> getVariables(List<String> variableNames,
+                                                UnifiedRegisterFileBlock registerFileBlock,
+                                                Map<String, Integer> labels)
   {
     List<Expression.Variable> variables                = new ArrayList<>();
     InstructionFunctionModel  instructionFunctionModel = getInstructionFunctionModel();
@@ -504,8 +507,13 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
         }
         else
         {
-          // TODO: Handle labels: load their value or extract it in parse. Skip for now.
-          //throw new IllegalStateException("Could not parse " + renamedName + " as constant");
+          if (labels != null && labels.containsKey(renamedName))
+          {
+            variables.add(new Expression.Variable(name, argument.type(),
+                                                  RegisterDataContainer.fromValue(labels.get(renamedName))));
+            continue;
+          }
+          throw new IllegalStateException("Could not parse " + renamedName + " as constant or label");
         }
       }
     }

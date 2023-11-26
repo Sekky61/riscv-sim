@@ -49,15 +49,24 @@ public class MemoryInitializer
   public int stackSize;
   
   /**
+   * State of the memory allocator
+   * Pointer to the next free memory location
+   */
+  private long memoryPtr;
+  
+  /**
    * Constructor
    */
   public MemoryInitializer(int freeMemoryStart, int stackSize)
   {
     this.freeMemoryStart = freeMemoryStart;
     this.stackSize       = stackSize;
+    this.memoryPtr       = freeMemoryStart + stackSize;
   }// end of Constructor
   
   /**
+   * Can be called multiple times
+   *
    * @param memory    - Memory to initialize
    * @param locations - Locations to initialize memory with
    *
@@ -65,7 +74,6 @@ public class MemoryInitializer
    */
   public void initializeMemory(SimulatedMemory memory, List<MemoryLocation> locations)
   {
-    long memoryPtr = freeMemoryStart + stackSize;
     for (MemoryLocation memoryLocation : locations)
     {
       // Align it (ceil to the next multiple of alignment)

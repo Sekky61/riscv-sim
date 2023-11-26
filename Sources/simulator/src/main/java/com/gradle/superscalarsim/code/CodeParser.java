@@ -431,7 +431,7 @@ public class CodeParser
     else
     {
       // Add label, this is index to the array of instructions, not "bytes"
-      labels.put(labelName, instructions.size());
+      labels.put(labelName, instructions.size() * 4);
       // Clear unconfirmed labels
       unconfirmedLabels.removeIf(token -> token.text().equals(labelName));
     }

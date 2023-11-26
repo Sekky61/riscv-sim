@@ -145,13 +145,44 @@ public class CompilerTests
     String                  asm           = String.join("\n", program.program);
     parser.parseCode(asm);
     
-    // TODO: Parser filters out constants
-    // .word   0x41c80000                      # float 25
-    // [4:9:12] Expecting immediate value, got : ".LC0".
+    // Verify
+    Assert.assertTrue(compileResult.success);
+    Assert.assertTrue(parser.success());
+    Assert.assertFalse(parser.getInstructions().isEmpty());
+    
+    // There is a square label
+    Assert.assertNotNull(parser.getLabels().get("square"));
+  }
+  
+  @Test
+  public void test_cprogram_with_global_array_produces_valid_riscv_asm()
+  {
+    // Setup
+    String cCode = """
+            int arr[10];
+            
+            int sum() {
+                int sum = 0;
+                for(int i = 0; i < 10; i++) {
+                    sum += arr[i];
+                }
+                return sum;
+            }""";
+    InitLoader loader = new InitLoader();
+    CodeParser parser = new CodeParser(loader);
+    
+    // Exercise
+    GccCaller.CompileResult compileResult = GccCaller.compile(cCode, true);
+    CompiledProgram         program       = AsmParser.parse(compileResult.code, cCode.split("\n").length);
+    String                  asm           = String.join("\n", program.program);
+    parser.parseCode(asm);
     
     // Verify
     Assert.assertTrue(compileResult.success);
     Assert.assertTrue(parser.success());
     Assert.assertFalse(parser.getInstructions().isEmpty());
+    
+    // There is a sum label
+    Assert.assertNotNull(parser.getLabels().get("sum"));
   }
 }

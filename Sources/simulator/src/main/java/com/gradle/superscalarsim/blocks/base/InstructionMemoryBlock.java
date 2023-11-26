@@ -68,7 +68,9 @@ public class InstructionMemoryBlock
   private Map<String, Integer> labels;
   
   /**
-   * @param [in] initLoader - InitLoader object with loaded instructions and registers
+   * @param code   List of parsed instructions
+   * @param labels List of all labels
+   * @param nop    Nop instruction
    *
    * @brief Constructor
    */
@@ -94,7 +96,7 @@ public class InstructionMemoryBlock
     {
       return -1;
     }
-    return index * 4;
+    return index;
   }
   //-------------------------------------------------------------------------------------------
   
@@ -135,6 +137,11 @@ public class InstructionMemoryBlock
   public void setLabels(Map<String, Integer> labels)
   {
     this.labels = labels;
+  }
+  
+  public Map<String, Integer> getLabels()
+  {
+    return labels;
   }
   
   public InputCodeModel getNop()
