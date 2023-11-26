@@ -68,45 +68,14 @@ public class AsmParser
     // Collect used labels
     Set<String> usedLabels = collectUsedLabels(stringLines);
     
-    // Remove unused labels
-    for (int i = lines.size() - 1; i >= 0; i--)
-    {
-      String line = lines.get(i).asmLine;
-      if (Pattern.matches(labelRegex, line))
-      {
-        String labelName = line.split(":")[0];
-        if (!usedLabels.contains(labelName))
-        {
-          lines.remove(i);
-        }
-      }
-    }
-    
-    // Remove directives not pointed to by labels
-    for (int i = lines.size() - 1; i >= 0; i--)
-    {
-      String line = lines.get(i).asmLine;
-      if (line.startsWith(".") && !line.endsWith(":"))
-      {
-        // Check last line
-        if (i == 0)
-        {
-          lines.remove(i);
-          continue;
-        }
-        Line lastLine = lines.get(i - 1);
-        if (!Pattern.matches(labelRegex, lastLine.asmLine))
-        {
-          lines.remove(i);
-        }
-      }
-    }
+    // Filter, mutates the lines
+    List<Line> filteredLines = filterAsm(lines, usedLabels);
     
     List<String>  finalLines = new ArrayList<>();
     List<Integer> cLines     = new ArrayList<>();
     List<Integer> asmToC     = new ArrayList<>();
     
-    for (Line line : lines)
+    for (Line line : filteredLines)
     {
       finalLines.add(line.asmLine);
       asmToC.add(line.cLine);
@@ -174,6 +143,64 @@ public class AsmParser
     return usedLabels;
   }
   
+  private static List<Line> filterAsm(List<Line> lines, Set<String> usedLabels)
+  {
+    List<Line> filteredLines = new ArrayList<>();
+    // Remove unused labels
+    for (Line value : lines)
+    {
+      String line = value.asmLine;
+      if (Pattern.matches(labelRegex, line))
+      {
+        String labelName = line.split(":")[0];
+        if (!usedLabels.contains(labelName))
+        {
+          continue;
+        }
+      }
+      filteredLines.add(value);
+    }
+    
+    // Remove directives not pointed to by labels
+    List<Line> finalLines = new ArrayList<>();
+    boolean    labeled    = false;
+    for (Line filteredLine : filteredLines)
+    {
+      String  line            = filteredLine.asmLine;
+      boolean isDirective     = line.startsWith(".") && !line.endsWith(":");
+      boolean deleteException = line.startsWith(".loc") || line.startsWith(".file");
+      boolean doNotDelete     = line.startsWith(".align");
+      // Keep labeled status while encountering .byte, .word, etc.
+      if (!isDirective || !isDataDirective(line))
+      {
+        labeled = Pattern.matches(labelRegex, line);
+      }
+      if (((!isDirective || labeled) && !deleteException) || doNotDelete)
+      {
+        finalLines.add(filteredLine);
+      }
+    }
+    
+    // Second pass - keep .align only if it is followed by a label and followed by data
+    List<Line> linesToFilter = new ArrayList<>();
+    for (int i = 0; i < finalLines.size(); i++)
+    {
+      String line = finalLines.get(i).asmLine;
+      if (line.startsWith(".align"))
+      {
+        String  nextLine          = (i + 1 < finalLines.size()) ? finalLines.get(i + 1).asmLine : "";
+        String  nextNextLine      = (i + 2 < finalLines.size()) ? finalLines.get(i + 2).asmLine : "";
+        boolean isFollowedByLabel = Pattern.matches(labelRegex, nextLine);
+        if (!isFollowedByLabel || !isDataDirective(nextNextLine))
+        {
+          continue;
+        }
+      }
+      linesToFilter.add(finalLines.get(i));
+    }
+    return linesToFilter;
+  }
+  
   /**
    * @brief Removes comments from a line
    */
@@ -206,7 +233,7 @@ public class AsmParser
   /**
    * @param program The program to look for labels in
    *
-   * @return List of labels in the program
+   * @return Set of labels in the program
    */
   private static Set<String> collectLabels(List<String> program)
   {
@@ -220,6 +247,12 @@ public class AsmParser
       }
     }
     return labels;
+  }
+  
+  private static boolean isDataDirective(String line)
+  {
+    return line.startsWith(".byte") || line.startsWith(".word") || line.startsWith(".hword") || line.startsWith(
+            ".ascii") || line.startsWith(".asciz");
   }
   
   record Line(int cLine, String asmLine)

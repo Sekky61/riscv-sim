@@ -118,7 +118,7 @@ public class GccCaller
     return List.of(compilerPath, "-xc", "-O" + (optimize ? "2" : "0"), "-march=rv32imfd", "-mabi=ilp32d", "-o",
                    "/dev/stdout", "-S", "-g", "-fverbose-asm", "-fcf-protection=none", "-fno-stack-protector",
                    "-fno-asynchronous-unwind-tables", "-fno-dwarf2-cfi-asm", "-nostdlib", "-fdiagnostics-format=json",
-                   "-xc", "-");
+                   "-fpic", "-xc", "-");
   }
   
   public static class CompileResult

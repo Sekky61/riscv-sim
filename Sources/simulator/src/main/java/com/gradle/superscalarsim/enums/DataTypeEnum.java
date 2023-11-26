@@ -127,25 +127,36 @@ public enum DataTypeEnum
   {
     int    radix    = 10;
     String cutValue = value;
-    if (value.startsWith("0x"))
+    if (value.startsWith("0x") || value.startsWith("0X"))
     {
       radix    = 16;
       cutValue = value.substring(2);
     }
-    else if (value.startsWith("0b"))
+    else if (value.startsWith("0b") || value.startsWith("0B"))
     {
       radix    = 2;
       cutValue = value.substring(2);
     }
     else if (value.startsWith("0"))
     {
-      radix    = 8;
-      cutValue = value.substring(1);
+      radix = 8;
+      //      cutValue = value.substring(1);
     }
     byte[] bytes = new byte[getSize()];
     switch (this)
     {
-      case kBool, kByte -> bytes[0] = Byte.parseByte(value);
+      case kBool, kByte ->
+      {
+        // Java does not have unsigned byte, so we need to parse it manually
+        try
+        {
+          bytes[0] = Byte.parseByte(cutValue, radix);
+        }
+        catch (NumberFormatException e)
+        {
+          bytes[0] = (byte) (Integer.parseInt(cutValue, radix) & 0xFF);
+        }
+      }
       case kShort ->
       {
         short shortValue = Short.decode(value);

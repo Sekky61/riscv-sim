@@ -59,52 +59,64 @@ public class CodeParser
    * Descriptions of all instructions
    */
   Map<String, InstructionFunctionModel> instructionModels;
+  
   /**
    * Descriptions of all memory locations defined in code
    */
   List<MemoryLocation> memoryLocations;
+  
   /**
    * Descriptions of all register files
    */
   List<RegisterFileModel> registerFileModelList;
+  
   /**
    * Factory for creating instances of InputCodeModel
    */
   InputCodeModelFactory inputCodeModelFactory;
+  
   /**
    * Lexer for parsing the code
    */
   Lexer lexer;
+  
   /**
    * Current token
    */
   CodeToken currentToken;
+  
   /**
    * Peek token
    */
   CodeToken peekToken;
+  
   /**
    * Result of the parsing - list of instructions.
    */
   List<InputCodeModel> instructions;
+  
   /**
    * Result of the parsing - list of labels.
    */
   Map<String, Integer> labels;
+  
   /**
    * Unconfirmed labels
    */
   List<CodeToken> unconfirmedLabels;
+  
   /**
    * Error messages from parsing ASM code.
    *
    * @brief List of error messages
    */
   List<ParseError> errorMessages;
+  
   Pattern decimalPattern;
   Pattern hexadecimalPattern;
   Pattern registerPattern;
   Pattern immediatePattern;
+  
   /**
    * The aliases between registers.
    * The key is the architecture name (x0), the value is the alias (zero).
