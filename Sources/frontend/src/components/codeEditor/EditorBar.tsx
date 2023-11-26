@@ -94,7 +94,7 @@ export default function EditorBar({ mode }: EditorBarProps) {
   const errorDisplay = mode == 'c' ? <CErrorsDisplay /> : <AsmErrorsDisplay />;
 
   return (
-    <div className='pl-3 text-sm flex items-center gap-1 bg-[#f5f5f5]'>
+    <div className='pl-3 text-sm flex items-center gap-1 bg-[#f5f5f5] sticky top-0 z-10'>
       <div className='py-1 px-0.5 font-bold'>{editorName}</div>
       {errorDisplay}
       <label>

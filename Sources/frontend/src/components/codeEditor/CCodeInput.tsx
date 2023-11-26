@@ -138,7 +138,7 @@ export default function CCodeInput() {
 
   // The ref is on an inner div so that the gray background is always after the editor
   return (
-    <div className='flex flex-col flex-grow overflow-hidden rounded border'>
+    <div className='flex flex-col flex-grow overflow-y-scroll rounded border relative'>
       <EditorBar mode='c' />
       <div className='relative flex-grow'>
         <div className='h-full w-full relative' ref={editor} />
