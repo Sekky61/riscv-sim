@@ -36,6 +36,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * `-mno-explicit-relocs` - disable symbolic address splitting (%hi/%lo) for RISC-V
+ *
  * @brief Class to call GCC
  */
 public class GccCaller
@@ -140,7 +142,8 @@ public class GccCaller
     command.addAll(extraFlags);
     command.addAll(List.of("-xc", "-march=rv32imfd", "-mabi=ilp32d", "-o", "/dev/stdout", "-S", "-g", "-fverbose-asm",
                            "-fcf-protection=none", "-fno-stack-protector", "-fno-asynchronous-unwind-tables",
-                           "-fno-dwarf2-cfi-asm", "-nostdlib", "-fdiagnostics-format=json", "-fpic", "-xc", "-"));
+                           "-mno-explicit-relocs", "-fno-dwarf2-cfi-asm", "-nostdlib", "-fdiagnostics-format=json",
+                           "-fpic", "-xc", "-"));
     return command;
   }
   

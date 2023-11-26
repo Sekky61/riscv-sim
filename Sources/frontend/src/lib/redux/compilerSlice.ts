@@ -207,6 +207,21 @@ export const callParseAsm = createAsyncThunk<ParseAsmResponse>(
 );
 
 /**
+ * Open an example and compile it.
+ *
+ * Example: dispatch(openExampleAndCompile("example1"));
+ */
+export const openExampleAndCompile = createAsyncThunk<void, Example>(
+  'compiler/openExampleAndCompile',
+  async (example, { getState, dispatch }) => {
+    dispatch(openExample(example));
+    if (example.type === 'c') {
+      dispatch(callCompiler());
+    }
+  },
+);
+
+/**
  * Save the active code to a file. A dialog is shown to the user, they can choose the file name.
  *
  * Example: dispatch(saveToFile());

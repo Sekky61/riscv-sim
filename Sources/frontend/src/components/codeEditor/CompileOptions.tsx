@@ -34,7 +34,7 @@ import _examples from 'src/constant/codeExamples.json';
 
 import {
   callCompiler,
-  openExample,
+  openExampleAndCompile,
   selectAsmManuallyEdited,
   toggleOptimizeFlag,
 } from '@/lib/redux/compilerSlice';
@@ -178,7 +178,7 @@ function ExamplesButton() {
             <DropdownMenuItem
               key={example.name}
               onClick={() => {
-                dispatch(openExample(example));
+                dispatch(openExampleAndCompile(example));
               }}
               className='flex'
             >
