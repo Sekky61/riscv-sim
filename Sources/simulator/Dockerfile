@@ -23,4 +23,4 @@ CMD gradle run --args="server --host=0.0.0.0 --port=8000"
 FROM deps as test
 WORKDIR /app
 COPY . . 
-RUN gradle build
+RUN gradle build -i
