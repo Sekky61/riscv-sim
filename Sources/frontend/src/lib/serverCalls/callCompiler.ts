@@ -49,7 +49,7 @@ export async function callCompilerImpl(
 ): Promise<CompileResponse> {
   const body: CompileRequest = {
     code,
-    optimize: options.optimize,
+    optimizeFlags: options.optimizeFlags,
   };
   return await callApi('compile' as const, body);
 }

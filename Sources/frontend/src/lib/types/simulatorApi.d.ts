@@ -29,8 +29,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { CpuConfiguration } from '@/lib/forms/Isa';
-import { CpuState } from '@/lib/types/cpuApi';
+import type { CpuConfiguration } from '@/lib/forms/Isa';
+import type { OptimizeOption } from '@/lib/redux/compilerSlice';
+import type { CpuState } from '@/lib/types/cpuApi';
 
 export type EndpointName =
   | 'compile'
@@ -83,7 +84,7 @@ export interface CompileEndpoint {
 
 export interface CompileRequest {
   code: string;
-  optimize: boolean;
+  optimizeFlags: OptimizeOption[];
 }
 
 export type CompileResponse =

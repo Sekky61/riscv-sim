@@ -8,6 +8,8 @@ import com.gradle.superscalarsim.loader.InitLoader;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.List;
+
 /**
  * @brief Tests for the compiler
  * Note: These tests require GCC riscv toolchain to be installed
@@ -22,7 +24,7 @@ public class CompilerTests
     String cCode = "int f(int a) { return a+1; }";
     
     // Exercise
-    GccCaller.CompileResult compileResult = GccCaller.compile(cCode, false);
+    GccCaller.CompileResult compileResult = GccCaller.compile(cCode, List.of());
     
     // Verify
     Assert.assertTrue(compileResult.success);
@@ -86,7 +88,7 @@ public class CompilerTests
     String cCode = "int f(int a) { return a+1;";
     
     // Exercise
-    GccCaller.CompileResult compileResult = GccCaller.compile(cCode, false);
+    GccCaller.CompileResult compileResult = GccCaller.compile(cCode, List.of());
     
     // Verify
     Assert.assertFalse(compileResult.success);
@@ -105,7 +107,7 @@ public class CompilerTests
     CodeParser parser = new CodeParser(loader);
     
     // Exercise
-    GccCaller.CompileResult compileResult = GccCaller.compile(cCode, false);
+    GccCaller.CompileResult compileResult = GccCaller.compile(cCode, List.of());
     CompiledProgram         program       = AsmParser.parse(compileResult.code, cCode.split("\n").length);
     String                  asm           = String.join("\n", program.program);
     parser.parseCode(asm);
@@ -140,7 +142,7 @@ public class CompilerTests
     CodeParser parser = new CodeParser(loader);
     
     // Exercise
-    GccCaller.CompileResult compileResult = GccCaller.compile(cCode, true);
+    GccCaller.CompileResult compileResult = GccCaller.compile(cCode, List.of("O2"));
     CompiledProgram         program       = AsmParser.parse(compileResult.code, cCode.split("\n").length);
     String                  asm           = String.join("\n", program.program);
     parser.parseCode(asm);
@@ -184,7 +186,7 @@ public class CompilerTests
     CodeParser parser = new CodeParser(loader);
     
     // Exercise
-    GccCaller.CompileResult compileResult = GccCaller.compile(cCode, true);
+    GccCaller.CompileResult compileResult = GccCaller.compile(cCode, List.of("O2"));
     CompiledProgram         program       = AsmParser.parse(compileResult.code, cCode.split("\n").length);
     String                  asm           = String.join("\n", program.program);
     parser.parseCode(asm);

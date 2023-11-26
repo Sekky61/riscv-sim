@@ -59,7 +59,7 @@ public class CompileHandler implements IRequestResolver<CompileRequest, CompileR
     else
     {
       // Compile
-      GccCaller.CompileResult res = GccCaller.compile(request.code, request.optimize);
+      GccCaller.CompileResult res = GccCaller.compile(request.code, request.optimizeFlags);
       if (!res.success)
       {
         System.err.println("Failed to compile code");

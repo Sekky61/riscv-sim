@@ -31,7 +31,9 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gradle.superscalarsim.serialization.Serialization;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @brief Class to call GCC
@@ -40,9 +42,17 @@ public class GccCaller
 {
   public static String compilerPath = "/usr/bin/riscv64-linux-gnu-gcc-12";
   
-  public static CompileResult compile(String code, boolean optimize)
+  /**
+   * Map of optimization flags
+   */
+  public static Map<String, String> optimizeFlags = Map.of("O2", "-O2", "rename", "-frename-registers", "unroll",
+                                                           "-funroll-all-loops", "peel", "-fpeel-loops", "inline",
+                                                           "-finline-functions", "omit-frame-pointer",
+                                                           "-fomit-frame-pointer");
+  
+  public static CompileResult compile(String code, List<String> optimizeFlags)
   {
-    ProcessBuilder pb = new ProcessBuilder(getCommand(optimize));
+    ProcessBuilder pb = new ProcessBuilder(getCommand(optimizeFlags));
     
     // Pipe the code into the process, and get the output from stdout
     pb.redirectInput(ProcessBuilder.Redirect.PIPE);
@@ -113,12 +123,25 @@ public class GccCaller
   }
   
   // /usr/bin/riscv64-linux-gnu-gcc -xc -O0 -march=rv32imfd -mabi=ilp32d -o /dev/stdout -S -g -fverbose-asm -fcf-protection=none -fno-stack-protector -fno-asynchronous-unwind-tables -fno-dwarf2-cfi-asm -nostdlib -xc -
-  static List<String> getCommand(boolean optimize)
+  static List<String> getCommand(List<String> optimizeFlags)
   {
-    return List.of(compilerPath, "-xc", "-O" + (optimize ? "2" : "0"), "-march=rv32imfd", "-mabi=ilp32d", "-o",
-                   "/dev/stdout", "-S", "-g", "-fverbose-asm", "-fcf-protection=none", "-fno-stack-protector",
-                   "-fno-asynchronous-unwind-tables", "-fno-dwarf2-cfi-asm", "-nostdlib", "-fdiagnostics-format=json",
-                   "-fpic", "-xc", "-");
+    // Add optimization flags
+    List<String> extraFlags = new ArrayList<>();
+    for (String flag : optimizeFlags)
+    {
+      if (GccCaller.optimizeFlags.containsKey(flag))
+      {
+        extraFlags.add(GccCaller.optimizeFlags.get(flag));
+      }
+    }
+    
+    List<String> command = new ArrayList<>();
+    command.add(compilerPath);
+    command.addAll(extraFlags);
+    command.addAll(List.of("-xc", "-march=rv32imfd", "-mabi=ilp32d", "-o", "/dev/stdout", "-S", "-g", "-fverbose-asm",
+                           "-fcf-protection=none", "-fno-stack-protector", "-fno-asynchronous-unwind-tables",
+                           "-fno-dwarf2-cfi-asm", "-nostdlib", "-fdiagnostics-format=json", "-fpic", "-xc", "-"));
+    return command;
   }
   
   public static class CompileResult

@@ -51,8 +51,16 @@ import {
   SimpleParseError,
 } from '@/lib/types/simulatorApi';
 
+export type OptimizeOption =
+  | 'O2'
+  | 'rename'
+  | 'unroll'
+  | 'peel'
+  | 'inline'
+  | 'omit-frame-pointer';
+
 export interface CompilerOptions {
-  optimize: boolean;
+  optimizeFlags: OptimizeOption[];
 }
 
 export interface Example {
@@ -91,7 +99,7 @@ const initialState: CompilerState = {
   cDirty: false,
   asmDirty: false,
   compileStatus: 'idle',
-  optimize: false,
+  optimizeFlags: [],
   editorMode: 'c',
   asmManuallyEdited: false,
   cErrors: [],
@@ -252,8 +260,18 @@ export const compilerSlice = createSlice({
     setAsmCode: (state, action: PayloadAction<string>) => {
       state.asmCode = action.payload;
     },
-    setOptimize: (state, action: PayloadAction<boolean>) => {
-      state.optimize = action.payload;
+    toggleOptimizeFlag: (state, action: PayloadAction<OptimizeOption>) => {
+      // Special case for -O2
+      if (action.payload === 'O2' && !state.optimizeFlags.includes('O2')) {
+        state.optimizeFlags = ['O2', 'omit-frame-pointer', 'inline', 'rename'];
+        return;
+      }
+      const idx = state.optimizeFlags.indexOf(action.payload);
+      if (idx === -1) {
+        state.optimizeFlags.push(action.payload);
+      } else {
+        state.optimizeFlags.splice(idx, 1);
+      }
     },
     enterEditorMode: (state, action: PayloadAction<'c' | 'asm'>) => {
       state.editorMode = action.payload;
@@ -331,7 +349,7 @@ export const compilerSlice = createSlice({
 export const {
   setCCode,
   setAsmCode,
-  setOptimize,
+  toggleOptimizeFlag,
   enterEditorMode,
   cFieldTyping,
   asmFieldTyping,
@@ -346,7 +364,8 @@ export const selectCompileStatus = (state: RootState) =>
 export const selectCErrors = (state: RootState) => state.compiler.cErrors;
 export const selectAsmErrors = (state: RootState) => state.compiler.asmErrors;
 export const selectAsmCode = (state: RootState) => state.compiler.asmCode;
-export const selectOptimize = (state: RootState) => state.compiler.optimize;
+export const selectOptimize = (state: RootState) =>
+  state.compiler.optimizeFlags;
 export const selectEditorMode = (state: RootState) => state.compiler.editorMode;
 export const selectCDirty = (state: RootState) => state.compiler.cDirty;
 export const selectAsmDirty = (state: RootState) => state.compiler.asmDirty;
