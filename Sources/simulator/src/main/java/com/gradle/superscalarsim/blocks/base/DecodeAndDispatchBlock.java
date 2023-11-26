@@ -32,10 +32,12 @@
  */
 package com.gradle.superscalarsim.blocks.base;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.blocks.AbstractBlock;
 import com.gradle.superscalarsim.blocks.branch.BranchTargetBuffer;
 import com.gradle.superscalarsim.blocks.branch.GlobalHistoryRegister;
-import com.gradle.superscalarsim.code.SimCodeModelAllocator;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.models.InputCodeArgument;
 import com.gradle.superscalarsim.models.InstructionFunctionModel;
@@ -49,21 +51,29 @@ import java.util.OptionalInt;
  * @class DecodeAndDispatchBlock
  * @brief Class, which simulates instruction decode and renames registers
  */
+@JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
 public class DecodeAndDispatchBlock implements AbstractBlock
 {
   /// List holding code before renaming for difference highlight
+  @JsonIdentityReference(alwaysAsId = true)
   private final List<SimCodeModel> beforeRenameCodeList;
   /// List holding code with renamed registers ready for dispatch
+  @JsonIdentityReference(alwaysAsId = true)
   private final List<SimCodeModel> afterRenameCodeList;
   /// Instruction Fetch Block holding fetched instructions
+  @JsonIdentityReference(alwaysAsId = true)
   private final InstructionFetchBlock instructionFetchBlock;
   /// Class holding all mappings from architectural to speculative
+  @JsonIdentityReference(alwaysAsId = true)
   private final RenameMapTableBlock renameMapTableBlock;
   /// Bit register marking history of predictions
+  @JsonIdentityReference(alwaysAsId = true)
   private final GlobalHistoryRegister globalHistoryRegister;
   /// Buffer holding information about branch instructions targets
+  @JsonIdentityReference(alwaysAsId = true)
   private final BranchTargetBuffer branchTargetBuffer;
   /// Parser holding parsed instructions
+  @JsonIdentityReference(alwaysAsId = true)
   private final InstructionMemoryBlock instructionMemoryBlock;
   /// Counter giving out ids for instructions in order to correctly simulate backwards
   private int idCounter;
@@ -78,21 +88,28 @@ public class DecodeAndDispatchBlock implements AbstractBlock
   private int stalledPullCount;
   
   /**
-   * @param [in] instructionFetchBlock - Block fetching N instructions each clock event
-   * @param [in] blockScheduleTask     - Task class, where blocks are periodically triggered by the GlobalTimer
-   * @param [in] renameMapTableBlock   - Class holding mappings from architectural registers to speculative
-   * @param [in] globalHistoryRegister - Bit register holding history of predictions
-   * @param [in] branchTargetBuffer    - Buffer holding information about branch instructions targets
-   * @param [in] codeParser            - Parser holding parsed instructions
+   * Decode buffer size limit
+   * TODO: Make configurable
+   */
+  private int decodeBufferSize;
+  
+  /**
+   * @param [in]             instructionFetchBlock - Block fetching N instructions each clock event
+   * @param [in]             blockScheduleTask     - Task class, where blocks are periodically triggered by the GlobalTimer
+   * @param [in]             renameMapTableBlock   - Class holding mappings from architectural registers to speculative
+   * @param [in]             globalHistoryRegister - Bit register holding history of predictions
+   * @param [in]             branchTargetBuffer    - Buffer holding information about branch instructions targets
+   * @param [in]             codeParser            - Parser holding parsed instructions
+   * @param decodeBufferSize - Size of the decode buffer
    *
    * @brief Constructor
    */
-  public DecodeAndDispatchBlock(SimCodeModelAllocator simCodeModelAllocator,
-                                InstructionFetchBlock instructionFetchBlock,
+  public DecodeAndDispatchBlock(InstructionFetchBlock instructionFetchBlock,
                                 RenameMapTableBlock renameMapTableBlock,
                                 GlobalHistoryRegister globalHistoryRegister,
                                 BranchTargetBuffer branchTargetBuffer,
-                                InstructionMemoryBlock codeParser)
+                                InstructionMemoryBlock codeParser,
+                                int decodeBufferSize)
   {
     this.instructionFetchBlock = instructionFetchBlock;
     this.renameMapTableBlock   = renameMapTableBlock;
@@ -106,6 +123,7 @@ public class DecodeAndDispatchBlock implements AbstractBlock
     this.globalHistoryRegister  = globalHistoryRegister;
     this.branchTargetBuffer     = branchTargetBuffer;
     this.instructionMemoryBlock = codeParser;
+    this.decodeBufferSize       = decodeBufferSize;
   }// end of Constructor
   //----------------------------------------------------------------------
   
@@ -226,7 +244,6 @@ public class DecodeAndDispatchBlock implements AbstractBlock
       int fetchCount = Math.min((int) this.instructionFetchBlock.getFetchedCode().stream()
                                         .filter(code -> !code.getInstructionName().equals("nop")).count(),
                                 this.instructionFetchBlock.getNumberOfWays() - this.afterRenameCodeList.size());
-      this.instructionFetchBlock.setStallFetchCount(fetchCount);
       for (int i = 0; i < fetchCount; i++)
       {
         SimCodeModel codeModel = this.instructionFetchBlock.getFetchedCode().get(i);
@@ -364,7 +381,7 @@ public class DecodeAndDispatchBlock implements AbstractBlock
       if (argument.writeBack())
       {
         InputCodeArgument destinationArgument = simCodeModel.getArgumentByName(argument.name());
-        String mappedReg = renameMapTableBlock.mapRegister(destinationArgument.getValue(), simCodeModel.getId());
+        String mappedReg = renameMapTableBlock.mapRegister(destinationArgument.getValue(), simCodeModel.getIntegerId());
         destinationArgument.setValue(mappedReg);
       }
     }
@@ -400,7 +417,7 @@ public class DecodeAndDispatchBlock implements AbstractBlock
       // Fix entry in BTB, set correct PC
       codeModel.setBranchPredicted(true);
       this.branchTargetBuffer.setEntry(instructionPosition, codeModel, realTarget, modelId, -1);
-      this.instructionFetchBlock.setPcCounter(realTarget);
+      this.instructionFetchBlock.setPc(realTarget);
       // Drop instructions after branch
       removeInstructionsFromIndex(position + 1);
       globalHistoryBit = true;

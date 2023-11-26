@@ -45,8 +45,11 @@ import {
 
 import { cLineToColor } from './lineColoring';
 
-export function cLineToLineDecorator(cLine: number) {
+export function cLineToLineDecorator(cLine: number): Decoration {
   const color = cLineToColor(cLine);
+  if (color === undefined) {
+    throw new Error(`Invalid cLine: ${cLine}`);
+  }
   return Decoration.line({
     attributes: { class: color },
   });
@@ -63,9 +66,10 @@ function decorateLines(view: EditorView) {
     for (let pos = from; pos <= to; ) {
       const line = view.state.doc.lineAt(pos);
       // decorate only if the line number is > 0
-      const shouldColor = (lineArr[line.number] ?? 0) > 0;
+      const num = lineArr[line.number] ?? 0;
+      const shouldColor = num > 0;
       if (shouldColor) {
-        const decor = cLineToLineDecorator(lineArr[line.number]);
+        const decor = cLineToLineDecorator(num);
         builder.add(line.from, line.from, decor);
       }
 

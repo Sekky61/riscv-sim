@@ -104,11 +104,14 @@ export const isaSlice = createSlice({
       state.isas = state.isas.filter((isa) => isa.name != action.payload);
       // If the active ISA was removed, make the first one active
       if (state.activeIsaName == action.payload) {
-        state.activeIsaName = state.isas[0].name;
+        const defaultIsa = state.isas[0];
+        if (defaultIsa == undefined) throw new Error('No default ISA found');
+        state.activeIsaName = defaultIsa.name;
       }
     },
   },
 });
+
 export type IsaReducer = ReturnType<typeof isaSlice.reducer>;
 
 export const { newActiveIsa, createIsa, updateIsa, removeIsa } =
@@ -118,11 +121,15 @@ export const selectActiveIsaName = (state: RootState) =>
   state.isa.activeIsaName;
 export const selectIsas = (state: RootState) => state.isa.isas;
 
+/**
+ * Adds "code" field to the ISA config
+ */
 export const selectActiveIsa = createSelector(
   [selectIsas, selectActiveIsaName],
-  (isas, name) => {
-    const isa = isas.find((isa) => isa.name == name);
+  (isas, name): IsaNamedConfig => {
+    const isa = isas.find((isaItem) => isaItem.name == name);
     if (isa == undefined) throw new Error('Active ISA not found');
+    // Copy the ISA config
     return isa;
   },
 );

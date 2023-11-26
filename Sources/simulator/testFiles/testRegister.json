@@ -1,7 +1,6 @@
 {
   "name": "Integer physical register",
   "dataType": "kInt",
-  "bitSize": "kBit32",
   "registerList": [
     {
       "name": "x0",

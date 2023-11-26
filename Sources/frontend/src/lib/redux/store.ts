@@ -45,6 +45,7 @@ import hardSet from 'redux-persist/lib/stateReconciler/hardSet';
 import storage from 'redux-persist/lib/storage';
 
 import compilerReducer from '@/lib/redux/compilerSlice';
+import cpuReducer from '@/lib/redux/cpustateSlice';
 import isaReducer, { IsaReducer } from '@/lib/redux/isaSlice';
 import modalsReducer from '@/lib/redux/modalSlice';
 import shortcutsReducer from '@/lib/redux/shortcutsSlice';
@@ -66,6 +67,7 @@ const reducers = combineReducers({
   notifications: notificationsReducer(),
   shortcuts: shortcutsReducer,
   modals: modalsReducer,
+  cpu: cpuReducer,
 });
 
 export const store = configureStore({

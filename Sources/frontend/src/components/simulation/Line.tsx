@@ -33,18 +33,23 @@
 
 export type LineProps = {
   length: number;
+  down?: boolean;
 };
 
 // https://thenewcode.com/1068/Making-Arrows-in-SVG
 
-export default function Line({ length }: LineProps) {
+export default function Line({ length, down = false }: LineProps) {
+  const width = down ? 10 : length;
+  const height = down ? length : 10;
   return (
-    <svg
-      viewBox={`0 0 ${length} 100`}
-      xmlns='http://www.w3.org/2000/svg'
-      style={{ width: `${length}px`, height: '100px' }}
-    >
-      <line x1='0' y1='0' x2={length} y2='0' className='schemaLine' />
+    <svg width={width} height={height}>
+      <line
+        x1={down ? 5 : 0}
+        y1={down ? 0 : 5}
+        x2={down ? 5 : length}
+        y2={down ? length : 5}
+        className='schemaLine'
+      />
     </svg>
   );
 }

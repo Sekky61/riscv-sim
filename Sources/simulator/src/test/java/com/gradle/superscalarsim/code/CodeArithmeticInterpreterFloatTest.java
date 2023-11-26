@@ -7,6 +7,7 @@ import com.gradle.superscalarsim.builders.RegisterFileModelBuilder;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.enums.RegisterTypeEnum;
+import com.gradle.superscalarsim.factories.RegisterModelFactory;
 import com.gradle.superscalarsim.loader.InitLoader;
 import com.gradle.superscalarsim.models.InputCodeArgument;
 import com.gradle.superscalarsim.models.InputCodeModel;
@@ -44,10 +45,11 @@ public class CodeArithmeticInterpreterFloatTest
             .hasRegisterList(Arrays.asList(float1, float2, float3, float4)).build();
     
     this.initLoader = new InitLoader();
-    UnifiedRegisterFileBlock unifiedRegisterFileBlock = new UnifiedRegisterFileBlock(initLoader);
+    UnifiedRegisterFileBlock unifiedRegisterFileBlock = new UnifiedRegisterFileBlock(initLoader,
+                                                                                     new RegisterModelFactory());
     // This adds the reg files, but also creates speculative registers!
-    unifiedRegisterFileBlock.setRegisterList(new ArrayList<>());
-    unifiedRegisterFileBlock.loadRegisters(List.of(floatFile));
+    unifiedRegisterFileBlock.setRegistersWithList(new ArrayList<>());
+    unifiedRegisterFileBlock.loadRegisters(List.of(floatFile), new RegisterModelFactory());
     
     this.codeArithmeticInterpreter = new CodeArithmeticInterpreter(unifiedRegisterFileBlock);
   }

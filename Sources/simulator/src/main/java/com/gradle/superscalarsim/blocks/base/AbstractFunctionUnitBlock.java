@@ -32,6 +32,9 @@
  */
 package com.gradle.superscalarsim.blocks.base;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.blocks.AbstractBlock;
 import com.gradle.superscalarsim.models.SimCodeModel;
 
@@ -39,48 +42,52 @@ import com.gradle.superscalarsim.models.SimCodeModel;
  * @class AbstractFunctionUnitBlock
  * @brief Abstract class containing interface and shared logic for all function units
  */
+@JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
 public abstract class AbstractFunctionUnitBlock implements AbstractBlock
 {
+  /// Class containing simulated Reorder Buffer
+  @JsonIdentityReference(alwaysAsId = true)
+  protected ReorderBufferBlock reorderBufferBlock;
+  /// Class containing logic of Instruction decode stage
+  @JsonIdentityReference(alwaysAsId = true)
+  protected SimCodeModel simCodeModel;
+  /// ID specifying when instruction passed specified FU
+  protected int functionUnitId;
+  /// Overall count of FUs in assigned issue window
+  protected int functionUnitCount;
+  /// Issue window block for comparing instruction and data types
+  @JsonIdentityReference(alwaysAsId = true)
+  protected AbstractIssueWindowBlock issueWindowBlock;
   /// Delay for function unit, representing how many ticks does it take to generate result
   private int delay;
   /// Counter variable
   private int counter;
   /// Name of the function unit
   private String name;
-  /// Class containing simulated Reorder Buffer
-  protected ReorderBufferBlock reorderBufferBlock;
-  /// Class containing logic of Instruction decode stage
-  protected SimCodeModel simCodeModel;
-  
-  /// Id specifying when instruction passed specified FU
-  protected int functionUnitId;
-  /// Overall count of FUs in assigned issue window
-  protected int functionUnitCount;
-  /// Issue window block for comparing instruction and data types
-  protected AbstractIssueWindowBlock issueWindowBlock;
   
   public AbstractFunctionUnitBlock()
   {
   }
   
   /**
-   * @param [in] blockScheduleTask  - Task class, where blocks are periodically triggered by the GlobalTimer
-   * @param [in] reorderBufferBlock - Class containing simulated Reorder Buffer
-   * @param [in] delay              - Delay for function unit
-   * @param [in] issueWindowBlock   - Issue window block for comparing instruction and data types
+   * @param name               Name of the function unit
+   * @param delay              Delay for function unit
+   * @param issueWindowBlock   Issue window block for comparing instruction and data types
+   * @param reorderBufferBlock Class containing simulated Reorder Buffer
    *
    * @brief Constructor
    */
-  public AbstractFunctionUnitBlock(ReorderBufferBlock reorderBufferBlock,
+  public AbstractFunctionUnitBlock(String name,
                                    int delay,
-                                   AbstractIssueWindowBlock issueWindowBlock)
+                                   AbstractIssueWindowBlock issueWindowBlock,
+                                   ReorderBufferBlock reorderBufferBlock)
   {
     this.reorderBufferBlock = reorderBufferBlock;
     this.delay              = delay;
     this.counter            = 0;
     this.simCodeModel       = null;
     this.issueWindowBlock   = issueWindowBlock;
-    this.name               = "Function Unit";
+    this.name               = name;
   }// end of Constructor
   //----------------------------------------------------------------------
   
@@ -127,6 +134,17 @@ public abstract class AbstractFunctionUnitBlock implements AbstractBlock
   //----------------------------------------------------------------------
   
   /**
+   * @param [in] delay - Integer, representing how many ticks does it take to generate result
+   *
+   * @brief Sets delay of an function unit
+   */
+  public void setDelay(int delay)
+  {
+    this.delay = delay;
+  }// end of setDelay
+  //----------------------------------------------------------------------
+  
+  /**
    * @brief Sets the counter to zero (needs to be used before setting the new instruction)
    */
   public void resetCounter()
@@ -142,17 +160,6 @@ public abstract class AbstractFunctionUnitBlock implements AbstractBlock
   {
     this.counter = this.delay - 1;
   }// end of resetReverseCounter
-  //----------------------------------------------------------------------
-  
-  /**
-   * @param [in] delay - Integer, representing how many ticks does it take to generate result
-   *
-   * @brief Sets delay of an function unit
-   */
-  public void setDelay(int delay)
-  {
-    this.delay = delay;
-  }// end of setDelay
   //----------------------------------------------------------------------
   
   /**

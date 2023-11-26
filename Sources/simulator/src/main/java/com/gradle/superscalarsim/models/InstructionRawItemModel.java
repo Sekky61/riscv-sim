@@ -35,7 +35,7 @@ package com.gradle.superscalarsim.models;
 /**
  * @class InstructionRawItemModel
  * @brief Definition of instruction format item
- * @details Class contains definition of instruction format item, which can be later used for interpreting instruction
+ * @details Future work. Class contains definition of instruction format item, which can be later used for interpreting instruction
  * in I-cache. Instruction has to have just one opcode item.
  */
 public class InstructionRawItemModel

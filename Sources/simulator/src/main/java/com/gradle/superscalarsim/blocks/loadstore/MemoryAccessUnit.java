@@ -32,6 +32,7 @@
  */
 package com.gradle.superscalarsim.blocks.loadstore;
 
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.gradle.superscalarsim.blocks.base.AbstractFunctionUnitBlock;
 import com.gradle.superscalarsim.blocks.base.AbstractIssueWindowBlock;
 import com.gradle.superscalarsim.blocks.base.ReorderBufferBlock;
@@ -52,12 +53,16 @@ import java.util.Objects;
 public class MemoryAccessUnit extends AbstractFunctionUnitBlock
 {
   /// Load buffer with all load instruction entries
+  @JsonIdentityReference(alwaysAsId = true)
   private LoadBufferBlock loadBufferBlock;
   /// Store buffer with all Store instruction entries
+  @JsonIdentityReference(alwaysAsId = true)
   private StoreBufferBlock storeBufferBlock;
   /// Interpreter for processing load store instructions
+  @JsonIdentityReference(alwaysAsId = true)
   private CodeLoadStoreInterpreter loadStoreInterpreter;
   /// Class containing all registers, that simulator uses
+  @JsonIdentityReference(alwaysAsId = true)
   private UnifiedRegisterFileBlock registerFileBlock;
   /// Clock cycle counter
   private int cycleCount;
@@ -74,6 +79,7 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
   }
   
   /**
+   * @param name                 Name of function unit
    * @param reorderBufferBlock   Class containing simulated Reorder Buffer
    * @param delay                Delay for function unit
    * @param issueWindowBlock     Issue window block for comparing instruction and data types
@@ -84,7 +90,8 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
    *
    * @brief Constructor
    */
-  public MemoryAccessUnit(ReorderBufferBlock reorderBufferBlock,
+  public MemoryAccessUnit(String name,
+                          ReorderBufferBlock reorderBufferBlock,
                           int delay,
                           AbstractIssueWindowBlock issueWindowBlock,
                           LoadBufferBlock loadBufferBlock,
@@ -92,7 +99,7 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
                           CodeLoadStoreInterpreter loadStoreInterpreter,
                           UnifiedRegisterFileBlock registerFileBlock)
   {
-    super(reorderBufferBlock, delay, issueWindowBlock);
+    super(name, delay, issueWindowBlock, reorderBufferBlock);
     this.loadBufferBlock      = loadBufferBlock;
     this.storeBufferBlock     = storeBufferBlock;
     this.loadStoreInterpreter = loadStoreInterpreter;
@@ -121,13 +128,14 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
     
     if (!isFunctionUnitEmpty() && hasTimerStarted())
     {
-      if (this.loadBufferBlock.getLoadMap().containsKey(this.simCodeModel.getId()))
+      if (this.loadBufferBlock.getLoadMap().containsKey(this.simCodeModel.getIntegerId()))
       {
-        this.loadBufferBlock.getLoadMap().get(this.simCodeModel.getId()).setMemoryAccessId(this.functionUnitId);
+        this.loadBufferBlock.getLoadMap().get(this.simCodeModel.getIntegerId()).setMemoryAccessId(this.functionUnitId);
       }
-      else if (this.storeBufferBlock.getStoreMap().containsKey(this.simCodeModel.getId()))
+      else if (this.storeBufferBlock.getStoreMap().containsKey(this.simCodeModel.getIntegerId()))
       {
-        this.storeBufferBlock.getStoreMap().get(this.simCodeModel.getId()).setMemoryAccessId(this.functionUnitId);
+        this.storeBufferBlock.getStoreMap().get(this.simCodeModel.getIntegerId())
+                .setMemoryAccessId(this.functionUnitId);
       }
     }
     
@@ -155,20 +163,20 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
       {
         firstDelayPassed = false;
         this.setDelay(baseDelay);
-        this.reorderBufferBlock.getFlagsMap().get(this.simCodeModel.getId()).setBusy(false);
-        if (this.loadBufferBlock.getLoadMap().containsKey(this.simCodeModel.getId()))
+        this.reorderBufferBlock.getRobItem(this.simCodeModel.getIntegerId()).reorderFlags.setBusy(false);
+        if (this.loadBufferBlock.getLoadMap().containsKey(this.simCodeModel.getIntegerId()))
         {
           InputCodeArgument destinationArgument = simCodeModel.getArgumentByName("rd");
           RegisterModel destRegister = registerFileBlock.getRegister(
                   Objects.requireNonNull(destinationArgument).getValue());
           destRegister.setBits(savedResult);
           destRegister.setReadiness(RegisterReadinessEnum.kExecuted);
-          this.loadBufferBlock.setDestinationAvailable(simCodeModel.getId());
-          this.loadBufferBlock.setMemoryAccessFinished(simCodeModel.getId());
+          this.loadBufferBlock.setDestinationAvailable(simCodeModel.getIntegerId());
+          this.loadBufferBlock.setMemoryAccessFinished(simCodeModel.getIntegerId());
         }
-        else if (this.storeBufferBlock.getStoreMap().containsKey(this.simCodeModel.getId()))
+        else if (this.storeBufferBlock.getStoreMap().containsKey(this.simCodeModel.getIntegerId()))
         {
-          this.storeBufferBlock.setMemoryAccessFinished(simCodeModel.getId());
+          this.storeBufferBlock.setMemoryAccessFinished(simCodeModel.getIntegerId());
         }
         
         this.simCodeModel = null;

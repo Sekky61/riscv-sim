@@ -79,6 +79,7 @@ public class LoadStoreIssueWindowBlock extends AbstractIssueWindowBlock
   @Override
   public AbstractFunctionUnitBlock selectSufficientFunctionUnit(InstructionFunctionModel instruction)
   {
+    // TODO: check if list is not empty (would loop forever)
     for (LoadStoreFunctionUnit functionBlock : this.functionUnitBlockList)
     {
       if (functionBlock.isFunctionUnitEmpty())

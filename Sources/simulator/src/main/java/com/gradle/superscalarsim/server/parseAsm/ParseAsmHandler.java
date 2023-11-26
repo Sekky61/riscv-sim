@@ -27,11 +27,16 @@
 
 package com.gradle.superscalarsim.server.parseAsm;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gradle.superscalarsim.code.CodeParser;
 import com.gradle.superscalarsim.code.ParseError;
 import com.gradle.superscalarsim.loader.InitLoader;
+import com.gradle.superscalarsim.serialization.Serialization;
+import com.gradle.superscalarsim.server.IRequestDeserializer;
 import com.gradle.superscalarsim.server.IRequestResolver;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Collections;
 
 /**
@@ -39,7 +44,7 @@ import java.util.Collections;
  * @brief Handler class for compile requests
  * Gets C code, calls the compiler, returns ASM for RISC-V
  */
-public class ParseAsmHandler implements IRequestResolver<ParseAsmRequest, ParseAsmResponse>
+public class ParseAsmHandler implements IRequestResolver<ParseAsmRequest, ParseAsmResponse>, IRequestDeserializer<ParseAsmRequest>
 {
   
   public ParseAsmResponse resolve(ParseAsmRequest request)
@@ -73,5 +78,12 @@ public class ParseAsmHandler implements IRequestResolver<ParseAsmRequest, ParseA
     }
     
     return response;
+  }
+  
+  @Override
+  public ParseAsmRequest deserialize(InputStream json) throws IOException
+  {
+    ObjectMapper deserializer = Serialization.getDeserializer();
+    return deserializer.readValue(json, ParseAsmRequest.class);
   }
 }

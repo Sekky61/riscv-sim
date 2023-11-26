@@ -29,23 +29,164 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Instruction } from '@/lib/redux/compilerSlice';
+import clsx from 'clsx';
+
+import {
+  highlightRegister,
+  highlightSimCode,
+  selectHighlightedRegister,
+  selectHighlightedSimCode,
+  selectRegisterById,
+  selectSimCodeModel,
+  unhighlightRegister,
+  unhighlightSimCode,
+} from '@/lib/redux/cpustateSlice';
+import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
+import { openModal } from '@/lib/redux/modalSlice';
+import { Reference } from '@/lib/types/cpuApi';
+import { ReactChildren, ReactClassName } from '@/lib/types/reactTypes';
 
 export type InstructionFieldProps = {
-  instruction?: Instruction;
+  instructionId?: Reference;
 };
 
 export default function InstructionField({
-  instruction,
+  instructionId: simCodeId,
 }: InstructionFieldProps) {
-  if (!instruction) {
+  const dispatch = useAppDispatch();
+  const q = useAppSelector((state) => selectSimCodeModel(state, simCodeId));
+  const highlightedId = useAppSelector((state) =>
+    selectHighlightedSimCode(state),
+  );
+  if (!q || simCodeId === undefined) {
     return (
-      <div className='w-full rounded-sm border p-0.5'>
+      <InstructionBubble className='flex justify-center px-2 py-1 font-mono'>
         <span className='text-gray-400'>empty</span>
-      </div>
+      </InstructionBubble>
     );
   }
+  const { simCodeModel, inputCodeModel, functionModel } = q;
+
+  const args = simCodeModel.renamedArguments;
+  const highlighted = highlightedId === simCodeId;
+
+  const handleMouseEnter = () => {
+    dispatch(highlightSimCode(simCodeId));
+  };
+
+  const handleMouseLeave = () => {
+    dispatch(unhighlightSimCode(simCodeId));
+  };
+
+  const cls = clsx(
+    'flex justify-between items-center gap-2 font-mono px-2 hover:cursor-pointer',
+    highlighted ? 'bg-gray-200' : '',
+  );
+
+  const showDetail = () => {
+    dispatch(
+      openModal({
+        modalType: 'SIMCODE_DETAILS_MODAL',
+        modalProps: { simCodeId },
+      }),
+    );
+  };
+
   return (
-    <div className='w-full rounded-sm border p-0.5'>{instruction.mnemonic}</div>
+    <InstructionBubble
+      className={cls}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      onClick={showDetail}
+    >
+      <InstructionName mnemonic={inputCodeModel.instructionName} />
+      <div className='flex gap-2'>
+        {args.map((arg) => (
+          <InstructionArgument
+            argName={arg.name}
+            idOrLiteral={arg.value}
+            key={arg.name}
+          />
+        ))}
+      </div>
+    </InstructionBubble>
+  );
+}
+
+interface InstructionBubbleProps extends ReactClassName {
+  children: ReactChildren;
+  [x: string]: unknown;
+}
+
+export function InstructionBubble({
+  children,
+  className,
+  ...props
+}: InstructionBubbleProps) {
+  const cls = clsx('rounded-sm border h-8', className);
+  return (
+    <div className={cls} {...props}>
+      {children}
+    </div>
+  );
+}
+
+function InstructionName({ mnemonic }: { mnemonic: string }) {
+  return (
+    <div className='font-mono hover:cursor-pointer hover:underline leading-4'>
+      {mnemonic}
+    </div>
+  );
+}
+
+export interface InstructionArgumentProps {
+  argName: string;
+  idOrLiteral: string;
+}
+
+function InstructionArgument({
+  argName,
+  idOrLiteral,
+}: InstructionArgumentProps) {
+  const dispatch = useAppDispatch();
+  const register = useAppSelector((state) =>
+    selectRegisterById(state, idOrLiteral),
+  );
+  const highlightedId = useAppSelector(selectHighlightedRegister);
+
+  const isRegister = register !== null;
+  const highlighted = highlightedId === idOrLiteral;
+
+  const displayText = idOrLiteral;
+  let hoverText;
+
+  if (isRegister) {
+    hoverText = `Argument ${argName}: ${register.name} (${register.value.bits})`;
+  } else {
+    hoverText = `Argument ${argName}: ${idOrLiteral}`;
+  }
+
+  const cls = clsx(
+    'rounded hover:bg-gray-300 min-w-[2em] h-6 flex justify-center items-center leading-4',
+    highlighted && 'bg-gray-200',
+  );
+
+  return (
+    <div
+      className={cls}
+      title={hoverText}
+      onMouseEnter={() => {
+        if (isRegister) {
+          dispatch(highlightRegister(idOrLiteral));
+        }
+      }}
+      onMouseLeave={() => {
+        if (isRegister) {
+          dispatch(unhighlightRegister(idOrLiteral));
+        }
+      }}
+    >
+      {displayText}
+    </div>
   );
 }

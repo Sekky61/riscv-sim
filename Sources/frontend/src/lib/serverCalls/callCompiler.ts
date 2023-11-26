@@ -29,69 +29,66 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import {
+  AsyncEndpointFunction,
+  CompileRequest,
+  CompileResponse,
+  EndpointName,
+  ParseAsmRequest,
+  ParseAsmResponse,
+  SimulateRequest,
+  SimulateResponse,
+} from '@/lib/types/simulatorApi';
+
 import { CompilerOptions } from '../redux/compilerSlice';
 
-export type CompilerAPIResponse =
-  | {
-      '@type': string;
-      success: true;
-      program: string[];
-      cLines: number[];
-      asmToC: number[];
-    }
-  | {
-      '@type': string;
-      success: false;
-      error: string;
-      compilerError: {
-        '@items': Array<ErrorItem>;
-      };
-    };
-
-export type ErrorItem = {
-  kind: 'error' | 'warning';
-  message: string;
-  locations: {
-    '@items': Array<ErrorSpan>;
+export async function callCompilerImpl(
+  code: string,
+  options: CompilerOptions,
+): Promise<CompileResponse> {
+  const body: CompileRequest = {
+    code,
+    optimize: options.optimize,
   };
-};
+  return await callApi('compile' as const, body);
+}
 
-/**
- * Finish is optional, meaning that the error is a single character
- */
-export type ErrorSpan = {
-  caret: ErrorLocation;
-  finish?: ErrorLocation;
-};
+export async function callParseAsmImpl(
+  code: string,
+): Promise<ParseAsmResponse> {
+  const body: ParseAsmRequest = {
+    code,
+  };
+  return await callApi('parseAsm' as const, body);
+}
 
-export type ErrorLocation = {
-  line: number;
-  'display-column': number;
-};
+export async function callSimulationImpl(
+  tick: number,
+  cfg: object,
+): Promise<SimulateResponse> {
+  // todo: cfg type
+  const body: SimulateRequest = {
+    tick,
+    config: cfg,
+  };
+  return await callApi('simulate' as const, body);
+}
 
-export async function callCompilerImpl(code: string, options: CompilerOptions) {
-  // fetch from :8000/compile
-  // payload:
-  // {
-  //   "@type": "com.gradle.superscalarsim.server.compile.CompileRequest",
-  //   "code": string
-  //   "optimize": boolean
-  // }
+async function callApi<T extends EndpointName>(
+  ...args: Parameters<AsyncEndpointFunction<T>>
+): Promise<ReturnType<AsyncEndpointFunction<T>>> {
+  const endpoint = args[0];
+  const request = args[1];
 
   const serverUrl =
     process.env.NEXT_PUBLIC_SIMSERVER_URL || 'http://localhost:8000';
 
-  const response = await fetch(`${serverUrl}/compile`, {
+  const response = await fetch(`${serverUrl}/${endpoint}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({
-      '@type': 'com.gradle.superscalarsim.server.compile.CompileRequest',
-      code,
-      optimize: options.optimize,
-    }),
+    body: JSON.stringify(request),
   });
-  const json: CompilerAPIResponse = await response.json();
-  return json;
+  return response.json();
 }

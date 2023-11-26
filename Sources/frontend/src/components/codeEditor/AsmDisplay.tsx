@@ -54,8 +54,8 @@ import EditorBar from '@/components/codeEditor/EditorBar';
 
 const baseTheme = EditorView.baseTheme({
   '.cm-activeLine': {
-    backgroundColor: 'rgba(var(--line-highlight-color), 0.35)',
-    backdropFilter: 'contrast(1.2)',
+    backgroundColor: 'rgba(var(--line-highlight-color), 0.25)',
+    backdropFilter: 'contrast(1.1)',
   },
   '.cm-content': {
     borderTopWidth: '1px',

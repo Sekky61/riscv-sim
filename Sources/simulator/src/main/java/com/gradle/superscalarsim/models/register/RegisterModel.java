@@ -32,30 +32,34 @@
  */
 package com.gradle.superscalarsim.models.register;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.enums.RegisterTypeEnum;
+import com.gradle.superscalarsim.models.Identifiable;
 
 /**
  * @class RegisterModel
  * @brief Definition of single register in register file
  */
-public class RegisterModel
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "name")
+public class RegisterModel implements Identifiable
 {
   /**
-   * Name of register
+   * Name of register. Assumed to be unique by the serialization.
    */
-  private final String name;
+  private String name;
   
   /**
    * True if the value of register is constant (example: register x0 from risc-v spec)
    */
-  private final boolean isConstant;
+  private boolean isConstant;
   
   /**
    * Data type of register (int, float)
    */
-  private final RegisterTypeEnum type;
+  private RegisterTypeEnum type;
   
   /**
    * Value inside the register
@@ -67,6 +71,13 @@ public class RegisterModel
    * Architecture registers are `kAssigned` by default, speculative ones are `kFree`
    */
   private RegisterReadinessEnum readiness;
+  
+  /**
+   * @brief Default constructor for deserialization
+   */
+  public RegisterModel()
+  {
+  }
   
   /**
    * @param name       Register name
@@ -150,6 +161,7 @@ public class RegisterModel
   
   /**
    * Copy constructor
+   * TODO: test
    */
   public RegisterModel(RegisterModel register)
   {
@@ -272,5 +284,15 @@ public class RegisterModel
   public void setValueContainer(RegisterDataContainer container)
   {
     this.value = container;
+  }
+  
+  /**
+   * @return Unique identifier of the object
+   * @brief Get the identifier
+   */
+  @Override
+  public String getId()
+  {
+    return name;
   }
 }

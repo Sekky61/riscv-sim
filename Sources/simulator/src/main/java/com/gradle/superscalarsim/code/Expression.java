@@ -40,6 +40,7 @@ import java.util.regex.Pattern;
  *   <li>'+' - Addition</li>
  *   <li>'-' - Subtraction</li>
  *   <li>'*' - Multiplication</li>
+ *   <li>'*w' - Multiplication with double destination size</li>
  *   <li>'%' - Modulo</li>
  *   <li>'/' - Division</li>
  *   <li>'&' - Bitwise AND</li>
@@ -103,7 +104,7 @@ public class Expression
   /**
    * List of supported binary operators
    */
-  public static String[] binaryOperators = new String[]{"+", "-", "*", "/", "%", "&", "|", "^", "<<", ">>", ">>>", ">", ">=", "<", "<=", "==", "!=", "="};
+  public static String[] binaryOperators = new String[]{"+", "-", "*", "*w", "/", "%", "&", "|", "^", "<<", ">>", ">>>", ">", ">=", "<", "<=", "==", "!=", "="};
   
   /**
    * List of all ternary operators
@@ -111,6 +112,18 @@ public class Expression
   public static String[] ternaryOperators = new String[]{"pick"};
   
   public static String[] allOperators;
+  
+  public static String[] baseOperators = new String[]{"bits", "=", "pick", "!", ">", ">=", "<", "<=", "==", "!="};
+  
+  public static String[] bitwiseOperators = new String[]{"&", "|", "^", "<<", ">>", ">>>"};
+  
+  public static String[] additionOperators = new String[]{"+", "-"};
+  
+  public static String[] multiplicationOperators = new String[]{"*", "*w", "%"};
+  
+  public static String[] divisionOperators = new String[]{"/"};
+  
+  public static String[] specialOperators = new String[]{"sqrt", "float", "fclass"};
   
   static
   {
@@ -300,7 +313,8 @@ public class Expression
     if (lVariable.type != rVariable.type)
     {
       // Special case: MULHSU (multiply high signed unsigned)
-      if (operator.equals("*") && lVariable.type == DataTypeEnum.kInt && rVariable.type == DataTypeEnum.kUInt)
+      if ((operator.equals("*") || operator.equals(
+              "*w")) && lVariable.type == DataTypeEnum.kInt && rVariable.type == DataTypeEnum.kUInt)
       {
         int  lValueInt = (int) lVariable.value.getValue(DataTypeEnum.kInt);
         long lValue    = (long) lValueInt;
@@ -524,7 +538,8 @@ public class Expression
     {
       case "+" -> Variable.fromValue(value + value2);
       case "-" -> Variable.fromValue(value - value2);
-      case "*" -> Variable.fromValue((long) value * (long) value2);
+      case "*" -> Variable.fromValue(value * value2);
+      case "*w" -> Variable.fromValue((long) value * (long) value2);
       case "/" -> Variable.fromValue(value / value2);
       case "%" -> Variable.fromValue(value % value2);
       case "&" -> Variable.fromValue(value & value2);
@@ -551,7 +566,8 @@ public class Expression
     {
       case "+" -> Variable.fromValue(value + value2);
       case "-" -> Variable.fromValue(value - value2);
-      case "*" ->
+      case "*" -> Variable.fromValue(value * value2);
+      case "*w" ->
       {
         long l = unsignedIntToLong(value);
         long r = unsignedIntToLong(value2);

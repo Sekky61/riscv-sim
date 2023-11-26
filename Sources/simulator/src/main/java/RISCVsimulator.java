@@ -39,81 +39,62 @@ import picocli.CommandLine.Option;
 import java.io.IOException;
 import java.util.concurrent.Callable;
 
-@Command(name = "RISCVsimulator", mixinStandardHelpOptions = true, version = "RISCVsimulator 0.1", description =
-    "RISCVsimulator")
-class SimOptions implements Callable<Integer>
+@Command(name = "RiscvSimulator", subcommands = ServerApp.class, version = "0.1", description = "RISC-V simulator")
+class App implements Runnable
 {
-  
-  @CommandLine.ArgGroup(exclusive = true, multiplicity = "1")
-  Mode mode;
-  
-  @Override
-  public Integer call() throws Exception
-  {
-    return 0;
-  }
-  
-  static class Mode
-  {
-    
-    @Option(names = "--server", description = "Launch in server mode")
-    boolean server;
-  }
-  
-  @Option(names = "--port", description = "Port to listen on")
-  int port = 8000;
-  
-  @Option(names = "--register-dir", description = "Directory with register description .json files")
+  @Option(names = "--register-dir", description = "Directory with register description .json files", scope = CommandLine.ScopeType.INHERIT)
   String registerDir = "./registers/";
   
-  @Option(names = "--instruction-dir", description = "Directory with instruction description .json files")
+  @Option(names = "--instruction-dir", description = "Directory with instruction description .json files", scope = CommandLine.ScopeType.INHERIT)
   String instructionDir = "./riscvisa/";
   
-  @Option(names = {"-h", "--help"}, usageHelp = true, description = "display a help message")
+  @Option(names = {"-h", "--help"}, usageHelp = true, description = "display a help message", scope = CommandLine.ScopeType.INHERIT)
   boolean helpRequested = false;
-}
-
-/**
- * @class RISCVsimulator
- * @brief Wrapper for a main class to rename root process to class name
- */
-public class RISCVsimulator
-{
+  
   /**
-   * @param [in] args - Input arguments
-   *
+   * This method is called when no subcommand is specified (CLI mode)
+   */
+  public void run()
+  {
+    // TODO: CLI mode
+    System.out.print("No subcommand specified");
+  }
+  
+  /**
    * @brief Application main
    */
   public static void main(String[] args)
   {
-    SimOptions  simOptions = new SimOptions();
-    CommandLine cli        = new CommandLine(simOptions);
-    cli.execute(args);
-    
-    if (cli.isUsageHelpRequested())
+    int exitCode = new CommandLine(new App()).execute(args);
+    // Do NOT call exit
+  }
+}
+
+
+@Command(name = "server", description = "Server subcommand")
+class ServerApp implements Callable<Integer>
+{
+  @CommandLine.ParentCommand
+  private App parent;
+  
+  @Option(names = "--host", description = "Host to listen on")
+  String host = "localhost";
+  
+  @Option(names = "--port", description = "Port to listen on")
+  int port = 8000;
+  
+  @Override
+  public Integer call()
+  {
+    Server server = new Server(host, port);
+    try
     {
-      return;
+      server.start();
     }
-    
-    if (simOptions.mode.server)
+    catch (IOException e)
     {
-      Server server = new Server(simOptions.port);
-      try
-      {
-        server.start();
-      }
-      catch (IOException e)
-      {
-        throw new RuntimeException(e);
-      }
+      throw new RuntimeException(e);
     }
-    else
-    {
-      System.out.print("No mode specified");
-    }
-    
-    //System.exit(new CommandLine(new SimOptions()).execute(args));
-  }// end of main
-  //----------------------------------------------------------------------
-  //----------------------------------------------------------------------
+    return 0;
+  }
 }

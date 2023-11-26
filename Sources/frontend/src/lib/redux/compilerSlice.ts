@@ -41,15 +41,15 @@ import { notify } from 'reapop';
 import { transformErrors } from '@/lib/editor/transformErrors';
 import type { RootState } from '@/lib/redux/store';
 import {
-  callParseAsmImpl,
-  ParseAsmAPIResponse,
-} from '@/lib/serverCalls/callParseAsm';
-
-import {
   callCompilerImpl,
-  CompilerAPIResponse,
-  ErrorItem,
-} from '../serverCalls/callCompiler';
+  callParseAsmImpl,
+} from '@/lib/serverCalls/callCompiler';
+import {
+  CompileResponse,
+  ComplexErrorItem,
+  ParseAsmResponse,
+  SimpleParseError,
+} from '@/lib/types/simulatorApi';
 
 export interface CompilerOptions {
   optimize: boolean;
@@ -75,8 +75,8 @@ interface CompilerState extends CompilerOptions {
   cDirty: boolean;
   asmDirty: boolean;
   asmManuallyEdited: boolean;
-  cErrors: Array<ErrorItem>;
-  asmErrors: Array<ErrorItem>;
+  cErrors: Array<ComplexErrorItem>;
+  asmErrors: Array<SimpleParseError>;
 }
 
 // Define the initial state using that type
@@ -100,8 +100,12 @@ const initialState: CompilerState = {
   asmErrors: [],
 };
 
-// Call example: dispatch(callCompiler());
-export const callCompiler = createAsyncThunk<CompilerAPIResponse>(
+/**
+ * Call the compiler on the C code.
+ *
+ * Example: dispatch(callCompiler());
+ */
+export const callCompiler = createAsyncThunk<CompileResponse>(
   'compiler/callCompiler',
   async (arg, { getState, dispatch }) => {
     // @ts-ignore
@@ -147,8 +151,12 @@ export const callCompiler = createAsyncThunk<CompilerAPIResponse>(
   },
 );
 
-// Call example: dispatch(callParseAsm());
-export const callParseAsm = createAsyncThunk<ParseAsmAPIResponse>(
+/**
+ * Call the compiler on the asm code. Detects errors in the asm code.
+ *
+ * Example: dispatch(callParseAsm());
+ */
+export const callParseAsm = createAsyncThunk<ParseAsmResponse>(
   'compiler/callParseAsm',
   async (arg, { getState, dispatch }) => {
     // @ts-ignore
@@ -189,6 +197,29 @@ export const callParseAsm = createAsyncThunk<ParseAsmAPIResponse>(
         throw err;
       });
     return response;
+  },
+);
+
+/**
+ * Save the active code to a file. A dialog is shown to the user, they can choose the file name.
+ *
+ * Example: dispatch(saveToFile());
+ */
+export const saveToFile = createAsyncThunk<void>(
+  'compiler/saveToFile',
+  async (arg, { getState }) => {
+    // @ts-ignore
+    const state: RootState = getState();
+    const code = selectActiveCode(state);
+    const suggestedFileName =
+      selectEditorMode(state) === 'c' ? 'code.c' : 'code.asm';
+
+    const blob = new Blob([code], { type: 'text/plain;charset=utf-8' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = suggestedFileName;
+    link.click();
   },
 );
 
@@ -266,14 +297,14 @@ export const compilerSlice = createSlice({
         state.asmDirty = false;
         if (!action.payload.success) {
           state.compileStatus = 'failed';
-          state.cErrors = action.payload.compilerError['@items'];
+          state.cErrors = action.payload.compilerError;
           // Delete mapping
           state.cLines = [];
           state.asmToC = [];
           state.asmCode = '';
           return;
         }
-        state.asmCode = action.payload.program.join('\n');
+        state.asmCode = action.payload.program;
         state.compileStatus = 'success';
         state.cErrors = [];
         state.asmManuallyEdited = false;
@@ -295,7 +326,7 @@ export const compilerSlice = createSlice({
       .addCase(callParseAsm.fulfilled, (state, action) => {
         state.asmDirty = false;
         if (!action.payload.success) {
-          state.asmErrors = action.payload.errors['@items'];
+          state.asmErrors = action.payload.errors;
           return;
         }
         state.asmErrors = [];
@@ -331,6 +362,13 @@ export const selectCDirty = (state: RootState) => state.compiler.cDirty;
 export const selectAsmDirty = (state: RootState) => state.compiler.asmDirty;
 export const selectAsmManuallyEdited = (state: RootState) =>
   state.compiler.asmManuallyEdited;
+
+export const selectActiveCode = (state: RootState) => {
+  if (state.compiler.editorMode === 'c') {
+    return state.compiler.cCode;
+  }
+  return state.compiler.asmCode;
+};
 
 export interface Instruction {
   // Id of instruction in program. ~line number
@@ -379,7 +417,36 @@ export const selectAsmCodeMirrorErrors = createSelector(
     if (dirty) {
       return [];
     }
-    return transformErrors(errors, asmCode);
+    // Transform simple to complex errors
+    const simpleErrors: Array<ComplexErrorItem> = errors.map((err) => {
+      const c: ComplexErrorItem = {
+        kind: err.kind,
+        message: err.message,
+        locations: [
+          {
+            caret: {
+              line: err.line,
+              'display-column': err.columnStart,
+            },
+          },
+        ],
+      };
+
+      if (err.columnEnd && c.locations.length > 0) {
+        const loc = c.locations[0];
+        if (!loc) {
+          throw new Error('Unexpected error');
+        }
+        loc.finish = {
+          line: err.line,
+          'display-column': err.columnEnd,
+        };
+      }
+
+      return c;
+    });
+
+    return transformErrors(simpleErrors, asmCode);
   },
 );
 

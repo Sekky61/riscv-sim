@@ -27,8 +27,8 @@
 
 package com.gradle.superscalarsim.cpu;
 
-import com.cedarsoftware.util.io.JsonReader;
-import com.cedarsoftware.util.io.JsonWriter;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gradle.superscalarsim.blocks.CacheStatisticsCounter;
 import com.gradle.superscalarsim.blocks.StatisticsCounter;
 import com.gradle.superscalarsim.blocks.arithmetic.AluIssueWindowBlock;
@@ -39,8 +39,14 @@ import com.gradle.superscalarsim.blocks.branch.*;
 import com.gradle.superscalarsim.blocks.loadstore.*;
 import com.gradle.superscalarsim.code.*;
 import com.gradle.superscalarsim.enums.cache.ReplacementPoliciesEnum;
+import com.gradle.superscalarsim.factories.InputCodeModelFactory;
+import com.gradle.superscalarsim.factories.RegisterModelFactory;
+import com.gradle.superscalarsim.factories.SimCodeModelFactory;
 import com.gradle.superscalarsim.loader.InitLoader;
-import com.gradle.superscalarsim.serialization.GsonConfiguration;
+import com.gradle.superscalarsim.managers.ManagerRegistry;
+import com.gradle.superscalarsim.models.InputCodeModel;
+import com.gradle.superscalarsim.models.InstructionFunctionModel;
+import com.gradle.superscalarsim.serialization.Serialization;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -54,16 +60,11 @@ import java.util.Objects;
  */
 public class CpuState implements Serializable
 {
+  public ManagerRegistry managerRegistry;
+  
   public int tick;
   
-  /**
-   * Warning: this must be a reference to the same loader as in Cpu
-   */
-  public InitLoader initLoader;
   public InstructionMemoryBlock instructionMemoryBlock;
-  public SimCodeModelAllocator simCodeModelAllocator;
-  
-  public ReorderBufferState reorderBufferState;
   
   // Housekeeping
   
@@ -123,19 +124,30 @@ public class CpuState implements Serializable
   
   public CpuState(CpuConfiguration config, InitLoader initLoader)
   {
-    this.initLoader = initLoader;
-    this.initState(config);
+    this.initState(config, initLoader);
   }
   
   /**
    * @brief Initialize the CPU state - given the configuration.
    */
-  public void initState(CpuConfiguration config)
+  public void initState(CpuConfiguration config, InitLoader initLoader)
   {
-    this.tick = 0;
+    this.tick            = 0;
+    this.managerRegistry = new ManagerRegistry();
+    
+    // Factories (for tracking instances of models)
+    InputCodeModelFactory inputCodeModelFactory = new InputCodeModelFactory(managerRegistry.inputCodeManager);
+    SimCodeModelFactory   simCodeModelFactory   = new SimCodeModelFactory(managerRegistry.simCodeManager);
+    RegisterModelFactory  registerModelFactory  = new RegisterModelFactory(managerRegistry.registerModelManager);
+    
+    // Hack to load all function models and registers to manager
+    initLoader.getInstructionFunctionModels()
+            .forEach((name, model) -> managerRegistry.instructionFunctionManager.addInstance(model));
+    initLoader.getRegisterFileModelList().forEach(registerFileModel -> registerFileModel.getRegisterList()
+            .forEach(registerModel -> managerRegistry.registerModelManager.addInstance(registerModel)));
     
     // Parse code
-    CodeParser codeParser = new CodeParser(initLoader);
+    CodeParser codeParser = new CodeParser(initLoader, inputCodeModelFactory);
     codeParser.parseCode(config.code);
     
     if (!codeParser.success())
@@ -143,18 +155,15 @@ public class CpuState implements Serializable
       throw new IllegalStateException("Code parsing failed: " + codeParser.getErrorMessages());
     }
     
-    this.instructionMemoryBlock = new InstructionMemoryBlock(codeParser.getInstructions(), codeParser.getLabels());
-    
-    simCodeModelAllocator = new SimCodeModelAllocator();
-    
-    this.reorderBufferState        = new ReorderBufferState();
-    reorderBufferState.bufferSize  = config.robSize;
-    reorderBufferState.commitLimit = config.commitWidth;
+    InstructionFunctionModel nopFM = initLoader.getInstructionFunctionModel("nop");
+    InputCodeModel nop = inputCodeModelFactory.createInstance(nopFM, new ArrayList<>(),
+                                                              codeParser.getInstructions().size());
+    this.instructionMemoryBlock = new InstructionMemoryBlock(codeParser.getInstructions(), codeParser.getLabels(), nop);
     
     this.statisticsCounter      = new StatisticsCounter();
     this.cacheStatisticsCounter = new CacheStatisticsCounter();
     
-    this.unifiedRegisterFileBlock = new UnifiedRegisterFileBlock(initLoader);
+    this.unifiedRegisterFileBlock = new UnifiedRegisterFileBlock(initLoader, registerModelFactory);
     this.renameMapTableBlock      = new RenameMapTableBlock(unifiedRegisterFileBlock);
     
     this.globalHistoryRegister = new GlobalHistoryRegister(10);
@@ -194,19 +203,22 @@ public class CpuState implements Serializable
     this.memoryModel          = new MemoryModel(cache, cacheStatisticsCounter);
     this.loadStoreInterpreter = new CodeLoadStoreInterpreter(memoryModel, unifiedRegisterFileBlock);
     
-    this.instructionFetchBlock = new InstructionFetchBlock(simCodeModelAllocator, instructionMemoryBlock, gShareUnit,
+    this.instructionFetchBlock = new InstructionFetchBlock(simCodeModelFactory, instructionMemoryBlock, gShareUnit,
                                                            branchTargetBuffer);
     instructionFetchBlock.setNumberOfWays(config.fetchWidth);
     
-    this.decodeAndDispatchBlock = new DecodeAndDispatchBlock(simCodeModelAllocator, instructionFetchBlock,
-                                                             renameMapTableBlock, globalHistoryRegister,
-                                                             branchTargetBuffer, instructionMemoryBlock);
-    this.reorderBufferBlock     = new ReorderBufferBlock(unifiedRegisterFileBlock, renameMapTableBlock,
-                                                         decodeAndDispatchBlock, gShareUnit, branchTargetBuffer,
-                                                         instructionFetchBlock, statisticsCounter, reorderBufferState);
-    this.issueWindowSuperBlock  = new IssueWindowSuperBlock(decodeAndDispatchBlock);
-    this.arithmeticInterpreter  = new CodeArithmeticInterpreter(unifiedRegisterFileBlock);
-    this.branchInterpreter      = new CodeBranchInterpreter(instructionMemoryBlock, unifiedRegisterFileBlock);
+    this.decodeAndDispatchBlock = new DecodeAndDispatchBlock(instructionFetchBlock, renameMapTableBlock,
+                                                             globalHistoryRegister, branchTargetBuffer,
+                                                             instructionMemoryBlock, config.fetchWidth);
+    this.reorderBufferBlock     = new ReorderBufferBlock(renameMapTableBlock, decodeAndDispatchBlock, gShareUnit,
+                                                         branchTargetBuffer, instructionFetchBlock, statisticsCounter);
+    // ROB state
+    reorderBufferBlock.bufferSize  = config.robSize;
+    reorderBufferBlock.commitLimit = config.commitWidth;
+    
+    this.issueWindowSuperBlock = new IssueWindowSuperBlock(decodeAndDispatchBlock);
+    this.arithmeticInterpreter = new CodeArithmeticInterpreter(unifiedRegisterFileBlock);
+    this.branchInterpreter     = new CodeBranchInterpreter(instructionMemoryBlock, unifiedRegisterFileBlock);
     
     this.storeBufferBlock = new StoreBufferBlock(loadStoreInterpreter, decodeAndDispatchBlock, unifiedRegisterFileBlock,
                                                  reorderBufferBlock);
@@ -237,48 +249,51 @@ public class CpuState implements Serializable
     {
       switch (fu.fuType)
       {
-        case "FX" ->
+        case FX ->
         {
-          ArithmeticFunctionUnitBlock functionBlock = new ArithmeticFunctionUnitBlock(reorderBufferBlock, fu.latency,
+          List<String> allowedOperators = fu.getAllowedOperations();
+          ArithmeticFunctionUnitBlock functionBlock = new ArithmeticFunctionUnitBlock(fu.name, fu.latency,
                                                                                       fpIssueWindowBlock,
-                                                                                      fu.operations);
+                                                                                      allowedOperators,
+                                                                                      reorderBufferBlock);
           functionBlock.addArithmeticInterpreter(arithmeticInterpreter);
           functionBlock.addRegisterFileBlock(unifiedRegisterFileBlock);
           this.aluIssueWindowBlock.setFunctionUnitBlock(functionBlock);
           this.arithmeticFunctionUnitBlocks.add(functionBlock);
         }
-        case "FP" ->
+        case FP ->
         {
-          ArithmeticFunctionUnitBlock functionBlock = new ArithmeticFunctionUnitBlock(reorderBufferBlock, fu.latency,
+          List<String> allowedOperators = fu.getAllowedOperations();
+          ArithmeticFunctionUnitBlock functionBlock = new ArithmeticFunctionUnitBlock(fu.name, fu.latency,
                                                                                       fpIssueWindowBlock,
-                                                                                      fu.operations);
+                                                                                      allowedOperators,
+                                                                                      reorderBufferBlock);
           functionBlock.addArithmeticInterpreter(arithmeticInterpreter);
           functionBlock.addRegisterFileBlock(unifiedRegisterFileBlock);
           this.fpIssueWindowBlock.setFunctionUnitBlock(functionBlock);
           this.fpFunctionUnitBlocks.add(functionBlock);
         }
-        case "L/S" ->
+        case L_S ->
         {
-          LoadStoreFunctionUnit loadStoreFunctionUnit = new LoadStoreFunctionUnit(reorderBufferBlock, fu.latency,
-                                                                                  loadStoreIssueWindowBlock,
+          LoadStoreFunctionUnit loadStoreFunctionUnit = new LoadStoreFunctionUnit(fu.name, reorderBufferBlock,
+                                                                                  fu.latency, loadStoreIssueWindowBlock,
                                                                                   loadBufferBlock, storeBufferBlock,
                                                                                   loadStoreInterpreter);
           this.loadStoreIssueWindowBlock.setFunctionUnitBlock(loadStoreFunctionUnit);
           this.loadStoreFunctionUnits.add(loadStoreFunctionUnit);
         }
-        case "Branch" ->
+        case Branch ->
         {
-          BranchFunctionUnitBlock branchFunctionUnitBlock = new BranchFunctionUnitBlock(reorderBufferBlock,
-                                                                                        branchIssueWindowBlock,
-                                                                                        fu.latency);
+          BranchFunctionUnitBlock branchFunctionUnitBlock = new BranchFunctionUnitBlock(fu.name, branchIssueWindowBlock,
+                                                                                        fu.latency, reorderBufferBlock);
           branchFunctionUnitBlock.addBranchInterpreter(branchInterpreter);
           branchFunctionUnitBlock.addRegisterFileBlock(unifiedRegisterFileBlock);
           this.branchIssueWindowBlock.setFunctionUnitBlock(branchFunctionUnitBlock);
           this.branchFunctionUnitBlocks.add(branchFunctionUnitBlock);
         }
-        case "Memory" ->
+        case Memory ->
         {
-          MemoryAccessUnit memoryAccessUnit = new MemoryAccessUnit(reorderBufferBlock, fu.latency,
+          MemoryAccessUnit memoryAccessUnit = new MemoryAccessUnit(fu.name, reorderBufferBlock, fu.latency,
                                                                    loadStoreIssueWindowBlock, loadBufferBlock,
                                                                    storeBufferBlock, loadStoreInterpreter,
                                                                    unifiedRegisterFileBlock);
@@ -336,13 +351,20 @@ public class CpuState implements Serializable
   
   public String serialize()
   {
-    return JsonWriter.objectToJson(this, GsonConfiguration.getJsonWriterOptions());
+    ObjectMapper serializer = Serialization.getSerializer();
+    try
+    {
+      return serializer.writeValueAsString(this);
+    }
+    catch (JsonProcessingException e)
+    {
+      throw new RuntimeException(e);
+    }
   }
   
   public static CpuState deserialize(String json)
   {
-    CpuState state = (CpuState) JsonReader.jsonToJava(json, GsonConfiguration.getJsonWriterOptions());
-    return state;
+    throw new UnsupportedOperationException("Not implemented");
   }
   
   /**
@@ -366,8 +388,8 @@ public class CpuState implements Serializable
     CpuState myObject = (CpuState) obj;
     
     // Compare:
-    String meJson    = JsonWriter.objectToJson(this, GsonConfiguration.getJsonWriterOptions());
-    String otherJson = JsonWriter.objectToJson(myObject, GsonConfiguration.getJsonWriterOptions());
+    String meJson    = this.serialize();
+    String otherJson = myObject.serialize();
     
     return meJson.equals(otherJson);
   }
@@ -389,7 +411,7 @@ public class CpuState implements Serializable
     // Check which buffer contains older instruction at the top
     // Null check first, if any is empty, the order does not matter
     if (loadBufferBlock.getLoadQueueFirst() == null || storeBufferBlock.getStoreQueueFirst() == null || loadBufferBlock.getLoadQueueFirst()
-            .getId() < storeBufferBlock.getStoreQueueFirst().getId())
+            .getIntegerId() < storeBufferBlock.getStoreQueueFirst().getIntegerId())
     {
       loadBufferBlock.simulate();
       storeBufferBlock.simulate();
@@ -413,8 +435,5 @@ public class CpuState implements Serializable
     statisticsCounter.incrementClockCycles();
     
     this.tick++;
-    
-    // Clean up
-    simCodeModelAllocator.deleteOldReferences();
   }// end of run
 }

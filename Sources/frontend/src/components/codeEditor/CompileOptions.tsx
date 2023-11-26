@@ -29,8 +29,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { ChevronRight } from 'lucide-react';
-import { useState } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import _examples from 'src/constant/codeExamples.json';
 
@@ -47,7 +45,15 @@ import {
 } from '@/lib/redux/compilerSlice';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 
-import ExpandBubble from '@/components/ExpandBubble';
+import { Button } from '@/components/base/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/base/ui/dropdown-menu';
 import Tooltip from '@/components/Tooltip';
 
 import { CodeExample } from '@/constant/codeExamples';
@@ -113,50 +119,40 @@ export default function CompileOptions() {
         </div>
         <CompileButton handleCompile={handleCompile} />
       </div>
-      <button className='button'>Load ASM to simulator</button>
     </div>
   );
 }
 
 function ExamplesButton() {
   const dispatch = useAppDispatch();
-  const [showExamples, setShowExamples] = useState(false);
 
   return (
-    <div
-      onMouseEnter={() => setShowExamples(true)}
-      onMouseLeave={() => setShowExamples(false)}
-      className='relative button-shape text-center button-interactions rounded border'
-    >
-      <span>Examples</span>
-      <div className='absolute inset-0 flex items-center justify-end pr-1'>
-        <ChevronRight
-          strokeWidth={1.5}
-          className={'duration-100 ' + (showExamples ? 'rotate-180' : '')}
-        />
-      </div>
-      {showExamples && (
-        <ExpandBubble>
-          {examples.map((example) => {
-            // Wrapped in two divs, to not lose hover when the mouse moves over
-            return (
-              <button
-                key={example.name}
-                className='w-full p-1 hover:bg-gray-100 flex items-center justify-between'
-                onClick={() => {
-                  dispatch(openExample(example));
-                }}
-              >
-                <div className=''>{example.name}</div>
-                <div className='w-8 rounded px-0.5 mr-1 bg-amber-300 text-[#694848] text-xs'>
-                  {example.type}
-                </div>
-              </button>
-            );
-          })}
-        </ExpandBubble>
-      )}
-    </div>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant='outline'>Examples</Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent side='right'>
+        <DropdownMenuLabel>Examples</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        {examples.map((example) => {
+          // Wrapped in two divs, to not lose hover when the mouse moves over
+          return (
+            <DropdownMenuItem
+              key={example.name}
+              onClick={() => {
+                dispatch(openExample(example));
+              }}
+              className='flex'
+            >
+              <div className='flex-grow'>{example.name}</div>
+              <div className='flex justify-center w-8 rounded px-0.5 mr-1 bg-amber-300 text-[#694848] text-xs'>
+                {example.type}
+              </div>
+            </DropdownMenuItem>
+          );
+        })}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 

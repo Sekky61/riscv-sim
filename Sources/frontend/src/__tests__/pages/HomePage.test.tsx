@@ -31,7 +31,7 @@
 
 // !STARTERCONF You should delete this page
 
-import { render, screen } from '@testing-library/react';
+import { render } from '@testing-library/react';
 import { Provider } from 'react-redux';
 
 import { store } from '@/lib/redux/store';
@@ -46,8 +46,11 @@ describe('Homepage', () => {
       </Provider>,
     );
 
-    const heading = screen.getByText(/Reorder/i);
-
-    expect(heading).toBeInTheDocument();
+    // Check if there is a button for simulation forward
+    // There should be a button with aria-label="Forward"
+    const buttonForward = document.querySelector(
+      'button[aria-label="Step forward"]',
+    );
+    expect(buttonForward).toBeInTheDocument();
   });
 });

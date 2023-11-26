@@ -29,36 +29,64 @@ package com.gradle.superscalarsim.server;
 
 import com.gradle.superscalarsim.server.checkConfig.CheckConfigHandler;
 import com.gradle.superscalarsim.server.compile.CompileHandler;
-import com.gradle.superscalarsim.server.getState.GetStateHandler;
 import com.gradle.superscalarsim.server.parseAsm.ParseAsmHandler;
-import com.gradle.superscalarsim.server.simulation.SimulationHandler;
+import com.gradle.superscalarsim.server.schema.SchemaHandler;
+import com.gradle.superscalarsim.server.simulate.SimulateHandler;
+import io.undertow.Handlers;
 import io.undertow.Undertow;
+import io.undertow.server.HttpHandler;
+import io.undertow.server.handlers.encoding.ContentEncodingRepository;
+import io.undertow.server.handlers.encoding.DeflateEncodingProvider;
+import io.undertow.server.handlers.encoding.EncodingHandler;
+import io.undertow.server.handlers.encoding.GzipEncodingProvider;
 
 import java.io.IOException;
 
-import static io.undertow.Handlers.path;
-
+/**
+ * Supports gzip encoding - client must include "Accept-Encoding: gzip" header.
+ *
+ * @class Server
+ * @brief Undertow server with handlers for several HTTP endpoints.
+ */
 public class Server
 {
+  
+  String host;
   
   /**
    * @brief Port to listen on. Can be configured via command line argument
    */
-  int port = 8000;
+  int port;
   
-  public Server(int port)
+  boolean useGzip = true;
+  
+  public Server(String host, int port)
   {
+    this.host = host;
     this.port = port;
   }
   
   public void start() throws IOException
   {
-    Undertow server = Undertow.builder().addHttpListener(8000, "localhost").setHandler(
-            path().addPrefixPath("/compile", new MyRequestHandler<>(new CompileHandler()))
-                    .addPrefixPath("/parseAsm", new MyRequestHandler<>(new ParseAsmHandler()))
-                    .addPrefixPath("/checkConfig", new MyRequestHandler<>(new CheckConfigHandler()))
-                    .addPrefixPath("/getState", new MyRequestHandler<>(new GetStateHandler()))
-                    .addPrefixPath("/simulation", new MyRequestHandler<>(new SimulationHandler()))).build();
+    // Register handlers
+    HttpHandler pathHandler = Handlers.path()
+            .addPrefixPath(EndpointName.compile.getPath(), new MyRequestHandler<>(new CompileHandler()))
+            .addPrefixPath(EndpointName.parseAsm.getPath(), new MyRequestHandler<>(new ParseAsmHandler()))
+            .addPrefixPath(EndpointName.checkConfig.getPath(), new MyRequestHandler<>(new CheckConfigHandler()))
+            .addPrefixPath(EndpointName.simulate.getPath(), new MyRequestHandler<>(new SimulateHandler()))
+            .addPrefixPath(EndpointName.schema.getPath(), new MyRequestHandler<>(new SchemaHandler()));
+    HttpHandler baseHandler = pathHandler;
+    
+    // Add gzip encoding
+    if (useGzip)
+    {
+      baseHandler = new EncodingHandler(
+              new ContentEncodingRepository().addEncodingHandler("gzip", new GzipEncodingProvider(), 50)
+                      .addEncodingHandler("deflate", new DeflateEncodingProvider(), 10)).setNext(pathHandler);
+    }
+    
+    Undertow server = Undertow.builder().addHttpListener(port, host).setHandler(baseHandler).build();
     server.start();
+    System.out.println("Server started on port " + port);
   }
 }

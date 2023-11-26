@@ -32,6 +32,9 @@
  */
 package com.gradle.superscalarsim.blocks.loadstore;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.blocks.AbstractBlock;
 import com.gradle.superscalarsim.blocks.base.DecodeAndDispatchBlock;
 import com.gradle.superscalarsim.blocks.base.ReorderBufferBlock;
@@ -50,27 +53,34 @@ import java.util.*;
  * @class StoreBufferBlock
  * @brief Class that holds all in-flight store instructions
  */
+@JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
 public class StoreBufferBlock implements AbstractBlock
 {
   /// Queue with all uncommitted store instructions
+  @JsonIdentityReference(alwaysAsId = true)
   private final Queue<SimCodeModel> storeQueue;
   /// Map with additional infos for specific store instructions
   private final Map<Integer, StoreBufferItem> storeMap;
   /// List holding all allocated memory access units
+  @JsonIdentityReference(alwaysAsId = true)
   private final List<MemoryAccessUnit> memoryAccessUnitList;
   /// Counter, which is used to calculate if buffer can hold instructions pulled into ROB
   public int possibleNewEntries;
   /// Interpreter for processing load store instructions
+  @JsonIdentityReference(alwaysAsId = true)
   private CodeLoadStoreInterpreter loadStoreInterpreter;
   /// Class, which simulates instruction decode and renames registers
+  @JsonIdentityReference(alwaysAsId = true)
   private DecodeAndDispatchBlock decodeAndDispatchBlock;
   /// Class containing all registers, that simulator uses
+  @JsonIdentityReference(alwaysAsId = true)
   private UnifiedRegisterFileBlock registerFileBlock;
   /// Class contains simulated implementation of Reorder buffer
+  @JsonIdentityReference(alwaysAsId = true)
   private ReorderBufferBlock reorderBufferBlock;
   /// Store Buffer size
   private int bufferSize;
-  /// Id counter matching the one in ROB
+  /// ID counter matching the one in ROB
   private int commitId;
   
   public StoreBufferBlock()
@@ -204,20 +214,20 @@ public class StoreBufferBlock implements AbstractBlock
                                                             {
                                                               if (isInstructionStore(codeModel))
                                                               {
-                                                                if (isBufferFull(
-                                                                        1) || !this.reorderBufferBlock.getFlagsMap()
-                                                                        .containsKey(codeModel.getId()))
+                                                                boolean isPresent = this.reorderBufferBlock.getRobItem(
+                                                                        codeModel.getIntegerId()) != null;
+                                                                if (isBufferFull(1) || !isPresent)
                                                                 {
                                                                   return;
                                                                 }
                                                                 this.storeQueue.add(codeModel);
                                                                 InputCodeArgument argument = codeModel.getArgumentByName(
                                                                         "rs2");
-                                                                this.storeMap.put(codeModel.getId(),
+                                                                this.storeMap.put(codeModel.getIntegerId(),
                                                                                   new StoreBufferItem(
                                                                                           Objects.requireNonNull(
                                                                                                   argument).getValue(),
-                                                                                          codeModel.getId()));
+                                                                                          codeModel.getIntegerId()));
                                                               }
                                                             });
   }// end of pullStoreInstructionsFromDecode
@@ -234,11 +244,11 @@ public class StoreBufferBlock implements AbstractBlock
       if (simCodeModel.hasFailed())
       {
         removedInstructions.add(simCodeModel);
-        if (this.storeMap.get(simCodeModel.getId()).isAccessingMemory())
+        if (this.storeMap.get(simCodeModel.getIntegerId()).isAccessingMemory())
         {
           this.memoryAccessUnitList.forEach(ma -> ma.tryRemoveCodeModel(simCodeModel));
         }
-        this.storeMap.remove(simCodeModel.getId());
+        this.storeMap.remove(simCodeModel.getIntegerId());
       }
     }
     this.storeQueue.removeAll(removedInstructions);
@@ -268,7 +278,7 @@ public class StoreBufferBlock implements AbstractBlock
     SimCodeModel codeModel = null;
     for (SimCodeModel simCodeModel : this.storeQueue)
     {
-      StoreBufferItem item = this.storeMap.get(simCodeModel.getId());
+      StoreBufferItem item = this.storeMap.get(simCodeModel.getIntegerId());
       
       //If there is store without address computed stop - there could be WaW hazard
       if (item.getAddress() == -1)
@@ -276,18 +286,20 @@ public class StoreBufferBlock implements AbstractBlock
         break;
       }
       
-      boolean isAvailableForMA = item.getAddress() != -1 && !item.isAccessingMemory() && item.getAccessingMemoryId() == -1 && item.isSourceReady() && !reorderBufferBlock.getFlagsMap()
-              .get(simCodeModel.getId()).isSpeculative();
+      assert !simCodeModel.hasFailed();
+      
+      boolean isSpeculative = reorderBufferBlock.getRobItem(simCodeModel.getIntegerId()).reorderFlags.isSpeculative();
+      boolean isAvailableForMA = item.getAddress() != -1 && !item.isAccessingMemory() && item.getAccessingMemoryId() == -1 && item.isSourceReady() && !isSpeculative;
       if (isAvailableForMA)
       {
         for (SimCodeModel previousStore : this.storeQueue)
         {
           //Check if we haven't reached current statement
-          if (simCodeModel.getId() == previousStore.getId())
+          if (simCodeModel.getIntegerId() == previousStore.getIntegerId())
           {
             break;
           }
-          else if ((this.storeMap.get(previousStore.getId()).getAddress() & ~3L) == (item.getAddress() & ~3L))
+          else if ((this.storeMap.get(previousStore.getIntegerId()).getAddress() & ~3L) == (item.getAddress() & ~3L))
           {
             //If there is WaW hazard - stop
             isAvailableForMA = false;
@@ -319,8 +331,9 @@ public class StoreBufferBlock implements AbstractBlock
       {
         memoryAccessUnit.resetCounter();
         memoryAccessUnit.setSimCodeModel(codeModel);
-        this.storeMap.get(codeModel.getId()).setAccessingMemory(true);
-        this.storeMap.get(codeModel.getId()).setAccessingMemoryId(this.commitId);
+        this.storeMap.get(codeModel.getIntegerId()).setAccessingMemory(true);
+        this.storeMap.get(codeModel.getIntegerId()).setAccessingMemoryId(this.commitId);
+        // todo: return here??
       }
     }
   }// end of selectLoadForDataAccess
@@ -422,14 +435,14 @@ public class StoreBufferBlock implements AbstractBlock
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Release store instruction on top of the queue and commits it
+   * @brief Release store instruction on top of the queue (instruction has been committed)
    */
   public void releaseStoreFirst()
   {
     if (!this.storeQueue.isEmpty())
     {
       SimCodeModel codeModel = storeQueue.poll();
-      this.storeMap.remove(codeModel.getId());
+      this.storeMap.remove(codeModel.getIntegerId());
     }
     else
     {

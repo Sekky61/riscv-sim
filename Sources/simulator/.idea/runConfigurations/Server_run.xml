@@ -2,9 +2,9 @@
   <configuration default="false" name="Server run" type="Application" factoryName="Application">
     <option name="ALTERNATIVE_JRE_PATH" value="17" />
     <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
-    <option name="MAIN_CLASS_NAME" value="RISCVsimulator" />
+    <option name="MAIN_CLASS_NAME" value="App" />
     <module name="superscalar-simulator.main" />
-    <option name="PROGRAM_PARAMETERS" value="--server" />
+    <option name="PROGRAM_PARAMETERS" value="server" />
     <method v="2">
       <option name="Make" enabled="true" />
     </method>

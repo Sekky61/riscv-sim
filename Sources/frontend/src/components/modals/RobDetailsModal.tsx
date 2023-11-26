@@ -29,8 +29,37 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-const RobDetailsModal = () => {
-  return <div>Details</div>;
-};
+import { selectROB } from '@/lib/redux/cpustateSlice';
+import { useAppSelector } from '@/lib/redux/hooks';
 
-export default RobDetailsModal;
+import {
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/base/ui/card';
+import InstructionTable from '@/components/simulation/InstructionTable';
+
+export const RobDetailsModal = () => {
+  const rob = useAppSelector(selectROB);
+
+  if (!rob) throw new Error('ROB not found');
+
+  const instructionIds = rob.reorderQueue.map((i) => i.simCodeModel);
+
+  return (
+    <>
+      <CardHeader>
+        <CardTitle>Reorder Buffer</CardTitle>
+        <CardDescription>Detailed view</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <h2>Buffer</h2>
+        <div>
+          Capacity: {rob.reorderQueue.length}/{rob.bufferSize}
+        </div>
+        <InstructionTable instructions={instructionIds} />
+      </CardContent>
+    </>
+  );
+};

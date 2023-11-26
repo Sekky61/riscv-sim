@@ -31,7 +31,7 @@
 
 import type { Diagnostic } from '@codemirror/lint';
 
-import type { ErrorItem } from '@/lib/serverCalls/callCompiler';
+import { ComplexErrorItem } from '@/lib/types/simulatorApi';
 
 /**
  * Transforms errors from compiler API to codemirror diagnostics.
@@ -42,27 +42,35 @@ import type { ErrorItem } from '@/lib/serverCalls/callCompiler';
  * @returns Array of codemirror diagnostics
  */
 export function transformErrors(
-  errors: Array<ErrorItem>,
+  errors: Array<ComplexErrorItem>,
   code: string,
 ): Array<Diagnostic> {
   // Add one to each line length to account for the fact that caret can be at the end of the line
   const lineLengths = code.split('\n').map((line) => line.length + 1);
   const lineLengthsPrefixSum = lineLengths.reduce(
-    (acc, curr, i) => [...acc, curr + acc[i]],
+    (acc, curr, i) => {
+      const prev = acc[i];
+      if (prev === undefined) {
+        throw new Error('Invalid line lengths');
+      }
+      return [...acc, curr + prev];
+    },
     [0],
   );
-  return errors.map((error: ErrorItem): Diagnostic => {
+  return errors.map((error: ComplexErrorItem): Diagnostic => {
     // We have a line and column, but code mirror expects a 1D character index
     // We need to convert the line and column to a character index
-    const span = error.locations['@items'][0];
+    const span = error.locations[0];
     if (!span) {
       throw new Error('Invalid error span (0 locations)');
     }
     // 1-based line and column
     const line = span.caret.line;
-
-    const charIndex =
-      lineLengthsPrefixSum[line - 1] + span.caret['display-column'] - 1;
+    const lineStart = lineLengthsPrefixSum[line - 1];
+    if (lineStart === undefined) {
+      throw new Error(`Invalid line start for line ${line}`);
+    }
+    const charIndex = lineStart + span.caret['display-column'] - 1;
 
     let charIndexEnd;
     if (span.finish) {

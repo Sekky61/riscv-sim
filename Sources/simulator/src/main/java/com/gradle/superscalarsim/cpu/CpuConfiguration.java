@@ -27,12 +27,15 @@
 
 package com.gradle.superscalarsim.cpu;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.gradle.superscalarsim.code.CodeParser;
+import com.gradle.superscalarsim.code.Expression;
 import com.gradle.superscalarsim.code.ParseError;
 import com.gradle.superscalarsim.loader.InitLoader;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -71,14 +74,12 @@ import java.util.Objects;
 //    };
 
 /**
- * @author Michal Majer
- * Faculty of Information Technology
- * Brno University of Technology
- * xmajer21@stud.fit.vutbr.cz
+ * @details @JsonIgnoreProperties makes deserialization ignore any extra properties (client sends 'name' of config)
  * @class CpuConfiguration
  * @brief Class representing the CPU configuration
  * Can be used to create a CpuState
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class CpuConfiguration implements Serializable
 {
   /**
@@ -134,33 +135,31 @@ public class CpuConfiguration implements Serializable
     // FX with all ops
     config.fUnits[0]            = new FUnit();
     config.fUnits[0].id         = 0;
-    config.fUnits[0].fuType     = "FX";
+    config.fUnits[0].fuType     = FUnit.Type.FX;
     config.fUnits[0].latency    = 2;
-    config.fUnits[0].operations = new String[]{"!", "bits", "+", "-", "*", "/", "%", "&", "|", "^", ">>>", "<<", ">>", "<=", ">=", "==", "<", ">", "="};
-    
+    config.fUnits[0].operations = new FUnit.Capability[]{FUnit.Capability.addition, FUnit.Capability.bitwise, FUnit.Capability.multiplication, FUnit.Capability.division, FUnit.Capability.special};
     // FP with all ops
     config.fUnits[1]            = new FUnit();
     config.fUnits[1].id         = 1;
-    config.fUnits[1].fuType     = "FP";
+    config.fUnits[1].fuType     = FUnit.Type.FP;
     config.fUnits[1].latency    = 2;
-    config.fUnits[1].operations = new String[]{"!", "sqrt", "bits", "float", "fclass", "+", "-", "*", "/", "%", "&", "|", "^", ">>>", "<<", ">>", "<=", ">=", "==", "<", ">", "="};
-    
+    config.fUnits[1].operations = new FUnit.Capability[]{FUnit.Capability.addition, FUnit.Capability.bitwise, FUnit.Capability.multiplication, FUnit.Capability.division, FUnit.Capability.special};
     // L/S
     config.fUnits[2]         = new FUnit();
     config.fUnits[2].id      = 2;
-    config.fUnits[2].fuType  = "L/S";
+    config.fUnits[2].fuType  = FUnit.Type.L_S;
     config.fUnits[2].latency = 1;
     
     // Branch
     config.fUnits[3]         = new FUnit();
     config.fUnits[3].id      = 3;
-    config.fUnits[3].fuType  = "Branch";
+    config.fUnits[3].fuType  = FUnit.Type.Branch;
     config.fUnits[3].latency = 2;
     
     // Memory
     config.fUnits[4]         = new FUnit();
     config.fUnits[4].id      = 4;
-    config.fUnits[4].fuType  = "Memory";
+    config.fUnits[4].fuType  = FUnit.Type.Memory;
     config.fUnits[4].latency = 1;
     
     config.useCache             = true;
@@ -362,14 +361,14 @@ public class CpuConfiguration implements Serializable
       
       switch (fu.fuType)
       {
-        case "L/S", "Branch", "Memory" ->
+        case L_S, Branch, Memory ->
         {
           if (fu.operations != null)
           {
             errorMessages.add(String.format("FU %d: %s FU must not have operations", i, fu.fuType));
           }
         }
-        case "FX", "FP" ->
+        case FX, FP ->
         {
           if (fu.operations == null)
           {
@@ -390,24 +389,96 @@ public class CpuConfiguration implements Serializable
     }
   }
   
+  /**
+   * @brief Function unit description
+   */
   public static class FUnit
   {
+    /**
+     * AFAIK not used
+     */
     public int id;
-    public String fuType;
+    
+    /**
+     * Optional name of the FUnit. Shows up in simulation visualisation, also used for debugging
+     */
+    public String name;
+    
+    /**
+     * Type of the FUnit
+     */
+    public Type fuType;
+    
+    /**
+     * Latency of the FUnit
+     */
     public int latency;
-    public String[] operations;
+    
+    /**
+     * Classes of operations that this FUnit can perform
+     */
+    public Capability[] operations;
     
     public FUnit()
     {
     
     }
     
-    public FUnit(int id, String fuType, int latency, String[] operations)
+    public FUnit(int id, Type fuType, int latency, Capability[] operations, String name)
     {
       this.id         = id;
+      this.name       = name;
       this.fuType     = fuType;
       this.latency    = latency;
       this.operations = operations;
+    }
+    
+    public FUnit(int id, Type fuType, int latency, Capability[] operations)
+    {
+      this.id         = id;
+      this.name       = "FUnit " + id;
+      this.fuType     = fuType;
+      this.latency    = latency;
+      this.operations = operations;
+    }
+    
+    /**
+     * @return List of operations that this FUnit can perform based on its capabilities
+     * {@link Expression}
+     */
+    public List<String> getAllowedOperations()
+    {
+      // Base
+      List<String> ops = new ArrayList<>(Arrays.asList(Expression.baseOperators));
+      // Add operations based on capabilities
+      for (Capability capability : operations)
+      {
+        switch (capability)
+        {
+          case addition -> ops.addAll(Arrays.asList(Expression.additionOperators));
+          case bitwise -> ops.addAll(Arrays.asList(Expression.bitwiseOperators));
+          case multiplication -> ops.addAll(Arrays.asList(Expression.multiplicationOperators));
+          case division -> ops.addAll(Arrays.asList(Expression.divisionOperators));
+          case special -> ops.addAll(Arrays.asList(Expression.specialOperators));
+        }
+      }
+      return ops;
+    }
+    
+    /**
+     * Types of FUnits
+     */
+    public enum Type
+    {
+      FX, FP, L_S, Branch, Memory,
+    }
+    
+    /**
+     * Enumeration of Funit capabilities
+     */
+    public enum Capability
+    {
+      addition, bitwise, multiplication, division, special,
     }
   }
   

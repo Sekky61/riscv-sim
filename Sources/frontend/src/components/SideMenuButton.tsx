@@ -64,6 +64,7 @@ export default function SideMenuButton({
         active={isActive}
         clickCallback={clickCallback}
         shortCut={shortcut}
+        description={hoverText}
       >
         {Icon}
       </AnimatedButton>

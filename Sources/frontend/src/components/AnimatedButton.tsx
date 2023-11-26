@@ -34,7 +34,7 @@ import { useState } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { OptionsOrDependencyArray } from 'react-hotkeys-hook/dist/types';
 
-import { ReactChildren } from '@/lib/reactTypes';
+import { ReactChildren } from '@/lib/types/reactTypes';
 
 export type AnimatedButtonProps = {
   active?: boolean;
@@ -44,10 +44,12 @@ export type AnimatedButtonProps = {
   children: ReactChildren;
   animationLength?: number;
   className?: string;
+  description: string;
 };
 
 /**
  * The click callback is called when the button is clicked or when the shortcut is pressed.
+ * By default, the shortcut is prevented from bubbling up to the browser.
  */
 const AnimatedButton = ({
   active = false,
@@ -57,6 +59,7 @@ const AnimatedButton = ({
   children,
   animationLength,
   className,
+  description,
 }: AnimatedButtonProps) => {
   const [isAnimating, setIsAnimating] = useState(false);
 
@@ -65,7 +68,7 @@ const AnimatedButton = ({
     () => {
       onClick();
     },
-    shortCutOptions,
+    { preventDefault: true, ...shortCutOptions },
   );
 
   const onClick = () => {
@@ -83,6 +86,7 @@ const AnimatedButton = ({
         isAnimating && 'tlbutton-animation-outer',
       )}
       onClick={onClick}
+      aria-label={description}
     >
       <div
         className={clsx(

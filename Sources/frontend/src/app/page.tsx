@@ -32,19 +32,41 @@
 'use client';
 
 import { ZoomIn, ZoomOut } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
+
+import {
+  pullCodeFromCompiler,
+  reloadSimulation,
+  selectCpu,
+} from '@/lib/redux/cpustateSlice';
+import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 
 import AnimatedButton from '@/components/AnimatedButton';
 import CanvasWindow from '@/components/CanvasWindow';
-import Placement from '@/components/Placement';
-import Line from '@/components/simulation/Line';
+import BranchBlock from '@/components/simulation/BranchBlock';
+import DecodeBlock from '@/components/simulation/DecodeBlock';
+import FetchBlock from '@/components/simulation/FetchBlock';
+import FunctionUnitGroup from '@/components/simulation/FunctionUnitGroup';
+import IssueWindow from '@/components/simulation/IssueWindow';
+import LoadBuffer from '@/components/simulation/LoadBuffer';
 import Program from '@/components/simulation/Program';
 import ReorderBuffer from '@/components/simulation/ReorderBuffer';
+import StoreBuffer from '@/components/simulation/StoreBuffer';
 import Timeline from '@/components/simulation/Timeline';
 
 export default function HomePage() {
   const [scale, setScale] = useState(1);
+  const dispatch = useAppDispatch();
+  const state = useAppSelector(selectCpu);
+
+  useEffect(() => {
+    if (!state) {
+      // TODO: calls multiple times unnecessarily
+      dispatch(pullCodeFromCompiler());
+      dispatch(reloadSimulation());
+    }
+  }, [state, dispatch]);
 
   const scaleUp = () => {
     setScale(scale + 0.2);
@@ -57,15 +79,32 @@ export default function HomePage() {
   return (
     <>
       <CanvasWindow scale={scale}>
-        <Placement x={50} y={100}>
-          <Program />
-        </Placement>
-        <Placement x={250} y={150}>
-          <Line length={250} />
-        </Placement>
-        <Placement x={500} y={100}>
-          <ReorderBuffer />
-        </Placement>
+        <div className='global-grid'>
+          <div className='col-grid'>
+            <Program />
+            <div className='flex flex-col gap-4'>
+              <BranchBlock />
+              <FetchBlock />
+              <DecodeBlock />
+            </div>
+            <ReorderBuffer />
+          </div>
+          <div className='sim-grid justify-items-center'>
+            <IssueWindow type='alu' />
+            <FunctionUnitGroup type='alu' />
+            <IssueWindow type='fp' />
+            <FunctionUnitGroup type='fp' />
+            <IssueWindow type='branch' />
+            <FunctionUnitGroup type='branch' />
+          </div>
+          <div className='sim-grid'>
+            <StoreBuffer />
+            <LoadBuffer />
+          </div>
+          <div>
+            <FunctionUnitGroup type='memory' />
+          </div>
+        </div>
       </CanvasWindow>
       <div className='pointer-events-none absolute top-0 flex w-full justify-center pt-2'>
         <Timeline className='pointer-events-auto' />
@@ -111,6 +150,7 @@ const ScaleButtons = ({ scaleUp, scaleDown }: ScaleButtonsProps) => {
         shortCutOptions={{ combinationKey: '-', preventDefault: true }}
         clickCallback={scaleUp}
         className='bg-gray-100 rounded-full drop-shadow'
+        description='Zoom in'
       >
         <ZoomIn strokeWidth={1.5} />
       </AnimatedButton>
@@ -119,6 +159,7 @@ const ScaleButtons = ({ scaleUp, scaleDown }: ScaleButtonsProps) => {
         shortCutOptions={{ preventDefault: true }}
         clickCallback={scaleDown}
         className='bg-gray-100 rounded-full drop-shadow'
+        description='Zoom out'
       >
         <ZoomOut strokeWidth={1.5} />
       </AnimatedButton>

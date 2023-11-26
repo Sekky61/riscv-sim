@@ -27,15 +27,16 @@
 
 package com.gradle.superscalarsim.server;
 
-import com.cedarsoftware.util.io.JsonReader;
-import com.cedarsoftware.util.io.JsonWriter;
-import com.gradle.superscalarsim.serialization.GsonConfiguration;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gradle.superscalarsim.serialization.Serialization;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.Headers;
 import io.undertow.util.HttpString;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  * @class MyRequestHandler
@@ -44,11 +45,20 @@ import java.io.IOException;
 public class MyRequestHandler<T, U> implements HttpHandler
 {
   
+  IRequestDeserializer<T> deserializer;
+  
   IRequestResolver<T, U> resolver;
   
-  public MyRequestHandler(IRequestResolver<T, U> resolver)
+  public <R extends IRequestResolver<T, U> & IRequestDeserializer<T>> MyRequestHandler(R resolver)
   {
-    this.resolver = resolver;
+    this.resolver     = resolver;
+    this.deserializer = resolver;
+  }
+  
+  public MyRequestHandler(IRequestResolver<T, U> resolver, IRequestDeserializer<T> deserializer)
+  {
+    this.deserializer = deserializer;
+    this.resolver     = resolver;
   }
   
   @Override
@@ -78,12 +88,29 @@ public class MyRequestHandler<T, U> implements HttpHandler
     
     exchange.startBlocking();
     
-    T compileRequest = (T) JsonReader.jsonToJava(exchange.getInputStream(), null);
-    U response       = resolver.resolve(compileRequest);
+    ObjectMapper mapper = Serialization.getSerializer();
+    
+    // Deserialize
+    InputStream requestJson    = exchange.getInputStream();
+    T           compileRequest = null;
+    try
+    {
+      compileRequest = deserializer.deserialize(requestJson);
+    }
+    catch (Exception e)
+    {
+      exchange.setStatusCode(400);
+      System.err.println("Invalid request: " + e.getMessage());
+      exchange.getResponseSender().send("Bad request");
+      return;
+    }
+    
+    U response = resolver.resolve(compileRequest);
     
     // Serialize
-    String out = JsonWriter.objectToJson(response, GsonConfiguration.getJsonWriterOptions());
-    exchange.getResponseSender().send(out);
+    OutputStream outputStream = exchange.getOutputStream();
+    mapper.writeValue(outputStream, response);
+    exchange.endExchange();
   }
   
   /**

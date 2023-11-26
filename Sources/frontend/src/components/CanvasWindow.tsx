@@ -77,13 +77,16 @@ export default function CanvasWindow({
 
     // Get body
     const body = document.getElementsByTagName('body')[0];
+    if (!body) {
+      throw new Error('Body not found');
+    }
     body.style.userSelect = 'none';
     body.classList.add('cursor-grabbing');
 
-    function onDrag(this: Window, e: MouseEvent) {
+    function onDrag(this: Window, ee: MouseEvent) {
       // get the change in x and y
-      const dx = e.movementX;
-      const dy = e.movementY;
+      const dx = ee.movementX;
+      const dy = ee.movementY;
       // set the position of the div to the change in x and y
       if (elRef.current) {
         elRef.current.style.left = `${elRef.current.offsetLeft + dx}px`;
@@ -97,9 +100,12 @@ export default function CanvasWindow({
       window.removeEventListener('mousemove', onDrag);
       window.removeEventListener('mouseup', onDragEnd);
 
-      const body = document.getElementsByTagName('body')[0];
-      body.style.userSelect = 'auto';
-      body.classList.remove('cursor-grabbing');
+      const body2 = document.getElementsByTagName('body')[0];
+      if (!body2) {
+        throw new Error('Body not found');
+      }
+      body2.style.userSelect = 'auto';
+      body2.classList.remove('cursor-grabbing');
     }
 
     window.addEventListener('mousemove', onDrag);
@@ -110,7 +116,7 @@ export default function CanvasWindow({
     <div
       ref={canvasRef}
       onMouseDown={onDragStart}
-      className={`${className} relative h-full w-full overflow-auto`}
+      className={`${className} relative h-full w-full overflow-auto dotted-bg`}
     >
       <div
         ref={elRef}

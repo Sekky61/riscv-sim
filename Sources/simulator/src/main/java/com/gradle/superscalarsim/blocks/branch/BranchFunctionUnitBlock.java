@@ -32,6 +32,9 @@
  */
 package com.gradle.superscalarsim.blocks.branch;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.blocks.base.AbstractFunctionUnitBlock;
 import com.gradle.superscalarsim.blocks.base.AbstractIssueWindowBlock;
 import com.gradle.superscalarsim.blocks.base.ReorderBufferBlock;
@@ -43,11 +46,14 @@ import com.gradle.superscalarsim.models.register.RegisterModel;
 
 import java.util.OptionalInt;
 
+@JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
 public class BranchFunctionUnitBlock extends AbstractFunctionUnitBlock
 {
   /// Interpreter for interpreting executing instructions
+  @JsonIdentityReference(alwaysAsId = true)
   private CodeBranchInterpreter branchInterpreter;
   /// Class containing all registers, that simulator uses
+  @JsonIdentityReference(alwaysAsId = true)
   private UnifiedRegisterFileBlock registerFileBlock;
   
   public BranchFunctionUnitBlock()
@@ -56,18 +62,19 @@ public class BranchFunctionUnitBlock extends AbstractFunctionUnitBlock
   }
   
   /**
-   * @param [in] blockScheduleTask     - Task class, where blocks are periodically triggered by the GlobalTimer
-   * @param [in] reorderBufferBlock    - Class containing simulated Reorder Buffer
-   * @param [in] delay                 - Delay for function unit
-   * @param [in] issueWindowBlock   - Issue window block for comparing instruction and data types
+   * @param name               Name of the function unit
+   * @param issueWindowBlock   Issue window block for comparing instruction and data types
+   * @param delay              Delay for function unit
+   * @param reorderBufferBlock Class containing simulated Reorder Buffer
    *
    * @brief Constructor
    */
-  public BranchFunctionUnitBlock(ReorderBufferBlock reorderBufferBlock,
+  public BranchFunctionUnitBlock(String name,
                                  AbstractIssueWindowBlock issueWindowBlock,
-                                 int delay)
+                                 int delay,
+                                 ReorderBufferBlock reorderBufferBlock)
   {
-    super(reorderBufferBlock, delay, issueWindowBlock);
+    super(name, delay, issueWindowBlock, reorderBufferBlock);
   }// end of Constructor
   //----------------------------------------------------------------------
   
@@ -139,7 +146,7 @@ public class BranchFunctionUnitBlock extends AbstractFunctionUnitBlock
         reg.setReadiness(RegisterReadinessEnum.kExecuted);
       }
       
-      this.reorderBufferBlock.getFlagsMap().get(this.simCodeModel.getId()).setBusy(false);
+      this.reorderBufferBlock.getRobItem(this.simCodeModel.getIntegerId()).reorderFlags.setBusy(false);
       this.simCodeModel = null;
     }
     

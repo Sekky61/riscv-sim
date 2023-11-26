@@ -32,55 +32,79 @@
  */
 package com.gradle.superscalarsim.blocks.base;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.blocks.AbstractBlock;
 import com.gradle.superscalarsim.blocks.branch.BranchTargetBuffer;
 import com.gradle.superscalarsim.blocks.branch.GShareUnit;
-import com.gradle.superscalarsim.code.SimCodeModelAllocator;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
+import com.gradle.superscalarsim.factories.SimCodeModelFactory;
 import com.gradle.superscalarsim.models.SimCodeModel;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Stack;
 
 /**
  * @class InstructionFetchBlock
  * @brief Class that fetches code from CodeParser
  */
+@JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
 public class InstructionFetchBlock implements AbstractBlock
 {
-  /// Allocator for allocating new SimCodeModels
-  private final SimCodeModelAllocator simCodeModelAllocator;
-  /// GShare unit for getting correct prediction counters
-  private final GShareUnit gShareUnit;
-  /// Buffer holding information about branch instructions targets
-  private final BranchTargetBuffer branchTargetBuffer;
   /**
-   * Stack of previous PCs for backward simulation
-   * TODO: Can be deleted?
+   * Allocator for SimCodeModels
    */
-  private final Stack<Integer> previousPcStack;
+  @JsonIdentityReference(alwaysAsId = true)
+  private final SimCodeModelFactory simCodeModelFactory;
+  
+  /**
+   * GShare unit for getting correct prediction counters
+   */
+  @JsonIdentityReference(alwaysAsId = true)
+  private final GShareUnit gShareUnit;
+  
+  /**
+   * Buffer holding information about branch instructions targets
+   */
+  @JsonIdentityReference(alwaysAsId = true)
+  private final BranchTargetBuffer branchTargetBuffer;
+  
   /**
    * Limit on the number of times the unit can follow a branch in a single cycle
    */
   private final int branchFollowLimit;
-  /// Class containing parsed code
+  
+  /**
+   * Class containing parsed code
+   */
+  @JsonIdentityReference(alwaysAsId = true)
   public InstructionMemoryBlock instructionMemoryBlock;
-  /// List for storing fetched code
+  
+  /**
+   * List for storing fetched code
+   */
+  @JsonIdentityReference(alwaysAsId = true)
   private List<SimCodeModel> fetchedCode;
-  /// Marks the maximum number of instructions fetched in one tick
+  
+  /**
+   * Marks the maximum number of instructions fetched in one tick
+   */
   private int numberOfWays;
-  /// PC counter
-  private int pcCounter;
+  
+  /**
+   * Current Program Counter - pointer to the next instruction to be fetched
+   */
+  private int pc;
+  
   /**
    * Flag indicating that decode block was stalled and IF should behave accordingly
    */
   private boolean stallFlag;
-  /// Number indicating how many instructions were pulled from IF by the decode block
-  private int stallFetchCount;
-  /// Next PC set by last fetch to be able to check if the PC changed during simulation
-  private int lastPC;
-  /// ID of the cycle, starting from 0
+  
+  /**
+   * ID of the cycle, starting from 0
+   */
   private int cycleId;
   
   /**
@@ -91,23 +115,20 @@ public class InstructionFetchBlock implements AbstractBlock
    *
    * @brief Constructor
    */
-  public InstructionFetchBlock(SimCodeModelAllocator simCodeModelAllocator,
+  public InstructionFetchBlock(SimCodeModelFactory simCodeModelAllocator,
                                InstructionMemoryBlock parser,
                                GShareUnit gShareUnit,
                                BranchTargetBuffer branchTargetBuffer)
   {
-    this.simCodeModelAllocator  = simCodeModelAllocator;
+    this.simCodeModelFactory    = simCodeModelAllocator;
     this.instructionMemoryBlock = parser;
     this.gShareUnit             = gShareUnit;
     this.branchTargetBuffer     = branchTargetBuffer;
     
     this.numberOfWays      = 3;
-    this.pcCounter         = 0;
+    this.pc                = 0;
     this.fetchedCode       = new ArrayList<>();
-    this.previousPcStack   = new Stack<>();
     this.stallFlag         = false;
-    this.stallFetchCount   = 0;
-    this.lastPC            = 0;
     this.cycleId           = -1;
     this.branchFollowLimit = 1;
   }// end of Constructor
@@ -145,16 +166,6 @@ public class InstructionFetchBlock implements AbstractBlock
   }// end of setStallFlag
   
   /**
-   * @param stallFetchCount The amount of instructions that were pulled (and removed) by the decode block
-   *
-   * @brief Set the amount of instructions that were pulled by the decode block
-   */
-  public void setStallFetchCount(int stallFetchCount)
-  {
-    this.stallFetchCount = stallFetchCount;
-  }// end of setStallFetchCount
-  
-  /**
    * @brief Simulates fetching instructions
    */
   @Override
@@ -168,10 +179,7 @@ public class InstructionFetchBlock implements AbstractBlock
       this.stallFlag = false;
       return;
     }
-    this.previousPcStack.push(this.pcCounter);
-    this.fetchedCode     = fetchInstructions();
-    this.lastPC          = this.pcCounter;
-    this.stallFetchCount = 0;
+    this.fetchedCode = fetchInstructions();
   }// end of simulate
   //----------------------------------------------------------------------
   
@@ -182,11 +190,8 @@ public class InstructionFetchBlock implements AbstractBlock
   public void reset()
   {
     this.fetchedCode.clear();
-    this.previousPcStack.clear();
-    this.stallFlag       = false;
-    this.pcCounter       = 0;
-    this.stallFetchCount = 0;
-    this.lastPC          = 0;
+    this.stallFlag = false;
+    this.pc        = 0;
   }// end of reset
   //----------------------------------------------------------------------
   
@@ -206,10 +211,10 @@ public class InstructionFetchBlock implements AbstractBlock
     {
       // Unique ID of the instruction
       int simCodeId = this.cycleId * numberOfWays + i;
-      SimCodeModel codeModel = this.simCodeModelAllocator.createSimCodeModel(
-              instructionMemoryBlock.getInstructionAt(pcCounter), simCodeId, cycleId);
+      SimCodeModel codeModel = this.simCodeModelFactory.createInstance(instructionMemoryBlock.getInstructionAt(pc),
+                                                                       simCodeId, cycleId);
       
-      codeModel.setSavedPc(pcCounter);
+      codeModel.setSavedPc(pc);
       
       // This if emulates the in my opinion wrong logic. Removing it will cause the program to fetch
       // instructions until a number of jumps are _followed_
@@ -222,9 +227,9 @@ public class InstructionFetchBlock implements AbstractBlock
           codeModel.setBranchPredicted(false);
           for (int j = i; j < numberOfWays; j++)
           {
-            SimCodeModel nopCodeModel = this.simCodeModelAllocator.createSimCodeModel(instructionMemoryBlock.getNop(),
-                                                                                      simCodeId, cycleId);
-            nopCodeModel.setSavedPc(pcCounter);
+            SimCodeModel nopCodeModel = this.simCodeModelFactory.createInstance(instructionMemoryBlock.getNop(),
+                                                                                simCodeId, cycleId);
+            nopCodeModel.setSavedPc(pc);
             fetchedCode.add(nopCodeModel);
           }
           break;
@@ -233,20 +238,20 @@ public class InstructionFetchBlock implements AbstractBlock
       
       // TODO: If we cannot follow anymore, do we still fetch instructions, or end early?
       // And does it matter if the branch is taken?
-      boolean branchPredicted = isBranchingPredicted(pcCounter);
+      boolean branchPredicted = isBranchingPredicted(pc);
       if (branchPredicted && followedBranches < branchFollowLimit)
       {
         // Follow that branch
         codeModel.setBranchPredicted(true);
-        int newPc = this.branchTargetBuffer.getEntryTarget(pcCounter);
+        int newPc = this.branchTargetBuffer.getEntryTarget(pc);
         assert newPc >= 0;
-        this.pcCounter = newPc;
+        this.pc = newPc;
         followedBranches++;
       }
       else
       {
         // No jump, just increment PC
-        this.pcCounter += 4;
+        this.pc += 4;
       }
       fetchedCode.add(codeModel);
     }
@@ -278,23 +283,35 @@ public class InstructionFetchBlock implements AbstractBlock
   //----------------------------------------------------------------------
   
   /**
+   * @brief Clears fetched code buffer
+   */
+  public void clearFetchedCode()
+  {
+    for (SimCodeModel simCode : this.getFetchedCode())
+    {
+      simCode.setFinished(true);
+    }
+    this.fetchedCode.clear();
+  }
+  
+  /**
    * Gets current PC counter value
    *
    * @return PC counter value
    */
-  public int getPcCounter()
+  public int getPc()
   {
-    return pcCounter;
+    return pc;
   }// end of getCodeLine
   //----------------------------------------------------------------------
   
   /**
-   * @param [in] pcCounter - New value of the PC counter
+   * @param pc New value of the PC counter
    *
-   * @brief Set the PC counter value (used during branches)
+   * @brief Set the PC value (used during branches)
    */
-  public void setPcCounter(int pcCounter)
+  public void setPc(int pc)
   {
-    this.pcCounter = pcCounter;
+    this.pc = pc;
   }// end of setPcCounter
 }

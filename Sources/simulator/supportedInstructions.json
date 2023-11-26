@@ -1500,7 +1500,6 @@
   "ret": {
     "name": "ret",
     "instructionType": "kJumpbranch",
-    "instructionSyntax": "ret",
     "arguments": [
       {
         "name": "rd1",
@@ -1558,7 +1557,7 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "\\rs1 \\rs2 * 32l >> \\rd ="
+    "interpretableAs": "\\rs1 \\rs2 *w 32l >> \\rd ="
   },
   "mulhu": {
     "name": "mulhu",
@@ -1578,7 +1577,7 @@
         "type": "kUInt"
       }
     ],
-    "interpretableAs": "\\rs1 \\rs2 * 32l >> \\rd ="
+    "interpretableAs": "\\rs1 \\rs2 *w 32l >> \\rd ="
   },
   "mulhsu": {
     "name": "mulhsu",
@@ -1598,7 +1597,7 @@
         "type": "kUInt"
       }
     ],
-    "interpretableAs": "\\rs1 \\rs2 * 32l >> \\rd ="
+    "interpretableAs": "\\rs1 \\rs2 *w 32l >> \\rd ="
   },
   "fmin.s": {
     "name": "fmin.s",

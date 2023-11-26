@@ -36,6 +36,15 @@ import {
   UseFormRegister,
 } from 'react-hook-form';
 
+import { Input } from '@/components/base/ui/input';
+import { Label } from '@/components/base/ui/label';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/base/ui/tooltip';
+
 export type FormInputProps<T extends FieldValues> = {
   name: Path<T>;
   title: string;
@@ -60,27 +69,26 @@ export function FormInput<T extends FieldValues>({
   }
 
   return (
-    <div className=''>
-      <label
-        htmlFor={name}
-        className={
-          'mb-1 text-sm font-medium ' + (isError ? 'text-red-700' : '')
-        }
-      >
-        {title}
-      </label>
-      {hint ? (
-        <span className='tooltip ml-1 text-xs hover:cursor-help'>
-          &#9432;
-          <div className='tooltiptext ml-2 rounded bg-gray-100 p-1'>{hint}</div>
-        </span>
-      ) : null}
-      <input
+    <div>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger>
+            <Label htmlFor={name}>
+              {title}&nbsp;
+              {hint ? <span>&#9432;</span> : null}
+            </Label>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>{hint}</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+      <Input
         {...register(name, regOptions)}
         type='text'
         name={name}
         id={name}
-        className={'form-input ' + (isError ? 'error' : '')}
+        className={isError ? 'error' : ''}
       />
       <div className='h-6'>
         {error?.message && (

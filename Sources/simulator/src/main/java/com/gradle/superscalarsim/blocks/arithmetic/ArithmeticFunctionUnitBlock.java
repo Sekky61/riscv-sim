@@ -32,6 +32,7 @@
  */
 package com.gradle.superscalarsim.blocks.arithmetic;
 
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.gradle.superscalarsim.blocks.base.AbstractFunctionUnitBlock;
 import com.gradle.superscalarsim.blocks.base.AbstractIssueWindowBlock;
 import com.gradle.superscalarsim.blocks.base.ReorderBufferBlock;
@@ -42,6 +43,9 @@ import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.models.InputCodeArgument;
 import com.gradle.superscalarsim.models.register.RegisterModel;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * @class ArithmeticFunctionUnitBlock
  * @brief Specific function unit class for executing arithmetic instructions
@@ -49,32 +53,35 @@ import com.gradle.superscalarsim.models.register.RegisterModel;
 public class ArithmeticFunctionUnitBlock extends AbstractFunctionUnitBlock
 {
   /// Array of all supported operators by this FU
-  private final String[] allowedOperators;
+  private final List<String> allowedOperators;
   /// Interpreter for interpreting executing instructions
+  @JsonIdentityReference(alwaysAsId = true)
   private CodeArithmeticInterpreter arithmeticInterpreter;
   /// Class containing all registers, that simulator uses
+  @JsonIdentityReference(alwaysAsId = true)
   private UnifiedRegisterFileBlock registerFileBlock;
   
   public ArithmeticFunctionUnitBlock()
   {
     // Empty
-    this.allowedOperators = new String[0];
+    this.allowedOperators = new ArrayList<>();
   }
   
   /**
-   * @param [in] blockScheduleTask  - Task class, where blocks are periodically triggered by the GlobalTimer
-   * @param [in] reorderBufferBlock - Class containing simulated Reorder Buffer
-   * @param [in] delay              - Delay for function unit
-   * @param [in] allowedOperators   - Array of all supported operators by this FU
+   * @param name
+   * @param delay              Delay for function unit
+   * @param allowedOperators   Array of all supported operators by this FU
+   * @param reorderBufferBlock Class containing simulated Reorder Buffer
    *
    * @brief Constructor
    */
-  public ArithmeticFunctionUnitBlock(ReorderBufferBlock reorderBufferBlock,
+  public ArithmeticFunctionUnitBlock(String name,
                                      int delay,
                                      AbstractIssueWindowBlock issueWindowBlock,
-                                     String[] allowedOperators)
+                                     List<String> allowedOperators,
+                                     ReorderBufferBlock reorderBufferBlock)
   {
-    super(reorderBufferBlock, delay, issueWindowBlock);
+    super(name, delay, issueWindowBlock, reorderBufferBlock);
     this.allowedOperators = allowedOperators;
   }// end of Constructor
   //----------------------------------------------------------------------
@@ -134,7 +141,7 @@ public class ArithmeticFunctionUnitBlock extends AbstractFunctionUnitBlock
       reg.setValueContainer(result.value);
       reg.setReadiness(RegisterReadinessEnum.kExecuted);
       
-      this.reorderBufferBlock.getFlagsMap().get(this.simCodeModel.getId()).setBusy(false);
+      this.reorderBufferBlock.getRobItem(this.simCodeModel.getIntegerId()).reorderFlags.setBusy(false);
       this.simCodeModel = null;
     }
     
@@ -147,12 +154,14 @@ public class ArithmeticFunctionUnitBlock extends AbstractFunctionUnitBlock
   //----------------------------------------------------------------------
   
   /**
-   * @return Array of allowed operators
+   * @return List of allowed operators
    * @brief Get all allowed operators by this FU
    */
-  public String[] getAllowedOperators()
+  public List<String> getAllowedOperators()
   {
     return allowedOperators;
   }// end of getAllowedOperators
   //----------------------------------------------------------------------
+  
+  
 }

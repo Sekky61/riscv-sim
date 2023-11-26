@@ -29,7 +29,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { ReactChildren } from '@/lib/reactTypes';
+import { ReactChildren } from '@/lib/types/reactTypes';
 
 type ExpandBubbleProps = {
   children: ReactChildren;

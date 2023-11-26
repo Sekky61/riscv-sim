@@ -29,30 +29,69 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { selectROB } from '@/lib/redux/cpustateSlice';
+import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
+import { openModal } from '@/lib/redux/modalSlice';
+
 import Block from '@/components/simulation/Block';
 import InstructionField from '@/components/simulation/InstructionField';
+import { InstructionListDisplay } from '@/components/simulation/InstructionListDisplay';
 
 export default function ReorderBuffer() {
-  const capacity = 128;
-  const used = 2;
+  const dispatch = useAppDispatch();
+  const rob = useAppSelector(selectROB);
+
+  if (!rob) return null;
+
+  const used = rob.reorderQueue.length;
+  const showLimit = 16;
+  const showMore = used > showLimit;
+
+  const robStats = (
+    <>
+      <div>
+        Capacity: {used}/{rob.bufferSize}
+      </div>
+    </>
+  );
+
+  const handleMore = () => {
+    dispatch(
+      openModal({
+        modalType: 'ROB_DETAILS_MODAL',
+        modalProps: null,
+      }),
+    );
+  };
 
   return (
-    <Block title='Reorder Buffer'>
-      <div>
-        <span>
-          {used}/{capacity}
-        </span>
-      </div>
-      <div className='flex flex-col gap-1'>
-        <InstructionField
-          instruction={{ mnemonic: 'add', args: ['x0', 'x1', '5'], id: 5 }}
-        />
-        <InstructionField
-          instruction={{ mnemonic: 'add', args: ['x4', 'x4', 'x4'], id: 6 }}
-        />
-        <InstructionField />
-        <InstructionField />
-      </div>
+    <Block
+      title='Reorder Buffer'
+      stats={robStats}
+      handleMore={handleMore}
+      className='rob'
+    >
+      <InstructionListDisplay
+        instructions={rob.reorderQueue}
+        limit={showLimit}
+        instructionRenderer={(item) => {
+          const isPresent = item !== undefined;
+          const isConfirmed = !(item?.reorderFlags.isSpeculative ?? false);
+          return (
+            <div className='relative'>
+              <InstructionField instructionId={item?.simCodeModel} />
+              {isPresent && isConfirmed && (
+                <span className='absolute right-0 top-0 w-1 h-full bg-green-300' />
+              )}
+            </div>
+          );
+        }}
+      />
+      {showMore && (
+        <div className='flex justify-center'>
+          And {used - showLimit} more...
+        </div>
+      )}
     </Block>
   );
 }

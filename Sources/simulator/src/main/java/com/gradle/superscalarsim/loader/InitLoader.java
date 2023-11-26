@@ -32,10 +32,11 @@
  */
 package com.gradle.superscalarsim.loader;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gradle.superscalarsim.models.InstructionFunctionModel;
 import com.gradle.superscalarsim.models.register.RegisterFileModel;
+import com.gradle.superscalarsim.serialization.Serialization;
 
 import java.io.File;
 import java.io.IOException;
@@ -106,20 +107,6 @@ public class InitLoader
   }// end of Constructor
   
   /**
-   * @return List of register files
-   * @brief Get loaded register files
-   */
-  public List<RegisterFileModel> getRegisterFileModelList()
-  {
-    return registerFileModelList;
-  }// end of getRegisterFileModelList
-  
-  public void setRegisterFileModelList(List<RegisterFileModel> registerFileModelList)
-  {
-    this.registerFileModelList = registerFileModelList;
-  }
-  
-  /**
    * @brief Calls appropriate subloaders and loads lists from files. The alternative is to set the data using setters.
    */
   public void loadFromConfigFiles()
@@ -130,12 +117,11 @@ public class InitLoader
       loadInstructions();
       loadAliases();
     }
-    catch (NullPointerException | IOException e)
+    catch (NullPointerException e)
     {
       handleNullPointerException();
     }
   }// end of load
-  //------------------------------------------------------
   
   /**
    * @throws NullPointerException Thrown in case of empty directory
@@ -152,32 +138,39 @@ public class InitLoader
       this.registerFileModelList.add(subloader.loadRegisterFile(file.getAbsolutePath()));
     }
   }// end of loadRegisters
-  //------------------------------------------------------
   
   /**
    * @throws NullPointerException Thrown in case of empty directory
    * @brief Calls subloader for instruction set and saves it into list
    */
-  private void loadInstructions() throws NullPointerException, IOException
+  private void loadInstructions()
   {
     // All instructions are in a single .json file.
     // The structure is a single object with keys being the instruction names and
     // values being the InstructionFunctionModel objects.
     
-    Gson   gson   = new Gson();
-    Reader reader = Files.newBufferedReader(Paths.get(instructionsFilePath));
-    // read to a map
-    Map<String, InstructionFunctionModel> instructions = gson.fromJson(reader,
-                                                                       new TypeToken<Map<String, InstructionFunctionModel>>()
-                                                                       {
-                                                                       }.getType());
+    ObjectMapper                          deserializer = Serialization.getDeserializer();
+    Reader                                reader       = null;
+    Map<String, InstructionFunctionModel> instructions = null;
+    try
+    {
+      reader = Files.newBufferedReader(Paths.get(instructionsFilePath));
+      // read to a map
+      instructions = deserializer.readValue(reader, new TypeReference<Map<String, InstructionFunctionModel>>()
+      {
+      });
+    }
+    catch (IOException e)
+    {
+      e.printStackTrace();
+    }
     // add to list
     this.instructionFunctionModels = instructions;
   }// end of loadInstructions
+  //------------------------------------------------------
   
   private void loadAliases()
   {
-    Gson   gson   = new Gson();
     Reader reader = null;
     try
     {
@@ -188,10 +181,19 @@ public class InitLoader
       e.printStackTrace();
     }
     // read
-    registerAliases = gson.fromJson(reader, new TypeToken<List<RegisterMapping>>()
+    ObjectMapper deserializer = Serialization.getDeserializer();
+    try
     {
-    }.getType());
+      registerAliases = deserializer.readValue(reader, new TypeReference<>()
+      {
+      });
+    }
+    catch (IOException e)
+    {
+      throw new RuntimeException(e);
+    }
   }
+  //------------------------------------------------------
   
   /**
    * @brief Sets error message in case of NullPointerException and prints it into stderr
@@ -208,6 +210,20 @@ public class InitLoader
     }
     System.err.println(this.errorMessage);
   }// end of handleNullPointerException
+  
+  /**
+   * @return List of register files
+   * @brief Get loaded register files
+   */
+  public List<RegisterFileModel> getRegisterFileModelList()
+  {
+    return registerFileModelList;
+  }// end of getRegisterFileModelList
+  
+  public void setRegisterFileModelList(List<RegisterFileModel> registerFileModelList)
+  {
+    this.registerFileModelList = registerFileModelList;
+  }
   //------------------------------------------------------
   
   public InstructionFunctionModel getInstructionFunctionModel(String instructionName)
@@ -261,6 +277,13 @@ public class InitLoader
   {
     public String register;
     public String alias;
+    
+    /**
+     * @brief Default constructor for deserialization
+     */
+    RegisterMapping()
+    {
+    }
     
     public RegisterMapping(String register, String alias)
     {

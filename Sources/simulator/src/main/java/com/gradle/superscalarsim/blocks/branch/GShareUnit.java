@@ -32,22 +32,28 @@
  */
 package com.gradle.superscalarsim.blocks.branch;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+
 /**
  * @class GShareUnit
  * @brief Class containing GShare logic for indexing correct bit predictor
  */
+@JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
 public class GShareUnit
 {
   
   /**
    * Table with all bit predictors
    */
+  @JsonIdentityReference(alwaysAsId = true)
   private PatternHistoryTable patternHistoryTable;
   
   /**
    * Bit array of branching history
-   * TODO: What is the meaning of this?
    */
+  @JsonIdentityReference(alwaysAsId = true)
   private GlobalHistoryRegister globalHistoryRegister;
   /**
    * Size of the pattern table

@@ -6,9 +6,9 @@ import com.gradle.superscalarsim.blocks.branch.GlobalHistoryRegister;
 import com.gradle.superscalarsim.builders.InputCodeArgumentBuilder;
 import com.gradle.superscalarsim.builders.InputCodeModelBuilder;
 import com.gradle.superscalarsim.builders.RegisterFileModelBuilder;
-import com.gradle.superscalarsim.code.SimCodeModelAllocator;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.enums.RegisterTypeEnum;
+import com.gradle.superscalarsim.factories.RegisterModelFactory;
 import com.gradle.superscalarsim.loader.InitLoader;
 import com.gradle.superscalarsim.models.InputCodeArgument;
 import com.gradle.superscalarsim.models.InputCodeModel;
@@ -71,11 +71,11 @@ public class DecodeAndDispatchBlockTest
     loader.setRegisterFileModelList(registerFileModels);
     
     
-    renameMapTableBlock = new RenameMapTableBlock(new UnifiedRegisterFileBlock(loader));
-    SimCodeModelAllocator simCodeModelAllocator = new SimCodeModelAllocator();
-    decodeAndDispatchBlock = new DecodeAndDispatchBlock(simCodeModelAllocator, instructionFetchBlock,
-                                                        renameMapTableBlock, globalHistoryRegister, branchTargetBuffer,
-                                                        instructionMemoryBlock);
+    renameMapTableBlock    = new RenameMapTableBlock(new UnifiedRegisterFileBlock(loader, new RegisterModelFactory()));
+    decodeAndDispatchBlock = new DecodeAndDispatchBlock(instructionFetchBlock, renameMapTableBlock,
+                                                        globalHistoryRegister, branchTargetBuffer,
+                                                        instructionMemoryBlock,
+                                                        instructionFetchBlock.getNumberOfWays());
   }
   
   @Test

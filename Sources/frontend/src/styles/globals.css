@@ -35,6 +35,79 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 20 14.3% 4.1%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 20 14.3% 4.1%;
+ 
+    --popover: 0 0% 100%;
+    --popover-foreground: 20 14.3% 4.1%;
+ 
+    --primary: 24 9.8% 10%;
+    --primary-foreground: 60 9.1% 97.8%;
+ 
+    --secondary: 60 4.8% 95.9%;
+    --secondary-foreground: 24 9.8% 10%;
+ 
+    --muted: 60 4.8% 95.9%;
+    --muted-foreground: 25 5.3% 44.7%;
+ 
+    --accent: 60 4.8% 95.9%;
+    --accent-foreground: 24 9.8% 10%;
+ 
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 60 9.1% 97.8%;
+
+    --border: 20 5.9% 90%;
+    --input: 20 5.9% 90%;
+    --ring: 20 14.3% 4.1%;
+ 
+    --radius: 0.5rem;
+  }
+ 
+  .dark {
+    --background: 20 14.3% 4.1%;
+    --foreground: 60 9.1% 97.8%;
+ 
+    --card: 20 14.3% 4.1%;
+    --card-foreground: 60 9.1% 97.8%;
+ 
+    --popover: 20 14.3% 4.1%;
+    --popover-foreground: 60 9.1% 97.8%;
+ 
+    --primary: 60 9.1% 97.8%;
+    --primary-foreground: 24 9.8% 10%;
+ 
+    --secondary: 12 6.5% 15.1%;
+    --secondary-foreground: 60 9.1% 97.8%;
+ 
+    --muted: 12 6.5% 15.1%;
+    --muted-foreground: 24 5.4% 63.9%;
+ 
+    --accent: 12 6.5% 15.1%;
+    --accent-foreground: 60 9.1% 97.8%;
+ 
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 60 9.1% 97.8%;
+ 
+    --border: 12 6.5% 15.1%;
+    --input: 12 6.5% 15.1%;
+    --ring: 24 5.7% 82.9%;
+  }
+}
+ 
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer base {
   body {
     font-family: 'Open Sans', sans-serif;
     @apply neutral-bg;
@@ -42,6 +115,11 @@
 
   .neutral-bg {
     @apply bg-neutral-99 text-neutral-10;
+  }
+
+  .dotted-bg {
+    background-image: radial-gradient(circle at 1px 1px, #cca 1px, transparent 0);
+    background-size: 20px 20px;
   }
 
   p {
@@ -135,7 +213,7 @@
 
 @layer components {
   .cm-line {
-    background-color: rgba(var(--line-highlight-color), 0.2);
+    background-color: rgba(var(--line-highlight-color), 0.13);
     position: relative;
   }
 
@@ -147,7 +225,7 @@
     left: 0;
     width: 0.3rem;
     height: 100%;
-    background-color: rgba(var(--line-highlight-color), 0.3);
+    background-color: rgba(var(--line-highlight-color), 0.38);
   }
 
   .cm-line.code_highlight_red {
@@ -255,7 +333,7 @@
   }
 
   .radio-selected {
-    @apply bg-gray-300;
+    @apply bg-background text-foreground shadow-sm;
   }
 
   /* radio input */
@@ -268,7 +346,7 @@
 
   .schemaLine {
     stroke: black;
-    stroke-width: 3px;
+    stroke-width: 2px;
   }
 
   /* dropdown bubble - style only */
@@ -295,7 +373,7 @@
 
   /* Icon highlight */
   .timelineHighlight {
-    @apply duration-100 hover:bg-gray-200;
+    @apply duration-100 hover:bg-black/10;
   }
 
   .tlbutton-animation-outer {
@@ -305,4 +383,99 @@
   .tlbutton-animation-inner {
     transform: translateY(2px);
   }
+
+  /* Right pointing red arrow */
+
+  .rectangle::after {
+    @apply border-l-red-500 border-y-transparent border-r-transparent absolute top-0 left-full;
+    content: "";
+    border-width: 0.5rem 0 0.5rem 0.5rem;
+  }
+
+  /* FU Configuration table */
+  .fu-grid {
+    @apply grid gap-x-4 gap-y-1 justify-center;
+    grid-template-columns: auto auto 1fr auto;
+  }
+
+  /* Simulation view grid */
+  .sim-grid {
+    @apply inline-grid gap-4 justify-center m-4 mt-16;
+    grid-auto-columns: 1fr;
+    grid-auto-rows: auto;
+  }
+
+  .col-grid {
+    @apply flex gap-4 justify-center m-4 mt-16;
+  }
+
+  .global-grid {
+    @apply grid justify-items-start items-start;
+    grid-template-columns: repeat(2, max-content);
+  }
+
+  .program {
+    @apply w-full h-full;
+    grid-column: 1 / span 1;
+    grid-row: 1 / span 3;
+  }
+
+  .fetch {
+    grid-column: 2 / span 1;
+    grid-row: 1 / span 2;
+  }
+
+  .decode {
+    grid-column: 2 / span 1;
+    grid-row: 3 / span 2;
+  }
+
+  .rob {
+    grid-column: 3 / span 1;
+    grid-row: 1 / span 5;
+  }
+
+  .aluIssue {
+    grid-column: 1 / span 1;
+    grid-row: 1 / span 1;
+  }
+
+  /* FUs also define tailwind class for positioning in a row */
+  .aluFu {
+    grid-column: 1 / span 1;
+    grid-row-end: span 1;
+  }
+
+  .fpIssue {
+    grid-column: 2 / span 1;
+    grid-row: 1 / span 1;
+  }
+
+  .fpFu {
+    grid-column: 2 / span 1;
+    grid-row-end: span 1;
+  }
+
+  .branchIssue {
+    grid-column: 3 / span 1;
+    grid-row: 1 / span 1;
+  }
+
+  .branchFu {
+    grid-column: 3 / span 1;
+    grid-row-end: span 1;
+  }
+
+
+
+  .storeBuffer {
+    grid-column: 1 / span 2;
+    grid-row: 1 / span 2;
+  }
+
+  .loadBuffer {
+    grid-column: 3 / span 2;
+    grid-row: 1 / span 2;
+  }
+
 }

@@ -27,24 +27,30 @@
 
 package com.gradle.superscalarsim.server.checkConfig;
 
-import com.cedarsoftware.util.io.JsonWriter;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
 
+/**
+ * Response for the /checkConfig endpoint
+ */
 public class CheckConfigResponse
 {
-  
+  /**
+   * True if the configuration is valid
+   */
+  @JsonProperty(required = true)
   public boolean valid;
+  
+  /**
+   * List of messages describing the errors in the configuration.
+   */
+  @JsonProperty(required = true)
   public List<String> messages;
   
   public CheckConfigResponse(boolean valid, List<String> messages)
   {
     this.valid    = valid;
     this.messages = messages;
-  }
-  
-  public String serialize()
-  {
-    return JsonWriter.objectToJson(this);
   }
 }

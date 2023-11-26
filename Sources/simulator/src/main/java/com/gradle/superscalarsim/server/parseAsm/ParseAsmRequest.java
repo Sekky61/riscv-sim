@@ -27,12 +27,23 @@
 
 package com.gradle.superscalarsim.server.parseAsm;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class ParseAsmRequest
 {
   /**
    * @brief The ASM code to parse
    */
+  @JsonProperty(required = true)
   String code;
+  
+  /**
+   * @brief Default constructor for deserialization
+   */
+  public ParseAsmRequest()
+  {
+  
+  }
   
   public ParseAsmRequest(String code)
   {

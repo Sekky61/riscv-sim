@@ -913,7 +913,7 @@ public class InstructionTests
     cpu.execute();
     
     // Assert
-    Assert.assertTrue(cpu.cpuState.instructionFetchBlock.getPcCounter() > 200);
+    Assert.assertTrue(cpu.cpuState.instructionFetchBlock.getPc() > 200);
     Assert.assertEquals(1, cpu.cpuState.statisticsCounter.getTakenBranches());
   }
   
@@ -930,7 +930,7 @@ public class InstructionTests
     cpu.execute();
     
     // Assert
-    Assert.assertTrue(cpu.cpuState.instructionFetchBlock.getPcCounter() > 200);
+    Assert.assertTrue(cpu.cpuState.instructionFetchBlock.getPc() > 200);
     Assert.assertEquals(1, cpu.cpuState.statisticsCounter.getTakenBranches());
   }
   
@@ -947,7 +947,7 @@ public class InstructionTests
     cpu.execute();
     
     // Assert
-    Assert.assertTrue(cpu.cpuState.instructionFetchBlock.getPcCounter() > 200);
+    Assert.assertTrue(cpu.cpuState.instructionFetchBlock.getPc() > 200);
     Assert.assertEquals(1, cpu.cpuState.statisticsCounter.getTakenBranches());
   }
   
@@ -963,7 +963,7 @@ public class InstructionTests
     cpu.execute();
     
     // Assert
-    Assert.assertTrue(cpu.cpuState.instructionFetchBlock.getPcCounter() > 200);
+    Assert.assertTrue(cpu.cpuState.instructionFetchBlock.getPc() > 200);
     Assert.assertEquals(1, cpu.cpuState.statisticsCounter.getTakenBranches());
     Assert.assertEquals(4, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt));
   }
@@ -981,7 +981,7 @@ public class InstructionTests
     cpu.execute();
     
     // Assert
-    Assert.assertTrue(cpu.cpuState.instructionFetchBlock.getPcCounter() > 200);
+    Assert.assertTrue(cpu.cpuState.instructionFetchBlock.getPc() > 200);
     Assert.assertEquals(1, cpu.cpuState.statisticsCounter.getTakenBranches());
   }
   

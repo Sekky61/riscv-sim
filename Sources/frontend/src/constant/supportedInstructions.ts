@@ -31,7 +31,7 @@
 
 import _supportedInstructions from 'src/constant/supportedInstructions.json';
 
-import { InstructionDescription } from '@/lib/instructionsDatabase';
+import { InstructionDescription } from '@/lib/types/instructionsDatabase';
 
 export type SupportedInstructionsKeys = keyof typeof _supportedInstructions;
 

@@ -30,6 +30,7 @@ package com.gradle.superscalarsim.code;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.enums.RegisterTypeEnum;
+import com.gradle.superscalarsim.factories.InputCodeModelFactory;
 import com.gradle.superscalarsim.loader.InitLoader;
 import com.gradle.superscalarsim.models.InputCodeArgument;
 import com.gradle.superscalarsim.models.InputCodeModel;
@@ -60,6 +61,11 @@ public class CodeParser
    * Descriptions of all register files
    */
   List<RegisterFileModel> registerFileModelList;
+  
+  /**
+   * Factory for creating instances of InputCodeModel
+   */
+  InputCodeModelFactory inputCodeModelFactory;
   
   /**
    * Lexer for parsing the code
@@ -111,12 +117,15 @@ public class CodeParser
   private List<InitLoader.RegisterMapping> registerAliases;
   
   /**
-   * @brief Constructor when initloader is available
+   * For cases when instance manager is not needed
    */
   public CodeParser(InitLoader initLoader)
   {
     this(initLoader.getInstructionFunctionModels(), initLoader.getRegisterFileModelList(),
-         initLoader.getRegisterAliases());
+         initLoader.getRegisterAliases(), null);
+    
+    // todo: maybe a dummyManager?
+    this.inputCodeModelFactory = new InputCodeModelFactory();
   }
   
   /**
@@ -124,8 +133,11 @@ public class CodeParser
    */
   public CodeParser(Map<String, InstructionFunctionModel> instructionModels,
                     List<RegisterFileModel> registerFileModelList,
-                    List<InitLoader.RegisterMapping> registerAliases)
+                    List<InitLoader.RegisterMapping> registerAliases,
+                    InputCodeModelFactory manager)
   {
+    this.inputCodeModelFactory = manager;
+    
     this.registerFileModelList = registerFileModelList;
     this.instructionModels     = instructionModels;
     this.registerAliases       = registerAliases;
@@ -140,6 +152,17 @@ public class CodeParser
     this.registerPattern    = Pattern.compile("r[d,s]\\d*");
     this.immediatePattern   = Pattern.compile("imm\\d*");
     
+  }
+  
+  /**
+   * More convenient constructor
+   *
+   * @brief Constructor when initloader is available
+   */
+  public CodeParser(InitLoader initLoader, InputCodeModelFactory manager)
+  {
+    this(initLoader.getInstructionFunctionModels(), initLoader.getRegisterFileModelList(),
+         initLoader.getRegisterAliases(), manager);
   }
   
   /**
@@ -374,10 +397,10 @@ public class CodeParser
     
     // Validate arguments
     List<InputCodeArgument> codeArguments = new ArrayList<>();
-    for (Map.Entry<String, CodeToken> entry : args.entrySet())
+    for (InstructionFunctionModel.Argument argument : instructionModel.getArguments())
     {
-      String            argumentName        = entry.getKey();
-      CodeToken         argumentToken       = entry.getValue();
+      CodeToken         argumentToken       = args.get(argument.name());
+      String            argumentName        = argument.name();
       InputCodeArgument inputCodeArgument   = new InputCodeArgument(argumentName, argumentToken.text());
       boolean           isLValue            = argumentName.equals("rd");
       DataTypeEnum      instructionDataType = instructionModel.getArgumentByName(argumentName).type();
@@ -389,7 +412,8 @@ public class CodeParser
       }
     }
     
-    InputCodeModel inputCodeModel = new InputCodeModel(instructionModel, codeArguments, instructions.size());
+    InputCodeModel inputCodeModel = inputCodeModelFactory.createInstance(instructionModel, codeArguments,
+                                                                         instructions.size());
     instructions.add(inputCodeModel);
   }
   

@@ -32,6 +32,9 @@
  */
 package com.gradle.superscalarsim.blocks.loadstore;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.blocks.AbstractBlock;
 import com.gradle.superscalarsim.blocks.base.DecodeAndDispatchBlock;
 import com.gradle.superscalarsim.blocks.base.InstructionFetchBlock;
@@ -48,32 +51,40 @@ import java.util.*;
  * @class LoadBufferBlock
  * @brief Class that holds all in-flight load instructions
  */
+@JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
 public class LoadBufferBlock implements AbstractBlock
 {
   /// Queue with all uncommitted load instructions
+  @JsonIdentityReference(alwaysAsId = true)
   private final Queue<SimCodeModel> loadQueue;
   /**
-   * Map with additional infos for specific load instructions
+   * Map with additional info for specific load instructions
    * The actual buffer of the load buffer
    */
   private final Map<Integer, LoadBufferItem> loadMap;
   /// Counter, which is used to calculate if buffer can hold instructions pulled into ROB
   public int possibleNewEntries;
   /// List holding all allocated memory access units
+  @JsonIdentityReference(alwaysAsId = true)
   private List<MemoryAccessUnit> memoryAccessUnitList;
   /// Block keeping all in-flight store instructions
+  @JsonIdentityReference(alwaysAsId = true)
   private StoreBufferBlock storeBufferBlock;
   /// Class, which simulates instruction decode and renames registers
+  @JsonIdentityReference(alwaysAsId = true)
   private DecodeAndDispatchBlock decodeAndDispatchBlock;
   /// Class containing all registers, that simulator uses
+  @JsonIdentityReference(alwaysAsId = true)
   private UnifiedRegisterFileBlock registerFileBlock;
   /// Class contains simulated implementation of Reorder buffer
+  @JsonIdentityReference(alwaysAsId = true)
   private ReorderBufferBlock reorderBufferBlock;
   /// Class that fetches code from CodeParser
+  @JsonIdentityReference(alwaysAsId = true)
   private InstructionFetchBlock instructionFetchBlock;
   /// Load Buffer size
   private int bufferSize;
-  /// Id counter matching the one in ROB
+  /// ID counter matching the one in ROB
   private int commitId;
   
   public LoadBufferBlock()
@@ -230,9 +241,9 @@ public class LoadBufferBlock implements AbstractBlock
                                                               {
                                                                 return;
                                                               }
-                                                              if (isBufferFull(
-                                                                      1) || !this.reorderBufferBlock.getFlagsMap()
-                                                                      .containsKey(codeModel.getId()))
+                                                              boolean containsKey = this.reorderBufferBlock.getRobItem(
+                                                                      codeModel.getIntegerId()) != null;
+                                                              if (isBufferFull(1) || !containsKey)
                                                               {
                                                                 return;
                                                               }
@@ -240,8 +251,10 @@ public class LoadBufferBlock implements AbstractBlock
                                                               // Create entry in the Load Buffer
                                                               InputCodeArgument argument = codeModel.getArgumentByName(
                                                                       "rd");
-                                                              this.loadMap.put(codeModel.getId(), new LoadBufferItem(
-                                                                      Objects.requireNonNull(argument).getValue()));
+                                                              this.loadMap.put(codeModel.getIntegerId(),
+                                                                               new LoadBufferItem(
+                                                                                       Objects.requireNonNull(argument)
+                                                                                               .getValue()));
                                                               
                                                             });
   }// end of pullLoadInstructionsFromDecode
@@ -255,7 +268,7 @@ public class LoadBufferBlock implements AbstractBlock
     
     for (SimCodeModel simCodeModel : this.loadQueue)
     {
-      LoadBufferItem bufferItem        = loadMap.get(simCodeModel.getId());
+      LoadBufferItem bufferItem        = loadMap.get(simCodeModel.getIntegerId());
       boolean        isDestReady       = bufferItem.isDestinationReady();
       boolean        isAccessingMemory = bufferItem.isAccessingMemory();
       if (!isDestReady && !isAccessingMemory)
@@ -276,8 +289,8 @@ public class LoadBufferBlock implements AbstractBlock
       bufferItem.setMemoryAccessId(beforeMaId);
       bufferItem.setHasBypassed(beforeBypass);
       // Fix PC
-      instructionFetchBlock.setPcCounter(simCodeModel.getSavedPc());
-      simCodeModel.setSavedPc(instructionFetchBlock.getPcCounter());
+      instructionFetchBlock.setPc(simCodeModel.getSavedPc());
+      simCodeModel.setSavedPc(instructionFetchBlock.getPc());
     }
   }// end of checkIfProcessedHasConflict
   //-------------------------------------------------------------------------------------------
@@ -293,11 +306,11 @@ public class LoadBufferBlock implements AbstractBlock
       if (simCodeModel.hasFailed())
       {
         removedInstructions.add(simCodeModel);
-        if (this.loadMap.get(simCodeModel.getId()).isAccessingMemory())
+        if (this.loadMap.get(simCodeModel.getIntegerId()).isAccessingMemory())
         {
           this.memoryAccessUnitList.forEach(ma -> ma.tryRemoveCodeModel(simCodeModel));
         }
-        this.loadMap.remove(simCodeModel.getId());
+        this.loadMap.remove(simCodeModel.getIntegerId());
       }
     }
     this.loadQueue.removeAll(removedInstructions);
@@ -312,7 +325,7 @@ public class LoadBufferBlock implements AbstractBlock
     SimCodeModel codeModel = null;
     for (SimCodeModel simCodeModel : this.loadQueue)
     {
-      LoadBufferItem item             = this.loadMap.get(simCodeModel.getId());
+      LoadBufferItem item             = this.loadMap.get(simCodeModel.getIntegerId());
       boolean        isAvailableForMA = item.getAddress() != -1 && !item.isAccessingMemory() && !item.isDestinationReady();
       
       if (isAvailableForMA)
@@ -340,8 +353,8 @@ public class LoadBufferBlock implements AbstractBlock
       {
         memoryAccessUnit.resetCounter();
         memoryAccessUnit.setSimCodeModel(codeModel);
-        this.loadMap.get(codeModel.getId()).setAccessingMemory(true);
-        this.loadMap.get(codeModel.getId()).setAccessingMemoryId(this.commitId);
+        this.loadMap.get(codeModel.getIntegerId()).setAccessingMemory(true);
+        this.loadMap.get(codeModel.getIntegerId()).setAccessingMemoryId(this.commitId);
       }
     }
   }// end of selectLoadForDataAccess
@@ -384,16 +397,17 @@ public class LoadBufferBlock implements AbstractBlock
    */
   private SimCodeModel processLoadInstruction(SimCodeModel simCodeModel)
   {
-    if (reorderBufferBlock.getFlagsMap().get(simCodeModel.getId()) == null)
+    ReorderBufferItem robItem = this.reorderBufferBlock.getRobItem(simCodeModel.getIntegerId());
+    if (robItem == null)
     {
       //If current instruction has been flushed from reorder buffer stop computing it
       return simCodeModel;
     }
-    LoadBufferItem  loadItem        = this.loadMap.get(simCodeModel.getId());
+    LoadBufferItem  loadItem        = this.loadMap.get(simCodeModel.getIntegerId());
     StoreBufferItem resultStoreItem = null;
     for (StoreBufferItem storeItem : this.storeBufferBlock.getStoreMapAsList())
     {
-      if (loadItem.getAddress() == storeItem.getAddress() && simCodeModel.getId() > storeItem.getSourceResultId())
+      if (loadItem.getAddress() == storeItem.getAddress() && simCodeModel.getIntegerId() > storeItem.getSourceResultId())
       {
         boolean isNewItemBetter = resultStoreItem == null || (storeItem.getSourceResultId() < resultStoreItem.getSourceResultId() && storeItem.getAddress() == loadItem.getAddress());
         resultStoreItem = isNewItemBetter ? storeItem : resultStoreItem;
@@ -418,10 +432,10 @@ public class LoadBufferBlock implements AbstractBlock
     RegisterModel destinationReg = registerFileBlock.getRegister(loadItem.getDestinationRegister());
     destinationReg.setValue(sourceReg.getValue());
     destinationReg.setReadiness(RegisterReadinessEnum.kAssigned);
-    loadMap.get(simCodeModel.getId()).setDestinationReady(true);
-    loadMap.get(simCodeModel.getId()).setHasBypassed(true);
-    loadMap.get(simCodeModel.getId()).setMemoryAccessId(this.commitId);
-    reorderBufferBlock.getFlagsMap().get(simCodeModel.getId()).setBusy(false);
+    loadMap.get(simCodeModel.getIntegerId()).setDestinationReady(true);
+    loadMap.get(simCodeModel.getIntegerId()).setHasBypassed(true);
+    loadMap.get(simCodeModel.getIntegerId()).setMemoryAccessId(this.commitId);
+    reorderBufferBlock.getRobItem(simCodeModel.getIntegerId()).reorderFlags.setBusy(false);
     return null;
     
   }// end of processLoadInstruction
@@ -480,7 +494,7 @@ public class LoadBufferBlock implements AbstractBlock
     {
       SimCodeModel codeModel = loadQueue.poll();
       
-      this.loadMap.remove(codeModel.getId());
+      this.loadMap.remove(codeModel.getIntegerId());
     }
     else
     {

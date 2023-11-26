@@ -1,0 +1,98 @@
+# Author: Michal Majer (xmajer21, misa@majer.cz)
+# Date: 2023-11-01
+
+# This file defines the CI/CD pipeline for the project.
+# It is used by GitLab to run the pipeline.
+#
+# It defines two tags:
+# - riscvsim: Can be ran in docker runner
+# - docker-deploy: Can be ran in shell runner. This runner has access to docker-compose and creates the deployment
+#
+# There are two stages: test and deploy
+
+default:
+  image: docker:24.0.5
+  services:
+    - docker:24.0.5-dind
+  before_script:
+    - docker info
+
+# Source: https://docs.gitlab.com/ee/ci/docker/using_docker_build.html#use-docker-in-docker
+variables:
+  DOCKER_TLS_CERTDIR: "/certs"
+
+# Frontend website
+
+# tag: riscvsim
+
+# Run Tests
+#
+# Building the container already builds the app, so this is a build+test job
+test_frontend:
+  stage: test
+  script:
+    - cd Sources/frontend
+    - docker build -t sources_riscvsim-web --target test .
+  tags:
+    - riscvsim
+
+# Deploy the app
+# Runs on commit to development branch
+
+deploy_development:
+  stage: deploy
+  script:
+    - cd Sources
+    - docker-compose -f "docker-compose.yml" up -d --build # Runner uses older Docker
+  environment:
+    name: development-env
+    url: https://sc-gpu1.fit.vutbr.cz:3120/
+  # Only deploy on development branch
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "development"'
+      when: always
+  tags:
+    - docker-deploy
+
+# Deploy a review app when a new merge request is created
+
+deploy_review:
+  stage: deploy
+  script:
+    - cd Sources
+    - docker-compose -f "docker-compose.yml" up -d --build # Runner uses older Docker
+  environment:
+    name: review/$CI_COMMIT_REF_SLUG
+    url: https://sc-gpu1.fit.vutbr.cz:3120/
+    on_stop: stop_review
+    auto_stop_in: 2 weeks
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+  tags:
+    - docker-deploy
+
+stop_review:
+  stage: deploy
+  script:
+    - echo "Remove review app"
+    - cd Sources
+    - docker compose -f "docker-compose.yml" down
+  environment:
+    name: review/$CI_COMMIT_REF_SLUG
+    action: stop
+  rules:
+    - if: $CI_MERGE_REQUEST_ID
+      when: manual
+  tags:
+    - docker-deploy
+
+# Backend simulator
+
+test_backend:
+  stage: test
+  script:
+    - cd Sources/simulator
+    - docker build -t sources_riscvsim-server --target test .
+  allow_failure: true
+  tags:
+    - riscvsim

@@ -32,6 +32,8 @@
  */
 package com.gradle.superscalarsim.blocks.branch;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.models.BranchTargetEntryModel;
 import com.gradle.superscalarsim.models.IInputCodeModel;
 import com.gradle.superscalarsim.models.InstructionFunctionModel;
@@ -43,6 +45,7 @@ import java.util.TreeMap;
  * @class BranchTargetBuffer
  * @brief Class holding targets for branch instructions
  */
+@JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
 public class BranchTargetBuffer
 {
   /// Buffer for branch instruction targets

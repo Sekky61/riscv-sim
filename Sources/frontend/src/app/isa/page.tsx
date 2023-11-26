@@ -32,8 +32,7 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import clsx from 'clsx';
-import { ChevronDown } from 'lucide-react';
+import { Check, ChevronsUpDown } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import React from 'react';
 import { useForm } from 'react-hook-form';
@@ -43,25 +42,37 @@ import {
   isaFormDefaultValues,
   isaNamed,
   IsaNamedConfig,
-  isArithmeticUnitConfig,
 } from '@/lib/forms/Isa';
-import { IsaConfig } from '@/lib/forms/Isa';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import {
   createIsa,
   IsaSaveChecked,
   newActiveIsa,
   selectActiveIsa,
-  selectActiveIsaName,
   selectIsas,
-  selectValidatedIsas,
   updateIsa,
 } from '@/lib/redux/isaSlice';
 import { openModal } from '@/lib/redux/modalSlice';
+import { cn } from '@/lib/utils';
 
+import { Button } from '@/components/base/ui/button';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandSeparator,
+} from '@/components/base/ui/command';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/base/ui/popover';
 import IsaSettingsForm from '@/components/form/IsaSettingsForm';
 import { SaveIsaChangesModalProps } from '@/components/modals/SaveIsaChangesModal';
 
+// TODO: delete configuration
 export default function Page() {
   // Redux
   const dispatch = useAppDispatch();
@@ -93,9 +104,9 @@ export default function Page() {
     // Isa [number] regex
     const regex = /Isa (\d+)/;
     let biggestNum = 0;
-    for (let i = 0; i < isas.length; i++) {
-      const match = isas[i].name.match(regex);
-      if (match) {
+    for (const isa of isas) {
+      const match = isa.name.match(regex);
+      if (match && match[1]) {
         // We have a match
         const num = parseInt(match[1]);
         if (num > biggestNum) {
@@ -166,65 +177,68 @@ export default function Page() {
     );
   };
 
-  const configBoxClicked: React.MouseEventHandler<HTMLDivElement> = (e) => {
-    // Ignore clicks from the input
-    if (!(e.target instanceof HTMLInputElement)) {
-      setSavesOpen(!savesOpen);
-    }
-  };
-
   return (
     <div>
       <h1 className='mb-8 text-2xl'>ISA Configuration</h1>
-      <div className='mb-2'>Pick a configuration</div>
-      <div className='mb-8 flex gap-4'>
-        <div
-          onClick={configBoxClicked}
-          className={
-            'relative flex w-80 items-center justify-between gap-4 border p-3 hover:cursor-pointer hover:bg-gray-100 active:bg-gray-200 ' +
-            (savesOpen ? 'rounded-t-md' : 'rounded-md')
-          }
-        >
-          <input
-            className='form-input'
-            {...form.register('name')}
-            disabled={blockEditing}
-          />
-          <ChevronDown
-            className={
-              'pointer-events-none h-6 w-6 ' +
-              (savesOpen ? 'rotate-180 transform' : '')
-            }
-          />
-          <div
-            className={
-              'absolute left-0 top-full z-10 w-full rounded-b-md border border-t-0 bg-white ' +
-              (savesOpen ? '' : 'hidden')
-            }
-          >
-            <IsaLocalStorageItems onIsaSavePicked={onChangeSelected} />
-            <button
-              onClick={createNewIsa}
-              className='button w-full border-t p-1'
+      <div className='mb-4 flex justify-center items-center gap-4 border-b pb-4'>
+        <span className='font-bold'>Active configuration</span>
+        <Popover open={savesOpen} onOpenChange={(op) => setSavesOpen(op)}>
+          <PopoverTrigger asChild>
+            <Button
+              variant='outline'
+              role='combobox'
+              aria-expanded={savesOpen}
+              className='w-[200px] justify-between'
             >
-              Create new ISA
-            </button>
-          </div>
-        </div>
-        <button
-          onClick={persistIsaChanges}
-          disabled={!hasUnsavedChanges}
-          className='button'
-        >
+              {activeIsa.name}
+              <ChevronsUpDown className='ml-2 h-4 w-4 shrink-0 opacity-50' />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className='w-[200px] p-0'>
+            <Command>
+              <CommandInput placeholder='Search...' />
+              <CommandEmpty>No ISA found.</CommandEmpty>
+              <CommandGroup>
+                {isas.map((isa) => (
+                  <CommandItem
+                    key={isa.name}
+                    value={isa.name}
+                    onSelect={(_currentValue) => {
+                      // _currentValue converts to lowercase
+                      onChangeSelected(isa.name);
+                    }}
+                  >
+                    <Check
+                      className={cn(
+                        'mr-2 h-4 w-4',
+                        activeIsa.name === isa.name
+                          ? 'opacity-100'
+                          : 'opacity-0',
+                      )}
+                    />
+                    {isa.name}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+              <CommandSeparator />
+              <CommandGroup>
+                <CommandItem onSelect={createNewIsa}>
+                  Create new ISA
+                </CommandItem>
+              </CommandGroup>
+            </Command>
+          </PopoverContent>
+        </Popover>
+        <Button onClick={persistIsaChanges} disabled={!hasUnsavedChanges}>
           Save Changes
-        </button>
+        </Button>
       </div>
       <div
-        className={
-          blockEditing
-            ? 'pointer-events-none opacity-60 hover:cursor-not-allowed'
-            : ''
-        }
+        className={cn(
+          blockEditing &&
+            'pointer-events-none opacity-60 hover:cursor-not-allowed',
+          'flex justify-center',
+        )}
       >
         <IsaSettingsForm form={form} disabled={blockEditing} />
       </div>
@@ -238,85 +252,4 @@ export type IsaItemsProps = {
   onIsaSavePicked: (name: string) => void;
 };
 
-function IsaLocalStorageItems({ onIsaSavePicked }: IsaItemsProps) {
-  const validatedIsas = useAppSelector(selectValidatedIsas);
-  return (
-    <>
-      {validatedIsas.map((isa) => (
-        <IsaItem key={isa.name} isa={isa} onIsaSavePicked={onIsaSavePicked} />
-      ))}
-    </>
-  );
-}
-
 export type IsaItemProps = IsaItemsProps & { isa: IsaSaveChecked };
-
-function IsaItem({ isa, onIsaSavePicked }: IsaItemProps) {
-  const [hover, setHover] = useState(false);
-  const activeIsaName = useAppSelector(selectActiveIsaName);
-  const isActiveIsa = activeIsaName === isa.name;
-  const classes = clsx(
-    'flex p-2 relative',
-    isa.valid &&
-      !isActiveIsa &&
-      'hover:bg-gray-100 active:bg-gray-300 hover:cursor-pointer',
-    isActiveIsa && 'bg-gray-200',
-  );
-  return (
-    <div
-      onClick={() => onIsaSavePicked(isa.name)}
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => setHover(false)}
-      className={classes}
-    >
-      {isa.name}
-      {hover && <IsaSettingsDisplay isa={isa} />}
-    </div>
-  );
-}
-
-interface IsaSettingsDisplayProps {
-  isa: IsaConfig;
-}
-
-function IsaSettingsDisplay({ isa }: IsaSettingsDisplayProps) {
-  return (
-    <div className='tooltiptext neutral-bg ml-2 rounded border p-4'>
-      <h3 className='my-1'>Fetch</h3>
-      <ul className='list-disc ml-4'>
-        <li>
-          <b>Fetch width:</b> {isa.fetchWidth}
-        </li>
-        <li>
-          <b>Commit width:</b> {isa.commitWidth}
-        </li>
-      </ul>
-      <h3 className='my-1'>Buffers</h3>
-      <ul className='list-disc ml-4'>
-        <li>
-          <b>ROB size:</b> {isa.robSize}
-        </li>
-        <li>
-          <b>LB size:</b> {isa.lbSize}
-        </li>
-        <li>
-          <b>SB size:</b> {isa.sbSize}
-        </li>
-      </ul>
-      <h3 className='my-1'>Functional Units ({isa.fUnits.length})</h3>
-      <ul className='list-decimal ml-4'>
-        {isa.fUnits.map((unit) => {
-          let nOfOps = null;
-          if (isArithmeticUnitConfig(unit)) {
-            nOfOps = ` - (${unit.operations.length}) operations`;
-          }
-          return (
-            <li key={unit.id}>
-              <b>{unit.fuType}</b> - Latency: {unit.latency} {nOfOps}
-            </li>
-          );
-        })}
-      </ul>
-    </div>
-  );
-}
