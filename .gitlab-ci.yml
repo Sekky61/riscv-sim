@@ -32,7 +32,7 @@ test_frontend:
   stage: test
   script:
     - cd Sources/frontend
-    - docker build -t sources_riscvsim-web --target test .
+    - docker build --tag riscvsim-frontend-tests --target test .
   tags:
     - riscvsim
 
@@ -92,6 +92,6 @@ test_backend:
   stage: test
   script:
     - cd Sources/simulator
-    - docker build -t sources_riscvsim-server --target test .
+    - docker build --tag riscvsim-backend-tests --target test .
   tags:
     - riscvsim
