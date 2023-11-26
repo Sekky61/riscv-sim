@@ -72,7 +72,7 @@ public class InputCodeModelFactory
     InputCodeModel instance = new InputCodeModel(instructionFunctionModel, arguments, codeId);
     if (manager == null)
     {
-      System.err.println("InputCodeModelFactory: manager is null");
+      // System.err.println("InputCodeModelFactory: manager is null");
     }
     else
     {

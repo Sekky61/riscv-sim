@@ -201,6 +201,8 @@ public class CompilerTests
     catch (AssertionError e)
     {
       System.out.println(e.getMessage());
+      System.out.println("Unfiltered program:");
+      System.out.println(compileResult.code);
       System.out.println("Program:");
       System.out.println(asm);
       System.out.println("Error messages:");

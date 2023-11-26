@@ -58,7 +58,7 @@ public class SimCodeModelFactory
     SimCodeModel instance = new SimCodeModel(inputCodeModel, id, instructionBulkNumber);
     if (manager == null)
     {
-      System.err.println("SimCodeModelFactory: manager is null");
+      // System.err.println("SimCodeModelFactory: manager is null");
     }
     else
     {

@@ -4,6 +4,7 @@ FROM gradle:8.4.0-jdk17-focal AS base
 FROM base AS deps
 # Ignore the error code from apt-get update - happens on old versions of docker
 RUN apt-get update && apt-get install -y gcc-riscv64-linux-gnu; exit 0
+RUN /usr/bin/riscv64-linux-gnu-gcc --version
 WORKDIR /app
 
 FROM deps AS build
