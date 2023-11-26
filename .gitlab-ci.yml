@@ -93,6 +93,5 @@ test_backend:
   script:
     - cd Sources/simulator
     - docker build -t sources_riscvsim-server --target test .
-  allow_failure: true
   tags:
     - riscvsim
