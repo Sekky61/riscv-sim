@@ -38,7 +38,7 @@ import java.util.List;
  */
 public class GccCaller
 {
-  static String compilerPath = "/usr/bin/riscv64-linux-gnu-gcc";
+  public static String compilerPath = "/usr/bin/riscv64-linux-gnu-gcc-12";
   
   public static CompileResult compile(String code, boolean optimize)
   {
