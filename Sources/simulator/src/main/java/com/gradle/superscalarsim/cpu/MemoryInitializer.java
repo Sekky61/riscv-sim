@@ -92,4 +92,12 @@ public class MemoryInitializer
       memoryPtr += memoryLocation.getSize();
     }
   }
+  
+  /**
+   * @return pointer to the end of the stack
+   */
+  public long getStackPointer()
+  {
+    return freeMemoryStart + stackSize;
+  }
 }

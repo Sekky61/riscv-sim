@@ -77,7 +77,7 @@ import {
 import { FormInput } from './FormInput';
 import { RadioInput, RadioInputWithTitle } from './RadioInput';
 
-type IsaArrayFields = 'fUnits';
+type IsaArrayFields = 'fUnits' | 'memoryLocations';
 type IsaSimpleFields = keyof Omit<IsaNamedConfig, IsaArrayFields>;
 type IsaKeys = IsaSimpleFields | IsaArrayFields;
 
@@ -166,6 +166,9 @@ const isaFormMetadata: IsaFormMetadata = {
   },
   fUnits: {
     title: 'Functional units',
+  },
+  memoryLocations: {
+    title: 'Memory locations',
   },
 };
 

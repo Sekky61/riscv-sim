@@ -65,7 +65,7 @@ export default function InstructionField({
       </InstructionBubble>
     );
   }
-  const { simCodeModel, inputCodeModel, functionModel } = q;
+  const { simCodeModel, inputCodeModel } = q;
 
   const args = simCodeModel.renamedArguments;
   const highlighted = highlightedId === simCodeId;

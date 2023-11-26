@@ -40,7 +40,6 @@ import {
   selectAsmErrors,
   selectCDirty,
   selectCErrors,
-  selectEditorMode,
 } from '@/lib/redux/compilerSlice';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 
@@ -79,7 +78,6 @@ function loadFile(callback: (contents: string) => void) {
 
 export default function EditorBar({ mode }: EditorBarProps) {
   const dispatch = useAppDispatch();
-  const editorMode = useAppSelector(selectEditorMode);
   const editorName = mode == 'c' ? 'C Code' : 'ASM Code';
 
   // Load file and set it as C/ASM code

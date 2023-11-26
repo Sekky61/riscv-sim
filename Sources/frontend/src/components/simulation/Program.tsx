@@ -171,7 +171,9 @@ function ProgramInstruction({
   const cls = clsx(className, 'font-mono text-sm');
   return (
     <>
-      <span className='text-xs text-gray-600'>{address}</span>
+      <div className='text-xs text-gray-600 font-mono flex justify-center items-center'>
+        {address}
+      </div>
       <span className={cls}>
         {children}
         <span title={model.interpretableAs}>{model.name}</span>

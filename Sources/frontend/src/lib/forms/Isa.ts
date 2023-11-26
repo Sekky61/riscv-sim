@@ -43,6 +43,24 @@ export type CacheReplacementType = (typeof cacheReplacementTypes)[number];
 export const storeBehaviorTypes = ['write-back'] as const;
 export type StoreBehaviorType = (typeof storeBehaviorTypes)[number];
 
+export const memoryLocation = z.object({
+  name: z.string(),
+  alignment: z.number().min(1).max(16),
+  value: z.array(z.number().min(0).max(255)),
+  dataType: z.enum([
+    'kByte',
+    'kShort',
+    'kInt',
+    'kUInt',
+    'kLong',
+    'kULong',
+    'kFloat',
+    'kDouble',
+    'kBool',
+  ]),
+});
+export type MemoryLocation = z.infer<typeof memoryLocation>;
+
 export const arithmeticUnits = ['FX', 'FP'] as const;
 export const otherUnits = ['L_S', 'Branch', 'Memory'] as const;
 export const fuTypes = [...arithmeticUnits, ...otherUnits] as const;
@@ -106,6 +124,7 @@ export const isaSchema = z.object({
   loadLatency: z.number().min(0).max(1000),
   laneReplacementDelay: z.number().min(1).max(1000),
   addRemainingDelay: z.boolean(), // todo
+  memoryLocations: z.array(memoryLocation),
 });
 
 export type IsaConfig = z.infer<typeof isaSchema>;
@@ -114,7 +133,13 @@ export const isaNamed = isaSchema.extend({
   name: z.string(),
 });
 
+export const isaNamedAndCode = isaNamed.extend({
+  code: z.string(),
+});
+
 export type IsaNamedConfig = z.infer<typeof isaNamed>;
+
+export type CpuConfiguration = z.infer<typeof isaNamedAndCode>;
 
 export const isaFormDefaultValues: IsaNamedConfig = {
   robSize: 256,
@@ -178,5 +203,6 @@ export const isaFormDefaultValues: IsaNamedConfig = {
   loadLatency: 1,
   laneReplacementDelay: 10,
   addRemainingDelay: false,
+  memoryLocations: [],
   name: 'Default',
 };

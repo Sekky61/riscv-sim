@@ -29,6 +29,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { CpuConfiguration } from '@/lib/forms/Isa';
 import { CpuState } from '@/lib/types/cpuApi';
 
 export type EndpointName =

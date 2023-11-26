@@ -31,7 +31,7 @@
 
 import { selectStoreBuffer } from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
-import { Reference, StoreBufferItem } from '@/lib/types/cpuApi';
+import { StoreBufferItem } from '@/lib/types/cpuApi';
 
 import Block from '@/components/simulation/Block';
 import InstructionField, {
@@ -59,15 +59,8 @@ export default function StoreBuffer() {
             <div>Data</div>
           </>
         }
-        instructionRenderer={(simCodeId) => (
-          <StoreBufferItem
-            simCodeId={simCodeId}
-            storeItem={
-              simCodeId !== undefined
-                ? storeBuffer.storeMap[simCodeId]
-                : undefined
-            }
-          />
+        instructionRenderer={(bufItem) => (
+          <StoreBufferItem storeItem={bufItem} />
         )}
       />
     </Block>
@@ -75,17 +68,13 @@ export default function StoreBuffer() {
 }
 
 type StoreBufferItemProps = {
-  simCodeId?: Reference;
   storeItem?: StoreBufferItem;
 };
 
 /**
  * Displays address and loaded value of a single item in the Load Buffer
  */
-export function StoreBufferItem({
-  simCodeId,
-  storeItem: item,
-}: StoreBufferItemProps) {
+export function StoreBufferItem({ storeItem: item }: StoreBufferItemProps) {
   if (!item) {
     return (
       <InstructionBubble className='flex justify-center px-2 py-1 font-mono col-span-3'>
@@ -99,7 +88,7 @@ export function StoreBufferItem({
 
   return (
     <>
-      <InstructionField instructionId={simCodeId} />
+      <InstructionField instructionId={item.simCodeModel} />
       <InstructionBubble>{displayAddress}</InstructionBubble>
       <InstructionBubble>Data</InstructionBubble>
     </>

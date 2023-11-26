@@ -64,7 +64,7 @@ export function InstructionListDisplay<T>({
         {legend && <li className='contents'>{legend}</li>}
         {codeModels.map((inst) => instructionRenderer(inst))}
         {emptyCount > 0 &&
-          [...Array(emptyCount)].map((_, i) => instructionRenderer(undefined))}
+          [...Array(emptyCount)].map(() => instructionRenderer(undefined))}
       </ul>
     </div>
   );

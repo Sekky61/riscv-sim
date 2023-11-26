@@ -292,19 +292,17 @@ export type MemoryAccessUnit = FunctionUnitBlock;
 // L/S
 
 export interface LoadBufferBlock {
-  loadQueue: Reference[]; // SimCodeModel
-  loadMap: Record<StringReference, LoadBufferItem>;
-  possibleNewEntries: number;
+  loadQueue: LoadBufferItem[];
   bufferSize: number;
   commitId: number;
+  memoryAccessUnitList?: MemoryAccessUnit[];
   storeBufferBlock?: StoreBufferBlock;
-  decodeAndDispatchBlock?: DecodeAndDispatchBlock;
   registerFileBlock?: UnifiedRegisterFileBlock;
   reorderBufferBlock?: ReorderBufferBlock;
   instructionFetchBlock?: InstructionFetchBlock;
-  memoryAccessUnitList?: MemoryAccessUnit[];
 }
 export interface LoadBufferItem {
+  simCodeModel: Reference;
   destinationRegister: string;
   destinationReady: boolean;
   address: number;
@@ -317,18 +315,17 @@ export interface LoadBufferItem {
 }
 
 export interface StoreBufferBlock {
-  storeQueue: Reference[]; // SimCodeModel
-  storeMap: Record<StringReference, StoreBufferItem>;
-  possibleNewEntries: number;
+  storeQueue: StoreBufferItem[];
   bufferSize: number;
   commitId: number;
+  memoryAccessUnitList?: MemoryAccessUnit[];
   loadStoreInterpreter?: CodeLoadStoreInterpreter;
-  decodeAndDispatchBlock?: DecodeAndDispatchBlock;
   registerFileBlock?: UnifiedRegisterFileBlock;
   reorderBufferBlock?: ReorderBufferBlock;
-  memoryAccessUnitList?: MemoryAccessUnit[];
 }
+
 export interface StoreBufferItem {
+  simCodeModel: Reference;
   sourceRegister: string;
   sourceResultId: number;
   sourceReady: boolean;

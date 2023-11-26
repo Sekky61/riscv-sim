@@ -115,7 +115,7 @@ function InstructionRow({ instructionId }: InstructionRowProps) {
   const q = useAppSelector((state) => selectSimCodeModel(state, instructionId));
   const dispatch = useAppDispatch();
   if (!q) throw new Error('Instruction not found');
-  const { simCodeModel, inputCodeModel, functionModel } = q;
+  const { simCodeModel, inputCodeModel } = q;
 
   let instructionType;
   switch (inputCodeModel.instructionTypeEnum) {

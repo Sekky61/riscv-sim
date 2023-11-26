@@ -45,7 +45,7 @@ import ModalRoot from '@/components/modals/ModalRoot';
 import Notifications from '@/components/Notifications';
 import SideBar from '@/components/SideBar';
 
-export const fontSans = FontSans({
+const fontSans = FontSans({
   subsets: ['latin'],
   variable: '--font-sans',
 });

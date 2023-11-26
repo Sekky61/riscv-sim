@@ -27,6 +27,8 @@
  */
 package com.gradle.superscalarsim.models;
 
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
+
 /**
  * @class LoadBufferItem
  * @brief Container for all the additional info required for instructions inside of load buffer
@@ -41,6 +43,7 @@ public class LoadBufferItem
   /**
    * The instruction itself
    */
+  @JsonIdentityReference(alwaysAsId = true)
   private SimCodeModel simCodeModel;
   
   /**

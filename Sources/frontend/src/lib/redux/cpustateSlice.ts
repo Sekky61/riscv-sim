@@ -160,7 +160,8 @@ export const simStepBackward = (): ThunkAction<
   return async (dispatch, getState) => {
     const state: RootState = getState();
     const currentTick = selectTick(state);
-    dispatch(callSimulation(currentTick - 1));
+    const cappedTick = Math.max(0, currentTick - 1);
+    dispatch(callSimulation(cappedTick));
   };
 };
 
@@ -430,6 +431,7 @@ const selectDetailedSimCodeModels = createSelector(
         const registerExpected = renamedArg.name.startsWith('r');
         const a = registers[arg.value];
         if (a === undefined && registerExpected) {
+          console.warn(registers);
           throw new Error(`Register ${arg.value} not found`);
         }
         detail.args.push(arg);
@@ -522,21 +524,7 @@ export const selectMemoryAccessUnitBlocks = (state: RootState) =>
 export const selectStoreBuffer = (state: RootState) =>
   state.cpu.state?.storeBufferBlock;
 
-export const selectStoreBufferItemById = (state: RootState, id?: Reference) => {
-  if (!isValidReference(id)) {
-    return null;
-  }
-  return selectStoreBuffer(state)?.storeMap[id];
-};
-
 export const selectLoadBuffer = (state: RootState) =>
   state.cpu.state?.loadBufferBlock;
-
-export const selectLoadBufferItemById = (state: RootState, id?: Reference) => {
-  if (!isValidReference(id)) {
-    return null;
-  }
-  return selectLoadBuffer(state)?.loadMap[id];
-};
 
 export default cpuSlice.reducer;

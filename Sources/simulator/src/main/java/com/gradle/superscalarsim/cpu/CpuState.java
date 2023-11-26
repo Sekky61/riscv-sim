@@ -201,6 +201,8 @@ public class CpuState implements Serializable
     MemoryInitializer memoryInitializer = new MemoryInitializer(128, 512);
     memoryInitializer.initializeMemory(simulatedMemory, codeParser.getMemoryLocations());
     memoryInitializer.initializeMemory(simulatedMemory, config.memoryLocations);
+    // Set the sp to the end of the stack
+    this.unifiedRegisterFileBlock.getRegister("sp").setValue(memoryInitializer.getStackPointer());
     
     this.cache = new Cache(simulatedMemory, config.cacheLines, config.cacheAssoc, config.cacheLineSize,
                            replacementPoliciesEnum, writeBack, config.addRemainingDelay, config.storeLatency,

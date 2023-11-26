@@ -173,7 +173,7 @@ public class CodeLoadStoreInterpreter
     }
     String addressExpr = interpretableAsParams[2];
     
-    List<String>              varNames  = Expression.getVariableNames(addressExpr);
+    List<String> varNames = Expression.getVariableNames(addressExpr);
     List<Expression.Variable> variables = codeModel.getVariables(varNames, registerFileBlock,
                                                                  instructionMemoryBlock.getLabels());
     
@@ -183,6 +183,11 @@ public class CodeLoadStoreInterpreter
       throw new IllegalStateException("Address result is null");
     }
     int address = (int) addressResult.value.getValue(DataTypeEnum.kInt);
+    
+    if (address < 0)
+    {
+      throw new IllegalStateException("Address is negative: " + address);
+    }
     
     return address;
   }// end of interpretAddress

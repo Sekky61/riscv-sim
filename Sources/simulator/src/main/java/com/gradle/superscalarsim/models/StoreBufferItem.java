@@ -32,6 +32,8 @@
  */
 package com.gradle.superscalarsim.models;
 
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
+
 /**
  * @class StoreBufferItem
  * @brief Container for all the additional info required for instructions inside of store buffer
@@ -49,6 +51,7 @@ public class StoreBufferItem
   /**
    * The instruction itself
    */
+  @JsonIdentityReference(alwaysAsId = true)
   SimCodeModel simCodeModel;
   /**
    * Is the register ready for store instruction

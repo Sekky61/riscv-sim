@@ -29,6 +29,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { CpuConfiguration } from '@/lib/forms/Isa';
 import {
   AsyncEndpointFunction,
   CompileRequest,
@@ -64,7 +65,7 @@ export async function callParseAsmImpl(
 
 export async function callSimulationImpl(
   tick: number,
-  cfg: object,
+  cfg: CpuConfiguration,
 ): Promise<SimulateResponse> {
   // todo: cfg type
   const body: SimulateRequest = {
