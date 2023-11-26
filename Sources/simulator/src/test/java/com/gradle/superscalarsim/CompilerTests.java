@@ -145,13 +145,25 @@ public class CompilerTests
     String                  asm           = String.join("\n", program.program);
     parser.parseCode(asm);
     
-    // Verify
-    Assert.assertTrue(compileResult.success);
-    Assert.assertTrue(parser.success());
-    Assert.assertFalse(parser.getInstructions().isEmpty());
-    
-    // There is a square label
-    Assert.assertNotNull(parser.getLabels().get("square"));
+    try
+    {
+      // Verify
+      Assert.assertTrue(compileResult.success);
+      Assert.assertTrue(parser.success());
+      Assert.assertFalse(parser.getInstructions().isEmpty());
+      
+      // There is a square label
+      Assert.assertNotNull(parser.getLabels().get("square"));
+    }
+    catch (AssertionError e)
+    {
+      System.out.println(e.getMessage());
+      System.out.println("Program:");
+      System.out.println(asm);
+      System.out.println("Error messages:");
+      System.out.println(parser.getErrorMessages());
+      Assert.fail();
+    }
   }
   
   @Test
@@ -178,11 +190,22 @@ public class CompilerTests
     parser.parseCode(asm);
     
     // Verify
-    Assert.assertTrue(compileResult.success);
-    Assert.assertTrue(parser.success());
-    Assert.assertFalse(parser.getInstructions().isEmpty());
-    
-    // There is a sum label
-    Assert.assertNotNull(parser.getLabels().get("sum"));
+    try
+    {
+      Assert.assertTrue(compileResult.success);
+      Assert.assertTrue(parser.success());
+      Assert.assertFalse(parser.getInstructions().isEmpty());
+      // There is a sum label
+      Assert.assertNotNull(parser.getLabels().get("sum"));
+    }
+    catch (AssertionError e)
+    {
+      System.out.println(e.getMessage());
+      System.out.println("Program:");
+      System.out.println(asm);
+      System.out.println("Error messages:");
+      System.out.println(parser.getErrorMessages());
+      Assert.fail();
+    }
   }
 }
