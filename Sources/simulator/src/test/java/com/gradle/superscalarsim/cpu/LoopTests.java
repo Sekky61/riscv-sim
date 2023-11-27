@@ -35,6 +35,25 @@ import java.util.List;
 
 public class LoopTests
 {
+  /**
+   * jr ra
+   */
+  @Test
+  public void test_jump_on_yourself()
+  {
+    CpuConfiguration cpuConfiguration = CpuConfiguration.getDefaultConfiguration();
+    cpuConfiguration.code = "jr x0";
+    Cpu cpu = new Cpu(cpuConfiguration);
+    
+    // Should not throw an exception, loop until infinity
+    for (int i = 0; i < 100; i++)
+    {
+      cpu.step();
+    }
+    
+    Assert.assertTrue(true);
+    Assert.assertTrue(cpu.cpuState.statisticsCounter.getCommittedInstructions() > 10);
+  }
   
   /**
    * Simcodes hold references to input code models.

@@ -63,58 +63,70 @@ public class ReorderBufferBlock implements AbstractBlock
    * Queue of scheduled instruction in backend
    */
   public ArrayDeque<ReorderBufferItem> reorderQueue;
+  
   /**
    * Numerical limit, how many instruction can be committed in a single tick
    */
   public int commitLimit;
+  
   /**
    * ID (tick( counter for marking when an instruction was committed/ready
    */
   public int commitId;
+  
   /**
    * Flag to mark newly added instructions as speculative.
    * This flag is set after encountering branch instruction.
    */
   public boolean speculativePulls;
+  
   /**
    * Reorder buffer size limit.
    */
   public int bufferSize;
+  
   /**
    * Class holding mappings from architectural registers to speculative
    */
   @JsonIdentityReference(alwaysAsId = true)
   private RenameMapTableBlock renameMapTableBlock;
+  
   /**
    * Class, which simulates instruction decode and renames registers
    */
   @JsonIdentityReference(alwaysAsId = true)
   private DecodeAndDispatchBlock decodeAndDispatchBlock;
+  
   /**
    * Class for statistics gathering
    */
   @JsonIdentityReference(alwaysAsId = true)
   private StatisticsCounter statisticsCounter;
+  
   /**
    * GShare unit for getting correct prediction counters
    */
   @JsonIdentityReference(alwaysAsId = true)
   private GShareUnit gShareUnit;
+  
   /**
    * Buffer holding information about branch instructions targets
    */
   @JsonIdentityReference(alwaysAsId = true)
   private BranchTargetBuffer branchTargetBuffer;
+  
   /**
    * Class that fetches code from CodeParser
    */
   @JsonIdentityReference(alwaysAsId = true)
   private InstructionFetchBlock instructionFetchBlock;
+  
   /**
    * Buffer that tracks all in-flight load instructions
    */
   @JsonIdentityReference(alwaysAsId = true)
   private LoadBufferBlock loadBufferBlock;
+  
   /**
    * Buffer that tracks all in-flight store instructions
    */
@@ -296,6 +308,13 @@ public class ReorderBufferBlock implements AbstractBlock
         
         this.instructionFetchBlock.setPc(resultPc);
       }
+      
+      // If we go to the end of the queue, we did not find a branch instruction.
+      // This means that we are not speculating at this point.
+      if (!reorderQueue.getLast().reorderFlags.isSpeculative())
+      {
+        this.speculativePulls = false;
+      }
     }
     else if (codeModel.getInstructionTypeEnum() == InstructionTypeEnum.kLoadstore)
     {
@@ -458,9 +477,6 @@ public class ReorderBufferBlock implements AbstractBlock
         return;
       }
     }
-    // If we go to the end of the queue, we did not find a branch instruction.
-    // This means that we are not speculating at this point.
-    this.speculativePulls = false;
   }// end of validateInstructions
   //----------------------------------------------------------------------
   

@@ -112,7 +112,7 @@ public class InstructionMemoryBlock
   {
     assert pc % 4 == 0;
     int index = pc / 4;
-    // getParsedCode so it is mockable
+    // getCode so it is mockable
     if (index < 0 || index >= getCode().size())
     {
       return this.nop;

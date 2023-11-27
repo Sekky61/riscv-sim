@@ -49,6 +49,7 @@ public class SimulatedMemory
   /**
    * Hash map with stored values, serves as memory
    */
+  @JsonProperty("memoryBase64")
   private byte[] memory;
   
   /**
