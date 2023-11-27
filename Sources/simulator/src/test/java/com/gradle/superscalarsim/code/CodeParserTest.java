@@ -417,7 +417,7 @@ public class CodeParserTest
     Assert.assertEquals("N", n.name);
     Assert.assertEquals(DataTypeEnum.kByte, n.dataType);
     Assert.assertEquals(1, n.getSize());
-    Assert.assertEquals((byte) 25, (byte) n.value.get(0));
+    Assert.assertEquals((byte) 25, (byte) n.bytes.get(0));
   }
   
   @Test
@@ -435,8 +435,8 @@ public class CodeParserTest
     Assert.assertEquals("N", n.name);
     Assert.assertEquals(DataTypeEnum.kShort, n.dataType);
     Assert.assertEquals(2, n.getSize());
-    Assert.assertEquals((byte) 0x34, (byte) n.value.get(0));
-    Assert.assertEquals((byte) 0x12, (byte) n.value.get(1));
+    Assert.assertEquals((byte) 0x34, (byte) n.bytes.get(0));
+    Assert.assertEquals((byte) 0x12, (byte) n.bytes.get(1));
   }
   
   @Test
@@ -455,10 +455,10 @@ public class CodeParserTest
     Assert.assertEquals(DataTypeEnum.kInt, n.dataType);
     
     Assert.assertEquals(4, n.getSize());
-    Assert.assertEquals((byte) 0xdd, (byte) n.value.get(0));
-    Assert.assertEquals((byte) 0xcc, (byte) n.value.get(1));
-    Assert.assertEquals((byte) 0xbb, (byte) n.value.get(2));
-    Assert.assertEquals((byte) 0xaa, (byte) n.value.get(3));
+    Assert.assertEquals((byte) 0xdd, (byte) n.bytes.get(0));
+    Assert.assertEquals((byte) 0xcc, (byte) n.bytes.get(1));
+    Assert.assertEquals((byte) 0xbb, (byte) n.bytes.get(2));
+    Assert.assertEquals((byte) 0xaa, (byte) n.bytes.get(3));
   }
   
   @Test
@@ -477,9 +477,9 @@ public class CodeParserTest
     Assert.assertEquals(DataTypeEnum.kByte, hello.dataType);
     
     Assert.assertEquals(3, hello.getSize());
-    Assert.assertEquals((byte) 'a', (byte) hello.value.get(0));
-    Assert.assertEquals((byte) 'b', (byte) hello.value.get(1));
-    Assert.assertEquals((byte) 'c', (byte) hello.value.get(2));
+    Assert.assertEquals((byte) 'a', (byte) hello.bytes.get(0));
+    Assert.assertEquals((byte) 'b', (byte) hello.bytes.get(1));
+    Assert.assertEquals((byte) 'c', (byte) hello.bytes.get(2));
   }
   
   @Test
@@ -522,12 +522,12 @@ public class CodeParserTest
     Assert.assertEquals(DataTypeEnum.kByte, hello.dataType);
     
     Assert.assertEquals(6, hello.getSize());
-    Assert.assertEquals((byte) 'a', (byte) hello.value.get(0));
-    Assert.assertEquals((byte) 'b', (byte) hello.value.get(1));
-    Assert.assertEquals((byte) 'c', (byte) hello.value.get(2));
-    Assert.assertEquals((byte) 'd', (byte) hello.value.get(3));
-    Assert.assertEquals((byte) 'e', (byte) hello.value.get(4));
-    Assert.assertEquals((byte) 'f', (byte) hello.value.get(5));
+    Assert.assertEquals((byte) 'a', (byte) hello.bytes.get(0));
+    Assert.assertEquals((byte) 'b', (byte) hello.bytes.get(1));
+    Assert.assertEquals((byte) 'c', (byte) hello.bytes.get(2));
+    Assert.assertEquals((byte) 'd', (byte) hello.bytes.get(3));
+    Assert.assertEquals((byte) 'e', (byte) hello.bytes.get(4));
+    Assert.assertEquals((byte) 'f', (byte) hello.bytes.get(5));
   }
   
   @Test
@@ -546,10 +546,10 @@ public class CodeParserTest
     Assert.assertEquals(DataTypeEnum.kByte, hello.dataType);
     
     Assert.assertEquals(4, hello.getSize());
-    Assert.assertEquals((byte) 'a', (byte) hello.value.get(0));
-    Assert.assertEquals((byte) 'b', (byte) hello.value.get(1));
-    Assert.assertEquals((byte) 'c', (byte) hello.value.get(2));
-    Assert.assertEquals((byte) 0, (byte) hello.value.get(3));
+    Assert.assertEquals((byte) 'a', (byte) hello.bytes.get(0));
+    Assert.assertEquals((byte) 'b', (byte) hello.bytes.get(1));
+    Assert.assertEquals((byte) 'c', (byte) hello.bytes.get(2));
+    Assert.assertEquals((byte) 0, (byte) hello.bytes.get(3));
   }
   
   @Test
@@ -568,12 +568,12 @@ public class CodeParserTest
     Assert.assertEquals(DataTypeEnum.kByte, hello.dataType);
     
     Assert.assertEquals(6, hello.getSize());
-    Assert.assertEquals((byte) 'a', (byte) hello.value.get(0));
-    Assert.assertEquals((byte) 'b', (byte) hello.value.get(1));
-    Assert.assertEquals((byte) 'c', (byte) hello.value.get(2));
-    Assert.assertEquals((byte) 0, (byte) hello.value.get(3));
-    Assert.assertEquals((byte) 'a', (byte) hello.value.get(4));
-    Assert.assertEquals((byte) 0, (byte) hello.value.get(5));
+    Assert.assertEquals((byte) 'a', (byte) hello.bytes.get(0));
+    Assert.assertEquals((byte) 'b', (byte) hello.bytes.get(1));
+    Assert.assertEquals((byte) 'c', (byte) hello.bytes.get(2));
+    Assert.assertEquals((byte) 0, (byte) hello.bytes.get(3));
+    Assert.assertEquals((byte) 'a', (byte) hello.bytes.get(4));
+    Assert.assertEquals((byte) 0, (byte) hello.bytes.get(5));
   }
   
   @Test
@@ -592,10 +592,10 @@ public class CodeParserTest
     Assert.assertEquals(DataTypeEnum.kInt, n.dataType);
     
     Assert.assertEquals(4, n.getSize());
-    Assert.assertEquals((byte) 0xff, (byte) n.value.get(0));
-    Assert.assertEquals((byte) 0xff, (byte) n.value.get(1));
-    Assert.assertEquals((byte) 0xff, (byte) n.value.get(2));
-    Assert.assertEquals((byte) 0xff, (byte) n.value.get(3));
+    Assert.assertEquals((byte) 0xff, (byte) n.bytes.get(0));
+    Assert.assertEquals((byte) 0xff, (byte) n.bytes.get(1));
+    Assert.assertEquals((byte) 0xff, (byte) n.bytes.get(2));
+    Assert.assertEquals((byte) 0xff, (byte) n.bytes.get(3));
   }
   
   @Test
@@ -613,8 +613,8 @@ public class CodeParserTest
     Assert.assertEquals("N", n.name);
     Assert.assertEquals(DataTypeEnum.kByte, n.dataType);
     Assert.assertEquals(2, n.getSize());
-    Assert.assertEquals((byte) 25, (byte) n.value.get(0));
-    Assert.assertEquals((byte) 26, (byte) n.value.get(1));
+    Assert.assertEquals((byte) 25, (byte) n.bytes.get(0));
+    Assert.assertEquals((byte) 26, (byte) n.bytes.get(1));
   }
   
   @Test
@@ -669,7 +669,7 @@ public class CodeParserTest
     Assert.assertEquals(8, n.getSize());
     for (int i = 0; i < 8; i++)
     {
-      Assert.assertEquals((byte) 0, (byte) n.value.get(i));
+      Assert.assertEquals((byte) 0, (byte) n.bytes.get(i));
     }
   }
   
@@ -690,7 +690,7 @@ public class CodeParserTest
     Assert.assertEquals(5, n.getSize());
     for (int i = 0; i < 5; i++)
     {
-      Assert.assertEquals((byte) 2, (byte) n.value.get(i));
+      Assert.assertEquals((byte) 2, (byte) n.bytes.get(i));
     }
   }
   

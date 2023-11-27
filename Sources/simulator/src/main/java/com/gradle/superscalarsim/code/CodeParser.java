@@ -97,6 +97,7 @@ public class CodeParser
   
   /**
    * Result of the parsing - list of labels.
+   * Some keys may point to the same label object.
    */
   Map<String, Label> labels;
   
@@ -190,17 +191,35 @@ public class CodeParser
    */
   public void parseCode(String code)
   {
+    parseCode(code, new ArrayList<>());
+  }
+  
+  /**
+   * After calling this method, the results can be collected from the instance.
+   *
+   * @param code        ASM Code to parse
+   * @param knownLabels List of labels that are known to exist in the code.
+   *
+   * @brief Parses the code
+   */
+  public void parseCode(String code, List<Label> knownLabels)
+  {
     // First, scan the code for directives like .asciiz, .word, etc. and note their locations and values
     // Then filter them out so lexer only sees instructions and labels
     this.errorMessages = new ArrayList<>();
     collectMemoryLocations(code);
     String filteredCode = filterDirectives(code);
     
-    this.lexer             = new Lexer(filteredCode);
-    this.currentToken      = this.lexer.nextToken();
-    this.peekToken         = this.lexer.nextToken();
-    this.instructions      = new ArrayList<>();
-    this.labels            = new HashMap<>();
+    this.lexer        = new Lexer(filteredCode);
+    this.currentToken = this.lexer.nextToken();
+    this.peekToken    = this.lexer.nextToken();
+    this.instructions = new ArrayList<>();
+    this.labels       = new HashMap<>();
+    for (Label label : knownLabels)
+    {
+      // todo: Does not alias (two labels pointing to the same object)
+      this.labels.put(label.name, label);
+    }
     this.unconfirmedLabels = new ArrayList<>();
     parse();
     
@@ -233,7 +252,7 @@ public class CodeParser
         if (mem.name != null)
         {
           // Is it a data label?
-          if (!mem.value.isEmpty())
+          if (!mem.bytes.isEmpty())
           {
             memoryLocations.add(mem);
           }
@@ -279,7 +298,7 @@ public class CodeParser
             byte[] bytes = dataType.getBytes(tokens[j]);
             for (byte b : bytes)
             {
-              mem.value.add(b);
+              mem.bytes.add(b);
             }
           }
         }
@@ -316,11 +335,11 @@ public class CodeParser
             token = token.substring(1, token.length() - 1);
             for (char c : token.toCharArray())
             {
-              mem.value.add((byte) c);
+              mem.bytes.add((byte) c);
             }
             if (directive.equals(".asciiz"))
             {
-              mem.value.add((byte) 0);
+              mem.bytes.add((byte) 0);
             }
           }
         }
@@ -340,7 +359,7 @@ public class CodeParser
           }
           for (int j = 0; j < size; j++)
           {
-            mem.value.add(fill);
+            mem.bytes.add(fill);
           }
         }
       }

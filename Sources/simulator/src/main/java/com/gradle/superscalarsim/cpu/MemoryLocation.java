@@ -30,6 +30,7 @@ package com.gradle.superscalarsim.cpu;
 
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -53,7 +54,7 @@ public class MemoryLocation
   /**
    * Value of the memory location
    */
-  public List<Byte> value;
+  public List<Byte> bytes;
   
   /**
    * Data type of the memory location
@@ -63,12 +64,48 @@ public class MemoryLocation
   /**
    * @brief Constructor
    */
-  public MemoryLocation(String name, int alignment, List<Byte> value, DataTypeEnum dataType)
+  public MemoryLocation(String name, int alignment, List<Byte> bytes, DataTypeEnum dataType)
   {
     this.name      = name;
-    this.value     = value;
     this.dataType  = dataType;
     this.alignment = alignment;
+    this.bytes     = bytes;
+  }
+  
+  /**
+   * @brief Constructor for FX values
+   */
+  public static MemoryLocation createFx(String name, int alignment, List<Long> fxValues, DataTypeEnum dataType)
+  {
+    // Convert to bytes
+    List<Byte> bytes = new ArrayList<>();
+    for (Long fxValue : fxValues)
+    {
+      byte[] b = dataType.getBytes(fxValue.toString());
+      for (byte b1 : b)
+      {
+        bytes.add(b1);
+      }
+    }
+    return new MemoryLocation(name, alignment, bytes, dataType);
+  }
+  
+  /**
+   * @brief Constructor for FP values
+   */
+  public static MemoryLocation createFp(String name, int alignment, List<Double> fpValues, DataTypeEnum dataType)
+  {
+    // Convert to bytes
+    List<Byte> bytes = new ArrayList<>();
+    for (Double fpValue : fpValues)
+    {
+      byte[] b = dataType.getBytes(fpValue.toString());
+      for (byte b1 : b)
+      {
+        bytes.add(b1);
+      }
+    }
+    return new MemoryLocation(name, alignment, bytes, dataType);
   }
   
   /**
@@ -85,7 +122,7 @@ public class MemoryLocation
     }
     else
     {
-      return name + " " + dataType + " " + value.get(0);
+      return name + " " + dataType + " " + bytes.get(0);
     }
   }
   
@@ -94,7 +131,7 @@ public class MemoryLocation
    */
   public int getSize()
   {
-    return value.size();
+    return bytes.size();
   }
   
 }

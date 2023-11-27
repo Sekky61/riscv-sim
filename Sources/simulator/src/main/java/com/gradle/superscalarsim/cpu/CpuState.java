@@ -148,7 +148,13 @@ public class CpuState implements Serializable
     
     // Parse code
     CodeParser codeParser = new CodeParser(initLoader, inputCodeModelFactory);
-    codeParser.parseCode(config.code);
+    // Add data labels from config
+    List<Label> dataLabels = new ArrayList<>();
+    for (MemoryLocation memoryLocation : config.memoryLocations)
+    {
+      dataLabels.add(new Label(memoryLocation.name, 0)); // Address will be set later
+    }
+    codeParser.parseCode(config.code, dataLabels);
     
     if (!codeParser.success())
     {

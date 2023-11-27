@@ -395,7 +395,7 @@ public class CpuConfiguration implements Serializable
         {
           errorMessages.add("Memory location alignment must be greater than 0");
         }
-        if (memoryLocation.value == null)
+        if (memoryLocation.bytes == null)
         {
           errorMessages.add("Memory location value must not be null");
         }

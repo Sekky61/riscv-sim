@@ -85,10 +85,10 @@ public class MemoryInitializer
         int alignment = 1 << memoryLocation.alignment;
         memoryPtr = (memoryPtr + alignment - 1) / alignment * alignment;
       }
-      byte[] data = new byte[memoryLocation.value.size()];
-      for (int i = 0; i < memoryLocation.value.size(); i++)
+      byte[] data = new byte[memoryLocation.bytes.size()];
+      for (int i = 0; i < memoryLocation.bytes.size(); i++)
       {
-        data[i] = memoryLocation.value.get(i);
+        data[i] = memoryLocation.bytes.get(i);
       }
       memory.insertIntoMemory(memoryPtr, data);
       // Save label address
