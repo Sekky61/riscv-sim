@@ -12,7 +12,7 @@
     "typecheck": "tsc --noEmit --incremental false",
     "test:watch": "jest --watch",
     "test": "jest",
-    "format": "prettier -w .",
+    "format": "npx @biomejs/biome format src/ --write",
     "format:check": "prettier -c .",
     "postbuild": "next-sitemap --config next-sitemap.config.js"
   },
@@ -73,8 +73,6 @@
     "next-router-mock": "^0.9.10",
     "next-sitemap": "^4.2.3",
     "postcss": "^8.4.31",
-    "prettier": "^3.1.0",
-    "prettier-plugin-tailwindcss": "^0.5.7",
     "tailwindcss": "^3.3.5",
     "tsd": "^0.29.0",
     "typescript": "^5.3.2"
