@@ -53,11 +53,8 @@
     "zod": "^3.22.2"
   },
   "devDependencies": {
-    "@commitlint/cli": "^16.3.0",
-    "@commitlint/config-conventional": "^16.2.4",
     "@next/bundle-analyzer": "^13.4.19",
     "@svgr/webpack": "^8.0.1",
-    "@tailwindcss/forms": "^0.5.4",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
     "@types/react": "^18.2.15",
