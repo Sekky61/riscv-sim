@@ -342,13 +342,13 @@ export const selectProgramWithLabels = createSelector(
 
     // Collect labels that are not after the end of the program
     const labels: Array<Label & { labelName: string }> = [];
-    Object.entries(program.labels).forEach(([labelName, label]) => {
+    for (const [labelName, label] of Object.entries(program.labels)) {
       // Do not insert labels that are well after the end of the program
       if (label.address >= (program.code.length + 1) * 4) {
-        return;
+        continue;
       }
       labels.push({ ...label, labelName });
-    });
+    }
 
     // Sort labels by address, ascending
     labels.sort((a, b) => a.address - b.address);
@@ -378,6 +378,7 @@ export const selectProgramWithLabels = createSelector(
 
 export const selectAllRegisters = (state: RootState) =>
   state.cpu.state?.managerRegistry.registerModelManager;
+
 export const selectRegisterIdMap = (state: RootState) =>
   state.cpu.state?.unifiedRegisterFileBlock.registerMap;
 
@@ -396,14 +397,14 @@ export const selectRegisterMap = createSelector(
     const registerMap: Record<string, RegisterModel> = { ...registers };
 
     // Assign aliases (not in the map at the moment)
-    Object.entries(map).forEach(([alias, id]) => {
+    for (const [alias, id] of Object.entries(map)) {
       const register = registers[id];
       if (!register) {
         console.warn(`Register ${id} not found`, alias, id);
         throw new Error(`Register ${id} not found`);
       }
       registerMap[alias] ??= register;
-    });
+    }
 
     return registerMap;
   },
@@ -436,7 +437,7 @@ const selectDetailedSimCodeModels = createSelector(
 
     // Create a lookup table with entry for each simcode
     const lookup: Record<Reference, DetailedSimCodeModel> = {};
-    Object.entries(simCodeModels).forEach(([id, simCodeModel]) => {
+    for (const [id, simCodeModel] of Object.entries(simCodeModels)) {
       const reference = parseInt(id, 10);
       if (Number.isNaN(reference)) {
         throw new Error(`Invalid simcode id: ${id}`);
@@ -468,7 +469,7 @@ const selectDetailedSimCodeModels = createSelector(
         detail.args.push(arg);
       }
       lookup[reference] = detail;
-    });
+    }
     return lookup;
   },
 );

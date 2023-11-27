@@ -54,7 +54,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   const appRef = useRef<HTMLDivElement>(null);
 
   return (
-    <html>
+    <html lang='en'>
       <head>
         <meta
           name='viewport'

@@ -95,7 +95,7 @@ export default function Page() {
   // When the active ISA changes, set the form values
   useEffect(() => {
     form.reset(activeIsa);
-  }, [activeIsa, form, isas]);
+  }, [activeIsa, form]);
 
   const generateIsaName = () => {
     // Iterate over the names of the saved ISAs

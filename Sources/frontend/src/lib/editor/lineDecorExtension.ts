@@ -118,12 +118,13 @@ const cLineArr = StateField.define<number[]>({
     return [];
   },
   update(value, tr) {
+    let newValue = value;
     for (const effect of tr.effects) {
       if (effect.is(changeHighlightEffect)) {
-        value = effect.value;
+        newValue = effect.value;
       }
     }
-    return value;
+    return newValue;
   },
 });
 
@@ -132,12 +133,13 @@ const dirtyState = StateField.define({
     return false;
   },
   update(value, tr) {
+    let newValue = value;
     for (const effect of tr.effects) {
       if (effect.is(changeDirtyEffect)) {
-        value = effect.value;
+        newValue = effect.value;
       }
     }
-    return value;
+    return newValue;
   },
 });
 

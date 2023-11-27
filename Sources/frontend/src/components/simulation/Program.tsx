@@ -68,7 +68,7 @@ export default function Program() {
     const containerTop = containerRef.current.offsetTop;
     const containerHeight = containerRef.current.offsetHeight;
     containerRef.current.scrollTop = pcTop - containerTop - containerHeight / 2;
-  });
+  }, [pcRef, containerRef]);
 
   if (!program || !fetch || !codeOrder) return null;
 

@@ -140,7 +140,11 @@ function InstructionRow({ instructionId }: InstructionRowProps) {
   };
 
   return (
-    <tr onClick={showDetail} className='hover:bg-gray-100 hover:cursor-pointer'>
+    <tr
+      onClick={showDetail}
+      onKeyUp={showDetail}
+      className='hover:bg-gray-100 hover:cursor-pointer'
+    >
       <td>{simCodeModel.id}</td>
       <td>{inputCodeModel.instructionName}</td>
       <td>{instructionType}</td>

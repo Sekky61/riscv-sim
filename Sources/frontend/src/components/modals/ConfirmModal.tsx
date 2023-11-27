@@ -29,6 +29,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { Button } from '@/components/base/ui/button';
+
 export type ConfirmModalProps = {
   title: string;
   message: string;
@@ -51,12 +53,12 @@ const ConfirmModal = ({
       <h1 className='text-xl'>{title}</h1>
       <p className='mb-4'>{message}</p>
       <div>
-        <button onClick={onYes} className='button mr-4'>
+        <Button onClick={onYes} className='button mr-4'>
           {yesText || 'Confirm'}
-        </button>
-        <button onClick={onNo} className='button'>
+        </Button>
+        <Button onClick={onNo} className='button'>
           {noText || 'Cancel'}
-        </button>
+        </Button>
       </div>
     </div>
   );

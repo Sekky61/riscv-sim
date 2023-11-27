@@ -43,6 +43,8 @@ import {
 } from '@/lib/redux/compilerSlice';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 
+import { Button } from '@/components/base/ui/button';
+
 type EditorBarProps = {
   mode: 'c' | 'asm';
 };
@@ -98,19 +100,21 @@ export default function EditorBar({ mode }: EditorBarProps) {
       <div className='py-1 px-0.5 font-bold'>{editorName}</div>
       {errorDisplay}
       <label>
-        <button
+        <Button
+          variant='ghost'
           onClick={handleLoadFile}
-          className='button-interactions px-2 rounded py-0.5 my-0.5'
+          className='button-interactions px-2 rounded py-0.5 my-0.5 h-6'
         >
           Load
-        </button>
+        </Button>
       </label>
-      <button
+      <Button
+        variant='ghost'
         onClick={handleSaveFile}
-        className='button-interactions px-2 rounded py-0.5 my-0.5'
+        className='button-interactions px-2 rounded py-0.5 my-0.5 h-6'
       >
         Save
-      </button>
+      </Button>
     </div>
   );
 }
@@ -126,7 +130,7 @@ const AsmErrorsDisplay = () => {
   };
 
   const boxStyle = clsx(
-    'flex items-center px-2 rounded py-0.5 my-0.5',
+    'flex items-center px-2 rounded py-0.5 my-0.5 h-6 text-black bg-gray-200 hover:bg-gray-300',
     dirty && 'button-interactions',
     hasErrors &&
       !dirty &&
@@ -146,12 +150,12 @@ const AsmErrorsDisplay = () => {
   }
 
   return (
-    <button className={boxStyle} onClick={checkAsm}>
+    <Button className={boxStyle} onClick={checkAsm}>
       <div className='mr-2'>
         <StatusIcon type={iconType} />
       </div>
       Check
-    </button>
+    </Button>
   );
 };
 

@@ -425,8 +425,7 @@ export interface Instruction {
 export const parsedInstructions = createSelector([selectAsmCode], (asm) => {
   const lines = asm.split('\n');
   const parsed = lines.map((line, i) => {
-    line = line.trim();
-    const [mnemonic, ...args] = line.split(' ');
+    const [mnemonic, ...args] = line.trim().split(' ');
     return { mnemonic, args, id: i } as Instruction;
   });
   return parsed;

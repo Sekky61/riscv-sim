@@ -54,9 +54,8 @@ export default function BranchBlock() {
     addresses.push(pc + i * 4);
   }
 
-  const btbEntries: React.ReactNode[] = [];
   // TODO: target label if exists
-  addresses.forEach((address) => {
+  const btbEntries: React.ReactNode[] = addresses.map((address) => {
     const entry = btb.buffer[address];
     if (!entry) return null;
     btbEntries.push(

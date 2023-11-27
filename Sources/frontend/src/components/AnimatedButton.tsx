@@ -79,6 +79,7 @@ const AnimatedButton = ({
 
   return (
     <button
+      type='button'
       className={clsx(
         'timelineHighlight h-8 w-8 rounded-full p-1',
         className,
