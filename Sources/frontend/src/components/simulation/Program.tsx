@@ -89,7 +89,7 @@ export default function Program() {
       className='program justify-self-stretch self-stretch'
     >
       <div
-        className='h-96 grid gap-1 overflow-y-auto pt-4'
+        className='max-h-96 grid gap-1 overflow-y-auto pt-4'
         style={{ gridTemplateColumns: 'auto auto' }}
       >
         {codeOrder.map((instructionOrLabel) => {

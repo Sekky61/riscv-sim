@@ -39,6 +39,7 @@ import {
   PayloadAction,
   ThunkAction,
 } from '@reduxjs/toolkit';
+import base64Decode from 'fast-base64-decode';
 import { notify } from 'reapop';
 
 import { selectAsmCode } from '@/lib/redux/compilerSlice';
@@ -283,6 +284,21 @@ export const selectAllSimCodeModels = (state: RootState) =>
 export const selectSimCodeModelById = (state: RootState, id: Reference) =>
   state.cpu.state?.managerRegistry.simCodeManager[id];
 
+export const selectMemory = (state: RootState) =>
+  state.cpu.state?.simulatedMemory;
+
+/**
+ * Parse the base64 string from the API into a Uint8Array.
+ */
+export const selectMemoryBytes = createSelector([selectMemory], (memory) => {
+  if (!memory) {
+    return null;
+  }
+  const arr = new Uint8Array(memory.size);
+  base64Decode(memory.memoryBase64 ?? '', arr);
+  return arr;
+});
+
 export const selectProgram = (state: RootState) =>
   state.cpu.state?.instructionMemoryBlock;
 
@@ -380,15 +396,11 @@ export const selectRegisterMap = createSelector(
     // Copy the registers
     const registerMap: Record<string, RegisterModel> = { ...registers };
 
-    if (registers['f8'] === undefined) {
-      console.warn('f8 is undefined', registers);
-      return registerMap;
-    }
-
     // Assign aliases (not in the map at the moment)
     Object.entries(map).forEach(([alias, id]) => {
       const register = registers[id];
       if (!register) {
+        console.warn(`Register ${id} not found`, alias, id);
         throw new Error(`Register ${id} not found`);
       }
       registerMap[alias] ??= register;
@@ -450,6 +462,7 @@ const selectDetailedSimCodeModels = createSelector(
         const registerExpected = renamedArg.name.startsWith('r');
         const a = registers[arg.value];
         if (a === undefined && registerExpected) {
+          console.warn(`Register ${arg.name} not found ()`);
           console.warn(registers);
           throw new Error(`Register ${arg.value} not found`);
         }

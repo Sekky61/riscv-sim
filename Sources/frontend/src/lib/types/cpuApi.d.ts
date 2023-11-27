@@ -64,6 +64,17 @@ export interface CpuState {
   reorderBufferBlock: ReorderBufferBlock;
 }
 
+export interface SimulatedMemory {
+  /**
+   * Memory encoded as a base64 string
+   */
+  memoryBase64: string | null;
+  /**
+   * Size of the memory in bytes
+   */
+  size: number;
+}
+
 export interface ReorderBufferBlock {
   reorderQueue: ReorderBufferItem[];
   commitLimit: number;

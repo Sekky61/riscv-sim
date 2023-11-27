@@ -8,9 +8,9 @@
 
  *          xmajer21@stud.fit.vutbr.cz
  *
- * @brief   The compiler page
+ * @brief   The memory page
  *
- * @date    19 September 2023, 22:00 (created)
+ * @date    27 November 2023, 22:00 (created)
  *
  * @section Licence
  * This file is part of the Superscalar simulator app
@@ -35,27 +35,17 @@
 
 import Head from 'next/head';
 
-import AsmDisplay from '@/components/codeEditor/AsmDisplay';
-import CCodeInput from '@/components/codeEditor/CCodeInput';
-import CompileOptions from '@/components/codeEditor/CompileOptions';
-import CompilerShortcuts from '@/components/shortcuts/CompilerShortcuts';
-
 export default function HomePage() {
   // Note: min-h-0 fixes overflow of the flex container
   return (
     <main className='h-full'>
       <Head>
-        <title>Code Editor</title>
+        <title>Memory</title>
       </Head>
       <div className='flex h-full flex-col'>
-        <h1 className='m-2 mb-6 text-2xl'>Code Editor</h1>
-        <div className=' grid min-h-0 flex-grow grid-cols-[160px_2fr_minmax(350px,1fr)] gap-4'>
-          <CompileOptions />
-          <CCodeInput />
-          <AsmDisplay />
-        </div>
+        <h1 className='m-2 mb-6 text-2xl'>Memory Editor</h1>
+        <div>bar</div>
       </div>
-      <CompilerShortcuts />
     </main>
   );
 }

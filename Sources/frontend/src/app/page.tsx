@@ -50,6 +50,7 @@ import FetchBlock from '@/components/simulation/FetchBlock';
 import FunctionUnitGroup from '@/components/simulation/FunctionUnitGroup';
 import IssueWindow from '@/components/simulation/IssueWindow';
 import LoadBuffer from '@/components/simulation/LoadBuffer';
+import MainMemory from '@/components/simulation/MainMemory';
 import Program from '@/components/simulation/Program';
 import ReorderBuffer from '@/components/simulation/ReorderBuffer';
 import StoreBuffer from '@/components/simulation/StoreBuffer';
@@ -103,6 +104,7 @@ export default function HomePage() {
           </div>
           <div>
             <FunctionUnitGroup type='memory' />
+            <MainMemory />
           </div>
         </div>
       </CanvasWindow>
