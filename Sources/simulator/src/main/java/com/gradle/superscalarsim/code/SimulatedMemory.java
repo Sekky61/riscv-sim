@@ -33,6 +33,7 @@
 package com.gradle.superscalarsim.code;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
 /**
@@ -154,4 +155,13 @@ public class SimulatedMemory
     this.memory = new byte[0];
   }// end of reset
   //-------------------------------------------------------------------------------------------
+  
+  /**
+   * @return Size of the memory in bytes
+   */
+  @JsonProperty
+  public int getSize()
+  {
+    return this.memory.length;
+  }
 }
