@@ -53,17 +53,21 @@ import Block from '@/components/simulation/Block';
  */
 export default function Program() {
   const pcRef = React.useRef<HTMLDivElement>(null);
+  const containerRef = React.useRef<HTMLDivElement>(null);
   const program = useAppSelector(selectProgram);
   const fetch = useAppSelector(selectFetch);
   const codeOrder = useAppSelector(selectProgramWithLabels);
   const highlightedInputCodeId = useAppSelector(selectHighlightedInputCode);
 
-  // Scroll to PC on every render
+  // Scroll to PC on every render using scrollTop, because scrollIntoView makes the whole page jump
   useEffect(() => {
-    if (!pcRef.current) {
+    if (!pcRef.current || !containerRef.current) {
       return;
     }
-    pcRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    const pcTop = pcRef.current.offsetTop;
+    const containerTop = containerRef.current.offsetTop;
+    const containerHeight = containerRef.current.offsetHeight;
+    containerRef.current.scrollTop = pcTop - containerTop - containerHeight / 2;
   });
 
   if (!program || !fetch || !codeOrder) return null;
@@ -91,6 +95,7 @@ export default function Program() {
       <div
         className='max-h-96 grid gap-1 overflow-y-auto pt-4'
         style={{ gridTemplateColumns: 'auto auto' }}
+        ref={containerRef}
       >
         {codeOrder.map((instructionOrLabel) => {
           if (typeof instructionOrLabel === 'string') {

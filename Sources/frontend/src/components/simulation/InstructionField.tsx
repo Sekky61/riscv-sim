@@ -161,7 +161,7 @@ function InstructionArgument({
   let hoverText;
 
   if (isRegister) {
-    hoverText = `Argument ${argName}: ${register.name} (${register.value.bits})`;
+    hoverText = `Argument ${argName}: ${register.name} (${register.value.stringRepresentation})`;
   } else {
     hoverText = `Argument ${argName}: ${idOrLiteral}`;
   }

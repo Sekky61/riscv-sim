@@ -47,7 +47,7 @@ export default function MainMemory() {
 
   return (
     <Block title='Main Memory' className=''>
-      <div className='flex flex-col'>
+      <div className='grid gap-1 text-xs font-mono memory-grid justify-center'>
         {Array.from(Array(rows).keys()).map((row) => (
           <MemoryRow
             key={row}
@@ -76,15 +76,17 @@ function MemoryRow({
   const bytesInRow = 8;
 
   const data = memory.slice(startAddress, startAddress + count);
+  // Pad the address with zeros
+  const address = '0x' + startAddress.toString(16).padStart(4, '0');
 
   return (
-    <div className='flex flex-row text-xs'>
-      <div className='w-12'>{startAddress.toString(16)}</div>
+    <>
+      <div className=''>{address}</div>
       {Array.from(Array(bytesInRow).keys()).map((index) => (
-        <div key={index} className='w-12'>
-          {(data[index] ?? 0).toString(16)}
+        <div key={index} className=''>
+          {(data[index] ?? 0).toString(16).padStart(2, '0')}
         </div>
       ))}
-    </div>
+    </>
   );
 }

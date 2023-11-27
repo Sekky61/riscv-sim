@@ -86,4 +86,46 @@ public class LoopTests
     // TODO: manually check
     Assert.assertEquals(28, steps);
   }
+  
+  /**
+   * The program writes numbers from 0 to 19 to memory
+   * TODO: go back to it later
+   */
+  //  @Test
+  public void test_write_memory()
+  {
+    CpuConfiguration cpuConfiguration = CpuConfiguration.getDefaultConfiguration();
+    cpuConfiguration.code = """
+            wr:
+                addi sp,sp,-32
+                sw s0,28(sp)
+                addi s0,sp,32
+                sw zero,-20(s0)
+                j .L2
+            .L3:
+                lw a5,-20(s0)
+                lw a4,-20(s0)
+                andi a4,a4,0xff
+                sb a4,0(a5)
+                lw a5,-20(s0)
+                addi a5,a5,1
+                sw a5,-20(s0)
+            .L2:
+                lw a4,-20(s0)
+                li a5,19
+                ble a4,a5,.L3
+                nop
+                mv a0,a5
+                lw s0,28(sp)
+                addi sp,sp,32
+                """;
+    Cpu cpu = new Cpu(cpuConfiguration);
+    cpu.execute();
+    
+    // Assert that bytes 0 to 19 are written to memory
+    for (int i = 0; i < 20; i++)
+    {
+      Assert.assertEquals(i, cpu.cpuState.simulatedMemory.getFromMemory((long) i));
+    }
+  }
 }

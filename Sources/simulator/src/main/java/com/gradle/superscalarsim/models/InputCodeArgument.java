@@ -32,17 +32,26 @@
  */
 package com.gradle.superscalarsim.models;
 
+import com.gradle.superscalarsim.models.register.RegisterDataContainer;
+
 /**
  * @class InputCodeArgument
  * @brief Container of argument of parsed instruction
  */
 public class InputCodeArgument
 {
+  
+  /**
+   * Parsed constant value of the argument. Uses type info from instruction definition.
+   */
+  RegisterDataContainer constantValue;
+  
   /**
    * Name of the argument.
    * Example: rs1, imm, labelName.
    */
   private String name;
+  
   /**
    * Value of the argument.
    * Example: x5, 10, name of a label.
@@ -57,8 +66,23 @@ public class InputCodeArgument
    */
   public InputCodeArgument(final String name, final String value)
   {
-    this.name  = name;
-    this.value = value;
+    this.name          = name;
+    this.value         = value;
+    this.constantValue = null;
+  }// end of Constructor
+  
+  /**
+   * @param name          Name of the argument
+   * @param value         Value of the argument
+   * @param constantValue Constant value of the argument
+   *
+   * @brief Constructor
+   */
+  public InputCodeArgument(final String name, final String value, final RegisterDataContainer constantValue)
+  {
+    this.name          = name;
+    this.value         = value;
+    this.constantValue = constantValue;
   }// end of Constructor
   //------------------------------------------------------
   
@@ -71,6 +95,14 @@ public class InputCodeArgument
   {
     this.name  = argument.getName();
     this.value = argument.getValue();
+    if (argument.getConstantValue() != null)
+    {
+      this.constantValue = new RegisterDataContainer(argument.getConstantValue());
+    }
+    else
+    {
+      this.constantValue = null;
+    }
   }// end of Constructor
   //------------------------------------------------------
   
@@ -103,6 +135,15 @@ public class InputCodeArgument
   {
     this.value = value;
   }// end of setValue
+  //------------------------------------------------------
+  
+  /**
+   * @return Constant value of the argument, if it is a constant
+   */
+  public RegisterDataContainer getConstantValue()
+  {
+    return constantValue;
+  }
   //------------------------------------------------------
   
   /**

@@ -142,6 +142,7 @@ export interface InputCodeModel {
 }
 
 export interface InputCodeArgument {
+  constantValue?: RegisterDataContainer;
   name: string;
   value: string;
 }
@@ -216,6 +217,7 @@ export interface RegisterModel {
 export interface RegisterDataContainer {
   bits: number;
   currentType: DataTypeEnum;
+  stringRepresentation?: string;
 }
 
 export interface RenameMapTableBlock {
@@ -275,8 +277,9 @@ export interface IssueWindowBlock {
 
 export interface IssueItemModel {
   tag: string;
-  value: number;
   validityBit: boolean;
+  value?: StringReference;
+  constantValue?: RegisterDataContainer;
 }
 
 export type AluIssueWindowBlock = IssueWindowBlock;
@@ -288,7 +291,7 @@ export type LoadStoreIssueWindowBlock = IssueWindowBlock;
 
 export interface FunctionUnitBlock {
   reorderBufferBlock?: Reference;
-  simCodeModel: Reference;
+  simCodeModel?: Reference; // todo it is actually a Reference | null
   functionUnitId: number;
   functionUnitCount: number;
   issueWindowBlock?: Reference;

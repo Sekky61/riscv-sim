@@ -253,13 +253,14 @@ public abstract class AbstractIssueWindowBlock implements AbstractBlock
         RegisterModel         reg          = this.registerFileBlock.getRegister(registerName);
         RegisterReadinessEnum readiness    = reg.getReadiness();
         boolean               validity     = readiness == RegisterReadinessEnum.kExecuted || readiness == RegisterReadinessEnum.kAssigned;
-        itemModelList.add(new IssueItemModel(registerName, reg.getValue(), validity));
+        itemModelList.add(new IssueItemModel(registerName, reg, validity));
       }
       else if (argument.getName().startsWith("imm"))
       {
+        // Also labels are considered immediate values
         try
         {
-          itemModelList.add(new IssueItemModel(argument.getName(), Double.parseDouble(argument.getValue()), true));
+          itemModelList.add(new IssueItemModel(argument.getName(), argument.getConstantValue(), true));
         }
         catch (NumberFormatException e)
         {
@@ -314,12 +315,12 @@ public abstract class AbstractIssueWindowBlock implements AbstractBlock
     RegisterReadinessEnum readinessEnum = reg.getReadiness();
     if (readinessEnum == RegisterReadinessEnum.kExecuted || readinessEnum == RegisterReadinessEnum.kAssigned)
     {
-      item.setValue(reg.getValue());
+      item.setConstantValue(reg.getValueContainer());
       item.setValidityBit(true);
     }
     else
     {
-      item.setValue(0);
+      item.setRegisterValue(null);
       item.setValidityBit(false);
     }
   }// end of updateValidityItem

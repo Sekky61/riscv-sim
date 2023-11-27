@@ -26,6 +26,7 @@
  */
 package com.gradle.superscalarsim.models.register;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 
 /**
@@ -57,6 +58,36 @@ public class RegisterDataContainer
   {
     this.bits        = 0;
     this.currentType = DataTypeEnum.kULong;
+  }
+  
+  /**
+   * Copy constructor
+   */
+  public RegisterDataContainer(RegisterDataContainer other)
+  {
+    this.bits        = other.bits;
+    this.currentType = other.currentType;
+  }
+  
+  public static RegisterDataContainer parseAs(String value, DataTypeEnum type)
+  {
+    try
+    {
+      RegisterDataContainer container = new RegisterDataContainer();
+      byte[]                bytes     = type.getBytes(value);
+      long                  bits      = 0;
+      for (int i = 0; i < bytes.length; i++)
+      {
+        bits |= (bytes[i] & 0xFFL) << (i * 8);
+      }
+      container.bits        = bits;
+      container.currentType = type;
+      return container;
+    }
+    catch (Exception e)
+    {
+      return null;
+    }
   }
   
   public static <T> RegisterDataContainer fromValue(T value)
@@ -117,11 +148,22 @@ public class RegisterDataContainer
   }
   
   /**
-   * @return The bit representation of the register value
+   * @return string representation of the register value
    */
-  public long getBits()
+  @JsonProperty
+  public String getStringRepresentation()
   {
-    return bits;
+    return getString(currentType);
+  }
+  
+  public String getString(DataTypeEnum type)
+  {
+    if (type == null)
+    {
+      type = currentType;
+    }
+    Object v = getValue(type);
+    return v.toString();
   }
   
   /**
@@ -154,14 +196,12 @@ public class RegisterDataContainer
     };
   }
   
-  public String getString(DataTypeEnum type)
+  /**
+   * @return The bit representation of the register value
+   */
+  public long getBits()
   {
-    if (type == null)
-    {
-      type = currentType;
-    }
-    Object v = getValue(type);
-    return v.toString();
+    return bits;
   }
   
   /**

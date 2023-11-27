@@ -126,6 +126,7 @@ public class CodeBranchInterpreter
     InputCodeArgument labelArgument = codeModel.getArgumentByName("imm");
     if (labelArgument != null)
     {
+      // todo immediate values not handled
       String labelName     = labelArgument.getValue();
       int    labelPosition = instructionMemoryBlock.getLabelPosition(labelName);
       if (labelPosition != -1)

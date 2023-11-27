@@ -36,6 +36,7 @@ import {
   selectBranchIssueWindowBlock,
   selectFpIssueWindowBlock,
   selectLoadStoreIssueWindowBlock,
+  selectRegisterById,
 } from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
 import { IssueItemModel, Reference } from '@/lib/types/cpuApi';
@@ -138,6 +139,12 @@ type IssueWindowItemProps = {
  * Displays a single item in the Issue Window
  */
 export function IssueWindowItem({ simCodeId, items }: IssueWindowItemProps) {
+  const reg1 = useAppSelector((state) =>
+    selectRegisterById(state, items?.[0]?.tag ?? 'INVALID'),
+  );
+  const reg2 = useAppSelector((state) =>
+    selectRegisterById(state, items?.[1]?.tag ?? 'INVALID'),
+  );
   if (!items) {
     return (
       <div className='col-span-3'>
@@ -146,20 +153,43 @@ export function IssueWindowItem({ simCodeId, items }: IssueWindowItemProps) {
     );
   }
 
-  const item1 = items[0] || { value: '-', validityBit: false };
-  const item2 = items[1] || { value: '-', validityBit: false };
+  const item1 = items[0];
+  const item2 = items[1];
 
-  const item1Style = clsx('flex px-2', item1.validityBit && 'text-green-500');
-  const item2Style = clsx('flex px-2', item2.validityBit && 'text-green-500');
+  const item1Style = clsx(
+    'flex px-2',
+    item1?.validityBit && 'text-green-500',
+    item1 === undefined && 'invisible',
+  );
+  const item2Style = clsx(
+    'flex px-2',
+    item2?.validityBit && 'text-green-500',
+    item2 === undefined && 'invisible',
+  );
+
+  // First try to get the value from the constant value, then from the register
+  let item1Value = item1?.constantValue?.stringRepresentation;
+  if (item1Value === undefined) {
+    item1Value = reg1?.value.stringRepresentation;
+  }
+
+  let item2Value = item2?.constantValue?.stringRepresentation;
+  if (item2Value === undefined) {
+    item2Value = reg2?.value.stringRepresentation;
+  }
+
+  console.log('simcode', simCodeId);
+  console.log('item1', item1, reg1);
+  console.log('item2', item2, reg2);
 
   return (
     <>
       <InstructionField instructionId={simCodeId} />
       <InstructionBubble className={item1Style}>
-        {item1.value}
+        {item1Value ?? '-'}
       </InstructionBubble>
       <InstructionBubble className={item2Style}>
-        {item2.value}
+        {item2Value ?? '-'}
       </InstructionBubble>
     </>
   );

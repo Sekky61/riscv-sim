@@ -93,18 +93,21 @@ export default function FunctionUnitGroup({ type }: FunctionUnitGroupProps) {
   // TODO: has no limit
   return (
     <>
-      {fus.map((fu, i) => (
-        <Fragment key={fu.functionUnitId}>
-          <Block
-            title={fu.name || getNameFromType(type)}
-            key={fu.name}
-            stats={`${fu.counter}/${fu.delay}`}
-            className={clsx(cl, 'row-span-1', rowPosition[i + 1])}
-          >
-            <InstructionField instructionId={fu.simCodeModel} />
-          </Block>
-        </Fragment>
-      ))}
+      {fus.map((fu, i) => {
+        const displayCounter = fu.simCodeModel === null ? 0 : fu.counter + 1;
+        return (
+          <Fragment key={fu.functionUnitId}>
+            <Block
+              title={fu.name || getNameFromType(type)}
+              key={fu.name}
+              stats={`${displayCounter}/${fu.delay}`}
+              className={clsx(cl, 'row-span-1', rowPosition[i + 1])}
+            >
+              <InstructionField instructionId={fu.simCodeModel} />
+            </Block>
+          </Fragment>
+        );
+      })}
     </>
   );
 }

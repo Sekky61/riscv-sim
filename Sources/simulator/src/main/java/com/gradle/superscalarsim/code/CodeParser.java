@@ -36,6 +36,7 @@ import com.gradle.superscalarsim.loader.InitLoader;
 import com.gradle.superscalarsim.models.InputCodeArgument;
 import com.gradle.superscalarsim.models.InputCodeModel;
 import com.gradle.superscalarsim.models.InstructionFunctionModel;
+import com.gradle.superscalarsim.models.register.RegisterDataContainer;
 import com.gradle.superscalarsim.models.register.RegisterFileModel;
 import com.gradle.superscalarsim.models.register.RegisterModel;
 
@@ -630,11 +631,14 @@ public class CodeParser
     List<InputCodeArgument> codeArguments = new ArrayList<>();
     for (InstructionFunctionModel.Argument argument : instructionModel.getArguments())
     {
-      CodeToken         argumentToken       = args.get(argument.name());
-      String            argumentName        = argument.name();
-      InputCodeArgument inputCodeArgument   = new InputCodeArgument(argumentName, argumentToken.text());
-      boolean           isLValue            = argumentName.equals("rd");
-      DataTypeEnum      instructionDataType = instructionModel.getArgumentByName(argumentName).type();
+      CodeToken argumentToken = args.get(argument.name());
+      String    argumentName  = argument.name();
+      // Try to parse as a constant. May be null for labels, registers
+      RegisterDataContainer constantValue       = RegisterDataContainer.parseAs(argumentToken.text(), argument.type());
+      InputCodeArgument     inputCodeArgument   = new InputCodeArgument(argumentName, argumentToken.text(),
+                                                                        constantValue);
+      boolean               isLValue            = argumentName.equals("rd");
+      DataTypeEnum          instructionDataType = instructionModel.getArgumentByName(argumentName).type();
       boolean isValid = validateArgument(inputCodeArgument, instructionModel.getInstructionType(), instructionDataType,
                                          isLValue, argumentToken);
       if (isValid)
