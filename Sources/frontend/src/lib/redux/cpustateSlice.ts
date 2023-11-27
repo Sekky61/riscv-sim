@@ -49,6 +49,7 @@ import type {
   CpuState,
   InputCodeModel,
   InstructionFunctionModel,
+  Label,
   Reference,
   RegisterModel,
   SimCodeModel,
@@ -324,19 +325,37 @@ export const selectProgramWithLabels = createSelector(
       return null;
     }
 
-    // COPY code
-    const codeOrder: Array<Reference | string> = [...program.code];
-
-    // For each label, insert it before the instruction it points to
-    Object.entries(program.labels).forEach(([labelName, idx]) => {
-      let insertIndex = codeOrder.findIndex(
-        (instruction) => typeof instruction !== 'string' && instruction === idx,
-      );
-      if (insertIndex === -1) {
-        insertIndex = codeOrder.length;
+    // Collect labels that are not after the end of the program
+    const labels: Array<Label & { labelName: string }> = [];
+    Object.entries(program.labels).forEach(([labelName, label]) => {
+      // Do not insert labels that are well after the end of the program
+      if (label.address >= (program.code.length + 1) * 4) {
+        return;
       }
-      codeOrder.splice(insertIndex, 0, labelName);
+      labels.push({ ...label, labelName });
     });
+
+    // Sort labels by address, ascending
+    labels.sort((a, b) => a.address - b.address);
+
+    // Upsert labels into the code
+    let offset = 0;
+    const codeOrder: Array<Reference | string> = [];
+    for (let i = 0; i < program.code.length; i++) {
+      const address = i * 4;
+      // Insert labels before the instruction they point to
+      let lab = labels[offset];
+      while (lab != undefined && lab.address === address) {
+        codeOrder.push(lab.labelName);
+        offset++;
+        lab = labels[offset];
+      }
+      const instruction = program.code[i];
+      if (instruction === undefined) {
+        throw new Error(`Instruction at ${address} not found`);
+      }
+      codeOrder.push(instruction);
+    }
 
     return codeOrder;
   },

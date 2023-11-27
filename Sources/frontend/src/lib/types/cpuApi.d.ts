@@ -94,8 +94,13 @@ export interface InstructionMemoryBlock {
   nop: Reference;
   code: Reference[];
   labels: {
-    [k: string]: number;
+    [k: string]: Label;
   };
+}
+
+export interface Label {
+  name: string;
+  address: number;
 }
 
 export type InstructionTypeEnum = 'kArithmetic' | 'kLoadstore' | 'kJumpbranch';
