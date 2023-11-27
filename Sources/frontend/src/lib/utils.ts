@@ -63,3 +63,18 @@ export function hexPadEven(num: number): string {
   const hex = num.toString(16);
   return '0x' + (hex.length % 2 ? `0${hex}` : hex);
 }
+
+/**
+ * Converts number to hex string padded to 4B.
+ */
+export function hexPad(num: number): string {
+  const hex = num.toString(16).padStart(8, '0');
+  return '0x' + hex;
+}
+
+/**
+ * Converts number to binary string padded to 32 bits.
+ */
+export function binPad32(num: number): string {
+  return '0b' + num.toString(2).padStart(32, '0');
+}

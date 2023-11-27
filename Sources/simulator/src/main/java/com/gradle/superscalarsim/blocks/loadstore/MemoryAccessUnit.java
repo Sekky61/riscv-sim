@@ -223,7 +223,7 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
         InputCodeArgument destinationArgument = simCodeModel.getArgumentByName("rd");
         RegisterModel destRegister = registerFileBlock.getRegister(
                 Objects.requireNonNull(destinationArgument).getValue());
-        destRegister.setBits(savedResult);
+        destRegister.setValue(savedResult, simCodeModel.getInstructionFunctionModel().getArgumentByName("rd").type());
         destRegister.setReadiness(RegisterReadinessEnum.kExecuted);
         this.loadBufferBlock.setDestinationAvailable(simCodeId);
         this.loadBufferBlock.setMemoryAccessFinished(simCodeId);

@@ -39,10 +39,17 @@ import {
 } from '@/lib/redux/cpustateSlice';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import { openModal } from '@/lib/redux/modalSlice';
-import { Reference } from '@/lib/types/cpuApi';
+import { InputCodeArgument, Reference } from '@/lib/types/cpuApi';
 import { ReactChildren, ReactClassName } from '@/lib/types/reactTypes';
 
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/base/ui/tooltip';
 import RegisterReference from '@/components/simulation/RegisterReference';
+import ValueTooltip from '@/components/simulation/ValueTooltip';
 
 export type InstructionFieldProps = {
   instructionId?: Reference;
@@ -100,11 +107,7 @@ export default function InstructionField({
       <InstructionName mnemonic={inputCodeModel.instructionName} />
       <div className='flex gap-2'>
         {args.map((arg) => (
-          <InstructionArgument
-            argName={arg.name}
-            idOrLiteral={arg.value}
-            key={arg.name}
-          />
+          <InstructionArgument arg={arg} key={arg.name} />
         ))}
       </div>
     </InstructionBubble>
@@ -138,29 +141,38 @@ function InstructionName({ mnemonic }: { mnemonic: string }) {
 }
 
 export interface InstructionArgumentProps {
-  argName: string;
-  idOrLiteral: string;
+  arg: InputCodeArgument;
 }
 
-function InstructionArgument({
-  argName,
-  idOrLiteral,
-}: InstructionArgumentProps) {
-  const isRegister = argName.startsWith('r');
+function InstructionArgument({ arg }: InstructionArgumentProps) {
+  const isRegister = arg.name.startsWith('r');
   const cls = clsx(
     'rounded hover:bg-gray-300 min-w-[2em] h-6 flex justify-center items-center leading-4',
   );
 
   if (isRegister) {
-    return <RegisterReference registerId={idOrLiteral} className={cls} />;
+    return <RegisterReference registerId={arg.value} className={cls} />;
   }
 
-  const displayText = idOrLiteral;
+  const displayText = arg.value;
   const hoverText = `Constant: ${displayText}`;
 
+  if (arg.constantValue === undefined) {
+    throw new Error(
+      `Constant value of argument ${arg.name} has undefined value`,
+    );
+  }
+
   return (
-    <div className={cls} title={hoverText}>
-      {displayText}
-    </div>
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div className={cls}>{displayText}</div>
+        </TooltipTrigger>
+        <TooltipContent>
+          <ValueTooltip value={arg.constantValue} />
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }

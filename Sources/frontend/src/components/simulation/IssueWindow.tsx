@@ -41,11 +41,18 @@ import {
 import { useAppSelector } from '@/lib/redux/hooks';
 import { IssueItemModel, Reference } from '@/lib/types/cpuApi';
 
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/base/ui/tooltip';
 import Block from '@/components/simulation/Block';
 import InstructionField, {
   InstructionBubble,
 } from '@/components/simulation/InstructionField';
 import { InstructionListDisplay } from '@/components/simulation/InstructionListDisplay';
+import ValueTooltip from '@/components/simulation/ValueTooltip';
 
 type IssueType = 'alu' | 'fp' | 'branch' | 'ls';
 
@@ -168,29 +175,56 @@ export function IssueWindowItem({ simCodeId, items }: IssueWindowItemProps) {
   );
 
   // First try to get the value from the constant value, then from the register
-  let item1Value = item1?.constantValue?.stringRepresentation;
+  let item1Value = item1?.constantValue;
   if (item1Value === undefined) {
-    item1Value = reg1?.value.stringRepresentation;
+    item1Value = reg1?.value;
   }
 
-  let item2Value = item2?.constantValue?.stringRepresentation;
+  let item2Value = item2?.constantValue;
   if (item2Value === undefined) {
-    item2Value = reg2?.value.stringRepresentation;
+    item2Value = reg2?.value;
   }
 
   console.log('simcode', simCodeId);
-  console.log('item1', item1, reg1);
-  console.log('item2', item2, reg2);
+  console.log('item1', item1, item1Value);
+  console.log('item2', item2, item2Value);
 
   return (
     <>
       <InstructionField instructionId={simCodeId} />
-      <InstructionBubble className={item1Style}>
-        {item1Value ?? '-'}
-      </InstructionBubble>
-      <InstructionBubble className={item2Style}>
-        {item2Value ?? '-'}
-      </InstructionBubble>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger>
+            <InstructionBubble className={item1Style}>
+              {item1Value?.stringRepresentation ?? '-'}
+            </InstructionBubble>
+          </TooltipTrigger>
+          <TooltipContent>
+            {item1Value ? (
+              <ValueTooltip value={item1Value} />
+            ) : (
+              <div className='text-gray-400'>No value</div>
+            )}
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger>
+            <InstructionBubble className={item2Style}>
+              {item2Value?.stringRepresentation ?? '-'}
+            </InstructionBubble>
+          </TooltipTrigger>
+
+          <TooltipContent>
+            {item2Value ? (
+              <ValueTooltip value={item2Value} />
+            ) : (
+              <div className='text-gray-400'>No value</div>
+            )}
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
     </>
   );
 }

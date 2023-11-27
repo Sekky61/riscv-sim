@@ -40,6 +40,14 @@ import {
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import { ReactClassName } from '@/lib/types/reactTypes';
 
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/base/ui/tooltip';
+import ValueTooltip from '@/components/simulation/ValueTooltip';
+
 export type RegisterReferenceProps = {
   registerId: string;
   showValue?: boolean;
@@ -55,32 +63,39 @@ export default function RegisterReference({
     selectRegisterById(state, registerId),
   );
   const highlightedId = useAppSelector(selectHighlightedRegister);
+
+  if (!register) return null;
+
   const highlighted = highlightedId === registerId;
   const valid =
-    register?.readiness === 'kExecuted' || register?.readiness === 'kAssigned';
-
-  const hoverText = `${registerId}: ${register?.value.stringRepresentation} | ${
-    valid ? 'valid' : 'invalid'
-  }`;
-  const cls = clsx(highlighted && 'bg-gray-200', className);
+    register.readiness === 'kExecuted' || register.readiness === 'kAssigned';
 
   let displayValue = registerId;
   if (showValue && valid) {
-    displayValue = register?.value.stringRepresentation ?? '???';
+    displayValue = register.value.stringRepresentation ?? '???';
   }
 
+  const cls = clsx(highlighted && 'bg-gray-200', className);
   return (
-    <div
-      className={cls}
-      title={hoverText}
-      onMouseEnter={() => {
-        dispatch(highlightRegister(registerId));
-      }}
-      onMouseLeave={() => {
-        dispatch(unhighlightRegister(registerId));
-      }}
-    >
-      {displayValue}
-    </div>
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div
+            className={cls}
+            onMouseEnter={() => {
+              dispatch(highlightRegister(registerId));
+            }}
+            onMouseLeave={() => {
+              dispatch(unhighlightRegister(registerId));
+            }}
+          >
+            {displayValue}
+          </div>
+        </TooltipTrigger>
+        <TooltipContent>
+          <ValueTooltip value={register.value} valid={valid} />
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }

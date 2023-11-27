@@ -45,7 +45,6 @@ public class RegisterDataContainer
    * Did not use java.nio.ByteBuffer because there is a problem with serialization.
    */
   private long bits;
-  
   /**
    * Last type of the register - used for inspection, display
    */
@@ -145,6 +144,11 @@ public class RegisterDataContainer
   {
     this.bits        = value ? 1 : 0;
     this.currentType = DataTypeEnum.kBool;
+  }
+  
+  public void setCurrentType(DataTypeEnum currentType)
+  {
+    this.currentType = currentType;
   }
   
   /**
