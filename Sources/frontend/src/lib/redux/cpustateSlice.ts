@@ -39,7 +39,7 @@ import {
   PayloadAction,
   ThunkAction,
 } from '@reduxjs/toolkit';
-import base64Decode from 'fast-base64-decode';
+import { toByteArray } from 'base64-js';
 import { notify } from 'reapop';
 
 import { selectAsmCode } from '@/lib/redux/compilerSlice';
@@ -294,8 +294,7 @@ export const selectMemoryBytes = createSelector([selectMemory], (memory) => {
   if (!memory) {
     return null;
   }
-  const arr = new Uint8Array(memory.size);
-  base64Decode(memory.memoryBase64 ?? '', arr);
+  const arr = toByteArray(memory.memoryBase64 ?? '');
   return arr;
 });
 
