@@ -198,6 +198,27 @@ public class Cache
   }
   
   /**
+   * Flushes the cache - writes dirty lines to memory
+   */
+  public void flush()
+  {
+    for (int i = 0; i < numberOfLines / associativity; i++)
+    {
+      for (int j = 0; j < associativity; j++)
+      {
+        CacheLineModel line = cache[i][j];
+        if (line.isDirty())
+        {
+          //Store victim line into memory
+          memory.insertIntoMemory(line.getBaseAddress(), line.getLineData());
+          line.setDirty(false);
+          line.setValid(false);
+        }
+      }
+    }
+  }
+  
+  /**
    * @param numberOfLines Number of cache lines
    * @param associativity Number of lines per index
    * @param lineSize      Size of line in bytes

@@ -95,47 +95,6 @@ public class Cpu implements Serializable
     this.cpuState           = new CpuState(this.configuration, this.initLoader);
   }
   
-  
-  /**
-   * Run the simulation for a given number of steps
-   *
-   * @param maxSteps Maximum number of steps to run
-   *
-   * @return Number of steps executed (it may be less than maxSteps if simulation ended)
-   */
-  public int run(int maxSteps)
-  {
-    int steps = 0;
-    while (!simEnded() && steps < maxSteps)
-    {
-      step();
-      steps++;
-    }
-    return steps;
-  }
-  
-  public boolean simEnded()
-  {
-    boolean robEmpty      = cpuState.reorderBufferBlock.getReorderQueueSize() == 0;
-    boolean pcEnd         = cpuState.instructionFetchBlock.getPc() >= cpuState.instructionMemoryBlock.getCode()
-            .size() * 4;
-    boolean renameEmpty   = cpuState.decodeAndDispatchBlock.getAfterRenameCodeList().isEmpty();
-    boolean fetchNotEmpty = !cpuState.instructionFetchBlock.getFetchedCode().isEmpty();
-    boolean nop = fetchNotEmpty && cpuState.instructionFetchBlock.getFetchedCode().get(0).getInstructionName()
-            .equals("nop");
-    return robEmpty && pcEnd && renameEmpty && nop;
-  }
-  
-  /**
-   * @brief Calls all blocks and tell them to update their values (triggered by GlobalTimer)
-   * Runs ROB at the end again
-   */
-  public void step()
-  {
-    this.cpuState.step();
-  }// end of step
-  //-------------------------------------------------------------------------------------------
-  
   public void stepBack()
   {
     simulateState(this.cpuState.tick - 1);
@@ -169,13 +128,39 @@ public class Cpu implements Serializable
       }
     }
   }
+  //-------------------------------------------------------------------------------------------
   
+  public boolean simEnded()
+  {
+    boolean robEmpty = cpuState.reorderBufferBlock.getReorderQueueSize() == 0;
+    boolean pcEnd = cpuState.instructionFetchBlock.getPc() >= cpuState.instructionMemoryBlock.getCode().size() * 4;
+    boolean renameEmpty   = cpuState.decodeAndDispatchBlock.getAfterRenameCodeList().isEmpty();
+    boolean fetchNotEmpty = !cpuState.instructionFetchBlock.getFetchedCode().isEmpty();
+    boolean nop = fetchNotEmpty && cpuState.instructionFetchBlock.getFetchedCode().get(0).getInstructionName()
+            .equals("nop");
+    return robEmpty && pcEnd && renameEmpty && nop;
+  }
+  
+  /**
+   * @brief Calls all blocks and tell them to update their values (triggered by GlobalTimer)
+   * Runs ROB at the end again
+   */
+  public void step()
+  {
+    this.cpuState.step();
+  }// end of step
+  
+  /**
+   * @brief Runs simulation from current state to the end
+   */
   public void execute()
   {
     while (!simEnded())
     {
       step();
     }
+    // Flush cache
+    this.cpuState.cache.flush();
   }
 }
 
