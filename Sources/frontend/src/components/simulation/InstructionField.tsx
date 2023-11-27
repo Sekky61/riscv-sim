@@ -32,19 +32,17 @@
 import clsx from 'clsx';
 
 import {
-  highlightRegister,
   highlightSimCode,
-  selectHighlightedRegister,
   selectHighlightedSimCode,
-  selectRegisterById,
   selectSimCodeModel,
-  unhighlightRegister,
   unhighlightSimCode,
 } from '@/lib/redux/cpustateSlice';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import { openModal } from '@/lib/redux/modalSlice';
 import { Reference } from '@/lib/types/cpuApi';
 import { ReactChildren, ReactClassName } from '@/lib/types/reactTypes';
+
+import RegisterReference from '@/components/simulation/RegisterReference';
 
 export type InstructionFieldProps = {
   instructionId?: Reference;
@@ -148,44 +146,20 @@ function InstructionArgument({
   argName,
   idOrLiteral,
 }: InstructionArgumentProps) {
-  const dispatch = useAppDispatch();
-  const register = useAppSelector((state) =>
-    selectRegisterById(state, idOrLiteral),
-  );
-  const highlightedId = useAppSelector(selectHighlightedRegister);
-
-  const isRegister = register !== null;
-  const highlighted = highlightedId === idOrLiteral;
-
-  const displayText = idOrLiteral;
-  let hoverText;
-
-  if (isRegister) {
-    hoverText = `Argument ${argName}: ${register.name} (${register.value.stringRepresentation})`;
-  } else {
-    hoverText = `Argument ${argName}: ${idOrLiteral}`;
-  }
-
+  const isRegister = argName.startsWith('r');
   const cls = clsx(
     'rounded hover:bg-gray-300 min-w-[2em] h-6 flex justify-center items-center leading-4',
-    highlighted && 'bg-gray-200',
   );
 
+  if (isRegister) {
+    return <RegisterReference registerId={idOrLiteral} className={cls} />;
+  }
+
+  const displayText = idOrLiteral;
+  const hoverText = `Constant: ${displayText}`;
+
   return (
-    <div
-      className={cls}
-      title={hoverText}
-      onMouseEnter={() => {
-        if (isRegister) {
-          dispatch(highlightRegister(idOrLiteral));
-        }
-      }}
-      onMouseLeave={() => {
-        if (isRegister) {
-          dispatch(unhighlightRegister(idOrLiteral));
-        }
-      }}
-    >
+    <div className={cls} title={hoverText}>
       {displayText}
     </div>
   );

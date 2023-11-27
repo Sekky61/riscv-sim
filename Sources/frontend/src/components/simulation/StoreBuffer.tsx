@@ -32,12 +32,14 @@
 import { selectStoreBuffer } from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
 import { StoreBufferItem } from '@/lib/types/cpuApi';
+import { hexPadEven } from '@/lib/utils';
 
 import Block from '@/components/simulation/Block';
 import InstructionField, {
   InstructionBubble,
 } from '@/components/simulation/InstructionField';
 import { InstructionListDisplay } from '@/components/simulation/InstructionListDisplay';
+import RegisterReference from '@/components/simulation/RegisterReference';
 
 export default function StoreBuffer() {
   const storeBuffer = useAppSelector(selectStoreBuffer);
@@ -84,13 +86,21 @@ export function StoreBufferItem({ storeItem: item }: StoreBufferItemProps) {
   }
 
   // If address is -1, it is not known yet
-  const displayAddress = item.address === -1 ? '???' : item.address;
+  const displayAddress = item.address === -1 ? '???' : hexPadEven(item.address);
 
   return (
     <>
       <InstructionField instructionId={item.simCodeModel} />
-      <InstructionBubble>{displayAddress}</InstructionBubble>
-      <InstructionBubble>Data</InstructionBubble>
+      <InstructionBubble className='h-full flex justify-center items-center'>
+        {displayAddress}
+      </InstructionBubble>
+      <InstructionBubble>
+        <RegisterReference
+          registerId={item.sourceRegister}
+          className='h-full flex justify-center items-center'
+          showValue
+        />
+      </InstructionBubble>
     </>
   );
 }

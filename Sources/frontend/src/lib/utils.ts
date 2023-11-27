@@ -55,3 +55,11 @@ export function isValidReference(ref?: Reference): ref is Reference {
 export function inputCodeAddress(instructionId: number): string {
   return `0x${(instructionId * 4).toString(16)}`;
 }
+
+/**
+ * Converts number to hex string padded to even number of characters.
+ */
+export function hexPadEven(num: number): string {
+  const hex = num.toString(16);
+  return '0x' + (hex.length % 2 ? `0${hex}` : hex);
+}
