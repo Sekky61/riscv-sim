@@ -61,26 +61,26 @@ export type IssueWindowProps = {
 };
 
 function getSelector(type: IssueType) {
-  if (type == 'alu') return selectAluIssueWindowBlock;
-  if (type == 'fp') return selectFpIssueWindowBlock;
-  if (type == 'branch') return selectBranchIssueWindowBlock;
-  if (type == 'ls') return selectLoadStoreIssueWindowBlock;
+  if (type === 'alu') return selectAluIssueWindowBlock;
+  if (type === 'fp') return selectFpIssueWindowBlock;
+  if (type === 'branch') return selectBranchIssueWindowBlock;
+  if (type === 'ls') return selectLoadStoreIssueWindowBlock;
   throw new Error(`Invalid type ${type}`);
 }
 
 function getTitle(type: IssueType) {
-  if (type == 'alu') return 'ALU Issue Window';
-  if (type == 'fp') return 'FP Issue Window';
-  if (type == 'branch') return 'Branch Issue Window';
-  if (type == 'ls') return 'L/S Issue Window';
+  if (type === 'alu') return 'ALU Issue Window';
+  if (type === 'fp') return 'FP Issue Window';
+  if (type === 'branch') return 'Branch Issue Window';
+  if (type === 'ls') return 'L/S Issue Window';
   throw new Error(`Invalid type ${type}`);
 }
 
 function getGridClassName(type: IssueType) {
-  if (type == 'alu') return 'aluIssue';
-  if (type == 'fp') return 'fpIssue';
-  if (type == 'branch') return 'branchIssue';
-  if (type == 'ls') return 'lsIssue';
+  if (type === 'alu') return 'aluIssue';
+  if (type === 'fp') return 'fpIssue';
+  if (type === 'branch') return 'branchIssue';
+  if (type === 'ls') return 'lsIssue';
   throw new Error(`Invalid type ${type}`);
 }
 

@@ -45,6 +45,7 @@ import {
 } from '@/lib/redux/compilerSlice';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 
+import Tooltip from '@/components/Tooltip';
 import { Button } from '@/components/base/ui/button';
 import { Checkbox } from '@/components/base/ui/checkbox';
 import {
@@ -55,7 +56,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/base/ui/dropdown-menu';
-import Tooltip from '@/components/Tooltip';
 
 import { CodeExample } from '@/constant/codeExamples';
 
@@ -122,7 +122,7 @@ export default function CompileOptions() {
   ];
 
   const editorModeChanged = (newVal: string) => {
-    if (newVal != 'c' && newVal != 'asm') {
+    if (newVal !== 'c' && newVal !== 'asm') {
       console.error(`Unknown mode '${newVal}' while changing editor mode`);
       return;
     }

@@ -96,7 +96,7 @@ const ModalRoot = ({ appRef }: { appRef: RefObject<HTMLElement> }) => {
   // This is needed so that react-modal can add aria-hidden to the app root when the modal is open (accessibility)
   useEffect(() => {
     if (!appRef.current) {
-      throw new Error(`App ref is not set`);
+      throw new Error('App ref is not set');
     }
     ReactModal.setAppElement(appRef.current);
   }, [appRef]);

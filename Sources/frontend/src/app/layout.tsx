@@ -41,9 +41,9 @@ import '@/styles/globals.css';
 import { persistor, store } from '@/lib/redux/store';
 import { cn } from '@/lib/utils';
 
-import ModalRoot from '@/components/modals/ModalRoot';
 import Notifications from '@/components/Notifications';
 import SideBar from '@/components/SideBar';
+import ModalRoot from '@/components/modals/ModalRoot';
 
 const fontSans = FontSans({
   subsets: ['latin'],

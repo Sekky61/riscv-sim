@@ -45,7 +45,7 @@ export function cn(...inputs: ClassValue[]) {
  * @returns True if reference present and valid, false otherwise
  */
 export function isValidReference(ref?: Reference): ref is Reference {
-  return typeof ref == 'number' && ref >= 0;
+  return typeof ref === 'number' && ref >= 0;
 }
 
 /**
@@ -61,7 +61,7 @@ export function inputCodeAddress(instructionId: number): string {
  */
 export function hexPadEven(num: number): string {
   const hex = num.toString(16);
-  return '0x' + (hex.length % 2 ? `0${hex}` : hex);
+  return `0x${hex.length % 2 ? `0${hex}` : hex}`;
 }
 
 /**
@@ -69,12 +69,12 @@ export function hexPadEven(num: number): string {
  */
 export function hexPad(num: number): string {
   const hex = num.toString(16).padStart(8, '0');
-  return '0x' + hex;
+  return `0x${hex}`;
 }
 
 /**
  * Converts number to binary string padded to 32 bits.
  */
 export function binPad32(num: number): string {
-  return '0b' + num.toString(2).padStart(32, '0');
+  return `0b${num.toString(2).padStart(32, '0')}`;
 }

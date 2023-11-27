@@ -39,14 +39,14 @@ import { useForm } from 'react-hook-form';
 import { notify } from 'reapop';
 
 import {
+  IsaNamedConfig,
   isaFormDefaultValues,
   isaNamed,
-  IsaNamedConfig,
 } from '@/lib/forms/Isa';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import {
-  createIsa,
   IsaSaveChecked,
+  createIsa,
   newActiveIsa,
   selectActiveIsa,
   selectIsas,
@@ -106,7 +106,7 @@ export default function Page() {
     let biggestNum = 0;
     for (const isa of isas) {
       const match = isa.name.match(regex);
-      if (match && match[1]) {
+      if (match?.[1]) {
         // We have a match
         const num = parseInt(match[1]);
         if (num > biggestNum) {
@@ -137,7 +137,7 @@ export default function Page() {
     dispatch(updateIsa({ isa, oldName: activeIsa.name }));
     dispatch(
       notify({
-        title: `Updates have been saved.`,
+        title: 'Updates have been saved.',
         status: 'success',
       }),
     );

@@ -33,11 +33,11 @@
 
 import {
   Action,
+  PayloadAction,
+  ThunkAction,
   createAsyncThunk,
   createSelector,
   createSlice,
-  PayloadAction,
-  ThunkAction,
 } from '@reduxjs/toolkit';
 import { toByteArray } from 'base64-js';
 import { notify } from 'reapop';
@@ -188,12 +188,12 @@ export const callSimulation = createAsyncThunk<SimulationParsedResult, number>(
       // Log error and show simple error message to the user
       console.error(err);
       console.warn(
-        `Try clearing the local storage (application tab) and reloading the page`,
+        'Try clearing the local storage (application tab) and reloading the page',
       );
       dispatch(
         notify({
-          title: `API call failed`,
-          message: `See the console for more details`,
+          title: 'API call failed',
+          message: 'See the console for more details',
           status: 'error',
         }),
       );
@@ -360,7 +360,7 @@ export const selectProgramWithLabels = createSelector(
       const address = i * 4;
       // Insert labels before the instruction they point to
       let lab = labels[offset];
-      while (lab != undefined && lab.address === address) {
+      while (lab !== undefined && lab.address === address) {
         codeOrder.push(lab.labelName);
         offset++;
         lab = labels[offset];
@@ -438,7 +438,7 @@ const selectDetailedSimCodeModels = createSelector(
     const lookup: Record<Reference, DetailedSimCodeModel> = {};
     Object.entries(simCodeModels).forEach(([id, simCodeModel]) => {
       const reference = parseInt(id, 10);
-      if (isNaN(reference)) {
+      if (Number.isNaN(reference)) {
         throw new Error(`Invalid simcode id: ${id}`);
       }
       const inputCodeModel = inputCodeModels[simCodeModel.inputCodeModel];

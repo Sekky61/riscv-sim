@@ -60,7 +60,7 @@ export const SaveIsaChangesModal = ({
         dispatch(updateIsa({ isa, oldName }));
         dispatch(
           notify({
-            title: `Updates have been saved.`,
+            title: 'Updates have been saved.',
             status: 'success',
           }),
         );

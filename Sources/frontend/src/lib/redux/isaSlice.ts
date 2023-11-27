@@ -29,12 +29,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { createSelector, createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { PayloadAction, createSelector, createSlice } from '@reduxjs/toolkit';
 
 // Import as type to avoid circular dependency
 import type { RootState } from '@/lib/redux/store';
 
-import { isaFormDefaultValues, IsaNamedConfig, isaSchema } from '../forms/Isa';
+import { IsaNamedConfig, isaFormDefaultValues, isaSchema } from '../forms/Isa';
 
 // Define a type for the slice state
 interface IsaState {
@@ -56,7 +56,7 @@ function findIsaByName(
   isas: Array<IsaNamedConfig>,
   name: string,
 ): IsaNamedConfig | undefined {
-  return isas.find((isa) => isa.name == name);
+  return isas.find((isa) => isa.name === name);
 }
 
 export const isaSlice = createSlice({
@@ -80,15 +80,15 @@ export const isaSlice = createSlice({
       state,
       action: PayloadAction<{ oldName: string; isa: IsaNamedConfig }>,
     ) => {
-      if (action.payload.oldName == 'Default') {
+      if (action.payload.oldName === 'Default') {
         throw new Error('Cannot edit the default ISA');
       }
       // Update the ISA
       state.isas = state.isas.map((isa) => {
-        if (isa.name == action.payload.oldName) {
+        if (isa.name === action.payload.oldName) {
           // Found the ISA to update
           // If it is active, rename the active ISA field
-          if (state.activeIsaName == action.payload.oldName) {
+          if (state.activeIsaName === action.payload.oldName) {
             state.activeIsaName = action.payload.isa.name;
           }
           return action.payload.isa;
@@ -98,14 +98,14 @@ export const isaSlice = createSlice({
     },
     removeIsa: (state, action: PayloadAction<string>) => {
       // Do not allow to remove the first ISA (called "Default")
-      if (action.payload == 'Default') {
+      if (action.payload === 'Default') {
         throw new Error('Cannot remove the default ISA');
       }
-      state.isas = state.isas.filter((isa) => isa.name != action.payload);
+      state.isas = state.isas.filter((isa) => isa.name !== action.payload);
       // If the active ISA was removed, make the first one active
-      if (state.activeIsaName == action.payload) {
+      if (state.activeIsaName === action.payload) {
         const defaultIsa = state.isas[0];
-        if (defaultIsa == undefined) throw new Error('No default ISA found');
+        if (defaultIsa === undefined) throw new Error('No default ISA found');
         state.activeIsaName = defaultIsa.name;
       }
     },
@@ -127,8 +127,8 @@ export const selectIsas = (state: RootState) => state.isa.isas;
 export const selectActiveIsa = createSelector(
   [selectIsas, selectActiveIsaName],
   (isas, name): IsaNamedConfig => {
-    const isa = isas.find((isaItem) => isaItem.name == name);
-    if (isa == undefined) throw new Error('Active ISA not found');
+    const isa = isas.find((isaItem) => isaItem.name === name);
+    if (isa === undefined) throw new Error('Active ISA not found');
     // Copy the ISA config
     return isa;
   },

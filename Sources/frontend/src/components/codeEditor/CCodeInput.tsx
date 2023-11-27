@@ -84,7 +84,7 @@ export default function CCodeInput() {
   const mappedCLines = useAppSelector(selectCCodeMappings);
   const cErrors = useAppSelector(selectCCodeMirrorErrors);
 
-  const isEnabled = mode == 'c';
+  const isEnabled = mode === 'c';
 
   const editor = useRef<HTMLDivElement>(null);
   const { setContainer, view, state } = useCodeMirror({

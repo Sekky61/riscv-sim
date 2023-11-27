@@ -39,19 +39,19 @@ import {
   Control,
   Controller,
   FieldError,
+  UseFormReturn,
   useController,
   useForm,
-  UseFormReturn,
 } from 'react-hook-form';
 
 import {
-  cacheReplacementTypes,
   FUnitConfig,
+  IsaNamedConfig,
+  Operations,
+  cacheReplacementTypes,
   fUnitSchema,
   fuTypes,
-  IsaNamedConfig,
   isArithmeticUnitConfig,
-  Operations,
   operations,
   predictorDefaults,
   predictorTypes,

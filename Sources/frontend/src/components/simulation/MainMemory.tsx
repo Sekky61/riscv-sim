@@ -77,7 +77,7 @@ function MemoryRow({
 
   const data = memory.slice(startAddress, startAddress + count);
   // Pad the address with zeros
-  const address = '0x' + startAddress.toString(16).padStart(4, '0');
+  const address = `0x${startAddress.toString(16).padStart(4, '0')}`;
 
   return (
     <>

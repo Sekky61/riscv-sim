@@ -81,7 +81,7 @@ export default function AsmDisplay() {
   const mode = useAppSelector(selectEditorMode);
   const asmErrors = useAppSelector(selectAsmCodeMirrorErrors);
 
-  const isEnabled = mode == 'asm';
+  const isEnabled = mode === 'asm';
 
   const editor = useRef<HTMLDivElement>(null);
   const { setContainer, view, state } = useCodeMirror({

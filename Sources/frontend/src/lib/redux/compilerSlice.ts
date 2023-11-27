@@ -31,10 +31,10 @@
 
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import {
+  PayloadAction,
   createAsyncThunk,
   createSelector,
   createSlice,
-  PayloadAction,
 } from '@reduxjs/toolkit';
 import { notify } from 'reapop';
 
@@ -144,7 +144,7 @@ export const callCompiler = createAsyncThunk<CompileResponse>(
       .catch((err) => {
         dispatch(
           notify({
-            message: `Compilation failed: server error`,
+            message: 'Compilation failed: server error',
             status: 'error',
             dismissible: true,
             dismissAfter: 2000,
@@ -180,7 +180,7 @@ export const callParseAsm = createAsyncThunk<ParseAsmResponse>(
           // Show the short error message
           dispatch(
             notify({
-              message: `Check failed`,
+              message: 'Check failed',
               status: 'error',
               dismissible: true,
               // Do not automatically dismiss
@@ -193,7 +193,7 @@ export const callParseAsm = createAsyncThunk<ParseAsmResponse>(
       .catch((err) => {
         dispatch(
           notify({
-            message: `Compilation failed: server error`,
+            message: 'Compilation failed: server error',
             status: 'error',
             dismissible: true,
             dismissAfter: 2000,

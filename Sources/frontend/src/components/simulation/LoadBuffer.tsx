@@ -63,7 +63,7 @@ export default function LoadBuffer() {
           </>
         }
         instructionRenderer={(buffItem) => (
-          <LoadBufferItem loadItem={buffItem} />
+          <LoadBufferItemComponent loadItem={buffItem} />
         )}
       />
     </Block>
@@ -77,7 +77,9 @@ type LoadBufferItemProps = {
 /**
  * Displays address and loaded value of a single item in the Load Buffer
  */
-export function LoadBufferItem({ loadItem: item }: LoadBufferItemProps) {
+export function LoadBufferItemComponent({
+  loadItem: item,
+}: LoadBufferItemProps) {
   if (!item) {
     return (
       <InstructionBubble className='flex justify-center px-2 py-1 font-mono col-span-4'>

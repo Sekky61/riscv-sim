@@ -42,8 +42,7 @@ export function useSvgRender(element: RefObject<HTMLElement>, fn: () => Svg) {
       return () => {
         svg.remove();
       };
-    } else {
-      console.warn('Element is null');
     }
+    console.warn('Element is null');
   }, [element, fn]);
 }

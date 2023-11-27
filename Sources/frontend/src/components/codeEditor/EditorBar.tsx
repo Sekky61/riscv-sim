@@ -78,7 +78,7 @@ function loadFile(callback: (contents: string) => void) {
 
 export default function EditorBar({ mode }: EditorBarProps) {
   const dispatch = useAppDispatch();
-  const editorName = mode == 'c' ? 'C Code' : 'ASM Code';
+  const editorName = mode === 'c' ? 'C Code' : 'ASM Code';
 
   // Load file and set it as C/ASM code
   const handleLoadFile = () => {
@@ -91,7 +91,7 @@ export default function EditorBar({ mode }: EditorBarProps) {
     dispatch(saveToFile());
   };
 
-  const errorDisplay = mode == 'c' ? <CErrorsDisplay /> : <AsmErrorsDisplay />;
+  const errorDisplay = mode === 'c' ? <CErrorsDisplay /> : <AsmErrorsDisplay />;
 
   return (
     <div className='pl-3 text-sm flex items-center gap-1 bg-[#f5f5f5] sticky top-0 z-10'>

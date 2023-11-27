@@ -72,8 +72,8 @@ function instructionTooltip(instruction: InstructionDescription) {
 export const wordHover = hoverTooltip((view, pos, side) => {
   // Extract hovered word
   const { from, to, text } = view.state.doc.lineAt(pos);
-  let start = pos,
-    end = pos;
+  let start = pos;
+  let end = pos;
 
   while (start > from) {
     const l = text[start - from - 1];
@@ -91,7 +91,7 @@ export const wordHover = hoverTooltip((view, pos, side) => {
     end++;
   }
 
-  if ((start == pos && side < 0) || (end == pos && side > 0)) {
+  if ((start === pos && side < 0) || (end === pos && side > 0)) {
     return null;
   }
 
