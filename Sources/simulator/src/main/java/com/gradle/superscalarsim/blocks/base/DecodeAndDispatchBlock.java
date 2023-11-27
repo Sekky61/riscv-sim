@@ -381,8 +381,7 @@ public class DecodeAndDispatchBlock implements AbstractBlock
       if (argument.writeBack())
       {
         InputCodeArgument destinationArgument = simCodeModel.getArgumentByName(argument.name());
-        String            mappedReg           = renameMapTableBlock.mapRegister(destinationArgument.getValue(),
-                                                                                simCodeModel.getIntegerId());
+        String mappedReg = renameMapTableBlock.mapRegister(destinationArgument.getValue(), simCodeModel.getIntegerId());
         destinationArgument.setValue(mappedReg);
       }
     }

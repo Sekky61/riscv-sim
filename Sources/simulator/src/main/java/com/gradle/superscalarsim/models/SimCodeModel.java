@@ -37,6 +37,7 @@ import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.blocks.base.UnifiedRegisterFileBlock;
 import com.gradle.superscalarsim.code.Expression;
+import com.gradle.superscalarsim.code.Label;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.models.register.RegisterDataContainer;
@@ -466,7 +467,7 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
    */
   public List<Expression.Variable> getVariables(List<String> variableNames,
                                                 UnifiedRegisterFileBlock registerFileBlock,
-                                                Map<String, Integer> labels)
+                                                Map<String, Label> labels)
   {
     List<Expression.Variable> variables                = new ArrayList<>();
     InstructionFunctionModel  instructionFunctionModel = getInstructionFunctionModel();
@@ -510,7 +511,7 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
           if (labels != null && labels.containsKey(renamedName))
           {
             variables.add(new Expression.Variable(name, argument.type(),
-                                                  RegisterDataContainer.fromValue(labels.get(renamedName))));
+                                                  RegisterDataContainer.fromValue(labels.get(renamedName).address)));
             continue;
           }
           throw new IllegalStateException("Could not parse " + renamedName + " as constant or label");

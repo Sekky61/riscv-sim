@@ -39,7 +39,6 @@ public class ForwardSimulationTest
   InitLoader initLoader;
   
   InstructionMemoryBlock instructionMemoryBlock;
-  private SimCodeModelAllocator simCodeModelAllocator;
   private StatisticsCounter statisticsCounter;
   
   private InstructionFetchBlock instructionFetchBlock;
@@ -1057,7 +1056,12 @@ public class ForwardSimulationTest
     
     List<InputCodeModel> instructions = Arrays.asList(ins1, ins2, ins3, ins4);
     instructionMemoryBlock.setCode(instructions);
-    instructionMemoryBlock.setLabels(Map.of("lab1", 4, "lab2", 2 * 4, "lab3", 3 * 4, "labFinal", 4 * 4));
+    Map<String, Label> labelMap = new HashMap<>();
+    labelMap.put("lab1", new Label("lab1", 4));
+    labelMap.put("lab2", new Label("lab2", 2 * 4));
+    labelMap.put("lab3", new Label("lab3", 3 * 4));
+    labelMap.put("labFinal", new Label("labFinal", 4 * 4));
+    instructionMemoryBlock.setLabels(labelMap);
     
     this.cpu.step();
     Assert.assertEquals("jal", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
@@ -1212,7 +1216,10 @@ public class ForwardSimulationTest
     
     List<InputCodeModel> instructions = Arrays.asList(ins1, ins2, ins3);
     instructionMemoryBlock.setCode(instructions);
-    instructionMemoryBlock.setLabels(Map.of("loop", 0, "loopEnd", 3 * 4));
+    Map<String, Label> labelMap = new HashMap<>();
+    labelMap.put("loop", new Label("loop", 0));
+    labelMap.put("loopEnd", new Label("loopEnd", 3 * 4));
+    instructionMemoryBlock.setLabels(labelMap);
     
     // First fetch (3)
     this.cpu.step();
@@ -1486,7 +1493,10 @@ public class ForwardSimulationTest
     
     List<InputCodeModel> instructions = Arrays.asList(ins1, ins2, ins3, ins4);
     instructionMemoryBlock.setCode(instructions);
-    instructionMemoryBlock.setLabels(Map.of("labelIf", 3 * 4, "labelFin", 4 * 4));
+    Map<String, Label> labelMap = new HashMap<>();
+    labelMap.put("labelIf", new Label("labelIf", 3 * 4));
+    labelMap.put("labelFin", new Label("labelFin", 4 * 4));
+    instructionMemoryBlock.setLabels(labelMap);
     
     // First fetch
     this.cpu.step();
@@ -1616,7 +1626,10 @@ public class ForwardSimulationTest
     
     List<InputCodeModel> instructions = Arrays.asList(ins1, ins2, ins3, ins4);
     instructionMemoryBlock.setCode(instructions);
-    instructionMemoryBlock.setLabels(Map.of("labelIf", 3 * 4, "labelFin", 4 * 4));
+    Map<String, Label> labelMap = new HashMap<>();
+    labelMap.put("labelIf", new Label("labelIf", 3 * 4));
+    labelMap.put("labelFin", new Label("labelFin", 4 * 4));
+    instructionMemoryBlock.setLabels(labelMap);
     // Code:
     //
     // beq x3 x0 labelIf

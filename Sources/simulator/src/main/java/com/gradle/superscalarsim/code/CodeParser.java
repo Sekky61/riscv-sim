@@ -98,7 +98,7 @@ public class CodeParser
   /**
    * Result of the parsing - list of labels.
    */
-  Map<String, Integer> labels;
+  Map<String, Label> labels;
   
   /**
    * Unconfirmed labels
@@ -442,8 +442,8 @@ public class CodeParser
     }
     else
     {
-      // Add label, this is index to the array of instructions, not "bytes"
-      labels.put(labelName, instructions.size() * 4);
+      // Add label, this is in "bytes"
+      labels.put(labelName, new Label(labelName, instructions.size() * 4));
       // Clear unconfirmed labels
       unconfirmedLabels.removeIf(token -> token.text().equals(labelName));
     }
@@ -832,7 +832,7 @@ public class CodeParser
     return instructions;
   }
   
-  public Map<String, Integer> getLabels()
+  public Map<String, Label> getLabels()
   {
     return labels;
   }

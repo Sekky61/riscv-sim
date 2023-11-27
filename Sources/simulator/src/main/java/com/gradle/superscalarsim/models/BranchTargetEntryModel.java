@@ -38,23 +38,38 @@ package com.gradle.superscalarsim.models;
  */
 public class BranchTargetEntryModel
 {
-  /// PC Tag which identifies instruction
+  
+  /**
+   * PC Tag which identifies instruction
+   */
   private final int pcTag;
-  /// Is branch instruction conditional or unconditional
+  
+  /**
+   * Is branch instruction conditional or unconditional
+   */
   private final boolean isConditional;
-  /// Target of the branch instruction
+  
+  /**
+   * Target of the branch instruction
+   */
   private final int target;
-  /// Id from decode block marking bulk of processed instructions
+  
+  /**
+   * ID from decode block marking bulk of processed instructions
+   */
   private final int instructionId;
-  /// Id marking when branch instruction get committed
+  
+  /**
+   * ID marking when branch instruction get committed
+   */
   private final int commitId;
   
   /**
-   * @param [in] pcTag    - PC Tag which identifies instruction
-   * @param [in] isBranch - Is branch instruction conditional or unconditional
-   * @param [in] target   - Target of the branch instruction
-   * @param [in] bulkId   - Id from decode block marking bulk of processed instructions
-   * @param [in] commitId - Id marking when branch instruction get committed
+   * @param pcTag    PC Tag which identifies instruction
+   * @param isBranch Is branch instruction conditional or unconditional
+   * @param target   Target of the branch instruction
+   * @param bulkId   ID from decode block marking bulk of processed instructions
+   * @param commitId ID marking when branch instruction get committed
    *
    * @brief Constructor
    */

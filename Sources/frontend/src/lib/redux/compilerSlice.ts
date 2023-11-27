@@ -213,7 +213,7 @@ export const callParseAsm = createAsyncThunk<ParseAsmResponse>(
  */
 export const openExampleAndCompile = createAsyncThunk<void, Example>(
   'compiler/openExampleAndCompile',
-  async (example, { getState, dispatch }) => {
+  async (example, { dispatch }) => {
     dispatch(openExample(example));
     if (example.type === 'c') {
       dispatch(callCompiler());

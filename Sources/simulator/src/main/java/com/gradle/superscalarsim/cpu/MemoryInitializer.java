@@ -28,9 +28,11 @@
 
 package com.gradle.superscalarsim.cpu;
 
+import com.gradle.superscalarsim.code.Label;
 import com.gradle.superscalarsim.code.SimulatedMemory;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @class MemoryInitializer
@@ -67,12 +69,12 @@ public class MemoryInitializer
   /**
    * Can be called multiple times
    *
-   * @param memory    - Memory to initialize
-   * @param locations - Locations to initialize memory with
+   * @param memory    Memory to initialize
+   * @param locations Locations to initialize memory with
    *
    * @brief Initializes memory with data from MemoryLocation objects
    */
-  public void initializeMemory(SimulatedMemory memory, List<MemoryLocation> locations)
+  public void initializeMemory(SimulatedMemory memory, List<MemoryLocation> locations, Map<String, Label> labels)
   {
     for (MemoryLocation memoryLocation : locations)
     {
@@ -89,6 +91,15 @@ public class MemoryInitializer
         data[i] = memoryLocation.value.get(i);
       }
       memory.insertIntoMemory(memoryPtr, data);
+      // Save label address
+      if (labels.containsKey(memoryLocation.name))
+      {
+        labels.get(memoryLocation.name).address = (int) memoryPtr;
+      }
+      else
+      {
+        throw new RuntimeException("Label " + memoryLocation.name + " not found");
+      }
       memoryPtr += memoryLocation.getSize();
     }
   }

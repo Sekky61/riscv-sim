@@ -35,6 +35,7 @@ package com.gradle.superscalarsim.blocks.base;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import com.gradle.superscalarsim.code.Label;
 import com.gradle.superscalarsim.models.InputCodeModel;
 
 import java.util.List;
@@ -65,7 +66,7 @@ public class InstructionMemoryBlock
    *
    * @brief List of all labels
    */
-  private Map<String, Integer> labels;
+  private Map<String, Label> labels;
   
   /**
    * @param code   List of parsed instructions
@@ -74,7 +75,7 @@ public class InstructionMemoryBlock
    *
    * @brief Constructor
    */
-  public InstructionMemoryBlock(List<InputCodeModel> code, Map<String, Integer> labels, InputCodeModel nop)
+  public InstructionMemoryBlock(List<InputCodeModel> code, Map<String, Label> labels, InputCodeModel nop)
   {
     this.code   = code;
     this.labels = labels;
@@ -91,12 +92,12 @@ public class InstructionMemoryBlock
    */
   public int getLabelPosition(String label)
   {
-    Integer index = labels.get(label);
-    if (index == null)
+    Label labelObj = labels.get(label);
+    if (labelObj == null)
     {
       return -1;
     }
-    return index;
+    return labelObj.address;
   }
   //-------------------------------------------------------------------------------------------
   
@@ -134,12 +135,12 @@ public class InstructionMemoryBlock
     this.code = code;
   }
   
-  public void setLabels(Map<String, Integer> labels)
+  public void setLabels(Map<String, Label> labels)
   {
     this.labels = labels;
   }
   
-  public Map<String, Integer> getLabels()
+  public Map<String, Label> getLabels()
   {
     return labels;
   }

@@ -155,16 +155,25 @@ public class CpuState implements Serializable
       throw new IllegalStateException("Code parsing failed: " + codeParser.getErrorMessages());
     }
     
+    this.statisticsCounter      = new StatisticsCounter();
+    this.cacheStatisticsCounter = new CacheStatisticsCounter();
+    
     InstructionFunctionModel nopFM = initLoader.getInstructionFunctionModel("nop");
     InputCodeModel nop = inputCodeModelFactory.createInstance(nopFM, new ArrayList<>(),
                                                               codeParser.getInstructions().size());
     this.instructionMemoryBlock = new InstructionMemoryBlock(codeParser.getInstructions(), codeParser.getLabels(), nop);
     
-    this.statisticsCounter      = new StatisticsCounter();
-    this.cacheStatisticsCounter = new CacheStatisticsCounter();
-    
+    // Create memory
     this.unifiedRegisterFileBlock = new UnifiedRegisterFileBlock(initLoader, registerModelFactory);
-    this.renameMapTableBlock      = new RenameMapTableBlock(unifiedRegisterFileBlock);
+    this.simulatedMemory          = new SimulatedMemory();
+    // Fill memory with data
+    MemoryInitializer memoryInitializer = new MemoryInitializer(128, 512);
+    memoryInitializer.initializeMemory(simulatedMemory, codeParser.getMemoryLocations(), codeParser.getLabels());
+    memoryInitializer.initializeMemory(simulatedMemory, config.memoryLocations, codeParser.getLabels());
+    // Set the sp to the end of the stack
+    this.unifiedRegisterFileBlock.getRegister("sp").setValue(memoryInitializer.getStackPointer());
+    
+    this.renameMapTableBlock = new RenameMapTableBlock(unifiedRegisterFileBlock);
     
     this.globalHistoryRegister = new GlobalHistoryRegister(10);
     PatternHistoryTable.PredictorType predictorType = switch (config.predictorType)
@@ -195,14 +204,6 @@ public class CpuState implements Serializable
     {
       throw new IllegalStateException("Unexpected value for store behavior: " + config.storeBehavior);
     }
-    
-    this.simulatedMemory = new SimulatedMemory();
-    // Fill memory with data
-    MemoryInitializer memoryInitializer = new MemoryInitializer(128, 512);
-    memoryInitializer.initializeMemory(simulatedMemory, codeParser.getMemoryLocations());
-    memoryInitializer.initializeMemory(simulatedMemory, config.memoryLocations);
-    // Set the sp to the end of the stack
-    this.unifiedRegisterFileBlock.getRegister("sp").setValue(memoryInitializer.getStackPointer());
     
     this.cache = new Cache(simulatedMemory, config.cacheLines, config.cacheAssoc, config.cacheLineSize,
                            replacementPoliciesEnum, writeBack, config.addRemainingDelay, config.storeLatency,

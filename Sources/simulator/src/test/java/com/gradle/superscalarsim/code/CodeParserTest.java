@@ -80,9 +80,9 @@ public class CodeParserTest
     Assert.assertEquals("fadd.s", codeParser.getInstructions().get(3).getInstructionName());
     
     // Parser does not deal in bytes, but index offsets
-    Assert.assertEquals(0, (int) codeParser.getLabels().get("one"));
-    Assert.assertEquals(4, (int) codeParser.getLabels().get("two"));
-    Assert.assertEquals(12, (int) codeParser.getLabels().get("three"));
+    Assert.assertEquals(0, codeParser.getLabels().get("one").address);
+    Assert.assertEquals(4, codeParser.getLabels().get("two").address);
+    Assert.assertEquals(12, codeParser.getLabels().get("three").address);
   }
   
   @Test
@@ -106,9 +106,9 @@ public class CodeParserTest
     Assert.assertEquals("fcvt.w.s", codeParser.getInstructions().get(1).getInstructionName());
     Assert.assertEquals("fadd.s", codeParser.getInstructions().get(2).getInstructionName());
     
-    Assert.assertEquals(0, (int) codeParser.getLabels().get("one"));
-    Assert.assertEquals(4, (int) codeParser.getLabels().get("two"));
-    Assert.assertEquals(8, (int) codeParser.getLabels().get("three"));
+    Assert.assertEquals(0, codeParser.getLabels().get("one").address);
+    Assert.assertEquals(4, codeParser.getLabels().get("two").address);
+    Assert.assertEquals(8, codeParser.getLabels().get("three").address);
   }
   
   @Test
@@ -163,9 +163,9 @@ public class CodeParserTest
     
     Assert.assertTrue(codeParser.success());
     Assert.assertEquals(1, codeParser.getInstructions().size());
-    Assert.assertEquals(0, (int) codeParser.getLabels().get("one"));
-    Assert.assertEquals(0, (int) codeParser.getLabels().get("two"));
-    Assert.assertEquals(0, (int) codeParser.getLabels().get("three"));
+    Assert.assertEquals(0, codeParser.getLabels().get("one").address);
+    Assert.assertEquals(0, codeParser.getLabels().get("two").address);
+    Assert.assertEquals(0, codeParser.getLabels().get("three").address);
   }
   
   @Test
@@ -707,7 +707,7 @@ public class CodeParserTest
     
     MemoryInitializer memoryInitializer = new MemoryInitializer(0, 0);
     SimulatedMemory   memory            = new SimulatedMemory();
-    memoryInitializer.initializeMemory(memory, codeParser.getMemoryLocations());
+    memoryInitializer.initializeMemory(memory, codeParser.getMemoryLocations(), codeParser.getLabels());
     
     Assert.assertEquals((byte) 25, memory.getFromMemory(0L));
   }
@@ -726,7 +726,7 @@ public class CodeParserTest
     
     MemoryInitializer memoryInitializer = new MemoryInitializer(0, 0);
     SimulatedMemory   memory            = new SimulatedMemory();
-    memoryInitializer.initializeMemory(memory, codeParser.getMemoryLocations());
+    memoryInitializer.initializeMemory(memory, codeParser.getMemoryLocations(), codeParser.getLabels());
     
     Assert.assertEquals((byte) 0x34, memory.getFromMemory(0L));
     Assert.assertEquals((byte) 0x12, memory.getFromMemory(1L));
@@ -750,7 +750,7 @@ public class CodeParserTest
     
     MemoryInitializer memoryInitializer = new MemoryInitializer(1, 0);
     SimulatedMemory   memory            = new SimulatedMemory();
-    memoryInitializer.initializeMemory(memory, codeParser.getMemoryLocations());
+    memoryInitializer.initializeMemory(memory, codeParser.getMemoryLocations(), codeParser.getLabels());
     
     Assert.assertEquals((byte) 0x34, memory.getFromMemory(8L));
     Assert.assertEquals((byte) 0x12, memory.getFromMemory(9L));
