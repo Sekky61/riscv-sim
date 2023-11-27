@@ -189,12 +189,7 @@
   "nop": {
     "name": "nop",
     "instructionType": "kArithmetic",
-    "arguments": [
-      {
-        "name": "",
-        "type": "kInt"
-      }
-    ],
+    "arguments": [],
     "interpretableAs": "0"
   },
   "sw": {

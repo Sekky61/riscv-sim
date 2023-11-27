@@ -792,4 +792,40 @@ public class CodeParserTest
     Assert.assertEquals(0, codeParser.getLabels().get("a").address);
     Assert.assertEquals(0, codeParser.getLabels().get("b").address);
   }
+  
+  @Test
+  public void test_valid_gcc_code_passes()
+  {
+    String code = """
+            add:
+                addi sp,sp,-48
+                sw s0,44(sp)
+                addi s0,sp,48
+                sw a0,-36(s0)
+                sw a1,-40(s0)
+                sw zero,-20(s0)
+                j .L2
+            .L3:
+                lw a5,-20(s0)
+                lw a4,-20(s0)
+                sw a4,0(a5)
+                lw a5,-20(s0)
+                addi a5,a5,1
+                sw a5,-20(s0)
+            .L2:
+                lw a4,-20(s0)
+                li a5,19
+                ble a4,a5,.L3
+                nop
+                mv a0,a5
+                lw s0,44(sp)
+                addi sp,sp,48
+                jr ra
+                        """;
+    codeParser.parseCode(code);
+    
+    Assert.assertTrue(codeParser.success());
+    Assert.assertEquals(0, codeParser.getMemoryLocations().size());
+    Assert.assertEquals(3, codeParser.getLabels().size());
+  }
 }

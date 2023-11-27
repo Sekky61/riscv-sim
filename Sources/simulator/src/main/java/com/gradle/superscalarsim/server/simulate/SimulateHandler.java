@@ -54,7 +54,7 @@ public class SimulateHandler implements IRequestResolver<SimulateRequest, Simula
     {
       // Send error
       // TODO: Add proper error handling
-      throw new IllegalArgumentException("Invalid request");
+      throw new IllegalArgumentException("Invalid request fields");
     }
     else
     {
@@ -68,7 +68,11 @@ public class SimulateHandler implements IRequestResolver<SimulateRequest, Simula
       else
       {
         // TODO: Add proper error handling
-        throw new IllegalArgumentException("Invalid request");
+        for (String error : errors.messages)
+        {
+          System.err.println(error);
+        }
+        throw new IllegalArgumentException("Invalid request values");
       }
     }
     return response;
