@@ -773,4 +773,23 @@ public class CodeParserTest
     Assert.assertTrue(codeParser.success());
     Assert.assertEquals(0, codeParser.getMemoryLocations().size());
   }
+  
+  @Test
+  public void test_allocate_two_names()
+  {
+    // Setup + exercise
+    String code = """
+            a:
+            b:
+            .word 1""";
+    codeParser.parseCode(code);
+    
+    Assert.assertTrue(codeParser.success());
+    // One memory location
+    Assert.assertEquals(1, codeParser.getMemoryLocations().size());
+    // but two labels
+    Assert.assertEquals(2, codeParser.getLabels().size());
+    Assert.assertEquals(0, codeParser.getLabels().get("a").address);
+    Assert.assertEquals(0, codeParser.getLabels().get("b").address);
+  }
 }

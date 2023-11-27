@@ -224,7 +224,7 @@ public class CodeParser
     MemoryLocation mem   = new MemoryLocation(null, 1, new ArrayList<>(), DataTypeEnum.kByte);
     
     // Go through the program
-    // Take note of .byte, .hword, .word, .align, .ascii, .asciiz, .skip
+    // Take note of .byte, .hword, .word, .align, .ascii, .asciiz, .skip, .zero
     for (String line : lines)
     {
       if (!isDirective(line))
@@ -324,8 +324,9 @@ public class CodeParser
             }
           }
         }
-        case ".skip" ->
+        case ".skip", ".zero" ->
         {
+          // .zero is an alias for .skip
           if (argCount != 1 && argCount != 2)
           {
             addError(new CodeToken(0, 0, directive, CodeToken.Type.EOF), ".skip expected 1 argument, got " + argCount);
@@ -468,7 +469,26 @@ public class CodeParser
     else
     {
       // Add label, this is in "bytes"
-      labels.put(labelName, new Label(labelName, instructions.size() * 4));
+      // If there already is a label with this name, throw
+      if (labels.containsKey(labelName))
+      {
+        addError(currentToken, "Label '" + labelName + "' already defined");
+      }
+      // If there already is a label with this address, point to it
+      Label lab = null;
+      for (Label label : labels.values())
+      {
+        if (label.address == instructions.size() * 4)
+        {
+          lab = label;
+          break;
+        }
+      }
+      if (lab == null)
+      {
+        lab = new Label(labelName, instructions.size() * 4);
+      }
+      labels.put(labelName, lab);
       // Clear unconfirmed labels
       unconfirmedLabels.removeIf(token -> token.text().equals(labelName));
     }

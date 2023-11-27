@@ -101,7 +101,7 @@ public class Cpu implements Serializable
    *
    * @param maxSteps Maximum number of steps to run
    *
-   * @return Number of steps executed (may be less than maxSteps if simulation ended)
+   * @return Number of steps executed (it may be less than maxSteps if simulation ended)
    */
   public int run(int maxSteps)
   {
@@ -116,8 +116,9 @@ public class Cpu implements Serializable
   
   public boolean simEnded()
   {
-    boolean robEmpty = cpuState.reorderBufferBlock.getReorderQueueSize() == 0;
-    boolean pcEnd = cpuState.instructionFetchBlock.getPc() >= cpuState.instructionMemoryBlock.getCode().size() * 4;
+    boolean robEmpty      = cpuState.reorderBufferBlock.getReorderQueueSize() == 0;
+    boolean pcEnd         = cpuState.instructionFetchBlock.getPc() >= cpuState.instructionMemoryBlock.getCode()
+            .size() * 4;
     boolean renameEmpty   = cpuState.decodeAndDispatchBlock.getAfterRenameCodeList().isEmpty();
     boolean fetchNotEmpty = !cpuState.instructionFetchBlock.getFetchedCode().isEmpty();
     boolean nop = fetchNotEmpty && cpuState.instructionFetchBlock.getFetchedCode().get(0).getInstructionName()
