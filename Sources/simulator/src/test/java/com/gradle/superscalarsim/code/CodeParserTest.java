@@ -646,6 +646,7 @@ public class CodeParserTest
     codeParser.parseCode(code);
     
     Assert.assertTrue(codeParser.success());
+    Assert.assertEquals(2, codeParser.getMemoryLocations().size());
     MemoryLocation m = codeParser.getMemoryLocations().get(1);
     // Alignment should be reset after the label
     Assert.assertEquals(1, m.alignment);
@@ -756,5 +757,20 @@ public class CodeParserTest
     Assert.assertEquals((byte) 0x12, memory.getFromMemory(9L));
     Assert.assertEquals((byte) 0, memory.getFromMemory(10L));
     Assert.assertEquals((byte) 0, memory.getFromMemory(11L));
+  }
+  
+  @Test
+  public void memoryInitializer_do_not_pick_up_code_labels()
+  {
+    String code = """
+            l1:
+            la x1, l1
+            l2:
+            la x2, l2
+            """;
+    codeParser.parseCode(code);
+    
+    Assert.assertTrue(codeParser.success());
+    Assert.assertEquals(0, codeParser.getMemoryLocations().size());
   }
 }

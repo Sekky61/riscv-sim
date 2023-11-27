@@ -220,25 +220,38 @@ public class CodeParser
    */
   private void collectMemoryLocations(String code)
   {
-    List<String> lines          = splitLines(code);
-    int          alignmentState = 1;
+    List<String>   lines = splitLines(code);
+    MemoryLocation mem   = new MemoryLocation(null, 1, new ArrayList<>(), DataTypeEnum.kByte);
     
     // Go through the program
     // Take note of .byte, .hword, .word, .align, .ascii, .asciiz, .skip
-    for (int i = 0; i < lines.size(); i++)
+    for (String line : lines)
     {
-      String line = lines.get(i);
       if (!isDirective(line))
       {
+        // Save memory location when label ends
+        if (mem.name != null)
+        {
+          // Is it a data label?
+          if (!mem.value.isEmpty())
+          {
+            memoryLocations.add(mem);
+          }
+          // Start new memory location
+          mem = new MemoryLocation(null, 1, new ArrayList<>(), DataTypeEnum.kByte);
+        }
+        if (isLabel(line))
+        {
+          // todo multiple labels on one line, multiple labels on multiple lines
+          mem.name = line.substring(0, line.length() - 1);
+        }
         continue;
       }
       String[] tokens = line.split("[\\s,]+");
       
-      String directive    = tokens[0];
-      int    argCount     = tokens.length - 1;
-      String previousLine = i > 0 ? lines.get(i - 1) : "";
-      String name         = previousLine.split(":")[0];
-      MemoryLocation memoryLocation = switch (directive)
+      String directive = tokens[0];
+      int    argCount  = tokens.length - 1;
+      switch (directive)
       {
         case ".byte", ".hword", ".word" ->
         {
@@ -246,7 +259,12 @@ public class CodeParser
           {
             addError(new CodeToken(0, 0, directive, CodeToken.Type.EOF),
                      directive + " expected at least 1 argument, got " + argCount);
-            yield null;
+            break;
+          }
+          if (mem.name == null)
+          {
+            addError(new CodeToken(0, 0, directive, CodeToken.Type.EOF), directive + " expected label before it");
+            break;
           }
           DataTypeEnum dataType = switch (directive)
           {
@@ -255,28 +273,28 @@ public class CodeParser
             case ".word" -> DataTypeEnum.kInt;
             default -> null;
           };
-          List<Byte> values = new ArrayList<>();
+          mem.dataType = dataType;
           for (int j = 1; j < tokens.length; j++)
           {
             byte[] bytes = dataType.getBytes(tokens[j]);
             for (byte b : bytes)
             {
-              values.add(b);
+              mem.value.add(b);
             }
           }
-          int alignment = alignmentState;
-          alignmentState = 1;
-          yield new MemoryLocation(name, alignment, values, dataType);
         }
         case ".align" ->
         {
           if (argCount != 1)
           {
             addError(new CodeToken(0, 0, directive, CodeToken.Type.EOF), ".align expected 1 argument, got " + argCount);
-            yield null;
+            break;
           }
-          alignmentState = Integer.parseInt(tokens[1]);
-          yield null;
+          if (mem.name != null)
+          {
+            addError(new CodeToken(0, 0, directive, CodeToken.Type.EOF), ".align expected before a label");
+          }
+          mem.alignment = Integer.parseInt(tokens[1]);
         }
         case ".ascii", ".asciiz" ->
         {
@@ -284,38 +302,34 @@ public class CodeParser
           {
             addError(new CodeToken(0, 0, directive, CodeToken.Type.EOF),
                      ".ascii expected at least 1 argument, got " + argCount);
-            yield null;
+            break;
           }
           
-          List<Byte> values = new ArrayList<>();
           for (int j = 1; j < tokens.length; j++)
           {
             String token = tokens[j];
             if (!token.startsWith("\"") || !token.endsWith("\""))
             {
               addError(new CodeToken(0, 0, token, CodeToken.Type.EOF), "Expected string literal, got " + token);
-              yield null;
+              break;
             }
             token = token.substring(1, token.length() - 1);
             for (char c : token.toCharArray())
             {
-              values.add((byte) c);
+              mem.value.add((byte) c);
             }
             if (directive.equals(".asciiz"))
             {
-              values.add((byte) 0);
+              mem.value.add((byte) 0);
             }
           }
-          int alignment = alignmentState;
-          alignmentState = 1;
-          yield new MemoryLocation(name, alignment, values, DataTypeEnum.kByte);
         }
         case ".skip" ->
         {
           if (argCount != 1 && argCount != 2)
           {
             addError(new CodeToken(0, 0, directive, CodeToken.Type.EOF), ".skip expected 1 argument, got " + argCount);
-            yield null;
+            break;
           }
           int  size = Integer.parseInt(tokens[1]);
           byte fill = 0;
@@ -323,22 +337,17 @@ public class CodeParser
           {
             fill = Byte.decode(tokens[2]);
           }
-          int alignment = alignmentState;
-          alignmentState = 1;
-          ArrayList<Byte> values = new ArrayList<>();
           for (int j = 0; j < size; j++)
           {
-            values.add(fill);
+            mem.value.add(fill);
           }
-          yield new MemoryLocation(name, alignment, values, DataTypeEnum.kByte);
         }
-        default -> null;
-      };
-      
-      if (memoryLocation != null)
-      {
-        memoryLocations.add(memoryLocation);
       }
+    }
+    // Save last memory location
+    if (mem.name != null)
+    {
+      memoryLocations.add(mem);
     }
   }
   
@@ -419,6 +428,22 @@ public class CodeParser
     return line.startsWith(".") && !line.endsWith(":");
   }
   
+  private boolean isLabel(String line)
+  {
+    return line.endsWith(":");
+  }
+  
+  /**
+   * @param token   Token where the error occurred
+   * @param message Error message
+   *
+   * @brief Adds a single-line error message to the list of errors
+   */
+  private void addError(CodeToken token, String message)
+  {
+    this.errorMessages.add(new ParseError("error", message, token.line(), token.columnStart(), token.columnEnd()));
+  }
+  
   /**
    * @brief Parse label. Current token is the label name, peek token is colon.
    */
@@ -486,17 +511,6 @@ public class CodeParser
   {
     this.currentToken = this.peekToken;
     this.peekToken    = this.lexer.nextToken();
-  }
-  
-  /**
-   * @param token   Token where the error occurred
-   * @param message Error message
-   *
-   * @brief Adds a single-line error message to the list of errors
-   */
-  private void addError(CodeToken token, String message)
-  {
-    this.errorMessages.add(new ParseError("error", message, token.line(), token.columnStart(), token.columnEnd()));
   }
   
   private void parseDirective()
