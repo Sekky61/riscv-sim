@@ -29,7 +29,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { selectSimCodeModel } from '@/lib/redux/cpustateSlice';
+import { selectRegisterById, selectSimCodeModel } from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
 
 import {
@@ -38,6 +38,8 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/base/ui/card';
+import ValueInformation from '@/components/simulation/ValueTooltip';
+import { isValidRegisterValue } from '@/lib/utils';
 
 type SimCodeDetailModalProps = {
   simCodeId: number;
@@ -48,6 +50,8 @@ export const SimCodeDetailModal = ({ simCodeId }: SimCodeDetailModalProps) => {
   if (!q) throw new Error(`InstructionId ${simCodeId} not found`);
   const { simCodeModel, inputCodeModel, functionModel, args } = q;
 
+  console.log(args)
+
   return (
     <>
       <CardHeader>
@@ -57,7 +61,7 @@ export const SimCodeDetailModal = ({ simCodeId }: SimCodeDetailModalProps) => {
         <CardDescription>Detailed view</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className='grid grid-cols-2'>
+        <div className='grid grid-cols-2 gap-4'>
           <div>
             <h1 className='text-2xl'>
               {inputCodeModel.instructionName.toUpperCase()}
@@ -66,12 +70,20 @@ export const SimCodeDetailModal = ({ simCodeId }: SimCodeDetailModalProps) => {
               <li>Type: {inputCodeModel.instructionTypeEnum}</li>
             </ul>
             <h2 className='text-xl mt-2'>Operands</h2>
-            <ul>
-              {args.map((operand) => (
-                <li key={operand.name}>
-                  {operand.name} {operand.value} {operand.arch?.name}
-                </li>
-              ))}
+            <ul className='flex flex-col gap-4'>
+              {args.map((operand) => {
+                const value = operand.constantValue ?? operand.arch?.value;
+                const valid = operand.arch ? isValidRegisterValue(operand.arch) : true;
+                return (
+                    <li key={operand.name} className='text-sm border rounded-md p-4'>
+                      <span className='text-lg'>
+                        {operand.name}: {operand.value}
+                      </span>
+                    {value && <ValueInformation value={value} valid={valid} />}
+                  </li>
+                )
+            } 
+              )}
             </ul>
           </div>
           <div>

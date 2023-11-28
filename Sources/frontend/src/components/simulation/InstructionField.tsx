@@ -49,7 +49,7 @@ import {
   TooltipTrigger,
 } from '@/components/base/ui/tooltip';
 import RegisterReference from '@/components/simulation/RegisterReference';
-import ValueTooltip from '@/components/simulation/ValueTooltip';
+import ValueInformation from '@/components/simulation/ValueTooltip';
 
 export type InstructionFieldProps = {
   instructionId?: Reference;
@@ -155,7 +155,6 @@ function InstructionArgument({ arg }: InstructionArgumentProps) {
   }
 
   const displayText = arg.value;
-  const hoverText = `Constant: ${displayText}`;
 
   if (arg.constantValue === undefined) {
     throw new Error(
@@ -163,6 +162,7 @@ function InstructionArgument({ arg }: InstructionArgumentProps) {
     );
   }
 
+  // todo more general 
   return (
     <TooltipProvider>
       <Tooltip>
@@ -170,7 +170,7 @@ function InstructionArgument({ arg }: InstructionArgumentProps) {
           <div className={cls}>{displayText}</div>
         </TooltipTrigger>
         <TooltipContent>
-          <ValueTooltip value={arg.constantValue} />
+          <ValueInformation value={arg.constantValue} valid={true} />
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>

@@ -1,5 +1,5 @@
 /**
- * @file    ValueTooltip.tsx
+ * @file    ValueInformation.tsx
  *
  * @author  Michal Majer
  *          Faculty of Information Technology
@@ -32,20 +32,21 @@
 import { RegisterDataContainer } from '@/lib/types/cpuApi';
 import { binPad32, hexPad } from '@/lib/utils';
 
-export type ValueTooltipProps = {
+export type ValueInformationProps = {
   value: RegisterDataContainer;
-  valid?: boolean;
+  valid: boolean;
 };
 
 /**
- * Contents of the tooltip with a value of a register or constant
+ * Value of a register or constant.
+ * Used in the tooltip and instruction modals.
  */
-export default function ValueTooltip({
+export default function ValueInformation({
   value,
-  valid = true,
-}: ValueTooltipProps) {
+  valid,
+}: ValueInformationProps) {
   return (
-    <div className='flex flex-col text-sm'>
+    <div className='flex flex-col'>
       <div className='flex flex-row'>
         <div className='flex flex-col'>
           <div>Value</div>

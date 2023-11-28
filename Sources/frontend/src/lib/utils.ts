@@ -32,7 +32,7 @@
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
-import { Reference } from '@/lib/types/cpuApi';
+import { Reference, RegisterModel } from '@/lib/types/cpuApi';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -77,4 +77,11 @@ export function hexPad(num: number): string {
  */
 export function binPad32(num: number): string {
   return `0b${num.toString(2).padStart(32, '0')}`;
+}
+
+/**
+ * Returns true if a register has a valid value.
+ */
+export function isValidRegisterValue(register: RegisterModel): boolean {
+  return register.readiness === 'kExecuted' || register.readiness === 'kAssigned';
 }

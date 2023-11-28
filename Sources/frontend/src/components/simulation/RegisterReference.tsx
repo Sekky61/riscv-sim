@@ -46,7 +46,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/base/ui/tooltip';
-import ValueTooltip from '@/components/simulation/ValueTooltip';
+import ValueInformation from '@/components/simulation/ValueTooltip';
+import { isValidRegisterValue } from '@/lib/utils';
 
 export type RegisterReferenceProps = {
   registerId: string;
@@ -67,8 +68,7 @@ export default function RegisterReference({
   if (!register) return null;
 
   const highlighted = highlightedId === registerId;
-  const valid =
-    register.readiness === 'kExecuted' || register.readiness === 'kAssigned';
+  const valid = isValidRegisterValue(register);
 
   let displayValue = registerId;
   if (showValue && valid) {
@@ -93,7 +93,7 @@ export default function RegisterReference({
           </div>
         </TooltipTrigger>
         <TooltipContent>
-          <ValueTooltip value={register.value} valid={valid} />
+          <ValueInformation value={register.value} valid={valid} />
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>

@@ -48,6 +48,7 @@ import type { RootState } from '@/lib/redux/store';
 import { callSimulationImpl } from '@/lib/serverCalls/callCompiler';
 import type {
   CpuState,
+  InputCodeArgument,
   InputCodeModel,
   InstructionFunctionModel,
   Label,
@@ -55,7 +56,7 @@ import type {
   RegisterModel,
   SimCodeModel,
 } from '@/lib/types/cpuApi';
-import { isValidReference } from '@/lib/utils';
+import { isValidReference, isValidRegisterValue } from '@/lib/utils';
 
 /**
  * Redux state for CPU
@@ -310,26 +311,6 @@ export const selectHighlightedInputCode = (state: RootState) =>
 export const selectHighlightedRegister = (state: RootState) =>
   state.cpu.highlightedRegister;
 
-export type ParsedArgument = {
-  name: string;
-  value: string;
-  arch: RegisterModel | null;
-};
-
-type DetailedSimCodeModel = {
-  simCodeModel: SimCodeModel;
-  inputCodeModel: InputCodeModel;
-  functionModel: InstructionFunctionModel;
-  args: Array<ParsedArgument>;
-};
-
-export const selectSimCodeModel = (state: RootState, id?: Reference) => {
-  if (!isValidReference(id)) {
-    return null;
-  }
-  return selectDetailedSimCodeModels(state)?.[id];
-};
-
 /**
  * Returns program code with labels inserted before the instruction they point to.
  */
@@ -410,6 +391,24 @@ export const selectRegisterMap = createSelector(
   },
 );
 
+export type ParsedArgument = {
+  /**
+   * Register model, if the argument is a register
+   */
+  arch: RegisterModel | null;
+  /**
+   * True if the current argument value is valif
+   */
+  valid: boolean;
+} & InputCodeArgument;
+
+type DetailedSimCodeModel = {
+  simCodeModel: SimCodeModel;
+  inputCodeModel: InputCodeModel;
+  functionModel: InstructionFunctionModel;
+  args: Array<ParsedArgument>;
+};
+
 /**
  * Select simcodemodel, inputcodemodel and instructionfunctionmodel for a given simcode id.
  */
@@ -458,7 +457,7 @@ const selectDetailedSimCodeModels = createSelector(
         args: [],
       };
       for (const renamedArg of simCodeModel.renamedArguments) {
-        const arg: ParsedArgument = { arch: null, ...renamedArg };
+        const arg: ParsedArgument = { arch: null, valid: false, ...renamedArg };
         const registerExpected = renamedArg.name.startsWith('r');
         const a = registers[arg.value];
         if (a === undefined && registerExpected) {
@@ -466,6 +465,8 @@ const selectDetailedSimCodeModels = createSelector(
           console.warn(registers);
           throw new Error(`Register ${arg.value} not found`);
         }
+        arg.arch = a ?? null;
+        arg.valid = arg.arch === null || isValidRegisterValue(arg.arch);
         detail.args.push(arg);
       }
       lookup[reference] = detail;
@@ -473,6 +474,13 @@ const selectDetailedSimCodeModels = createSelector(
     return lookup;
   },
 );
+
+export const selectSimCodeModel = (state: RootState, id?: Reference) => {
+  if (!isValidReference(id)) {
+    return null;
+  }
+  return selectDetailedSimCodeModels(state)?.[id];
+};
 
 /**
  * ID is a register name or alias.

@@ -52,7 +52,7 @@ import InstructionField, {
   InstructionBubble,
 } from '@/components/simulation/InstructionField';
 import { InstructionListDisplay } from '@/components/simulation/InstructionListDisplay';
-import ValueTooltip from '@/components/simulation/ValueTooltip';
+import ValueInformation from '@/components/simulation/ValueTooltip';
 
 type IssueType = 'alu' | 'fp' | 'branch' | 'ls';
 
@@ -185,10 +185,6 @@ export function IssueWindowItem({ simCodeId, items }: IssueWindowItemProps) {
     item2Value = reg2?.value;
   }
 
-  console.log('simcode', simCodeId);
-  console.log('item1', item1, item1Value);
-  console.log('item2', item2, item2Value);
-
   return (
     <>
       <InstructionField instructionId={simCodeId} />
@@ -201,7 +197,7 @@ export function IssueWindowItem({ simCodeId, items }: IssueWindowItemProps) {
           </TooltipTrigger>
           <TooltipContent>
             {item1Value ? (
-              <ValueTooltip value={item1Value} />
+              <ValueInformation value={item1Value} valid={item1?.validityBit ?? false} />
             ) : (
               <div className='text-gray-400'>No value</div>
             )}
@@ -218,7 +214,7 @@ export function IssueWindowItem({ simCodeId, items }: IssueWindowItemProps) {
 
           <TooltipContent>
             {item2Value ? (
-              <ValueTooltip value={item2Value} />
+              <ValueInformation value={item2Value} valid={item2?.validityBit ?? false} />
             ) : (
               <div className='text-gray-400'>No value</div>
             )}
