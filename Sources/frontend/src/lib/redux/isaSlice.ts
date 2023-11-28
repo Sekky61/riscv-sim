@@ -29,12 +29,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { PayloadAction, createSelector, createSlice } from '@reduxjs/toolkit';
+import { PayloadAction, createAsyncThunk, createSelector, createSlice } from '@reduxjs/toolkit';
 
 // Import as type to avoid circular dependency
 import type { RootState } from '@/lib/redux/store';
 
-import { IsaNamedConfig, isaFormDefaultValues, isaSchema } from '../forms/Isa';
+import { IsaNamedConfig, MemoryLocation, isaFormDefaultValues, isaSchema } from '../forms/Isa';
 
 // Define a type for the slice state
 interface IsaState {
@@ -96,6 +96,14 @@ export const isaSlice = createSlice({
         return isa;
       });
     },
+    addMemoryLocation: (
+      state,
+      action: PayloadAction<MemoryLocation>,
+    ) => {
+      const activeIsa = findIsaByName(state.isas, state.activeIsaName);
+      if (activeIsa === undefined) throw new Error('Active ISA not found');
+      activeIsa.memoryLocations.push(action.payload);
+    },
     removeIsa: (state, action: PayloadAction<string>) => {
       // Do not allow to remove the first ISA (called "Default")
       if (action.payload === 'Default') {
@@ -114,7 +122,7 @@ export const isaSlice = createSlice({
 
 export type IsaReducer = ReturnType<typeof isaSlice.reducer>;
 
-export const { newActiveIsa, createIsa, updateIsa, removeIsa } =
+export const { newActiveIsa, createIsa, updateIsa, removeIsa, addMemoryLocation } =
   isaSlice.actions;
 
 export const selectActiveIsaName = (state: RootState) =>

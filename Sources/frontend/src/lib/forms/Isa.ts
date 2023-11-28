@@ -29,6 +29,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { DataTypeEnum } from '@/lib/types/cpuApi';
 import { z } from 'zod';
 
 export const predictorTypes = ['1bit', '2bit'] as const;
@@ -43,23 +44,30 @@ export type CacheReplacementType = (typeof cacheReplacementTypes)[number];
 export const storeBehaviorTypes = ['write-back'] as const;
 export type StoreBehaviorType = (typeof storeBehaviorTypes)[number];
 
+export const dataTypes = [
+  'kInt'
+  , 'kUInt'
+  , 'kLong'
+  , 'kULong'
+  , 'kFloat'
+  , 'kDouble'
+  , 'kBool'
+] as const;
+
 export const memoryLocation = z.object({
-  name: z.string(),
+  name: z.string().min(1),
   alignment: z.number().min(1).max(16),
-  value: z.array(z.number().min(0).max(255)),
-  dataType: z.enum([
-    'kByte',
-    'kShort',
-    'kInt',
-    'kUInt',
-    'kLong',
-    'kULong',
-    'kFloat',
-    'kDouble',
-    'kBool',
-  ]),
+  value: z.array(z.number()),
+  dataType: z.enum(dataTypes),
 });
 export type MemoryLocation = z.infer<typeof memoryLocation>;
+
+export const memoryLocationDefaultValue: MemoryLocation = {
+  name: 'Array',
+  alignment: 4,
+  value: [],
+  dataType: 'kInt',
+};
 
 export const arithmeticUnits = ['FX', 'FP'] as const;
 export const otherUnits = ['L_S', 'Branch', 'Memory'] as const;

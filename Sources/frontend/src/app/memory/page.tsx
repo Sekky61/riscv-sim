@@ -34,10 +34,17 @@
 'use client';
 
 import { Button } from '@/components/base/ui/button';
+import MemoryForm from '@/components/form/MemoryForm';
+import { useAppSelector } from '@/lib/redux/hooks';
+import { selectActiveIsa } from '@/lib/redux/isaSlice';
 import Head from 'next/head';
 
 export default function HomePage() {
-  // Note: min-h-0 fixes overflow of the flex container
+  // Load the active ISA
+  const activeIsa = useAppSelector(selectActiveIsa);
+
+  const memoryLocations = activeIsa?.memoryLocations;
+
   return (
     <main className='h-full'>
       <Head>
@@ -46,10 +53,19 @@ export default function HomePage() {
       <h1 className='m-2 mb-6 text-2xl'>Memory Editor</h1>
       <div className='flex h-full flex-col'>
         <div className='flex divide-x'>
-          <div className='p-4'>
-            <Button variant='ghost'>Ghost</Button>
+          <div className='w-48 p-4 flex flex-col gap-4'>
+            {memoryLocations.map((memoryLocation) => {
+              return <Button variant='ghost'>{memoryLocation.name}</Button>;
+            })}
+            <div className='mt-4 pt-4 border-t'>
+              <Button variant='ghost' className='w-full'>
+                New
+              </Button>
+            </div>
           </div>
-          <div className='p-4'>mem</div>
+          <div className='p-4'>
+            <MemoryForm />
+          </div>
         </div>
       </div>
     </main>
