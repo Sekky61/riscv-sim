@@ -29,7 +29,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { selectRegisterById, selectSimCodeModel } from '@/lib/redux/cpustateSlice';
+import {
+  selectRegisterById,
+  selectSimCodeModel,
+} from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
 
 import {
@@ -49,8 +52,6 @@ export const SimCodeDetailModal = ({ simCodeId }: SimCodeDetailModalProps) => {
   const q = useAppSelector((state) => selectSimCodeModel(state, simCodeId));
   if (!q) throw new Error(`InstructionId ${simCodeId} not found`);
   const { simCodeModel, inputCodeModel, functionModel, args } = q;
-
-  console.log(args)
 
   return (
     <>
@@ -73,17 +74,21 @@ export const SimCodeDetailModal = ({ simCodeId }: SimCodeDetailModalProps) => {
             <ul className='flex flex-col gap-4'>
               {args.map((operand) => {
                 const value = operand.constantValue ?? operand.arch?.value;
-                const valid = operand.arch ? isValidRegisterValue(operand.arch) : true;
+                const valid = operand.arch
+                  ? isValidRegisterValue(operand.arch)
+                  : true;
                 return (
-                    <li key={operand.name} className='text-sm border rounded-md p-4'>
-                      <span className='text-lg'>
-                        {operand.name}: {operand.value}
-                      </span>
+                  <li
+                    key={operand.name}
+                    className='text-sm border rounded-md p-4'
+                  >
+                    <span className='text-lg'>
+                      {operand.name}: {operand.value}
+                    </span>
                     {value && <ValueInformation value={value} valid={valid} />}
                   </li>
-                )
-            } 
-              )}
+                );
+              })}
             </ul>
           </div>
           <div>

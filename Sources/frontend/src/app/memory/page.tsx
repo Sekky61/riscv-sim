@@ -33,6 +33,7 @@
 
 'use client';
 
+import { Button } from '@/components/base/ui/button';
 import Head from 'next/head';
 
 export default function HomePage() {
@@ -42,9 +43,14 @@ export default function HomePage() {
       <Head>
         <title>Memory</title>
       </Head>
+      <h1 className='m-2 mb-6 text-2xl'>Memory Editor</h1>
       <div className='flex h-full flex-col'>
-        <h1 className='m-2 mb-6 text-2xl'>Memory Editor</h1>
-        <div>bar</div>
+        <div className='flex divide-x'>
+          <div className='p-4'>
+            <Button variant='ghost'>Ghost</Button>
+          </div>
+          <div className='p-4'>mem</div>
+        </div>
       </div>
     </main>
   );

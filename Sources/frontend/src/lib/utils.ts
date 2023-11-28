@@ -83,5 +83,7 @@ export function binPad32(num: number): string {
  * Returns true if a register has a valid value.
  */
 export function isValidRegisterValue(register: RegisterModel): boolean {
-  return register.readiness === 'kExecuted' || register.readiness === 'kAssigned';
+  return (
+    register.readiness === 'kExecuted' || register.readiness === 'kAssigned'
+  );
 }

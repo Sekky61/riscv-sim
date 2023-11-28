@@ -162,7 +162,7 @@ function InstructionArgument({ arg }: InstructionArgumentProps) {
     );
   }
 
-  // todo more general 
+  // todo more general
   return (
     <TooltipProvider>
       <Tooltip>

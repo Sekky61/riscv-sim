@@ -43,6 +43,7 @@ export default function Line({ length, down = false }: LineProps) {
   const height = down ? length : 10;
   return (
     <svg width={width} height={height}>
+      <title>wire</title>
       <line
         x1={down ? 5 : 0}
         y1={down ? 0 : 5}

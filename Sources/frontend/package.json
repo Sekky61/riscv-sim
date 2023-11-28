@@ -14,7 +14,7 @@
     "test:watch": "jest --watch",
     "test": "jest",
     "format": "npx @biomejs/biome format src/ --write",
-    "format:check": "prettier -c .",
+    "format:check": "npx @biomejs/biome format ./src",
     "postbuild": "next-sitemap --config next-sitemap.config.js"
   },
   "dependencies": {

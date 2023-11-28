@@ -197,7 +197,10 @@ export function IssueWindowItem({ simCodeId, items }: IssueWindowItemProps) {
           </TooltipTrigger>
           <TooltipContent>
             {item1Value ? (
-              <ValueInformation value={item1Value} valid={item1?.validityBit ?? false} />
+              <ValueInformation
+                value={item1Value}
+                valid={item1?.validityBit ?? false}
+              />
             ) : (
               <div className='text-gray-400'>No value</div>
             )}
@@ -214,7 +217,10 @@ export function IssueWindowItem({ simCodeId, items }: IssueWindowItemProps) {
 
           <TooltipContent>
             {item2Value ? (
-              <ValueInformation value={item2Value} valid={item2?.validityBit ?? false} />
+              <ValueInformation
+                value={item2Value}
+                valid={item2?.validityBit ?? false}
+              />
             ) : (
               <div className='text-gray-400'>No value</div>
             )}

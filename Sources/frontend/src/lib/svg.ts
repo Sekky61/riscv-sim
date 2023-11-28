@@ -10,7 +10,6 @@ export class PathMe {
 
   constructor() {
     this.moves = [];
-    return this;
   }
 
   moveTo(x: number, y: number) {

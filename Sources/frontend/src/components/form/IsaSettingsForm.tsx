@@ -357,7 +357,7 @@ type OpMetadata = {
   name: string;
 };
 
-const opsMetadata: { [key in Operations]: OpMetadata } = {
+const opsMetadata: { [op in Operations]: OpMetadata } = {
   addition: { name: 'Addition' },
   bitwise: { name: 'Bitwise' },
   division: { name: 'Division' },
@@ -430,6 +430,7 @@ function FunctionalUnitInput({
                     </div>
                     <div>
                       <button
+                        type='button'
                         onClick={() => removeUnit(i)}
                         className='shrink-0 px-1'
                       >
