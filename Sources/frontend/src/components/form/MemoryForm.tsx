@@ -61,7 +61,6 @@ export default function MemoryForm() {
   const { register, handleSubmit, formState } = form;
 
   const onSubmit = (data: MemoryLocation) => {
-    console.log(data);
     dispatch(addMemoryLocation(data));
   };
 

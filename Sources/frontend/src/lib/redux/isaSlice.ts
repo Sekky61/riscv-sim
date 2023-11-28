@@ -29,12 +29,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { PayloadAction, createAsyncThunk, createSelector, createSlice } from '@reduxjs/toolkit';
+import {
+  PayloadAction,
+  createAsyncThunk,
+  createSelector,
+  createSlice,
+} from '@reduxjs/toolkit';
 
 // Import as type to avoid circular dependency
 import type { RootState } from '@/lib/redux/store';
 
-import { IsaNamedConfig, MemoryLocation, isaFormDefaultValues, isaSchema } from '../forms/Isa';
+import {
+  IsaNamedConfig,
+  MemoryLocation,
+  isaFormDefaultValues,
+  isaSchema,
+} from '../forms/Isa';
 
 // Define a type for the slice state
 interface IsaState {
@@ -96,10 +106,7 @@ export const isaSlice = createSlice({
         return isa;
       });
     },
-    addMemoryLocation: (
-      state,
-      action: PayloadAction<MemoryLocation>,
-    ) => {
+    addMemoryLocation: (state, action: PayloadAction<MemoryLocation>) => {
       const activeIsa = findIsaByName(state.isas, state.activeIsaName);
       if (activeIsa === undefined) throw new Error('Active ISA not found');
       activeIsa.memoryLocations.push(action.payload);
@@ -122,8 +129,13 @@ export const isaSlice = createSlice({
 
 export type IsaReducer = ReturnType<typeof isaSlice.reducer>;
 
-export const { newActiveIsa, createIsa, updateIsa, removeIsa, addMemoryLocation } =
-  isaSlice.actions;
+export const {
+  newActiveIsa,
+  createIsa,
+  updateIsa,
+  removeIsa,
+  addMemoryLocation,
+} = isaSlice.actions;
 
 export const selectActiveIsaName = (state: RootState) =>
   state.isa.activeIsaName;

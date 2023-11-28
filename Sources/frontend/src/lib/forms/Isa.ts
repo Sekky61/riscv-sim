@@ -45,13 +45,13 @@ export const storeBehaviorTypes = ['write-back'] as const;
 export type StoreBehaviorType = (typeof storeBehaviorTypes)[number];
 
 export const dataTypes = [
-  'kInt'
-  , 'kUInt'
-  , 'kLong'
-  , 'kULong'
-  , 'kFloat'
-  , 'kDouble'
-  , 'kBool'
+  'kInt',
+  'kUInt',
+  'kLong',
+  'kULong',
+  'kFloat',
+  'kDouble',
+  'kBool',
 ] as const;
 
 export const memoryLocation = z.object({

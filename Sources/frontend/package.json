@@ -1,6 +1,6 @@
 {
   "name": "riscv-sim-frontend",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -9,10 +9,9 @@
     "lint": "npx @biomejs/biome check src",
     "lint:fix": "biome check --apply ./src",
     "lint:fix-unsafe": "biome check --apply-unsafe ./src",
-    "lint:strict": "eslint --max-warnings=0 src",
     "typecheck": "tsc --noEmit --incremental false",
-    "test:watch": "jest --watch",
     "test": "jest",
+    "test:watch": "jest --watch",
     "format": "npx @biomejs/biome format src/ --write",
     "format:check": "npx @biomejs/biome format ./src",
     "postbuild": "next-sitemap --config next-sitemap.config.js"
@@ -62,15 +61,7 @@
     "@testing-library/react": "^13.4.0",
     "@types/react": "^18.2.39",
     "@types/react-modal": "^3.16.3",
-    "@typescript-eslint/eslint-plugin": "^5.62.0",
-    "@typescript-eslint/parser": "^5.62.0",
     "autoprefixer": "^10.4.16",
-    "eslint": "^8.45.0",
-    "eslint-config-next": "^13.4.10",
-    "eslint-config-prettier": "^8.10.0",
-    "eslint-plugin-prettier": "^5.0.0",
-    "eslint-plugin-simple-import-sort": "^7.0.0",
-    "eslint-plugin-unused-imports": "^2.0.0",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
     "next-router-mock": "^0.9.10",
@@ -79,14 +70,5 @@
     "tailwindcss": "^3.3.5",
     "tsd": "^0.29.0",
     "typescript": "^5.3.2"
-  },
-  "lint-staged": {
-    "**/*.{js,jsx,ts,tsx}": [
-      "eslint --max-warnings=0",
-      "prettier -w"
-    ],
-    "**/*.{json,css,scss,md,webmanifest}": [
-      "prettier -w"
-    ]
   }
 }
