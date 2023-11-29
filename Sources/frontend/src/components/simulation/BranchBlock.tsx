@@ -39,6 +39,7 @@ import { useAppSelector } from '@/lib/redux/hooks';
 
 import Block from '@/components/simulation/Block';
 import { InstructionBubble } from '@/components/simulation/InstructionField';
+import { hexPadEven } from '@/lib/utils';
 
 export default function BranchBlock() {
   const btb = useAppSelector(selectBranchTargetBuffer);
@@ -55,20 +56,28 @@ export default function BranchBlock() {
   }
 
   // TODO: target label if exists
-  const btbEntries: React.ReactNode[] = addresses.map((address) => {
+  const btbEntries: React.ReactNode[] = [];
+  for (const address of addresses) {
     const entry = btb.buffer[address];
-    if (!entry) return null;
+    if (!entry) continue;
     btbEntries.push(
-      <InstructionBubble key={address} className='flex text-sm'>
-        <div className='w-1/2'>Address: {`0x${address.toString(16)}`}</div>
-        <div className='w-1/2'>Target: {`0x${entry.target.toString(16)}`}</div>
-      </InstructionBubble>,
+      <InstructionBubble key={address} className='contents'>
+        <div>{hexPadEven(address)}</div>
+        <div>{hexPadEven(entry.target)}</div>
+      </InstructionBubble>
     );
-  });
+  }
 
   return (
-    <Block title='Branch Block' className='h-20'>
-      {btbEntries.length > 0 ? btbEntries : <div>No relevant entries</div>}
+    <Block title='Branch Block' className='h-28'>
+      {btbEntries.length > 0 ? 
+      <div className='grid grid-cols-2'>
+        <div>Address</div>
+        <div>Target</div>
+        {btbEntries}
+      </div> 
+      : 
+      <div className='text-sm text-gray-500'>No relevant entries</div>}
     </Block>
   );
 }

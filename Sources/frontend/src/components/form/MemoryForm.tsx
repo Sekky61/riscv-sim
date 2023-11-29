@@ -30,6 +30,8 @@
  */
 
 import { Button } from '@/components/base/ui/button';
+import { Card } from '@/components/base/ui/card';
+import { Input } from '@/components/base/ui/input';
 import {
   Select,
   SelectContent,
@@ -38,9 +40,11 @@ import {
   SelectValue,
 } from '@/components/base/ui/select';
 import { FormInput } from '@/components/form/FormInput';
+import { RadioInput, RadioInputWithTitle } from '@/components/form/RadioInput';
 import {
   MemoryLocationFormValue,
   dataTypes,
+  dataTypesText,
   memoryLocation,
   memoryLocationDefaultValue,
 } from '@/lib/forms/Isa';
@@ -49,14 +53,28 @@ import { addMemoryLocation } from '@/lib/redux/isaSlice';
 import { DataTypeEnum } from '@/lib/types/cpuApi';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+
+/**
+ * Expand the memoryLocation form with a data input
+ */
+const memoryLocationWithDataType = memoryLocation.extend({
+  dataSource: z.enum(['constant', 'random', 'file']),
+  constant: z.number().optional(),
+});
+type MemoryLocationForm = z.infer<typeof memoryLocationWithDataType>;
 
 export default function MemoryForm() {
   const dispatch = useAppDispatch();
-  const form = useForm<MemoryLocationFormValue>({
-    resolver: zodResolver(memoryLocation),
-    defaultValues: memoryLocationDefaultValue,
+  const form = useForm<MemoryLocationForm>({
+    resolver: zodResolver(memoryLocationWithDataType),
+    defaultValues: {
+      ...memoryLocationDefaultValue,
+      dataSource: 'constant',
+    },
     mode: 'onChange',
   });
+  const watchDataSource = form.watch('dataSource');
 
   const { register, handleSubmit, formState } = form;
 
@@ -67,32 +85,13 @@ export default function MemoryForm() {
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <div className='flex flex-col'>
-        <div className='flex flex-row'>
           <FormInput
             name='name'
             title='Name'
             register={register}
             error={formState.errors.name}
           />
-          <Select
-            onValueChange={(e: DataTypeEnum) => {
-              form.setValue('dataType', e);
-            }}
-            defaultValue={'kBool'}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder='Select a verified email to display' />
-            </SelectTrigger>
-            <SelectContent>
-              {dataTypes.map((item) => (
-                <SelectItem key={item} value={item}>
-                  {item}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className='flex flex-row'>
+          <RadioInputWithTitle name='dataType' register={register} title='Data Type' choices={dataTypes} texts={dataTypesText} />
           <FormInput
             type='number'
             name='alignment'
@@ -100,8 +99,34 @@ export default function MemoryForm() {
             register={register}
             error={formState.errors.alignment}
           />
-        </div>
+          <RadioInputWithTitle name='dataSource' register={register} title='Data Source' choices={['constant', 'random', 'file']} texts={['Constant', 'Random', 'File']} />
       </div>
+      <Card>
+        <h2>Value</h2>
+        {watchDataSource === 'constant'  && (
+          <FormInput
+            type='number'
+            name='constant'
+            title='Constant'
+            register={register}
+            error={formState.errors.constant}
+          />
+        )}
+        {watchDataSource === 'random' && (
+          <div className='flex flex-col'>
+            -
+          </div>
+        )}
+        {watchDataSource === 'file' && (
+          <div className='flex flex-col'>
+            <Input
+              type='file'
+              name='file'
+              title='File'
+            />
+          </div>
+        )}
+      </Card>
       <div className='flex flex-row justify-end'>
         <Button type='submit' disabled={!formState.isValid}>
           Save

@@ -53,6 +53,15 @@ export const dataTypes = [
   'kDouble',
   'kBool',
 ] as const;
+export const dataTypesText = [
+  'Integer',
+  'Unsigned Integer',
+  'Long',
+  'Unsigned Long',
+  'Float',
+  'Double',
+  'Boolean',
+] as const;
 
 export const memoryLocation = z.object({
   name: z.string().min(1),
