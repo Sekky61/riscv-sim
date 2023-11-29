@@ -60,6 +60,12 @@ public class MemoryLocation
    * Data type of the memory location
    */
   public DataTypeEnum dataType;
+
+  /**
+   * @brief Constructor for deserialization
+   */
+  public MemoryLocation() {
+  }
   
   /**
    * @brief Constructor

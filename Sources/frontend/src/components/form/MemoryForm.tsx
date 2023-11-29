@@ -39,7 +39,7 @@ import {
 } from '@/components/base/ui/select';
 import { FormInput } from '@/components/form/FormInput';
 import {
-  MemoryLocation,
+  MemoryLocationFormValue,
   dataTypes,
   memoryLocation,
   memoryLocationDefaultValue,
@@ -52,7 +52,7 @@ import { useForm } from 'react-hook-form';
 
 export default function MemoryForm() {
   const dispatch = useAppDispatch();
-  const form = useForm<MemoryLocation>({
+  const form = useForm<MemoryLocationFormValue>({
     resolver: zodResolver(memoryLocation),
     defaultValues: memoryLocationDefaultValue,
     mode: 'onChange',
@@ -60,7 +60,7 @@ export default function MemoryForm() {
 
   const { register, handleSubmit, formState } = form;
 
-  const onSubmit = (data: MemoryLocation) => {
+  const onSubmit = (data: MemoryLocationFormValue) => {
     dispatch(addMemoryLocation(data));
   };
 

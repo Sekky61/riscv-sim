@@ -41,7 +41,7 @@ import type { RootState } from '@/lib/redux/store';
 
 import {
   IsaNamedConfig,
-  MemoryLocation,
+  MemoryLocationFormValue,
   isaFormDefaultValues,
   isaSchema,
 } from '../forms/Isa';
@@ -106,7 +106,7 @@ export const isaSlice = createSlice({
         return isa;
       });
     },
-    addMemoryLocation: (state, action: PayloadAction<MemoryLocation>) => {
+    addMemoryLocation: (state, action: PayloadAction<MemoryLocationFormValue>) => {
       const activeIsa = findIsaByName(state.isas, state.activeIsaName);
       if (activeIsa === undefined) throw new Error('Active ISA not found');
       activeIsa.memoryLocations.push(action.payload);

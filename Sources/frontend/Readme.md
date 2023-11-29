@@ -7,7 +7,7 @@ Technology stack:
 - [TypeScript](https://www.typescriptlang.org/)
 - [Tailwind CSS](https://tailwindcss.com/)
 - [Jest](https://jestjs.io/)
-- [ESLint](https://eslint.org/)
+- [biomejs](https://biomejs.dev/)
 
 ## Structure
 

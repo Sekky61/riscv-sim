@@ -57,15 +57,15 @@ export const dataTypes = [
 export const memoryLocation = z.object({
   name: z.string().min(1),
   alignment: z.number().min(1).max(16),
-  value: z.array(z.number()),
+  bytes: z.array(z.number()),
   dataType: z.enum(dataTypes),
 });
-export type MemoryLocation = z.infer<typeof memoryLocation>;
+export type MemoryLocationFormValue = z.infer<typeof memoryLocation>;
 
-export const memoryLocationDefaultValue: MemoryLocation = {
+export const memoryLocationDefaultValue: MemoryLocationFormValue = {
   name: 'Array',
   alignment: 4,
-  value: [],
+  bytes: [],
   dataType: 'kInt',
 };
 
