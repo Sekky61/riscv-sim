@@ -1,11 +1,14 @@
-FROM gradle:8.4.0-jdk17-jammy AS base
+# Alpine image - originally ubuntu, but caused issues with olfer docker versions
+FROM alpine:3.18 AS base
 
 # Install dependencies only when needed
 FROM base AS deps
-# Ignore the error code from apt-get update - happens on old versions of docker
-# gcc-12-riscv64-linux-gnu is not available on ubuntu 20.04
-RUN apt-get update && apt-get install -y gcc-12-riscv64-linux-gnu; exit 0 
-RUN /usr/bin/riscv64-linux-gnu-gcc-12 --version
+# locking to specific versions threw errors
+RUN apk add \
+  gcc-riscv-none-elf \
+  gradle
+# RUN /usr/bin/riscv-none-elf-gcc-13.1.0 --version
+RUN /usr/bin/riscv-none-elf-gcc --version
 WORKDIR /app
 
 FROM deps AS build
@@ -20,7 +23,7 @@ FROM deps AS runner
 WORKDIR /app
 COPY . . 
 EXPOSE 8000
-CMD gradle run --args="server --host=0.0.0.0 --port=8000"
+CMD gradle run --args="server --host=0.0.0.0 --port=8000 --gcc-path=/usr/bin/riscv-none-elf-gcc"
 
 FROM deps as test
 WORKDIR /app
