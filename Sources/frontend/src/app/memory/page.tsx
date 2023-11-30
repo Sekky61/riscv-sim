@@ -37,11 +37,14 @@ import { Button } from '@/components/base/ui/button';
 import MemoryForm from '@/components/form/MemoryForm';
 import { useAppSelector } from '@/lib/redux/hooks';
 import { selectActiveIsa } from '@/lib/redux/isaSlice';
+import clsx from 'clsx';
 import Head from 'next/head';
+import { useState } from 'react';
 
 export default function HomePage() {
   // Load the active ISA
   const activeIsa = useAppSelector(selectActiveIsa);
+  const [activeMemoryLocation, setActiveMemoryLocation] = useState('new');
 
   const memoryLocations = activeIsa?.memoryLocations;
 
@@ -55,16 +58,33 @@ export default function HomePage() {
         <div className='flex divide-x'>
           <div className='w-48 p-4 flex flex-col gap-4'>
             {memoryLocations.map((memoryLocation) => {
-              return <Button variant='ghost'>{memoryLocation.name}</Button>;
+              const isActive = memoryLocation.name === activeMemoryLocation;
+              const style = clsx(isActive ? 'bg-gray-100' : '');
+              return (
+                <Button
+                  variant='ghost'
+                  className={style}
+                  onClick={() => setActiveMemoryLocation(memoryLocation.name)}
+                >
+                  {memoryLocation.name}
+                </Button>
+              );
             })}
             <div className='mt-4 pt-4 border-t'>
-              <Button variant='ghost' className='w-full'>
+              <Button
+                variant='ghost'
+                className={clsx(
+                  'new' === activeMemoryLocation ? 'bg-gray-100' : '',
+                  'w-full',
+                )}
+                onClick={() => setActiveMemoryLocation('new')}
+              >
                 New
               </Button>
             </div>
           </div>
           <div className='p-4'>
-            <MemoryForm />
+            <MemoryForm memoryLocationName={activeMemoryLocation} />
           </div>
         </div>
       </div>

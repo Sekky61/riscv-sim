@@ -106,10 +106,22 @@ export const isaSlice = createSlice({
         return isa;
       });
     },
+    /**
+     * Enforces unique memory location names
+     */
     addMemoryLocation: (state, action: PayloadAction<MemoryLocationFormValue>) => {
       const activeIsa = findIsaByName(state.isas, state.activeIsaName);
       if (activeIsa === undefined) throw new Error('Active ISA not found');
+      // Check if the name is unique
+      if (activeIsa.memoryLocations.find((loc) => loc.name === action.payload.name) !== undefined) {
+        throw new Error('Memory location name must be unique');
+      }
       activeIsa.memoryLocations.push(action.payload);
+    },
+    removeMemoryLocation: (state, action: PayloadAction<string>) => {
+      const activeIsa = findIsaByName(state.isas, state.activeIsaName);
+      if (activeIsa === undefined) throw new Error('Active ISA not found');
+      activeIsa.memoryLocations = activeIsa.memoryLocations.filter((loc) => loc.name !== action.payload);
     },
     removeIsa: (state, action: PayloadAction<string>) => {
       // Do not allow to remove the first ISA (called "Default")
@@ -135,6 +147,7 @@ export const {
   updateIsa,
   removeIsa,
   addMemoryLocation,
+  removeMemoryLocation
 } = isaSlice.actions;
 
 export const selectActiveIsaName = (state: RootState) =>
@@ -149,7 +162,7 @@ export const selectActiveIsa = createSelector(
   (isas, name): IsaNamedConfig => {
     const isa = isas.find((isaItem) => isaItem.name === name);
     if (isa === undefined) throw new Error('Active ISA not found');
-    // Copy the ISA config
+    // reference the ISA config
     return isa;
   },
 );
