@@ -29,6 +29,7 @@ package com.gradle.superscalarsim.compiler;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gradle.superscalarsim.loader.ConfigLoader;
 import com.gradle.superscalarsim.serialization.Serialization;
 
 import java.util.ArrayList;
@@ -42,7 +43,7 @@ import java.util.Map;
  */
 public class GccCaller
 {
-  public static String compilerPath = "/usr/bin/riscv64-linux-gnu-gcc-12";
+  public static String compilerPath = ConfigLoader.gccPath;
   
   /**
    * Map of optimization flags

@@ -57,6 +57,21 @@ application {
     mainClass = 'App'
 }
 
+apply plugin: 'application'
+mainClassName = 'App'
+run {
+    /* Can pass all the properties: */
+    systemProperties System.getProperties()
+
+    /* Need to split the space-delimited value in the exec.args */
+    args System.getProperty("exec.args", "").split()
+}
+
+test {
+    /* Can pass all the properties: */
+    systemProperties System.getProperties()
+}
+
 testlogger {
     // pick a theme - mocha, standard, plain, mocha-parallel, standard-parallel or plain-parallel
     theme 'standard'

@@ -23,9 +23,9 @@ FROM deps AS runner
 WORKDIR /app
 COPY . . 
 EXPOSE 8000
-CMD gradle run --args="server --host=0.0.0.0 --port=8000 --gcc-path=/usr/bin/riscv-none-elf-gcc"
+CMD gradle run --args="server --host=0.0.0.0 --port=8000" -Dconfig.profile=prod
 
 FROM deps as test
 WORKDIR /app
 COPY . . 
-RUN gradle build -i
+RUN gradle build -i -Dconfig.profile=prod
