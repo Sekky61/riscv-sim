@@ -32,7 +32,7 @@
 /**
  * Parse contents as CSV. Maps the values to a 1D array of numbers.
  * The rows do not have to be of the same length.
- * 
+ *
  * @param contents
  */
 export function parseCsv(contents: string): number[] {
@@ -47,4 +47,4 @@ export function parseCsv(contents: string): number[] {
   }
 
   return numbers;
-};
+}

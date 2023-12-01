@@ -109,11 +109,18 @@ export const isaSlice = createSlice({
     /**
      * Enforces unique memory location names
      */
-    addMemoryLocation: (state, action: PayloadAction<MemoryLocationFormValue>) => {
+    addMemoryLocation: (
+      state,
+      action: PayloadAction<MemoryLocationFormValue>,
+    ) => {
       const activeIsa = findIsaByName(state.isas, state.activeIsaName);
       if (activeIsa === undefined) throw new Error('Active ISA not found');
       // Check if the name is unique
-      if (activeIsa.memoryLocations.find((loc) => loc.name === action.payload.name) !== undefined) {
+      if (
+        activeIsa.memoryLocations.find(
+          (loc) => loc.name === action.payload.name,
+        ) !== undefined
+      ) {
         throw new Error('Memory location name must be unique');
       }
       activeIsa.memoryLocations.push(action.payload);
@@ -121,7 +128,9 @@ export const isaSlice = createSlice({
     removeMemoryLocation: (state, action: PayloadAction<string>) => {
       const activeIsa = findIsaByName(state.isas, state.activeIsaName);
       if (activeIsa === undefined) throw new Error('Active ISA not found');
-      activeIsa.memoryLocations = activeIsa.memoryLocations.filter((loc) => loc.name !== action.payload);
+      activeIsa.memoryLocations = activeIsa.memoryLocations.filter(
+        (loc) => loc.name !== action.payload,
+      );
     },
     removeIsa: (state, action: PayloadAction<string>) => {
       // Do not allow to remove the first ISA (called "Default")
@@ -147,7 +156,7 @@ export const {
   updateIsa,
   removeIsa,
   addMemoryLocation,
-  removeMemoryLocation
+  removeMemoryLocation,
 } = isaSlice.actions;
 
 export const selectActiveIsaName = (state: RootState) =>

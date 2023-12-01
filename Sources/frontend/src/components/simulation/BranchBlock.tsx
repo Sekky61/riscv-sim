@@ -64,20 +64,21 @@ export default function BranchBlock() {
       <InstructionBubble key={address} className='contents'>
         <div>{hexPadEven(address)}</div>
         <div>{hexPadEven(entry.target)}</div>
-      </InstructionBubble>
+      </InstructionBubble>,
     );
   }
 
   return (
     <Block title='Branch Block' className='h-28'>
-      {btbEntries.length > 0 ? 
-      <div className='grid grid-cols-2'>
-        <div>Address</div>
-        <div>Target</div>
-        {btbEntries}
-      </div> 
-      : 
-      <div className='text-sm text-gray-500'>No relevant entries</div>}
+      {btbEntries.length > 0 ? (
+        <div className='grid grid-cols-2'>
+          <div>Address</div>
+          <div>Target</div>
+          {btbEntries}
+        </div>
+      ) : (
+        <div className='text-sm text-gray-500'>No relevant entries</div>
+      )}
     </Block>
   );
 }
