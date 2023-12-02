@@ -47,6 +47,7 @@ import { selectActiveIsa } from '@/lib/redux/isaSlice';
 import type { RootState } from '@/lib/redux/store';
 import { callSimulationImpl } from '@/lib/serverCalls/callCompiler';
 import type {
+  CacheLineModel,
   CpuState,
   InputCodeArgument,
   InputCodeModel,
@@ -55,6 +56,7 @@ import type {
   Reference,
   RegisterModel,
   SimCodeModel,
+  Cache,
 } from '@/lib/types/cpuApi';
 import { isValidReference, isValidRegisterValue } from '@/lib/utils';
 
@@ -566,5 +568,38 @@ export const selectStoreBuffer = (state: RootState) =>
 
 export const selectLoadBuffer = (state: RootState) =>
   state.cpu.state?.loadBufferBlock;
+
+// cache
+
+const selectCacheInternal = (state: RootState) => state.cpu.state?.cache;
+
+export interface DecodedCacheLine extends CacheLineModel {
+  decodedLine: number[];
+}
+
+export interface DecodedCache extends Cache {
+  cache: DecodedCacheLine[][];
+}
+
+export const selectCache = createSelector(
+  [selectCacheInternal],
+  (cache): DecodedCache | null => {
+    if (!cache) {
+      return null;
+    }
+
+    // deep copy the cache
+    const copy: DecodedCache = JSON.parse(JSON.stringify(cache));
+
+    // decode the base64 string in each cache line
+    for (const isl of copy.cache) {
+      for (const line of isl) {
+        const ba = toByteArray(line.line ?? '');
+        line.decodedLine = Array.from(ba);
+      }
+    }
+    return copy;
+  },
+);
 
 export default cpuSlice.reducer;

@@ -55,6 +55,7 @@ import Program from '@/components/simulation/Program';
 import ReorderBuffer from '@/components/simulation/ReorderBuffer';
 import StoreBuffer from '@/components/simulation/StoreBuffer';
 import Timeline from '@/components/simulation/Timeline';
+import CacheBlock from '@/components/simulation/CacheBlock';
 
 export default function HomePage() {
   const [scale, setScale] = useState(1);
@@ -99,12 +100,19 @@ export default function HomePage() {
             <FunctionUnitGroup type='branch' />
           </div>
           <div className='sim-grid'>
-            <StoreBuffer />
-            <LoadBuffer />
+            <div className='flex justify-center'>
+              <FunctionUnitGroup type='memory' />
+            </div>
+            <div className='flex gap-4'>
+              <StoreBuffer />
+              <LoadBuffer />
+            </div>
           </div>
           <div>
-            <FunctionUnitGroup type='memory' />
-            <MainMemory />
+            <div className='flex gap-4 mb-4'>
+              <MainMemory />
+              <CacheBlock />
+            </div>
           </div>
         </div>
       </CanvasWindow>

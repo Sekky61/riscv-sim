@@ -400,17 +400,17 @@
 
   /* Simulation view grid */
   .sim-grid {
-    @apply inline-grid gap-4 justify-center m-4 mt-16;
+    @apply inline-grid gap-4 justify-center;
     grid-auto-columns: 1fr;
     grid-auto-rows: auto;
   }
 
   .col-grid {
-    @apply flex gap-4 justify-center m-4 mt-16;
+    @apply flex gap-4 justify-center m-4;
   }
 
   .global-grid {
-    @apply grid justify-items-start items-start;
+    @apply grid justify-items-start items-start gap-4  mt-16;
     grid-template-columns: repeat(2, max-content);
   }
 
@@ -490,4 +490,25 @@
     margin-right: 0.5em;
   }
   
+  /* cache subgrid */
+  .cache-grid {
+    @apply grid justify-center;
+    grid-template-columns: repeat(3, max-content);
+    grid-auto-rows: auto;
+  }
+
+  .cache-line {
+    @apply grid;
+    grid-row: span 2;
+    grid-column: span 3;
+    grid-template-columns: subgrid;
+    grid-template-rows: repeat(2, 1fr);
+  }
+
+  .cache-lines-cont {
+    @apply grid;
+    grid-column: span 2;
+    grid-template-columns: subgrid;
+    grid-template-rows: subgrid;
+  }
 }

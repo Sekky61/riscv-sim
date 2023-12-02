@@ -43,7 +43,7 @@ export default function MainMemory() {
   const bytesInRow = 8;
   const rows = 16;
 
-  const startAddress = 0;
+  const startAddress = 624;
 
   return (
     <Block title='Main Memory' className=''>
