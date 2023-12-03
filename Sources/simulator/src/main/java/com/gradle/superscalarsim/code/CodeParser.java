@@ -192,7 +192,7 @@ public class CodeParser
    */
   public void parseCode(String code)
   {
-    parseCode(code, new ArrayList<>());
+    parseCode(code, new HashMap<>());
   }
   
   /**
@@ -203,7 +203,7 @@ public class CodeParser
    *
    * @brief Parses the code
    */
-  public void parseCode(String code, List<Label> knownLabels)
+  public void parseCode(String code, Map<String, Label> knownLabels)
   {
     // First, scan the code for directives like .asciiz, .word, etc. and note their locations and values
     // Then filter them out so lexer only sees instructions and labels
@@ -216,11 +216,9 @@ public class CodeParser
     this.peekToken    = this.lexer.nextToken();
     this.instructions = new ArrayList<>();
     this.labels       = new HashMap<>();
-    for (Label label : knownLabels)
-    {
-      // todo: Does not alias (two labels pointing to the same object)
-      this.labels.put(label.name, label);
-    }
+    // todo: Does not alias (two labels pointing to the same object)
+    // Add known labels
+    this.labels.putAll(knownLabels);
     this.unconfirmedLabels = new ArrayList<>();
     parse();
     
@@ -229,6 +227,24 @@ public class CodeParser
     {
       this.instructions = new ArrayList<>();
       this.labels       = new HashMap<>();
+    }
+    
+    // Add constantValues to labels in instructions
+    // TODO: memory initializer would ideally have references to labels and change them directly
+    for (InputCodeModel instruction : instructions)
+    {
+      for (InputCodeArgument argument : instruction.getArguments())
+      {
+        if (argument.getConstantValue() == null)
+        {
+          if (labels.containsKey(argument.getValue()))
+          {
+            RegisterDataContainer constantValue = new RegisterDataContainer();
+            constantValue.setValue(labels.get(argument.getValue()).address);
+            argument.setConstantValue(constantValue);
+          }
+        }
+      }
     }
   }
   

@@ -244,7 +244,7 @@ public class AsmParser
    *
    * @return Set of labels in the program
    */
-  private static Set<String> collectLabels(List<String> program)
+  public static Set<String> collectLabels(List<String> program)
   {
     Set<String> labels = new HashSet<>();
     for (String line : program)

@@ -45,13 +45,11 @@ public class InputCodeArgument
    * Parsed constant value of the argument. Uses type info from instruction definition.
    */
   RegisterDataContainer constantValue;
-  
   /**
    * Name of the argument.
    * Example: rs1, imm, labelName.
    */
   private String name;
-  
   /**
    * Value of the argument.
    * Example: x5, 10, name of a label.
@@ -84,7 +82,6 @@ public class InputCodeArgument
     this.value         = value;
     this.constantValue = constantValue;
   }// end of Constructor
-  //------------------------------------------------------
   
   /**
    * @param argument Object to be copied
@@ -143,6 +140,12 @@ public class InputCodeArgument
   public RegisterDataContainer getConstantValue()
   {
     return constantValue;
+  }
+  //------------------------------------------------------
+  
+  public void setConstantValue(RegisterDataContainer constantValue)
+  {
+    this.constantValue = constantValue;
   }
   //------------------------------------------------------
   

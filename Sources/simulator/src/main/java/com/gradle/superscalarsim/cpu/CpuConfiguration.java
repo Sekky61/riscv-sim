@@ -30,14 +30,12 @@ package com.gradle.superscalarsim.cpu;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.gradle.superscalarsim.code.CodeParser;
 import com.gradle.superscalarsim.code.Expression;
+import com.gradle.superscalarsim.code.Label;
 import com.gradle.superscalarsim.code.ParseError;
 import com.gradle.superscalarsim.loader.InitLoader;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 // The corresponding Typescript type is:
 //
@@ -195,7 +193,7 @@ public class CpuConfiguration implements Serializable
     
     // Parse code
     CodeParser codeParser = new CodeParser(new InitLoader());
-    codeParser.parseCode(code);
+    codeParser.parseCode(code, getMemoryLocationLabels());
     
     if (!codeParser.success())
     {
@@ -507,6 +505,19 @@ public class CpuConfiguration implements Serializable
     {
       addition, bitwise, multiplication, division, special,
     }
+  }
+  
+  /**
+   * Extract names of memory locations defined outside the code
+   */
+  public Map<String, Label> getMemoryLocationLabels()
+  {
+    Map<String, Label> names = new HashMap<>();
+    for (MemoryLocation memoryLocation : memoryLocations)
+    {
+      names.put(memoryLocation.name, new Label(memoryLocation.name, -1));
+    }
+    return names;
   }
   
   public static class ValidationResult

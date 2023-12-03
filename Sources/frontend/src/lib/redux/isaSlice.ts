@@ -123,7 +123,14 @@ export const isaSlice = createSlice({
       ) {
         throw new Error('Memory location name must be unique');
       }
-      activeIsa.memoryLocations.push(action.payload);
+      // keep only the defined fields
+      const newLocation: MemoryLocationFormValue = {
+        name: action.payload.name,
+        alignment: action.payload.alignment,
+        bytes: action.payload.bytes,
+        dataType: action.payload.dataType,
+      };
+      activeIsa.memoryLocations.push(newLocation);
     },
     removeMemoryLocation: (state, action: PayloadAction<string>) => {
       const activeIsa = findIsaByName(state.isas, state.activeIsaName);

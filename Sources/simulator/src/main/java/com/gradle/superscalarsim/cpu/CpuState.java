@@ -49,9 +49,7 @@ import com.gradle.superscalarsim.models.InstructionFunctionModel;
 import com.gradle.superscalarsim.serialization.Serialization;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * @class CpuState
@@ -149,17 +147,25 @@ public class CpuState implements Serializable
     // Parse code
     CodeParser codeParser = new CodeParser(initLoader, inputCodeModelFactory);
     // Add data labels from config
-    List<Label> dataLabels = new ArrayList<>();
+    Map<String, Label> dataLabels = new HashMap<>();
     for (MemoryLocation memoryLocation : config.memoryLocations)
     {
-      dataLabels.add(new Label(memoryLocation.name, 0)); // Address will be set later
+      dataLabels.put(memoryLocation.name, new Label(memoryLocation.name, 0)); // Address will be set later
     }
+    
+    this.simulatedMemory = new SimulatedMemory();
+    // Fill memory with data
+    MemoryInitializer memoryInitializer = new MemoryInitializer(128, 512);
+    // init these first, so that the values are set and written to argument list
+    memoryInitializer.initializeMemory(simulatedMemory, config.memoryLocations, dataLabels);
+    
     codeParser.parseCode(config.code, dataLabels);
     
     if (!codeParser.success())
     {
       throw new IllegalStateException("Code parsing failed: " + codeParser.getErrorMessages());
     }
+    memoryInitializer.initializeMemory(simulatedMemory, codeParser.getMemoryLocations(), codeParser.getLabels());
     
     this.statisticsCounter      = new StatisticsCounter();
     this.cacheStatisticsCounter = new CacheStatisticsCounter();
@@ -171,11 +177,6 @@ public class CpuState implements Serializable
     
     // Create memory
     this.unifiedRegisterFileBlock = new UnifiedRegisterFileBlock(initLoader, registerModelFactory);
-    this.simulatedMemory          = new SimulatedMemory();
-    // Fill memory with data
-    MemoryInitializer memoryInitializer = new MemoryInitializer(128, 512);
-    memoryInitializer.initializeMemory(simulatedMemory, codeParser.getMemoryLocations(), codeParser.getLabels());
-    memoryInitializer.initializeMemory(simulatedMemory, config.memoryLocations, codeParser.getLabels());
     // Set the sp to the end of the stack
     this.unifiedRegisterFileBlock.getRegister("sp").setValue(memoryInitializer.getStackPointer());
     
