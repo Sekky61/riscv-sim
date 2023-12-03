@@ -235,15 +235,13 @@ public class CodeParser
     {
       for (InputCodeArgument argument : instruction.getArguments())
       {
-        if (argument.getConstantValue() == null)
+        if (argument.getConstantValue() != null || !labels.containsKey(argument.getValue()))
         {
-          if (labels.containsKey(argument.getValue()))
-          {
-            RegisterDataContainer constantValue = new RegisterDataContainer();
-            constantValue.setValue(labels.get(argument.getValue()).address);
-            argument.setConstantValue(constantValue);
-          }
+          continue;
         }
+        RegisterDataContainer constantValue = new RegisterDataContainer();
+        constantValue.setValue(labels.get(argument.getValue()).address);
+        argument.setConstantValue(constantValue);
       }
     }
   }

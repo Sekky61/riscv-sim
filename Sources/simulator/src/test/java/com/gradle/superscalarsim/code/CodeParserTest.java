@@ -828,4 +828,34 @@ public class CodeParserTest
     Assert.assertEquals(0, codeParser.getMemoryLocations().size());
     Assert.assertEquals(3, codeParser.getLabels().size());
   }
+  
+  /**
+   * Labels argument objects should have the address loaded
+   */
+  @Test
+  public void test_labels_have_address()
+  {
+    String code = """
+            add:
+                addi sp,sp,-48
+                sw s0,44(sp)
+                addi s0,sp,48
+            .L2:
+                sw a0,-36(s0)
+                sw a1,-40(s0)
+                sw zero,-20(s0)
+                j .L2
+                        """;
+    codeParser.parseCode(code);
+    
+    Assert.assertTrue(codeParser.success());
+    Assert.assertEquals(0, codeParser.getMemoryLocations().size());
+    Assert.assertEquals(2, codeParser.getLabels().size());
+    
+    Assert.assertEquals(0, codeParser.getLabels().get("add").address);
+    Assert.assertEquals(12, codeParser.getLabels().get(".L2").address);
+    
+    Assert.assertEquals(12, (int) codeParser.getInstructions().get(6).getArgumentByName("imm").getConstantValue()
+            .getValue(DataTypeEnum.kUInt));
+  }
 }
