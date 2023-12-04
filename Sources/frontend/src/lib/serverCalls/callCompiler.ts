@@ -29,7 +29,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { CpuConfiguration } from '@/lib/forms/Isa';
+import { CpuConfiguration, MemoryLocationApi } from '@/lib/forms/Isa';
 import {
   AsyncEndpointFunction,
   CompileRequest,
@@ -67,10 +67,22 @@ export async function callSimulationImpl(
   tick: number,
   cfg: CpuConfiguration,
 ): Promise<SimulateResponse> {
+  // Take just some fields from memory locations
+  const memoryLocations: MemoryLocationApi[] = cfg.memoryLocations.map(
+    (loc) => ({
+      name: loc.name,
+      alignment: loc.alignment,
+      bytes: loc.bytes,
+      dataType: loc.dataType,
+    }),
+  );
   // todo: cfg type
   const body: SimulateRequest = {
     tick,
-    config: cfg,
+    config: {
+      ...cfg,
+      memoryLocations,
+    },
   };
   return await callApi('simulate' as const, body);
 }

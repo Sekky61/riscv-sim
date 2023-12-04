@@ -45,6 +45,7 @@ import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import AnimatedButton from '@/components/AnimatedButton';
 import CanvasWindow from '@/components/CanvasWindow';
 import BranchBlock from '@/components/simulation/BranchBlock';
+import CacheBlock from '@/components/simulation/CacheBlock';
 import DecodeBlock from '@/components/simulation/DecodeBlock';
 import FetchBlock from '@/components/simulation/FetchBlock';
 import FunctionUnitGroup from '@/components/simulation/FunctionUnitGroup';
@@ -55,7 +56,6 @@ import Program from '@/components/simulation/Program';
 import ReorderBuffer from '@/components/simulation/ReorderBuffer';
 import StoreBuffer from '@/components/simulation/StoreBuffer';
 import Timeline from '@/components/simulation/Timeline';
-import CacheBlock from '@/components/simulation/CacheBlock';
 
 export default function HomePage() {
   const [scale, setScale] = useState(1);

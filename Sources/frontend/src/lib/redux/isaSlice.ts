@@ -41,7 +41,8 @@ import type { RootState } from '@/lib/redux/store';
 
 import {
   IsaNamedConfig,
-  MemoryLocationFormValue,
+  MemoryLocationForm,
+  MemoryLocationApi,
   isaFormDefaultValues,
   isaSchema,
 } from '../forms/Isa';
@@ -109,10 +110,7 @@ export const isaSlice = createSlice({
     /**
      * Enforces unique memory location names
      */
-    addMemoryLocation: (
-      state,
-      action: PayloadAction<MemoryLocationFormValue>,
-    ) => {
+    addMemoryLocation: (state, action: PayloadAction<MemoryLocationForm>) => {
       const activeIsa = findIsaByName(state.isas, state.activeIsaName);
       if (activeIsa === undefined) throw new Error('Active ISA not found');
       // Check if the name is unique
@@ -123,14 +121,7 @@ export const isaSlice = createSlice({
       ) {
         throw new Error('Memory location name must be unique');
       }
-      // keep only the defined fields
-      const newLocation: MemoryLocationFormValue = {
-        name: action.payload.name,
-        alignment: action.payload.alignment,
-        bytes: action.payload.bytes,
-        dataType: action.payload.dataType,
-      };
-      activeIsa.memoryLocations.push(newLocation);
+      activeIsa.memoryLocations.push(action.payload);
     },
     removeMemoryLocation: (state, action: PayloadAction<string>) => {
       const activeIsa = findIsaByName(state.isas, state.activeIsaName);

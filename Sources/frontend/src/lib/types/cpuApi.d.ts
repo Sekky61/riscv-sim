@@ -65,46 +65,46 @@ export interface CpuState {
 }
 
 export interface Cache {
-  numberOfLines: number
-  associativity: number
-  lineSize: number
-  cache: CacheLineModel[][]
-  writeBack: boolean
-  lastAccess?: CacheAccess[] // todo ?
-  storeDelay: number
-  loadDelay: number
-  lineReplacementDelay: number
-  addRemainingDelayToStore: boolean
-  cycleEndOfReplacement: number
-  replacementPolicyType: "FIFO" | "LRU" | "RANDOM"
-  replacementPolicy: ReplacementPolicyModel
-  memory?: SimulatedMemory
-  cacheStatisticsCounter?: CacheStatisticsCounter
+  numberOfLines: number;
+  associativity: number;
+  lineSize: number;
+  cache: CacheLineModel[][];
+  writeBack: boolean;
+  lastAccess?: CacheAccess[]; // todo ?
+  storeDelay: number;
+  loadDelay: number;
+  lineReplacementDelay: number;
+  addRemainingDelayToStore: boolean;
+  cycleEndOfReplacement: number;
+  replacementPolicyType: 'FIFO' | 'LRU' | 'RANDOM';
+  replacementPolicy: ReplacementPolicyModel;
+  memory?: SimulatedMemory;
+  cacheStatisticsCounter?: CacheStatisticsCounter;
 }
 export interface CacheLineModel {
-  line: string // base64 encoded
-  valid: boolean
-  dirty: boolean
-  tag: number
-  lineSize: number
-  index: number
-  baseAddress: number
+  line: string; // base64 encoded
+  valid: boolean;
+  dirty: boolean;
+  tag: number;
+  lineSize: number;
+  index: number;
+  baseAddress: number;
 }
-export type ReplacementPolicyModel = object
+export type ReplacementPolicyModel = object;
 export interface CacheAccess {
-  id: number
-  clockCycle: number
-  isHit?: boolean[]
-  isStore: boolean
-  tag: number
-  index: number
-  offset: number
-  data: number
-  cacheIndex?: number[]
-  lineOffset?: number[]
-  delay: number
-  endOfReplacement: number
-  store: boolean
+  id: number;
+  clockCycle: number;
+  isHit?: boolean[];
+  isStore: boolean;
+  tag: number;
+  index: number;
+  offset: number;
+  data: number;
+  cacheIndex?: number[];
+  lineOffset?: number[];
+  delay: number;
+  endOfReplacement: number;
+  store: boolean;
 }
 
 export interface SimulatedMemory {

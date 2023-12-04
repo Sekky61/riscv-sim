@@ -69,13 +69,30 @@ export const memoryLocation = z.object({
   bytes: z.array(z.number()),
   dataType: z.enum(dataTypes),
 });
-export type MemoryLocationFormValue = z.infer<typeof memoryLocation>;
+export type MemoryLocationApi = z.infer<typeof memoryLocation>;
 
-export const memoryLocationDefaultValue: MemoryLocationFormValue = {
+export const memoryLocationDefaultValue: MemoryLocationApi = {
   name: 'Array',
   alignment: 4,
   bytes: [],
   dataType: 'kInt',
+};
+
+/**
+ * Expand the memoryLocation form with a data input
+ */
+export const memoryLocationWithSource = memoryLocation.extend({
+  dataSource: z.enum(['constant', 'random', 'file']),
+  constant: z.number().optional(),
+  dataLength: z.number().min(1).optional(),
+});
+export type MemoryLocationForm = z.infer<typeof memoryLocationWithSource>;
+
+export const memoryLocationFormDefaultValue: MemoryLocationForm = {
+  ...memoryLocationDefaultValue,
+  dataSource: 'constant',
+  constant: 0,
+  dataLength: 1,
 };
 
 export const arithmeticUnits = ['FX', 'FP'] as const;
@@ -141,7 +158,7 @@ export const isaSchema = z.object({
   loadLatency: z.number().min(0).max(1000),
   laneReplacementDelay: z.number().min(1).max(1000),
   addRemainingDelay: z.boolean(), // todo
-  memoryLocations: z.array(memoryLocation),
+  memoryLocations: z.array(memoryLocationWithSource),
 });
 
 export type IsaConfig = z.infer<typeof isaSchema>;
@@ -152,6 +169,7 @@ export const isaNamed = isaSchema.extend({
 
 export const isaNamedAndCode = isaNamed.extend({
   code: z.string(),
+  memoryLocations: z.array(memoryLocation),
 });
 
 export type IsaNamedConfig = z.infer<typeof isaNamed>;

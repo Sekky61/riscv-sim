@@ -33,22 +33,18 @@ import { Button, buttonVariants } from '@/components/base/ui/button';
 import { Card } from '@/components/base/ui/card';
 import { Input } from '@/components/base/ui/input';
 import { Label } from '@/components/base/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/base/ui/select';
 import { FormInput } from '@/components/form/FormInput';
-import { RadioInput, RadioInputWithTitle } from '@/components/form/RadioInput';
+import { RadioInputWithTitle } from '@/components/form/RadioInput';
 import { parseCsv } from '@/lib/csv';
 import {
-  MemoryLocationFormValue,
+  MemoryLocationForm,
+  MemoryLocationApi,
   dataTypes,
   dataTypesText,
   memoryLocation,
   memoryLocationDefaultValue,
+  memoryLocationFormDefaultValue,
+  memoryLocationWithSource,
 } from '@/lib/forms/Isa';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import {
@@ -56,28 +52,9 @@ import {
   removeMemoryLocation,
   selectActiveIsa,
 } from '@/lib/redux/isaSlice';
-import { DataTypeEnum } from '@/lib/types/cpuApi';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect, useState } from 'react';
-import { set, useForm } from 'react-hook-form';
-import { z } from 'zod';
-
-/**
- * Expand the memoryLocation form with a data input
- */
-const memoryLocationWithDataType = memoryLocation.extend({
-  dataSource: z.enum(['constant', 'random', 'file']),
-  constant: z.number().optional(),
-  dataLength: z.number().min(1).optional(),
-});
-type MemoryLocationForm = z.infer<typeof memoryLocationWithDataType>;
-
-const memoryLocationFormDefaultValue: MemoryLocationForm = {
-  ...memoryLocationDefaultValue,
-  dataSource: 'constant',
-  constant: 0,
-  dataLength: 1,
-};
+import { useForm } from 'react-hook-form';
 
 // props
 interface MemoryFormProps {
@@ -88,7 +65,7 @@ export default function MemoryForm({ memoryLocationName }: MemoryFormProps) {
   const dispatch = useAppDispatch();
   const activeIsa = useAppSelector(selectActiveIsa);
   const form = useForm<MemoryLocationForm>({
-    resolver: zodResolver(memoryLocationWithDataType),
+    resolver: zodResolver(memoryLocationWithSource),
     defaultValues: memoryLocationFormDefaultValue,
     mode: 'onChange',
   });
@@ -106,6 +83,8 @@ export default function MemoryForm({ memoryLocationName }: MemoryFormProps) {
     const memoryLocation = activeIsa.memoryLocations.find(
       (ml) => ml.name === memoryLocationName,
     );
+    console.log(`Loading memory location ${memoryLocationName}`);
+    console.dir(memoryLocation);
     if (memoryLocation) {
       reset(memoryLocation);
     } else if (memoryLocationName === 'new') {
@@ -120,7 +99,20 @@ export default function MemoryForm({ memoryLocationName }: MemoryFormProps) {
     activeIsa.memoryLocations.find((ml) => ml.name === watchFields.name) ===
       undefined;
 
-  const onSubmit = (data: MemoryLocationFormValue) => {
+  const onSubmit = (data: MemoryLocationForm) => {
+    // random data
+    if (data.dataSource === 'random') {
+      data.bytes = Array.from({ length: data.dataLength ?? 0 }, () =>
+        Math.floor(Math.random() * 256),
+      );
+    }
+    // constant data
+    if (data.dataSource === 'constant') {
+      data.bytes = Array.from(
+        { length: data.dataLength ?? 0 },
+        () => data.constant ?? 0,
+      );
+    }
     dispatch(addMemoryLocation(data));
   };
 
