@@ -35,18 +35,24 @@
 
 import { Button } from '@/components/base/ui/button';
 import MemoryForm from '@/components/form/MemoryForm';
-import { useAppSelector } from '@/lib/redux/hooks';
-import { selectActiveIsa } from '@/lib/redux/isaSlice';
+import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
+import { removeMemoryLocation, selectActiveIsa } from '@/lib/redux/isaSlice';
 import clsx from 'clsx';
 import Head from 'next/head';
 import { useState } from 'react';
 
 export default function HomePage() {
   // Load the active ISA
+  const dispatch = useAppDispatch();
   const activeIsa = useAppSelector(selectActiveIsa);
   const [activeMemoryLocation, setActiveMemoryLocation] = useState('new');
-
   const memoryLocations = activeIsa?.memoryLocations;
+
+  const handleDelete = () => {
+    // remove from redux
+    dispatch(removeMemoryLocation(activeMemoryLocation));
+    setActiveMemoryLocation('new');
+  };
 
   return (
     <main className='h-full'>
@@ -57,6 +63,11 @@ export default function HomePage() {
       <div className='flex h-full flex-col'>
         <div className='flex divide-x'>
           <div className='w-48 p-4 flex flex-col gap-4'>
+            {memoryLocations?.length === 0 && (
+              <div className='text-gray-400 text-sm text-center'>
+                No memory locations
+              </div>
+            )}
             {memoryLocations.map((memoryLocation) => {
               const isActive = memoryLocation.name === activeMemoryLocation;
               const style = clsx(isActive ? 'bg-gray-100' : '');
@@ -84,7 +95,11 @@ export default function HomePage() {
             </div>
           </div>
           <div className='p-4'>
-            <MemoryForm memoryLocationName={activeMemoryLocation} />
+            <MemoryForm
+              existing={activeMemoryLocation !== 'new'}
+              memoryLocationName={activeMemoryLocation}
+              deleteCallback={handleDelete}
+            />
           </div>
         </div>
       </div>

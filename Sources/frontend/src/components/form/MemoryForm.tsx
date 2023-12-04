@@ -58,10 +58,19 @@ import { useForm } from 'react-hook-form';
 
 // props
 interface MemoryFormProps {
+  /**
+   * True if the memory location already exists (vs new one)
+   */
+  existing: boolean;
   memoryLocationName: string;
+  deleteCallback: () => void;
 }
 
-export default function MemoryForm({ memoryLocationName }: MemoryFormProps) {
+export default function MemoryForm({
+  existing,
+  memoryLocationName,
+  deleteCallback,
+}: MemoryFormProps) {
   const dispatch = useAppDispatch();
   const activeIsa = useAppSelector(selectActiveIsa);
   const form = useForm<MemoryLocationForm>({
@@ -83,8 +92,6 @@ export default function MemoryForm({ memoryLocationName }: MemoryFormProps) {
     const memoryLocation = activeIsa.memoryLocations.find(
       (ml) => ml.name === memoryLocationName,
     );
-    console.log(`Loading memory location ${memoryLocationName}`);
-    console.dir(memoryLocation);
     if (memoryLocation) {
       reset(memoryLocation);
     } else if (memoryLocationName === 'new') {
@@ -142,13 +149,6 @@ export default function MemoryForm({ memoryLocationName }: MemoryFormProps) {
     } else {
       console.warn('No file selected');
     }
-  };
-
-  const handleDelete = () => {
-    // remove from redux
-    dispatch(removeMemoryLocation(watchFields.name));
-    // Reset form
-    reset(memoryLocationFormDefaultValue);
   };
 
   let valueMetadata = {
@@ -261,12 +261,23 @@ export default function MemoryForm({ memoryLocationName }: MemoryFormProps) {
           <div className='flex flex-col'>Count: {valueMetadata.count}</div>
         </div>
       </Card>
-      <div className='flex flex-row justify-between'>
-        <Button type='button' variant='destructive' onClick={handleDelete}>
-          Delete
-        </Button>
-        <Button type='submit' disabled={!canSubmit}>
-          Save
+      <div className='relative'>
+        {existing && (
+          <Button
+            className='absolute left-0'
+            type='button'
+            variant='destructive'
+            onClick={deleteCallback}
+          >
+            Delete
+          </Button>
+        )}
+        <Button
+          className='absolute right-0'
+          type='submit'
+          disabled={!canSubmit}
+        >
+          {existing ? 'Update' : 'Create'}
         </Button>
       </div>
     </form>
