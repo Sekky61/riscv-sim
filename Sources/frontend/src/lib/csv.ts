@@ -35,14 +35,14 @@
  *
  * @param contents
  */
-export function parseCsv(contents: string): number[] {
+export function parseCsv(contents: string): string[] {
   const numbers = [];
   for (const line of contents.split('\n')) {
     if (line === '') {
       continue;
     }
     for (const number of line.split(',')) {
-      numbers.push(Number(number));
+      numbers.push(number);
     }
   }
 

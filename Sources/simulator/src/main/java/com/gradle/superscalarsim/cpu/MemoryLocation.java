@@ -173,6 +173,13 @@ public class MemoryLocation
     public List<String> values;
     
     /**
+     * @brief Constructor for deserialization
+     */
+    public DataChunk()
+    {
+    }
+    
+    /**
      * @brief Constructor
      */
     public DataChunk(DataTypeEnum dataType)

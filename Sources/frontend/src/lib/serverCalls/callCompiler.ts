@@ -72,8 +72,7 @@ export async function callSimulationImpl(
     (loc) => ({
       name: loc.name,
       alignment: loc.alignment,
-      bytes: loc.bytes,
-      dataType: loc.dataType,
+      dataChunks: loc.dataChunks,
     }),
   );
   // todo: cfg type

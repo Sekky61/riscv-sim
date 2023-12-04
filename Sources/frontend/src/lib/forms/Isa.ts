@@ -52,6 +52,7 @@ export const dataTypes = [
   'kFloat',
   'kDouble',
   'kBool',
+  'kChar',
 ] as const;
 export const dataTypesText = [
   'Integer',
@@ -61,27 +62,33 @@ export const dataTypesText = [
   'Float',
   'Double',
   'Boolean',
+  'Char',
 ] as const;
+
+export const dataChunk = z.object({
+  dataType: z.enum(dataTypes),
+  values: z.array(z.string()),
+});
+export type DataChunk = z.infer<typeof dataChunk>;
 
 export const memoryLocation = z.object({
   name: z.string().min(1),
   alignment: z.number().min(1).max(16),
-  bytes: z.array(z.number()),
-  dataType: z.enum(dataTypes),
+  dataChunks: z.array(dataChunk),
 });
 export type MemoryLocationApi = z.infer<typeof memoryLocation>;
 
 export const memoryLocationDefaultValue: MemoryLocationApi = {
   name: 'Array',
   alignment: 4,
-  bytes: [],
-  dataType: 'kInt',
+  dataChunks: [],
 };
 
 /**
  * Expand the memoryLocation form with a data input
  */
 export const memoryLocationWithSource = memoryLocation.extend({
+  dataType: z.enum(dataTypes),
   dataSource: z.enum(['constant', 'random', 'file']),
   constant: z.number().optional(),
   dataLength: z.number().min(1).optional(),
@@ -90,6 +97,7 @@ export type MemoryLocationForm = z.infer<typeof memoryLocationWithSource>;
 
 export const memoryLocationFormDefaultValue: MemoryLocationForm = {
   ...memoryLocationDefaultValue,
+  dataType: 'kInt',
   dataSource: 'constant',
   constant: 0,
   dataLength: 1,

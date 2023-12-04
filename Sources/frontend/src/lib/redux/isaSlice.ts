@@ -123,6 +123,28 @@ export const isaSlice = createSlice({
       }
       activeIsa.memoryLocations.push(action.payload);
     },
+    updateMemoryLocation: (
+      state,
+      action: PayloadAction<{
+        oldName: string;
+        memoryLocation: MemoryLocationForm;
+      }>,
+    ) => {
+      const activeIsa = findIsaByName(state.isas, state.activeIsaName);
+      if (activeIsa === undefined) throw new Error('Active ISA not found');
+      const oldLoc = activeIsa.memoryLocations.find(
+        (loc) => loc.name === action.payload.oldName,
+      );
+      if (oldLoc === undefined) {
+        throw new Error('Updating memory location that is undefined');
+      }
+      activeIsa.memoryLocations = activeIsa.memoryLocations.map((loc) => {
+        if (loc.name === action.payload.oldName) {
+          return action.payload.memoryLocation;
+        }
+        return loc;
+      });
+    },
     removeMemoryLocation: (state, action: PayloadAction<string>) => {
       const activeIsa = findIsaByName(state.isas, state.activeIsaName);
       if (activeIsa === undefined) throw new Error('Active ISA not found');
@@ -155,6 +177,7 @@ export const {
   removeIsa,
   addMemoryLocation,
   removeMemoryLocation,
+  updateMemoryLocation,
 } = isaSlice.actions;
 
 export const selectActiveIsaName = (state: RootState) =>

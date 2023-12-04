@@ -45,16 +45,51 @@ import {
   memoryLocationDefaultValue,
   memoryLocationFormDefaultValue,
   memoryLocationWithSource,
+  DataChunk,
 } from '@/lib/forms/Isa';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import {
   addMemoryLocation,
   removeMemoryLocation,
   selectActiveIsa,
+  updateMemoryLocation,
 } from '@/lib/redux/isaSlice';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
+
+interface FileMetadata {
+  name: string;
+  size: number;
+  type: string;
+  data: string[];
+}
+
+async function readFromFile(
+  file: File,
+  callback: (result: FileMetadata) => void,
+) {
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const content = e.target?.result;
+    if (typeof content === 'string') {
+      // parse file content as csv
+      const numbers = parseCsv(content);
+      if (numbers) {
+        // if csv is valid, set the value
+        callback({
+          name: file.name,
+          size: file.size,
+          type: file.type,
+          data: numbers,
+        });
+      }
+    } else {
+      console.warn('File content is not string');
+    }
+  };
+  reader.readAsText(file);
+}
 
 // props
 interface MemoryFormProps {
@@ -78,11 +113,13 @@ export default function MemoryForm({
     defaultValues: memoryLocationFormDefaultValue,
     mode: 'onChange',
   });
-  const [fileMetadata, setFileMetadata] = useState({
+  const [fileMetadata, setFileMetadata] = useState<FileMetadata>({
     name: '',
     size: 0,
     type: '',
+    data: [],
   });
+  const [fileChanged, setFileChanged] = useState(false);
   const watchFields = form.watch();
   const { register, handleSubmit, formState, reset } = form;
 
@@ -103,49 +140,59 @@ export default function MemoryForm({
 
   const canSubmit =
     formState.isValid &&
-    activeIsa.memoryLocations.find((ml) => ml.name === watchFields.name) ===
-      undefined;
+    (activeIsa.memoryLocations.find((ml) => ml.name === watchFields.name) ===
+      undefined ||
+      existing) &&
+    (formState.isDirty || fileChanged);
 
   const onSubmit = (data: MemoryLocationForm) => {
     // random data
     if (data.dataSource === 'random') {
-      data.bytes = Array.from({ length: data.dataLength ?? 0 }, () =>
-        Math.floor(Math.random() * 256),
-      );
+      const chunk: DataChunk = {
+        dataType: data.dataType,
+        values: Array.from({ length: data.dataLength ?? 0 }, () =>
+          Math.floor(Math.random() * 256).toString(),
+        ),
+      };
+      data.dataChunks = [chunk];
     }
     // constant data
     if (data.dataSource === 'constant') {
-      data.bytes = Array.from(
-        { length: data.dataLength ?? 0 },
-        () => data.constant ?? 0,
-      );
+      const constant = data.constant?.toString() || '0';
+      const chunk: DataChunk = {
+        dataType: data.dataType,
+        values: Array.from({ length: data.dataLength ?? 0 }, () => constant),
+      };
+      data.dataChunks = [chunk];
     }
-    dispatch(addMemoryLocation(data));
+    if (data.dataSource === 'file') {
+      const chunk: DataChunk = {
+        dataType: data.dataType,
+        values: fileMetadata.data,
+      };
+      data.dataChunks = [chunk];
+    }
+
+    setFileChanged(false);
+    if (existing) {
+      dispatch(
+        updateMemoryLocation({
+          oldName: memoryLocationName,
+          memoryLocation: data,
+        }),
+      );
+    } else {
+      dispatch(addMemoryLocation(data));
+    }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const content = e.target?.result;
-        if (typeof content === 'string') {
-          // parse file content as csv
-          const numbers = parseCsv(content);
-          if (numbers) {
-            // if csv is valid, set the value
-            form.setValue('bytes', numbers);
-            setFileMetadata({
-              name: file.name,
-              size: file.size,
-              type: file.type,
-            });
-          }
-        } else {
-          console.warn('File content is not string');
-        }
-      };
-      reader.readAsText(file);
+      readFromFile(file, (result) => {
+        setFileMetadata(result);
+        setFileChanged(true);
+      });
     } else {
       console.warn('No file selected');
     }
@@ -166,7 +213,7 @@ export default function MemoryForm({
   }
   if (watchFields.dataSource === 'file') {
     valueMetadata = {
-      count: watchFields.bytes?.length || 0,
+      count: watchFields.dataChunks?.[0]?.values.length || 0,
     };
   }
 
