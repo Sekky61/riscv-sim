@@ -34,21 +34,21 @@ import { parseCsv } from '@/lib/csv';
 describe('The CSV parser', () => {
   it('Reads 1D integers', () => {
     const result = parseCsv('1,2,3,4,5');
-    expect(result).toEqual([1, 2, 3, 4, 5]);
+    expect(result).toEqual(['1', '2', '3', '4', '5']);
   });
 
   it('Reads 2D integers', () => {
     const result = parseCsv('1,2,3,4,5\n6,7,8,9,10');
-    expect(result).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+    expect(result).toEqual(['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']);
   });
 
   it('Reads floats', () => {
     const result = parseCsv('1.1,2.2,3.3,4.4,5.5');
-    expect(result).toEqual([1.1, 2.2, 3.3, 4.4, 5.5]);
+    expect(result).toEqual(['1.1', '2.2', '3.3', '4.4', '5.5']);
   });
 
   it('Handles last empty line', () => {
     const result = parseCsv('1,2,3,4,5\n6,7,8,9,10\n');
-    expect(result).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+    expect(result).toEqual(['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']);
   });
 });
