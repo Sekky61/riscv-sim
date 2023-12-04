@@ -85,10 +85,10 @@ public class MemoryInitializer
         int alignment = 1 << memoryLocation.alignment;
         memoryPtr = (memoryPtr + alignment - 1) / alignment * alignment;
       }
-      byte[] data = new byte[memoryLocation.bytes.size()];
-      for (int i = 0; i < memoryLocation.bytes.size(); i++)
+      byte[] data = new byte[memoryLocation.getBytes().size()];
+      for (int i = 0; i < memoryLocation.getBytes().size(); i++)
       {
-        data[i] = memoryLocation.bytes.get(i);
+        data[i] = memoryLocation.getBytes().get(i);
       }
       memory.insertIntoMemory(memoryPtr, data);
       // Save label address
@@ -100,7 +100,7 @@ public class MemoryInitializer
       {
         throw new RuntimeException("Label " + memoryLocation.name + " not found");
       }
-      memoryPtr += memoryLocation.getSize();
+      memoryPtr += memoryLocation.getByteSize();
     }
   }
   

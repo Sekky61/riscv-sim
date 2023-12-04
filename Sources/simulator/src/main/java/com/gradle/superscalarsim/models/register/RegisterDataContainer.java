@@ -190,6 +190,7 @@ public class RegisterDataContainer
     }
     return switch (type)
     {
+      case kChar -> cls.cast((char) bits);
       case kByte -> cls.cast((byte) bits);
       case kShort -> cls.cast((short) bits);
       case kInt, kUInt -> cls.cast((int) bits);

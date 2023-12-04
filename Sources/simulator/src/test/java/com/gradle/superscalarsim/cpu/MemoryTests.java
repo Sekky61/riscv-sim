@@ -113,7 +113,7 @@ public class MemoryTests
             la x6, arr2
             arr:
             .byte 1, 2""";
-    cpuConfig.memoryLocations.add(MemoryLocation.createFx("arr2", 4, List.of(3L), DataTypeEnum.kInt));
+    cpuConfig.memoryLocations.add(new MemoryLocation("arr2", 4, DataTypeEnum.kInt, List.of("3")));
     Cpu cpu = new Cpu(cpuConfig);
     cpu.execute();
     

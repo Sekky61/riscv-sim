@@ -34,9 +34,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Result of parsing directives in assembly code
+ * Result of parsing directives in assembly code.
+ * Can have multiple sequences of values of different data types.
  *
- * @brief Describes one memory location (constant, array)
+ * @brief Describes one named memory location (constant, array, struct).
  */
 public class MemoryLocation
 {
@@ -52,66 +53,58 @@ public class MemoryLocation
   public int alignment;
   
   /**
-   * Value of the memory location
+   * Chunks of data.
+   * They lie next to each other in memory.
+   * One named memory location may have multiple data types. A C struct is an example.
+   * <p>
+   * <code>
+   * Array:
+   * .byte   1
+   * .word   42
+   * </code>
+   * </p>
+   * This would result in two data chunks: byte and int.
    */
-  public List<Byte> bytes;
+  List<DataChunk> dataChunks;
   
-  /**
-   * Data type of the memory location
-   */
-  public DataTypeEnum dataType;
-
   /**
    * @brief Constructor for deserialization
    */
-  public MemoryLocation() {
+  public MemoryLocation()
+  {
+  }
+  
+  /**
+   * @brief Constructor with initial value. For testing purposes.
+   */
+  public MemoryLocation(String name, int alignment, DataTypeEnum dataType, List<String> values)
+  {
+    this(name, alignment);
+    this.dataChunks.add(new DataChunk(dataType));
+    this.dataChunks.get(0).values = values;
   }
   
   /**
    * @brief Constructor
    */
-  public MemoryLocation(String name, int alignment, List<Byte> bytes, DataTypeEnum dataType)
+  public MemoryLocation(String name, int alignment)
   {
-    this.name      = name;
-    this.dataType  = dataType;
-    this.alignment = alignment;
-    this.bytes     = bytes;
+    this.name       = name;
+    this.alignment  = alignment;
+    this.dataChunks = new ArrayList<>();
+  }
+  
+  public List<DataChunk> getDataChunks()
+  {
+    return dataChunks;
   }
   
   /**
-   * @brief Constructor for FX values
+   * Add a value to the latest data chunk
    */
-  public static MemoryLocation createFx(String name, int alignment, List<Long> fxValues, DataTypeEnum dataType)
+  public void addValue(String value)
   {
-    // Convert to bytes
-    List<Byte> bytes = new ArrayList<>();
-    for (Long fxValue : fxValues)
-    {
-      byte[] b = dataType.getBytes(fxValue.toString());
-      for (byte b1 : b)
-      {
-        bytes.add(b1);
-      }
-    }
-    return new MemoryLocation(name, alignment, bytes, dataType);
-  }
-  
-  /**
-   * @brief Constructor for FP values
-   */
-  public static MemoryLocation createFp(String name, int alignment, List<Double> fpValues, DataTypeEnum dataType)
-  {
-    // Convert to bytes
-    List<Byte> bytes = new ArrayList<>();
-    for (Double fpValue : fpValues)
-    {
-      byte[] b = dataType.getBytes(fpValue.toString());
-      for (byte b1 : b)
-      {
-        bytes.add(b1);
-      }
-    }
-    return new MemoryLocation(name, alignment, bytes, dataType);
+    dataChunks.get(dataChunks.size() - 1).values.add(value);
   }
   
   /**
@@ -120,24 +113,116 @@ public class MemoryLocation
   @Override
   public String toString()
   {
-    
-    boolean isArray = getSize() > dataType.getSize();
-    if (isArray)
+    StringBuilder result = new StringBuilder(name + " ");
+    for (DataChunk dataChunk : dataChunks)
     {
-      return name + " " + dataType + "[" + getSize() / dataType.getSize() + "]";
+      result.append(dataChunk.toString()).append(" ");
     }
-    else
-    {
-      return name + " " + dataType + " " + bytes.get(0);
-    }
+    return result.toString();
   }
   
   /**
-   * @return Size of the memory location in bytes
+   * @return Bytes of the memory location
    */
-  public int getSize()
+  public List<Byte> getBytes()
   {
-    return bytes.size();
+    List<Byte> bytes = new ArrayList<>();
+    for (DataChunk dataChunk : dataChunks)
+    {
+      bytes.addAll(dataChunk.getBytes());
+    }
+    return bytes;
   }
   
+  /**
+   * @return Size of the whole memory location in bytes
+   */
+  public int getByteSize()
+  {
+    int size = 0;
+    for (DataChunk dataChunk : dataChunks)
+    {
+      size += dataChunk.getByteSize();
+    }
+    return size;
+  }
+  
+  /**
+   * @brief Add a new data chunk
+   */
+  public void addDataChunk(DataTypeEnum dataType)
+  {
+    dataChunks.add(new DataChunk(dataType));
+  }
+  
+  /**
+   *
+   */
+  public static class DataChunk
+  {
+    /**
+     * Data type of the memory location
+     */
+    public DataTypeEnum dataType;
+    
+    /**
+     * Value of the memory location.
+     * This is the semantic value of a memory location. If the data type is int, each of
+     * these values will occupy 4 bytes.
+     */
+    public List<String> values;
+    
+    /**
+     * @brief Constructor
+     */
+    public DataChunk(DataTypeEnum dataType)
+    {
+      this.dataType = dataType;
+      this.values   = new ArrayList<>();
+    }
+    
+    /**
+     * @brief String representation of the memory chunk
+     */
+    @Override
+    public String toString()
+    {
+      boolean isArray = getByteSize() > dataType.getSize();
+      if (isArray)
+      {
+        return dataType + "[" + getByteSize() / dataType.getSize() + "]";
+      }
+      else
+      {
+        return dataType + " " + getBytes().get(0);
+      }
+    }
+    
+    /**
+     * @return Size of the memory location in bytes
+     */
+    public int getByteSize()
+    {
+      return getBytes().size();
+    }
+    
+    /**
+     * Interpret the values according to the data type
+     *
+     * @return List of bytes
+     */
+    public List<Byte> getBytes()
+    {
+      List<Byte> bytes = new ArrayList<>();
+      for (Object o : values)
+      {
+        byte[] b = dataType.getBytes(o.toString());
+        for (byte value : b)
+        {
+          bytes.add(value);
+        }
+      }
+      return bytes;
+    }
+  }
 }

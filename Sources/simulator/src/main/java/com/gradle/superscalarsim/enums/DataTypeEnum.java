@@ -66,8 +66,20 @@ public enum DataTypeEnum
   /**
    * True/False. Used for expressions.
    */
-  kBool;
+  kBool,
   
+  /**
+   * Character. Semantically the same as unsigned byte, but used for display purposes.
+   */
+  kChar;
+  
+  /**
+   * Mapping from Java class to data type enum
+   *
+   * @param aClass Java class
+   *
+   * @return Data type enum for the given Java class
+   */
   public static DataTypeEnum fromJavaClass(Class<?> aClass)
   {
     if (aClass == Integer.class)
@@ -100,6 +112,7 @@ public enum DataTypeEnum
   {
     return switch (this)
     {
+      case kChar -> Character.class;
       case kByte -> Byte.class;
       case kShort -> Short.class;
       case kInt, kUInt -> Integer.class;
@@ -145,6 +158,7 @@ public enum DataTypeEnum
     byte[] bytes = new byte[getSize()];
     switch (this)
     {
+      case kChar -> bytes[0] = (byte) cutValue.charAt(0);
       case kBool, kByte ->
       {
         // Java does not have unsigned byte, so we need to parse it manually
@@ -230,10 +244,15 @@ public enum DataTypeEnum
   {
     return switch (this)
     {
-      case kBool, kByte -> 1;
+      case kBool, kByte, kChar -> 1;
       case kShort -> 2;
       case kInt, kUInt, kFloat -> 4;
       case kLong, kULong, kDouble -> 8;
     };
+  }
+  
+  public boolean isFloatingPoint()
+  {
+    return this == kFloat || this == kDouble;
   }
 }

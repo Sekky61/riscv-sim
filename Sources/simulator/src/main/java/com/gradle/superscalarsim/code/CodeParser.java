@@ -255,7 +255,7 @@ public class CodeParser
   private void collectMemoryLocations(String code)
   {
     List<String>   lines = splitLines(code);
-    MemoryLocation mem   = new MemoryLocation(null, 1, new ArrayList<>(), DataTypeEnum.kByte);
+    MemoryLocation mem   = new MemoryLocation(null, 1);
     
     // Go through the program
     // Take note of .byte, .hword, .word, .align, .ascii, .asciiz, .skip, .zero
@@ -267,12 +267,12 @@ public class CodeParser
         if (mem.name != null)
         {
           // Is it a data label?
-          if (!mem.bytes.isEmpty())
+          if (!mem.getBytes().isEmpty())
           {
             memoryLocations.add(mem);
           }
           // Start new memory location
-          mem = new MemoryLocation(null, 1, new ArrayList<>(), DataTypeEnum.kByte);
+          mem = new MemoryLocation(null, 1);
         }
         if (isLabel(line))
         {
@@ -300,21 +300,17 @@ public class CodeParser
             addError(new CodeToken(0, 0, directive, CodeToken.Type.EOF), directive + " expected label before it");
             break;
           }
-          DataTypeEnum dataType = switch (directive)
+          DataTypeEnum t = switch (directive)
           {
             case ".byte" -> DataTypeEnum.kByte;
             case ".hword" -> DataTypeEnum.kShort;
             case ".word" -> DataTypeEnum.kInt;
             default -> null;
           };
-          mem.dataType = dataType;
+          mem.addDataChunk(t);
           for (int j = 1; j < tokens.length; j++)
           {
-            byte[] bytes = dataType.getBytes(tokens[j]);
-            for (byte b : bytes)
-            {
-              mem.bytes.add(b);
-            }
+            mem.addValue(tokens[j]);
           }
         }
         case ".align" ->
@@ -332,6 +328,7 @@ public class CodeParser
         }
         case ".ascii", ".asciiz" ->
         {
+          mem.addDataChunk(DataTypeEnum.kChar);
           if (argCount == 0)
           {
             addError(new CodeToken(0, 0, directive, CodeToken.Type.EOF),
@@ -350,31 +347,32 @@ public class CodeParser
             token = token.substring(1, token.length() - 1);
             for (char c : token.toCharArray())
             {
-              mem.bytes.add((byte) c);
+              mem.addValue(c + "");
             }
             if (directive.equals(".asciiz"))
             {
-              mem.bytes.add((byte) 0);
+              mem.addValue("\0");
             }
           }
         }
         case ".skip", ".zero" ->
         {
           // .zero is an alias for .skip
+          mem.addDataChunk(DataTypeEnum.kByte);
           if (argCount != 1 && argCount != 2)
           {
             addError(new CodeToken(0, 0, directive, CodeToken.Type.EOF), ".skip expected 1 argument, got " + argCount);
             break;
           }
-          int  size = Integer.parseInt(tokens[1]);
-          byte fill = 0;
+          int    size = Integer.parseInt(tokens[1]);
+          String fill = "0";
           if (argCount == 2)
           {
-            fill = Byte.decode(tokens[2]);
+            fill = tokens[2];
           }
           for (int j = 0; j < size; j++)
           {
-            mem.bytes.add(fill);
+            mem.addValue(fill);
           }
         }
       }
@@ -648,11 +646,10 @@ public class CodeParser
       CodeToken argumentToken = args.get(argument.name());
       String    argumentName  = argument.name();
       // Try to parse as a constant. May be null for labels, registers
-      RegisterDataContainer constantValue       = RegisterDataContainer.parseAs(argumentToken.text(), argument.type());
-      InputCodeArgument     inputCodeArgument   = new InputCodeArgument(argumentName, argumentToken.text(),
-                                                                        constantValue);
-      boolean               isLValue            = argumentName.equals("rd");
-      DataTypeEnum          instructionDataType = instructionModel.getArgumentByName(argumentName).type();
+      RegisterDataContainer constantValue = RegisterDataContainer.parseAs(argumentToken.text(), argument.type());
+      InputCodeArgument inputCodeArgument = new InputCodeArgument(argumentName, argumentToken.text(), constantValue);
+      boolean      isLValue            = argumentName.equals("rd");
+      DataTypeEnum instructionDataType = instructionModel.getArgumentByName(argumentName).type();
       boolean isValid = validateArgument(inputCodeArgument, instructionModel.getInstructionType(), instructionDataType,
                                          isLValue, argumentToken);
       if (isValid)
@@ -881,9 +878,10 @@ public class CodeParser
    */
   private boolean checkDatatype(final DataTypeEnum argumentDataType, final RegisterTypeEnum registerDataType)
   {
+    // TODO: move this
     return switch (argumentDataType)
     {
-      case kInt, kUInt, kLong, kULong, kBool, kByte, kShort -> registerDataType == RegisterTypeEnum.kInt;
+      case kInt, kUInt, kLong, kULong, kBool, kByte, kShort, kChar -> registerDataType == RegisterTypeEnum.kInt;
       case kFloat, kDouble -> registerDataType == RegisterTypeEnum.kFloat;
       
     };
