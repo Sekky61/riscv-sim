@@ -76,7 +76,7 @@ stop_review:
   script:
     - echo "Remove review app"
     - cd Sources
-    - docker compose -f "docker-compose.yml" down
+    - docker-compose -f "docker-compose.yml" down
   environment:
     name: review/$CI_COMMIT_REF_SLUG
     action: stop
