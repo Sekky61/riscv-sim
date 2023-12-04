@@ -35,6 +35,7 @@ import { useAppSelector } from '@/lib/redux/hooks';
 import Block from '@/components/simulation/Block';
 import { CacheLineModel } from '@/lib/types/cpuApi';
 import { hexPadEven } from '@/lib/utils';
+import clsx from 'clsx';
 
 /**
  * Display the memory like a hexdump
@@ -70,14 +71,22 @@ function CacheLane({
 }: {
   lanes: DecodedCacheLine[];
 }) {
+  const nOfLanes = lanes.length;
   return (
-    <div className='cache-line font-mono'>
-      <div className='flex justify-center items-center row-span-2 border-x border-b box-border'>
-        {lanes[0]?.index}
+    <div className='cache-line font-mono' style={{
+      gridRow: `span ${nOfLanes}`,
+      gridTemplateRows: `repeat(${nOfLanes}, 1fr)`,
+    }}>
+      <div className='flex justify-center items-center font-bold border-x border-b box-border p-1' style={{
+        gridRow: `span ${nOfLanes} / span ${nOfLanes}`
+      }}>
+        {hexPadEven(lanes[0]?.index || 0)}
       </div>
-      {lanes.map((lane, index) => (
+      {lanes.map((lane, index) => {
+        const cls = clsx('border-r border-b p-1', lane.valid && 'bg-green-200', !lane.valid && 'text-gray-400');
+        return (
         <div key={index} className='cache-lines-cont'>
-          <div className='border-r border-b p-1'>{hexPadEven(lane.tag)}</div>
+          <div className={cls}>{hexPadEven(lane.tag)}</div>
           <div className='flex gap-1 border-b border-r p-1'>
             {lane.decodedLine.map((byte, index) => {
               return (
@@ -88,7 +97,8 @@ function CacheLane({
             })}
           </div>
         </div>
-      ))}
+      )
+          })}
     </div>
   );
 }

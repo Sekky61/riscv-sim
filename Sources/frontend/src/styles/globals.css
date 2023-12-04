@@ -499,10 +499,9 @@
 
   .cache-line {
     @apply grid;
-    grid-row: span 2;
+    /* specify grid-rows and grid-template-columns in JS */
     grid-column: span 3;
     grid-template-columns: subgrid;
-    grid-template-rows: repeat(2, 1fr);
   }
 
   .cache-lines-cont {
