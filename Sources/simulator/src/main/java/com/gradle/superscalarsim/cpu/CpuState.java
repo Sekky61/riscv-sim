@@ -86,7 +86,6 @@ public class CpuState implements Serializable
   public MemoryModel memoryModel;
   public CodeLoadStoreInterpreter loadStoreInterpreter;
   public StoreBufferBlock storeBufferBlock;
-  // TODO this is serialized as ref
   public LoadBufferBlock loadBufferBlock;
   
   // ALU

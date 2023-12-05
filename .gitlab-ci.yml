@@ -83,6 +83,7 @@ stop_review:
   rules:
     - if: $CI_MERGE_REQUEST_ID
       when: manual
+  retry: 1
   tags:
     - docker-deploy
 

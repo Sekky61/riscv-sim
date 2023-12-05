@@ -110,6 +110,9 @@ public class CpuConfiguration implements Serializable
   public int cacheLineSize;
   public int cacheAssoc;
   public String cacheReplacement;
+  /**
+   * write-back, write-through
+   */
   public String storeBehavior;
   public int storeLatency;
   public int loadLatency;
