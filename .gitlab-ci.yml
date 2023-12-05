@@ -32,6 +32,7 @@ test_frontend:
   stage: test
   script:
     - cd Sources/frontend
+    - '[ -n "$END_EARLY" ] && echo "Environment variable is set. Exiting." && exit 1'
     - docker build --tag riscvsim-frontend-tests --target test .
   tags:
     - riscvsim
@@ -75,6 +76,7 @@ stop_review:
   stage: deploy
   script:
     - echo "Remove review app"
+    - '[ -n "$END_EARLY" ] && echo "Environment variable is set. Exiting." && exit 1'
     - cd Sources
     - docker-compose -f "docker-compose.yml" down && true # Runner always succeeds
   environment:
