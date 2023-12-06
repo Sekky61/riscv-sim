@@ -22,7 +22,9 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-ENV NEXT_PUBLIC_SIMSERVER_URL http://localhost:8120
+# The default values are the same host as the client, port 8000
+ENV NEXT_PUBLIC_SIMSERVER_PORT 8120
+# ENV NEXT_PUBLIC_SIMSERVER_HOST localhost
 
 # Next.js collects completely anonymous telemetry data about general usage.
 # Learn more here: https://nextjs.org/telemetry
