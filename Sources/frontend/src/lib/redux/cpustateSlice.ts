@@ -45,7 +45,7 @@ import { notify } from 'reapop';
 import { selectAsmCode } from '@/lib/redux/compilerSlice';
 import { selectActiveIsa } from '@/lib/redux/isaSlice';
 import type { RootState } from '@/lib/redux/store';
-import { callSimulationImpl } from '@/lib/serverCalls/callCompiler';
+import { callSimulationImpl } from '@/lib/serverCalls';
 import type {
   Cache,
   CacheLineModel,

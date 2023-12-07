@@ -1,5 +1,5 @@
 /**
- * @file    callCompiler.ts
+ * @file    serverCalls.ts
  *
  * @author  Michal Majer
  *          Faculty of Information Technology
@@ -41,7 +41,7 @@ import {
   SimulateResponse,
 } from '@/lib/types/simulatorApi';
 
-import { CompilerOptions } from '../redux/compilerSlice';
+import { CompilerOptions } from './redux/compilerSlice';
 
 export async function callCompilerImpl(
   code: string,
@@ -113,6 +113,5 @@ export function getSimulatorServerUrl(): string {
   const hostName =
     process.env.NEXT_PUBLIC_SIMSERVER_HOST ?? window.location.hostname;
   const port = process.env.NEXT_PUBLIC_SIMSERVER_PORT ?? '8000';
-  console.log(hostName, port);
   return `http://${hostName}:${port}`;
 }

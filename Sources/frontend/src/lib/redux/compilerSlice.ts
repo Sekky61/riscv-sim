@@ -40,10 +40,7 @@ import { notify } from 'reapop';
 
 import { transformErrors } from '@/lib/editor/transformErrors';
 import type { RootState } from '@/lib/redux/store';
-import {
-  callCompilerImpl,
-  callParseAsmImpl,
-} from '@/lib/serverCalls/callCompiler';
+import { callCompilerImpl, callParseAsmImpl } from '@/lib/serverCalls';
 import {
   CompileResponse,
   ComplexErrorItem,

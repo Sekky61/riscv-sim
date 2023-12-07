@@ -50,12 +50,29 @@ import isaReducer, { IsaReducer } from '@/lib/redux/isaSlice';
 import modalsReducer from '@/lib/redux/modalSlice';
 import shortcutsReducer from '@/lib/redux/shortcutsSlice';
 
+/**
+ * This is the root of the global state.
+ * It is a combination of all the reducers defined in this directory.
+ *
+ * The configuration is persisted in the local storage.
+ * If the schema changes, the version number _must be increased_, otherwise the wrong data will be loaded and the app will not work.
+ *
+ * List of reducers:
+ * - isaSlice - for ISA configuration
+ * - compilerSlice - for compiler tab
+ * - cpustateSlice - for the simulator tab
+ * - modalSlice - for modals (invocation)
+ * - shortcutsSlice - for keyboard shortcuts
+ */
+
 // Persistance config
 // https://blog.logrocket.com/persist-state-redux-persist-redux-toolkit-react/
 // TODO: look at https://github.com/localForage/localForage
 const persistIsaConfig = {
+  // The key in localStorage
   key: 'root',
-  version: 1,
+  // Change the version when changing the schema
+  version: 2,
   storage,
   stateReconciler: hardSet,
 };
