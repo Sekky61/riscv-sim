@@ -44,7 +44,6 @@ import { IssueItemModel, Reference } from '@/lib/types/cpuApi';
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from '@/components/base/ui/tooltip';
 import Block from '@/components/simulation/Block';
@@ -188,45 +187,41 @@ export function IssueWindowItem({ simCodeId, items }: IssueWindowItemProps) {
   return (
     <>
       <InstructionField instructionId={simCodeId} />
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger>
-            <InstructionBubble className={item1Style}>
-              {item1Value?.stringRepresentation ?? '-'}
-            </InstructionBubble>
-          </TooltipTrigger>
-          <TooltipContent>
-            {item1Value ? (
-              <ValueInformation
-                value={item1Value}
-                valid={item1?.validityBit ?? false}
-              />
-            ) : (
-              <div className='text-gray-400'>No value</div>
-            )}
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger>
-            <InstructionBubble className={item2Style}>
-              {item2Value?.stringRepresentation ?? '-'}
-            </InstructionBubble>
-          </TooltipTrigger>
+      <Tooltip>
+        <TooltipTrigger>
+          <InstructionBubble className={item1Style}>
+            {item1Value?.stringRepresentation ?? '-'}
+          </InstructionBubble>
+        </TooltipTrigger>
+        <TooltipContent>
+          {item1Value ? (
+            <ValueInformation
+              value={item1Value}
+              valid={item1?.validityBit ?? false}
+            />
+          ) : (
+            <div className='text-gray-400'>No value</div>
+          )}
+        </TooltipContent>
+      </Tooltip>
+      <Tooltip>
+        <TooltipTrigger>
+          <InstructionBubble className={item2Style}>
+            {item2Value?.stringRepresentation ?? '-'}
+          </InstructionBubble>
+        </TooltipTrigger>
 
-          <TooltipContent>
-            {item2Value ? (
-              <ValueInformation
-                value={item2Value}
-                valid={item2?.validityBit ?? false}
-              />
-            ) : (
-              <div className='text-gray-400'>No value</div>
-            )}
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+        <TooltipContent>
+          {item2Value ? (
+            <ValueInformation
+              value={item2Value}
+              valid={item2?.validityBit ?? false}
+            />
+          ) : (
+            <div className='text-gray-400'>No value</div>
+          )}
+        </TooltipContent>
+      </Tooltip>
     </>
   );
 }

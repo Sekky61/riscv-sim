@@ -44,6 +44,7 @@ import { cn } from '@/lib/utils';
 import Notifications from '@/components/Notifications';
 import SideBar from '@/components/SideBar';
 import ModalRoot from '@/components/modals/ModalRoot';
+import { TooltipProvider } from '@/components/base/ui/tooltip';
 
 const fontSans = FontSans({
   subsets: ['latin'],
@@ -71,12 +72,17 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <Provider store={store}>
           <PersistGate loading={null} persistor={persistor}>
             <ModalRoot appRef={appRef} />
-            <div className='flex h-screen max-h-screen w-full'>
-              <SideBar />
-              <div className='relative flex-grow overflow-y-auto' ref={appRef}>
-                {children}
+            <TooltipProvider>
+              <div className='flex h-screen max-h-screen w-full'>
+                <SideBar />
+                <div
+                  className='relative flex-grow overflow-y-auto'
+                  ref={appRef}
+                >
+                  {children}
+                </div>
               </div>
-            </div>
+            </TooltipProvider>
             <Notifications />
           </PersistGate>
         </Provider>

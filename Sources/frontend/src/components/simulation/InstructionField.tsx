@@ -45,7 +45,6 @@ import { ReactChildren, ReactClassName } from '@/lib/types/reactTypes';
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from '@/components/base/ui/tooltip';
 import RegisterReference from '@/components/simulation/RegisterReference';
@@ -164,15 +163,13 @@ function InstructionArgument({ arg }: InstructionArgumentProps) {
 
   // todo more general
   return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <div className={cls}>{displayText}</div>
-        </TooltipTrigger>
-        <TooltipContent>
-          <ValueInformation value={arg.constantValue} valid={true} />
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <div className={cls}>{displayText}</div>
+      </TooltipTrigger>
+      <TooltipContent>
+        <ValueInformation value={arg.constantValue} valid={true} />
+      </TooltipContent>
+    </Tooltip>
   );
 }

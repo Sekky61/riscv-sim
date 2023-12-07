@@ -41,7 +41,6 @@ import { Label } from '@/components/base/ui/label';
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from '@/components/base/ui/tooltip';
 
@@ -70,19 +69,17 @@ export function FormInput<T extends FieldValues>({
 
   return (
     <div>
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger>
-            <Label htmlFor={name}>
-              {title}&nbsp;
-              {hint ? <span>&#9432;</span> : null}
-            </Label>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>{hint}</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger>
+          <Label htmlFor={name}>
+            {title}&nbsp;
+            {hint ? <span>&#9432;</span> : null}
+          </Label>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>{hint}</p>
+        </TooltipContent>
+      </Tooltip>
       <Input
         {...register(name, regOptions)}
         type='text'

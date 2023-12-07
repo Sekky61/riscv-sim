@@ -43,7 +43,6 @@ import { ReactClassName } from '@/lib/types/reactTypes';
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from '@/components/base/ui/tooltip';
 import ValueInformation from '@/components/simulation/ValueTooltip';
@@ -77,25 +76,23 @@ export default function RegisterReference({
 
   const cls = clsx(highlighted && 'bg-gray-200', className);
   return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <div
-            className={cls}
-            onMouseEnter={() => {
-              dispatch(highlightRegister(registerId));
-            }}
-            onMouseLeave={() => {
-              dispatch(unhighlightRegister(registerId));
-            }}
-          >
-            {displayValue}
-          </div>
-        </TooltipTrigger>
-        <TooltipContent>
-          <ValueInformation value={register.value} valid={valid} />
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <div
+          className={cls}
+          onMouseEnter={() => {
+            dispatch(highlightRegister(registerId));
+          }}
+          onMouseLeave={() => {
+            dispatch(unhighlightRegister(registerId));
+          }}
+        >
+          {displayValue}
+        </div>
+      </TooltipTrigger>
+      <TooltipContent>
+        <ValueInformation value={register.value} valid={valid} />
+      </TooltipContent>
+    </Tooltip>
   );
 }
