@@ -31,100 +31,80 @@
 
 'use client';
 
-import { ComponentProps, useEffect, useRef, useState } from 'react';
+import { ReactChildren } from '@/lib/types/reactTypes';
+import clsx from 'clsx';
+import { useRef, useState } from 'react';
+import { useHotkeys } from 'react-hotkeys-hook';
 
-type CanvasWindowProps = ComponentProps<'div'> & {
+type CanvasWindowProps = {
+  children: ReactChildren;
   scale: number;
 };
 
-// Drag with ctrl + click
-export default function CanvasWindow({
-  children,
-  className,
-  scale,
-}: CanvasWindowProps) {
-  const [_dragging, setDragging] = useState(false);
-  const canvasRef = useRef<HTMLDivElement>(null);
+/**
+ * Canvas window component.
+ * Scrollable, draggable with control and mouse.
+ * Zoomable with scale prop.
+ *
+ * TODO: when zoomed, the corners are not visible
+ */
+export default function CanvasWindow({ children, scale }: CanvasWindowProps) {
   const elRef = useRef<HTMLDivElement>(null);
+  const [ctrlHeld, setCtrlHeld] = useState(false);
 
-  // Register listening to ctrl key
-  useEffect(() => {
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Control') {
-        canvasRef.current?.classList.add('hover:cursor-grab');
-      }
-    };
-    const onKeyUp = (e: KeyboardEvent) => {
-      if (e.key === 'Control') {
-        canvasRef.current?.classList.remove('hover:cursor-grab');
-      }
-    };
+  // Add cursor change on ctrl
+  useHotkeys(
+    'ctrl',
+    (e) => {
+      setCtrlHeld(e.type === 'keydown');
+    },
+    { keyup: true, keydown: true },
+  );
 
-    window.addEventListener('keydown', onKeyDown);
-    window.addEventListener('keyup', onKeyUp);
-    return () => {
-      window.removeEventListener('keydown', onKeyDown);
-      window.removeEventListener('keyup', onKeyUp);
-    };
-  }, []);
-
-  const onDragStart = (e: React.DragEvent<HTMLDivElement>) => {
-    if (!e.ctrlKey) {
+  // Dragging event listeners
+  const onDragStart = () => {
+    if (!ctrlHeld) {
       return;
     }
 
-    setDragging(true);
-
-    // Get body
     const body = document.getElementsByTagName('body')[0];
     if (!body) {
       throw new Error('Body not found');
     }
     body.style.userSelect = 'none';
+    // todo cursor grab not working
     body.classList.add('cursor-grabbing');
 
     function onDrag(this: Window, ee: MouseEvent) {
       // get the change in x and y
       const dx = ee.movementX;
       const dy = ee.movementY;
-      // set the position of the div to the change in x and y
+      // set the new offset
       if (elRef.current) {
-        elRef.current.style.left = `${elRef.current.offsetLeft + dx}px`;
-        elRef.current.style.top = `${elRef.current.offsetTop + dy}px`;
+        elRef.current.scrollLeft = elRef.current.scrollLeft - dx;
+        elRef.current.scrollTop = elRef.current.scrollTop - dy;
       }
     }
 
-    function onDragEnd(this: Window, _e: MouseEvent) {
-      setDragging(false);
-
+    const onDragEnd = () => {
       window.removeEventListener('mousemove', onDrag);
       window.removeEventListener('mouseup', onDragEnd);
-
-      const body2 = document.getElementsByTagName('body')[0];
-      if (!body2) {
-        throw new Error('Body not found');
-      }
-      body2.style.userSelect = 'auto';
-      body2.classList.remove('cursor-grabbing');
-    }
+      body.style.userSelect = 'auto';
+      body.classList.remove('cursor-grabbing');
+    };
 
     window.addEventListener('mousemove', onDrag);
     window.addEventListener('mouseup', onDragEnd);
   };
 
+  const cls = clsx(
+    'relative overflow-auto w-full h-full dotted-bg',
+    ctrlHeld && 'hover:cursor-grab',
+  );
+
   return (
-    <div
-      ref={canvasRef}
-      onMouseDown={onDragStart}
-      className={`${className} relative h-full w-full overflow-auto dotted-bg`}
-    >
-      <div
-        ref={elRef}
-        className='absolute'
-        style={{ transform: `scale(${scale})` }}
-      >
-        {children}
-      </div>
+    <div onMouseDown={onDragStart} className={cls} ref={elRef}>
+      <div style={{ transform: `scale(${scale})` }}>{children}</div>
     </div>
   );
 }
