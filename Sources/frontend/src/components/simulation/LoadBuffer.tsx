@@ -35,9 +35,7 @@ import { LoadBufferItem } from '@/lib/types/cpuApi';
 import { hexPadEven } from '@/lib/utils';
 
 import Block from '@/components/simulation/Block';
-import InstructionField, {
-  InstructionBubble,
-} from '@/components/simulation/InstructionField';
+import InstructionField from '@/components/simulation/InstructionField';
 import { InstructionListDisplay } from '@/components/simulation/InstructionListDisplay';
 import RegisterReference from '@/components/simulation/RegisterReference';
 
@@ -71,7 +69,7 @@ export default function LoadBuffer() {
 }
 
 type LoadBufferItemProps = {
-  loadItem?: LoadBufferItem;
+  loadItem: LoadBufferItem | null;
 };
 
 /**
@@ -82,9 +80,9 @@ export function LoadBufferItemComponent({
 }: LoadBufferItemProps) {
   if (!item) {
     return (
-      <InstructionBubble className='flex justify-center px-2 py-1 font-mono col-span-4'>
+      <div className='instruction-bubble flex justify-center px-2 py-1 font-mono col-span-4'>
         <span className='text-gray-400'>empty</span>
-      </InstructionBubble>
+      </div>
     );
   }
 
@@ -94,19 +92,19 @@ export function LoadBufferItemComponent({
   return (
     <>
       <InstructionField instructionId={item.simCodeModel} />
-      <InstructionBubble className='h-full flex justify-center items-center'>
+      <div className='instruction-bubble h-full flex justify-center items-center'>
         {displayAddress}
-      </InstructionBubble>
-      <InstructionBubble>
+      </div>
+      <div>
         <RegisterReference
           registerId={item.destinationRegister}
           className='h-full flex justify-center items-center'
           showValue
         />
-      </InstructionBubble>
-      <InstructionBubble className='h-full flex justify-center items-center'>
+      </div>
+      <div className='instruction-bubble h-full flex justify-center items-center'>
         {item.hasBypassed ? 'True' : 'False'}
-      </InstructionBubble>
+      </div>
     </>
   );
 }

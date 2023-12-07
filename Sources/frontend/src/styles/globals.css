@@ -420,7 +420,7 @@
     grid-row: 1 / span 3;
   }
 
-  .fetch {
+  .fetch-position {
     grid-column: 2 / span 1;
     grid-row: 1 / span 2;
   }
@@ -509,5 +509,10 @@
     grid-column: span 2;
     grid-template-columns: subgrid;
     grid-template-rows: subgrid;
+  }
+
+  /* Style for instruction bubble */
+  .instruction-bubble {
+    @apply rounded-sm border h-8;
   }
 }

@@ -78,7 +78,7 @@ export default function RegisterReference({
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <div
+        <span
           className={cls}
           onMouseEnter={() => {
             dispatch(highlightRegister(registerId));
@@ -88,7 +88,7 @@ export default function RegisterReference({
           }}
         >
           {displayValue}
-        </div>
+        </span>
       </TooltipTrigger>
       <TooltipContent>
         <ValueInformation value={register.value} valid={valid} />

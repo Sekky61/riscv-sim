@@ -35,9 +35,7 @@ import { StoreBufferItem } from '@/lib/types/cpuApi';
 import { hexPadEven } from '@/lib/utils';
 
 import Block from '@/components/simulation/Block';
-import InstructionField, {
-  InstructionBubble,
-} from '@/components/simulation/InstructionField';
+import InstructionField from '@/components/simulation/InstructionField';
 import { InstructionListDisplay } from '@/components/simulation/InstructionListDisplay';
 import RegisterReference from '@/components/simulation/RegisterReference';
 
@@ -70,7 +68,7 @@ export default function StoreBuffer() {
 }
 
 type StoreBufferItemProps = {
-  storeItem?: StoreBufferItem;
+  storeItem: StoreBufferItem | null;
 };
 
 /**
@@ -81,9 +79,9 @@ export function StoreBufferItemComponent({
 }: StoreBufferItemProps) {
   if (!item) {
     return (
-      <InstructionBubble className='flex justify-center px-2 py-1 font-mono col-span-3'>
+      <div className='instruction-bubble flex justify-center px-2 py-1 font-mono col-span-3'>
         <span className='text-gray-400'>empty</span>
-      </InstructionBubble>
+      </div>
     );
   }
 
@@ -93,16 +91,16 @@ export function StoreBufferItemComponent({
   return (
     <>
       <InstructionField instructionId={item.simCodeModel} />
-      <InstructionBubble className='h-full flex justify-center items-center'>
+      <div className='instruction-bubble h-full flex justify-center items-center'>
         {displayAddress}
-      </InstructionBubble>
-      <InstructionBubble>
+      </div>
+      <div className='instruction-bubble'>
         <RegisterReference
           registerId={item.sourceRegister}
           className='h-full flex justify-center items-center'
           showValue
         />
-      </InstructionBubble>
+      </div>
     </>
   );
 }

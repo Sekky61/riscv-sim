@@ -215,6 +215,7 @@ export interface SimCodeModel {
   id: number;
   inputCodeModel: Reference;
   renamedArguments: InputCodeArgument[];
+  renamedCodeLine: string;
   instructionBulkNumber: number;
   issueWindowId: number;
   functionUnitId: number;

@@ -72,7 +72,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <Provider store={store}>
           <PersistGate loading={null} persistor={persistor}>
             <ModalRoot appRef={appRef} />
-            <TooltipProvider>
+            <TooltipProvider delayDuration={0}>
               <div className='flex h-screen max-h-screen w-full'>
                 <SideBar />
                 <div

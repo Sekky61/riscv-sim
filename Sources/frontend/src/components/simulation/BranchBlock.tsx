@@ -38,7 +38,6 @@ import {
 import { useAppSelector } from '@/lib/redux/hooks';
 
 import Block from '@/components/simulation/Block';
-import { InstructionBubble } from '@/components/simulation/InstructionField';
 import { hexPadEven } from '@/lib/utils';
 
 export default function BranchBlock() {
@@ -61,10 +60,10 @@ export default function BranchBlock() {
     const entry = btb.buffer[address];
     if (!entry) continue;
     btbEntries.push(
-      <InstructionBubble key={address} className='contents'>
+      <div key={address} className='instruction-bubble contents'>
         <div>{hexPadEven(address)}</div>
         <div>{hexPadEven(entry.target)}</div>
-      </InstructionBubble>,
+      </div>,
     );
   }
 

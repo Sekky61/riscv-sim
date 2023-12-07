@@ -477,7 +477,7 @@ const selectDetailedSimCodeModels = createSelector(
   },
 );
 
-export const selectSimCodeModel = (state: RootState, id?: Reference) => {
+export const selectSimCodeModel = (state: RootState, id: Reference | null) => {
   if (!isValidReference(id)) {
     return null;
   }

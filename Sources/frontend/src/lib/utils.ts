@@ -44,7 +44,7 @@ export function cn(...inputs: ClassValue[]) {
  * @param ref  Reference to check
  * @returns True if reference present and valid, false otherwise
  */
-export function isValidReference(ref?: Reference): ref is Reference {
+export function isValidReference(ref: Reference | null): ref is Reference {
   return typeof ref === 'number' && ref >= 0;
 }
 

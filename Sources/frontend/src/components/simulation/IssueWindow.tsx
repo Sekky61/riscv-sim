@@ -47,9 +47,7 @@ import {
   TooltipTrigger,
 } from '@/components/base/ui/tooltip';
 import Block from '@/components/simulation/Block';
-import InstructionField, {
-  InstructionBubble,
-} from '@/components/simulation/InstructionField';
+import InstructionField from '@/components/simulation/InstructionField';
 import { InstructionListDisplay } from '@/components/simulation/InstructionListDisplay';
 import ValueInformation from '@/components/simulation/ValueTooltip';
 
@@ -126,9 +124,7 @@ export default function IssueWindow({ type }: IssueWindowProps) {
         instructionRenderer={(instruction) => (
           <IssueWindowItem
             simCodeId={instruction}
-            items={
-              instruction !== undefined ? validity[instruction] : undefined
-            }
+            items={instruction !== null ? validity[instruction] : undefined}
           />
         )}
       />
@@ -137,7 +133,7 @@ export default function IssueWindow({ type }: IssueWindowProps) {
 }
 
 type IssueWindowItemProps = {
-  simCodeId?: Reference;
+  simCodeId: Reference | null;
   items?: IssueItemModel[];
 };
 
@@ -163,12 +159,12 @@ export function IssueWindowItem({ simCodeId, items }: IssueWindowItemProps) {
   const item2 = items[1];
 
   const item1Style = clsx(
-    'flex px-2',
+    'instruction-bubble flex px-2',
     item1?.validityBit && 'text-green-500',
     item1 === undefined && 'invisible',
   );
   const item2Style = clsx(
-    'flex px-2',
+    'instruction-bubble flex px-2',
     item2?.validityBit && 'text-green-500',
     item2 === undefined && 'invisible',
   );
@@ -189,9 +185,9 @@ export function IssueWindowItem({ simCodeId, items }: IssueWindowItemProps) {
       <InstructionField instructionId={simCodeId} />
       <Tooltip>
         <TooltipTrigger>
-          <InstructionBubble className={item1Style}>
+          <div className={item1Style}>
             {item1Value?.stringRepresentation ?? '-'}
-          </InstructionBubble>
+          </div>
         </TooltipTrigger>
         <TooltipContent>
           {item1Value ? (
@@ -206,9 +202,9 @@ export function IssueWindowItem({ simCodeId, items }: IssueWindowItemProps) {
       </Tooltip>
       <Tooltip>
         <TooltipTrigger>
-          <InstructionBubble className={item2Style}>
+          <div className={item2Style}>
             {item2Value?.stringRepresentation ?? '-'}
-          </InstructionBubble>
+          </div>
         </TooltipTrigger>
 
         <TooltipContent>

@@ -34,6 +34,7 @@ package com.gradle.superscalarsim.models;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.blocks.base.UnifiedRegisterFileBlock;
 import com.gradle.superscalarsim.code.Expression;
@@ -351,6 +352,7 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
    * @return String with renamed code line
    * @brief Gets string representation of the instruction with renamed arguments
    */
+  @JsonProperty
   public String getRenamedCodeLine()
   {
     StringBuilder genericLine = new StringBuilder(getInstructionName());
