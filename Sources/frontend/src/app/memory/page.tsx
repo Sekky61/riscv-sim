@@ -40,6 +40,7 @@ import { removeMemoryLocation, selectActiveIsa } from '@/lib/redux/isaSlice';
 import clsx from 'clsx';
 import Head from 'next/head';
 import { useState } from 'react';
+import { useForm } from 'react-hook-form';
 
 export default function HomePage() {
   // Load the active ISA

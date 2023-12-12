@@ -29,7 +29,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { DataTypeEnum } from '@/lib/types/cpuApi';
 import { z } from 'zod';
 
 export const predictorTypes = ['1bit', '2bit'] as const;
@@ -82,25 +81,6 @@ export const memoryLocationDefaultValue: MemoryLocationApi = {
   name: 'Array',
   alignment: 4,
   dataChunks: [],
-};
-
-/**
- * Expand the memoryLocation form with a data input
- */
-export const memoryLocationWithSource = memoryLocation.extend({
-  dataType: z.enum(dataTypes),
-  dataSource: z.enum(['constant', 'random', 'file']),
-  constant: z.number().optional(),
-  dataLength: z.number().min(1).optional(),
-});
-export type MemoryLocationForm = z.infer<typeof memoryLocationWithSource>;
-
-export const memoryLocationFormDefaultValue: MemoryLocationForm = {
-  ...memoryLocationDefaultValue,
-  dataType: 'kInt',
-  dataSource: 'constant',
-  constant: 0,
-  dataLength: 1,
 };
 
 export const arithmeticUnits = ['FX', 'FP'] as const;
@@ -166,7 +146,7 @@ export const isaSchema = z.object({
   loadLatency: z.number().min(0).max(1000),
   laneReplacementDelay: z.number().min(1).max(1000),
   addRemainingDelay: z.boolean(), // todo
-  memoryLocations: z.array(memoryLocationWithSource),
+  memoryLocations: z.array(memoryLocation),
 });
 
 export type IsaConfig = z.infer<typeof isaSchema>;

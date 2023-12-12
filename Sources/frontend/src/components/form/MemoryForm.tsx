@@ -37,58 +37,79 @@ import { FormInput } from '@/components/form/FormInput';
 import { RadioInputWithTitle } from '@/components/form/RadioInput';
 import { parseCsv } from '@/lib/csv';
 import {
-  MemoryLocationForm,
-  MemoryLocationApi,
   dataTypes,
   dataTypesText,
   memoryLocation,
   memoryLocationDefaultValue,
-  memoryLocationFormDefaultValue,
-  memoryLocationWithSource,
   DataChunk,
 } from '@/lib/forms/Isa';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import {
   addMemoryLocation,
-  removeMemoryLocation,
   selectActiveIsa,
   updateMemoryLocation,
 } from '@/lib/redux/isaSlice';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useEffect } from 'react';
+import {
+  Control,
+  FieldErrors,
+  Resolver,
+  useForm,
+  useWatch,
+} from 'react-hook-form';
+import { z } from 'zod';
 
-interface FileMetadata {
-  name: string;
-  size: number;
-  type: string;
-  data: string[];
+/**
+ * Expand the memoryLocation form with a data input
+ */
+export const memoryLocationWithSource = memoryLocation.extend({
+  dataType: z.enum(dataTypes),
+  dataSource: z.enum(['constant', 'random', 'file']),
+  file: z.any().transform((val) => {
+    if (!val || val.length === 0) {
+      return undefined;
+    }
+    return val[0];
+  }),
+  constant: z.number().optional(),
+  dataLength: z.number().min(1).optional(),
+});
+export type MemoryLocationForm = z.infer<typeof memoryLocationWithSource>;
+
+export const memoryLocationFormDefaultValue: MemoryLocationForm = {
+  ...memoryLocationDefaultValue,
+  dataType: 'kInt',
+  dataSource: 'constant',
+  constant: 0,
+  dataLength: 1,
+  file: [],
+};
+
+/**
+ * Filter out fields not belonging to memory location
+ */
+export function memoryLocationFormToIsa(
+  memoryLocation: MemoryLocationForm,
+): object {
+  return {
+    name: memoryLocation.name,
+    alignment: memoryLocation.alignment,
+    dataChunks: memoryLocation.dataChunks.map((dataChunk) => ({
+      dataType: dataChunk.dataType,
+      values: dataChunk.values,
+    })),
+    dataType: memoryLocation.dataType,
+    dataSource: memoryLocation.dataSource,
+    constant: memoryLocation.constant,
+    dataLength: memoryLocation.dataLength,
+  };
 }
 
-async function readFromFile(
-  file: File,
-  callback: (result: FileMetadata) => void,
-) {
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    const content = e.target?.result;
-    if (typeof content === 'string') {
-      // parse file content as csv
-      const numbers = parseCsv(content);
-      if (numbers) {
-        // if csv is valid, set the value
-        callback({
-          name: file.name,
-          size: file.size,
-          type: file.type,
-          data: numbers,
-        });
-      }
-    } else {
-      console.warn('File content is not string');
-    }
-  };
-  reader.readAsText(file);
+async function readFromFile(file: File): Promise<string[]> {
+  return file.text().then((text) => {
+    return parseCsv(text);
+  });
 }
 
 // props
@@ -101,6 +122,16 @@ interface MemoryFormProps {
   deleteCallback: () => void;
 }
 
+function isNotEmpty<TValue extends object>(
+  // biome-ignore lint/complexity/noBannedTypes: this is what zod returns...
+  value: TValue | {},
+): value is TValue {
+  return Object.keys(value).length > 0;
+}
+
+/**
+ * Component for defining a memory location
+ */
 export default function MemoryForm({
   existing,
   memoryLocationName,
@@ -108,27 +139,66 @@ export default function MemoryForm({
 }: MemoryFormProps) {
   const dispatch = useAppDispatch();
   const activeIsa = useAppSelector(selectActiveIsa);
+
+  // Custom resolver
+  const resolver: Resolver<MemoryLocationForm> = async (
+    values: MemoryLocationForm,
+    ...args
+  ) => {
+    // Let zod do its thing
+    const r = zodResolver(memoryLocationWithSource);
+    const val = await r(values, ...args);
+
+    if (isNotEmpty(val.errors)) {
+      return val;
+    }
+    // Additional checks
+    const errors: FieldErrors<MemoryLocationForm> = {};
+
+    // Name is unique. If we are updating, the name can stay the same
+    const memoryLocation = activeIsa.memoryLocations.find(
+      (ml) => ml.name === values.name,
+    );
+    // found, but ignore if we are updating
+    // todo: bug when updating memory
+    if (
+      memoryLocation &&
+      !(existing && memoryLocation.name === memoryLocationName)
+    ) {
+      console.log('name already exists', memoryLocation, memoryLocationName);
+      errors.name = {
+        type: 'manual',
+        message: 'Name already exists',
+      };
+    }
+
+    console.log(errors);
+
+    return {
+      values: val.values,
+      errors,
+    };
+  };
+
   const form = useForm<MemoryLocationForm>({
-    resolver: zodResolver(memoryLocationWithSource),
+    resolver,
     defaultValues: memoryLocationFormDefaultValue,
     mode: 'onChange',
   });
-  const [fileMetadata, setFileMetadata] = useState<FileMetadata>({
-    name: '',
-    size: 0,
-    type: '',
-    data: [],
-  });
-  const [fileChanged, setFileChanged] = useState(false);
+  const { register, handleSubmit, formState, reset, trigger } = form;
   const watchFields = form.watch();
-  const { register, handleSubmit, formState, reset } = form;
+  const { errors, isDirty, isValid } = formState;
+
+  // load the memory location
+  const memoryLocation = activeIsa.memoryLocations.find(
+    (ml) => ml.name === memoryLocationName,
+  );
+  // get file metadata
+  const file = watchFields.file?.[0];
 
   // watch for changes in the active memory location
   useEffect(() => {
-    // load the memory location
-    const memoryLocation = activeIsa.memoryLocations.find(
-      (ml) => ml.name === memoryLocationName,
-    );
+    trigger(); // Validate the form
     if (memoryLocation) {
       reset(memoryLocation);
     } else if (memoryLocationName === 'new') {
@@ -136,18 +206,12 @@ export default function MemoryForm({
     } else {
       throw new Error(`Memory location ${memoryLocationName} not found`);
     }
-  }, [memoryLocationName, activeIsa, reset]);
+  }, [memoryLocation, memoryLocationName, reset, trigger]);
 
-  const canSubmit =
-    formState.isValid &&
-    (activeIsa.memoryLocations.find((ml) => ml.name === watchFields.name) ===
-      undefined ||
-      existing) &&
-    (formState.isDirty || fileChanged);
-
-  const onSubmit = (data: MemoryLocationForm) => {
-    // random data
+  const onSubmit = async (data: MemoryLocationForm) => {
+    // random data - generate random values
     if (data.dataSource === 'random') {
+      // todo: random floats, chars
       const chunk: DataChunk = {
         dataType: data.dataType,
         values: Array.from({ length: data.dataLength ?? 0 }, () =>
@@ -166,56 +230,35 @@ export default function MemoryForm({
       data.dataChunks = [chunk];
     }
     if (data.dataSource === 'file') {
+      const file = data.file;
+      if (!file) {
+        throw new Error('File not selected');
+      }
+      const values = await readFromFile(file);
+
       const chunk: DataChunk = {
         dataType: data.dataType,
-        values: fileMetadata.data,
+        values,
       };
       data.dataChunks = [chunk];
     }
 
-    setFileChanged(false);
+    // Filter just fields for ISA
+    const filtered = memoryLocationFormToIsa(data);
+
     if (existing) {
       dispatch(
         updateMemoryLocation({
           oldName: memoryLocationName,
-          memoryLocation: data,
+          memoryLocation: filtered,
         }),
       );
     } else {
-      dispatch(addMemoryLocation(data));
+      dispatch(addMemoryLocation(filtered));
     }
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      readFromFile(file, (result) => {
-        setFileMetadata(result);
-        setFileChanged(true);
-      });
-    } else {
-      console.warn('No file selected');
-    }
-  };
-
-  let valueMetadata = {
-    count: 0,
-  };
-  if (watchFields.dataSource === 'constant') {
-    valueMetadata = {
-      count: watchFields.dataLength || 0,
-    };
-  }
-  if (watchFields.dataSource === 'random') {
-    valueMetadata = {
-      count: watchFields.dataLength || 0,
-    };
-  }
-  if (watchFields.dataSource === 'file') {
-    valueMetadata = {
-      count: watchFields.dataChunks?.[0]?.values.length || 0,
-    };
-  }
+  console.log(errors);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
@@ -250,7 +293,7 @@ export default function MemoryForm({
       </div>
       <Card className='my-4 p-4'>
         <h2 className='text-xl mb-4'>Data</h2>
-        <div className='h-20'>
+        <div className='h-24'>
           {watchFields.dataSource === 'constant' && (
             <div className='flex justify-evenly'>
               <FormInput
@@ -283,29 +326,26 @@ export default function MemoryForm({
           {watchFields.dataSource === 'file' && (
             <div className='flex flex-col'>
               <Input
-                type='file'
-                name='file'
                 title='File'
                 id='file'
+                type='file'
                 className='hidden'
                 accept='.csv'
-                onChange={(e) => {
-                  handleFileChange(e);
-                }}
+                {...register('file')}
               />
               <Label
                 htmlFor='file'
                 className={buttonVariants({ variant: 'outline' })}
               >
-                {fileMetadata.name ? `${fileMetadata.name} ✓` : 'Select file'}
+                {file?.name ? `${file.name} ✓` : 'Select file'}
               </Label>
-              <div>Size: {fileMetadata.size} bytes</div>
+              <div className='mt-4'>Size: {file?.size || '-'} bytes</div>
             </div>
           )}
         </div>
         <div className='flex flex-col'>
           <h3>Loaded values</h3>
-          <div className='flex flex-col'>Count: {valueMetadata.count}</div>
+          <div className='flex flex-col'>Count: lul</div>
         </div>
       </Card>
       <div className='relative'>
@@ -322,7 +362,7 @@ export default function MemoryForm({
         <Button
           className='absolute right-0'
           type='submit'
-          disabled={!canSubmit}
+          disabled={!isDirty || !isValid}
         >
           {existing ? 'Update' : 'Create'}
         </Button>

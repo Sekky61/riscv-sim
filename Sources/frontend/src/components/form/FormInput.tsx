@@ -33,6 +33,7 @@ import {
   FieldError,
   FieldValues,
   Path,
+  RegisterOptions,
   UseFormRegister,
 } from 'react-hook-form';
 
@@ -51,6 +52,7 @@ export type FormInputProps<T extends FieldValues> = {
   type?: string;
   error?: FieldError;
   hint?: string;
+  regOptions?: RegisterOptions;
 };
 
 export function FormInput<T extends FieldValues>({
@@ -60,28 +62,30 @@ export function FormInput<T extends FieldValues>({
   type,
   error,
   hint,
+  regOptions,
 }: FormInputProps<T>) {
   const isError = error !== undefined;
-  let regOptions = {};
+  const opts = regOptions || {};
   if (type === 'number') {
-    regOptions = { valueAsNumber: true };
+    opts.valueAsNumber = true;
   }
 
   return (
     <div>
-      <Tooltip>
-        <TooltipTrigger>
-          <Label htmlFor={name}>
-            {title}&nbsp;
-            {hint ? <span>&#9432;</span> : null}
-          </Label>
-        </TooltipTrigger>
-        <TooltipContent>
-          <p>{hint}</p>
-        </TooltipContent>
-      </Tooltip>
+      {hint ? (
+        <Tooltip>
+          <TooltipTrigger>
+            <Label htmlFor={name}>{title}&nbsp;&#9432;</Label>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>{hint}</p>
+          </TooltipContent>
+        </Tooltip>
+      ) : (
+        <Label htmlFor={name}>{title}</Label>
+      )}
       <Input
-        {...register(name, regOptions)}
+        {...register(name, opts)}
         type='text'
         name={name}
         id={name}
