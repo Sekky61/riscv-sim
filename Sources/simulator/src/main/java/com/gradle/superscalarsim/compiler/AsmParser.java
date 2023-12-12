@@ -111,9 +111,13 @@ public class AsmParser
     return lines;
   }
   
+  /**
+   * .loc [file index] [line] [column] are directives that tell us position of the corresponding C code.
+   * We will use this information to map the assembly to the C code.
+   */
   private static List<Line> markCMapping(List<String> lines)
   {
-    int        currentCLine = 0;
+    int        currentCLine = 0; // 0 is invalid value
     List<Line> cleanProgram = new ArrayList<>();
     for (String line : lines)
     {

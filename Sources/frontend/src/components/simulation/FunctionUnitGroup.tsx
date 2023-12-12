@@ -95,6 +95,7 @@ export default function FunctionUnitGroup({ type }: FunctionUnitGroupProps) {
     <>
       {fus.map((fu, i) => {
         const displayCounter = fu.simCodeModel === null ? 0 : fu.counter + 1;
+        const id = fu.simCodeModel ?? null;
         return (
           <Fragment key={fu.functionUnitId}>
             <Block
@@ -103,7 +104,7 @@ export default function FunctionUnitGroup({ type }: FunctionUnitGroupProps) {
               stats={`${displayCounter}/${fu.delay}`}
               className={clsx(cl, 'row-span-1', rowPosition[i + 1])}
             >
-              <InstructionField instructionId={fu.simCodeModel} />
+              <InstructionField instructionId={id} />
             </Block>
           </Fragment>
         );
