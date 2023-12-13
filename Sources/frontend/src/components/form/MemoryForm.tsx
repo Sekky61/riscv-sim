@@ -58,7 +58,7 @@ import {
   useForm,
   useWatch,
 } from 'react-hook-form';
-import { z } from 'zod';
+import { object, z } from 'zod';
 
 /**
  * Expand the memoryLocation form with a data input
@@ -66,11 +66,20 @@ import { z } from 'zod';
 export const memoryLocationWithSource = memoryLocation.extend({
   dataType: z.enum(dataTypes),
   dataSource: z.enum(['constant', 'random', 'file']),
-  file: z.any().transform((val) => {
-    if (!val || val.length === 0) {
-      return undefined;
+  /**
+   * File is of type any, because FileList is not a class.
+   * The transform function will convert it to (File | undefined)
+   */
+  file: z.unknown().transform((val) => {
+    // check if val is a FileList
+    if (
+      typeof val === 'object' &&
+      val !== null &&
+      'item' in val &&
+      typeof val.item === 'function'
+    ) {
+      return val.item(0);
     }
-    return val[0];
   }),
   constant: z.number().optional(),
   dataLength: z.number().min(1).optional(),
@@ -110,6 +119,15 @@ async function readFromFile(file: File): Promise<string[]> {
   return file.text().then((text) => {
     return parseCsv(text);
   });
+}
+
+/**
+ * Check if obj is a File
+ * @param obj argument to check
+ * @returns True if obj is a File
+ */
+function isFile(obj: unknown): obj is File {
+  return obj instanceof File;
 }
 
 // props
@@ -161,18 +179,12 @@ export default function MemoryForm({
     );
     // found, but ignore if we are updating
     // todo: bug when updating memory
-    if (
-      memoryLocation &&
-      !(existing && memoryLocation.name === memoryLocationName)
-    ) {
-      console.log('name already exists', memoryLocation, memoryLocationName);
+    if (memoryLocation && memoryLocation.name !== memoryLocationName) {
       errors.name = {
         type: 'manual',
         message: 'Name already exists',
       };
     }
-
-    console.log(errors);
 
     return {
       values: val.values,
@@ -187,7 +199,7 @@ export default function MemoryForm({
   });
   const { register, handleSubmit, formState, reset, trigger } = form;
   const watchFields = form.watch();
-  const { errors, isDirty, isValid } = formState;
+  const { isDirty, isValid } = formState;
 
   // load the memory location
   const memoryLocation = activeIsa.memoryLocations.find(
@@ -198,7 +210,6 @@ export default function MemoryForm({
 
   // watch for changes in the active memory location
   useEffect(() => {
-    trigger(); // Validate the form
     if (memoryLocation) {
       reset(memoryLocation);
     } else if (memoryLocationName === 'new') {
@@ -206,6 +217,7 @@ export default function MemoryForm({
     } else {
       throw new Error(`Memory location ${memoryLocationName} not found`);
     }
+    trigger(); // Validate the form, after reset
   }, [memoryLocation, memoryLocationName, reset, trigger]);
 
   const onSubmit = async (data: MemoryLocationForm) => {
@@ -231,7 +243,7 @@ export default function MemoryForm({
     }
     if (data.dataSource === 'file') {
       const file = data.file;
-      if (!file) {
+      if (!isFile(file)) {
         throw new Error('File not selected');
       }
       const values = await readFromFile(file);
@@ -257,8 +269,6 @@ export default function MemoryForm({
       dispatch(addMemoryLocation(filtered));
     }
   };
-
-  console.log(errors);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
