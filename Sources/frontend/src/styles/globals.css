@@ -314,13 +314,9 @@
     @apply visible opacity-100;
   }
 
-  /* Form */
-  .form-input {
-    @apply block w-full rounded-lg border border-gray-300 bg-gray-50 p-2 text-gray-900 focus:border-blue-500 focus:ring-blue-500 sm:text-xs;
-  }
-
-  .form-input.error {
-    @apply border-red-500 bg-red-50 text-red-900 placeholder-red-700 focus:border-red-500 focus:ring-red-500;
+  /* Form when in error state */
+  .form-input-error {
+    @apply border-red-500 bg-red-50 text-red-900 placeholder-red-700 focus-visible:ring-red-500;
   }
 
   /* folding */

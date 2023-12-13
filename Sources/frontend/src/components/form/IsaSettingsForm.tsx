@@ -39,6 +39,7 @@ import {
   Control,
   Controller,
   FieldError,
+  RegisterOptions,
   UseFormReturn,
   useController,
   useForm,
@@ -213,14 +214,16 @@ export default function IsaSettingsForm({
   } = form;
 
   // This function is valid for regular fields, but not arrays
-  const simpleRegister = (name: IsaSimpleFields) => {
+  const simpleRegister = (
+    name: IsaSimpleFields,
+    regOptions?: RegisterOptions,
+  ) => {
     const error: FieldError | undefined = errors[name];
     return {
-      register,
       error,
-      name,
       title: isaFormMetadata[name].title,
       hint: isaFormMetadata[name].hint,
+      ...register(name, regOptions),
     };
   };
 
@@ -263,9 +266,15 @@ export default function IsaSettingsForm({
             </CardHeader>
             <CardContent>
               <fieldset disabled={disabled}>
-                <FormInput {...simpleRegister('robSize')} type='number' />
-                <FormInput {...simpleRegister('lbSize')} type='number' />
-                <FormInput {...simpleRegister('sbSize')} type='number' />
+                <FormInput
+                  {...simpleRegister('robSize', { valueAsNumber: true })}
+                />
+                <FormInput
+                  {...simpleRegister('lbSize', { valueAsNumber: true })}
+                />
+                <FormInput
+                  {...simpleRegister('sbSize', { valueAsNumber: true })}
+                />
               </fieldset>
             </CardContent>
           </Card>
@@ -277,8 +286,12 @@ export default function IsaSettingsForm({
             </CardHeader>
             <CardContent>
               <fieldset disabled={disabled}>
-                <FormInput {...simpleRegister('fetchWidth')} type='number' />
-                <FormInput {...simpleRegister('commitWidth')} type='number' />
+                <FormInput
+                  {...simpleRegister('fetchWidth', { valueAsNumber: true })}
+                />
+                <FormInput
+                  {...simpleRegister('commitWidth', { valueAsNumber: true })}
+                />
               </fieldset>
             </CardContent>
           </Card>
@@ -293,9 +306,15 @@ export default function IsaSettingsForm({
             </CardHeader>
             <CardContent>
               <fieldset disabled={disabled}>
-                <FormInput {...simpleRegister('cacheLines')} type='number' />
-                <FormInput {...simpleRegister('cacheLineSize')} type='number' />
-                <FormInput {...simpleRegister('cacheAssoc')} type='number' />
+                <FormInput
+                  {...simpleRegister('cacheLines', { valueAsNumber: true })}
+                />
+                <FormInput
+                  {...simpleRegister('cacheLineSize', { valueAsNumber: true })}
+                />
+                <FormInput
+                  {...simpleRegister('cacheAssoc', { valueAsNumber: true })}
+                />
                 <div className='mb-6 flex justify-evenly'>
                   <RadioInputWithTitle
                     {...radioRegister('cacheReplacement')}
@@ -306,11 +325,16 @@ export default function IsaSettingsForm({
                     choices={storeBehaviorTypes}
                   />
                 </div>
-                <FormInput {...simpleRegister('storeLatency')} type='number' />
-                <FormInput {...simpleRegister('loadLatency')} type='number' />
                 <FormInput
-                  {...simpleRegister('laneReplacementDelay')}
-                  type='number'
+                  {...simpleRegister('storeLatency', { valueAsNumber: true })}
+                />
+                <FormInput
+                  {...simpleRegister('loadLatency', { valueAsNumber: true })}
+                />
+                <FormInput
+                  {...simpleRegister('laneReplacementDelay', {
+                    valueAsNumber: true,
+                  })}
                 />
                 <input
                   id='addRemainingDelay'
@@ -332,8 +356,12 @@ export default function IsaSettingsForm({
             </CardHeader>
             <CardContent>
               <fieldset disabled={disabled}>
-                <FormInput {...simpleRegister('btbSize')} type='number' />
-                <FormInput {...simpleRegister('phtSize')} type='number' />
+                <FormInput
+                  {...simpleRegister('btbSize', { valueAsNumber: true })}
+                />
+                <FormInput
+                  {...simpleRegister('phtSize', { valueAsNumber: true })}
+                />
                 <div className='mb-6 flex justify-evenly'>
                   <RadioInputWithTitle
                     {...radioRegister('predictorType')}
@@ -496,16 +524,15 @@ function FUAdder({ control }: { control: Control<IsaNamedConfig> }) {
       <div className='mt-4 flex justify-evenly'>
         <div>
           <FormInput
-            register={register}
+            {...register('name')}
             name='name'
             title='Name'
             error={errors.name}
           />
           <FormInput
-            register={register}
+            {...register('latency', { valueAsNumber: true })}
             name='latency'
             title='Latency'
-            type='number'
             error={errors.latency}
           />
         </div>

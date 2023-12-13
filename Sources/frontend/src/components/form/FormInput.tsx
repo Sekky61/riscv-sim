@@ -29,73 +29,73 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {
-  FieldError,
-  FieldValues,
-  Path,
-  RegisterOptions,
-  UseFormRegister,
-} from 'react-hook-form';
+import { FieldError } from 'react-hook-form';
 
-import { Input } from '@/components/base/ui/input';
 import { Label } from '@/components/base/ui/label';
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@/components/base/ui/tooltip';
+import { cn } from '@/lib/utils';
+import React from 'react';
 
-export type FormInputProps<T extends FieldValues> = {
-  name: Path<T>;
+type InputProps = React.InputHTMLAttributes<HTMLInputElement>;
+
+export type FormInputProps = {
+  name: string;
   title: string;
-  register: UseFormRegister<T>;
   type?: string;
   error?: FieldError;
   hint?: string;
-  regOptions?: RegisterOptions;
-};
+} & InputProps;
 
-export function FormInput<T extends FieldValues>({
-  name,
-  register,
-  title,
-  type,
-  error,
-  hint,
-  regOptions,
-}: FormInputProps<T>) {
-  const isError = error !== undefined;
-  const opts = regOptions || {};
-  if (type === 'number') {
-    opts.valueAsNumber = true;
-  }
+/**
+ * Generic input for forms
+ * It is a forwardRef component, so it can be used with react-hook-form.
+ * It displays error message, title, hint.
+ * See example of usage in {@link src/components/form/MemoryForm.tsx}
+ */
+const FormInput = React.forwardRef<HTMLInputElement, FormInputProps>(
+  ({ name, title, type, error, hint, ...inputProps }: FormInputProps, ref) => {
+    const isError = error !== undefined;
 
-  return (
-    <div>
-      {hint ? (
-        <Tooltip>
-          <TooltipTrigger>
-            <Label htmlFor={name}>{title}&nbsp;&#9432;</Label>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>{hint}</p>
-          </TooltipContent>
-        </Tooltip>
-      ) : (
-        <Label htmlFor={name}>{title}</Label>
-      )}
-      <Input
-        {...register(name, opts)}
-        type='text'
-        name={name}
-        id={name}
-        className={isError ? 'error' : ''}
-      />
-      <div className='h-6'>
-        {error?.message && (
-          <span className='mt-1 text-sm text-red-600'>{error?.message}</span>
+    return (
+      <div>
+        {hint ? (
+          <Tooltip>
+            <TooltipTrigger>
+              <Label htmlFor={name}>{title}&nbsp;&#9432;</Label>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{hint}</p>
+            </TooltipContent>
+          </Tooltip>
+        ) : (
+          <Label htmlFor={name}>{title}</Label>
         )}
+        <input
+          {...inputProps}
+          type='text'
+          name={name}
+          id={name}
+          className={cn(
+            'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
+            isError && 'form-input-error',
+            !isError && 'focus-visible:ring-ring',
+          )}
+          ref={ref}
+        />
+        <div className='h-6'>
+          {error?.message && (
+            <span className='mt-1 text-sm text-red-600'>{error?.message}</span>
+          )}
+        </div>
       </div>
-    </div>
-  );
-}
+    );
+  },
+);
+
+FormInput.displayName = 'FormInput';
+
+export { FormInput };

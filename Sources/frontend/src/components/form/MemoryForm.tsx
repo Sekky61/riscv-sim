@@ -37,11 +37,11 @@ import { FormInput } from '@/components/form/FormInput';
 import { RadioInputWithTitle } from '@/components/form/RadioInput';
 import { parseCsv } from '@/lib/csv';
 import {
+  DataChunk,
   dataTypes,
   dataTypesText,
   memoryLocation,
   memoryLocationDefaultValue,
-  DataChunk,
 } from '@/lib/forms/Isa';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import {
@@ -98,9 +98,7 @@ export const memoryLocationFormDefaultValue: MemoryLocationForm = {
 /**
  * Filter out fields not belonging to memory location
  */
-export function memoryLocationFormToIsa(
-  memoryLocation: MemoryLocationForm,
-): object {
+export function memoryLocationFormToIsa(memoryLocation: MemoryLocationForm) {
   return {
     name: memoryLocation.name,
     alignment: memoryLocation.alignment,
@@ -199,7 +197,7 @@ export default function MemoryForm({
   });
   const { register, handleSubmit, formState, reset, trigger } = form;
   const watchFields = form.watch();
-  const { isDirty, isValid } = formState;
+  const { errors, isDirty, isValid } = formState;
 
   // load the memory location
   const memoryLocation = activeIsa.memoryLocations.find(
@@ -274,9 +272,8 @@ export default function MemoryForm({
     <form onSubmit={handleSubmit(onSubmit)}>
       <div className='flex flex-col gap-4'>
         <FormInput
-          name='name'
           title='Name'
-          register={register}
+          {...register('name')}
           error={formState.errors.name}
         />
         <RadioInputWithTitle
@@ -288,9 +285,8 @@ export default function MemoryForm({
         />
         <FormInput
           type='number'
-          name='alignment'
           title='Alignment'
-          register={register}
+          {...register('alignment', { valueAsNumber: true })}
           error={formState.errors.alignment}
         />
         <RadioInputWithTitle
@@ -308,16 +304,14 @@ export default function MemoryForm({
             <div className='flex justify-evenly'>
               <FormInput
                 type='number'
-                name='constant'
                 title='Constant'
-                register={register}
+                {...register('constant', { valueAsNumber: true })}
                 error={formState.errors.constant}
               />
               <FormInput
                 type='number'
-                name='dataLength'
                 title='Data Size'
-                register={register}
+                {...register('dataLength', { valueAsNumber: true })}
                 error={formState.errors.dataLength}
               />
             </div>
@@ -326,9 +320,8 @@ export default function MemoryForm({
             <div className='flex flex-col'>
               <FormInput
                 type='number'
-                name='dataLength'
                 title='Data Size'
-                register={register}
+                {...register('dataLength', { valueAsNumber: true })}
                 error={formState.errors.dataLength}
               />
             </div>

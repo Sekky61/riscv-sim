@@ -43,8 +43,8 @@ import { cn } from '@/lib/utils';
 
 import Notifications from '@/components/Notifications';
 import SideBar from '@/components/SideBar';
-import ModalRoot from '@/components/modals/ModalRoot';
 import { TooltipProvider } from '@/components/base/ui/tooltip';
+import ModalRoot from '@/components/modals/ModalRoot';
 
 const fontSans = FontSans({
   subsets: ['latin'],

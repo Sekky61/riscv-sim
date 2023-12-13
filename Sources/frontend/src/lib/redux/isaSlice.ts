@@ -29,23 +29,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {
-  PayloadAction,
-  createAsyncThunk,
-  createSelector,
-  createSlice,
-} from '@reduxjs/toolkit';
+import { PayloadAction, createSelector, createSlice } from '@reduxjs/toolkit';
 
 // Import as type to avoid circular dependency
 import type { RootState } from '@/lib/redux/store';
 
-import {
-  IsaNamedConfig,
-  MemoryLocationForm,
-  MemoryLocationApi,
-  isaFormDefaultValues,
-  isaSchema,
-} from '../forms/Isa';
+import { MemoryLocationForm } from '@/components/form/MemoryForm';
+import { IsaNamedConfig, isaFormDefaultValues, isaSchema } from '../forms/Isa';
 
 // Define a type for the slice state
 interface IsaState {
