@@ -34,7 +34,7 @@ import { Card } from '@/components/base/ui/card';
 import { Input } from '@/components/base/ui/input';
 import { Label } from '@/components/base/ui/label';
 import { FormInput } from '@/components/form/FormInput';
-import { RadioInputWithTitle } from '@/components/form/RadioInput';
+import { RadioInput, RadioInputWithTitle } from '@/components/form/RadioInput';
 import { parseCsv } from '@/lib/csv';
 import {
   DataChunk,
@@ -195,7 +195,7 @@ export default function MemoryForm({
     defaultValues: memoryLocationFormDefaultValue,
     mode: 'onChange',
   });
-  const { register, handleSubmit, formState, reset, trigger } = form;
+  const { register, handleSubmit, formState, reset, trigger, control } = form;
   const watchFields = form.watch();
   const { errors, isDirty, isValid } = formState;
 
@@ -278,8 +278,9 @@ export default function MemoryForm({
         />
         <RadioInputWithTitle
           name='dataType'
-          register={register}
-          title='Data Type'
+          title='Data type'
+          hint='Data type affects the size of each value in the memory location'
+          control={control}
           choices={dataTypes}
           texts={dataTypesText}
         />
@@ -291,10 +292,10 @@ export default function MemoryForm({
         />
         <RadioInputWithTitle
           name='dataSource'
-          register={register}
-          title='Data Source'
+          title='Data source'
           choices={['constant', 'random', 'file']}
           texts={['Constant', 'Random', 'File']}
+          control={control}
         />
       </div>
       <Card className='my-4 p-4'>

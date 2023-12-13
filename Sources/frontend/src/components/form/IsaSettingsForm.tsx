@@ -76,7 +76,11 @@ import {
 } from '@/components/base/ui/tabs';
 
 import { FormInput } from './FormInput';
-import { RadioInput, RadioInputWithTitle } from './RadioInput';
+import {
+  ControlRadioInput,
+  RadioInput,
+  RadioInputWithTitle,
+} from './RadioInput';
 
 type IsaArrayFields = 'fUnits' | 'memoryLocations';
 type IsaSimpleFields = keyof Omit<IsaNamedConfig, IsaArrayFields>;
@@ -232,7 +236,7 @@ export default function IsaSettingsForm({
       name,
       title: isaFormMetadata[name].title,
       hint: isaFormMetadata[name].hint,
-      register,
+      control,
     };
   };
 
@@ -519,7 +523,11 @@ function FUAdder({ control }: { control: Control<IsaNamedConfig> }) {
   return (
     <div>
       <div className=''>
-        <RadioInput register={register} name='fuType' choices={fuTypes} />
+        <ControlRadioInput
+          control={subControl}
+          name='fuType'
+          choices={fuTypes}
+        />
       </div>
       <div className='mt-4 flex justify-evenly'>
         <div>
