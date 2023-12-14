@@ -93,7 +93,7 @@ export default function SideBar() {
         <SideMenuButton
           Icon={<Info strokeWidth={1.5} />}
           href='/help'
-          hoverText='About'
+          hoverText='Help'
           shortcut='Digit8'
         />
       </div>

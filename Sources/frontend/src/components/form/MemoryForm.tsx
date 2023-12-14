@@ -34,7 +34,7 @@ import { Card } from '@/components/base/ui/card';
 import { Input } from '@/components/base/ui/input';
 import { Label } from '@/components/base/ui/label';
 import { FormInput } from '@/components/form/FormInput';
-import { RadioInput, RadioInputWithTitle } from '@/components/form/RadioInput';
+import { RadioInputWithTitle } from '@/components/form/RadioInput';
 import { parseCsv } from '@/lib/csv';
 import {
   DataChunk,
@@ -49,16 +49,26 @@ import {
   selectActiveIsa,
   updateMemoryLocation,
 } from '@/lib/redux/isaSlice';
+import { ErrorMessage } from '@hookform/error-message';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect } from 'react';
-import {
-  Control,
-  FieldErrors,
-  Resolver,
-  useForm,
-  useWatch,
-} from 'react-hook-form';
-import { object, z } from 'zod';
+import { FieldErrors, Resolver, useForm } from 'react-hook-form';
+import { z } from 'zod';
+
+/**
+ * @param fileList File list is interface of object that is returned by input[type=file]
+ * @returns The first file, if it exists
+ */
+function getFileFromFileList(fileList: unknown): File | undefined {
+  if (
+    typeof fileList === 'object' &&
+    fileList !== null &&
+    'item' in fileList &&
+    typeof fileList.item === 'function'
+  ) {
+    return fileList.item(0);
+  }
+}
 
 /**
  * Expand the memoryLocation form with a data input
@@ -68,19 +78,11 @@ export const memoryLocationWithSource = memoryLocation.extend({
   dataSource: z.enum(['constant', 'random', 'file']),
   /**
    * File is of type any, because FileList is not a class.
-   * The transform function will convert it to (File | undefined)
+   * The getFileFromFileList transform function will convert it to (File | undefined).
+   *
+   * There is a test file in `src/lib/__tests__/test.csv`.
    */
-  file: z.unknown().transform((val) => {
-    // check if val is a FileList
-    if (
-      typeof val === 'object' &&
-      val !== null &&
-      'item' in val &&
-      typeof val.item === 'function'
-    ) {
-      return val.item(0);
-    }
-  }),
+  file: z.any(),
   constant: z.number().optional(),
   dataLength: z.number().min(1).optional(),
 });
@@ -92,7 +94,7 @@ export const memoryLocationFormDefaultValue: MemoryLocationForm = {
   dataSource: 'constant',
   constant: 0,
   dataLength: 1,
-  file: [],
+  file: null,
 };
 
 /**
@@ -113,6 +115,9 @@ export function memoryLocationFormToIsa(memoryLocation: MemoryLocationForm) {
   };
 }
 
+/**
+ * Read file contents, parse it as csv, return as 1D array of strings
+ */
 async function readFromFile(file: File): Promise<string[]> {
   return file.text().then((text) => {
     return parseCsv(text);
@@ -146,7 +151,10 @@ function isNotEmpty<TValue extends object>(
 }
 
 /**
- * Component for defining a memory location
+ * Component for defining a memory location.
+ *
+ * For random data, the data is generated on submit. This means that chnging the name of the memory location
+ * will generate new random data.
  */
 export default function MemoryForm({
   existing,
@@ -184,6 +192,18 @@ export default function MemoryForm({
       };
     }
 
+    // If file source, check if file is selected
+    if (values.dataSource === 'file') {
+      // Watch out - the file list is checked, transform has not been applied yet
+      const file = getFileFromFileList(values.file);
+      if (!isFile(file)) {
+        errors.file = {
+          type: 'manual',
+          message: 'File not selected',
+        };
+      }
+    }
+
     return {
       values: val.values,
       errors,
@@ -204,7 +224,8 @@ export default function MemoryForm({
     (ml) => ml.name === memoryLocationName,
   );
   // get file metadata
-  const file = watchFields.file?.[0];
+  console.dir(watchFields.file);
+  const file = getFileFromFileList(watchFields.file);
 
   // watch for changes in the active memory location
   useEffect(() => {
@@ -240,7 +261,7 @@ export default function MemoryForm({
       data.dataChunks = [chunk];
     }
     if (data.dataSource === 'file') {
-      const file = data.file;
+      const file = getFileFromFileList(data.file);
       if (!isFile(file)) {
         throw new Error('File not selected');
       }
@@ -331,19 +352,30 @@ export default function MemoryForm({
             <div className='flex flex-col'>
               <Input
                 title='File'
-                id='file'
+                id='fileId'
                 type='file'
                 className='hidden'
                 accept='.csv'
                 {...register('file')}
               />
               <Label
-                htmlFor='file'
+                htmlFor='fileId'
                 className={buttonVariants({ variant: 'outline' })}
               >
                 {file?.name ? `${file.name} ✓` : 'Select file'}
               </Label>
-              <div className='mt-4'>Size: {file?.size || '-'} bytes</div>
+              <div className='mt-4'>
+                {errors.file === undefined && (
+                  <span>Size: {file?.size || '-'} bytes</span>
+                )}
+                <ErrorMessage
+                  errors={errors}
+                  name='file'
+                  render={({ message }) => (
+                    <span className='text-red-600'>{message}</span>
+                  )}
+                />
+              </div>
             </div>
           )}
         </div>

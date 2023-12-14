@@ -329,12 +329,17 @@
   }
 
   .radio-selected {
-    @apply bg-background text-foreground shadow-sm;
+    @apply bg-background text-foreground shadow-sm cursor-default;
   }
 
   /* radio input */
   /* Source: https://thestizmedia.com/radio-buttons-as-toggle-buttons-with-css/ */
   .radio-field input[type='radio']:checked + label {
+    @apply radio-selected;
+  }
+
+  /* Sometimes, radix ui uses button instead of input */
+  .radio-field button[role='radio'][aria-checked='true'] + label {
     @apply radio-selected;
   }
 

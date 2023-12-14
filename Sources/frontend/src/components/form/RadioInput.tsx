@@ -42,6 +42,12 @@ import { Control, FieldValues, Path, useController } from 'react-hook-form';
 import { ReactClassName } from '@/lib/types/reactTypes';
 import { cn } from '@/lib/utils';
 
+import { Label } from '@/components/base/ui/label';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/base/ui/tooltip';
 import * as RadioGroup from '@radix-ui/react-radio-group';
 
 /**
@@ -85,7 +91,7 @@ export function RadioInput({
             </RadioGroup.Item>
             <label
               className={cn(
-                'hover:bg-white/60 hover:text-gray-700 flex-grow inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
+                'hover:bg-white/60 cursor-pointer hover:text-gray-700 flex-grow inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
               )}
               htmlFor={inputId}
             >
@@ -152,14 +158,19 @@ export function RadioInputWithTitle<T extends FieldValues>({
 }: RadioInputWithTitleProps<T>) {
   return (
     <div className={className}>
-      <label className='mb-1 text-sm font-medium '>{title}</label>
-      {hint ? (
-        <span className='tooltip ml-1 text-xs'>
-          &#9432;
-          <div className='tooltiptext ml-2 rounded bg-gray-100 p-1'>{hint}</div>
-        </span>
-      ) : null}
       <div>
+        {hint ? (
+          <Tooltip>
+            <TooltipTrigger>
+              <Label htmlFor={name}>{title}&nbsp;&#9432;</Label>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{hint}</p>
+            </TooltipContent>
+          </Tooltip>
+        ) : (
+          <Label htmlFor={name}>{title}</Label>
+        )}
         <ControlRadioInput
           choices={choices}
           texts={texts}

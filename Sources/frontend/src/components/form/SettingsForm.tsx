@@ -1,14 +1,14 @@
 /**
- * @file    page.tsx
+ * @file    SettingsForm.tsx
  *
  * @author  Michal Majer
  *          Faculty of Information Technology
  *          Brno University of Technology
  *          xmajer21@stud.fit.vutbr.cz
  *
- * @brief   The settings page
+ * @brief   Generic settings form component
  *
- * @date    19 September 2023, 22:00 (created)
+ * @date    14 December 2023, 16:00 (created)
  *
  * @section Licence
  * This file is part of the Superscalar simulator app
@@ -29,13 +29,25 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { SettingsForm } from '@/components/form/SettingsForm';
+'use client';
 
-export default function Page() {
+import { Button } from '@/components/base/ui/button';
+
+export function SettingsForm() {
+  const clearLocalMemory = () => {
+    // confirm
+    const doit = confirm('Are you sure you want to clear local memory?');
+    if (!doit) return;
+
+    localStorage.clear();
+    console.info('Local memory cleared');
+    // window.location.reload();
+  };
+
   return (
-    <main>
-      <h2 className='text-2xl mb-4'>Settings</h2>
-      <SettingsForm />
-    </main>
+    <div>
+      <Button onClick={clearLocalMemory}>Clear local memory</Button>
+      <p>Reload the page after clearing local memory</p>
+    </div>
   );
 }

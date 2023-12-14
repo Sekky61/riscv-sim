@@ -19,6 +19,7 @@
   "dependencies": {
     "@codemirror/lint": "^6.4.2",
     "@codemirror/state": "^6.3.2",
+    "@hookform/error-message": "^2.0.1",
     "@hookform/resolvers": "^3.3.2",
     "@radix-ui/react-checkbox": "^1.0.4",
     "@radix-ui/react-dialog": "^1.0.5",
