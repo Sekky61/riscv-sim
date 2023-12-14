@@ -179,61 +179,60 @@ export default function Page() {
     <div>
       <h1 className='mb-8 text-2xl'>ISA Configuration</h1>
       <div className='border-b mb-4 pb-4'>
-
-      <div className='flex justify-center items-center gap-4'>
-        <span className='font-bold'>Active configuration</span>
-        <Popover open={savesOpen} onOpenChange={(op) => setSavesOpen(op)}>
-          <PopoverTrigger asChild>
-            <Button
-              variant='outline'
-              role='combobox'
-              aria-expanded={savesOpen}
-              className='w-[200px] justify-between'
-            >
-              {activeIsa.cpuConfig.name}
-              <ChevronsUpDown className='ml-2 h-4 w-4 shrink-0 opacity-50' />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className='w-[200px] p-0'>
-            <Command>
-              <CommandInput placeholder='Search...' />
-              <CommandEmpty>No ISA found.</CommandEmpty>
-              <CommandGroup>
-                {isas.map((isa) => (
-                  <CommandItem
-                    key={isa.cpuConfig.name}
-                    value={isa.cpuConfig.name}
-                    onSelect={(_currentValue) => {
-                      // _currentValue converts to lowercase
-                      onChangeSelected(isa.cpuConfig.name);
-                    }}
-                  >
-                    <Check
-                      className={cn(
-                        'mr-2 h-4 w-4',
-                        activeIsa.cpuConfig.name === isa.cpuConfig.name
-                          ? 'opacity-100'
-                          : 'opacity-0',
-                      )}
-                    />
-                    {isa.cpuConfig.name}
+        <div className='flex justify-center items-center gap-4'>
+          <span className='font-bold'>Active configuration</span>
+          <Popover open={savesOpen} onOpenChange={(op) => setSavesOpen(op)}>
+            <PopoverTrigger asChild>
+              <Button
+                variant='outline'
+                role='combobox'
+                aria-expanded={savesOpen}
+                className='w-[200px] justify-between'
+              >
+                {activeIsa.cpuConfig.name}
+                <ChevronsUpDown className='ml-2 h-4 w-4 shrink-0 opacity-50' />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className='w-[200px] p-0'>
+              <Command>
+                <CommandInput placeholder='Search...' />
+                <CommandEmpty>No ISA found.</CommandEmpty>
+                <CommandGroup>
+                  {isas.map((isa) => (
+                    <CommandItem
+                      key={isa.cpuConfig.name}
+                      value={isa.cpuConfig.name}
+                      onSelect={(_currentValue) => {
+                        // _currentValue converts to lowercase
+                        onChangeSelected(isa.cpuConfig.name);
+                      }}
+                    >
+                      <Check
+                        className={cn(
+                          'mr-2 h-4 w-4',
+                          activeIsa.cpuConfig.name === isa.cpuConfig.name
+                            ? 'opacity-100'
+                            : 'opacity-0',
+                        )}
+                      />
+                      {isa.cpuConfig.name}
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+                <CommandSeparator />
+                <CommandGroup>
+                  <CommandItem onSelect={createNewIsa}>
+                    Create new ISA
                   </CommandItem>
-                ))}
-              </CommandGroup>
-              <CommandSeparator />
-              <CommandGroup>
-                <CommandItem onSelect={createNewIsa}>
-                  Create new ISA
-                </CommandItem>
-              </CommandGroup>
-            </Command>
-          </PopoverContent>
-        </Popover>
-        <Button onClick={persistIsaChanges} disabled={!hasUnsavedChanges}>
-          Save Changes
-        </Button>
-      </div>
-      <MemoryInfo />
+                </CommandGroup>
+              </Command>
+            </PopoverContent>
+          </Popover>
+          <Button onClick={persistIsaChanges} disabled={!hasUnsavedChanges}>
+            Save Changes
+          </Button>
+        </div>
+        <MemoryInfo />
       </div>
       <div
         className={cn(
@@ -251,7 +250,7 @@ export default function Page() {
 /**
  * Component to inform about memory locations
  */
-export function MemoryInfo() {
+function MemoryInfo() {
   const activeIsa = useAppSelector(selectActiveConfig);
   const mem = activeIsa.memoryLocations;
   const names = mem.map((m) => m.name);
@@ -264,16 +263,14 @@ export function MemoryInfo() {
 
   return (
     <div>
-      {
-        mem.length === 0 ? (
-          <span>No {memoryLink} locations defined.</span>
-        ) : (
-          <span>
-            {mem.length} {memoryLink} location{mem.length > 1 ? 's' : ''} defined:{' '}
-            {names.join(', ')}
-          </span>
-        )
-      }
+      {mem.length === 0 ? (
+        <span>No {memoryLink} locations defined.</span>
+      ) : (
+        <span>
+          {mem.length} {memoryLink} location{mem.length > 1 ? 's' : ''} defined:{' '}
+          {names.join(', ')}
+        </span>
+      )}
     </div>
   );
 }
