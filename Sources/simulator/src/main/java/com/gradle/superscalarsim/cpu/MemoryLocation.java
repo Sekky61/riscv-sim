@@ -28,6 +28,7 @@
 
 package com.gradle.superscalarsim.cpu;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 
 import java.util.ArrayList;
@@ -36,9 +37,11 @@ import java.util.List;
 /**
  * Result of parsing directives in assembly code.
  * Can have multiple sequences of values of different data types.
+ * The client includes extra fields, they are ignored during deserialization.
  *
  * @brief Describes one named memory location (constant, array, struct).
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class MemoryLocation
 {
   /**

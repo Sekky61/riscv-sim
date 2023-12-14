@@ -29,7 +29,7 @@ package com.gradle.superscalarsim.server.simulate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gradle.superscalarsim.cpu.Cpu;
-import com.gradle.superscalarsim.cpu.CpuConfiguration;
+import com.gradle.superscalarsim.cpu.CpuConfig;
 import com.gradle.superscalarsim.serialization.Serialization;
 import com.gradle.superscalarsim.server.IRequestDeserializer;
 import com.gradle.superscalarsim.server.IRequestResolver;
@@ -59,7 +59,7 @@ public class SimulateHandler implements IRequestResolver<SimulateRequest, Simula
     else
     {
       // Check configuration, it may be used
-      CpuConfiguration.ValidationResult errors = request.config.validate();
+      CpuConfig.ValidationResult errors = request.config.validate();
       if (errors.valid)
       {
         // Run simulation

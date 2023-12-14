@@ -41,9 +41,9 @@ public class LoopTests
   @Test
   public void test_jump_on_yourself()
   {
-    CpuConfiguration cpuConfiguration = CpuConfiguration.getDefaultConfiguration();
-    cpuConfiguration.code = "jr x0";
-    Cpu cpu = new Cpu(cpuConfiguration);
+    SimulationConfig cfg = SimulationConfig.getDefaultConfiguration();
+    cfg.code = "jr x0";
+    Cpu cpu = new Cpu(cfg);
     
     // Should not throw an exception, loop until infinity
     for (int i = 0; i < 100; i++)
@@ -62,9 +62,9 @@ public class LoopTests
   @Test
   public void LoopInstructionRenamingTest()
   {
-    CpuConfiguration cpuConfiguration = CpuConfiguration.getDefaultConfiguration();
-    cpuConfiguration.code = ExecuteUtil.getLoopProgram(5);
-    Cpu cpu = new Cpu(cpuConfiguration);
+    SimulationConfig cfg = SimulationConfig.getDefaultConfiguration();
+    cfg.code = ExecuteUtil.getLoopProgram(5);
+    Cpu cpu = new Cpu(cfg);
     
     // Obtain original value of inputcodemodels
     List<InputCodeModel> parsedCode = cpu.cpuState.instructionMemoryBlock.getCode();
@@ -94,8 +94,8 @@ public class LoopTests
   //  @Test
   public void test_write_memory()
   {
-    CpuConfiguration cpuConfiguration = CpuConfiguration.getDefaultConfiguration();
-    cpuConfiguration.code = """
+    SimulationConfig cfg = SimulationConfig.getDefaultConfiguration();
+    cfg.code = """
             wr:
                 addi sp,sp,-32
                 sw s0,28(sp)
@@ -119,7 +119,7 @@ public class LoopTests
                 lw s0,28(sp)
                 addi sp,sp,32
                 """;
-    Cpu cpu = new Cpu(cpuConfiguration);
+    Cpu cpu = new Cpu(cfg);
     cpu.execute();
     
     // Assert that bytes 0 to 19 are written to memory

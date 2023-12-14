@@ -36,22 +36,22 @@ public class ConfigurationTests
   @Test
   public void testDefaultConfiguration_Passes()
   {
-    CpuConfiguration config = CpuConfiguration.getDefaultConfiguration();
+    CpuConfig config = CpuConfig.getDefaultConfiguration();
     Assert.assertTrue(config.validate().valid);
   }
   
   @Test
   public void testNoFus_Fails()
   {
-    CpuConfiguration config = CpuConfiguration.getDefaultConfiguration();
-    config.fUnits = new CpuConfiguration.FUnit[0];
+    CpuConfig config = CpuConfig.getDefaultConfiguration();
+    config.fUnits = new CpuConfig.FUnit[0];
     Assert.assertFalse(config.validate().valid);
   }
   
   @Test
   public void testPredictors()
   {
-    CpuConfiguration config = CpuConfiguration.getDefaultConfiguration();
+    CpuConfig config = CpuConfig.getDefaultConfiguration();
     // A bad combination of predictors
     config.predictorType    = "2bit";
     config.predictorDefault = "Taken";
@@ -62,7 +62,7 @@ public class ConfigurationTests
   @Test
   public void testDefaultConfig_BuildsState()
   {
-    CpuConfiguration config = CpuConfiguration.getDefaultConfiguration();
+    SimulationConfig config = SimulationConfig.getDefaultConfiguration();
     Cpu              cpu    = new Cpu(config);
     Assert.assertNotNull(cpu.cpuState);
   }

@@ -37,7 +37,7 @@ public class SerializationTest
   @Test
   public void cpuState_serializedWithoutError()
   {
-    CpuConfiguration cfg = CpuConfiguration.getDefaultConfiguration();
+    SimulationConfig cfg = SimulationConfig.getDefaultConfiguration();
     cfg.code = """
             addi x3, x0, 10000
             addi x8, x0, 50

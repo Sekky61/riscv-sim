@@ -38,12 +38,12 @@ import org.junit.Test;
 public class InstructionTests
 {
   
-  private CpuConfiguration cpuConfig;
+  private SimulationConfig cpuConfig;
   
   @Before
   public void setup()
   {
-    cpuConfig = CpuConfiguration.getDefaultConfiguration();
+    cpuConfig = SimulationConfig.getDefaultConfiguration();
   }
   
   @Test

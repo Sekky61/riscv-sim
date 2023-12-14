@@ -11,8 +11,9 @@ import com.gradle.superscalarsim.builders.InputCodeModelBuilder;
 import com.gradle.superscalarsim.builders.RegisterFileModelBuilder;
 import com.gradle.superscalarsim.code.*;
 import com.gradle.superscalarsim.cpu.Cpu;
-import com.gradle.superscalarsim.cpu.CpuConfiguration;
+import com.gradle.superscalarsim.cpu.CpuConfig;
 import com.gradle.superscalarsim.cpu.CpuState;
+import com.gradle.superscalarsim.cpu.SimulationConfig;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
@@ -106,7 +107,7 @@ public class ForwardSimulationTest
     RegisterFileModel floatFile = new RegisterFileModelBuilder().hasName("float").hasDataType(RegisterTypeEnum.kFloat)
             .hasRegisterList(Arrays.asList(float1, float2, float3, float4, float5)).build();
     
-    CpuConfiguration cpuCfg = new CpuConfiguration();
+    CpuConfig cpuCfg = new CpuConfig();
     cpuCfg.robSize          = 256;
     cpuCfg.lbSize           = 64;
     cpuCfg.sbSize           = 64;
@@ -131,31 +132,27 @@ public class ForwardSimulationTest
     // 1 L/S: (delay 1)
     // 2 branch: (delay 3)
     // 1 mem: (delay 1)
-    cpuCfg.fUnits          = new CpuConfiguration.FUnit[10];
-    cpuCfg.fUnits[0]       = new CpuConfiguration.FUnit(1, CpuConfiguration.FUnit.Type.FX, 2,
-                                                        new CpuConfiguration.FUnit.Capability[]{CpuConfiguration.FUnit.Capability.addition});
-    cpuCfg.fUnits[1]       = new CpuConfiguration.FUnit(2, CpuConfiguration.FUnit.Type.FX, 2,
-                                                        new CpuConfiguration.FUnit.Capability[]{CpuConfiguration.FUnit.Capability.addition});
-    cpuCfg.fUnits[2]       = new CpuConfiguration.FUnit(3, CpuConfiguration.FUnit.Type.FX, 2,
-                                                        new CpuConfiguration.FUnit.Capability[]{CpuConfiguration.FUnit.Capability.addition});
-    cpuCfg.fUnits[3]       = new CpuConfiguration.FUnit(4, CpuConfiguration.FUnit.Type.FP, 2,
-                                                        new CpuConfiguration.FUnit.Capability[]{CpuConfiguration.FUnit.Capability.addition});
-    cpuCfg.fUnits[4]       = new CpuConfiguration.FUnit(5, CpuConfiguration.FUnit.Type.FP, 2,
-                                                        new CpuConfiguration.FUnit.Capability[]{CpuConfiguration.FUnit.Capability.addition});
-    cpuCfg.fUnits[5]       = new CpuConfiguration.FUnit(6, CpuConfiguration.FUnit.Type.FP, 2,
-                                                        new CpuConfiguration.FUnit.Capability[]{CpuConfiguration.FUnit.Capability.addition});
-    cpuCfg.fUnits[6]       = new CpuConfiguration.FUnit(7, CpuConfiguration.FUnit.Type.L_S, 1,
-                                                        new CpuConfiguration.FUnit.Capability[]{});
-    cpuCfg.fUnits[7]       = new CpuConfiguration.FUnit(8, CpuConfiguration.FUnit.Type.Branch, 3,
-                                                        new CpuConfiguration.FUnit.Capability[]{});
-    cpuCfg.fUnits[8]       = new CpuConfiguration.FUnit(9, CpuConfiguration.FUnit.Type.Branch, 3,
-                                                        new CpuConfiguration.FUnit.Capability[]{});
-    cpuCfg.fUnits[9]       = new CpuConfiguration.FUnit(10, CpuConfiguration.FUnit.Type.Memory, 1,
-                                                        new CpuConfiguration.FUnit.Capability[]{});
-    cpuCfg.code            = "";
-    cpuCfg.memoryLocations = new ArrayList<>();
+    cpuCfg.fUnits    = new CpuConfig.FUnit[10];
+    cpuCfg.fUnits[0] = new CpuConfig.FUnit(1, CpuConfig.FUnit.Type.FX, 2,
+                                           new CpuConfig.FUnit.Capability[]{CpuConfig.FUnit.Capability.addition});
+    cpuCfg.fUnits[1] = new CpuConfig.FUnit(2, CpuConfig.FUnit.Type.FX, 2,
+                                           new CpuConfig.FUnit.Capability[]{CpuConfig.FUnit.Capability.addition});
+    cpuCfg.fUnits[2] = new CpuConfig.FUnit(3, CpuConfig.FUnit.Type.FX, 2,
+                                           new CpuConfig.FUnit.Capability[]{CpuConfig.FUnit.Capability.addition});
+    cpuCfg.fUnits[3] = new CpuConfig.FUnit(4, CpuConfig.FUnit.Type.FP, 2,
+                                           new CpuConfig.FUnit.Capability[]{CpuConfig.FUnit.Capability.addition});
+    cpuCfg.fUnits[4] = new CpuConfig.FUnit(5, CpuConfig.FUnit.Type.FP, 2,
+                                           new CpuConfig.FUnit.Capability[]{CpuConfig.FUnit.Capability.addition});
+    cpuCfg.fUnits[5] = new CpuConfig.FUnit(6, CpuConfig.FUnit.Type.FP, 2,
+                                           new CpuConfig.FUnit.Capability[]{CpuConfig.FUnit.Capability.addition});
+    cpuCfg.fUnits[6] = new CpuConfig.FUnit(7, CpuConfig.FUnit.Type.L_S, 1, new CpuConfig.FUnit.Capability[]{});
+    cpuCfg.fUnits[7] = new CpuConfig.FUnit(8, CpuConfig.FUnit.Type.Branch, 3, new CpuConfig.FUnit.Capability[]{});
+    cpuCfg.fUnits[8] = new CpuConfig.FUnit(9, CpuConfig.FUnit.Type.Branch, 3, new CpuConfig.FUnit.Capability[]{});
+    cpuCfg.fUnits[9] = new CpuConfig.FUnit(10, CpuConfig.FUnit.Type.Memory, 1, new CpuConfig.FUnit.Capability[]{});
     
-    this.cpu = new Cpu(cpuCfg);
+    SimulationConfig cfg = new SimulationConfig("", new ArrayList<>(), cpuCfg);
+    
+    this.cpu = new Cpu(cfg);
     CpuState cpuState = this.cpu.cpuState;
     
     this.instructionMemoryBlock    = cpuState.instructionMemoryBlock;

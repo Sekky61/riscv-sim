@@ -28,14 +28,14 @@
 package com.gradle.superscalarsim.cpu;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.gradle.superscalarsim.code.CodeParser;
 import com.gradle.superscalarsim.code.Expression;
-import com.gradle.superscalarsim.code.Label;
 import com.gradle.superscalarsim.code.ParseError;
-import com.gradle.superscalarsim.loader.InitLoader;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 
 // The corresponding Typescript type is:
 //
@@ -78,14 +78,8 @@ import java.util.*;
  * Can be used to create a CpuState
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class CpuConfiguration implements Serializable
+public class CpuConfig implements Serializable
 {
-  /**
-   * Code to run.
-   * <p>
-   * Must be part of the configuration because it is used to create the initial state
-   */
-  public String code;
   public int robSize;
   public int lbSize;
   public int sbSize;
@@ -119,12 +113,9 @@ public class CpuConfiguration implements Serializable
   public int laneReplacementDelay;
   public boolean addRemainingDelay;
   
-  public List<MemoryLocation> memoryLocations;
-  
-  public static CpuConfiguration getDefaultConfiguration()
+  public static CpuConfig getDefaultConfiguration()
   {
-    CpuConfiguration config = new CpuConfiguration();
-    config.code             = "";
+    CpuConfig config = new CpuConfig();
     config.robSize          = 256;
     config.lbSize           = 64;
     config.sbSize           = 64;
@@ -175,7 +166,6 @@ public class CpuConfiguration implements Serializable
     config.loadLatency          = 1;
     config.laneReplacementDelay = 10;
     config.addRemainingDelay    = false;
-    config.memoryLocations      = new ArrayList<>();
     return config;
   }
   
@@ -186,23 +176,7 @@ public class CpuConfiguration implements Serializable
   public ValidationResult validate()
   {
     // List of error messages
-    List<String>     errorMessages = new ArrayList<>();
-    List<ParseError> codeErrors    = null;
-    
-    if (code == null)
-    {
-      errorMessages.add("Code must not be null");
-    }
-    
-    // Parse code
-    CodeParser codeParser = new CodeParser(new InitLoader());
-    codeParser.parseCode(code, getMemoryLocationLabels());
-    
-    if (!codeParser.success())
-    {
-      errorMessages.add("Code parsing failed");
-      codeErrors = codeParser.getErrorMessages();
-    }
+    List<String> errorMessages = new ArrayList<>();
     
     // Null checks
     if (fUnits == null)
@@ -383,37 +357,13 @@ public class CpuConfiguration implements Serializable
       }
     }
     
-    // Memory allocations
-    if (memoryLocations == null)
-    {
-      errorMessages.add("Memory locations must not be null");
-    }
-    else
-    {
-      for (MemoryLocation memoryLocation : memoryLocations)
-      {
-        if (memoryLocation.alignment < 0)
-        {
-          errorMessages.add("Memory location alignment must be greater than 0");
-        }
-        if (memoryLocation.getBytes() == null)
-        {
-          errorMessages.add("Memory location value must not be null");
-        }
-        if (memoryLocation.name == null || memoryLocation.name.isEmpty())
-        {
-          errorMessages.add("Memory location name must not be empty");
-        }
-      }
-    }
-    
     if (errorMessages.isEmpty())
     {
       return new ValidationResult(true, null, null);
     }
     else
     {
-      return new ValidationResult(false, errorMessages, codeErrors);
+      return new ValidationResult(false, errorMessages, null);
     }
   }
   
@@ -508,19 +458,6 @@ public class CpuConfiguration implements Serializable
     {
       addition, bitwise, multiplication, division, special,
     }
-  }
-  
-  /**
-   * Extract names of memory locations defined outside the code
-   */
-  public Map<String, Label> getMemoryLocationLabels()
-  {
-    Map<String, Label> names = new HashMap<>();
-    for (MemoryLocation memoryLocation : memoryLocations)
-    {
-      names.put(memoryLocation.name, new Label(memoryLocation.name, -1));
-    }
-    return names;
   }
   
   public static class ValidationResult

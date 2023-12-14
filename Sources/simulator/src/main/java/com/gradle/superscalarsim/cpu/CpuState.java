@@ -119,7 +119,7 @@ public class CpuState implements Serializable
     
   }
   
-  public CpuState(CpuConfiguration config, InitLoader initLoader)
+  public CpuState(SimulationConfig config, InitLoader initLoader)
   {
     this.initState(config, initLoader);
   }
@@ -127,7 +127,7 @@ public class CpuState implements Serializable
   /**
    * @brief Initialize the CPU state - given the configuration.
    */
-  public void initState(CpuConfiguration config, InitLoader initLoader)
+  public void initState(SimulationConfig config, InitLoader initLoader)
   {
     this.tick            = 0;
     this.managerRegistry = new ManagerRegistry();
@@ -182,38 +182,42 @@ public class CpuState implements Serializable
     this.renameMapTableBlock = new RenameMapTableBlock(unifiedRegisterFileBlock);
     
     this.globalHistoryRegister = new GlobalHistoryRegister(10);
-    PatternHistoryTable.PredictorType predictorType = switch (config.predictorType)
+    PatternHistoryTable.PredictorType predictorType = switch (config.cpuConfig.predictorType)
     {
       case "0bit" -> PatternHistoryTable.PredictorType.ZERO_BIT_PREDICTOR;
       case "1bit" -> PatternHistoryTable.PredictorType.ONE_BIT_PREDICTOR;
       case "2bit" -> PatternHistoryTable.PredictorType.TWO_BIT_PREDICTOR;
-      default -> throw new IllegalStateException("Unexpected value for predictor type: " + config.predictorType);
+      default ->
+              throw new IllegalStateException("Unexpected value for predictor type: " + config.cpuConfig.predictorType);
     };
     
-    boolean[] defaultTaken = getDefaultTaken(config);
+    boolean[] defaultTaken = getDefaultTaken(config.cpuConfig);
     
-    this.patternHistoryTable = new PatternHistoryTable(config.phtSize, defaultTaken, predictorType);
+    this.patternHistoryTable = new PatternHistoryTable(config.cpuConfig.phtSize, defaultTaken, predictorType);
     this.gShareUnit          = new GShareUnit(1024, this.globalHistoryRegister, this.patternHistoryTable);
-    this.branchTargetBuffer  = new BranchTargetBuffer(config.btbSize);
+    this.branchTargetBuffer  = new BranchTargetBuffer(config.cpuConfig.btbSize);
     
-    ReplacementPoliciesEnum replacementPoliciesEnum = switch (config.cacheReplacement)
+    ReplacementPoliciesEnum replacementPoliciesEnum = switch (config.cpuConfig.cacheReplacement)
     {
       case "LRU" -> ReplacementPoliciesEnum.LRU;
       case "FIFO" -> ReplacementPoliciesEnum.FIFO;
       case "Random" -> ReplacementPoliciesEnum.RANDOM;
-      default -> throw new IllegalStateException("Unexpected value for cache replacement: " + config.cacheReplacement);
+      default -> throw new IllegalStateException(
+              "Unexpected value for cache replacement: " + config.cpuConfig.cacheReplacement);
     };
     
     // Define memory
     boolean writeBack = true;
-    if (!Objects.equals(config.storeBehavior, "write-back"))
+    if (!Objects.equals(config.cpuConfig.storeBehavior, "write-back"))
     {
-      throw new IllegalStateException("Unexpected value for store behavior: " + config.storeBehavior);
+      throw new IllegalStateException("Unexpected value for store behavior: " + config.cpuConfig.storeBehavior);
     }
     
-    this.cache = new Cache(simulatedMemory, config.cacheLines, config.cacheAssoc, config.cacheLineSize,
-                           replacementPoliciesEnum, writeBack, config.addRemainingDelay, config.storeLatency,
-                           config.loadLatency, config.laneReplacementDelay, this.cacheStatisticsCounter);
+    this.cache = new Cache(simulatedMemory, config.cpuConfig.cacheLines, config.cpuConfig.cacheAssoc,
+                           config.cpuConfig.cacheLineSize, replacementPoliciesEnum, writeBack,
+                           config.cpuConfig.addRemainingDelay, config.cpuConfig.storeLatency,
+                           config.cpuConfig.loadLatency, config.cpuConfig.laneReplacementDelay,
+                           this.cacheStatisticsCounter);
     
     this.memoryModel = new MemoryModel(cache, cacheStatisticsCounter);
     
@@ -223,18 +227,18 @@ public class CpuState implements Serializable
     
     this.instructionFetchBlock = new InstructionFetchBlock(simCodeModelFactory, instructionMemoryBlock, gShareUnit,
                                                            branchTargetBuffer);
-    instructionFetchBlock.setNumberOfWays(config.fetchWidth);
+    instructionFetchBlock.setNumberOfWays(config.cpuConfig.fetchWidth);
     
     this.decodeAndDispatchBlock = new DecodeAndDispatchBlock(instructionFetchBlock, renameMapTableBlock,
                                                              globalHistoryRegister, branchTargetBuffer,
-                                                             instructionMemoryBlock, config.fetchWidth);
+                                                             instructionMemoryBlock, config.cpuConfig.fetchWidth);
     
     // ROB
     this.reorderBufferBlock        = new ReorderBufferBlock(renameMapTableBlock, decodeAndDispatchBlock, gShareUnit,
                                                             branchTargetBuffer, instructionFetchBlock,
                                                             statisticsCounter);
-    reorderBufferBlock.bufferSize  = config.robSize;
-    reorderBufferBlock.commitLimit = config.commitWidth;
+    reorderBufferBlock.bufferSize  = config.cpuConfig.robSize;
+    reorderBufferBlock.commitLimit = config.cpuConfig.commitWidth;
     
     // Issue
     this.issueWindowSuperBlock = new IssueWindowSuperBlock(decodeAndDispatchBlock);
@@ -243,10 +247,10 @@ public class CpuState implements Serializable
     
     // Memory blocks
     this.storeBufferBlock = new StoreBufferBlock(loadStoreInterpreter, unifiedRegisterFileBlock, reorderBufferBlock);
-    storeBufferBlock.setBufferSize(config.sbSize);
+    storeBufferBlock.setBufferSize(config.cpuConfig.sbSize);
     this.loadBufferBlock = new LoadBufferBlock(storeBufferBlock, unifiedRegisterFileBlock, reorderBufferBlock,
                                                instructionFetchBlock);
-    loadBufferBlock.setBufferSize(config.lbSize);
+    loadBufferBlock.setBufferSize(config.cpuConfig.lbSize);
     
     // FUs
     this.aluIssueWindowBlock       = new AluIssueWindowBlock(unifiedRegisterFileBlock);
@@ -264,7 +268,7 @@ public class CpuState implements Serializable
     this.loadStoreFunctionUnits       = new ArrayList<>();
     this.branchFunctionUnitBlocks     = new ArrayList<>();
     this.memoryAccessUnits            = new ArrayList<>();
-    for (CpuConfiguration.FUnit fu : config.fUnits)
+    for (CpuConfig.FUnit fu : config.cpuConfig.fUnits)
     {
       switch (fu.fuType)
       {
@@ -330,7 +334,7 @@ public class CpuState implements Serializable
    *
    * @brief Get the default state for the predictor from the configuration
    */
-  private static boolean[] getDefaultTaken(CpuConfiguration config)
+  private static boolean[] getDefaultTaken(CpuConfig config)
   {
     boolean[] defaultTaken;
     if (config.predictorType.equals("0bit") || config.predictorType.equals("1bit"))

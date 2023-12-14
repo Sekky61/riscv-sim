@@ -9,12 +9,12 @@ import java.util.List;
 
 public class MemoryTests
 {
-  private CpuConfiguration cpuConfig;
+  private SimulationConfig cpuConfig;
   
   @Before
   public void setup()
   {
-    cpuConfig = CpuConfiguration.getDefaultConfiguration();
+    cpuConfig = SimulationConfig.getDefaultConfiguration();
   }
   
   @Test

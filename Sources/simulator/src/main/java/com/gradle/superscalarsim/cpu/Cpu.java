@@ -40,7 +40,7 @@ public class Cpu implements Serializable
   /**
    * CPU configuration
    */
-  public CpuConfiguration configuration;
+  public SimulationConfig configuration;
   
   /**
    * CPU state
@@ -55,25 +55,25 @@ public class Cpu implements Serializable
   /**
    * Assumes the cpuConfiguration is correct
    *
-   * @param cpuConfiguration CPU configuration to use
+   * @param cpuConfig CPU configuration to use
    */
-  public Cpu(CpuConfiguration cpuConfiguration, CpuState cpuState)
+  public Cpu(SimulationConfig simConfig, CpuState cpuState)
   {
-    this.configuration = cpuConfiguration;
+    this.configuration = simConfig;
     this.initLoader    = new InitLoader();
     this.cpuState      = cpuState;
   }
   
   /**
-   * @param cpuConfiguration CPU configuration to use
+   * @param cpuConfig CPU configuration to use
    *
    * @brief Create a CPU with a given configuration at the default state (tick 0)
    */
-  public Cpu(CpuConfiguration cpuConfiguration)
+  public Cpu(SimulationConfig simConfig)
   {
-    this.configuration = cpuConfiguration;
+    this.configuration = simConfig;
     this.initLoader    = new InitLoader();
-    this.cpuState      = new CpuState(cpuConfiguration, this.initLoader);
+    this.cpuState      = new CpuState(this.configuration, this.initLoader);
   }
   
   /**
@@ -81,7 +81,7 @@ public class Cpu implements Serializable
    */
   public Cpu()
   {
-    this.configuration = CpuConfiguration.getDefaultConfiguration();
+    this.configuration = SimulationConfig.getDefaultConfiguration();
     this.initLoader    = new InitLoader();
     this.cpuState      = new CpuState(this.configuration, this.initLoader);
   }
