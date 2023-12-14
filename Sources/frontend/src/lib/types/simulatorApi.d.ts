@@ -29,7 +29,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import type { CpuConfiguration } from '@/lib/forms/Isa';
+import type { SimulationConfig } from '@/lib/forms/Isa';
 import type { OptimizeOption } from '@/lib/redux/compilerSlice';
 import type { CpuState } from '@/lib/types/cpuApi';
 
@@ -130,6 +130,7 @@ export interface ParseAsmEndpoint {
 
 export interface ParseAsmRequest {
   code: string;
+  config?: SimulationConfig;
 }
 
 export type ParseAsmResponse =
@@ -180,7 +181,7 @@ export interface SimulateEndpoint {
 
 export interface SimulateRequest {
   tick: number;
-  config?: CpuConfiguration; // todo: make this required
+  config: SimulationConfig; // todo: make this required
 }
 
 export interface SimulateResponse {

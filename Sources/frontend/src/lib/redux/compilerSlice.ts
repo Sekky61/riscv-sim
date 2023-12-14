@@ -39,6 +39,8 @@ import {
 import { notify } from 'reapop';
 
 import { transformErrors } from '@/lib/editor/transformErrors';
+import { CpuConfig } from '@/lib/forms/Isa';
+import { selectActiveConfig } from '@/lib/redux/isaSlice';
 import type { RootState } from '@/lib/redux/store';
 import { callCompilerImpl, callParseAsmImpl } from '@/lib/serverCalls';
 import {
@@ -163,8 +165,10 @@ export const callParseAsm = createAsyncThunk<ParseAsmResponse>(
   'compiler/callParseAsm',
   async (arg, { getState, dispatch }) => {
     // @ts-ignore
-    const code: string = getState().compiler.asmCode;
-    const response = await callParseAsmImpl(code)
+    const state: RootState = getState();
+    const code: string = state.compiler.asmCode;
+    const config = selectActiveConfig(state);
+    const response = await callParseAsmImpl(code, config)
       .then((res) => {
         if (res.success) {
           dispatch(

@@ -36,7 +36,7 @@
 import { Button } from '@/components/base/ui/button';
 import MemoryForm from '@/components/form/MemoryForm';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
-import { removeMemoryLocation, selectActiveIsa } from '@/lib/redux/isaSlice';
+import { removeMemoryLocation, selectActiveConfig } from '@/lib/redux/isaSlice';
 import clsx from 'clsx';
 import Head from 'next/head';
 import { useState } from 'react';
@@ -45,7 +45,7 @@ import { useForm } from 'react-hook-form';
 export default function HomePage() {
   // Load the active ISA
   const dispatch = useAppDispatch();
-  const activeIsa = useAppSelector(selectActiveIsa);
+  const activeIsa = useAppSelector(selectActiveConfig);
   const [activeMemoryLocation, setActiveMemoryLocation] = useState('new');
   const memoryLocations = activeIsa?.memoryLocations;
 

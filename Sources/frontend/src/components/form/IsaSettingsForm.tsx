@@ -46,8 +46,8 @@ import {
 } from 'react-hook-form';
 
 import {
+  CpuConfig,
   FUnitConfig,
-  IsaNamedConfig,
   Operations,
   cacheReplacementTypes,
   fUnitSchema,
@@ -83,7 +83,7 @@ import {
 } from './RadioInput';
 
 type IsaArrayFields = 'fUnits' | 'memoryLocations';
-type IsaSimpleFields = keyof Omit<IsaNamedConfig, IsaArrayFields>;
+type IsaSimpleFields = keyof Omit<CpuConfig, IsaArrayFields>;
 type IsaKeys = IsaSimpleFields | IsaArrayFields;
 
 type IsaFormMetadata = {
@@ -204,7 +204,7 @@ const capabilitiesMetadata: {
 
 export type IsaSettingsFormProps = {
   disabled?: boolean;
-  form: UseFormReturn<IsaNamedConfig>;
+  form: UseFormReturn<CpuConfig>;
 };
 
 export default function IsaSettingsForm({
@@ -399,7 +399,7 @@ const opsMetadata: { [op in Operations]: OpMetadata } = {
 
 interface FunctionalUnitInputProps {
   disabled?: boolean;
-  control: Control<IsaNamedConfig>;
+  control: Control<CpuConfig>;
 }
 
 // Uses its own subform
@@ -485,7 +485,7 @@ function FunctionalUnitInput({
 
 // Subform for adding a new FU
 // Controls the fUnits field
-function FUAdder({ control }: { control: Control<IsaNamedConfig> }) {
+function FUAdder({ control }: { control: Control<CpuConfig> }) {
   const { field } = useController({
     control,
     name: 'fUnits',

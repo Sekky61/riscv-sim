@@ -34,30 +34,45 @@ import { PayloadAction, createSelector, createSlice } from '@reduxjs/toolkit';
 // Import as type to avoid circular dependency
 import type { RootState } from '@/lib/redux/store';
 
-import { MemoryLocationForm } from '@/components/form/MemoryForm';
-import { IsaNamedConfig, isaFormDefaultValues, isaSchema } from '../forms/Isa';
+import {
+  CpuConfig,
+  MemoryLocationIsa,
+  SimulationConfig,
+  defaultCpuConfig,
+  defaultSimulationConfig,
+} from '../forms/Isa';
 
-// Define a type for the slice state
+/**
+ * The slice state type
+ */
 interface IsaState {
-  isas: Array<IsaNamedConfig>;
+  /**
+   * List of saved ISAs
+   */
+  isas: Array<SimulationConfig>;
+  /**
+   * Name of the active isa. References one of the isas in the list
+   */
   activeIsaName: string;
 }
 
-export type IsaSaveChecked = IsaNamedConfig & {
-  valid: boolean;
-};
-
-// Define the initial state using that type
+/**
+ * Define the initial state.
+ * One ISA is always present, called "Default". It is selected.
+ */
 const initialState: IsaState = {
-  isas: [isaFormDefaultValues],
-  activeIsaName: 'Default',
+  isas: [defaultSimulationConfig],
+  activeIsaName: defaultSimulationConfig.cpuConfig.name,
 };
 
+/**
+ * Helper function to find an ISA by name
+ */
 function findIsaByName(
-  isas: Array<IsaNamedConfig>,
+  isas: Array<SimulationConfig>,
   name: string,
-): IsaNamedConfig | undefined {
-  return isas.find((isa) => isa.name === name);
+): SimulationConfig | undefined {
+  return isas.find((isa) => isa.cpuConfig.name === name);
 }
 
 export const isaSlice = createSlice({
@@ -70,37 +85,41 @@ export const isaSlice = createSlice({
         throw new Error('ISA not found');
       state.activeIsaName = action.payload;
     },
-    // Create a new ISA, make it active
-    createIsa: (state, action: PayloadAction<IsaNamedConfig>) => {
-      if (findIsaByName(state.isas, action.payload.name) !== undefined)
+    /**
+     * Create a new ISA. Make it active.
+     * Fill code and memory locations with default values.
+     */
+    createIsa: (state, action: PayloadAction<CpuConfig>) => {
+      if (findIsaByName(state.isas, action.payload.name) !== undefined) {
         throw new Error('ISA already exists');
-      state.isas.push(action.payload);
+      }
+      // todo: check if assigning from defaultSimulationConfig is ok (references)
+      const newIsa: SimulationConfig = {
+        cpuConfig: action.payload,
+        code: defaultSimulationConfig.code,
+        memoryLocations: defaultSimulationConfig.memoryLocations,
+      };
+      state.isas.push(newIsa);
       state.activeIsaName = action.payload.name;
     },
     updateIsa: (
       state,
-      action: PayloadAction<{ oldName: string; isa: IsaNamedConfig }>,
+      action: PayloadAction<{ oldName: string; isa: CpuConfig }>,
     ) => {
       if (action.payload.oldName === 'Default') {
         throw new Error('Cannot edit the default ISA');
       }
       // Update the ISA
-      state.isas = state.isas.map((isa) => {
-        if (isa.name === action.payload.oldName) {
-          // Found the ISA to update
-          // If it is active, rename the active ISA field
-          if (state.activeIsaName === action.payload.oldName) {
-            state.activeIsaName = action.payload.isa.name;
-          }
-          return action.payload.isa;
+      for (const isa of state.isas) {
+        if (isa.cpuConfig.name === action.payload.oldName) {
+          isa.cpuConfig = action.payload.isa;
         }
-        return isa;
-      });
+      }
     },
     /**
      * Enforces unique memory location names
      */
-    addMemoryLocation: (state, action: PayloadAction<MemoryLocationForm>) => {
+    addMemoryLocation: (state, action: PayloadAction<MemoryLocationIsa>) => {
       const activeIsa = findIsaByName(state.isas, state.activeIsaName);
       if (activeIsa === undefined) throw new Error('Active ISA not found');
       // Check if the name is unique
@@ -113,11 +132,14 @@ export const isaSlice = createSlice({
       }
       activeIsa.memoryLocations.push(action.payload);
     },
+    /**
+     * Update existing memory location. Name can be changed, but must be unique.
+     */
     updateMemoryLocation: (
       state,
       action: PayloadAction<{
         oldName: string;
-        memoryLocation: MemoryLocationForm;
+        memoryLocation: MemoryLocationIsa;
       }>,
     ) => {
       const activeIsa = findIsaByName(state.isas, state.activeIsaName);
@@ -144,15 +166,17 @@ export const isaSlice = createSlice({
     },
     removeIsa: (state, action: PayloadAction<string>) => {
       // Do not allow to remove the first ISA (called "Default")
-      if (action.payload === 'Default') {
-        throw new Error('Cannot remove the default ISA');
+      if (action.payload === defaultCpuConfig.name) {
+        throw new Error('Cannot remove the default configuration');
       }
-      state.isas = state.isas.filter((isa) => isa.name !== action.payload);
+      state.isas = state.isas.filter(
+        (isa) => isa.cpuConfig.name !== action.payload,
+      );
       // If the active ISA was removed, make the first one active
       if (state.activeIsaName === action.payload) {
         const defaultIsa = state.isas[0];
         if (defaultIsa === undefined) throw new Error('No default ISA found');
-        state.activeIsaName = defaultIsa.name;
+        state.activeIsaName = defaultIsa.cpuConfig.name;
       }
     },
   },
@@ -177,25 +201,16 @@ export const selectIsas = (state: RootState) => state.isa.isas;
 /**
  * Adds "code" field to the ISA config
  */
-export const selectActiveIsa = createSelector(
+export const selectActiveConfig = createSelector(
   [selectIsas, selectActiveIsaName],
-  (isas, name): IsaNamedConfig => {
-    const isa = isas.find((isaItem) => isaItem.name === name);
+  (isas, name): SimulationConfig => {
+    console.log('selectActiveConfig', isas, name);
+    const isa = isas.find((isaItem) => isaItem.cpuConfig.name === name);
+    console.log('selectActiveConfig2', isa);
     if (isa === undefined) throw new Error('Active ISA not found');
     // reference the ISA config
     return isa;
   },
 );
-
-export const selectValidatedIsas = createSelector([selectIsas], (isas) => {
-  const checkedIsas: Array<IsaSaveChecked> = [];
-  for (const isaSave of isas) {
-    // Use zod to validate the isa config
-    const parseErrors = isaSchema.safeParse(isaSave);
-
-    checkedIsas.push({ ...isaSave, valid: parseErrors.success });
-  }
-  return checkedIsas;
-});
 
 export default isaSlice.reducer;

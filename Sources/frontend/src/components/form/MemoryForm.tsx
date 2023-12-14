@@ -42,11 +42,12 @@ import {
   dataTypesText,
   memoryLocation,
   memoryLocationDefaultValue,
+  memoryLocationIsa,
 } from '@/lib/forms/Isa';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import {
   addMemoryLocation,
-  selectActiveIsa,
+  selectActiveConfig,
   updateMemoryLocation,
 } from '@/lib/redux/isaSlice';
 import { ErrorMessage } from '@hookform/error-message';
@@ -71,11 +72,10 @@ function getFileFromFileList(fileList: unknown): File | undefined {
 }
 
 /**
- * Expand the memoryLocation form with a data input
+ * Expand the memoryLocation form with a data input.
+ * These are internal fields, not part of the ISA.
  */
-export const memoryLocationWithSource = memoryLocation.extend({
-  dataType: z.enum(dataTypes),
-  dataSource: z.enum(['constant', 'random', 'file']),
+const memoryLocationWithSource = memoryLocationIsa.extend({
   /**
    * File is of type any, because FileList is not a class.
    * The getFileFromFileList transform function will convert it to (File | undefined).
@@ -86,9 +86,9 @@ export const memoryLocationWithSource = memoryLocation.extend({
   constant: z.number().optional(),
   dataLength: z.number().min(1).optional(),
 });
-export type MemoryLocationForm = z.infer<typeof memoryLocationWithSource>;
+type MemoryLocationForm = z.infer<typeof memoryLocationWithSource>;
 
-export const memoryLocationFormDefaultValue: MemoryLocationForm = {
+const memoryLocationFormDefaultValue: MemoryLocationForm = {
   ...memoryLocationDefaultValue,
   dataType: 'kInt',
   dataSource: 'constant',
@@ -162,7 +162,7 @@ export default function MemoryForm({
   deleteCallback,
 }: MemoryFormProps) {
   const dispatch = useAppDispatch();
-  const activeIsa = useAppSelector(selectActiveIsa);
+  const activeIsa = useAppSelector(selectActiveConfig);
 
   // Custom resolver
   const resolver: Resolver<MemoryLocationForm> = async (

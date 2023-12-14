@@ -29,11 +29,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { isaFormDefaultValues, isaSchema } from '@/lib/forms/Isa';
+import { defaultCpuConfig, isaFormSchema } from '@/lib/forms/Isa';
 
 describe('The ISA configuration', () => {
   it('Default config should pass the validation', () => {
     // Should throw if not valid
-    const _result = isaSchema.parse(isaFormDefaultValues);
+    const _result = isaFormSchema.parse(defaultCpuConfig);
   });
 });

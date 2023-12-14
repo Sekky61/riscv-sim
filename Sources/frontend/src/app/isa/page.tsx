@@ -38,17 +38,12 @@ import React from 'react';
 import { useForm } from 'react-hook-form';
 import { notify } from 'reapop';
 
-import {
-  IsaNamedConfig,
-  isaFormDefaultValues,
-  isaNamed,
-} from '@/lib/forms/Isa';
+import { CpuConfig, defaultCpuConfig, isaFormSchema } from '@/lib/forms/Isa';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import {
-  IsaSaveChecked,
   createIsa,
   newActiveIsa,
-  selectActiveIsa,
+  selectActiveConfig,
   selectIsas,
   updateIsa,
 } from '@/lib/redux/isaSlice';
@@ -76,17 +71,17 @@ import { SaveIsaChangesModalProps } from '@/components/modals/SaveIsaChangesModa
 export default function Page() {
   // Redux
   const dispatch = useAppDispatch();
-  const activeIsa = useAppSelector(selectActiveIsa);
+  const activeIsa = useAppSelector(selectActiveConfig);
   const isas = useAppSelector(selectIsas);
 
   // If the active ISA is the default, we cannot edit it
-  const blockEditing = activeIsa.name === 'Default';
+  const blockEditing = activeIsa.cpuConfig.name === 'Default';
   const [savesOpen, setSavesOpen] = useState(false);
 
   // Lifted state of form
-  const form = useForm<IsaNamedConfig>({
-    resolver: zodResolver(isaNamed),
-    defaultValues: isaFormDefaultValues,
+  const form = useForm<CpuConfig>({
+    resolver: zodResolver(isaFormSchema),
+    defaultValues: defaultCpuConfig,
     mode: 'onChange',
   });
 
@@ -94,7 +89,7 @@ export default function Page() {
 
   // When the active ISA changes, set the form values
   useEffect(() => {
-    form.reset(activeIsa);
+    form.reset(activeIsa.cpuConfig);
   }, [activeIsa, form]);
 
   const generateIsaName = () => {
@@ -105,7 +100,7 @@ export default function Page() {
     const regex = /Isa (\d+)/;
     let biggestNum = 0;
     for (const isa of isas) {
-      const match = isa.name.match(regex);
+      const match = isa.cpuConfig.name.match(regex);
       if (match?.[1]) {
         // We have a match
         const num = parseInt(match[1]);
@@ -121,7 +116,7 @@ export default function Page() {
   const createNewIsa = () => {
     // Generate a name
     const nam = generateIsaName();
-    dispatch(createIsa({ ...isaFormDefaultValues, name: nam }));
+    dispatch(createIsa({ ...defaultCpuConfig, name: nam }));
     setSavesOpen(false);
     dispatch(
       notify({
@@ -134,7 +129,9 @@ export default function Page() {
   // Save name and form values to the active ISA
   const persistIsaChanges = () => {
     const isa = form.getValues();
-    dispatch(updateIsa({ isa, oldName: activeIsa.name }));
+    // Merge the form values with the name
+    const mergedIsa: CpuConfig = { ...activeIsa, ...isa };
+    dispatch(updateIsa({ isa: mergedIsa, oldName: activeIsa.cpuConfig.name }));
     dispatch(
       notify({
         title: 'Updates have been saved.',
@@ -146,7 +143,7 @@ export default function Page() {
   const promptForSave = () => {
     const modalProps: SaveIsaChangesModalProps = {
       isa: form.getValues(),
-      oldName: activeIsa.name,
+      oldName: activeIsa.cpuConfig.name,
     };
     dispatch(
       openModal({
@@ -190,7 +187,7 @@ export default function Page() {
               aria-expanded={savesOpen}
               className='w-[200px] justify-between'
             >
-              {activeIsa.name}
+              {activeIsa.cpuConfig.name}
               <ChevronsUpDown className='ml-2 h-4 w-4 shrink-0 opacity-50' />
             </Button>
           </PopoverTrigger>
@@ -201,22 +198,22 @@ export default function Page() {
               <CommandGroup>
                 {isas.map((isa) => (
                   <CommandItem
-                    key={isa.name}
-                    value={isa.name}
+                    key={isa.cpuConfig.name}
+                    value={isa.cpuConfig.name}
                     onSelect={(_currentValue) => {
                       // _currentValue converts to lowercase
-                      onChangeSelected(isa.name);
+                      onChangeSelected(isa.cpuConfig.name);
                     }}
                   >
                     <Check
                       className={cn(
                         'mr-2 h-4 w-4',
-                        activeIsa.name === isa.name
+                        activeIsa.cpuConfig.name === isa.cpuConfig.name
                           ? 'opacity-100'
                           : 'opacity-0',
                       )}
                     />
-                    {isa.name}
+                    {isa.cpuConfig.name}
                   </CommandItem>
                 ))}
               </CommandGroup>
@@ -251,5 +248,3 @@ export default function Page() {
 export type IsaItemsProps = {
   onIsaSavePicked: (name: string) => void;
 };
-
-export type IsaItemProps = IsaItemsProps & { isa: IsaSaveChecked };
