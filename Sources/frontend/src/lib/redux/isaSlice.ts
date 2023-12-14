@@ -204,9 +204,7 @@ export const selectIsas = (state: RootState) => state.isa.isas;
 export const selectActiveConfig = createSelector(
   [selectIsas, selectActiveIsaName],
   (isas, name): SimulationConfig => {
-    console.log('selectActiveConfig', isas, name);
     const isa = isas.find((isaItem) => isaItem.cpuConfig.name === name);
-    console.log('selectActiveConfig2', isa);
     if (isa === undefined) throw new Error('Active ISA not found');
     // reference the ISA config
     return isa;

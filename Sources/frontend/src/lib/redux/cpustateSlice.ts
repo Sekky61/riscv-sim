@@ -179,13 +179,11 @@ export const simStepBackward = (): ThunkAction<
 export const callSimulation = createAsyncThunk<SimulationParsedResult, number>(
   'cpu/callSimulation',
   async (arg, { getState, dispatch }) => {
-    console.log('callSimulation', arg);
     // @ts-ignore
     const state: RootState = getState();
     const config = selectActiveConfig(state);
     const code = state.cpu.code;
     const tick = arg;
-    console.log('Calling simulation API', tick, config, code);
     try {
       const response = await callSimulationImpl(tick, { ...config, code });
       return { state: response.state };
