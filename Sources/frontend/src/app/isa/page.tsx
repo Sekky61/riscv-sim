@@ -66,6 +66,7 @@ import {
 } from '@/components/base/ui/popover';
 import IsaSettingsForm from '@/components/form/IsaSettingsForm';
 import { SaveIsaChangesModalProps } from '@/components/modals/SaveIsaChangesModal';
+import Link from 'next/link';
 
 // TODO: delete configuration
 export default function Page() {
@@ -177,7 +178,9 @@ export default function Page() {
   return (
     <div>
       <h1 className='mb-8 text-2xl'>ISA Configuration</h1>
-      <div className='mb-4 flex justify-center items-center gap-4 border-b pb-4'>
+      <div className='border-b mb-4 pb-4'>
+
+      <div className='flex justify-center items-center gap-4'>
         <span className='font-bold'>Active configuration</span>
         <Popover open={savesOpen} onOpenChange={(op) => setSavesOpen(op)}>
           <PopoverTrigger asChild>
@@ -230,6 +233,8 @@ export default function Page() {
           Save Changes
         </Button>
       </div>
+      <MemoryInfo />
+      </div>
       <div
         className={cn(
           blockEditing &&
@@ -243,8 +248,32 @@ export default function Page() {
   );
 }
 
-// Configuration picker
+/**
+ * Component to inform about memory locations
+ */
+export function MemoryInfo() {
+  const activeIsa = useAppSelector(selectActiveConfig);
+  const mem = activeIsa.memoryLocations;
+  const names = mem.map((m) => m.name);
 
-export type IsaItemsProps = {
-  onIsaSavePicked: (name: string) => void;
-};
+  const memoryLink = (
+    <Link href='/memory' className='link'>
+      memory
+    </Link>
+  );
+
+  return (
+    <div>
+      {
+        mem.length === 0 ? (
+          <span>No {memoryLink} locations defined.</span>
+        ) : (
+          <span>
+            {mem.length} {memoryLink} location{mem.length > 1 ? 's' : ''} defined:{' '}
+            {names.join(', ')}
+          </span>
+        )
+      }
+    </div>
+  );
+}

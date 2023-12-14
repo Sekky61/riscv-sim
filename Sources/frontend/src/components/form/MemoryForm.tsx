@@ -234,7 +234,7 @@ export default function MemoryForm({
     } else if (memoryLocationName === 'new') {
       reset(memoryLocationFormDefaultValue);
     } else {
-      throw new Error(`Memory location ${memoryLocationName} not found`);
+      return; // Do not trigger validation
     }
     trigger(); // Validate the form, after reset
   }, [memoryLocation, memoryLocationName, reset, trigger]);
