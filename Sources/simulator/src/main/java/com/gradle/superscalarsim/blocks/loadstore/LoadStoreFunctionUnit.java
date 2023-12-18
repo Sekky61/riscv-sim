@@ -37,6 +37,7 @@ import com.gradle.superscalarsim.blocks.base.AbstractFunctionUnitBlock;
 import com.gradle.superscalarsim.blocks.base.AbstractIssueWindowBlock;
 import com.gradle.superscalarsim.blocks.base.ReorderBufferBlock;
 import com.gradle.superscalarsim.code.CodeLoadStoreInterpreter;
+import com.gradle.superscalarsim.models.FunctionalUnitDescription;
 
 /**
  * @class ArithmeticFunctionUnitBlock
@@ -78,15 +79,14 @@ public class LoadStoreFunctionUnit extends AbstractFunctionUnitBlock
    *
    * @brief Constructor
    */
-  public LoadStoreFunctionUnit(String name,
+  public LoadStoreFunctionUnit(FunctionalUnitDescription description,
                                ReorderBufferBlock reorderBufferBlock,
-                               int delay,
                                AbstractIssueWindowBlock issueWindowBlock,
                                LoadBufferBlock loadBufferBlock,
                                StoreBufferBlock storeBufferBlock,
                                CodeLoadStoreInterpreter loadStoreInterpreter)
   {
-    super(name, delay, issueWindowBlock, reorderBufferBlock);
+    super(description, issueWindowBlock, reorderBufferBlock);
     this.loadBufferBlock      = loadBufferBlock;
     this.storeBufferBlock     = storeBufferBlock;
     this.loadStoreInterpreter = loadStoreInterpreter;

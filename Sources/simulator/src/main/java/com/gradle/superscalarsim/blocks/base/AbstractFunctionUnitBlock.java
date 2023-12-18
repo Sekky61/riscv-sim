@@ -36,6 +36,7 @@ import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.blocks.AbstractBlock;
+import com.gradle.superscalarsim.models.FunctionalUnitDescription;
 import com.gradle.superscalarsim.models.SimCodeModel;
 
 /**
@@ -45,6 +46,11 @@ import com.gradle.superscalarsim.models.SimCodeModel;
 @JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
 public abstract class AbstractFunctionUnitBlock implements AbstractBlock
 {
+  /**
+   * ID specifying when instruction passed specified FU
+   */
+  protected int functionUnitId;
+  
   /**
    * Class containing simulated Reorder Buffer
    */
@@ -58,11 +64,6 @@ public abstract class AbstractFunctionUnitBlock implements AbstractBlock
   protected SimCodeModel simCodeModel;
   
   /**
-   * ID specifying when instruction passed specified FU
-   */
-  protected int functionUnitId;
-  
-  /**
    * Overall count of FUs in assigned issue window
    */
   protected int functionUnitCount;
@@ -74,19 +75,20 @@ public abstract class AbstractFunctionUnitBlock implements AbstractBlock
   protected AbstractIssueWindowBlock issueWindowBlock;
   
   /**
-   * Delay for function unit, representing how many ticks does it take to generate result.
+   * Configuration of the function unit.
+   * Latency, capabilities, etc.
+   */
+  private FunctionalUnitDescription description;
+  
+  /**
+   * Delay for function unit. Can change based on the instruction.
    */
   private int delay;
   
   /**
-   * Counter variable
+   * Counter variable. Used for counting delay of the function unit.
    */
   private int counter;
-  
-  /**
-   * Name of the function unit
-   */
-  private String name;
   
   public AbstractFunctionUnitBlock()
   {
@@ -94,23 +96,21 @@ public abstract class AbstractFunctionUnitBlock implements AbstractBlock
   
   /**
    * @param name               Name of the function unit
-   * @param delay              Delay for function unit
+   * @param description        Delay for function unit
    * @param issueWindowBlock   Issue window block for comparing instruction and data types
    * @param reorderBufferBlock Class containing simulated Reorder Buffer
    *
    * @brief Constructor
    */
-  public AbstractFunctionUnitBlock(String name,
-                                   int delay,
+  public AbstractFunctionUnitBlock(FunctionalUnitDescription description,
                                    AbstractIssueWindowBlock issueWindowBlock,
                                    ReorderBufferBlock reorderBufferBlock)
   {
     this.reorderBufferBlock = reorderBufferBlock;
-    this.delay              = delay;
+    this.description        = description;
     this.counter            = 0;
     this.simCodeModel       = null;
     this.issueWindowBlock   = issueWindowBlock;
-    this.name               = name;
   }// end of Constructor
   //----------------------------------------------------------------------
   
@@ -131,19 +131,8 @@ public abstract class AbstractFunctionUnitBlock implements AbstractBlock
    */
   public String getName()
   {
-    return name;
+    return description.name;
   }// end of getName
-  //----------------------------------------------------------------------
-  
-  /**
-   * @param name New name for the function unit
-   *
-   * @brief Sets the name of the function unit
-   */
-  public void setName(String name)
-  {
-    this.name = name;
-  }// end of setName
   //----------------------------------------------------------------------
   
   /**
@@ -152,7 +141,7 @@ public abstract class AbstractFunctionUnitBlock implements AbstractBlock
    */
   public int getDelay()
   {
-    return delay;
+    return description.latency;
   }// end of getDelay
   //----------------------------------------------------------------------
   
@@ -272,5 +261,40 @@ public abstract class AbstractFunctionUnitBlock implements AbstractBlock
     return this.counter;
   }// end of setCounter
   //----------------------------------------------------------------------
+  
+  /**
+   * Set the delay based on the instruction
+   */
+  public void setDelayBasedOnInstruction()
+  {
+    int delay = switch (this.simCodeModel.getInstructionFunctionModel().getInstructionType())
+    {
+      case kArithmetic -> getDelayBasedOnCapability();
+      case kLoadstore, kJumpbranch -> this.description.latency;
+    };
+    this.setDelay(delay);
+  }
+  
+  /**
+   * Get the delay based on the instruction capability. This is only used for arithmetic instructions.
+   */
+  private int getDelayBasedOnCapability()
+  {
+    String expr = this.simCodeModel.getInstructionFunctionModel().getInterpretableAs();
+    FunctionalUnitDescription.CapabilityName capabilityName = FunctionalUnitDescription.classifyOperation(expr);
+    if (capabilityName == null)
+    {
+      // Probably a type cast, so just return the base latency
+      return this.description.latency;
+    }
+    for (FunctionalUnitDescription.Capability capability : this.description.operations)
+    {
+      if (capability.name == capabilityName)
+      {
+        return capability.latency;
+      }
+    }
+    throw new RuntimeException("Unknown operation: " + expr);
+  }
   
 }

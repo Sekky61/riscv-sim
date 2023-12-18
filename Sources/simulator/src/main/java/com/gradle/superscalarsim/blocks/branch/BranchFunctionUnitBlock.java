@@ -41,6 +41,7 @@ import com.gradle.superscalarsim.blocks.base.ReorderBufferBlock;
 import com.gradle.superscalarsim.blocks.base.UnifiedRegisterFileBlock;
 import com.gradle.superscalarsim.code.CodeBranchInterpreter;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
+import com.gradle.superscalarsim.models.FunctionalUnitDescription;
 import com.gradle.superscalarsim.models.InputCodeArgument;
 import com.gradle.superscalarsim.models.register.RegisterModel;
 
@@ -69,12 +70,11 @@ public class BranchFunctionUnitBlock extends AbstractFunctionUnitBlock
    *
    * @brief Constructor
    */
-  public BranchFunctionUnitBlock(String name,
+  public BranchFunctionUnitBlock(FunctionalUnitDescription description,
                                  AbstractIssueWindowBlock issueWindowBlock,
-                                 int delay,
                                  ReorderBufferBlock reorderBufferBlock)
   {
-    super(name, delay, issueWindowBlock, reorderBufferBlock);
+    super(description, issueWindowBlock, reorderBufferBlock);
   }// end of Constructor
   //----------------------------------------------------------------------
   

@@ -40,6 +40,7 @@ import com.gradle.superscalarsim.blocks.base.UnifiedRegisterFileBlock;
 import com.gradle.superscalarsim.code.CodeArithmeticInterpreter;
 import com.gradle.superscalarsim.code.Expression;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
+import com.gradle.superscalarsim.models.FunctionalUnitDescription;
 import com.gradle.superscalarsim.models.InputCodeArgument;
 import com.gradle.superscalarsim.models.register.RegisterModel;
 
@@ -76,13 +77,12 @@ public class ArithmeticFunctionUnitBlock extends AbstractFunctionUnitBlock
    *
    * @brief Constructor
    */
-  public ArithmeticFunctionUnitBlock(String name,
-                                     int delay,
+  public ArithmeticFunctionUnitBlock(FunctionalUnitDescription description,
                                      AbstractIssueWindowBlock issueWindowBlock,
                                      List<String> allowedOperators,
                                      ReorderBufferBlock reorderBufferBlock)
   {
-    super(name, delay, issueWindowBlock, reorderBufferBlock);
+    super(description, issueWindowBlock, reorderBufferBlock);
     this.allowedOperators = allowedOperators;
   }// end of Constructor
   //----------------------------------------------------------------------

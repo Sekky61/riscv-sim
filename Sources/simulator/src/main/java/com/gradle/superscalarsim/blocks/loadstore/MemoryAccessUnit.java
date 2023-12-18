@@ -39,6 +39,7 @@ import com.gradle.superscalarsim.blocks.base.ReorderBufferBlock;
 import com.gradle.superscalarsim.blocks.base.UnifiedRegisterFileBlock;
 import com.gradle.superscalarsim.code.CodeLoadStoreInterpreter;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
+import com.gradle.superscalarsim.models.FunctionalUnitDescription;
 import com.gradle.superscalarsim.models.InputCodeArgument;
 import com.gradle.superscalarsim.models.Pair;
 import com.gradle.superscalarsim.models.SimCodeModel;
@@ -114,21 +115,20 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
    *
    * @brief Constructor
    */
-  public MemoryAccessUnit(String name,
+  public MemoryAccessUnit(FunctionalUnitDescription description,
                           ReorderBufferBlock reorderBufferBlock,
-                          int delay,
                           AbstractIssueWindowBlock issueWindowBlock,
                           LoadBufferBlock loadBufferBlock,
                           StoreBufferBlock storeBufferBlock,
                           CodeLoadStoreInterpreter loadStoreInterpreter,
                           UnifiedRegisterFileBlock registerFileBlock)
   {
-    super(name, delay, issueWindowBlock, reorderBufferBlock);
+    super(description, issueWindowBlock, reorderBufferBlock);
     this.loadBufferBlock      = loadBufferBlock;
     this.storeBufferBlock     = storeBufferBlock;
     this.loadStoreInterpreter = loadStoreInterpreter;
     this.registerFileBlock    = registerFileBlock;
-    this.baseDelay            = delay;
+    this.baseDelay            = description.latency;
   }// end of Constructor
   //----------------------------------------------------------------------
   

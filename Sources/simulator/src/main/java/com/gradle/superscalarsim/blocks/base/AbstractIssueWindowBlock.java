@@ -195,6 +195,7 @@ public abstract class AbstractIssueWindowBlock implements AbstractBlock
       currentModel.setIssueWindowId(this.windowId);
       functionUnitBlock.resetCounter();
       functionUnitBlock.setSimCodeModel(currentModel);
+      functionUnitBlock.setDelayBasedOnInstruction();
       removedCodeList.add(currentModel);
       this.argumentValidityMap.remove(currentModel.getIntegerId());
     }

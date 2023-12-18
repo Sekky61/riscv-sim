@@ -52,6 +52,7 @@ public class FunctionalUnitDescription
   /**
    * Latency of the FUnit.
    * Counts only for Branch and Memory FUnits.
+   * Set a sensible default anyway, since this latency is used for arithmetic operations (type casts) as well.
    */
   public int latency;
   
@@ -114,6 +115,54 @@ public class FunctionalUnitDescription
     this.name    = "FUnit " + id;
     this.fuType  = fuType;
     this.latency = latency;
+  }
+  
+  /**
+   * Classify an operation into a capability. Categories have this precedence:
+   * <p>
+   * special > division > multiplication > addition > bitwise
+   * TODO move
+   *
+   * @param expr Expression to classify (e.g. "\rs1 \rs2 * \rs3 + \rd =")
+   */
+  public static CapabilityName classifyOperation(String expr)
+  {
+    for (String op : Expression.specialOperators)
+    {
+      if (expr.contains(op))
+      {
+        return CapabilityName.special;
+      }
+    }
+    for (String op : Expression.divisionOperators)
+    {
+      if (expr.contains(op))
+      {
+        return CapabilityName.division;
+      }
+    }
+    for (String op : Expression.multiplicationOperators)
+    {
+      if (expr.contains(op))
+      {
+        return CapabilityName.multiplication;
+      }
+    }
+    for (String op : Expression.additionOperators)
+    {
+      if (expr.contains(op))
+      {
+        return CapabilityName.addition;
+      }
+    }
+    for (String op : Expression.bitwiseOperators)
+    {
+      if (expr.contains(op))
+      {
+        return CapabilityName.bitwise;
+      }
+    }
+    return null;
   }
   
   /**

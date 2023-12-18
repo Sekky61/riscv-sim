@@ -144,7 +144,7 @@ public class InstructionFunctionModel implements Identifiable
   
   /**
    * @return Instruction type
-   * @brief Get type of an instruction
+   * @brief Get type of instruction
    */
   public InstructionTypeEnum getInstructionType()
   {
