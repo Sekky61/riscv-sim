@@ -74,7 +74,7 @@ public abstract class AbstractFunctionUnitBlock implements AbstractBlock
   protected AbstractIssueWindowBlock issueWindowBlock;
   
   /**
-   * Delay for function unit, representing how many ticks does it take to generate result
+   * Delay for function unit, representing how many ticks does it take to generate result.
    */
   private int delay;
   

@@ -20,6 +20,7 @@ import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.enums.RegisterTypeEnum;
 import com.gradle.superscalarsim.factories.RegisterModelFactory;
 import com.gradle.superscalarsim.loader.InitLoader;
+import com.gradle.superscalarsim.models.FunctionalUnitDescription;
 import com.gradle.superscalarsim.models.InputCodeArgument;
 import com.gradle.superscalarsim.models.InputCodeModel;
 import com.gradle.superscalarsim.models.SimCodeModel;
@@ -131,28 +132,27 @@ public class ForwardSimulationTest
     // 1 L/S: (delay 1)
     // 2 branch: (delay 3)
     // 1 mem: (delay 1)
-    cpuCfg.fUnits = Arrays.asList(new CpuConfig.FUnit(0, CpuConfig.FUnit.Type.FX, Arrays.asList(
-                                          new CpuConfig.FUnit.Capability(CpuConfig.FUnit.CapabilityName.addition, 2)), "FX"),
-                                  new CpuConfig.FUnit(1, CpuConfig.FUnit.Type.FX, Arrays.asList(
-                                          new CpuConfig.FUnit.Capability(CpuConfig.FUnit.CapabilityName.addition, 2)),
-                                                      "FX"), new CpuConfig.FUnit(2, CpuConfig.FUnit.Type.FX,
-                                                                                 Arrays.asList(
-                                                                                         new CpuConfig.FUnit.Capability(
-                                                                                                 CpuConfig.FUnit.CapabilityName.addition,
-                                                                                                 2)), "FX"),
-                                  new CpuConfig.FUnit(3, CpuConfig.FUnit.Type.FP, Arrays.asList(
-                                          new CpuConfig.FUnit.Capability(CpuConfig.FUnit.CapabilityName.addition, 2)),
-                                                      "FP"), new CpuConfig.FUnit(4, CpuConfig.FUnit.Type.FP,
-                                                                                 Arrays.asList(
-                                                                                         new CpuConfig.FUnit.Capability(
-                                                                                                 CpuConfig.FUnit.CapabilityName.addition,
-                                                                                                 2)), "FP"),
-                                  new CpuConfig.FUnit(5, CpuConfig.FUnit.Type.FP, Arrays.asList(
-                                          new CpuConfig.FUnit.Capability(CpuConfig.FUnit.CapabilityName.addition, 2)),
-                                                      "FP"), new CpuConfig.FUnit(6, CpuConfig.FUnit.Type.L_S, 1, "L/S"),
-                                  new CpuConfig.FUnit(7, CpuConfig.FUnit.Type.Branch, 3, "Branch"),
-                                  new CpuConfig.FUnit(8, CpuConfig.FUnit.Type.Branch, 3, "Branch"),
-                                  new CpuConfig.FUnit(9, CpuConfig.FUnit.Type.Memory, 1, "Mem"));
+    cpuCfg.fUnits = Arrays.asList(new FunctionalUnitDescription(0, FunctionalUnitDescription.Type.FX, Arrays.asList(
+                                          new FunctionalUnitDescription.Capability(FunctionalUnitDescription.CapabilityName.addition, 2)), "FX"),
+                                  new FunctionalUnitDescription(1, FunctionalUnitDescription.Type.FX, Arrays.asList(
+                                          new FunctionalUnitDescription.Capability(
+                                                  FunctionalUnitDescription.CapabilityName.addition, 2)), "FX"),
+                                  new FunctionalUnitDescription(2, FunctionalUnitDescription.Type.FX, Arrays.asList(
+                                          new FunctionalUnitDescription.Capability(
+                                                  FunctionalUnitDescription.CapabilityName.addition, 2)), "FX"),
+                                  new FunctionalUnitDescription(3, FunctionalUnitDescription.Type.FP, Arrays.asList(
+                                          new FunctionalUnitDescription.Capability(
+                                                  FunctionalUnitDescription.CapabilityName.addition, 2)), "FP"),
+                                  new FunctionalUnitDescription(4, FunctionalUnitDescription.Type.FP, Arrays.asList(
+                                          new FunctionalUnitDescription.Capability(
+                                                  FunctionalUnitDescription.CapabilityName.addition, 2)), "FP"),
+                                  new FunctionalUnitDescription(5, FunctionalUnitDescription.Type.FP, Arrays.asList(
+                                          new FunctionalUnitDescription.Capability(
+                                                  FunctionalUnitDescription.CapabilityName.addition, 2)), "FP"),
+                                  new FunctionalUnitDescription(6, FunctionalUnitDescription.Type.L_S, 1, "L/S"),
+                                  new FunctionalUnitDescription(7, FunctionalUnitDescription.Type.Branch, 3, "Branch"),
+                                  new FunctionalUnitDescription(8, FunctionalUnitDescription.Type.Branch, 3, "Branch"),
+                                  new FunctionalUnitDescription(9, FunctionalUnitDescription.Type.Memory, 1, "Mem"));
     
     
     SimulationConfig cfg = new SimulationConfig("", new ArrayList<>(), cpuCfg);

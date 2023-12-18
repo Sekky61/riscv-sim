@@ -44,6 +44,7 @@ import com.gradle.superscalarsim.factories.RegisterModelFactory;
 import com.gradle.superscalarsim.factories.SimCodeModelFactory;
 import com.gradle.superscalarsim.loader.InitLoader;
 import com.gradle.superscalarsim.managers.ManagerRegistry;
+import com.gradle.superscalarsim.models.FunctionalUnitDescription;
 import com.gradle.superscalarsim.models.InputCodeModel;
 import com.gradle.superscalarsim.models.InstructionFunctionModel;
 import com.gradle.superscalarsim.serialization.Serialization;
@@ -267,7 +268,7 @@ public class CpuState implements Serializable
     this.loadStoreFunctionUnits       = new ArrayList<>();
     this.branchFunctionUnitBlocks     = new ArrayList<>();
     this.memoryAccessUnits            = new ArrayList<>();
-    for (CpuConfig.FUnit fu : config.cpuConfig.fUnits)
+    for (FunctionalUnitDescription fu : config.cpuConfig.fUnits)
     {
       switch (fu.fuType)
       {

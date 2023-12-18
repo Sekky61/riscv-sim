@@ -28,10 +28,9 @@
 package com.gradle.superscalarsim.cpu;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.gradle.superscalarsim.code.Expression;
+import com.gradle.superscalarsim.models.FunctionalUnitDescription;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -100,7 +99,7 @@ public class CpuConfig implements Serializable
   /**
    * Defined function units.
    */
-  public List<FUnit> fUnits;
+  public List<FunctionalUnitDescription> fUnits;
   
   /**
    * Use single level cache.
@@ -190,21 +189,27 @@ public class CpuConfig implements Serializable
     config.predictorType    = "2bit";
     config.predictorDefault = "Weakly Taken";
     config.useGlobalHistory = true;
-    // FUnits
-    config.fUnits = Arrays.asList(new FUnit(0, FUnit.Type.FX,
-                                            Arrays.asList(new FUnit.Capability(FUnit.CapabilityName.addition, 1),
-                                                          new FUnit.Capability(FUnit.CapabilityName.bitwise, 1),
-                                                          new FUnit.Capability(FUnit.CapabilityName.multiplication, 2),
-                                                          new FUnit.Capability(FUnit.CapabilityName.division, 2),
-                                                          new FUnit.Capability(FUnit.CapabilityName.special, 2)), "FX"),
-                                  new FUnit(1, FUnit.Type.FP,
-                                            Arrays.asList(new FUnit.Capability(FUnit.CapabilityName.addition, 1),
-                                                          new FUnit.Capability(FUnit.CapabilityName.bitwise, 1),
-                                                          new FUnit.Capability(FUnit.CapabilityName.multiplication, 2),
-                                                          new FUnit.Capability(FUnit.CapabilityName.division, 2),
-                                                          new FUnit.Capability(FUnit.CapabilityName.special, 2)), "FP"),
-                                  new FUnit(2, FUnit.Type.L_S, 1, "L/S"), new FUnit(3, FUnit.Type.Branch, 2, "Branch"),
-                                  new FUnit(4, FUnit.Type.Memory, 1, "Memory"));
+    // FunctionalUnitDescriptions
+    config.fUnits = Arrays.asList(new FunctionalUnitDescription(0, FunctionalUnitDescription.Type.FX, Arrays.asList(
+                                          new FunctionalUnitDescription.Capability(FunctionalUnitDescription.CapabilityName.addition, 1),
+                                          new FunctionalUnitDescription.Capability(FunctionalUnitDescription.CapabilityName.bitwise, 1),
+                                          new FunctionalUnitDescription.Capability(FunctionalUnitDescription.CapabilityName.multiplication, 2),
+                                          new FunctionalUnitDescription.Capability(FunctionalUnitDescription.CapabilityName.division, 2),
+                                          new FunctionalUnitDescription.Capability(FunctionalUnitDescription.CapabilityName.special, 2)), "FX"),
+                                  new FunctionalUnitDescription(1, FunctionalUnitDescription.Type.FP, Arrays.asList(
+                                          new FunctionalUnitDescription.Capability(
+                                                  FunctionalUnitDescription.CapabilityName.addition, 1),
+                                          new FunctionalUnitDescription.Capability(
+                                                  FunctionalUnitDescription.CapabilityName.bitwise, 1),
+                                          new FunctionalUnitDescription.Capability(
+                                                  FunctionalUnitDescription.CapabilityName.multiplication, 2),
+                                          new FunctionalUnitDescription.Capability(
+                                                  FunctionalUnitDescription.CapabilityName.division, 2),
+                                          new FunctionalUnitDescription.Capability(
+                                                  FunctionalUnitDescription.CapabilityName.special, 2)), "FP"),
+                                  new FunctionalUnitDescription(2, FunctionalUnitDescription.Type.L_S, 1, "L/S"),
+                                  new FunctionalUnitDescription(3, FunctionalUnitDescription.Type.Branch, 2, "Branch"),
+                                  new FunctionalUnitDescription(4, FunctionalUnitDescription.Type.Memory, 1, "Memory"));
     
     // Cache
     config.useCache         = true;
@@ -224,143 +229,5 @@ public class CpuConfig implements Serializable
     // Misc
     config.speculativeRegisters = 320;
     return config;
-  }
-  
-  /**
-   * @brief Function unit description
-   */
-  public static class FUnit
-  {
-    /**
-     * AFAIK not used
-     */
-    public int id;
-    
-    /**
-     * Optional name of the FUnit.
-     * Shows up in simulation visualisation, also used for debugging.
-     */
-    public String name;
-    
-    /**
-     * Latency of the FUnit.
-     * Counts only for Branch and Memory FUnits.
-     */
-    public int latency;
-    
-    /**
-     * Type of the FUnit.
-     */
-    public Type fuType;
-    
-    /**
-     * Classes of operations that this FUnit can perform.
-     * Each class has its own latency.
-     */
-    public List<Capability> operations;
-    
-    /**
-     * @brief Constructor for deserialization
-     */
-    public FUnit()
-    {
-    
-    }
-    
-    /**
-     * Constructor for FX and FP FUnits
-     */
-    public FUnit(int id, Type fuType, List<Capability> operations, String name)
-    {
-      this(id, fuType, operations);
-      this.name = name;
-    }
-    
-    /**
-     * Constructor for FX and FP FUnits
-     */
-    public FUnit(int id, Type fuType, List<Capability> operations)
-    {
-      this.id         = id;
-      this.name       = "FUnit " + id;
-      this.fuType     = fuType;
-      this.operations = operations;
-      // Should not be used
-      this.latency = -1;
-    }
-    
-    /**
-     * Constructor for L/S, Branch, Memory FUnits
-     */
-    public FUnit(int id, Type fuType, int latency, String name)
-    {
-      this(id, fuType, latency);
-      this.name = name;
-    }
-    
-    /**
-     * Constructor for L/S, Branch, Memory FUnits
-     */
-    public FUnit(int id, Type fuType, int latency)
-    {
-      this.id      = id;
-      this.name    = "FUnit " + id;
-      this.fuType  = fuType;
-      this.latency = latency;
-    }
-    
-    /**
-     * @return List of operations that this FUnit can perform based on its capabilities
-     * {@link Expression}
-     */
-    public List<String> getAllowedOperations()
-    {
-      // Base
-      List<String> ops = new ArrayList<>(Arrays.asList(Expression.baseOperators));
-      // Add operations based on capabilities
-      for (Capability capability : operations)
-      {
-        switch (capability.name)
-        {
-          case addition -> ops.addAll(Arrays.asList(Expression.additionOperators));
-          case bitwise -> ops.addAll(Arrays.asList(Expression.bitwiseOperators));
-          case multiplication -> ops.addAll(Arrays.asList(Expression.multiplicationOperators));
-          case division -> ops.addAll(Arrays.asList(Expression.divisionOperators));
-          case special -> ops.addAll(Arrays.asList(Expression.specialOperators));
-        }
-      }
-      return ops;
-    }
-    
-    /**
-     * Types of FUnits
-     */
-    public enum Type
-    {
-      FX, FP, L_S, Branch, Memory,
-    }
-    
-    /**
-     * Enumeration of kinds of FUnit capabilities
-     */
-    public enum CapabilityName
-    {
-      addition, bitwise, multiplication, division, special,
-    }
-    
-    /**
-     * Configuration of a capability.
-     */
-    public static class Capability
-    {
-      public CapabilityName name;
-      public int latency;
-      
-      public Capability(CapabilityName name, int latency)
-      {
-        this.name    = name;
-        this.latency = latency;
-      }
-    }
   }
 }

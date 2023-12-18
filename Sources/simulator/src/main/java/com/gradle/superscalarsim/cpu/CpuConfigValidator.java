@@ -27,6 +27,8 @@
 
 package com.gradle.superscalarsim.cpu;
 
+import com.gradle.superscalarsim.models.FunctionalUnitDescription;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -172,7 +174,7 @@ public class CpuConfigValidator
     {
       errors.add(new Error("There must be at least one FU", "fus"));
     }
-    for (CpuConfig.FUnit unit : cpuConfig.fUnits)
+    for (FunctionalUnitDescription unit : cpuConfig.fUnits)
     {
       validateFu(unit);
     }
@@ -266,7 +268,7 @@ public class CpuConfigValidator
   /**
    * Validates the FU configuration
    */
-  private void validateFu(CpuConfig.FUnit unit)
+  private void validateFu(FunctionalUnitDescription unit)
   {
     if (unit == null)
     {
@@ -283,7 +285,7 @@ public class CpuConfigValidator
           errors.add(new Error("FU capabilities are null", "fuCapabilities"));
           return;
         }
-        for (CpuConfig.FUnit.Capability capability : unit.operations)
+        for (FunctionalUnitDescription.Capability capability : unit.operations)
         {
           if (capability == null)
           {
