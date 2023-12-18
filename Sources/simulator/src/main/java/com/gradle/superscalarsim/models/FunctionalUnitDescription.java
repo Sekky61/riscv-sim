@@ -121,7 +121,7 @@ public class FunctionalUnitDescription
    * Classify an operation into a capability. Categories have this precedence:
    * <p>
    * special > division > multiplication > addition > bitwise
-   * TODO move
+   * TODO move, or better yet, mark the instruction type in the InstructionFunctionModel
    *
    * @param expr Expression to classify (e.g. "\rs1 \rs2 * \rs3 + \rd =")
    */

@@ -41,6 +41,7 @@ import com.gradle.superscalarsim.code.Expression;
 import com.gradle.superscalarsim.code.Label;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
+import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.models.register.RegisterDataContainer;
 import com.gradle.superscalarsim.models.register.RegisterModel;
 import org.jetbrains.annotations.NotNull;
@@ -565,4 +566,27 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
     InstructionFunctionModel instruction = getInstructionFunctionModel();
     return instruction != null && instruction.getInterpretableAs().startsWith("store");
   }// end of isInstructionStore
+  
+  /**
+   * @return True if the instruction is ready to be executed, false otherwise.
+   */
+  public boolean isReadyToExecute(UnifiedRegisterFileBlock registerFileBlock)
+  {
+    for (InputCodeArgument argument : getArguments())
+    {
+      if (!argument.getName().startsWith("rs"))
+      {
+        continue;
+      }
+      String                registerName = argument.getValue();
+      RegisterModel         reg          = registerFileBlock.getRegister(registerName);
+      RegisterReadinessEnum readiness    = reg.getReadiness();
+      boolean               validity     = readiness == RegisterReadinessEnum.kExecuted || readiness == RegisterReadinessEnum.kAssigned;
+      if (!validity)
+      {
+        return false;
+      }
+    }
+    return true;
+  }
 }

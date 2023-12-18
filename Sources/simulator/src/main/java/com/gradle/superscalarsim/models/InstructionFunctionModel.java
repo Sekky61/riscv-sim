@@ -81,7 +81,7 @@ public class InstructionFunctionModel implements Identifiable
   public InstructionFunctionModel()
   {
     this.name            = "";
-    this.instructionType = InstructionTypeEnum.kArithmetic;
+    this.instructionType = InstructionTypeEnum.kIntArithmetic;
     this.arguments       = new ArrayList<>();
     this.interpretableAs = "";
     this.dataType        = null;

@@ -34,17 +34,21 @@ package com.gradle.superscalarsim.blocks.arithmetic;
 
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.gradle.superscalarsim.blocks.base.AbstractFunctionUnitBlock;
-import com.gradle.superscalarsim.blocks.base.AbstractIssueWindowBlock;
+import com.gradle.superscalarsim.blocks.base.IssueWindowBlock;
 import com.gradle.superscalarsim.blocks.base.ReorderBufferBlock;
 import com.gradle.superscalarsim.blocks.base.UnifiedRegisterFileBlock;
 import com.gradle.superscalarsim.code.CodeArithmeticInterpreter;
 import com.gradle.superscalarsim.code.Expression;
+import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.models.FunctionalUnitDescription;
 import com.gradle.superscalarsim.models.InputCodeArgument;
+import com.gradle.superscalarsim.models.InstructionFunctionModel;
+import com.gradle.superscalarsim.models.SimCodeModel;
 import com.gradle.superscalarsim.models.register.RegisterModel;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -53,12 +57,20 @@ import java.util.List;
  */
 public class ArithmeticFunctionUnitBlock extends AbstractFunctionUnitBlock
 {
-  /// Array of all supported operators by this FU
+  /**
+   * Array of all supported operators by this FU.
+   */
   private final List<String> allowedOperators;
-  /// Interpreter for interpreting executing instructions
+  
+  /**
+   * Interpreter for interpreting executing instructions
+   */
   @JsonIdentityReference(alwaysAsId = true)
   private CodeArithmeticInterpreter arithmeticInterpreter;
-  /// Class containing all registers, that simulator uses
+  
+  /**
+   * Class containing all registers, that simulator uses
+   */
   @JsonIdentityReference(alwaysAsId = true)
   private UnifiedRegisterFileBlock registerFileBlock;
   
@@ -66,6 +78,43 @@ public class ArithmeticFunctionUnitBlock extends AbstractFunctionUnitBlock
   {
     // Empty
     this.allowedOperators = new ArrayList<>();
+  }
+  
+  /**
+   * @param simCodeModel Instruction to be executed
+   *
+   * @return True if the function unit can execute the instruction, false otherwise.
+   */
+  @Override
+  public boolean canExecuteInstruction(SimCodeModel simCodeModel)
+  {
+    // Check if the instruction is arithmetic
+    InstructionFunctionModel model = simCodeModel.getInstructionFunctionModel();
+    if (model.getInstructionType() != InstructionTypeEnum.kIntArithmetic && model.getInstructionType() != InstructionTypeEnum.kFloatArithmetic)
+    {
+      return false;
+    }
+    
+    // Check if the expression uses allowed operators
+    List<String> requiredOperators = new ArrayList<>();
+    for (String token : model.getInterpretableAs().split(" "))
+    {
+      // Compare it with all operators
+      if (Arrays.asList(Expression.allOperators).contains(token))
+      {
+        requiredOperators.add(token);
+      }
+    }
+    
+    // Check if all required operators are supported by FU
+    for (String requiredOperator : requiredOperators)
+    {
+      if (!allowedOperators.contains(requiredOperator))
+      {
+        return false;
+      }
+    }
+    return true;
   }
   
   /**
@@ -78,7 +127,7 @@ public class ArithmeticFunctionUnitBlock extends AbstractFunctionUnitBlock
    * @brief Constructor
    */
   public ArithmeticFunctionUnitBlock(FunctionalUnitDescription description,
-                                     AbstractIssueWindowBlock issueWindowBlock,
+                                     IssueWindowBlock issueWindowBlock,
                                      List<String> allowedOperators,
                                      ReorderBufferBlock reorderBufferBlock)
   {

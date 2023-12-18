@@ -33,139 +33,28 @@
 package com.gradle.superscalarsim.models;
 
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
-import com.gradle.superscalarsim.models.register.RegisterDataContainer;
-import com.gradle.superscalarsim.models.register.RegisterModel;
 
 /**
  * @class IssueItemModel
- * @brief Container for item, which should be build into a list for updating
- * readiness of values in Issue window for one instruction
+ * @brief An item in Issue window consisting of instruction and its operands
  */
 public class IssueItemModel
 {
   /**
-   * Register name
-   */
-  private String tag;
-  
-  /**
-   * Value of the operand. Reference to register in RegisterFile
+   * SimCodeModel of the instruction
    */
   @JsonIdentityReference(alwaysAsId = true)
-  private RegisterModel registerValue;
-  /**
-   * Constant value of the operand
-   */
-  private RegisterDataContainer constantValue;
-  /**
-   * True if register value is valid
-   */
-  private boolean validityBit;
+  public SimCodeModel instruction;
   
   /**
-   * @param tag         Register name
-   * @param value       Register value (if any)
-   * @param validityBit Is register valid?
+   * @param instruction Instruction to be set
    *
    * @brief Constructor for register operand
    */
-  public IssueItemModel(String tag, RegisterModel registerValue, boolean validityBit)
+  public IssueItemModel(SimCodeModel instruction)
   {
-    this.tag           = tag;
-    this.registerValue = registerValue;
-    this.constantValue = null;
-    this.validityBit   = validityBit;
+    this.instruction = instruction;
   }// end of Constructor
-  
-  /**
-   * @param tag         Register name
-   * @param value       Register value (if any)
-   * @param validityBit Is register valid?
-   *
-   * @brief Constructor
-   */
-  public IssueItemModel(String tag, RegisterDataContainer value, boolean validityBit)
-  {
-    this.tag           = tag;
-    this.registerValue = null;
-    this.constantValue = value;
-    this.validityBit   = validityBit;
-  }// end of Constructor
-  
-  public RegisterDataContainer getConstantValue()
-  {
-    return constantValue;
-  }
-  //------------------------------------------------------
-  
-  public void setConstantValue(RegisterDataContainer constantValue)
-  {
-    this.constantValue = constantValue;
-  }
-  //------------------------------------------------------
-  
-  /**
-   * @return String containing a tag
-   * @brief Get item tag (register name)
-   */
-  public String getTag()
-  {
-    return tag;
-  }// end of getTag
-  //------------------------------------------------------
-  
-  /**
-   * @param tag New String value of a tag
-   *
-   * @brief Sets item tag
-   */
-  public void setTag(String tag)
-  {
-    this.tag = tag;
-  }// end of setTag
-  //------------------------------------------------------
-  
-  /**
-   * @return Double value
-   * @brief Get item value
-   */
-  public RegisterModel getRegisterValue()
-  {
-    return registerValue;
-  }// end of getValue
-  //------------------------------------------------------
-  
-  /**
-   * @param registerValue New Double value of the item
-   *
-   * @brief Sets item value
-   */
-  public void setRegisterValue(RegisterModel registerValue)
-  {
-    this.registerValue = registerValue;
-  }// end of setValue
-  //------------------------------------------------------
-  
-  /**
-   * @return Boolean value of the bit
-   * @brief Gets validity bit
-   */
-  public boolean isValidityBit()
-  {
-    return validityBit;
-  }// end of isValidityBit
-  //------------------------------------------------------
-  
-  /**
-   * @param validityBit new value of the validity bit
-   *
-   * @brief Sets validity bit
-   */
-  public void setValidityBit(boolean validityBit)
-  {
-    this.validityBit = validityBit;
-  }// end of setValidityBit
-  //------------------------------------------------------
   
   /**
    * @brief String representation for debugging purposes
@@ -173,6 +62,6 @@ public class IssueItemModel
   @Override
   public String toString()
   {
-    return tag + " " + registerValue + " Valid: " + validityBit;
+    return instruction.toString();
   }// end of toString
 }

@@ -34,10 +34,12 @@ package com.gradle.superscalarsim.blocks.loadstore;
 
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.gradle.superscalarsim.blocks.base.AbstractFunctionUnitBlock;
-import com.gradle.superscalarsim.blocks.base.AbstractIssueWindowBlock;
+import com.gradle.superscalarsim.blocks.base.IssueWindowBlock;
 import com.gradle.superscalarsim.blocks.base.ReorderBufferBlock;
 import com.gradle.superscalarsim.code.CodeLoadStoreInterpreter;
+import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.models.FunctionalUnitDescription;
+import com.gradle.superscalarsim.models.SimCodeModel;
 
 /**
  * @class ArithmeticFunctionUnitBlock
@@ -69,6 +71,17 @@ public class LoadStoreFunctionUnit extends AbstractFunctionUnitBlock
   }
   
   /**
+   * @param simCodeModel Instruction to be executed
+   *
+   * @return True if the function unit can execute the instruction, false otherwise.
+   */
+  @Override
+  public boolean canExecuteInstruction(SimCodeModel simCodeModel)
+  {
+    return simCodeModel.getInstructionFunctionModel().getInstructionType() == InstructionTypeEnum.kLoadstore;
+  }
+  
+  /**
    * @param name                 Name of function unit
    * @param reorderBufferBlock   Class containing simulated Reorder Buffer
    * @param delay                Delay for function unit
@@ -81,7 +94,7 @@ public class LoadStoreFunctionUnit extends AbstractFunctionUnitBlock
    */
   public LoadStoreFunctionUnit(FunctionalUnitDescription description,
                                ReorderBufferBlock reorderBufferBlock,
-                               AbstractIssueWindowBlock issueWindowBlock,
+                               IssueWindowBlock issueWindowBlock,
                                LoadBufferBlock loadBufferBlock,
                                StoreBufferBlock storeBufferBlock,
                                CodeLoadStoreInterpreter loadStoreInterpreter)

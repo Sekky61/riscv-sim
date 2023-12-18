@@ -36,13 +36,15 @@ import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.blocks.base.AbstractFunctionUnitBlock;
-import com.gradle.superscalarsim.blocks.base.AbstractIssueWindowBlock;
+import com.gradle.superscalarsim.blocks.base.IssueWindowBlock;
 import com.gradle.superscalarsim.blocks.base.ReorderBufferBlock;
 import com.gradle.superscalarsim.blocks.base.UnifiedRegisterFileBlock;
 import com.gradle.superscalarsim.code.CodeBranchInterpreter;
+import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.models.FunctionalUnitDescription;
 import com.gradle.superscalarsim.models.InputCodeArgument;
+import com.gradle.superscalarsim.models.SimCodeModel;
 import com.gradle.superscalarsim.models.register.RegisterModel;
 
 import java.util.OptionalInt;
@@ -71,11 +73,22 @@ public class BranchFunctionUnitBlock extends AbstractFunctionUnitBlock
    * @brief Constructor
    */
   public BranchFunctionUnitBlock(FunctionalUnitDescription description,
-                                 AbstractIssueWindowBlock issueWindowBlock,
+                                 IssueWindowBlock issueWindowBlock,
                                  ReorderBufferBlock reorderBufferBlock)
   {
     super(description, issueWindowBlock, reorderBufferBlock);
   }// end of Constructor
+  
+  /**
+   * @param simCodeModel Instruction to be executed
+   *
+   * @return True if the function unit can execute the instruction, false otherwise.
+   */
+  @Override
+  public boolean canExecuteInstruction(SimCodeModel simCodeModel)
+  {
+    return simCodeModel.getInstructionFunctionModel().getInstructionType() == InstructionTypeEnum.kJumpbranch;
+  }
   //----------------------------------------------------------------------
   
   /**

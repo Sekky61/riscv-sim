@@ -45,11 +45,13 @@ public class InputCodeArgument
    * Parsed constant value of the argument. Uses type info from instruction definition.
    */
   RegisterDataContainer constantValue;
+  
   /**
    * Name of the argument.
    * Example: rs1, imm, labelName.
    */
   private String name;
+  
   /**
    * Value of the argument.
    * Example: x5, 10, name of a label.

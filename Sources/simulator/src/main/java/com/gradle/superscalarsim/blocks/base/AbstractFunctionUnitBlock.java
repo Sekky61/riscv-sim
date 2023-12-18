@@ -72,7 +72,7 @@ public abstract class AbstractFunctionUnitBlock implements AbstractBlock
    * Issue window block for comparing instruction and data types
    */
   @JsonIdentityReference(alwaysAsId = true)
-  protected AbstractIssueWindowBlock issueWindowBlock;
+  protected IssueWindowBlock issueWindowBlock;
   
   /**
    * Configuration of the function unit.
@@ -103,7 +103,7 @@ public abstract class AbstractFunctionUnitBlock implements AbstractBlock
    * @brief Constructor
    */
   public AbstractFunctionUnitBlock(FunctionalUnitDescription description,
-                                   AbstractIssueWindowBlock issueWindowBlock,
+                                   IssueWindowBlock issueWindowBlock,
                                    ReorderBufferBlock reorderBufferBlock)
   {
     this.reorderBufferBlock = reorderBufferBlock;
@@ -254,22 +254,13 @@ public abstract class AbstractFunctionUnitBlock implements AbstractBlock
   //----------------------------------------------------------------------
   
   /**
-   * @brief Returns value of the counter
-   */
-  protected int getCounter()
-  {
-    return this.counter;
-  }// end of setCounter
-  //----------------------------------------------------------------------
-  
-  /**
    * Set the delay based on the instruction
    */
   public void setDelayBasedOnInstruction()
   {
     int delay = switch (this.simCodeModel.getInstructionFunctionModel().getInstructionType())
     {
-      case kArithmetic -> getDelayBasedOnCapability();
+      case kIntArithmetic, kFloatArithmetic -> getDelayBasedOnCapability();
       case kLoadstore, kJumpbranch -> this.description.latency;
     };
     this.setDelay(delay);
@@ -280,7 +271,8 @@ public abstract class AbstractFunctionUnitBlock implements AbstractBlock
    */
   private int getDelayBasedOnCapability()
   {
-    String expr = this.simCodeModel.getInstructionFunctionModel().getInterpretableAs();
+    String                                   expr           = this.simCodeModel.getInstructionFunctionModel()
+            .getInterpretableAs();
     FunctionalUnitDescription.CapabilityName capabilityName = FunctionalUnitDescription.classifyOperation(expr);
     if (capabilityName == null)
     {
@@ -297,4 +289,10 @@ public abstract class AbstractFunctionUnitBlock implements AbstractBlock
     throw new RuntimeException("Unknown operation: " + expr);
   }
   
+  /**
+   * @param simCodeModel Instruction to be executed
+   *
+   * @return True if the function unit can execute the instruction, false otherwise.
+   */
+  public abstract boolean canExecuteInstruction(SimCodeModel simCodeModel);
 }

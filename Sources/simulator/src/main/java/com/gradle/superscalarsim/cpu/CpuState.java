@@ -31,13 +31,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gradle.superscalarsim.blocks.CacheStatisticsCounter;
 import com.gradle.superscalarsim.blocks.StatisticsCounter;
-import com.gradle.superscalarsim.blocks.arithmetic.AluIssueWindowBlock;
 import com.gradle.superscalarsim.blocks.arithmetic.ArithmeticFunctionUnitBlock;
-import com.gradle.superscalarsim.blocks.arithmetic.FpIssueWindowBlock;
 import com.gradle.superscalarsim.blocks.base.*;
 import com.gradle.superscalarsim.blocks.branch.*;
 import com.gradle.superscalarsim.blocks.loadstore.*;
 import com.gradle.superscalarsim.code.*;
+import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.enums.cache.ReplacementPoliciesEnum;
 import com.gradle.superscalarsim.factories.InputCodeModelFactory;
 import com.gradle.superscalarsim.factories.RegisterModelFactory;
@@ -93,16 +92,16 @@ public class CpuState implements Serializable
   public CodeArithmeticInterpreter arithmeticInterpreter;
   public List<ArithmeticFunctionUnitBlock> arithmeticFunctionUnitBlocks;
   public List<ArithmeticFunctionUnitBlock> fpFunctionUnitBlocks;
-  public AluIssueWindowBlock aluIssueWindowBlock;
-  public FpIssueWindowBlock fpIssueWindowBlock;
+  public IssueWindowBlock aluIssueWindowBlock;
+  public IssueWindowBlock fpIssueWindowBlock;
   
   public CodeBranchInterpreter branchInterpreter;
   public List<BranchFunctionUnitBlock> branchFunctionUnitBlocks;
-  public BranchIssueWindowBlock branchIssueWindowBlock;
+  public IssueWindowBlock branchIssueWindowBlock;
   
   // Load/Store
   public List<LoadStoreFunctionUnit> loadStoreFunctionUnits;
-  public LoadStoreIssueWindowBlock loadStoreIssueWindowBlock;
+  public IssueWindowBlock loadStoreIssueWindowBlock;
   
   // Memory
   public List<MemoryAccessUnit> memoryAccessUnits;
@@ -241,7 +240,6 @@ public class CpuState implements Serializable
     reorderBufferBlock.commitLimit = config.cpuConfig.commitWidth;
     
     // Issue
-    this.issueWindowSuperBlock = new IssueWindowSuperBlock(decodeAndDispatchBlock);
     this.arithmeticInterpreter = new CodeArithmeticInterpreter(unifiedRegisterFileBlock, instructionMemoryBlock);
     this.branchInterpreter     = new CodeBranchInterpreter(unifiedRegisterFileBlock, instructionMemoryBlock);
     
@@ -253,15 +251,15 @@ public class CpuState implements Serializable
     loadBufferBlock.setBufferSize(config.cpuConfig.lbSize);
     
     // FUs
-    this.aluIssueWindowBlock       = new AluIssueWindowBlock(unifiedRegisterFileBlock);
-    this.branchIssueWindowBlock    = new BranchIssueWindowBlock(unifiedRegisterFileBlock);
-    this.fpIssueWindowBlock        = new FpIssueWindowBlock(unifiedRegisterFileBlock);
-    this.loadStoreIssueWindowBlock = new LoadStoreIssueWindowBlock(unifiedRegisterFileBlock);
+    this.aluIssueWindowBlock       = new IssueWindowBlock(InstructionTypeEnum.kIntArithmetic, unifiedRegisterFileBlock);
+    this.branchIssueWindowBlock    = new IssueWindowBlock(InstructionTypeEnum.kJumpbranch, unifiedRegisterFileBlock);
+    this.fpIssueWindowBlock        = new IssueWindowBlock(InstructionTypeEnum.kFloatArithmetic,
+                                                          unifiedRegisterFileBlock);
+    this.loadStoreIssueWindowBlock = new IssueWindowBlock(InstructionTypeEnum.kLoadstore, unifiedRegisterFileBlock);
     
-    this.issueWindowSuperBlock.addAluIssueWindow(aluIssueWindowBlock);
-    this.issueWindowSuperBlock.addFpIssueWindow(fpIssueWindowBlock);
-    this.issueWindowSuperBlock.addLoadStoreIssueWindow(loadStoreIssueWindowBlock);
-    this.issueWindowSuperBlock.addBranchIssueWindow(branchIssueWindowBlock);
+    this.issueWindowSuperBlock = new IssueWindowSuperBlock(decodeAndDispatchBlock,
+                                                           List.of(aluIssueWindowBlock, fpIssueWindowBlock,
+                                                                   branchIssueWindowBlock, loadStoreIssueWindowBlock));
     
     this.arithmeticFunctionUnitBlocks = new ArrayList<>();
     this.fpFunctionUnitBlocks         = new ArrayList<>();
@@ -280,7 +278,7 @@ public class CpuState implements Serializable
                                                                                       reorderBufferBlock);
           functionBlock.addArithmeticInterpreter(arithmeticInterpreter);
           functionBlock.addRegisterFileBlock(unifiedRegisterFileBlock);
-          this.aluIssueWindowBlock.setFunctionUnitBlock(functionBlock);
+          this.aluIssueWindowBlock.addFunctionUnit(functionBlock);
           this.arithmeticFunctionUnitBlocks.add(functionBlock);
         }
         case FP ->
@@ -291,7 +289,7 @@ public class CpuState implements Serializable
                                                                                       reorderBufferBlock);
           functionBlock.addArithmeticInterpreter(arithmeticInterpreter);
           functionBlock.addRegisterFileBlock(unifiedRegisterFileBlock);
-          this.fpIssueWindowBlock.setFunctionUnitBlock(functionBlock);
+          this.fpIssueWindowBlock.addFunctionUnit(functionBlock);
           this.fpFunctionUnitBlocks.add(functionBlock);
         }
         case L_S ->
@@ -300,7 +298,7 @@ public class CpuState implements Serializable
                                                                                   loadStoreIssueWindowBlock,
                                                                                   loadBufferBlock, storeBufferBlock,
                                                                                   loadStoreInterpreter);
-          this.loadStoreIssueWindowBlock.setFunctionUnitBlock(loadStoreFunctionUnit);
+          this.loadStoreIssueWindowBlock.addFunctionUnit(loadStoreFunctionUnit);
           this.loadStoreFunctionUnits.add(loadStoreFunctionUnit);
         }
         case Branch ->
@@ -309,7 +307,7 @@ public class CpuState implements Serializable
                                                                                         reorderBufferBlock);
           branchFunctionUnitBlock.addBranchInterpreter(branchInterpreter);
           branchFunctionUnitBlock.addRegisterFileBlock(unifiedRegisterFileBlock);
-          this.branchIssueWindowBlock.setFunctionUnitBlock(branchFunctionUnitBlock);
+          this.branchIssueWindowBlock.addFunctionUnit(branchFunctionUnitBlock);
           this.branchFunctionUnitBlocks.add(branchFunctionUnitBlock);
         }
         case Memory ->

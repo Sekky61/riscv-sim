@@ -1,11 +1,15 @@
 package com.gradle.superscalarsim.blocks;
 
-import com.gradle.superscalarsim.blocks.arithmetic.AluIssueWindowBlock;
 import com.gradle.superscalarsim.blocks.arithmetic.ArithmeticFunctionUnitBlock;
-import com.gradle.superscalarsim.blocks.arithmetic.FpIssueWindowBlock;
 import com.gradle.superscalarsim.blocks.base.*;
-import com.gradle.superscalarsim.blocks.branch.*;
-import com.gradle.superscalarsim.blocks.loadstore.*;
+import com.gradle.superscalarsim.blocks.branch.BranchFunctionUnitBlock;
+import com.gradle.superscalarsim.blocks.branch.BranchTargetBuffer;
+import com.gradle.superscalarsim.blocks.branch.GShareUnit;
+import com.gradle.superscalarsim.blocks.branch.GlobalHistoryRegister;
+import com.gradle.superscalarsim.blocks.loadstore.LoadBufferBlock;
+import com.gradle.superscalarsim.blocks.loadstore.LoadStoreFunctionUnit;
+import com.gradle.superscalarsim.blocks.loadstore.MemoryAccessUnit;
+import com.gradle.superscalarsim.blocks.loadstore.StoreBufferBlock;
 import com.gradle.superscalarsim.builders.InputCodeArgumentBuilder;
 import com.gradle.superscalarsim.builders.InputCodeModelBuilder;
 import com.gradle.superscalarsim.builders.RegisterFileModelBuilder;
@@ -51,21 +55,21 @@ public class ForwardSimulationTest
   private RenameMapTableBlock renameMapTableBlock;
   private ReorderBufferBlock reorderBufferBlock;
   
-  private AluIssueWindowBlock aluIssueWindowBlock;
+  private IssueWindowBlock aluIssueWindowBlock;
   private ArithmeticFunctionUnitBlock addFunctionBlock;
   private ArithmeticFunctionUnitBlock addSecondFunctionBlock;
   private ArithmeticFunctionUnitBlock subFunctionBlock;
   
-  private FpIssueWindowBlock fpIssueWindowBlock;
+  private IssueWindowBlock fpIssueWindowBlock;
   private ArithmeticFunctionUnitBlock faddFunctionBlock;
   private ArithmeticFunctionUnitBlock faddSecondFunctionBlock;
   private ArithmeticFunctionUnitBlock fsubFunctionBlock;
   
-  private BranchIssueWindowBlock branchIssueWindowBlock;
+  private IssueWindowBlock branchIssueWindowBlock;
   private BranchFunctionUnitBlock branchFunctionUnitBlock1;
   private BranchFunctionUnitBlock branchFunctionUnitBlock2;
   
-  private LoadStoreIssueWindowBlock loadStoreIssueWindowBlock;
+  private IssueWindowBlock loadStoreIssueWindowBlock;
   private LoadStoreFunctionUnit loadStoreFunctionUnit;
   private MemoryAccessUnit memoryAccessUnit;
   private StoreBufferBlock storeBufferBlock;
@@ -1209,7 +1213,7 @@ public class ForwardSimulationTest
             .hasArguments(Arrays.asList(argumentJmp1, argumentJmp2, argumentJmp3)).build();
     InputCodeModel ins2 = new InputCodeModelBuilder().hasLoader(initLoader)
             .hasInstructionFunctionModel(this.initLoader.getInstructionFunctionModel("subi")).hasInstructionName("subi")
-            .hasCodeLine("subi x3,x3,1").hasInstructionTypeEnum(InstructionTypeEnum.kArithmetic)
+            .hasCodeLine("subi x3,x3,1").hasInstructionTypeEnum(InstructionTypeEnum.kIntArithmetic)
             .hasArguments(Arrays.asList(argumentJmp4, argumentJmp5, argumentJmp6)).build();
     InputCodeModel ins3 = new InputCodeModelBuilder().hasLoader(initLoader)
             .hasInstructionFunctionModel(this.initLoader.getInstructionFunctionModel("jal")).hasInstructionName("jal")
@@ -1482,7 +1486,7 @@ public class ForwardSimulationTest
             .hasArguments(Arrays.asList(argumentJmp1, argumentJmp2, argumentJmp3)).build();
     InputCodeModel ins2 = new InputCodeModelBuilder().hasLoader(initLoader)
             .hasInstructionFunctionModel(this.initLoader.getInstructionFunctionModel("subi")).hasInstructionName("subi")
-            .hasCodeLine("subi x1,x1,10").hasInstructionTypeEnum(InstructionTypeEnum.kArithmetic)
+            .hasCodeLine("subi x1,x1,10").hasInstructionTypeEnum(InstructionTypeEnum.kIntArithmetic)
             .hasArguments(Arrays.asList(argumentSub1, argumentSub2, argumentSub3)).build();
     InputCodeModel ins3 = new InputCodeModelBuilder().hasLoader(initLoader)
             .hasInstructionFunctionModel(this.initLoader.getInstructionFunctionModel("jal")).hasInstructionName("jal")
@@ -1490,7 +1494,7 @@ public class ForwardSimulationTest
             .hasArguments(Arrays.asList(argumentJmp4, argumentJmp5)).build();
     InputCodeModel ins4 = new InputCodeModelBuilder().hasLoader(initLoader)
             .hasInstructionFunctionModel(this.initLoader.getInstructionFunctionModel("addi")).hasInstructionName("addi")
-            .hasCodeLine("addi x1,x1,10").hasInstructionTypeEnum(InstructionTypeEnum.kArithmetic)
+            .hasCodeLine("addi x1,x1,10").hasInstructionTypeEnum(InstructionTypeEnum.kIntArithmetic)
             .hasArguments(Arrays.asList(argumentAdd1, argumentAdd2, argumentAdd3)).build();
     
     List<InputCodeModel> instructions = Arrays.asList(ins1, ins2, ins3, ins4);
@@ -1617,13 +1621,13 @@ public class ForwardSimulationTest
             .hasInstructionTypeEnum(InstructionTypeEnum.kJumpbranch)
             .hasArguments(Arrays.asList(argumentJmp1, argumentJmp2, argumentJmp3)).build();
     InputCodeModel ins2 = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("subi")
-            .hasCodeLine("subi x1,x1,10").hasInstructionTypeEnum(InstructionTypeEnum.kArithmetic)
+            .hasCodeLine("subi x1,x1,10").hasInstructionTypeEnum(InstructionTypeEnum.kIntArithmetic)
             .hasArguments(Arrays.asList(argumentSub1, argumentSub2, argumentSub3)).build();
     InputCodeModel ins3 = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("jal")
             .hasCodeLine("jal x0,labelFin").hasInstructionTypeEnum(InstructionTypeEnum.kJumpbranch)
             .hasArguments(Arrays.asList(argumentJmp4, argumentJmp5)).build();
     InputCodeModel ins4 = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("addi")
-            .hasCodeLine("addi x1,x1,10").hasInstructionTypeEnum(InstructionTypeEnum.kArithmetic)
+            .hasCodeLine("addi x1,x1,10").hasInstructionTypeEnum(InstructionTypeEnum.kIntArithmetic)
             .hasArguments(Arrays.asList(argumentAdd1, argumentAdd2, argumentAdd3)).build();
     
     List<InputCodeModel> instructions = Arrays.asList(ins1, ins2, ins3, ins4);
@@ -1853,7 +1857,7 @@ public class ForwardSimulationTest
     InputCodeArgument subi3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("5").build();
     InputCodeModel subiCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("subi")
             .hasCodeLine("subi x4,x4,5").hasDataTypeEnum(DataTypeEnum.kInt)
-            .hasInstructionTypeEnum(InstructionTypeEnum.kArithmetic).hasArguments(Arrays.asList(subi1, subi2, subi3))
+            .hasInstructionTypeEnum(InstructionTypeEnum.kIntArithmetic).hasArguments(Arrays.asList(subi1, subi2, subi3))
             .build();
     
     List<InputCodeModel> instructions = Arrays.asList(subiCodeModel, storeCodeModel, loadCodeModel);
@@ -1936,7 +1940,7 @@ public class ForwardSimulationTest
     InputCodeArgument subi3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("5").build();
     InputCodeModel subiCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("subi")
             .hasCodeLine("subi x3,x3,5").hasDataTypeEnum(DataTypeEnum.kInt)
-            .hasInstructionTypeEnum(InstructionTypeEnum.kArithmetic).hasArguments(Arrays.asList(subi1, subi2, subi3))
+            .hasInstructionTypeEnum(InstructionTypeEnum.kIntArithmetic).hasArguments(Arrays.asList(subi1, subi2, subi3))
             .build();
     
     InputCodeArgument store1 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x3").build();
@@ -2078,7 +2082,7 @@ public class ForwardSimulationTest
     InputCodeArgument subi3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("5").build();
     InputCodeModel subiCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("subi")
             .hasCodeLine("subi x3,x3,5").hasDataTypeEnum(DataTypeEnum.kInt)
-            .hasInstructionTypeEnum(InstructionTypeEnum.kArithmetic).hasArguments(Arrays.asList(subi1, subi2, subi3))
+            .hasInstructionTypeEnum(InstructionTypeEnum.kIntArithmetic).hasArguments(Arrays.asList(subi1, subi2, subi3))
             .build();
     
     InputCodeArgument store1 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x3").build();
