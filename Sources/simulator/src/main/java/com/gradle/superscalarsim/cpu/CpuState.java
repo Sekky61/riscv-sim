@@ -214,10 +214,9 @@ public class CpuState implements Serializable
     }
     
     this.cache = new Cache(simulatedMemory, config.cpuConfig.cacheLines, config.cpuConfig.cacheAssoc,
-                           config.cpuConfig.cacheLineSize, replacementPoliciesEnum, writeBack,
-                           config.cpuConfig.addRemainingDelay, config.cpuConfig.storeLatency,
-                           config.cpuConfig.loadLatency, config.cpuConfig.laneReplacementDelay,
-                           this.cacheStatisticsCounter);
+                           config.cpuConfig.cacheLineSize, replacementPoliciesEnum, writeBack, false,
+                           config.cpuConfig.storeLatency, config.cpuConfig.loadLatency,
+                           config.cpuConfig.laneReplacementDelay, this.cacheStatisticsCounter);
     
     this.memoryModel = new MemoryModel(cache, cacheStatisticsCounter);
     

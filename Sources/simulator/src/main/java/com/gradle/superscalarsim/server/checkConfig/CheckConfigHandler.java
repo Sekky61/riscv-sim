@@ -28,7 +28,8 @@
 package com.gradle.superscalarsim.server.checkConfig;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.gradle.superscalarsim.cpu.CpuConfig;
+import com.gradle.superscalarsim.cpu.CpuConfigValidator;
+import com.gradle.superscalarsim.cpu.SimulationConfig;
 import com.gradle.superscalarsim.serialization.Serialization;
 import com.gradle.superscalarsim.server.IRequestDeserializer;
 import com.gradle.superscalarsim.server.IRequestResolver;
@@ -52,12 +53,12 @@ public class CheckConfigHandler implements IRequestResolver<CheckConfigRequest, 
     if (request == null || request.config == null)
     {
       response = new CheckConfigResponse(false, new ArrayList<>(
-              List.of("Wrong format. Expected JSON with 'config' " + "object field")));
+              List.of(new CpuConfigValidator.Error("Invalid request fields", "root"))));
     }
     else
     {
       // Validate
-      CpuConfig.ValidationResult res = request.config.validate();
+      SimulationConfig.ValidationResult res = request.config.validate();
       response = new CheckConfigResponse(res.valid, res.messages);
     }
     return response;

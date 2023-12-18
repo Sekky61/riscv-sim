@@ -28,6 +28,7 @@
 package com.gradle.superscalarsim.server.checkConfig;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.gradle.superscalarsim.cpu.CpuConfigValidator;
 
 import java.util.List;
 
@@ -46,9 +47,9 @@ public class CheckConfigResponse
    * List of messages describing the errors in the configuration.
    */
   @JsonProperty(required = true)
-  public List<String> messages;
+  public List<CpuConfigValidator.Error> messages;
   
-  public CheckConfigResponse(boolean valid, List<String> messages)
+  public CheckConfigResponse(boolean valid, List<CpuConfigValidator.Error> messages)
   {
     this.valid    = valid;
     this.messages = messages;

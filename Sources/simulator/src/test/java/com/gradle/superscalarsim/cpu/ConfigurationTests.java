@@ -30,6 +30,8 @@ package com.gradle.superscalarsim.cpu;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.ArrayList;
+
 public class ConfigurationTests
 {
   
@@ -37,15 +39,21 @@ public class ConfigurationTests
   public void testDefaultConfiguration_Passes()
   {
     CpuConfig config = CpuConfig.getDefaultConfiguration();
-    Assert.assertTrue(config.validate().valid);
+    
+    CpuConfigValidator validator = new CpuConfigValidator();
+    validator.validate(config);
+    Assert.assertTrue(validator.isValid());
   }
   
   @Test
   public void testNoFus_Fails()
   {
     CpuConfig config = CpuConfig.getDefaultConfiguration();
-    config.fUnits = new CpuConfig.FUnit[0];
-    Assert.assertFalse(config.validate().valid);
+    config.fUnits = new ArrayList<>();
+    
+    CpuConfigValidator validator = new CpuConfigValidator();
+    validator.validate(config);
+    Assert.assertFalse(validator.isValid());
   }
   
   @Test
@@ -56,7 +64,9 @@ public class ConfigurationTests
     config.predictorType    = "2bit";
     config.predictorDefault = "Taken";
     
-    Assert.assertFalse(config.validate().valid);
+    CpuConfigValidator validator = new CpuConfigValidator();
+    validator.validate(config);
+    Assert.assertFalse(validator.isValid());
   }
   
   @Test

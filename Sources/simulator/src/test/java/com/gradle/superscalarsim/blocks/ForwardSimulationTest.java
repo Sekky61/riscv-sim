@@ -126,29 +126,34 @@ public class ForwardSimulationTest
     cpuCfg.storeLatency         = 0;
     cpuCfg.loadLatency          = 0;
     cpuCfg.laneReplacementDelay = 0;
-    cpuCfg.addRemainingDelay    = false;
     // 3 FX: +, +, - (delay 2)
     // 3 FP: +, +, - (delay 2)
     // 1 L/S: (delay 1)
     // 2 branch: (delay 3)
     // 1 mem: (delay 1)
-    cpuCfg.fUnits    = new CpuConfig.FUnit[10];
-    cpuCfg.fUnits[0] = new CpuConfig.FUnit(1, CpuConfig.FUnit.Type.FX, 2,
-                                           new CpuConfig.FUnit.Capability[]{CpuConfig.FUnit.Capability.addition});
-    cpuCfg.fUnits[1] = new CpuConfig.FUnit(2, CpuConfig.FUnit.Type.FX, 2,
-                                           new CpuConfig.FUnit.Capability[]{CpuConfig.FUnit.Capability.addition});
-    cpuCfg.fUnits[2] = new CpuConfig.FUnit(3, CpuConfig.FUnit.Type.FX, 2,
-                                           new CpuConfig.FUnit.Capability[]{CpuConfig.FUnit.Capability.addition});
-    cpuCfg.fUnits[3] = new CpuConfig.FUnit(4, CpuConfig.FUnit.Type.FP, 2,
-                                           new CpuConfig.FUnit.Capability[]{CpuConfig.FUnit.Capability.addition});
-    cpuCfg.fUnits[4] = new CpuConfig.FUnit(5, CpuConfig.FUnit.Type.FP, 2,
-                                           new CpuConfig.FUnit.Capability[]{CpuConfig.FUnit.Capability.addition});
-    cpuCfg.fUnits[5] = new CpuConfig.FUnit(6, CpuConfig.FUnit.Type.FP, 2,
-                                           new CpuConfig.FUnit.Capability[]{CpuConfig.FUnit.Capability.addition});
-    cpuCfg.fUnits[6] = new CpuConfig.FUnit(7, CpuConfig.FUnit.Type.L_S, 1, new CpuConfig.FUnit.Capability[]{});
-    cpuCfg.fUnits[7] = new CpuConfig.FUnit(8, CpuConfig.FUnit.Type.Branch, 3, new CpuConfig.FUnit.Capability[]{});
-    cpuCfg.fUnits[8] = new CpuConfig.FUnit(9, CpuConfig.FUnit.Type.Branch, 3, new CpuConfig.FUnit.Capability[]{});
-    cpuCfg.fUnits[9] = new CpuConfig.FUnit(10, CpuConfig.FUnit.Type.Memory, 1, new CpuConfig.FUnit.Capability[]{});
+    cpuCfg.fUnits = Arrays.asList(new CpuConfig.FUnit(0, CpuConfig.FUnit.Type.FX, Arrays.asList(
+                                          new CpuConfig.FUnit.Capability(CpuConfig.FUnit.CapabilityName.addition, 2)), "FX"),
+                                  new CpuConfig.FUnit(1, CpuConfig.FUnit.Type.FX, Arrays.asList(
+                                          new CpuConfig.FUnit.Capability(CpuConfig.FUnit.CapabilityName.addition, 2)),
+                                                      "FX"), new CpuConfig.FUnit(2, CpuConfig.FUnit.Type.FX,
+                                                                                 Arrays.asList(
+                                                                                         new CpuConfig.FUnit.Capability(
+                                                                                                 CpuConfig.FUnit.CapabilityName.addition,
+                                                                                                 2)), "FX"),
+                                  new CpuConfig.FUnit(3, CpuConfig.FUnit.Type.FP, Arrays.asList(
+                                          new CpuConfig.FUnit.Capability(CpuConfig.FUnit.CapabilityName.addition, 2)),
+                                                      "FP"), new CpuConfig.FUnit(4, CpuConfig.FUnit.Type.FP,
+                                                                                 Arrays.asList(
+                                                                                         new CpuConfig.FUnit.Capability(
+                                                                                                 CpuConfig.FUnit.CapabilityName.addition,
+                                                                                                 2)), "FP"),
+                                  new CpuConfig.FUnit(5, CpuConfig.FUnit.Type.FP, Arrays.asList(
+                                          new CpuConfig.FUnit.Capability(CpuConfig.FUnit.CapabilityName.addition, 2)),
+                                                      "FP"), new CpuConfig.FUnit(6, CpuConfig.FUnit.Type.L_S, 1, "L/S"),
+                                  new CpuConfig.FUnit(7, CpuConfig.FUnit.Type.Branch, 3, "Branch"),
+                                  new CpuConfig.FUnit(8, CpuConfig.FUnit.Type.Branch, 3, "Branch"),
+                                  new CpuConfig.FUnit(9, CpuConfig.FUnit.Type.Memory, 1, "Mem"));
+    
     
     SimulationConfig cfg = new SimulationConfig("", new ArrayList<>(), cpuCfg);
     
