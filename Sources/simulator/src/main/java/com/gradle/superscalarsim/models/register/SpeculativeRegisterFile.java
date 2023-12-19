@@ -28,6 +28,7 @@ package com.gradle.superscalarsim.models.register;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.enums.RegisterTypeEnum;
@@ -50,14 +51,17 @@ public class SpeculativeRegisterFile implements IRegisterFile
   private final int numberOfRegisters;
   
   /**
-   * Collection of registers
+   * Collection of registers.
+   * TODO: serializes as ["tg0":"tg0", "tg1":"tg1", ...], which is weird
    */
   @JsonIdentityReference(alwaysAsId = true)
   private final Map<String, RegisterModel> registers;
   
   /**
-   * Factory for creating speculative registers
+   * Factory for creating speculative registers.
+   * Ignored in serialization, because it is not needed.
    */
+  @JsonIgnore
   private final RegisterModelFactory registerModelFactory;
   
   /**

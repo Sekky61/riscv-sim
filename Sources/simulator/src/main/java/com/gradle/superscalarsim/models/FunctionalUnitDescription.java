@@ -94,7 +94,7 @@ public class FunctionalUnitDescription
     this.fuType     = fuType;
     this.operations = operations;
     // Should not be used
-    this.latency = -1;
+    this.latency = 1;
   }
   
   /**

@@ -194,7 +194,7 @@ public class CpuConfig implements Serializable
                                           new FunctionalUnitDescription.Capability(FunctionalUnitDescription.CapabilityName.addition, 1),
                                           new FunctionalUnitDescription.Capability(FunctionalUnitDescription.CapabilityName.bitwise, 1),
                                           new FunctionalUnitDescription.Capability(FunctionalUnitDescription.CapabilityName.multiplication, 2),
-                                          new FunctionalUnitDescription.Capability(FunctionalUnitDescription.CapabilityName.division, 2),
+                                          new FunctionalUnitDescription.Capability(FunctionalUnitDescription.CapabilityName.division, 10),
                                           new FunctionalUnitDescription.Capability(FunctionalUnitDescription.CapabilityName.special, 2)), "FX"),
                                   new FunctionalUnitDescription(1, FunctionalUnitDescription.Type.FP, Arrays.asList(
                                           new FunctionalUnitDescription.Capability(
@@ -216,7 +216,7 @@ public class CpuConfig implements Serializable
     config.cacheLines       = 16;
     config.cacheLineSize    = 32;
     config.cacheAssoc       = 2;
-    config.cacheReplacement = "Random"; // TODO: Other policies have problem deserializing
+    config.cacheReplacement = "LRU"; // TODO: Other policies have problem deserializing
     config.storeBehavior    = "write-back";
     config.cacheAccessDelay = 1;
     // Memory
