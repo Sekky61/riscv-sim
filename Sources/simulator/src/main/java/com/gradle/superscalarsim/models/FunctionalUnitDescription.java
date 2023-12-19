@@ -212,6 +212,10 @@ public class FunctionalUnitDescription
     public CapabilityName name;
     public int latency;
     
+    public Capability()
+    {
+    }
+    
     public Capability(CapabilityName name, int latency)
     {
       this.name    = name;
