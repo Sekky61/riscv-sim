@@ -39,7 +39,7 @@ import {
   selectRegisterById,
 } from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
-import { IssueItemModel, Reference } from '@/lib/types/cpuApi';
+import { Reference } from '@/lib/types/cpuApi';
 
 import {
   Tooltip,
@@ -85,18 +85,10 @@ export default function IssueWindow({ type }: IssueWindowProps) {
   const issue = useAppSelector(getSelector(type));
 
   if (!issue) return null;
-
-  const validity = issue.argumentValidityMap;
-  const instructionIds: Reference[] = [];
-  for (const key in validity) {
-    // Cast to number
-    const numericKey = Number(key);
-    instructionIds.push(numericKey);
-  }
+  const instrCount = issue.issuedInstructions.length;
 
   const title = getTitle(type);
 
-  const instrCount = instructionIds.length;
   const stats = (
     <>
       <div>
@@ -113,7 +105,7 @@ export default function IssueWindow({ type }: IssueWindowProps) {
       <InstructionListDisplay
         limit={6}
         columns={3}
-        instructions={instructionIds}
+        instructions={issue.issuedInstructions}
         legend={
           <>
             <div>Instruction</div>

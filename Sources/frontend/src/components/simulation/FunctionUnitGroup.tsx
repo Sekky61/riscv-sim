@@ -59,36 +59,42 @@ export type FunctionUnitGroupProps = {
   type: FUType;
 };
 
-function getSelector(type: FUType) {
-  if (type === 'alu') return selectArithmeticFunctionUnitBlocks;
-  if (type === 'fp') return selectFpFunctionUnitBlocks;
-  if (type === 'branch') return selectBranchFunctionUnitBlocks;
-  if (type === 'memory') return selectMemoryAccessUnitBlocks;
-  throw new Error(`Invalid type ${type}`);
-}
-
-function getNameFromType(type: FUType) {
-  if (type === 'alu') return 'ALU';
-  if (type === 'fp') return 'FP';
-  if (type === 'branch') return 'Branch';
-  if (type === 'memory') return 'Memory Access';
-  throw new Error(`Invalid type ${type}`);
-}
-
-function getGridClassName(type: FUType) {
-  if (type === 'alu') return 'aluFu';
-  if (type === 'fp') return 'fpFu';
-  if (type === 'branch') return 'branchFu';
-  if (type === 'memory') return 'memoryFu';
-  throw new Error(`Invalid type ${type}`);
+function getFuInfo(type: FUType) {
+  switch (type) {
+    case 'alu':
+      return {
+        selector: selectArithmeticFunctionUnitBlocks,
+        name: 'ALU',
+        className: 'aluFu',
+      };
+    case 'fp':
+      return {
+        selector: selectFpFunctionUnitBlocks,
+        name: 'FP',
+        className: 'fpFu',
+      };
+    case 'branch':
+      return {
+        selector: selectBranchFunctionUnitBlocks,
+        name: 'Branch',
+        className: 'branchFu',
+      };
+    case 'memory':
+      return {
+        selector: selectMemoryAccessUnitBlocks,
+        name: 'Memory Access',
+        className: 'memoryFu',
+      };
+    default:
+      throw new Error(`Invalid type ${type}`);
+  }
 }
 
 export default function FunctionUnitGroup({ type }: FunctionUnitGroupProps) {
-  const fus = useAppSelector(getSelector(type));
+  const { name, className, selector } = getFuInfo(type);
+  const fus = useAppSelector(selector);
 
   if (!fus) return null;
-
-  const cl = getGridClassName(type);
 
   // TODO: has no limit
   return (
@@ -97,12 +103,11 @@ export default function FunctionUnitGroup({ type }: FunctionUnitGroupProps) {
         const displayCounter = fu.simCodeModel === null ? 0 : fu.counter + 1;
         const id = fu.simCodeModel ?? null;
         return (
-          <Fragment key={fu.functionUnitId}>
+          <Fragment key={`${fu.description.name}-${fu.functionUnitId}`}>
             <Block
-              title={fu.name || getNameFromType(type)}
-              key={fu.name}
+              title={fu.description.name || name}
               stats={`${displayCounter}/${fu.delay}`}
-              className={clsx(cl, 'row-span-1', rowPosition[i + 1])}
+              className={clsx(className, 'row-span-1', rowPosition[i + 1])}
             >
               <InstructionField instructionId={id} />
             </Block>

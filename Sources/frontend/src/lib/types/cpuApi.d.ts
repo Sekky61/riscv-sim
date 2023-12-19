@@ -29,6 +29,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import type { Capability } from '@/lib/forms/Isa';
+
+/**
+ * Part of the API is defined in schemas.
+ * Otherwise, generated from JSON schema (using https://transform.tools/json-schema-to-typescript).
+ * See backend endpoint `POST /schema`.
+ */
+
 export interface CpuState {
   managerRegistry: ManagerRegistry;
   tick: number;
@@ -51,13 +59,13 @@ export interface CpuState {
   arithmeticInterpreter: CodeArithmeticInterpreter;
   arithmeticFunctionUnitBlocks: ArithmeticFunctionUnitBlock[];
   fpFunctionUnitBlocks: ArithmeticFunctionUnitBlock[];
-  aluIssueWindowBlock: AluIssueWindowBlock;
-  fpIssueWindowBlock: FpIssueWindowBlock;
+  aluIssueWindowBlock: IssueWindowBlock;
+  fpIssueWindowBlock: IssueWindowBlock;
   branchInterpreter: CodeBranchInterpreter;
   branchFunctionUnitBlocks: BranchFunctionUnitBlock[];
-  branchIssueWindowBlock: BranchIssueWindowBlock;
+  branchIssueWindowBlock: IssueWindowBlock;
   loadStoreFunctionUnits: LoadStoreFunctionUnit[];
-  loadStoreIssueWindowBlock: LoadStoreIssueWindowBlock;
+  loadStoreIssueWindowBlock: IssueWindowBlock;
   memoryAccessUnits: MemoryAccessUnit[];
   simulatedMemory: SimulatedMemory;
   issueWindowSuperBlock: IssueWindowSuperBlock;
@@ -157,7 +165,11 @@ export interface Label {
   address: number;
 }
 
-export type InstructionTypeEnum = 'kArithmetic' | 'kLoadstore' | 'kJumpbranch';
+export type InstructionTypeEnum =
+  | 'kIntArithmetic'
+  | 'kFloatArithmetic'
+  | 'kLoadstore'
+  | 'kJumpbranch';
 
 export type DataTypeEnum =
   | 'kInt'
@@ -313,23 +325,11 @@ export interface DecodeAndDispatchBlock {
 
 export interface IssueWindowBlock {
   issuedInstructions: Reference[];
-  argumentValidityMap: Record<Reference, IssueItemModel[]>;
-  registerFileBlock?: Reference;
+  instructionType: InstructionTypeEnum;
   windowId: number;
   functionUnitBlockList?: Reference[];
+  registerFileBlock?: UnifiedRegisterFileBlock;
 }
-
-export interface IssueItemModel {
-  tag: string;
-  validityBit: boolean;
-  value?: StringReference;
-  constantValue?: RegisterDataContainer;
-}
-
-export type AluIssueWindowBlock = IssueWindowBlock;
-export type FpIssueWindowBlock = IssueWindowBlock;
-export type BranchIssueWindowBlock = IssueWindowBlock;
-export type LoadStoreIssueWindowBlock = IssueWindowBlock;
 
 // Function unit blocks
 
@@ -348,9 +348,29 @@ export interface FunctionUnitBlock {
   functionUnitEmpty: boolean;
 }
 
-export type ArithmeticFunctionUnitBlock = FunctionUnitBlock;
-export type BranchFunctionUnitBlock = FunctionUnitBlock;
-export type MemoryAccessUnit = FunctionUnitBlock;
+export interface AbstractFunctionUnitBlock {
+  functionUnitId: number;
+  description: FunctionalUnitDescription;
+  delay: number;
+  counter: number;
+  simCodeModel: Reference;
+  functionUnitEmpty: boolean;
+  functionUnitCount: number;
+  reorderBufferBlock?: ReorderBufferBlock;
+  issueWindowBlock?: IssueWindowBlock;
+}
+
+export interface FunctionalUnitDescription {
+  id: number;
+  name: string;
+  latency: number;
+  fuType: 'FX' | 'FP' | 'L_S' | 'Branch' | 'Memory';
+  operations?: Capability[];
+}
+
+export type ArithmeticFunctionUnitBlock = AbstractFunctionUnitBlock;
+export type BranchFunctionUnitBlock = AbstractFunctionUnitBlock;
+export type MemoryAccessUnit = AbstractFunctionUnitBlock;
 
 // L/S
 
