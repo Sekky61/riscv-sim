@@ -33,7 +33,7 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { X } from 'lucide-react';
-import { MouseEventHandler } from 'react';
+import { MouseEventHandler, useEffect } from 'react';
 import React from 'react';
 import {
   Control,
@@ -52,6 +52,7 @@ import {
   fUnitSchema,
   fuTypes,
   isArithmeticUnitConfig,
+  predictorDefaults,
   predictorStates,
   predictorTypes,
   storeBehaviorTypes,
@@ -171,7 +172,7 @@ const isaFormMetadata: IsaFormMetadata = {
     hint: 'Number of clock cycles the CPU will take to flush the pipeline.',
   },
   useGlobalHistory: {
-    title: 'Use global history',
+    title: 'Use global history vector',
     hint: 'Use global history vector to address the PHT.',
   },
   useCache: {
@@ -229,7 +230,17 @@ export default function IsaSettingsForm({
     register,
     formState: { errors },
     control,
+    watch,
+    setValue,
   } = form;
+
+  const watchPredictorType = watch('predictorType');
+
+  // When predictorType changes, set a new predictorDefault
+  useEffect(() => {
+    const defaultPredictor = predictorDefaults[watchPredictorType][0];
+    setValue('predictorDefault', defaultPredictor);
+  }, [watchPredictorType, setValue]);
 
   // This function is valid for regular fields, but not arrays
   const simpleRegister = (
@@ -260,9 +271,9 @@ export default function IsaSettingsForm({
         <TabsList className='w-full'>
           <TabsTrigger value='name'>Name</TabsTrigger>
           <TabsTrigger value='buffers'>Buffers</TabsTrigger>
-          <TabsTrigger value='fetch'>Fetch</TabsTrigger>
           <TabsTrigger value='functional'>Functional Units</TabsTrigger>
           <TabsTrigger value='cache'>Cache</TabsTrigger>
+          <TabsTrigger value='memory'>Memory</TabsTrigger>
           <TabsTrigger value='branch'>Branch</TabsTrigger>
         </TabsList>
         <div
@@ -295,27 +306,47 @@ export default function IsaSettingsForm({
                     {...simpleRegister('robSize', { valueAsNumber: true })}
                   />
                   <FormInput
-                    {...simpleRegister('lbSize', { valueAsNumber: true })}
+                    {...simpleRegister('commitWidth', { valueAsNumber: true })}
                   />
                   <FormInput
-                    {...simpleRegister('sbSize', { valueAsNumber: true })}
+                    {...simpleRegister('flushPenalty', { valueAsNumber: true })}
+                  />
+                  <FormInput
+                    {...simpleRegister('fetchWidth', { valueAsNumber: true })}
                   />
                 </fieldset>
               </CardContent>
             </Card>
           </TabsContent>
-          <TabsContent value='fetch'>
+          <TabsContent value='memory'>
             <Card>
               <CardHeader>
-                <CardTitle>Fetch</CardTitle>
+                <CardTitle>Memory</CardTitle>
               </CardHeader>
               <CardContent>
                 <fieldset disabled={disabled}>
                   <FormInput
-                    {...simpleRegister('fetchWidth', { valueAsNumber: true })}
+                    {...simpleRegister('lbSize', { valueAsNumber: true })}
                   />
                   <FormInput
-                    {...simpleRegister('commitWidth', { valueAsNumber: true })}
+                    {...simpleRegister('sbSize', { valueAsNumber: true })}
+                  />
+
+                  <FormInput
+                    {...simpleRegister('storeLatency', { valueAsNumber: true })}
+                  />
+                  <FormInput
+                    {...simpleRegister('loadLatency', { valueAsNumber: true })}
+                  />
+                  <FormInput
+                    {...simpleRegister('callStackSize', {
+                      valueAsNumber: true,
+                    })}
+                  />
+                  <FormInput
+                    {...simpleRegister('speculativeRegisters', {
+                      valueAsNumber: true,
+                    })}
                   />
                 </fieldset>
               </CardContent>
@@ -331,6 +362,16 @@ export default function IsaSettingsForm({
               </CardHeader>
               <CardContent>
                 <fieldset disabled={disabled}>
+                  <div className='flex gap-2 items-center m-2'>
+                    <input
+                      {...register('useCache')}
+                      type='checkbox'
+                      className='m-2'
+                    />
+                    <Label htmlFor='useCache'>
+                      {isaFormMetadata.useCache.title}
+                    </Label>
+                  </div>
                   <FormInput
                     {...simpleRegister('cacheLines', { valueAsNumber: true })}
                   />
@@ -353,13 +394,12 @@ export default function IsaSettingsForm({
                     />
                   </div>
                   <FormInput
-                    {...simpleRegister('storeLatency', { valueAsNumber: true })}
-                  />
-                  <FormInput
-                    {...simpleRegister('loadLatency', { valueAsNumber: true })}
-                  />
-                  <FormInput
                     {...simpleRegister('laneReplacementDelay', {
+                      valueAsNumber: true,
+                    })}
+                  />
+                  <FormInput
+                    {...simpleRegister('cacheAccessDelay', {
                       valueAsNumber: true,
                     })}
                   />
@@ -370,7 +410,7 @@ export default function IsaSettingsForm({
           <TabsContent value='branch'>
             <Card>
               <CardHeader>
-                <CardTitle>Predictors</CardTitle>
+                <CardTitle>Branch Prediction</CardTitle>
               </CardHeader>
               <CardContent>
                 <fieldset disabled={disabled}>
@@ -380,15 +420,23 @@ export default function IsaSettingsForm({
                   <FormInput
                     {...simpleRegister('phtSize', { valueAsNumber: true })}
                   />
-                  <div className='mb-6 flex justify-evenly'>
-                    <RadioInputWithTitle
-                      {...radioRegister('predictorType')}
-                      choices={predictorTypes}
+                  <RadioInputWithTitle
+                    {...radioRegister('predictorType')}
+                    choices={predictorTypes}
+                  />
+                  <RadioInputWithTitle
+                    {...radioRegister('predictorDefault')}
+                    choices={predictorDefaults[watchPredictorType]}
+                  />
+                  <div className='flex gap-2 items-center m-2'>
+                    <input
+                      {...register('useGlobalHistory')}
+                      type='checkbox'
+                      className='m-2'
                     />
-                    <RadioInputWithTitle
-                      {...radioRegister('predictorDefault')}
-                      choices={predictorStates}
-                    />
+                    <Label htmlFor='useGlobalHistory'>
+                      {isaFormMetadata.useGlobalHistory.title}
+                    </Label>
                   </div>
                 </fieldset>
               </CardContent>

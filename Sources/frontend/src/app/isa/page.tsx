@@ -234,7 +234,7 @@ export default function Page() {
         </div>
         <MemoryInfo />
       </div>
-      <div className={cn('flex justify-center')}>
+      <div className='flex justify-center pb-8'>
         <IsaSettingsForm form={form} disabled={blockEditing} />
       </div>
     </div>

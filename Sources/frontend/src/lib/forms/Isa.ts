@@ -58,7 +58,7 @@ export type PredictorState = (typeof predictorStates)[number];
 export const cacheReplacementTypes = ['LRU', 'FIFO', 'Random'] as const;
 export type CacheReplacementType = (typeof cacheReplacementTypes)[number];
 
-export const storeBehaviorTypes = ['write-back'] as const;
+export const storeBehaviorTypes = ['write-back', 'write-through'] as const;
 export type StoreBehaviorType = (typeof storeBehaviorTypes)[number];
 
 export const dataTypes = [
