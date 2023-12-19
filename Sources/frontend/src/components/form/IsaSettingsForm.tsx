@@ -37,7 +37,6 @@ import { MouseEventHandler } from 'react';
 import React from 'react';
 import {
   Control,
-  Controller,
   FieldError,
   RegisterOptions,
   UseFormReturn,
@@ -53,8 +52,7 @@ import {
   fUnitSchema,
   fuTypes,
   isArithmeticUnitConfig,
-  operations,
-  predictorDefaults,
+  predictorStates,
   predictorTypes,
   storeBehaviorTypes,
 } from '@/lib/forms/Isa';
@@ -76,11 +74,7 @@ import {
 } from '@/components/base/ui/tabs';
 
 import { FormInput } from './FormInput';
-import {
-  ControlRadioInput,
-  RadioInput,
-  RadioInputWithTitle,
-} from './RadioInput';
+import { ControlRadioInput, RadioInputWithTitle } from './RadioInput';
 
 type IsaArrayFields = 'fUnits' | 'memoryLocations';
 type IsaSimpleFields = keyof Omit<CpuConfig, IsaArrayFields>;
@@ -166,14 +160,34 @@ const isaFormMetadata: IsaFormMetadata = {
     title: 'Lane replacement delay',
     hint: 'Number of cycles a cache line replacement takes.',
   },
-  addRemainingDelay: {
-    title: 'Should remaining line replacement delay be added to store?',
-  },
   fUnits: {
     title: 'Functional units',
   },
   memoryLocations: {
     title: 'Memory locations',
+  },
+  flushPenalty: {
+    title: 'Flush penalty',
+    hint: 'Number of clock cycles the CPU will take to flush the pipeline.',
+  },
+  useGlobalHistory: {
+    title: 'Use global history',
+    hint: 'Use global history vector to address the PHT.',
+  },
+  useCache: {
+    title: 'Use cache',
+    hint: 'Enabling cache will add a cache between the CPU and memory.',
+  },
+  cacheAccessDelay: {
+    title: 'Cache access delay',
+    hint: 'Cache access delay in cycles.',
+  },
+  callStackSize: {
+    title: 'Call stack size',
+    hint: 'Call stack size in bytes.',
+  },
+  speculativeRegisters: {
+    title: 'Number of speculative registers',
   },
 };
 
@@ -251,135 +265,136 @@ export default function IsaSettingsForm({
           <TabsTrigger value='cache'>Cache</TabsTrigger>
           <TabsTrigger value='branch'>Branch</TabsTrigger>
         </TabsList>
-        <TabsContent value='name'>
-          <Card>
-            <CardHeader>
-              <CardTitle>Name</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <fieldset disabled={disabled}>
-                <FormInput {...simpleRegister('name')} />
-              </fieldset>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        <TabsContent value='buffers'>
-          <Card>
-            <CardHeader>
-              <CardTitle>Buffers</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <fieldset disabled={disabled}>
-                <FormInput
-                  {...simpleRegister('robSize', { valueAsNumber: true })}
-                />
-                <FormInput
-                  {...simpleRegister('lbSize', { valueAsNumber: true })}
-                />
-                <FormInput
-                  {...simpleRegister('sbSize', { valueAsNumber: true })}
-                />
-              </fieldset>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        <TabsContent value='fetch'>
-          <Card>
-            <CardHeader>
-              <CardTitle>Fetch</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <fieldset disabled={disabled}>
-                <FormInput
-                  {...simpleRegister('fetchWidth', { valueAsNumber: true })}
-                />
-                <FormInput
-                  {...simpleRegister('commitWidth', { valueAsNumber: true })}
-                />
-              </fieldset>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        <TabsContent value='functional'>
-          <FunctionalUnitInput control={control} disabled={disabled} />
-        </TabsContent>
-        <TabsContent value='cache'>
-          <Card>
-            <CardHeader>
-              <CardTitle>Cache</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <fieldset disabled={disabled}>
-                <FormInput
-                  {...simpleRegister('cacheLines', { valueAsNumber: true })}
-                />
-                <FormInput
-                  {...simpleRegister('cacheLineSize', { valueAsNumber: true })}
-                />
-                <FormInput
-                  {...simpleRegister('cacheAssoc', { valueAsNumber: true })}
-                />
-                <div className='mb-6 flex justify-evenly'>
-                  <RadioInputWithTitle
-                    {...radioRegister('cacheReplacement')}
-                    choices={cacheReplacementTypes}
+        <div
+          className={
+            disabled
+              ? 'pointer-events-none opacity-60 hover:cursor-not-allowed'
+              : undefined
+          }
+        >
+          <TabsContent value='name'>
+            <Card>
+              <CardHeader>
+                <CardTitle>Name</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <fieldset disabled={disabled}>
+                  <FormInput {...simpleRegister('name')} />
+                </fieldset>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          <TabsContent value='buffers'>
+            <Card>
+              <CardHeader>
+                <CardTitle>Buffers</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <fieldset disabled={disabled}>
+                  <FormInput
+                    {...simpleRegister('robSize', { valueAsNumber: true })}
                   />
-                  <RadioInputWithTitle
-                    {...radioRegister('storeBehavior')}
-                    choices={storeBehaviorTypes}
+                  <FormInput
+                    {...simpleRegister('lbSize', { valueAsNumber: true })}
                   />
-                </div>
-                <FormInput
-                  {...simpleRegister('storeLatency', { valueAsNumber: true })}
-                />
-                <FormInput
-                  {...simpleRegister('loadLatency', { valueAsNumber: true })}
-                />
-                <FormInput
-                  {...simpleRegister('laneReplacementDelay', {
-                    valueAsNumber: true,
-                  })}
-                />
-                <input
-                  id='addRemainingDelay'
-                  type='checkbox'
-                  {...register('addRemainingDelay')}
-                  className='mr-2'
-                />
-                <label htmlFor='addRemainingDelay'>
-                  {isaFormMetadata.addRemainingDelay.title}
-                </label>
-              </fieldset>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        <TabsContent value='branch'>
-          <Card>
-            <CardHeader>
-              <CardTitle>Predictors</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <fieldset disabled={disabled}>
-                <FormInput
-                  {...simpleRegister('btbSize', { valueAsNumber: true })}
-                />
-                <FormInput
-                  {...simpleRegister('phtSize', { valueAsNumber: true })}
-                />
-                <div className='mb-6 flex justify-evenly'>
-                  <RadioInputWithTitle
-                    {...radioRegister('predictorType')}
-                    choices={predictorTypes}
+                  <FormInput
+                    {...simpleRegister('sbSize', { valueAsNumber: true })}
                   />
-                  <RadioInputWithTitle
-                    {...radioRegister('predictorDefault')}
-                    choices={predictorDefaults}
+                </fieldset>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          <TabsContent value='fetch'>
+            <Card>
+              <CardHeader>
+                <CardTitle>Fetch</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <fieldset disabled={disabled}>
+                  <FormInput
+                    {...simpleRegister('fetchWidth', { valueAsNumber: true })}
                   />
-                </div>
-              </fieldset>
-            </CardContent>
-          </Card>
-        </TabsContent>
+                  <FormInput
+                    {...simpleRegister('commitWidth', { valueAsNumber: true })}
+                  />
+                </fieldset>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          <TabsContent value='functional'>
+            <FunctionalUnitInput control={control} disabled={disabled} />
+          </TabsContent>
+          <TabsContent value='cache'>
+            <Card>
+              <CardHeader>
+                <CardTitle>Cache</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <fieldset disabled={disabled}>
+                  <FormInput
+                    {...simpleRegister('cacheLines', { valueAsNumber: true })}
+                  />
+                  <FormInput
+                    {...simpleRegister('cacheLineSize', {
+                      valueAsNumber: true,
+                    })}
+                  />
+                  <FormInput
+                    {...simpleRegister('cacheAssoc', { valueAsNumber: true })}
+                  />
+                  <div className='mb-6 flex justify-evenly'>
+                    <RadioInputWithTitle
+                      {...radioRegister('cacheReplacement')}
+                      choices={cacheReplacementTypes}
+                    />
+                    <RadioInputWithTitle
+                      {...radioRegister('storeBehavior')}
+                      choices={storeBehaviorTypes}
+                    />
+                  </div>
+                  <FormInput
+                    {...simpleRegister('storeLatency', { valueAsNumber: true })}
+                  />
+                  <FormInput
+                    {...simpleRegister('loadLatency', { valueAsNumber: true })}
+                  />
+                  <FormInput
+                    {...simpleRegister('laneReplacementDelay', {
+                      valueAsNumber: true,
+                    })}
+                  />
+                </fieldset>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          <TabsContent value='branch'>
+            <Card>
+              <CardHeader>
+                <CardTitle>Predictors</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <fieldset disabled={disabled}>
+                  <FormInput
+                    {...simpleRegister('btbSize', { valueAsNumber: true })}
+                  />
+                  <FormInput
+                    {...simpleRegister('phtSize', { valueAsNumber: true })}
+                  />
+                  <div className='mb-6 flex justify-evenly'>
+                    <RadioInputWithTitle
+                      {...radioRegister('predictorType')}
+                      choices={predictorTypes}
+                    />
+                    <RadioInputWithTitle
+                      {...radioRegister('predictorDefault')}
+                      choices={predictorStates}
+                    />
+                  </div>
+                </fieldset>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </div>
       </Tabs>
     </form>
   );
@@ -430,7 +445,7 @@ function FunctionalUnitInput({
           <div className='fu-grid'>
             <div className='contents font-bold'>
               <div>Name</div>
-              <div>Latency</div>
+              <div>Base Latency</div>
               <div>Operations</div>
               <div />
             </div>
@@ -439,14 +454,15 @@ function FunctionalUnitInput({
                 let third = null;
                 if (isArithmeticUnitConfig(fu)) {
                   third = fu.operations.map((op) => {
-                    const meta = opsMetadata[op];
+                    const meta = opsMetadata[op.name];
                     return (
                       <div
-                        key={op}
+                        key={op.name}
                         title={meta.name}
-                        className='rounded bg-gray-200 px-1 py-0.5'
+                        className='rounded bg-gray-200 px-1 py-0.5 whitespace-nowrap snap-always snap-start'
                       >
-                        {capabilitiesMetadata[op].name}
+                        {capabilitiesMetadata[op.name as Operations].name} (
+                        {op.latency})
                       </div>
                     );
                   });
@@ -457,7 +473,7 @@ function FunctionalUnitInput({
                       {fu.name || fu.fuType}
                     </div>
                     <div>{fu.latency}</div>
-                    <div className='flex flex-grow gap-1 items-center truncate text-sm overflow-x-auto'>
+                    <div className='flex flex-grow gap-1 items-center text-sm overflow-x-scroll snap-x'>
                       {third}
                     </div>
                     <div>
@@ -482,6 +498,14 @@ function FunctionalUnitInput({
     </Card>
   );
 }
+
+type CapabilityPicker = {
+  [key in Operations]: {
+    name: key;
+    picked: boolean;
+    latency: number;
+  };
+};
 
 // Subform for adding a new FU
 // Controls the fUnits field
@@ -509,6 +533,14 @@ function FUAdder({ control }: { control: Control<CpuConfig> }) {
   });
   const { errors } = subFormState;
 
+  const [capabilities, setCapabilities] = React.useState<CapabilityPicker>({
+    addition: { name: 'addition', picked: false, latency: 1 },
+    bitwise: { name: 'bitwise', picked: false, latency: 1 },
+    division: { name: 'division', picked: false, latency: 1 },
+    multiplication: { name: 'multiplication', picked: false, latency: 1 },
+    special: { name: 'special', picked: false, latency: 1 },
+  });
+
   const selectedUnitType = watch('fuType');
   const enableOps = selectedUnitType === 'FX' || selectedUnitType === 'FP';
 
@@ -517,6 +549,16 @@ function FUAdder({ control }: { control: Control<CpuConfig> }) {
     const id = Math.floor(Math.random() * 1000000);
     setValue('id', id);
     const data = getValues();
+    if (data.fuType === 'FX' || data.fuType === 'FP') {
+      data.operations = Object.entries(capabilities)
+        .filter(([, value]) => value.picked)
+        .map(([key, value]) => {
+          return {
+            name: key as Operations,
+            latency: value.latency,
+          };
+        });
+    }
     field.onChange([...field.value, data]);
   };
 
@@ -529,8 +571,8 @@ function FUAdder({ control }: { control: Control<CpuConfig> }) {
           choices={fuTypes}
         />
       </div>
-      <div className='mt-4 flex justify-evenly'>
-        <div>
+      <div className='mt-4'>
+        <div className='flex justify-evenly gap-4'>
           <FormInput
             {...register('name')}
             name='name'
@@ -540,48 +582,52 @@ function FUAdder({ control }: { control: Control<CpuConfig> }) {
           <FormInput
             {...register('latency', { valueAsNumber: true })}
             name='latency'
-            title='Latency'
+            title={enableOps ? 'Base latency' : 'Latency'}
             error={errors.latency}
           />
         </div>
-        <div className={enableOps ? '' : 'invisible'}>
-          <Label>Supported operations</Label>
-          <div className='flex gap-1'>
-            <Controller
-              control={subControl}
-              name='operations'
-              render={({ field: { onChange, value } }) => {
-                return (
-                  <div className='flex flex-col gap-2'>
-                    {operations.map((op) => {
-                      const id = `chkbx-${op}`;
-                      return (
-                        <div key={op} className='flex items-center space-x-2'>
-                          <Checkbox
-                            id={id}
-                            value={op}
-                            checked={value.includes(op)}
-                            onCheckedChange={(checked) => {
-                              if (checked) {
-                                onChange([...value, op]);
-                              } else {
-                                onChange(value.filter((item) => item !== op));
-                              }
-                            }}
-                          />
-                          <Label
-                            htmlFor={id}
-                            className='text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70'
-                          >
-                            {capabilitiesMetadata[op].additional}
-                          </Label>
-                        </div>
-                      );
-                    })}
-                  </div>
-                );
-              }}
-            />
+        <div className={enableOps ? '' : 'hidden'}>
+          <Label className='text text-lg'>Supported operations</Label>
+          <div>
+            {Object.entries(capabilities).map(([op, cap]) => {
+              const id = `chkbx-${op}`;
+              return (
+                <div key={op} className='flex items-center'>
+                  <Checkbox
+                    className='m-2'
+                    id={id}
+                    value={op}
+                    checked={cap.picked}
+                    onCheckedChange={(checked) => {
+                      setCapabilities({
+                        ...capabilities,
+                        [op]: { ...cap, picked: checked },
+                      });
+                    }}
+                  />
+                  <Label htmlFor={id} className='flex-grow'>
+                    {capabilitiesMetadata[op as Operations].additional}
+                  </Label>
+                  <FormInput
+                    value={cap.latency}
+                    onChange={(e) => {
+                      setCapabilities({
+                        ...capabilities,
+                        [op]: {
+                          ...cap,
+                          latency: e.target.valueAsNumber || 0,
+                        },
+                      });
+                    }}
+                    name={`latency-${op}`}
+                    type='number'
+                    title='Latency'
+                    error={errors.latency}
+                    disabled={!cap.picked}
+                  />
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>

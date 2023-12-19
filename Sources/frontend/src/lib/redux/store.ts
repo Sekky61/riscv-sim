@@ -72,7 +72,7 @@ const persistIsaConfig = {
   // The key in localStorage
   key: 'root',
   // Change the version when changing the schema
-  version: 3,
+  version: 4,
   storage,
   stateReconciler: hardSet,
 };

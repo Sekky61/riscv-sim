@@ -57,7 +57,7 @@ export type FormInputProps = {
  * See example of usage in {@link src/components/form/MemoryForm.tsx}
  */
 const FormInput = React.forwardRef<HTMLInputElement, FormInputProps>(
-  ({ name, title, type, error, hint, ...inputProps }: FormInputProps, ref) => {
+  ({ name, title, error, hint, ...inputProps }: FormInputProps, ref) => {
     const isError = error !== undefined;
 
     return (
@@ -76,7 +76,7 @@ const FormInput = React.forwardRef<HTMLInputElement, FormInputProps>(
         )}
         <input
           {...inputProps}
-          type='text'
+          type={inputProps.type || 'text'}
           name={name}
           id={name}
           className={cn(

@@ -54,7 +54,7 @@ public class CpuConfig implements Serializable
   public int commitWidth;
   
   /**
-   * Number of clock cycles that the CPU will take to flush the pipeline.
+   * Number of clock cycles the CPU will take to flush the pipeline.
    * For example, if a branch is mispredicted, the CPU will take this many cycles to clear the fetch, decode, and ROB.
    */
   public int flushPenalty;

@@ -234,13 +234,7 @@ export default function Page() {
         </div>
         <MemoryInfo />
       </div>
-      <div
-        className={cn(
-          blockEditing &&
-            'pointer-events-none opacity-60 hover:cursor-not-allowed',
-          'flex justify-center',
-        )}
-      >
+      <div className={cn('flex justify-center')}>
         <IsaSettingsForm form={form} disabled={blockEditing} />
       </div>
     </div>
