@@ -36,8 +36,8 @@ import com.gradle.superscalarsim.loader.InitLoader;
 import com.gradle.superscalarsim.models.InputCodeArgument;
 import com.gradle.superscalarsim.models.InputCodeModel;
 import com.gradle.superscalarsim.models.InstructionFunctionModel;
+import com.gradle.superscalarsim.models.register.IRegisterFile;
 import com.gradle.superscalarsim.models.register.RegisterDataContainer;
-import com.gradle.superscalarsim.models.register.RegisterFileModel;
 import com.gradle.superscalarsim.models.register.RegisterModel;
 
 import java.util.ArrayList;
@@ -69,7 +69,7 @@ public class CodeParser
   /**
    * Descriptions of all register files
    */
-  List<RegisterFileModel> registerFileModelList;
+  IRegisterFile registerFileModelList;
   
   /**
    * Factory for creating instances of InputCodeModel
@@ -120,20 +120,11 @@ public class CodeParser
   Pattern immediatePattern;
   
   /**
-   * The aliases between registers.
-   * The key is the architecture name (x0), the value is the alias (zero).
-   * Must be a list - register x8 has two aliases (s0 and fp).
-   */
-  private List<InitLoader.RegisterMapping> registerAliases;
-  
-  /**
    * For cases when instance manager is not needed
    */
   public CodeParser(InitLoader initLoader)
   {
-    this(initLoader.getInstructionFunctionModels(), initLoader.getRegisterFileModelList(),
-         initLoader.getRegisterAliases(), null);
-    
+    this(initLoader.getInstructionFunctionModels(), initLoader.getRegisterFile(), null);
     // todo: maybe a dummyManager?
     this.inputCodeModelFactory = new InputCodeModelFactory();
   }
@@ -142,15 +133,13 @@ public class CodeParser
    * @brief Constructor
    */
   public CodeParser(Map<String, InstructionFunctionModel> instructionModels,
-                    List<RegisterFileModel> registerFileModelList,
-                    List<InitLoader.RegisterMapping> registerAliases,
+                    IRegisterFile registerFileModelList,
                     InputCodeModelFactory manager)
   {
     this.inputCodeModelFactory = manager;
     
     this.registerFileModelList = registerFileModelList;
     this.instructionModels     = instructionModels;
-    this.registerAliases       = registerAliases;
     this.lexer                 = null;
     this.currentToken          = null;
     this.peekToken             = null;
@@ -173,8 +162,7 @@ public class CodeParser
    */
   public CodeParser(InitLoader initLoader, InputCodeModelFactory manager)
   {
-    this(initLoader.getInstructionFunctionModels(), initLoader.getRegisterFileModelList(),
-         initLoader.getRegisterAliases(), manager);
+    this(initLoader.getInstructionFunctionModels(), initLoader.getRegisterFile(), manager);
   }
   
   /**
@@ -838,34 +826,20 @@ public class CodeParser
       return false;
     }
     
-    // Lookup all register files and aliases, check if the register exists
+    // Lookup in register file, check if the register exists
     // Assumes that the register names and aliases are unique
-    // First try to find alias
-    String registerToLookFor = argumentValue;
-    for (InitLoader.RegisterMapping alias : registerAliases)
+    RegisterModel register = registerFileModelList.getRegister(argumentValue);
+    if (register == null)
     {
-      if (alias.alias.equals(argumentValue))
-      {
-        // Look for this register instead of the alias
-        registerToLookFor = alias.register;
-        break;
-      }
+      this.addError(token, "Argument \"" + argumentValue + "\" is not a register nor a value.");
+      return false;
     }
-    for (RegisterFileModel registerFileModel : registerFileModelList)
+    if (!checkDatatype(argumentDataType, register.getType()))
     {
-      if (!checkDatatype(argumentDataType, registerFileModel.getDataType()))
-      {
-        // Incorrect data type in this register file, skip
-        continue;
-      }
-      RegisterModel reg = registerFileModel.getRegister(registerToLookFor);
-      if (reg != null)
-      {
-        return true;
-      }
+      this.addError(token, "Argument \"" + argumentValue + "\" is a register of wrong type.");
+      return false;
     }
-    this.addError(token, "Argument \"" + argumentValue + "\" is not a register nor a value.");
-    return false;
+    return true;
   }// end of checkRegisterArgument
   //-------------------------------------------------------------------------------------------
   
@@ -873,7 +847,7 @@ public class CodeParser
    * @param argumentDataType The datatype of an argument
    * @param registerDataType The datatype of a register file
    *
-   * @return True if argument can fit inside the register, false otherwise
+   * @return True if argument is compatible with register, otherwise false
    * @brief Check argument and register data types if they fit within each other
    */
   private boolean checkDatatype(final DataTypeEnum argumentDataType, final RegisterTypeEnum registerDataType)
@@ -883,7 +857,6 @@ public class CodeParser
     {
       case kInt, kUInt, kLong, kULong, kBool, kByte, kShort, kChar -> registerDataType == RegisterTypeEnum.kInt;
       case kFloat, kDouble -> registerDataType == RegisterTypeEnum.kFloat;
-      
     };
   }// end of checkDatatype
   //-------------------------------------------------------------------------------------------

@@ -84,7 +84,7 @@ public class RenameMapTableBlock
   }
   
   /**
-   * @param [in] loader - InitLoader class holding information about instruction and registers
+   * @param registerFileBlock Registers
    *
    * @brief Constructor
    */
@@ -101,7 +101,7 @@ public class RenameMapTableBlock
   //----------------------------------------------------------------------
   
   /**
-   * @param [in] registerMap - Set of all registers in unified register file
+   * @param specRegistersCount Number of speculative registers to create in free list
    *
    * @brief Creates speculative registers in free list, where for each one architectural one creates one speculative
    */

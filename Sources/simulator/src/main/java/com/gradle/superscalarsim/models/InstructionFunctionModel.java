@@ -320,5 +320,13 @@ public class InstructionFunctionModel implements Identifiable
     {
       return name + ":" + type + (defaultValue != null ? ":" + defaultValue : "");
     }
+    
+    /**
+     * @return True if the argument is a register
+     */
+    public boolean isRegister()
+    {
+      return name.startsWith("r");
+    }
   }
 }

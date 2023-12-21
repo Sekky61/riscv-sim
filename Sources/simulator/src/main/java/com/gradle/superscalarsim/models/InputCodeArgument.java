@@ -32,7 +32,9 @@
  */
 package com.gradle.superscalarsim.models;
 
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.gradle.superscalarsim.models.register.RegisterDataContainer;
+import com.gradle.superscalarsim.models.register.RegisterModel;
 
 /**
  * @class InputCodeArgument
@@ -40,12 +42,10 @@ import com.gradle.superscalarsim.models.register.RegisterDataContainer;
  */
 public class InputCodeArgument
 {
-  
   /**
    * Parsed constant value of the argument. Uses type info from instruction definition.
    */
   RegisterDataContainer constantValue;
-  
   /**
    * Name of the argument.
    * Example: rs1, imm, labelName.
@@ -53,36 +53,49 @@ public class InputCodeArgument
   private String name;
   
   /**
+   * Register value of the argument.
+   */
+  @JsonIdentityReference(alwaysAsId = true)
+  private RegisterModel registerValue;
+  
+  /**
    * Value of the argument.
    * Example: x5, 10, name of a label.
    */
-  private String value;
+  private String stringValue;
   
   /**
    * @param name  Name of the argument
    * @param value Value of the argument
    *
-   * @brief Constructor
+   * @brief Constructor for label argument
    */
   public InputCodeArgument(final String name, final String value)
   {
     this.name          = name;
-    this.value         = value;
+    this.stringValue   = value;
     this.constantValue = null;
   }// end of Constructor
   
   /**
-   * @param name          Name of the argument
-   * @param value         Value of the argument
-   * @param constantValue Constant value of the argument
-   *
-   * @brief Constructor
+   * @brief Constructor for constant argument
    */
   public InputCodeArgument(final String name, final String value, final RegisterDataContainer constantValue)
   {
     this.name          = name;
-    this.value         = value;
+    this.stringValue   = value;
     this.constantValue = constantValue;
+  }// end of Constructor
+  
+  /**
+   * @brief Constructor for register argument
+   */
+  public InputCodeArgument(final String name, final RegisterModel registerValue)
+  {
+    this.name          = name;
+    this.stringValue   = registerValue.getName();
+    this.registerValue = registerValue;
+    this.constantValue = null;
   }// end of Constructor
   
   /**
@@ -92,8 +105,9 @@ public class InputCodeArgument
    */
   public InputCodeArgument(final InputCodeArgument argument)
   {
-    this.name  = argument.getName();
-    this.value = argument.getValue();
+    this.name          = argument.getName();
+    this.stringValue   = argument.getValue();
+    this.registerValue = argument.getRegisterValue();
     if (argument.getConstantValue() != null)
     {
       this.constantValue = new RegisterDataContainer(argument.getConstantValue());
@@ -103,7 +117,6 @@ public class InputCodeArgument
       this.constantValue = null;
     }
   }// end of Constructor
-  //------------------------------------------------------
   
   /**
    * @return Argument name
@@ -121,19 +134,17 @@ public class InputCodeArgument
    */
   public String getValue()
   {
-    return value;
+    return stringValue;
   }// end of getValue
   //------------------------------------------------------
   
   /**
-   * @param value New value of argument
-   *
-   * @brief Sets new value of the argument
+   * @return Register value of the argument
    */
-  public void setValue(final String value)
+  public RegisterModel getRegisterValue()
   {
-    this.value = value;
-  }// end of setValue
+    return registerValue;
+  }
   //------------------------------------------------------
   
   /**
@@ -152,11 +163,22 @@ public class InputCodeArgument
   //------------------------------------------------------
   
   /**
+   * @param stringValue New value of argument
+   *
+   * @brief Sets new value of the argument
+   */
+  public void setValue(final String stringValue)
+  {
+    this.stringValue = stringValue;
+  }// end of setValue
+  //------------------------------------------------------
+  
+  /**
    * String representation of the object
    */
   @Override
   public String toString()
   {
-    return name + " = " + value;
+    return name + " = " + stringValue;
   }
 }

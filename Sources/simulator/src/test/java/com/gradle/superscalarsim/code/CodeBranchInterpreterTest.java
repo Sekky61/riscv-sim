@@ -34,7 +34,7 @@ public class CodeBranchInterpreterTest
     InputCodeModel       nop             = new InputCodeModel(nopFM, new ArrayList<>(), 0);
     instructionMemoryBlock = new InstructionMemoryBlock(inputCodeModels, labels, nop);
     
-    UnifiedRegisterFileBlock unifiedRegisterFileBlock = new UnifiedRegisterFileBlock(initLoader,
+    UnifiedRegisterFileBlock unifiedRegisterFileBlock = new UnifiedRegisterFileBlock(initLoader, 320,
                                                                                      new RegisterModelFactory());
     unifiedRegisterFileBlock.getRegister("x1").setValue(0);
     unifiedRegisterFileBlock.getRegister("x2").setValue(25);

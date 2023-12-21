@@ -47,7 +47,7 @@ public class CodeArithmeticInterpreterFloatTest
             .hasRegisterList(Arrays.asList(float1, float2, float3, float4)).build();
     
     this.initLoader = new InitLoader();
-    UnifiedRegisterFileBlock unifiedRegisterFileBlock = new UnifiedRegisterFileBlock(initLoader,
+    UnifiedRegisterFileBlock unifiedRegisterFileBlock = new UnifiedRegisterFileBlock(initLoader, 320,
                                                                                      new RegisterModelFactory());
     // This adds the reg files, but also creates speculative registers!
     unifiedRegisterFileBlock.setRegistersWithList(new ArrayList<>());

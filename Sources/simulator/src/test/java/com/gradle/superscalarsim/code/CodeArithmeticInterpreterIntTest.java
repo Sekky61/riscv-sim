@@ -20,17 +20,11 @@ import com.gradle.superscalarsim.models.register.RegisterModel;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
 
 import java.util.*;
 
-import static org.mockito.ArgumentMatchers.any;
-
 public class CodeArithmeticInterpreterIntTest
 {
-  @Mock
   private InitLoader initLoader;
   
   private CodeArithmeticInterpreter codeArithmeticInterpreter;
@@ -38,7 +32,6 @@ public class CodeArithmeticInterpreterIntTest
   @Before
   public void setUp()
   {
-    MockitoAnnotations.openMocks(this);
     RegisterModel integer1 = new RegisterModel("x1", false, RegisterTypeEnum.kInt, 0, RegisterReadinessEnum.kAssigned);
     RegisterModel integer2 = new RegisterModel("x2", false, RegisterTypeEnum.kInt, 25, RegisterReadinessEnum.kAssigned);
     RegisterModel integer3 = new RegisterModel("x3", false, RegisterTypeEnum.kInt, 6, RegisterReadinessEnum.kAssigned);
@@ -46,14 +39,13 @@ public class CodeArithmeticInterpreterIntTest
     RegisterFileModel integerFile = new RegisterFileModelBuilder().hasName("integer").hasDataType(RegisterTypeEnum.kInt)
             .hasRegisterList(Arrays.asList(integer1, integer2, integer3, integer4)).build();
     
-    Mockito.when(initLoader.getRegisterFileModelList()).thenReturn(Collections.singletonList(integerFile));
-    Mockito.when(initLoader.getInstructionFunctionModels()).thenReturn(setUpInstructions());
-    Mockito.when(initLoader.getInstructionFunctionModel(any())).thenCallRealMethod();
+    initLoader = new InitLoader(Collections.singletonList(integerFile), null);
+    initLoader.setInstructionFunctionModels(setUpInstructions());
     
     InstructionMemoryBlock instructionMemoryBlock = new InstructionMemoryBlock(new ArrayList<>(), new HashMap<>(),
                                                                                null);
     this.codeArithmeticInterpreter = new CodeArithmeticInterpreter(
-            new UnifiedRegisterFileBlock(initLoader, new RegisterModelFactory()), instructionMemoryBlock);
+            new UnifiedRegisterFileBlock(initLoader, 320, new RegisterModelFactory()), instructionMemoryBlock);
   }
   
   private Map<String, InstructionFunctionModel> setUpInstructions()

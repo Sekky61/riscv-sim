@@ -309,4 +309,12 @@ public class RegisterModel implements Identifiable
   {
     return name;
   }
+  
+  /**
+   * @return the type of register
+   */
+  public RegisterTypeEnum getType()
+  {
+    return type;
+  }
 }

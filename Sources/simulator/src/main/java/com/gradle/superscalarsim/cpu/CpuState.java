@@ -46,6 +46,7 @@ import com.gradle.superscalarsim.managers.ManagerRegistry;
 import com.gradle.superscalarsim.models.FunctionalUnitDescription;
 import com.gradle.superscalarsim.models.InputCodeModel;
 import com.gradle.superscalarsim.models.InstructionFunctionModel;
+import com.gradle.superscalarsim.models.register.RegisterModel;
 import com.gradle.superscalarsim.serialization.Serialization;
 
 import java.io.Serializable;
@@ -140,8 +141,8 @@ public class CpuState implements Serializable
     // Hack to load all function models and registers to manager
     initLoader.getInstructionFunctionModels()
             .forEach((name, model) -> managerRegistry.instructionFunctionManager.addInstance(model));
-    initLoader.getRegisterFileModelList().forEach(registerFileModel -> registerFileModel.getRegisterList()
-            .forEach(registerModel -> managerRegistry.registerModelManager.addInstance(registerModel)));
+    initLoader.getRegisterFile().getRegisterMap(false)
+            .forEach((name, model) -> managerRegistry.registerModelManager.addInstance(model));
     
     // Parse code
     CodeParser codeParser = new CodeParser(initLoader, inputCodeModelFactory);
@@ -175,9 +176,18 @@ public class CpuState implements Serializable
     this.instructionMemoryBlock = new InstructionMemoryBlock(codeParser.getInstructions(), codeParser.getLabels(), nop);
     
     // Create memory
-    this.unifiedRegisterFileBlock = new UnifiedRegisterFileBlock(initLoader, registerModelFactory);
+    this.unifiedRegisterFileBlock = new UnifiedRegisterFileBlock(initLoader, config.cpuConfig.speculativeRegisters,
+                                                                 registerModelFactory);
     // Set the sp to the end of the stack
-    this.unifiedRegisterFileBlock.getRegister("sp").setValue(memoryInitializer.getStackPointer());
+    RegisterModel sp = this.unifiedRegisterFileBlock.getRegister("sp");
+    if (sp != null)
+    {
+      sp.setValue(memoryInitializer.getStackPointer());
+    }
+    else
+    {
+      System.err.println("Warning: sp register not found, not setting stack pointer");
+    }
     
     this.renameMapTableBlock = new RenameMapTableBlock(unifiedRegisterFileBlock);
     

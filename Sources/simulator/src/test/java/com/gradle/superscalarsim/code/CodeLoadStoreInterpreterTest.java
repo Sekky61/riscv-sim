@@ -20,18 +20,13 @@ import com.gradle.superscalarsim.models.register.RegisterModel;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
 
 import java.util.*;
 
 import static com.gradle.superscalarsim.models.register.RegisterDataContainer.interpretAs;
-import static org.mockito.ArgumentMatchers.any;
 
 public class CodeLoadStoreInterpreterTest
 {
-  @Mock
   private InitLoader initLoader;
   
   private CodeLoadStoreInterpreter codeLoadStoreInterpreter;
@@ -39,7 +34,6 @@ public class CodeLoadStoreInterpreterTest
   @Before
   public void setUp()
   {
-    MockitoAnnotations.openMocks(this);
     RegisterModel integer1 = new RegisterModel("x1", false, RegisterTypeEnum.kInt, 0, RegisterReadinessEnum.kAssigned);
     RegisterModel integer2 = new RegisterModel("x2", false, RegisterTypeEnum.kInt, 25, RegisterReadinessEnum.kAssigned);
     RegisterModel integer3 = new RegisterModel("x3", false, RegisterTypeEnum.kInt, 6, RegisterReadinessEnum.kAssigned);
@@ -63,14 +57,13 @@ public class CodeLoadStoreInterpreterTest
     RegisterFileModel floatFile = new RegisterFileModelBuilder().hasName("float").hasDataType(RegisterTypeEnum.kFloat)
             .hasRegisterList(Arrays.asList(float1, float2, float3, float4)).build();
     
-    Mockito.when(initLoader.getRegisterFileModelList()).thenReturn(Arrays.asList(integerFile, floatFile));
-    Mockito.when(initLoader.getInstructionFunctionModels()).thenReturn(setUpInstructions());
-    Mockito.when(initLoader.getInstructionFunctionModel(any())).thenCallRealMethod();
+    initLoader = new InitLoader(Arrays.asList(integerFile, floatFile), null);
+    initLoader.setInstructionFunctionModels(setUpInstructions());
     
     InstructionMemoryBlock instructionMemoryBlock = new InstructionMemoryBlock(new ArrayList<>(), new HashMap<>(),
                                                                                null);
     this.codeLoadStoreInterpreter = new CodeLoadStoreInterpreter(new MemoryModel(new SimulatedMemory()),
-                                                                 new UnifiedRegisterFileBlock(initLoader,
+                                                                 new UnifiedRegisterFileBlock(initLoader, 320,
                                                                                               new RegisterModelFactory()),
                                                                  instructionMemoryBlock);
   }

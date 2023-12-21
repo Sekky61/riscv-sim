@@ -35,6 +35,7 @@ package com.gradle.superscalarsim.loader;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gradle.superscalarsim.models.InstructionFunctionModel;
+import com.gradle.superscalarsim.models.register.RegisterFile;
 import com.gradle.superscalarsim.models.register.RegisterFileModel;
 import com.gradle.superscalarsim.serialization.Serialization;
 
@@ -53,188 +54,142 @@ import java.util.*;
 public class InitLoader
 {
   /**
-   * Holds loaded register files
+   * Holds register file with all registers and aliases.
    */
-  private List<RegisterFileModel> registerFileModelList;
-  
+  private RegisterFile registerFile;
   /**
    * Holds loaded ISA for interpreting values and action by simulation code
    */
   private Map<String, InstructionFunctionModel> instructionFunctionModels;
-  
   /**
    * Path to the directory with register files
    */
-  private String registerFileDirPath;
-  
+  private String registerFileDirPath = ConfigLoader.registerFileDirPath;
   /**
    * Path to file with instructions definitions
    */
-  private String instructionsFilePath;
-  
+  private String instructionsFilePath = ConfigLoader.instructionsFilePath;
   /**
    * @brief File path with register aliases
    * File structure: array of objects with keys "register" and "alias"
    */
-  private String registerAliasesFilePath;
-  
-  /**
-   * The aliases between registers.
-   * The key is the architecture name (x0), the value is the alias (zero).
-   * Must be a list - register x8 has two aliases (s0 and fp).
-   */
-  private List<RegisterMapping> registerAliases;
-  
-  /**
-   * Holds error message, if any occurs, otherwise is empty
-   */
-  private String errorMessage;
+  private String registerAliasesFilePath = ConfigLoader.registerAliasesFilePath;
   
   /**
    * @brief Constructor
    */
   public InitLoader()
   {
-    this.registerFileModelList     = new ArrayList<>();
+    this.registerFile              = null;
     this.instructionFunctionModels = new TreeMap<>();
     
     this.registerFileDirPath     = "./registers/";
     this.instructionsFilePath    = "./supportedInstructions.json";
     this.registerAliasesFilePath = "./registerAliases.json";
     
-    this.errorMessage = "";
-    this.loadFromConfigFiles();
-  }// end of Constructor
-  
-  /**
-   * @brief Calls appropriate subloaders and loads lists from files. The alternative is to set the data using setters.
-   */
-  public void loadFromConfigFiles()
-  {
     try
     {
-      loadRegisters();
-      loadInstructions();
-      loadAliases();
-    }
-    catch (NullPointerException e)
-    {
-      handleNullPointerException();
-    }
-  }// end of load
-  
-  /**
-   * @throws NullPointerException Thrown in case of empty directory
-   * @brief Calls subloader for register files and saves them into list
-   */
-  private void loadRegisters() throws NullPointerException
-  {
-    this.registerFileModelList.clear();
-    final File              registerFolder = new File(this.registerFileDirPath);
-    final RegisterSubloader subloader      = new RegisterSubloader();
-    
-    for (final File file : Objects.requireNonNull(registerFolder.listFiles()))
-    {
-      this.registerFileModelList.add(subloader.loadRegisterFile(file.getAbsolutePath()));
-    }
-  }// end of loadRegisters
-  
-  /**
-   * @throws NullPointerException Thrown in case of empty directory
-   * @brief Calls subloader for instruction set and saves it into list
-   */
-  private void loadInstructions()
-  {
-    // All instructions are in a single .json file.
-    // The structure is a single object with keys being the instruction names and
-    // values being the InstructionFunctionModel objects.
-    
-    ObjectMapper                          deserializer = Serialization.getDeserializer();
-    Reader                                reader       = null;
-    Map<String, InstructionFunctionModel> instructions = null;
-    try
-    {
-      reader = Files.newBufferedReader(Paths.get(instructionsFilePath));
-      // read to a map
-      instructions = deserializer.readValue(reader, new TypeReference<Map<String, InstructionFunctionModel>>()
-      {
-      });
-    }
-    catch (IOException e)
-    {
-      e.printStackTrace();
-    }
-    // add to list
-    this.instructionFunctionModels = instructions;
-  }// end of loadInstructions
-  //------------------------------------------------------
-  
-  private void loadAliases()
-  {
-    Reader reader = null;
-    try
-    {
-      reader = Files.newBufferedReader(Paths.get(registerAliasesFilePath));
-    }
-    catch (IOException e)
-    {
-      e.printStackTrace();
-    }
-    // read
-    ObjectMapper deserializer = Serialization.getDeserializer();
-    try
-    {
-      registerAliases = deserializer.readValue(reader, new TypeReference<>()
-      {
-      });
+      this.loadFromConfigFiles();
     }
     catch (IOException e)
     {
       throw new RuntimeException(e);
     }
+  }// end of Constructor
+  
+  /**
+   * @brief Calls appropriate subLoaders and loads lists from files. The alternative is to set the data using setters.
+   * TODO: try the paths while starting the server
+   */
+  public void loadFromConfigFiles() throws IOException
+  {
+    List<RegisterFileModel> registerFileModels = loadRegisters();
+    List<RegisterMapping>   registerMappings   = loadAliases();
+    this.registerFile = new RegisterFile(registerFileModels, registerMappings);
+    loadInstructions();
+  }// end of load
+  
+  /**
+   * @throws NullPointerException Thrown in case of empty directory
+   * @brief Calls subLoader for register files and saves them into list
+   */
+  private List<RegisterFileModel> loadRegisters() throws NullPointerException
+  {
+    
+    List<RegisterFileModel> registerFileModelList = new ArrayList<>();
+    final File              registerFolder        = new File(this.registerFileDirPath);
+    final RegisterSubloader subLoader             = new RegisterSubloader();
+    
+    for (final File file : Objects.requireNonNull(registerFolder.listFiles()))
+    {
+      registerFileModelList.add(subLoader.loadRegisterFile(file.getAbsolutePath()));
+    }
+    return registerFileModelList;
+  }// end of loadRegisters
+  
+  private List<RegisterMapping> loadAliases() throws IOException
+  {
+    Reader reader = null;
+    reader = Files.newBufferedReader(Paths.get(registerAliasesFilePath));
+    // read
+    ObjectMapper deserializer = Serialization.getDeserializer();
+    return deserializer.readValue(reader, new TypeReference<>()
+    {
+    });
   }
+  
+  /**
+   * @throws IOException Thrown in case of invalid file or file not found
+   * @brief Reads the configuration file and loads instructions
+   */
+  private void loadInstructions() throws IOException
+  {
+    // All instructions are in a single .json file.
+    // The structure is a single object with keys being the instruction names and
+    // values being the InstructionFunctionModel objects.
+    ObjectMapper deserializer = Serialization.getDeserializer();
+    Reader       reader       = Files.newBufferedReader(Paths.get(instructionsFilePath));
+    // read to a map
+    this.instructionFunctionModels = deserializer.readValue(reader,
+                                                            new TypeReference<Map<String, InstructionFunctionModel>>()
+                                                            {
+                                                            });
+  }// end of loadInstructions
+  
+  /**
+   * @brief Constructor, but does not load registers from files
+   */
+  public InitLoader(List<RegisterFileModel> registerFileModels, List<RegisterMapping> registerAliases)
+  {
+    this.registerFile              = new RegisterFile(registerFileModels, registerAliases);
+    this.instructionFunctionModels = new TreeMap<>();
+    try
+    {
+      loadInstructions();
+    }
+    catch (IOException e)
+    {
+      throw new RuntimeException(e);
+    }
+  }// end of Constructor
   //------------------------------------------------------
   
   /**
-   * @brief Sets error message in case of NullPointerException and prints it into stderr
+   * @return Register file
    */
-  private void handleNullPointerException()
+  public RegisterFile getRegisterFile()
   {
-    if (registerFileModelList.isEmpty())
-    {
-      this.errorMessage = "Directory with register files is empty. Aborting...";
-    }
-    else
-    {
-      this.errorMessage = "Directory with instructions is empty. Aborting...";
-    }
-    System.err.println(this.errorMessage);
-  }// end of handleNullPointerException
-  
-  /**
-   * @return List of register files
-   * @brief Get loaded register files
-   */
-  public List<RegisterFileModel> getRegisterFileModelList()
-  {
-    return registerFileModelList;
-  }// end of getRegisterFileModelList
-  
-  public void setRegisterFileModelList(List<RegisterFileModel> registerFileModelList)
-  {
-    this.registerFileModelList = registerFileModelList;
-  }
+    return registerFile;
+  }// end of getRegisterFile
   //------------------------------------------------------
   
   public InstructionFunctionModel getInstructionFunctionModel(String instructionName)
   {
     return getInstructionFunctionModels().get(instructionName);
   }
-  //------------------------------------------------------
   
   /**
-   * @return Set of instructions in list
-   * @brief Get loaded instruction set
+   * @return loaded instruction set
    */
   public Map<String, InstructionFunctionModel> getInstructionFunctionModels()
   {
@@ -242,27 +197,14 @@ public class InitLoader
   }// end of getInstructionFunctionModelList
   //------------------------------------------------------
   
+  /**
+   * @brief Testing purposes only
+   */
   public void setInstructionFunctionModels(Map<String, InstructionFunctionModel> instructionFunctionModels)
   {
     this.instructionFunctionModels = instructionFunctionModels;
   }
-  
-  /**
-   * @return Error message
-   * @brief Get error message in case of load failure
-   */
-  public String getErrorMessage()
-  {
-    return errorMessage;
-  }// end of getErrorMessage
-  
-  /**
-   * @brief Get register aliases
-   */
-  public List<RegisterMapping> getRegisterAliases()
-  {
-    return registerAliases;
-  }
+  //------------------------------------------------------
   
   /**
    * @brief Set register aliases file path

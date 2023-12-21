@@ -66,12 +66,10 @@ public class DecodeAndDispatchBlockTest
     RegisterFileModel floatFile = new RegisterFileModelBuilder().hasName("float").hasDataType(RegisterTypeEnum.kFloat)
             .hasRegisterList(Arrays.asList(float1, float2, float3, float4)).build();
     
-    List<RegisterFileModel> registerFileModels = Arrays.asList(integerFile, floatFile);
-    loader = new InitLoader();
-    loader.setRegisterFileModelList(registerFileModels);
+    loader = new InitLoader(Arrays.asList(integerFile, floatFile), null);
     
-    
-    renameMapTableBlock    = new RenameMapTableBlock(new UnifiedRegisterFileBlock(loader, new RegisterModelFactory()));
+    renameMapTableBlock    = new RenameMapTableBlock(
+            new UnifiedRegisterFileBlock(loader, 320, new RegisterModelFactory()));
     decodeAndDispatchBlock = new DecodeAndDispatchBlock(instructionFetchBlock, renameMapTableBlock,
                                                         globalHistoryRegister, branchTargetBuffer,
                                                         instructionMemoryBlock,

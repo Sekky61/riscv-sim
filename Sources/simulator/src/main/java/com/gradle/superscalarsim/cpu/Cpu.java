@@ -30,6 +30,7 @@ package com.gradle.superscalarsim.cpu;
 import com.gradle.superscalarsim.loader.InitLoader;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 /**
  * @class Cpu
@@ -55,13 +56,16 @@ public class Cpu implements Serializable
   /**
    * Assumes the cpuConfiguration is correct
    *
-   * @param cpuConfig CPU configuration to use
+   * @param simConfig  CPU configuration to use
+   * @param cpuState   CPU state to use - can be null
+   * @param initLoader registers and instruction definitions - can be null
    */
-  public Cpu(SimulationConfig simConfig, CpuState cpuState)
+  public Cpu(SimulationConfig simConfig, CpuState cpuState, InitLoader initLoader)
   {
     this.configuration = simConfig;
-    this.initLoader    = new InitLoader();
-    this.cpuState      = cpuState;
+    this.initLoader    = Objects.requireNonNullElseGet(initLoader, InitLoader::new);
+    this.cpuState      = Objects.requireNonNullElseGet(cpuState,
+                                                       () -> new CpuState(this.configuration, this.initLoader));
   }
   
   /**
@@ -132,8 +136,9 @@ public class Cpu implements Serializable
   
   public boolean simEnded()
   {
-    boolean robEmpty = cpuState.reorderBufferBlock.getReorderQueueSize() == 0;
-    boolean pcEnd = cpuState.instructionFetchBlock.getPc() >= cpuState.instructionMemoryBlock.getCode().size() * 4;
+    boolean robEmpty      = cpuState.reorderBufferBlock.getReorderQueueSize() == 0;
+    boolean pcEnd         = cpuState.instructionFetchBlock.getPc() >= cpuState.instructionMemoryBlock.getCode()
+            .size() * 4;
     boolean renameEmpty   = cpuState.decodeAndDispatchBlock.getAfterRenameCodeList().isEmpty();
     boolean fetchNotEmpty = !cpuState.instructionFetchBlock.getFetchedCode().isEmpty();
     boolean nop = fetchNotEmpty && cpuState.instructionFetchBlock.getFetchedCode().get(0).getInstructionName()

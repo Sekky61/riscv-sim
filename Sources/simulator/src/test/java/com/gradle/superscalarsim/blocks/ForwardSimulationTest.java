@@ -22,7 +22,6 @@ import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.enums.RegisterTypeEnum;
-import com.gradle.superscalarsim.factories.RegisterModelFactory;
 import com.gradle.superscalarsim.loader.InitLoader;
 import com.gradle.superscalarsim.models.FunctionalUnitDescription;
 import com.gradle.superscalarsim.models.InputCodeArgument;
@@ -33,7 +32,6 @@ import com.gradle.superscalarsim.models.register.RegisterModel;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.MockitoAnnotations;
 
 import java.util.*;
 
@@ -88,8 +86,6 @@ public class ForwardSimulationTest
   @Before
   public void setUp()
   {
-    MockitoAnnotations.openMocks(this);
-    
     RegisterModel integer0 = new RegisterModel("x0", true, RegisterTypeEnum.kInt, 0, RegisterReadinessEnum.kAssigned);
     RegisterModel integer1 = new RegisterModel("x1", false, RegisterTypeEnum.kInt, 0, RegisterReadinessEnum.kAssigned);
     RegisterModel integer2 = new RegisterModel("x2", false, RegisterTypeEnum.kInt, 25, RegisterReadinessEnum.kAssigned);
@@ -131,6 +127,7 @@ public class ForwardSimulationTest
     cpuCfg.storeLatency         = 0;
     cpuCfg.loadLatency          = 0;
     cpuCfg.laneReplacementDelay = 0;
+    cpuCfg.speculativeRegisters = 320;
     // 3 FX: +, +, - (delay 2)
     // 3 FP: +, +, - (delay 2)
     // 1 L/S: (delay 1)
@@ -161,7 +158,8 @@ public class ForwardSimulationTest
     
     SimulationConfig cfg = new SimulationConfig("", new ArrayList<>(), cpuCfg);
     
-    this.cpu = new Cpu(cfg);
+    this.initLoader = new InitLoader(Arrays.asList(integerFile, floatFile), new ArrayList<>());
+    this.cpu        = new Cpu(cfg, null, initLoader);
     CpuState cpuState = this.cpu.cpuState;
     
     this.instructionMemoryBlock    = cpuState.instructionMemoryBlock;
@@ -206,13 +204,8 @@ public class ForwardSimulationTest
     this.branchFunctionUnitBlock1 = cpuState.branchFunctionUnitBlocks.get(0);
     this.branchFunctionUnitBlock2 = cpuState.branchFunctionUnitBlocks.get(1);
     
-    this.initLoader = new InitLoader();
-    // Load predefined register files
-    this.initLoader.setRegisterFileModelList(Arrays.asList(integerFile, floatFile));
-    
     // This adds the reg files, but also creates speculative registers!
-    this.unifiedRegisterFileBlock.setRegistersWithList(new ArrayList<>());
-    this.unifiedRegisterFileBlock.loadRegisters(this.initLoader.getRegisterFileModelList(), new RegisterModelFactory());
+    this.unifiedRegisterFileBlock.setRegistersWithList(Arrays.asList(integerFile, floatFile));
   }
   
   ///////////////////////////////////////////////////////////
