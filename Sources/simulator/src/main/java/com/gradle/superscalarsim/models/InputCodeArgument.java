@@ -38,7 +38,8 @@ import com.gradle.superscalarsim.models.register.RegisterModel;
 
 /**
  * @class InputCodeArgument
- * @brief Container of argument of parsed instruction
+ * @brief Container of argument of parsed instruction.
+ * Can either be a register, constant or label.
  */
 public class InputCodeArgument
 {
@@ -68,33 +69,39 @@ public class InputCodeArgument
    * @param name  Name of the argument
    * @param value Value of the argument
    *
-   * @brief Constructor for label argument
+   * @brief Constructor for textual argument
    */
   public InputCodeArgument(final String name, final String value)
   {
     this.name          = name;
     this.stringValue   = value;
     this.constantValue = null;
+    this.registerValue = null;
   }// end of Constructor
   
   /**
    * @brief Constructor for constant argument
    */
-  public InputCodeArgument(final String name, final String value, final RegisterDataContainer constantValue)
+  public InputCodeArgument(final String name, final RegisterDataContainer constantValue)
   {
     this.name          = name;
-    this.stringValue   = value;
     this.constantValue = constantValue;
+    this.stringValue   = constantValue.getStringRepresentation();
+    this.registerValue = null;
   }// end of Constructor
   
   /**
-   * @brief Constructor for register argument
+   * @param name          Name of the argument
+   * @param regName       Name of the register
+   * @param registerValue Register value of the argument. May be null.
+   *
+   * @brief Constructor for register argument.
    */
-  public InputCodeArgument(final String name, final RegisterModel registerValue)
+  public InputCodeArgument(final String name, final String regName, final RegisterModel registerValue)
   {
     this.name          = name;
-    this.stringValue   = registerValue.getName();
     this.registerValue = registerValue;
+    this.stringValue   = regName;
     this.constantValue = null;
   }// end of Constructor
   

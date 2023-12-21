@@ -328,5 +328,13 @@ public class InstructionFunctionModel implements Identifiable
     {
       return name.startsWith("r");
     }
+    
+    /**
+     * @return True if the argument is an immediate
+     */
+    public boolean isImmediate()
+    {
+      return name.startsWith("i");
+    }
   }
 }

@@ -74,8 +74,9 @@ public class UnifiedRegisterFileBlock
   private SpeculativeRegisterFile speculativeRegisterFile;
   
   /**
-   * @param loader               InitLoader class holding information about instruction and registers. Only needed during initialization.
-   * @param registerModelFactory Factory for creating register models.
+   * @param loader                   InitLoader class holding information about instruction and registers. Only needed during initialization.
+   * @param speculativeRegisterCount Number of speculative registers to create.
+   * @param registerModelFactory     Factory for creating register models.
    *
    * @brief Constructor
    */
@@ -93,6 +94,7 @@ public class UnifiedRegisterFileBlock
    * as the owner (initLoader) does not get destroyed during backwards simulation.
    *
    * @param registerFileModelList List of all architectural register files
+   * @param registerModelFactory  Factory for creating register models.
    *
    * @brief Load all register files to this class and create the speculative file
    */
