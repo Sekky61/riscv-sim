@@ -33,7 +33,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public class ForwardSimulationTest
 {
@@ -215,16 +216,12 @@ public class ForwardSimulationTest
   @Test
   public void simulate_oneIntInstruction_finishesAfterSevenTicks()
   {
-    InputCodeArgument argument1 = new InputCodeArgument("rd", "x1");
-    InputCodeArgument argument2 = new InputCodeArgument("rs1", "x2");
-    InputCodeArgument argument3 = new InputCodeArgument("rs2", "x3");
     
-    InputCodeModel ins1 = new InputCodeModelBuilder().hasLoader(initLoader)
-            .hasInstructionFunctionModel(this.initLoader.getInstructionFunctionModel("add")).hasInstructionName("add")
-            .hasCodeLine("add x1,x2,x3").hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    List<InputCodeModel> instructions = Collections.singletonList(ins1);
-    
-    instructionMemoryBlock.setCode(instructions);
+    CodeParser codeParser = new CodeParser(initLoader);
+    codeParser.parseCode("""
+                                 add x1,x2,x3
+                                 """);
+    instructionMemoryBlock.setCode(codeParser.getInstructions());
     
     this.cpu.step();
     Assert.assertEquals(12, this.instructionFetchBlock.getPc());
@@ -286,30 +283,13 @@ public class ForwardSimulationTest
   @Test
   public void simulate_threeIntRawInstructions_finishesAfterElevenTicks()
   {
-    InputCodeArgument argumentAdd1 = new InputCodeArgumentBuilder().hasName("rd").hasValue("x3").build();
-    InputCodeArgument argumentAdd2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x4").build();
-    InputCodeArgument argumentAdd3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x5").build();
-    
-    InputCodeArgument argumentSub1 = new InputCodeArgumentBuilder().hasName("rd").hasValue("x2").build();
-    InputCodeArgument argumentSub2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x3").build();
-    InputCodeArgument argumentSub3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x4").build();
-    
-    InputCodeArgument argumentMul1 = new InputCodeArgumentBuilder().hasName("rd").hasValue("x1").build();
-    InputCodeArgument argumentMul2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x2").build();
-    InputCodeArgument argumentMul3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x3").build();
-    
-    
-    InputCodeModel ins1 = new InputCodeModelBuilder().hasLoader(initLoader)
-            .hasInstructionFunctionModel(this.initLoader.getInstructionFunctionModel("add")).hasInstructionName("add")
-            .hasCodeLine("add x3,x4,x5").hasArguments(Arrays.asList(argumentAdd1, argumentAdd2, argumentAdd3)).build();
-    InputCodeModel ins2 = new InputCodeModelBuilder().hasLoader(initLoader)
-            .hasInstructionFunctionModel(this.initLoader.getInstructionFunctionModel("add")).hasInstructionName("add")
-            .hasCodeLine("add x2,x3,x4").hasArguments(Arrays.asList(argumentSub1, argumentSub2, argumentSub3)).build();
-    InputCodeModel ins3 = new InputCodeModelBuilder().hasLoader(initLoader)
-            .hasInstructionFunctionModel(this.initLoader.getInstructionFunctionModel("add")).hasInstructionName("add")
-            .hasCodeLine("add x1,x2,x3").hasArguments(Arrays.asList(argumentMul1, argumentMul2, argumentMul3)).build();
-    List<InputCodeModel> instructions = Arrays.asList(ins1, ins2, ins3);
-    instructionMemoryBlock.setCode(instructions);
+    CodeParser codeParser = new CodeParser(initLoader);
+    codeParser.parseCode("""
+                                 add x3,x4,x5
+                                 add x2,x3,x4
+                                 add x1,x2,x3
+                                 """);
+    instructionMemoryBlock.setCode(codeParser.getInstructions());
     
     this.cpu.step();
     Assert.assertEquals(12, this.instructionFetchBlock.getPc());
@@ -451,38 +431,14 @@ public class ForwardSimulationTest
   @Test
   public void simulate_intOneRawConflict_usesFullPotentialOfTheProcessor()
   {
-    InputCodeArgument argumentSub1 = new InputCodeArgumentBuilder().hasName("rd").hasValue("x5").build();
-    InputCodeArgument argumentSub2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x4").build();
-    InputCodeArgument argumentSub3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x5").build();
-    
-    InputCodeArgument argumentAdd1 = new InputCodeArgumentBuilder().hasName("rd").hasValue("x2").build();
-    InputCodeArgument argumentAdd2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x3").build();
-    InputCodeArgument argumentAdd3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x4").build();
-    
-    InputCodeArgument argumentMul1 = new InputCodeArgumentBuilder().hasName("rd").hasValue("x1").build();
-    InputCodeArgument argumentMul2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x2").build();
-    InputCodeArgument argumentMul3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x3").build();
-    
-    InputCodeArgument argumentAdd21 = new InputCodeArgumentBuilder().hasName("rd").hasValue("x4").build();
-    InputCodeArgument argumentAdd22 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x4").build();
-    InputCodeArgument argumentAdd23 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x3").build();
-    
-    
-    InputCodeModel ins1 = new InputCodeModelBuilder().hasLoader(initLoader)
-            .hasInstructionFunctionModel(this.initLoader.getInstructionFunctionModel("sub")).hasInstructionName("sub")
-            .hasCodeLine("sub x5,x4,x5").hasArguments(Arrays.asList(argumentSub1, argumentSub2, argumentSub3)).build();
-    InputCodeModel ins2 = new InputCodeModelBuilder().hasLoader(initLoader)
-            .hasInstructionFunctionModel(this.initLoader.getInstructionFunctionModel("add")).hasInstructionName("add")
-            .hasCodeLine("add x2,x3,x4").hasArguments(Arrays.asList(argumentAdd1, argumentAdd2, argumentAdd3)).build();
-    InputCodeModel ins3 = new InputCodeModelBuilder().hasLoader(initLoader)
-            .hasInstructionFunctionModel(this.initLoader.getInstructionFunctionModel("add")).hasInstructionName("add")
-            .hasCodeLine("add x1,x2,x3").hasArguments(Arrays.asList(argumentMul1, argumentMul2, argumentMul3)).build();
-    InputCodeModel ins4 = new InputCodeModelBuilder().hasLoader(initLoader)
-            .hasInstructionFunctionModel(this.initLoader.getInstructionFunctionModel("add")).hasInstructionName("add")
-            .hasCodeLine("add x4,x4,x3").hasArguments(Arrays.asList(argumentAdd21, argumentAdd22, argumentAdd23))
-            .build();
-    List<InputCodeModel> instructions = Arrays.asList(ins1, ins2, ins3, ins4);
-    instructionMemoryBlock.setCode(instructions);
+    CodeParser codeParser = new CodeParser(initLoader);
+    codeParser.parseCode("""
+                                 sub x5,x4,x5
+                                 add x2,x3,x4
+                                 add x1,x2,x3
+                                 add x4,x4,x3
+                                 """);
+    instructionMemoryBlock.setCode(codeParser.getInstructions());
     
     this.cpu.step();
     Assert.assertEquals("sub", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
@@ -604,16 +560,11 @@ public class ForwardSimulationTest
   @Test
   public void simulate_oneFloatInstruction_finishesAfterSevenTicks()
   {
-    InputCodeArgument argument1 = new InputCodeArgument("rd", "f1");
-    InputCodeArgument argument2 = new InputCodeArgument("rs1", "f2");
-    InputCodeArgument argument3 = new InputCodeArgument("rs2", "f3");
-    
-    InputCodeModel ins1 = new InputCodeModelBuilder().hasLoader(initLoader)
-            .hasInstructionFunctionModel(this.initLoader.getInstructionFunctionModel("fadd.s"))
-            .hasInstructionName("fadd.s").hasCodeLine("fadd.s f1,f2,f3")
-            .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    List<InputCodeModel> instructions = Collections.singletonList(ins1);
-    instructionMemoryBlock.setCode(instructions);
+    CodeParser codeParser = new CodeParser(initLoader);
+    codeParser.parseCode("""
+                                 fadd.s f1,f2,f3
+                                 """);
+    instructionMemoryBlock.setCode(codeParser.getInstructions());
     
     this.cpu.step();
     Assert.assertEquals(12, this.instructionFetchBlock.getPc());
@@ -678,33 +629,13 @@ public class ForwardSimulationTest
   @Test
   public void simulate_threeFloatRawInstructions_finishesAfterElevenTicks()
   {
-    InputCodeArgument argumentAdd1 = new InputCodeArgumentBuilder().hasName("rd").hasValue("f3").build();
-    InputCodeArgument argumentAdd2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("f4").build();
-    InputCodeArgument argumentAdd3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("f5").build();
-    
-    InputCodeArgument argumentSub1 = new InputCodeArgumentBuilder().hasName("rd").hasValue("f2").build();
-    InputCodeArgument argumentSub2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("f3").build();
-    InputCodeArgument argumentSub3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("f4").build();
-    
-    InputCodeArgument argumentMul1 = new InputCodeArgumentBuilder().hasName("rd").hasValue("f1").build();
-    InputCodeArgument argumentMul2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("f2").build();
-    InputCodeArgument argumentMul3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("f3").build();
-    
-    
-    InputCodeModel ins1 = new InputCodeModelBuilder().hasLoader(initLoader)
-            .hasInstructionFunctionModel(this.initLoader.getInstructionFunctionModel("fadd.s"))
-            .hasInstructionName("fadd.s").hasCodeLine("fadd.s f3,f4,f5")
-            .hasArguments(Arrays.asList(argumentAdd1, argumentAdd2, argumentAdd3)).build();
-    InputCodeModel ins2 = new InputCodeModelBuilder().hasLoader(initLoader)
-            .hasInstructionFunctionModel(this.initLoader.getInstructionFunctionModel("fadd.s"))
-            .hasInstructionName("fadd.s").hasCodeLine("fadd.s f2,f3,f4")
-            .hasArguments(Arrays.asList(argumentSub1, argumentSub2, argumentSub3)).build();
-    InputCodeModel ins3 = new InputCodeModelBuilder().hasLoader(initLoader)
-            .hasInstructionFunctionModel(this.initLoader.getInstructionFunctionModel("fadd.s"))
-            .hasInstructionName("fadd.s").hasCodeLine("fadd.s f1,f2,f3")
-            .hasArguments(Arrays.asList(argumentMul1, argumentMul2, argumentMul3)).build();
-    List<InputCodeModel> instructions = Arrays.asList(ins1, ins2, ins3);
-    instructionMemoryBlock.setCode(instructions);
+    CodeParser codeParser = new CodeParser(initLoader);
+    codeParser.parseCode("""
+                                 fadd.s f3,f4,f5
+                                 fadd.s f2,f3,f4
+                                 fadd.s f1,f2,f3
+                                 """);
+    instructionMemoryBlock.setCode(codeParser.getInstructions());
     
     this.cpu.step();
     Assert.assertEquals(12, this.instructionFetchBlock.getPc());
@@ -857,41 +788,14 @@ public class ForwardSimulationTest
   @Test
   public void simulate_floatOneRawConflict_usesFullPotentialOfTheProcessor()
   {
-    InputCodeArgument argumentAdd1 = new InputCodeArgumentBuilder().hasName("rd").hasValue("f5").build();
-    InputCodeArgument argumentAdd2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("f4").build();
-    InputCodeArgument argumentAdd3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("f5").build();
-    
-    InputCodeArgument argumentSub1 = new InputCodeArgumentBuilder().hasName("rd").hasValue("f2").build();
-    InputCodeArgument argumentSub2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("f3").build();
-    InputCodeArgument argumentSub3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("f4").build();
-    
-    InputCodeArgument argumentMul1 = new InputCodeArgumentBuilder().hasName("rd").hasValue("f1").build();
-    InputCodeArgument argumentMul2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("f2").build();
-    InputCodeArgument argumentMul3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("f3").build();
-    
-    InputCodeArgument argumentAdd21 = new InputCodeArgumentBuilder().hasName("rd").hasValue("f4").build();
-    InputCodeArgument argumentAdd22 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("f4").build();
-    InputCodeArgument argumentAdd23 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("f3").build();
-    
-    
-    InputCodeModel ins1 = new InputCodeModelBuilder().hasLoader(initLoader)
-            .hasInstructionFunctionModel(this.initLoader.getInstructionFunctionModel("fsub.s"))
-            .hasInstructionName("fsub.s").hasCodeLine("fsub.s f5,f4,f5")
-            .hasArguments(Arrays.asList(argumentAdd1, argumentAdd2, argumentAdd3)).build();
-    InputCodeModel ins2 = new InputCodeModelBuilder().hasLoader(initLoader)
-            .hasInstructionFunctionModel(this.initLoader.getInstructionFunctionModel("fadd.s"))
-            .hasInstructionName("fadd.s").hasCodeLine("fadd.s f2,f3,f4")
-            .hasArguments(Arrays.asList(argumentSub1, argumentSub2, argumentSub3)).build();
-    InputCodeModel ins3 = new InputCodeModelBuilder().hasLoader(initLoader)
-            .hasInstructionFunctionModel(this.initLoader.getInstructionFunctionModel("fadd.s"))
-            .hasInstructionName("fadd.s").hasCodeLine("fadd.s f1,f2,f3")
-            .hasArguments(Arrays.asList(argumentMul1, argumentMul2, argumentMul3)).build();
-    InputCodeModel ins4 = new InputCodeModelBuilder().hasLoader(initLoader)
-            .hasInstructionFunctionModel(this.initLoader.getInstructionFunctionModel("fadd.s"))
-            .hasInstructionName("fadd.s").hasCodeLine("fadd.s f4,f4,f3")
-            .hasArguments(Arrays.asList(argumentAdd21, argumentAdd22, argumentAdd23)).build();
-    List<InputCodeModel> instructions = Arrays.asList(ins1, ins2, ins3, ins4);
-    instructionMemoryBlock.setCode(instructions);
+    CodeParser codeParser = new CodeParser(initLoader);
+    codeParser.parseCode("""
+                                 fsub.s f5,f4,f5
+                                 fadd.s f2,f3,f4
+                                 fadd.s f1,f2,f3
+                                 fadd.s f4,f4,f3
+                                 """);
+    instructionMemoryBlock.setCode(codeParser.getInstructions());
     
     this.cpu.step();
     Assert.assertEquals("fsub.s", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
@@ -1024,43 +928,19 @@ public class ForwardSimulationTest
   @Test
   public void simulate_jumpFromLabelToLabel_recordToBTB()
   {
-    InputCodeArgument argumentJmp1 = new InputCodeArgumentBuilder().hasName("rd").hasValue("x0").build();
-    InputCodeArgument argumentJmp2 = new InputCodeArgumentBuilder().hasName("imm").hasValue("lab3").build();
-    
-    InputCodeArgument argumentJmp3 = new InputCodeArgumentBuilder().hasName("rd").hasValue("x0").build();
-    InputCodeArgument argumentJmp4 = new InputCodeArgumentBuilder().hasName("imm").hasValue("labFinal").build();
-    
-    InputCodeArgument argumentJmp5 = new InputCodeArgumentBuilder().hasName("rd").hasValue("x0").build();
-    InputCodeArgument argumentJmp6 = new InputCodeArgumentBuilder().hasName("imm").hasValue("lab1").build();
-    
-    InputCodeArgument argumentJmp7 = new InputCodeArgumentBuilder().hasName("rd").hasValue("x0").build();
-    InputCodeArgument argumentJmp8 = new InputCodeArgumentBuilder().hasName("imm").hasValue("lab2").build();
-    
-    InputCodeModel ins1 = new InputCodeModelBuilder().hasLoader(initLoader)
-            .hasInstructionFunctionModel(this.initLoader.getInstructionFunctionModel("jal")).hasInstructionName("jal")
-            .hasCodeLine("jal x0,lab3").hasInstructionTypeEnum(InstructionTypeEnum.kJumpbranch)
-            .hasArguments(Arrays.asList(argumentJmp1, argumentJmp2)).build();
-    InputCodeModel ins2 = new InputCodeModelBuilder().hasLoader(initLoader)
-            .hasInstructionFunctionModel(this.initLoader.getInstructionFunctionModel("jal")).hasInstructionName("jal")
-            .hasCodeLine("jal x0,labFinal").hasInstructionTypeEnum(InstructionTypeEnum.kJumpbranch)
-            .hasArguments(Arrays.asList(argumentJmp3, argumentJmp4)).build();
-    InputCodeModel ins3 = new InputCodeModelBuilder().hasLoader(initLoader)
-            .hasInstructionFunctionModel(this.initLoader.getInstructionFunctionModel("jal")).hasInstructionName("jal")
-            .hasCodeLine("jal x0,lab1").hasInstructionTypeEnum(InstructionTypeEnum.kJumpbranch)
-            .hasArguments(Arrays.asList(argumentJmp5, argumentJmp6)).build();
-    InputCodeModel ins4 = new InputCodeModelBuilder().hasLoader(initLoader)
-            .hasInstructionFunctionModel(this.initLoader.getInstructionFunctionModel("jal")).hasInstructionName("jal")
-            .hasCodeLine("jal x0,lab2").hasInstructionTypeEnum(InstructionTypeEnum.kJumpbranch)
-            .hasArguments(Arrays.asList(argumentJmp7, argumentJmp8)).build();
-    
-    List<InputCodeModel> instructions = Arrays.asList(ins1, ins2, ins3, ins4);
-    instructionMemoryBlock.setCode(instructions);
-    Map<String, Label> labelMap = new HashMap<>();
-    labelMap.put("lab1", new Label("lab1", 4));
-    labelMap.put("lab2", new Label("lab2", 2 * 4));
-    labelMap.put("lab3", new Label("lab3", 3 * 4));
-    labelMap.put("labFinal", new Label("labFinal", 4 * 4));
-    instructionMemoryBlock.setLabels(labelMap);
+    CodeParser codeParser = new CodeParser(initLoader);
+    codeParser.parseCode("""
+                                  jal x0,lab3
+                                 lab1:
+                                  jal x0,labFinal
+                                 lab2:
+                                  jal x0,lab1
+                                 lab3:
+                                  jal x0,lab2
+                                 labFinal:
+                                 """);
+    instructionMemoryBlock.setCode(codeParser.getInstructions());
+    instructionMemoryBlock.setLabels(codeParser.getLabels());
     
     this.cpu.step();
     Assert.assertEquals("jal", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
@@ -1178,47 +1058,16 @@ public class ForwardSimulationTest
   @Test
   public void simulate_wellDesignedLoop_oneMisfetch()
   {
-    InputCodeArgument argumentJmp1 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x3").build();
-    InputCodeArgument argumentJmp2 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x0").build();
-    InputCodeArgument argumentJmp3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("loopEnd").build();
-    
-    
-    InputCodeArgument argumentJmp4 = new InputCodeArgumentBuilder().hasName("rd").hasValue("x3").build();
-    InputCodeArgument argumentJmp5 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x3").build();
-    InputCodeArgument argumentJmp6 = new InputCodeArgumentBuilder().hasName("imm").hasValue("1").build();
-    
-    InputCodeArgument argumentJmp7 = new InputCodeArgumentBuilder().hasName("rd").hasValue("x0").build();
-    InputCodeArgument argumentJmp8 = new InputCodeArgumentBuilder().hasName("imm").hasValue("loop").build();
-    
-    // InputCodeModel[=\s\w\.\(\"\)]+\.hasInstructionName\(\"label\"\)[\s\w\.\(\"\)\,]+;
-    
-    // Program:
-    //
-    // loop:
-    // beq x3 x0 loopEnd  # starts with values 6, 0
-    // subi x3 x3 1
-    // jal x0 loop        # keeps saving 3 to x0
-    // loopEnd:
-    
-    InputCodeModel ins1 = new InputCodeModelBuilder().hasLoader(initLoader)
-            .hasInstructionFunctionModel(this.initLoader.getInstructionFunctionModel("beq")).hasInstructionName("beq")
-            .hasCodeLine("beq x3,x0,loopEnd").hasInstructionTypeEnum(InstructionTypeEnum.kJumpbranch)
-            .hasArguments(Arrays.asList(argumentJmp1, argumentJmp2, argumentJmp3)).build();
-    InputCodeModel ins2 = new InputCodeModelBuilder().hasLoader(initLoader)
-            .hasInstructionFunctionModel(this.initLoader.getInstructionFunctionModel("subi")).hasInstructionName("subi")
-            .hasCodeLine("subi x3,x3,1").hasInstructionTypeEnum(InstructionTypeEnum.kIntArithmetic)
-            .hasArguments(Arrays.asList(argumentJmp4, argumentJmp5, argumentJmp6)).build();
-    InputCodeModel ins3 = new InputCodeModelBuilder().hasLoader(initLoader)
-            .hasInstructionFunctionModel(this.initLoader.getInstructionFunctionModel("jal")).hasInstructionName("jal")
-            .hasCodeLine("jal x0,loop").hasInstructionTypeEnum(InstructionTypeEnum.kJumpbranch)
-            .hasArguments(Arrays.asList(argumentJmp7, argumentJmp8)).build();
-    
-    List<InputCodeModel> instructions = Arrays.asList(ins1, ins2, ins3);
-    instructionMemoryBlock.setCode(instructions);
-    Map<String, Label> labelMap = new HashMap<>();
-    labelMap.put("loop", new Label("loop", 0));
-    labelMap.put("loopEnd", new Label("loopEnd", 3 * 4));
-    instructionMemoryBlock.setLabels(labelMap);
+    CodeParser codeParser = new CodeParser(initLoader);
+    codeParser.parseCode("""
+                                  loop:
+                                    beq x3,x0,loopEnd
+                                    subi x3,x3,1
+                                    jal x0,loop
+                                  loopEnd:
+                                 """);
+    instructionMemoryBlock.setCode(codeParser.getInstructions());
+    instructionMemoryBlock.setLabels(codeParser.getLabels());
     
     // First fetch (3)
     this.cpu.step();
@@ -1458,44 +1307,17 @@ public class ForwardSimulationTest
   @Test
   public void simulate_ifElse_executeFirstFragment()
   {
-    InputCodeArgument argumentJmp1 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x5").build();
-    InputCodeArgument argumentJmp2 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x0").build();
-    InputCodeArgument argumentJmp3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("labelIf").build();
-    
-    InputCodeArgument argumentSub1 = new InputCodeArgumentBuilder().hasName("rd").hasValue("x1").build();
-    InputCodeArgument argumentSub2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x1").build();
-    InputCodeArgument argumentSub3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("10").build();
-    
-    InputCodeArgument argumentJmp4 = new InputCodeArgumentBuilder().hasName("rd").hasValue("x0").build();
-    InputCodeArgument argumentJmp5 = new InputCodeArgumentBuilder().hasName("imm").hasValue("labelFin").build();
-    
-    InputCodeArgument argumentAdd1 = new InputCodeArgumentBuilder().hasName("rd").hasValue("x1").build();
-    InputCodeArgument argumentAdd2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x1").build();
-    InputCodeArgument argumentAdd3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("10").build();
-    
-    InputCodeModel ins1 = new InputCodeModelBuilder().hasLoader(initLoader)
-            .hasInstructionFunctionModel(this.initLoader.getInstructionFunctionModel("beq")).hasInstructionName("beq")
-            .hasCodeLine("beq x5,x0,labelIf").hasInstructionTypeEnum(InstructionTypeEnum.kJumpbranch)
-            .hasArguments(Arrays.asList(argumentJmp1, argumentJmp2, argumentJmp3)).build();
-    InputCodeModel ins2 = new InputCodeModelBuilder().hasLoader(initLoader)
-            .hasInstructionFunctionModel(this.initLoader.getInstructionFunctionModel("subi")).hasInstructionName("subi")
-            .hasCodeLine("subi x1,x1,10").hasInstructionTypeEnum(InstructionTypeEnum.kIntArithmetic)
-            .hasArguments(Arrays.asList(argumentSub1, argumentSub2, argumentSub3)).build();
-    InputCodeModel ins3 = new InputCodeModelBuilder().hasLoader(initLoader)
-            .hasInstructionFunctionModel(this.initLoader.getInstructionFunctionModel("jal")).hasInstructionName("jal")
-            .hasCodeLine("jal x0,labelFin").hasInstructionTypeEnum(InstructionTypeEnum.kJumpbranch)
-            .hasArguments(Arrays.asList(argumentJmp4, argumentJmp5)).build();
-    InputCodeModel ins4 = new InputCodeModelBuilder().hasLoader(initLoader)
-            .hasInstructionFunctionModel(this.initLoader.getInstructionFunctionModel("addi")).hasInstructionName("addi")
-            .hasCodeLine("addi x1,x1,10").hasInstructionTypeEnum(InstructionTypeEnum.kIntArithmetic)
-            .hasArguments(Arrays.asList(argumentAdd1, argumentAdd2, argumentAdd3)).build();
-    
-    List<InputCodeModel> instructions = Arrays.asList(ins1, ins2, ins3, ins4);
-    instructionMemoryBlock.setCode(instructions);
-    Map<String, Label> labelMap = new HashMap<>();
-    labelMap.put("labelIf", new Label("labelIf", 3 * 4));
-    labelMap.put("labelFin", new Label("labelFin", 4 * 4));
-    instructionMemoryBlock.setLabels(labelMap);
+    CodeParser codeParser = new CodeParser(initLoader);
+    codeParser.parseCode("""
+                                  beq x5,x0,labelIf
+                                  subi x1,x1,10
+                                  jal x0,labelFin
+                                 labelIf:
+                                  addi x1,x1,10
+                                 labelFin:
+                                 """);
+    instructionMemoryBlock.setCode(codeParser.getInstructions());
+    instructionMemoryBlock.setLabels(codeParser.getLabels());
     
     // First fetch
     this.cpu.step();
@@ -1593,50 +1415,17 @@ public class ForwardSimulationTest
   @Test
   public void simulate_ifElse_executeElseFragment()
   {
-    InputCodeArgument argumentJmp1 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x3").build();
-    InputCodeArgument argumentJmp2 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x0").build();
-    InputCodeArgument argumentJmp3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("labelIf").build();
-    
-    
-    InputCodeArgument argumentSub1 = new InputCodeArgumentBuilder().hasName("rd").hasValue("x1").build();
-    InputCodeArgument argumentSub2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x1").build();
-    InputCodeArgument argumentSub3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("10").build();
-    
-    InputCodeArgument argumentJmp4 = new InputCodeArgumentBuilder().hasName("rd").hasValue("x0").build();
-    InputCodeArgument argumentJmp5 = new InputCodeArgumentBuilder().hasName("imm").hasValue("labelFin").build();
-    
-    InputCodeArgument argumentAdd1 = new InputCodeArgumentBuilder().hasName("rd").hasValue("x1").build();
-    InputCodeArgument argumentAdd2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x1").build();
-    InputCodeArgument argumentAdd3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("10").build();
-    
-    InputCodeModel ins1 = new InputCodeModelBuilder().hasLoader(initLoader).hasLoader(initLoader)
-            .hasInstructionName("beq").hasCodeLine("beq x3,x0,labelIf")
-            .hasInstructionTypeEnum(InstructionTypeEnum.kJumpbranch)
-            .hasArguments(Arrays.asList(argumentJmp1, argumentJmp2, argumentJmp3)).build();
-    InputCodeModel ins2 = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("subi")
-            .hasCodeLine("subi x1,x1,10").hasInstructionTypeEnum(InstructionTypeEnum.kIntArithmetic)
-            .hasArguments(Arrays.asList(argumentSub1, argumentSub2, argumentSub3)).build();
-    InputCodeModel ins3 = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("jal")
-            .hasCodeLine("jal x0,labelFin").hasInstructionTypeEnum(InstructionTypeEnum.kJumpbranch)
-            .hasArguments(Arrays.asList(argumentJmp4, argumentJmp5)).build();
-    InputCodeModel ins4 = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("addi")
-            .hasCodeLine("addi x1,x1,10").hasInstructionTypeEnum(InstructionTypeEnum.kIntArithmetic)
-            .hasArguments(Arrays.asList(argumentAdd1, argumentAdd2, argumentAdd3)).build();
-    
-    List<InputCodeModel> instructions = Arrays.asList(ins1, ins2, ins3, ins4);
-    instructionMemoryBlock.setCode(instructions);
-    Map<String, Label> labelMap = new HashMap<>();
-    labelMap.put("labelIf", new Label("labelIf", 3 * 4));
-    labelMap.put("labelFin", new Label("labelFin", 4 * 4));
-    instructionMemoryBlock.setLabels(labelMap);
-    // Code:
-    //
-    // beq x3 x0 labelIf
-    // subi x1 x1 10
-    // jal x0 labelFin
-    // labelIf:
-    // addi x1 x1 10
-    // labelFin:
+    CodeParser codeParser = new CodeParser(initLoader);
+    codeParser.parseCode("""
+                                  beq x3, x0, labelIf
+                                  subi x1, x1, 10
+                                  jal x0, labelFin
+                                 labelIf:
+                                  addi x1, x1, 10
+                                 labelFin:
+                                 """);
+    instructionMemoryBlock.setCode(codeParser.getInstructions());
+    instructionMemoryBlock.setLabels(codeParser.getLabels());
     
     this.cpu.step();
     // 3 fetches
@@ -1698,14 +1487,6 @@ public class ForwardSimulationTest
   @Test
   public void simulate_oneStore_savesIntInMemory()
   {
-    InputCodeArgument store1 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x3").build();
-    InputCodeArgument store2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x2").build();
-    InputCodeArgument store3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("0").build();
-    InputCodeModel storeCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("sw")
-            .hasCodeLine("sw x3,0(x2)").hasDataTypeEnum(DataTypeEnum.kInt)
-            .hasInstructionTypeEnum(InstructionTypeEnum.kLoadstore).hasArguments(Arrays.asList(store1, store2, store3))
-            .build();
-    
     // Just a testing instruction
     InputCodeArgument load1 = new InputCodeArgumentBuilder().hasName("rd").hasValue("x1").build();
     InputCodeArgument load2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x2").build();
@@ -1715,10 +1496,12 @@ public class ForwardSimulationTest
             .hasInstructionTypeEnum(InstructionTypeEnum.kLoadstore).hasArguments(Arrays.asList(load1, load2, load3))
             .build();
     
-    // Code:
-    // sw x3 x2 0 (store 6 in memory)
-    List<InputCodeModel> instructions = Collections.singletonList(storeCodeModel);
-    instructionMemoryBlock.setCode(instructions);
+    CodeParser codeParser = new CodeParser(initLoader);
+    codeParser.parseCode("""
+                                  sw x3,0(x2)
+                                 """);
+    instructionMemoryBlock.setCode(codeParser.getInstructions());
+    instructionMemoryBlock.setLabels(codeParser.getLabels());
     
     this.cpu.step();
     Assert.assertEquals("sw", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
@@ -1766,16 +1549,12 @@ public class ForwardSimulationTest
   @Test
   public void simulate_oneLoad_loadsIntInMemory()
   {
-    InputCodeArgument load1 = new InputCodeArgumentBuilder().hasName("rd").hasValue("x1").build();
-    InputCodeArgument load2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x2").build();
-    InputCodeArgument load3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("0").build();
-    InputCodeModel loadCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("lw")
-            .hasCodeLine("lw x1,0(x2)").hasDataTypeEnum(DataTypeEnum.kInt)
-            .hasInstructionTypeEnum(InstructionTypeEnum.kLoadstore).hasArguments(Arrays.asList(load1, load2, load3))
-            .build();
-    
-    List<InputCodeModel> instructions = Collections.singletonList(loadCodeModel);
-    instructionMemoryBlock.setCode(instructions);
+    CodeParser codeParser = new CodeParser(initLoader);
+    codeParser.parseCode("""
+                                 lw x1,0(x2)
+                                 """);
+    instructionMemoryBlock.setCode(codeParser.getInstructions());
+    instructionMemoryBlock.setLabels(codeParser.getLabels());
     
     this.cpu.step();
     Assert.assertEquals("lw", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
@@ -1829,32 +1608,14 @@ public class ForwardSimulationTest
   @Test
   public void simulate_loadBypassing_successfullyLoadsFromStoreBuffer()
   {
-    InputCodeArgument store1 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x3").build();
-    InputCodeArgument store2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x2").build();
-    InputCodeArgument store3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("0").build();
-    InputCodeModel storeCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("sw")
-            .hasCodeLine("sw x3,0(x2)").hasDataTypeEnum(DataTypeEnum.kInt)
-            .hasInstructionTypeEnum(InstructionTypeEnum.kLoadstore).hasArguments(Arrays.asList(store1, store2, store3))
-            .build();
-    
-    InputCodeArgument load1 = new InputCodeArgumentBuilder().hasName("rd").hasValue("x1").build();
-    InputCodeArgument load2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x2").build();
-    InputCodeArgument load3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("0").build();
-    InputCodeModel loadCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("lw")
-            .hasCodeLine("lw x1,0(x2)").hasDataTypeEnum(DataTypeEnum.kInt)
-            .hasInstructionTypeEnum(InstructionTypeEnum.kLoadstore).hasArguments(Arrays.asList(load1, load2, load3))
-            .build();
-    
-    InputCodeArgument subi1 = new InputCodeArgumentBuilder().hasName("rd").hasValue("x4").build();
-    InputCodeArgument subi2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x4").build();
-    InputCodeArgument subi3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("5").build();
-    InputCodeModel subiCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("subi")
-            .hasCodeLine("subi x4,x4,5").hasDataTypeEnum(DataTypeEnum.kInt)
-            .hasInstructionTypeEnum(InstructionTypeEnum.kIntArithmetic).hasArguments(Arrays.asList(subi1, subi2, subi3))
-            .build();
-    
-    List<InputCodeModel> instructions = Arrays.asList(subiCodeModel, storeCodeModel, loadCodeModel);
-    instructionMemoryBlock.setCode(instructions);
+    CodeParser codeParser = new CodeParser(initLoader);
+    codeParser.parseCode("""
+                                 subi x4,x4,5
+                                 sw x3,0(x2)
+                                 lw x1,0(x2)
+                                 """);
+    instructionMemoryBlock.setCode(codeParser.getInstructions());
+    instructionMemoryBlock.setLabels(codeParser.getLabels());
     
     this.cpu.step();
     Assert.assertEquals("subi", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
@@ -1928,36 +1689,17 @@ public class ForwardSimulationTest
   @Test
   public void simulate_loadForwarding_FailsAndRerunsFromLoad()
   {
-    InputCodeArgument subi1 = new InputCodeArgumentBuilder().hasName("rd").hasValue("x3").build();
-    InputCodeArgument subi2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x3").build();
-    InputCodeArgument subi3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("5").build();
-    InputCodeModel subiCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("subi")
-            .hasCodeLine("subi x3,x3,5").hasDataTypeEnum(DataTypeEnum.kInt)
-            .hasInstructionTypeEnum(InstructionTypeEnum.kIntArithmetic).hasArguments(Arrays.asList(subi1, subi2, subi3))
-            .build();
-    
-    InputCodeArgument store1 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x3").build();
-    InputCodeArgument store2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x2").build();
-    InputCodeArgument store3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("0").build();
-    InputCodeModel storeCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("sw")
-            .hasCodeLine("sw x3,0(x2)").hasDataTypeEnum(DataTypeEnum.kInt)
-            .hasInstructionTypeEnum(InstructionTypeEnum.kLoadstore).hasArguments(Arrays.asList(store1, store2, store3))
-            .build();
-    
-    InputCodeArgument load1 = new InputCodeArgumentBuilder().hasName("rd").hasValue("x1").build();
-    InputCodeArgument load2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x2").build();
-    InputCodeArgument load3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("0").build();
-    InputCodeModel loadCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("lw")
-            .hasCodeLine("lw x1,0(x2)").hasDataTypeEnum(DataTypeEnum.kInt)
-            .hasInstructionTypeEnum(InstructionTypeEnum.kLoadstore).hasArguments(Arrays.asList(load1, load2, load3))
-            .build();
-    
     // Code:
     // subi x3 x3 5
     // sw x3 x2 0 - store 6 to address x2 (25)
     // lw x1 x2 0 - load from address x2
-    List<InputCodeModel> instructions = Arrays.asList(subiCodeModel, storeCodeModel, loadCodeModel);
-    instructionMemoryBlock.setCode(instructions);
+    CodeParser codeParser = new CodeParser(initLoader);
+    codeParser.parseCode("""
+                                 subi x3, x3, 5
+                                 sw x3, 0(x2)
+                                 lw x1, 0(x2)
+                                 """);
+    instructionMemoryBlock.setCode(codeParser.getInstructions());
     
     this.cpu.step();
     // Fetch all three instructions
@@ -2070,37 +1812,20 @@ public class ForwardSimulationTest
   @Test
   public void simulate_loadForwarding_FailsDuringMA()
   {
-    InputCodeArgument subi1 = new InputCodeArgumentBuilder().hasName("rd").hasValue("x3").build();
-    InputCodeArgument subi2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x3").build();
-    InputCodeArgument subi3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("5").build();
-    InputCodeModel subiCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("subi")
-            .hasCodeLine("subi x3,x3,5").hasDataTypeEnum(DataTypeEnum.kInt)
-            .hasInstructionTypeEnum(InstructionTypeEnum.kIntArithmetic).hasArguments(Arrays.asList(subi1, subi2, subi3))
-            .build();
-    
-    InputCodeArgument store1 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x3").build();
-    InputCodeArgument store2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x2").build();
-    InputCodeArgument store3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("0").build();
-    InputCodeModel storeCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("sw")
-            .hasCodeLine("sw x3,0(x2)").hasDataTypeEnum(DataTypeEnum.kInt)
-            .hasInstructionTypeEnum(InstructionTypeEnum.kLoadstore).hasArguments(Arrays.asList(store1, store2, store3))
-            .build();
-    
-    InputCodeArgument load1 = new InputCodeArgumentBuilder().hasName("rd").hasValue("x1").build();
-    InputCodeArgument load2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x2").build();
-    InputCodeArgument load3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("0").build();
-    InputCodeModel loadCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("lw")
-            .hasCodeLine("lw x1,0(x2)").hasDataTypeEnum(DataTypeEnum.kInt)
-            .hasInstructionTypeEnum(InstructionTypeEnum.kLoadstore).hasArguments(Arrays.asList(load1, load2, load3))
-            .build();
-    
     // Program:
     //
     // subi x3 x3 5 # x3: 6 -> 1
     // sw x3 x2 0   # x3 (1) is stored to memory [25+0]
     // lw x1 x2 0   # x1: 0 -> 1
-    List<InputCodeModel> instructions = Arrays.asList(subiCodeModel, storeCodeModel, loadCodeModel);
-    instructionMemoryBlock.setCode(instructions);
+    CodeParser codeParser = new CodeParser(initLoader);
+    codeParser.parseCode("""
+                                  subi x3, x3, 5
+                                  sw x3, 0(x2)
+                                  lw x1, 0(x2)
+                                 """);
+    instructionMemoryBlock.setCode(codeParser.getInstructions());
+    instructionMemoryBlock.setLabels(codeParser.getLabels());
+    
     this.memoryAccessUnit.setDelay(3);
     this.memoryAccessUnit.setBaseDelay(3);
     
