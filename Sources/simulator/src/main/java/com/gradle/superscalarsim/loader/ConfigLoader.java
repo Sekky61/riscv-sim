@@ -40,6 +40,9 @@ import java.util.Properties;
 public class ConfigLoader
 {
   public static String gccPath;
+  public static String registerFileDirPath;
+  public static String instructionsFilePath;
+  public static String registerAliasesFilePath;
   
   static
   {
@@ -54,7 +57,10 @@ public class ConfigLoader
       // load a properties file
       prop.load(input);
       
-      gccPath = prop.getProperty("gcc.path");
+      gccPath                 = prop.getProperty("gcc.path");
+      registerFileDirPath     = prop.getProperty("registerFileDir.path");
+      instructionsFilePath    = prop.getProperty("instructionsFile.path");
+      registerAliasesFilePath = prop.getProperty("registerAliasesFile.path");
       System.err.println("ConfigLoader: gccPath = " + gccPath);
     }
     catch (IOException ex)
