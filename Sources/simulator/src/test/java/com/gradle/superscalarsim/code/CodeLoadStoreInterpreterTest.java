@@ -30,6 +30,7 @@ public class CodeLoadStoreInterpreterTest
   private InitLoader initLoader;
   
   private CodeLoadStoreInterpreter codeLoadStoreInterpreter;
+  private UnifiedRegisterFileBlock urf;
   
   @Before
   public void setUp()
@@ -59,12 +60,11 @@ public class CodeLoadStoreInterpreterTest
     
     initLoader = new InitLoader(Arrays.asList(integerFile, floatFile), null);
     initLoader.setInstructionFunctionModels(setUpInstructions());
+    urf = new UnifiedRegisterFileBlock(initLoader, 320, new RegisterModelFactory());
     
     InstructionMemoryBlock instructionMemoryBlock = new InstructionMemoryBlock(new ArrayList<>(), new HashMap<>(),
                                                                                null);
     this.codeLoadStoreInterpreter = new CodeLoadStoreInterpreter(new MemoryModel(new SimulatedMemory()),
-                                                                 new UnifiedRegisterFileBlock(initLoader, 320,
-                                                                                              new RegisterModelFactory()),
                                                                  instructionMemoryBlock);
   }
   
@@ -188,9 +188,9 @@ public class CodeLoadStoreInterpreterTest
   @Test
   public void storeByte_loadByte_returnsExactValue()
   {
-    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x3").build();
-    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x2").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("0").build();
+    InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x3").build();
+    InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x2").build();
+    InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("imm").hasValue("0").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("sb")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
@@ -198,9 +198,9 @@ public class CodeLoadStoreInterpreterTest
             .getSecond();
     Assert.assertEquals(6, value);
     
-    argument1      = new InputCodeArgumentBuilder().hasName("rd").hasValue("x1").build();
-    argument2      = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x2").build();
-    argument3      = new InputCodeArgumentBuilder().hasName("imm").hasValue("0").build();
+    argument1      = new InputCodeArgumentBuilder(urf).hasName("rd").hasRegister("x1").build();
+    argument2      = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x2").build();
+    argument3      = new InputCodeArgumentBuilder(urf).hasName("imm").hasValue("0").build();
     inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("lbu")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
@@ -212,18 +212,18 @@ public class CodeLoadStoreInterpreterTest
   @Test
   public void storeShort_loadShort_returnsExactValue()
   {
-    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x3").build();
-    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x2").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("0").build();
+    InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x3").build();
+    InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x2").build();
+    InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("imm").hasValue("0").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("sh")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     long value = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1, -1), 0)
             .getSecond();
     Assert.assertEquals(6, value);
     
-    argument1      = new InputCodeArgumentBuilder().hasName("rd").hasValue("x1").build();
-    argument2      = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x2").build();
-    argument3      = new InputCodeArgumentBuilder().hasName("imm").hasValue("0").build();
+    argument1      = new InputCodeArgumentBuilder(urf).hasName("rd").hasRegister("x1").build();
+    argument2      = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x2").build();
+    argument3      = new InputCodeArgumentBuilder(urf).hasName("imm").hasValue("0").build();
     inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("lhu")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
@@ -235,18 +235,18 @@ public class CodeLoadStoreInterpreterTest
   @Test
   public void storeInt_loadInt_returnsExactValue()
   {
-    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x3").build();
-    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x2").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("0").build();
+    InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x3").build();
+    InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x2").build();
+    InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("imm").hasValue("0").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("sw")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     long value = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1, -1), 0)
             .getSecond();
     Assert.assertEquals(6, value);
     
-    argument1      = new InputCodeArgumentBuilder().hasName("rd").hasValue("x1").build();
-    argument2      = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x2").build();
-    argument3      = new InputCodeArgumentBuilder().hasName("imm").hasValue("0").build();
+    argument1      = new InputCodeArgumentBuilder(urf).hasName("rd").hasRegister("x1").build();
+    argument2      = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x2").build();
+    argument3      = new InputCodeArgumentBuilder(urf).hasName("imm").hasValue("0").build();
     inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("lwu")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
@@ -258,18 +258,18 @@ public class CodeLoadStoreInterpreterTest
   @Test
   public void storeLong_loadLong_returnsExactValue()
   {
-    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x3").build();
-    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x2").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("0").build();
+    InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x3").build();
+    InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x2").build();
+    InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("imm").hasValue("0").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("sd")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     long value = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1, -1), 0)
             .getSecond();
     Assert.assertEquals(6, value);
     
-    argument1      = new InputCodeArgumentBuilder().hasName("rd").hasValue("x1").build();
-    argument2      = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x2").build();
-    argument3      = new InputCodeArgumentBuilder().hasName("imm").hasValue("0").build();
+    argument1      = new InputCodeArgumentBuilder(urf).hasName("rd").hasRegister("x1").build();
+    argument2      = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x2").build();
+    argument3      = new InputCodeArgumentBuilder(urf).hasName("imm").hasValue("0").build();
     inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("ld")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
@@ -281,9 +281,9 @@ public class CodeLoadStoreInterpreterTest
   @Test
   public void storeFloat_loadFloat_returnsExactValue()
   {
-    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("f3").build();
-    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x2").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("0").build();
+    InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("f3").build();
+    InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x2").build();
+    InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("imm").hasValue("0").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("fsw")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     long value = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1, -1), 0)
@@ -291,9 +291,9 @@ public class CodeLoadStoreInterpreterTest
     float r = (float) interpretAs(value, DataTypeEnum.kFloat);
     Assert.assertEquals(6.0f, r, 0.001);
     
-    argument1      = new InputCodeArgumentBuilder().hasName("rd").hasValue("f1").build();
-    argument2      = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x2").build();
-    argument3      = new InputCodeArgumentBuilder().hasName("imm").hasValue("0").build();
+    argument1      = new InputCodeArgumentBuilder(urf).hasName("rd").hasRegister("f1").build();
+    argument2      = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x2").build();
+    argument3      = new InputCodeArgumentBuilder(urf).hasName("imm").hasValue("0").build();
     inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("flw")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
@@ -306,9 +306,9 @@ public class CodeLoadStoreInterpreterTest
   @Test
   public void storeDouble_loadDouble_returnsExactValue()
   {
-    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("f4").build();
-    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x2").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("0").build();
+    InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("f4").build();
+    InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x2").build();
+    InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("imm").hasValue("0").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("fsd")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
@@ -317,9 +317,9 @@ public class CodeLoadStoreInterpreterTest
     double r = (double) interpretAs(value, DataTypeEnum.kDouble);
     Assert.assertEquals(6.0d, r, 0.001);
     
-    argument1      = new InputCodeArgumentBuilder().hasName("rd").hasValue("f1").build();
-    argument2      = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x2").build();
-    argument3      = new InputCodeArgumentBuilder().hasName("imm").hasValue("0").build();
+    argument1      = new InputCodeArgumentBuilder(urf).hasName("rd").hasRegister("f1").build();
+    argument2      = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x2").build();
+    argument3      = new InputCodeArgumentBuilder(urf).hasName("imm").hasValue("0").build();
     inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("fld")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
@@ -332,9 +332,9 @@ public class CodeLoadStoreInterpreterTest
   @Test
   public void storeDouble_loadFloat_returnsDifferentValue()
   {
-    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("f4").build();
-    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x2").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("0").build();
+    InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("f4").build();
+    InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x2").build();
+    InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("imm").hasValue("0").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("fsd")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
@@ -343,9 +343,9 @@ public class CodeLoadStoreInterpreterTest
     double r = (double) interpretAs(value, DataTypeEnum.kDouble);
     Assert.assertEquals(6.0d, r, 0.001);
     
-    argument1      = new InputCodeArgumentBuilder().hasName("rd").hasValue("f1").build();
-    argument2      = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x2").build();
-    argument3      = new InputCodeArgumentBuilder().hasName("imm").hasValue("0").build();
+    argument1      = new InputCodeArgumentBuilder(urf).hasName("rd").hasRegister("f1").build();
+    argument2      = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x2").build();
+    argument3      = new InputCodeArgumentBuilder(urf).hasName("imm").hasValue("0").build();
     inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("flw")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
@@ -357,9 +357,9 @@ public class CodeLoadStoreInterpreterTest
   @Test
   public void storeFloat_loadDouble_returnsDifferentValue()
   {
-    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("f3").build();
-    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x2").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("0").build();
+    InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("f3").build();
+    InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x2").build();
+    InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("imm").hasValue("0").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("fsw")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
@@ -369,9 +369,9 @@ public class CodeLoadStoreInterpreterTest
     float r = (float) interpretAs(value, DataTypeEnum.kFloat);
     Assert.assertEquals(6.0f, r, 0.001);
     
-    argument1      = new InputCodeArgumentBuilder().hasName("rd").hasValue("f1").build();
-    argument2      = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x2").build();
-    argument3      = new InputCodeArgumentBuilder().hasName("imm").hasValue("0").build();
+    argument1      = new InputCodeArgumentBuilder(urf).hasName("rd").hasRegister("f1").build();
+    argument2      = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x2").build();
+    argument3      = new InputCodeArgumentBuilder(urf).hasName("imm").hasValue("0").build();
     inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("fld")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
@@ -383,9 +383,9 @@ public class CodeLoadStoreInterpreterTest
   @Test
   public void storeInt_loadSignedByte_returnsRightSign()
   {
-    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x4").build();
-    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x2").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("0").build();
+    InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x4").build();
+    InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x2").build();
+    InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("imm").hasValue("0").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("sw")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
@@ -395,9 +395,9 @@ public class CodeLoadStoreInterpreterTest
     int signedValue = (int) interpretAs(value, DataTypeEnum.kInt);
     Assert.assertEquals(-1000, signedValue);
     
-    argument1      = new InputCodeArgumentBuilder().hasName("rd").hasValue("x1").build();
-    argument2      = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x2").build();
-    argument3      = new InputCodeArgumentBuilder().hasName("imm").hasValue("0").build();
+    argument1      = new InputCodeArgumentBuilder(urf).hasName("rd").hasRegister("x1").build();
+    argument2      = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x2").build();
+    argument3      = new InputCodeArgumentBuilder(urf).hasName("imm").hasValue("0").build();
     inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("lb")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
@@ -409,9 +409,9 @@ public class CodeLoadStoreInterpreterTest
   @Test
   public void storeLong_loadSignedInt_returnsRightSign()
   {
-    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x6").build();
-    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x2").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("0").build();
+    InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x6").build();
+    InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x2").build();
+    InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("imm").hasValue("0").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("sd")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
@@ -419,9 +419,9 @@ public class CodeLoadStoreInterpreterTest
             .getSecond();
     Assert.assertEquals(-4294967295L, value);
     
-    argument1      = new InputCodeArgumentBuilder().hasName("rd").hasValue("x1").build();
-    argument2      = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x2").build();
-    argument3      = new InputCodeArgumentBuilder().hasName("imm").hasValue("0").build();
+    argument1      = new InputCodeArgumentBuilder(urf).hasName("rd").hasRegister("x1").build();
+    argument2      = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x2").build();
+    argument3      = new InputCodeArgumentBuilder(urf).hasName("imm").hasValue("0").build();
     inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("lw")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
@@ -433,9 +433,9 @@ public class CodeLoadStoreInterpreterTest
   @Test
   public void storeInt_loadSignedHalf_returnsRightSign()
   {
-    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x5").build();
-    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x2").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("0").build();
+    InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x5").build();
+    InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x2").build();
+    InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("imm").hasValue("0").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("sw")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
@@ -444,9 +444,9 @@ public class CodeLoadStoreInterpreterTest
     int signedValue = (int) interpretAs(value, DataTypeEnum.kInt);
     Assert.assertEquals(-65535, signedValue);
     
-    argument1      = new InputCodeArgumentBuilder().hasName("rd").hasValue("x1").build();
-    argument2      = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x2").build();
-    argument3      = new InputCodeArgumentBuilder().hasName("imm").hasValue("0").build();
+    argument1      = new InputCodeArgumentBuilder(urf).hasName("rd").hasRegister("x1").build();
+    argument2      = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x2").build();
+    argument3      = new InputCodeArgumentBuilder(urf).hasName("imm").hasValue("0").build();
     inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("lh")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
@@ -458,9 +458,9 @@ public class CodeLoadStoreInterpreterTest
   @Test
   public void loadWord_dataUnknown_returns0()
   {
-    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rd").hasValue("x1").build();
-    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x2").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("0").build();
+    InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rd").hasRegister("x1").build();
+    InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x2").build();
+    InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("imm").hasValue("0").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("lw")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     long result1 = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1, -1), 0)
@@ -474,9 +474,9 @@ public class CodeLoadStoreInterpreterTest
   @Test
   public void loadWord_storeItBefore_returnsExactData()
   {
-    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x2").build();
-    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x2").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("0").build();
+    InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x2").build();
+    InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x2").build();
+    InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("imm").hasValue("0").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("sw")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
@@ -484,9 +484,9 @@ public class CodeLoadStoreInterpreterTest
             .getSecond();
     Assert.assertEquals(25, value);
     
-    argument1      = new InputCodeArgumentBuilder().hasName("rd").hasValue("x1").build();
-    argument2      = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x2").build();
-    argument3      = new InputCodeArgumentBuilder().hasName("imm").hasValue("0").build();
+    argument1      = new InputCodeArgumentBuilder(urf).hasName("rd").hasRegister("x1").build();
+    argument2      = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x2").build();
+    argument3      = new InputCodeArgumentBuilder(urf).hasName("imm").hasValue("0").build();
     inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("lw")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
@@ -499,9 +499,9 @@ public class CodeLoadStoreInterpreterTest
   @Test
   public void storeTwoBytes_loadOneShort_getByteCombinedValue()
   {
-    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x3").build();
-    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x1").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("0").build();
+    InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x3").build();
+    InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x1").build();
+    InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("imm").hasValue("0").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("sb")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
@@ -509,9 +509,9 @@ public class CodeLoadStoreInterpreterTest
             .getSecond();
     Assert.assertEquals(6, value);
     
-    argument1      = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x3").build();
-    argument2      = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x1").build();
-    argument3      = new InputCodeArgumentBuilder().hasName("imm").hasValue("1").build();
+    argument1      = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x3").build();
+    argument2      = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x1").build();
+    argument3      = new InputCodeArgumentBuilder(urf).hasName("imm").hasValue("1").build();
     inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("sb")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
@@ -519,9 +519,9 @@ public class CodeLoadStoreInterpreterTest
             .getSecond();
     Assert.assertEquals(6, value2);
     
-    argument1      = new InputCodeArgumentBuilder().hasName("rd").hasValue("x2").build();
-    argument2      = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x1").build();
-    argument3      = new InputCodeArgumentBuilder().hasName("imm").hasValue("0").build();
+    argument1      = new InputCodeArgumentBuilder(urf).hasName("rd").hasRegister("x2").build();
+    argument2      = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x1").build();
+    argument3      = new InputCodeArgumentBuilder(urf).hasName("imm").hasValue("0").build();
     inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("lhu")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
@@ -533,9 +533,9 @@ public class CodeLoadStoreInterpreterTest
   @Test
   public void storeTwoShort_loadOneInt_getShortCombinedValue()
   {
-    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x3").build();
-    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x2").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("0").build();
+    InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x3").build();
+    InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x2").build();
+    InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("imm").hasValue("0").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("sh")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
@@ -543,9 +543,9 @@ public class CodeLoadStoreInterpreterTest
             .getSecond();
     Assert.assertEquals(6, value);
     
-    argument1      = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x3").build();
-    argument2      = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x2").build();
-    argument3      = new InputCodeArgumentBuilder().hasName("imm").hasValue("2").build();
+    argument1      = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x3").build();
+    argument2      = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x2").build();
+    argument3      = new InputCodeArgumentBuilder(urf).hasName("imm").hasValue("2").build();
     inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("sh")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
@@ -553,9 +553,9 @@ public class CodeLoadStoreInterpreterTest
             .getSecond();
     Assert.assertEquals(6, value2);
     
-    argument1      = new InputCodeArgumentBuilder().hasName("rd").hasValue("x1").build();
-    argument2      = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x2").build();
-    argument3      = new InputCodeArgumentBuilder().hasName("imm").hasValue("0").build();
+    argument1      = new InputCodeArgumentBuilder(urf).hasName("rd").hasRegister("x1").build();
+    argument2      = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x2").build();
+    argument3      = new InputCodeArgumentBuilder(urf).hasName("imm").hasValue("0").build();
     inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("lwu")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
@@ -567,9 +567,9 @@ public class CodeLoadStoreInterpreterTest
   @Test
   public void storeOneShort_loadOneInt_getRandomValues()
   {
-    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x3").build();
-    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x2").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("0").build();
+    InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x3").build();
+    InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x2").build();
+    InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("imm").hasValue("0").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("sh")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
@@ -577,9 +577,9 @@ public class CodeLoadStoreInterpreterTest
             .getSecond();
     Assert.assertEquals(6, value);
     
-    argument1      = new InputCodeArgumentBuilder().hasName("rd").hasValue("x1").build();
-    argument2      = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x2").build();
-    argument3      = new InputCodeArgumentBuilder().hasName("imm").hasValue("0").build();
+    argument1      = new InputCodeArgumentBuilder(urf).hasName("rd").hasRegister("x1").build();
+    argument2      = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x2").build();
+    argument3      = new InputCodeArgumentBuilder(urf).hasName("imm").hasValue("0").build();
     inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("lwu")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     

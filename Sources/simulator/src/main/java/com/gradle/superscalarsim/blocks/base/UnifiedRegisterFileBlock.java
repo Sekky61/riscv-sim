@@ -53,11 +53,6 @@ import java.util.Map;
 @JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
 public class UnifiedRegisterFileBlock
 {
-  /**
-   * Multiplier on how many speculative registers should be created based on existing number of ISA registers
-   * TODO: Take the total number of registers on construction
-   */
-  private static final int specRegisterMultiplier = 10;
   
   /**
    * Mapping of names to register objects.

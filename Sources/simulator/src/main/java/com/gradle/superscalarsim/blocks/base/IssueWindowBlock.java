@@ -33,7 +33,6 @@
 package com.gradle.superscalarsim.blocks.base;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.blocks.AbstractBlock;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
@@ -72,23 +71,16 @@ public class IssueWindowBlock implements AbstractBlock
   private InstructionTypeEnum instructionType;
   
   /**
-   * Class containing all registers, that simulator uses
-   */
-  @JsonIdentityReference(alwaysAsId = true)
-  private UnifiedRegisterFileBlock registerFileBlock;
-  
-  /**
    * @param registerFileBlock Class containing all registers, that simulator uses
    *
    * @brief Constructor
    */
-  public IssueWindowBlock(InstructionTypeEnum instructionType, UnifiedRegisterFileBlock registerFileBlock)
+  public IssueWindowBlock(InstructionTypeEnum instructionType)
   {
     this.issuedInstructions    = new ArrayList<>();
     this.functionUnitBlockList = new ArrayList<>();
     
-    this.instructionType   = instructionType;
-    this.registerFileBlock = registerFileBlock;
+    this.instructionType = instructionType;
   }// end of Constructor
   //----------------------------------------------------------------------
   
@@ -135,7 +127,7 @@ public class IssueWindowBlock implements AbstractBlock
       for (SimCodeModel currentModel : this.issuedInstructions)
       {
         boolean isMatch = functionUnitBlock.canExecuteInstruction(currentModel);
-        boolean isReady = currentModel.isReadyToExecute(this.registerFileBlock);
+        boolean isReady = currentModel.isReadyToExecute();
         // Can instruction be issued?
         if (!isMatch || !isReady)
         {

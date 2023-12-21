@@ -52,13 +52,11 @@ public class InputCodeArgument
    * Example: rs1, imm, labelName.
    */
   private String name;
-  
   /**
    * Register value of the argument.
    */
   @JsonIdentityReference(alwaysAsId = true)
   private RegisterModel registerValue;
-  
   /**
    * Value of the argument.
    * Example: x5, 10, name of a label.
@@ -133,7 +131,6 @@ public class InputCodeArgument
   {
     return name;
   }// end of getName
-  //------------------------------------------------------
   
   /**
    * @return Argument value
@@ -151,6 +148,16 @@ public class InputCodeArgument
   public RegisterModel getRegisterValue()
   {
     return registerValue;
+  }
+  //------------------------------------------------------
+  
+  /**
+   * @brief Set register value of the argument. Used for speculative register renaming.
+   */
+  public void setRegisterValue(RegisterModel registerValue)
+  {
+    this.registerValue = registerValue;
+    this.stringValue   = registerValue.getName();
   }
   //------------------------------------------------------
   

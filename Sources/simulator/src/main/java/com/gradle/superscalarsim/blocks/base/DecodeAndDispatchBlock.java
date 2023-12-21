@@ -42,6 +42,7 @@ import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.models.InputCodeArgument;
 import com.gradle.superscalarsim.models.InstructionFunctionModel;
 import com.gradle.superscalarsim.models.SimCodeModel;
+import com.gradle.superscalarsim.models.register.RegisterModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,32 +55,52 @@ import java.util.OptionalInt;
 @JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
 public class DecodeAndDispatchBlock implements AbstractBlock
 {
-  /// List holding code before renaming for difference highlight
+  /**
+   * List holding code before renaming for difference highlight
+   */
   @JsonIdentityReference(alwaysAsId = true)
   private final List<SimCodeModel> beforeRenameCodeList;
-  /// List holding code with renamed registers ready for dispatch
+  /**
+   * List holding code with renamed registers ready for dispatch
+   */
   @JsonIdentityReference(alwaysAsId = true)
   private final List<SimCodeModel> afterRenameCodeList;
-  /// Instruction Fetch Block holding fetched instructions
+  /**
+   * Instruction Fetch Block holding fetched instructions
+   */
   @JsonIdentityReference(alwaysAsId = true)
   private final InstructionFetchBlock instructionFetchBlock;
-  /// Class holding all mappings from architectural to speculative
+  /**
+   * Class holding all mappings from architectural to speculative
+   */
   @JsonIdentityReference(alwaysAsId = true)
   private final RenameMapTableBlock renameMapTableBlock;
-  /// Bit register marking history of predictions
+  /**
+   * Bit register marking history of predictions
+   */
   @JsonIdentityReference(alwaysAsId = true)
   private final GlobalHistoryRegister globalHistoryRegister;
-  /// Buffer holding information about branch instructions targets
+  /**
+   * Buffer holding information about branch instructions targets
+   */
   @JsonIdentityReference(alwaysAsId = true)
   private final BranchTargetBuffer branchTargetBuffer;
-  /// Parser holding parsed instructions
+  /**
+   * Parser holding parsed instructions
+   */
   @JsonIdentityReference(alwaysAsId = true)
   private final InstructionMemoryBlock instructionMemoryBlock;
-  /// Counter giving out ids for instructions in order to correctly simulate backwards
+  /**
+   * Counter giving out ids for instructions in order to correctly simulate backwards
+   */
   private int idCounter;
-  /// Boolean flag indicating if the decode block should be flushed
+  /**
+   * Boolean flag indicating if the decode block should be flushed
+   */
   private boolean flush;
-  /// Boolean flag indicating that one of the buffers is full and should simulate according to that state
+  /**
+   * Boolean flag indicating that one of the buffers is full and should simulate according to that state
+   */
   private boolean stallFlag;
   /**
    * @brief Number of instructions that is pulled by the ROB
@@ -94,13 +115,12 @@ public class DecodeAndDispatchBlock implements AbstractBlock
   private int decodeBufferSize;
   
   /**
-   * @param [in]             instructionFetchBlock - Block fetching N instructions each clock event
-   * @param [in]             blockScheduleTask     - Task class, where blocks are periodically triggered by the GlobalTimer
-   * @param [in]             renameMapTableBlock   - Class holding mappings from architectural registers to speculative
-   * @param [in]             globalHistoryRegister - Bit register holding history of predictions
-   * @param [in]             branchTargetBuffer    - Buffer holding information about branch instructions targets
-   * @param [in]             codeParser            - Parser holding parsed instructions
-   * @param decodeBufferSize - Size of the decode buffer
+   * @param instructionFetchBlock Block fetching N instructions each clock event
+   * @param renameMapTableBlock   Class holding mappings from architectural registers to speculative
+   * @param globalHistoryRegister A bit register holding history of predictions
+   * @param branchTargetBuffer    Buffer holding information about branch instructions targets
+   * @param codeParser            Parser holding parsed instructions
+   * @param decodeBufferSize      Size of the decode buffer
    *
    * @brief Constructor
    */
@@ -116,7 +136,7 @@ public class DecodeAndDispatchBlock implements AbstractBlock
     
     this.beforeRenameCodeList = new ArrayList<>();
     this.afterRenameCodeList  = new ArrayList<>();
-    this.idCounter            = -2;
+    this.idCounter            = -2; // todo
     this.stallFlag            = false;
     this.stalledPullCount     = 0;
     
@@ -179,7 +199,7 @@ public class DecodeAndDispatchBlock implements AbstractBlock
   //----------------------------------------------------------------------
   
   /**
-   * @param [in] stalledPullCount - Number of the pulled instructions
+   * @param stalledPullCount Number of the pulled instructions
    *
    * @brief Set the number of instructions, that were pulled by the Reorder buffer
    */
@@ -190,7 +210,7 @@ public class DecodeAndDispatchBlock implements AbstractBlock
   //----------------------------------------------------------------------
   
   /**
-   * @param [in] flush - New value of the flush flag
+   * @param flush New value of the flush flag
    *
    * @brief Sets the flush flag
    */
@@ -201,7 +221,7 @@ public class DecodeAndDispatchBlock implements AbstractBlock
   //----------------------------------------------------------------------
   
   /**
-   * @param [in] shouldStall - New boolean value of the stall flag
+   * @param shouldStall New boolean value of the stall flag
    *
    * @brief Sets the stall flag
    */
@@ -301,15 +321,6 @@ public class DecodeAndDispatchBlock implements AbstractBlock
   //----------------------------------------------------------------------
   
   /**
-   * @brief Decrement ID for next decode step for backward simulation
-   */
-  private void lowerStepId()
-  {
-    idCounter = idCounter <= -2 ? -2 : idCounter - 1;
-  }// end of lowerStepId
-  //----------------------------------------------------------------------
-  
-  /**
    * @brief Increment ID for next decode step for backward simulation
    */
   private void upStepId()
@@ -347,29 +358,28 @@ public class DecodeAndDispatchBlock implements AbstractBlock
   //----------------------------------------------------------------------
   
   /**
-   * @param [in,out] decodeCodeModel - CodeModel with registers to be renamed
+   * @param decodeCodeModel CodeModel with registers to be renamed
    *
    * @brief Checks map table if source registers were renamed in past and renames them in instruction (RAW conflict)
    */
   private void renameSourceRegisters(SimCodeModel simCodeModel)
   {
-    simCodeModel.getArguments().forEach(argument ->
-                                        {
-                                          String oldArgumentValue = argument.getValue();
-                                          boolean shouldRename = !argument.getName().equals("rd") && !argument.getName()
-                                                  .equals("imm");
-                                          if (shouldRename)
-                                          {
-                                            String rename = renameMapTableBlock.getMappingForRegister(oldArgumentValue);
-                                            argument.setValue(rename);
-                                            renameMapTableBlock.increaseReference(rename);
-                                          }
-                                        });
+    for (InputCodeArgument argument : simCodeModel.getArguments())
+    {
+      String  oldArgumentValue = argument.getValue();
+      boolean shouldRename     = !argument.getName().equals("rd") && !argument.getName().equals("imm");
+      if (shouldRename)
+      {
+        RegisterModel rename = renameMapTableBlock.getMappingForRegister(oldArgumentValue);
+        argument.setRegisterValue(rename);
+        renameMapTableBlock.increaseReference(rename.getName());
+      }
+    }
   }// end of renameSourceRegisters
   //----------------------------------------------------------------------
   
   /**
-   * @param [in,out] decodeCodeModel - CodeModel with registers to be renamed
+   * @param decodeCodeModel CodeModel with registers to be renamed
    *
    * @brief Renames registers in instruction (1st part of Tomasulo algorithm)
    */
@@ -381,18 +391,20 @@ public class DecodeAndDispatchBlock implements AbstractBlock
       if (argument.writeBack())
       {
         InputCodeArgument destinationArgument = simCodeModel.getArgumentByName(argument.name());
-        String            mappedReg           = renameMapTableBlock.mapRegister(destinationArgument.getValue(),
-                                                                                simCodeModel.getIntegerId());
-        destinationArgument.setValue(mappedReg);
+        RegisterModel mappedReg = renameMapTableBlock.mapRegister(destinationArgument.getValue(),
+                                                                  simCodeModel.getIntegerId());
+        assert mappedReg != null;
+        // Get reference
+        destinationArgument.setRegisterValue(mappedReg);
       }
     }
   }// end of renameDestinationRegister
   //----------------------------------------------------------------------
   
   /**
-   * @param [in,out] codeModel - Branch code model with arguments
-   * @param [in]     position  - Position of instruction in a fetched block
-   * @param [in]     modelId   - future Id that this instruction will receive
+   * @param codeModel Branch code model with arguments
+   * @param position  Position of instruction in a fetched block
+   * @param modelId   future ID that this instruction will receive
    *
    * @brief Processes branch instructions in decode block
    */
@@ -470,5 +482,14 @@ public class DecodeAndDispatchBlock implements AbstractBlock
       this.beforeRenameCodeList.remove(index);
     }
   }// end of removeInstructionsFromIndex
+  //----------------------------------------------------------------------
+  
+  /**
+   * @brief Decrement ID for next decode step for backward simulation
+   */
+  private void lowerStepId()
+  {
+    idCounter = idCounter <= -2 ? -2 : idCounter - 1;
+  }// end of lowerStepId
   //----------------------------------------------------------------------
 }

@@ -36,7 +36,6 @@ import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.gradle.superscalarsim.blocks.base.AbstractFunctionUnitBlock;
 import com.gradle.superscalarsim.blocks.base.IssueWindowBlock;
 import com.gradle.superscalarsim.blocks.base.ReorderBufferBlock;
-import com.gradle.superscalarsim.blocks.base.UnifiedRegisterFileBlock;
 import com.gradle.superscalarsim.code.CodeLoadStoreInterpreter;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
@@ -45,8 +44,6 @@ import com.gradle.superscalarsim.models.InputCodeArgument;
 import com.gradle.superscalarsim.models.Pair;
 import com.gradle.superscalarsim.models.SimCodeModel;
 import com.gradle.superscalarsim.models.register.RegisterModel;
-
-import java.util.Objects;
 
 /**
  * @class MemoryAccessUnit
@@ -73,12 +70,6 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
   private CodeLoadStoreInterpreter loadStoreInterpreter;
   
   /**
-   * Class containing all registers, that simulator uses
-   */
-  @JsonIdentityReference(alwaysAsId = true)
-  private UnifiedRegisterFileBlock registerFileBlock;
-  
-  /**
    * Clock cycle counter
    */
   private int cycleCount;
@@ -100,10 +91,6 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
    */
   private int baseDelay;
   
-  public MemoryAccessUnit()
-  {
-  }
-  
   /**
    * @param name                 Name of function unit
    * @param reorderBufferBlock   Class containing simulated Reorder Buffer
@@ -112,7 +99,6 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
    * @param loadBufferBlock      Buffer keeping all in-flight load instructions
    * @param storeBufferBlock     Buffer keeping all in-flight store instructions
    * @param loadStoreInterpreter Interpreter processing load/store instructions
-   * @param registerFileBlock    Class containing all registers, that simulator uses
    *
    * @brief Constructor
    */
@@ -121,14 +107,12 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
                           IssueWindowBlock issueWindowBlock,
                           LoadBufferBlock loadBufferBlock,
                           StoreBufferBlock storeBufferBlock,
-                          CodeLoadStoreInterpreter loadStoreInterpreter,
-                          UnifiedRegisterFileBlock registerFileBlock)
+                          CodeLoadStoreInterpreter loadStoreInterpreter)
   {
     super(description, issueWindowBlock, reorderBufferBlock);
     this.loadBufferBlock      = loadBufferBlock;
     this.storeBufferBlock     = storeBufferBlock;
     this.loadStoreInterpreter = loadStoreInterpreter;
-    this.registerFileBlock    = registerFileBlock;
     this.baseDelay            = description.latency;
   }// end of Constructor
   //----------------------------------------------------------------------
@@ -222,8 +206,7 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
       if (this.simCodeModel.isLoad())
       {
         InputCodeArgument destinationArgument = simCodeModel.getArgumentByName("rd");
-        RegisterModel destRegister = registerFileBlock.getRegister(
-                Objects.requireNonNull(destinationArgument).getValue());
+        RegisterModel     destRegister        = destinationArgument.getRegisterValue();
         destRegister.setValue(savedResult, simCodeModel.getInstructionFunctionModel().getArgumentByName("rd").type());
         destRegister.setReadiness(RegisterReadinessEnum.kExecuted);
         this.loadBufferBlock.setDestinationAvailable(simCodeId);

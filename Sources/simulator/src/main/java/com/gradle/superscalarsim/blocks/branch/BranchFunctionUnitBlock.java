@@ -38,7 +38,6 @@ import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.blocks.base.AbstractFunctionUnitBlock;
 import com.gradle.superscalarsim.blocks.base.IssueWindowBlock;
 import com.gradle.superscalarsim.blocks.base.ReorderBufferBlock;
-import com.gradle.superscalarsim.blocks.base.UnifiedRegisterFileBlock;
 import com.gradle.superscalarsim.code.CodeBranchInterpreter;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
@@ -52,17 +51,11 @@ import java.util.OptionalInt;
 @JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
 public class BranchFunctionUnitBlock extends AbstractFunctionUnitBlock
 {
-  /// Interpreter for interpreting executing instructions
+  /**
+   * Interpreter for interpreting executing instructions
+   */
   @JsonIdentityReference(alwaysAsId = true)
-  private CodeBranchInterpreter branchInterpreter;
-  /// Class containing all registers, that simulator uses
-  @JsonIdentityReference(alwaysAsId = true)
-  private UnifiedRegisterFileBlock registerFileBlock;
-  
-  public BranchFunctionUnitBlock()
-  {
-  
-  }
+  private final CodeBranchInterpreter branchInterpreter;
   
   /**
    * @param name               Name of the function unit
@@ -74,9 +67,11 @@ public class BranchFunctionUnitBlock extends AbstractFunctionUnitBlock
    */
   public BranchFunctionUnitBlock(FunctionalUnitDescription description,
                                  IssueWindowBlock issueWindowBlock,
-                                 ReorderBufferBlock reorderBufferBlock)
+                                 ReorderBufferBlock reorderBufferBlock,
+                                 CodeBranchInterpreter branchInterpreter)
   {
     super(description, issueWindowBlock, reorderBufferBlock);
+    this.branchInterpreter = branchInterpreter;
   }// end of Constructor
   
   /**
@@ -89,28 +84,6 @@ public class BranchFunctionUnitBlock extends AbstractFunctionUnitBlock
   {
     return simCodeModel.getInstructionFunctionModel().getInstructionType() == InstructionTypeEnum.kJumpbranch;
   }
-  //----------------------------------------------------------------------
-  
-  /**
-   * @param branchInterpreter Branch interpreter object
-   *
-   * @brief Injects Branch interpreter to the FU
-   */
-  public void addBranchInterpreter(CodeBranchInterpreter branchInterpreter)
-  {
-    this.branchInterpreter = branchInterpreter;
-  }// end of addBranchInterpreter
-  //----------------------------------------------------------------------
-  
-  /**
-   * @param registerFileBlock UnifiedRegisterFileBlock object with all registers
-   *
-   * @brief Injects UnifiedRegisterFileBlock to the FU
-   */
-  public void addRegisterFileBlock(UnifiedRegisterFileBlock registerFileBlock)
-  {
-    this.registerFileBlock = registerFileBlock;
-  }// end of addRegisterFileBlock
   //----------------------------------------------------------------------
   
   /**
@@ -169,7 +142,7 @@ public class BranchFunctionUnitBlock extends AbstractFunctionUnitBlock
     if (destinationArgument != null)
     {
       // Write the result to the register
-      RegisterModel reg                     = registerFileBlock.getRegister(destinationArgument.getValue());
+      RegisterModel reg                     = destinationArgument.getRegisterValue();
       int           nextInstructionPosition = instructionPosition + 4;
       reg.setValue(nextInstructionPosition);
       reg.setReadiness(RegisterReadinessEnum.kExecuted);

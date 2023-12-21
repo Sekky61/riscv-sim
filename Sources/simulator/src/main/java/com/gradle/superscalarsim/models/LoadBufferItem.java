@@ -37,6 +37,7 @@ public class LoadBufferItem
 {
   /**
    * Name of the destination register (result)
+   * TODO: change to a reference to the register
    */
   private final String destinationRegister;
   

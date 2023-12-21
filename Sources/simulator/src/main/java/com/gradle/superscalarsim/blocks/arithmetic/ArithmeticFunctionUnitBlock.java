@@ -36,7 +36,6 @@ import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.gradle.superscalarsim.blocks.base.AbstractFunctionUnitBlock;
 import com.gradle.superscalarsim.blocks.base.IssueWindowBlock;
 import com.gradle.superscalarsim.blocks.base.ReorderBufferBlock;
-import com.gradle.superscalarsim.blocks.base.UnifiedRegisterFileBlock;
 import com.gradle.superscalarsim.code.CodeArithmeticInterpreter;
 import com.gradle.superscalarsim.code.Expression;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
@@ -68,17 +67,29 @@ public class ArithmeticFunctionUnitBlock extends AbstractFunctionUnitBlock
   @JsonIdentityReference(alwaysAsId = true)
   private CodeArithmeticInterpreter arithmeticInterpreter;
   
-  /**
-   * Class containing all registers, that simulator uses
-   */
-  @JsonIdentityReference(alwaysAsId = true)
-  private UnifiedRegisterFileBlock registerFileBlock;
-  
   public ArithmeticFunctionUnitBlock()
   {
     // Empty
     this.allowedOperators = new ArrayList<>();
   }
+  
+  /**
+   * @param name               Name of the function unit
+   * @param delay              Delay for function unit
+   * @param issueWindowBlock   Issue window block for comparing instruction and data types
+   * @param allowedOperators   Array of all supported operators by this FU
+   * @param reorderBufferBlock Class containing simulated Reorder Buffer
+   *
+   * @brief Constructor
+   */
+  public ArithmeticFunctionUnitBlock(FunctionalUnitDescription description,
+                                     IssueWindowBlock issueWindowBlock,
+                                     List<String> allowedOperators,
+                                     ReorderBufferBlock reorderBufferBlock)
+  {
+    super(description, issueWindowBlock, reorderBufferBlock);
+    this.allowedOperators = allowedOperators;
+  }// end of Constructor
   
   /**
    * @param simCodeModel Instruction to be executed
@@ -116,24 +127,6 @@ public class ArithmeticFunctionUnitBlock extends AbstractFunctionUnitBlock
     }
     return true;
   }
-  
-  /**
-   * @param name               Name of the function unit
-   * @param delay              Delay for function unit
-   * @param issueWindowBlock   Issue window block for comparing instruction and data types
-   * @param allowedOperators   Array of all supported operators by this FU
-   * @param reorderBufferBlock Class containing simulated Reorder Buffer
-   *
-   * @brief Constructor
-   */
-  public ArithmeticFunctionUnitBlock(FunctionalUnitDescription description,
-                                     IssueWindowBlock issueWindowBlock,
-                                     List<String> allowedOperators,
-                                     ReorderBufferBlock reorderBufferBlock)
-  {
-    super(description, issueWindowBlock, reorderBufferBlock);
-    this.allowedOperators = allowedOperators;
-  }// end of Constructor
   //----------------------------------------------------------------------
   
   /**
@@ -145,18 +138,6 @@ public class ArithmeticFunctionUnitBlock extends AbstractFunctionUnitBlock
   {
     this.arithmeticInterpreter = arithmeticInterpreter;
   }// end of addArithmeticInterpreter
-  //----------------------------------------------------------------------
-  
-  
-  /**
-   * @param registerFileBlock UnifiedRegisterFileBlock object with all registers
-   *
-   * @brief Injects UnifiedRegisterFileBlock to the FU
-   */
-  public void addRegisterFileBlock(UnifiedRegisterFileBlock registerFileBlock)
-  {
-    this.registerFileBlock = registerFileBlock;
-  }// end of addRegisterFileBlock
   //----------------------------------------------------------------------
   
   /**
@@ -206,7 +187,7 @@ public class ArithmeticFunctionUnitBlock extends AbstractFunctionUnitBlock
     // Write result to the destination register
     InputCodeArgument   destinationArgument = simCodeModel.getArgumentByName("rd");
     Expression.Variable result              = arithmeticInterpreter.interpretInstruction(this.simCodeModel);
-    RegisterModel       reg                 = registerFileBlock.getRegister(destinationArgument.getValue());
+    RegisterModel       reg                 = destinationArgument.getRegisterValue();
     // TODO redundant?
     reg.setValueContainer(result.value);
     reg.setReadiness(RegisterReadinessEnum.kExecuted);

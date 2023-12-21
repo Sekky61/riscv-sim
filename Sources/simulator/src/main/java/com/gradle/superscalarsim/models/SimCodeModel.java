@@ -36,7 +36,6 @@ import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
-import com.gradle.superscalarsim.blocks.base.UnifiedRegisterFileBlock;
 import com.gradle.superscalarsim.code.Expression;
 import com.gradle.superscalarsim.code.Label;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
@@ -468,9 +467,7 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
    * @return Variables used in the instruction in the form for expression evaluation
    * @brief reads current register values (including speculative values), the PC, constants
    */
-  public List<Expression.Variable> getVariables(List<String> variableNames,
-                                                UnifiedRegisterFileBlock registerFileBlock,
-                                                Map<String, Label> labels)
+  public List<Expression.Variable> getVariables(List<String> variableNames, Map<String, Label> labels)
   {
     List<Expression.Variable> variables                = new ArrayList<>();
     InstructionFunctionModel  instructionFunctionModel = getInstructionFunctionModel();
@@ -490,10 +487,11 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
       }
       
       // Variable is an argument of the instruction (rs1/imm)
-      String name        = argument.name();
-      String renamedName = getArgumentByName(name).getValue();
+      String            name        = argument.name();
+      InputCodeArgument arg         = getArgumentByName(name);
+      String            renamedName = arg.getValue();
       // Check if value is register
-      RegisterModel register = registerFileBlock.getRegister(renamedName);
+      RegisterModel register = arg.getRegisterValue();
       if (register != null)
       {
         // Register found (or its speculative rename)
@@ -501,7 +499,8 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
       }
       else
       {
-        //It is an immediate - constant or a label
+        // It is an immediate - constant or a label
+        // todo make this read from the argument - it works, but does not pass the setup of some tests
         Expression.Variable parsed = Expression.parseConstant(renamedName);
         if (parsed != null)
         {
@@ -570,7 +569,7 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
   /**
    * @return True if the instruction is ready to be executed, false otherwise.
    */
-  public boolean isReadyToExecute(UnifiedRegisterFileBlock registerFileBlock)
+  public boolean isReadyToExecute()
   {
     for (InputCodeArgument argument : getArguments())
     {
@@ -578,10 +577,9 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
       {
         continue;
       }
-      String                registerName = argument.getValue();
-      RegisterModel         reg          = registerFileBlock.getRegister(registerName);
-      RegisterReadinessEnum readiness    = reg.getReadiness();
-      boolean               validity     = readiness == RegisterReadinessEnum.kExecuted || readiness == RegisterReadinessEnum.kAssigned;
+      RegisterModel         reg       = argument.getRegisterValue();
+      RegisterReadinessEnum readiness = reg.getReadiness();
+      boolean               validity  = readiness == RegisterReadinessEnum.kExecuted || readiness == RegisterReadinessEnum.kAssigned;
       if (!validity)
       {
         return false;

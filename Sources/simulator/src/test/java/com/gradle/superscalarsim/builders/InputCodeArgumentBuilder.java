@@ -1,16 +1,22 @@
 package com.gradle.superscalarsim.builders;
 
+import com.gradle.superscalarsim.blocks.base.UnifiedRegisterFileBlock;
 import com.gradle.superscalarsim.models.InputCodeArgument;
+import com.gradle.superscalarsim.models.register.RegisterModel;
 
 public class InputCodeArgumentBuilder
 {
   private String name;
   private String value;
+  private RegisterModel registerModel;
   
-  public InputCodeArgumentBuilder()
+  UnifiedRegisterFileBlock unifiedRegisterFileBlock;
+  
+  public InputCodeArgumentBuilder(UnifiedRegisterFileBlock unifiedRegisterFileBlock)
   {
-    this.name  = "";
-    this.value = "";
+    this.name                     = "";
+    this.value                    = "";
+    this.unifiedRegisterFileBlock = unifiedRegisterFileBlock;
   }
   
   public InputCodeArgumentBuilder hasName(String name)
@@ -25,8 +31,15 @@ public class InputCodeArgumentBuilder
     return this;
   }
   
+  public InputCodeArgumentBuilder hasRegister(String regName)
+  {
+    this.value         = regName;
+    this.registerModel = unifiedRegisterFileBlock.getRegister(regName);
+    return this;
+  }
+  
   public InputCodeArgument build()
   {
-    return new InputCodeArgument(this.name, this.value);
+    return new InputCodeArgument(this.name, this.value, registerModel);
   }
 }
