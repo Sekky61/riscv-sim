@@ -73,63 +73,48 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
    * The order of arguments is the same as in the original code line and tests depend on this order.
    */
   private final List<InputCodeArgument> renamedArguments;
-  
-  /**
-   * Number marking bulk of instructions, which was fetched together
-   */
-  private int instructionBulkNumber;
-  
   /**
    * ID, when was instructions accepted by the issue window
    */
   private int issueWindowId;
-  
   /**
    * ID of the function block, which processed this instruction
    */
   private int functionUnitId;
-  
   /**
    * ID marking when was result ready
    */
   private int readyId;
-  
   /**
    * ID marking when was instruction committed from ROB
    */
   private int commitId;
-  
   /**
    * True if simcodemodel has left the system (committed, flushed).
    * A finished simcodemodel can be safely deleted.
    */
   private boolean isFinished;
-  
   /**
    * Bit value marking failure due to wrong branch prediction
    */
   private boolean hasFailed;
-  
   /**
    * Saved value of the PC, when instruction was fetched
    * Used for load/store and branch instructions
    * TODO: Optional
    */
   private int savedPc;
-  
   /**
    * Prediction made by branch predictor at the time of fetching.
    * Used for branch instructions.
    */
   private boolean branchPredicted;
-  
   /**
    * Result of the branch computation.
    * Used to check for mispredictions.
    * True means branch was taken.
    */
   private boolean branchLogicResult;
-  
   /**
    * Target of the branch instruction (offset from the savedPc).
    * Used to fix BTB and PC in misprediction.
@@ -137,21 +122,19 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
   private int branchTargetOffset;
   
   /**
-   * @param inputCodeModel        Original code model
-   * @param id                    Number marking when was code accepted
-   * @param instructionBulkNumber Number marking bulk of instructions, which was fetched together
+   * @param inputCodeModel Original code model
+   * @param id             Number marking when was code accepted
    *
    * @brief Constructor which copies original InputCodeModel
    * This constructor can be used only through the SimCodeModelAllocator
    */
-  public SimCodeModel(InputCodeModel inputCodeModel, int id, int instructionBulkNumber)
+  public SimCodeModel(InputCodeModel inputCodeModel, int id)
   {
-    this.inputCodeModel        = inputCodeModel;
-    this.id                    = id;
-    this.commitId              = -1;
-    this.isFinished            = false;
-    this.instructionBulkNumber = instructionBulkNumber;
-    this.hasFailed             = false;
+    this.inputCodeModel = inputCodeModel;
+    this.id             = id;
+    this.commitId       = -1;
+    this.isFinished     = false;
+    this.hasFailed      = false;
     // Copy arguments
     this.renamedArguments = new ArrayList<>();
     for (InputCodeArgument argument : inputCodeModel.getArguments())
@@ -159,7 +142,59 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
       this.renamedArguments.add(new InputCodeArgument(argument));
     }
   }// end of Constructor
+  
+  public int getIssueWindowId()
+  {
+    return issueWindowId;
+  }
+  
+  /**
+   * @param windowId ID, when was instruction accepted to issue window
+   *
+   * @brief Sets accepted id to issue window
+   */
+  public void setIssueWindowId(int windowId)
+  {
+    this.issueWindowId = windowId;
+  }// end of setIssueWindowId
+  
+  public int getFunctionUnitId()
+  {
+    return functionUnitId;
+  }
+  
+  /**
+   * @param functionUnitId ID of function block, which processed this instruction
+   *
+   * @brief Sets id of function block, which processed this instruction
+   */
+  public void setFunctionUnitId(int functionUnitId)
+  {
+    this.functionUnitId = functionUnitId;
+  }// end of setFunctionUnitId
   //------------------------------------------------------
+  
+  public int getReadyId()
+  {
+    return readyId;
+  }
+  //------------------------------------------------------
+  
+  public int getCommitId()
+  {
+    return commitId;
+  }
+  //------------------------------------------------------
+  
+  /**
+   * @param commitId ID of when was instruction committed
+   *
+   * @brief Sets id of when was instruction's result ready
+   */
+  public void setCommitId(int commitId)
+  {
+    this.commitId = commitId;
+  }// end of setCommitId
   
   /**
    * @param codeModel Model to be compared to
@@ -192,98 +227,6 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
   {
     return Integer.toString(this.id);
   }
-  
-  /**
-   * @return Integer value of bulk number
-   * @brief Gets number marking when was code processed
-   */
-  public int getInstructionBulkNumber()
-  {
-    return instructionBulkNumber;
-  }// end of getId
-  //------------------------------------------------------
-  
-  /**
-   * @return tick when the instruction was accepted to issue window, 0 if not yet processed
-   * @brief Gets accepted id to issue window
-   */
-  public int getIssueWindowId()
-  {
-    return issueWindowId;
-  }// end of getIssueWindowId
-  //------------------------------------------------------
-  
-  /**
-   * @param [in] windowId - Id, when was instruction accepted to issue window
-   *
-   * @brief Sets accepted id to issue window
-   */
-  public void setIssueWindowId(int windowId)
-  {
-    this.issueWindowId = windowId;
-  }// end of setIssueWindowId
-  //------------------------------------------------------
-  
-  /**
-   * @return ID of function block, which processed this instruction, 0 if not yet processed
-   * @brief Gets id of function block, which processed this instruction
-   */
-  public int getFunctionUnitId()
-  {
-    return functionUnitId;
-  }// end of getFunctionUnitId
-  //------------------------------------------------------
-  
-  /**
-   * @param functionUnitId ID of function block, which processed this instruction
-   *
-   * @brief Sets id of function block, which processed this instruction
-   */
-  public void setFunctionUnitId(int functionUnitId)
-  {
-    this.functionUnitId = functionUnitId;
-  }// end of setFunctionUnitId
-  //------------------------------------------------------
-  
-  /**
-   * @return ID of when was instruction's result ready, 0 if not yet processed
-   * @brief Gets id of when was instruction's result ready
-   */
-  public int getReadyId()
-  {
-    return readyId;
-  }// end of getReadyId
-  
-  /**
-   * @param readyId ID of when was instruction's result ready
-   *
-   * @brief Sets id of when was instruction's result ready
-   */
-  public void setReadyId(int readyId)
-  {
-    this.readyId = readyId;
-  }// end of setReadyId
-  //------------------------------------------------------
-  
-  /**
-   * @return ID of when was instruction committed, 0 if not yet processed
-   * @brief Gets id of when was instruction committed
-   */
-  public int getCommitId()
-  {
-    return commitId;
-  }// end of getCommitId
-  //------------------------------------------------------
-  
-  /**
-   * @param commitId ID of when was instruction committed
-   *
-   * @brief Sets id of when was instruction's result ready
-   */
-  public void setCommitId(int commitId)
-  {
-    this.commitId = commitId;
-  }// end of setCommitId
   //------------------------------------------------------
   
   /**
@@ -297,7 +240,7 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
   //------------------------------------------------------
   
   /**
-   * @param hasFailed - Has instruction failed to finish due to missprediction?
+   * @param hasFailed - Has instruction failed to finish due to miss-prediction?
    *
    * @brief Set bit marking to failure due to wrong prediction
    */
@@ -437,22 +380,6 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
   public InstructionFunctionModel getInstructionFunctionModel()
   {
     return inputCodeModel.getInstructionFunctionModel();
-  }
-  
-  /**
-   * @return Original arguments of the instruction (without renaming)
-   */
-  public List<InputCodeArgument> getOriginalArguments()
-  {
-    return inputCodeModel.getArguments();
-  }
-  
-  /**
-   * @return True if simcodemodel has left the system (committed, flushed)
-   */
-  public boolean isFinished()
-  {
-    return isFinished;
   }
   
   /**

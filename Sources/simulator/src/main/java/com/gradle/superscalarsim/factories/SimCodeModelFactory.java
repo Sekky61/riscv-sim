@@ -53,14 +53,10 @@ public class SimCodeModelFactory
     this.manager = manager;
   }
   
-  public SimCodeModel createInstance(InputCodeModel inputCodeModel, int id, int instructionBulkNumber)
+  public SimCodeModel createInstance(InputCodeModel inputCodeModel, int id)
   {
-    SimCodeModel instance = new SimCodeModel(inputCodeModel, id, instructionBulkNumber);
-    if (manager == null)
-    {
-      // System.err.println("SimCodeModelFactory: manager is null");
-    }
-    else
+    SimCodeModel instance = new SimCodeModel(inputCodeModel, id);
+    if (manager != null)
     {
       manager.addInstance(instance);
     }

@@ -87,13 +87,13 @@ public class DecodeAndDispatchBlockTest
     
     InputCodeModel ins1 = new InputCodeModelBuilder().hasLoader(loader).hasInstructionName("add")
             .hasCodeLine("add x1,x2,x3").hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    SimCodeModel sim1 = new SimCodeModel(ins1, 0, 0);
+    SimCodeModel sim1 = new SimCodeModel(ins1, 0);
     InputCodeModel ins2 = new InputCodeModelBuilder().hasLoader(loader).hasInstructionName("sub")
             .hasCodeLine("sub x1,x2,x3").hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    SimCodeModel sim2 = new SimCodeModel(ins2, 0, 0);
+    SimCodeModel sim2 = new SimCodeModel(ins2, 0);
     InputCodeModel ins3 = new InputCodeModelBuilder().hasLoader(loader).hasInstructionName("mul")
             .hasCodeLine("mul x1,x2,x3").hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    SimCodeModel       sim3         = new SimCodeModel(ins3, 0, 0);
+    SimCodeModel       sim3         = new SimCodeModel(ins3, 0);
     List<SimCodeModel> instructions = Arrays.asList(sim1, sim2, sim3);
     Mockito.when(instructionFetchBlock.getFetchedCode()).thenReturn(instructions);
     
@@ -123,13 +123,13 @@ public class DecodeAndDispatchBlockTest
     
     InputCodeModel ins1 = new InputCodeModelBuilder().hasLoader(loader).hasInstructionName("add")
             .hasCodeLine("add x1,x2,x3").hasArguments(Arrays.asList(argumentAdd1, argumentAdd2, argumentAdd3)).build();
-    SimCodeModel sim1 = new SimCodeModel(ins1, 0, 0);
+    SimCodeModel sim1 = new SimCodeModel(ins1, 0);
     InputCodeModel ins2 = new InputCodeModelBuilder().hasLoader(loader).hasInstructionName("sub")
             .hasCodeLine("sub x2,x3,x4").hasArguments(Arrays.asList(argumentSub1, argumentSub2, argumentSub3)).build();
-    SimCodeModel sim2 = new SimCodeModel(ins2, 0, 0);
+    SimCodeModel sim2 = new SimCodeModel(ins2, 0);
     InputCodeModel ins3 = new InputCodeModelBuilder().hasLoader(loader).hasInstructionName("mul")
             .hasCodeLine("mul x3,x4,x5").hasArguments(Arrays.asList(argumentMul1, argumentMul2, argumentMul3)).build();
-    SimCodeModel       sim3         = new SimCodeModel(ins3, 0, 0);
+    SimCodeModel       sim3         = new SimCodeModel(ins3, 0);
     List<SimCodeModel> instructions = Arrays.asList(sim1, sim2, sim3);
     Mockito.when(instructionFetchBlock.getFetchedCode()).thenReturn(instructions);
     
@@ -159,13 +159,13 @@ public class DecodeAndDispatchBlockTest
     
     InputCodeModel ins1 = new InputCodeModelBuilder().hasLoader(loader).hasInstructionName("add")
             .hasCodeLine("add x3,x4,x5").hasArguments(Arrays.asList(argumentAdd1, argumentAdd2, argumentAdd3)).build();
-    SimCodeModel sim1 = new SimCodeModel(ins1, 0, 0);
+    SimCodeModel sim1 = new SimCodeModel(ins1, 0);
     InputCodeModel ins2 = new InputCodeModelBuilder().hasLoader(loader).hasInstructionName("sub")
             .hasCodeLine("sub x2,x3,x4").hasArguments(Arrays.asList(argumentSub1, argumentSub2, argumentSub3)).build();
-    SimCodeModel sim2 = new SimCodeModel(ins2, 0, 0);
+    SimCodeModel sim2 = new SimCodeModel(ins2, 0);
     InputCodeModel ins3 = new InputCodeModelBuilder().hasLoader(loader).hasInstructionName("mul")
             .hasCodeLine("mul x1,x2,x3").hasArguments(Arrays.asList(argumentMul1, argumentMul2, argumentMul3)).build();
-    SimCodeModel       sim3         = new SimCodeModel(ins3, 0, 0);
+    SimCodeModel       sim3         = new SimCodeModel(ins3, 0);
     List<SimCodeModel> instructions = Arrays.asList(sim1, sim2, sim3);
     Mockito.when(instructionFetchBlock.getFetchedCode()).thenReturn(instructions);
     

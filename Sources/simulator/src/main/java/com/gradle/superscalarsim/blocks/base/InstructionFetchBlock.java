@@ -212,7 +212,7 @@ public class InstructionFetchBlock implements AbstractBlock
       // Unique ID of the instruction
       int simCodeId = this.cycleId * numberOfWays + i;
       SimCodeModel codeModel = this.simCodeModelFactory.createInstance(instructionMemoryBlock.getInstructionAt(pc),
-                                                                       simCodeId, cycleId);
+                                                                       simCodeId);
       
       codeModel.setSavedPc(pc);
       
@@ -228,7 +228,7 @@ public class InstructionFetchBlock implements AbstractBlock
           for (int j = i; j < numberOfWays; j++)
           {
             SimCodeModel nopCodeModel = this.simCodeModelFactory.createInstance(instructionMemoryBlock.getNop(),
-                                                                                simCodeId, cycleId);
+                                                                                simCodeId);
             nopCodeModel.setSavedPc(pc);
             fetchedCode.add(nopCodeModel);
           }
@@ -272,17 +272,6 @@ public class InstructionFetchBlock implements AbstractBlock
   //----------------------------------------------------------------------
   
   /**
-   * Get fetched instructions
-   *
-   * @return Fetched instructions
-   */
-  public List<SimCodeModel> getFetchedCode()
-  {
-    return fetchedCode;
-  }// end of getFetchedCode
-  //----------------------------------------------------------------------
-  
-  /**
    * @brief Clears fetched code buffer
    */
   public void clearFetchedCode()
@@ -293,6 +282,17 @@ public class InstructionFetchBlock implements AbstractBlock
     }
     this.fetchedCode.clear();
   }
+  //----------------------------------------------------------------------
+  
+  /**
+   * Get fetched instructions
+   *
+   * @return Fetched instructions
+   */
+  public List<SimCodeModel> getFetchedCode()
+  {
+    return fetchedCode;
+  }// end of getFetchedCode
   
   /**
    * Gets current PC counter value
