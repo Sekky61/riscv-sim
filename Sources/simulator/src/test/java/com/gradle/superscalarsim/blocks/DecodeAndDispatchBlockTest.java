@@ -81,9 +81,9 @@ public class DecodeAndDispatchBlockTest
   @Test
   public void decodeAndDispatchSimulate_wawDependency_renamesDestinationRegisters()
   {
-    InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rd").hasValue("x1").build();
-    InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasValue("x2").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasValue("x3").build();
+    InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rd").hasRegister("x1").build();
+    InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x2").build();
+    InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x3").build();
     
     InputCodeModel ins1 = new InputCodeModelBuilder().hasLoader(loader).hasInstructionName("add")
             .hasCodeLine("add x1,x2,x3").hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
@@ -108,17 +108,17 @@ public class DecodeAndDispatchBlockTest
   @Test
   public void decodeAndDispatchSimulate_warDependency_renamesDestinationRegisters()
   {
-    InputCodeArgument argumentAdd1 = new InputCodeArgumentBuilder(urf).hasName("rd").hasValue("x1").build();
-    InputCodeArgument argumentAdd2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasValue("x2").build();
-    InputCodeArgument argumentAdd3 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasValue("x3").build();
+    InputCodeArgument argumentAdd1 = new InputCodeArgumentBuilder(urf).hasName("rd").hasRegister("x1").build();
+    InputCodeArgument argumentAdd2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x2").build();
+    InputCodeArgument argumentAdd3 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x3").build();
     
-    InputCodeArgument argumentSub1 = new InputCodeArgumentBuilder(urf).hasName("rd").hasValue("x2").build();
-    InputCodeArgument argumentSub2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasValue("x3").build();
-    InputCodeArgument argumentSub3 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasValue("x4").build();
+    InputCodeArgument argumentSub1 = new InputCodeArgumentBuilder(urf).hasName("rd").hasRegister("x2").build();
+    InputCodeArgument argumentSub2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x3").build();
+    InputCodeArgument argumentSub3 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x4").build();
     
-    InputCodeArgument argumentMul1 = new InputCodeArgumentBuilder(urf).hasName("rd").hasValue("x3").build();
-    InputCodeArgument argumentMul2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasValue("x4").build();
-    InputCodeArgument argumentMul3 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasValue("x5").build();
+    InputCodeArgument argumentMul1 = new InputCodeArgumentBuilder(urf).hasName("rd").hasRegister("x3").build();
+    InputCodeArgument argumentMul2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x4").build();
+    InputCodeArgument argumentMul3 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x5").build();
     
     
     InputCodeModel ins1 = new InputCodeModelBuilder().hasLoader(loader).hasInstructionName("add")
@@ -144,17 +144,17 @@ public class DecodeAndDispatchBlockTest
   @Test
   public void decodeAndDispatchSimulate_rawDependency_renamesAllRegisters()
   {
-    InputCodeArgument argumentAdd1 = new InputCodeArgumentBuilder(urf).hasName("rd").hasValue("x3").build();
-    InputCodeArgument argumentAdd2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasValue("x4").build();
-    InputCodeArgument argumentAdd3 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasValue("x5").build();
+    InputCodeArgument argumentAdd1 = new InputCodeArgumentBuilder(urf).hasName("rd").hasRegister("x3").build();
+    InputCodeArgument argumentAdd2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x4").build();
+    InputCodeArgument argumentAdd3 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x5").build();
     
-    InputCodeArgument argumentSub1 = new InputCodeArgumentBuilder(urf).hasName("rd").hasValue("x2").build();
-    InputCodeArgument argumentSub2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasValue("x3").build();
-    InputCodeArgument argumentSub3 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasValue("x4").build();
+    InputCodeArgument argumentSub1 = new InputCodeArgumentBuilder(urf).hasName("rd").hasRegister("x2").build();
+    InputCodeArgument argumentSub2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x3").build();
+    InputCodeArgument argumentSub3 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x4").build();
     
-    InputCodeArgument argumentMul1 = new InputCodeArgumentBuilder(urf).hasName("rd").hasValue("x1").build();
-    InputCodeArgument argumentMul2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasValue("x2").build();
-    InputCodeArgument argumentMul3 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasValue("x3").build();
+    InputCodeArgument argumentMul1 = new InputCodeArgumentBuilder(urf).hasName("rd").hasRegister("x1").build();
+    InputCodeArgument argumentMul2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x2").build();
+    InputCodeArgument argumentMul3 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x3").build();
     
     
     InputCodeModel ins1 = new InputCodeModelBuilder().hasLoader(loader).hasInstructionName("add")

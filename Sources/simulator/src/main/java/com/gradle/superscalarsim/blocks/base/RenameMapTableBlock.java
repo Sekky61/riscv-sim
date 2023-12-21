@@ -119,7 +119,7 @@ public class RenameMapTableBlock
    */
   public void clear()
   {
-    // Broken clear. TODO: remove all clearing and reseting. We have CpuConfiguration for that
+    // Broken clear. TODO: remove all clearing and resetting. We have CpuConfiguration for that
     //    this.registerFileBlock.refreshRegisters();
     this.freeList.clear();
     this.registerMap.clear();

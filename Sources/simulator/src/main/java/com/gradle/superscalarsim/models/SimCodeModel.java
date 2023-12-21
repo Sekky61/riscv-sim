@@ -500,24 +500,20 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
       else
       {
         // It is an immediate - constant or a label
-        // todo make this read from the argument - it works, but does not pass the setup of some tests
-        Expression.Variable parsed = Expression.parseConstant(renamedName);
-        if (parsed != null)
+        RegisterDataContainer constantValue = arg.getConstantValue();
+        if (constantValue != null)
         {
-          parsed.tag  = name;
-          parsed.type = argument.type();
-          variables.add(parsed);
+          variables.add(new Expression.Variable(name, argument.type(), constantValue));
+          continue;
         }
-        else
+        // Must be a label
+        if (labels != null && labels.containsKey(renamedName))
         {
-          if (labels != null && labels.containsKey(renamedName))
-          {
-            variables.add(new Expression.Variable(name, argument.type(),
-                                                  RegisterDataContainer.fromValue(labels.get(renamedName).address)));
-            continue;
-          }
-          throw new IllegalStateException("Could not parse " + renamedName + " as constant or label");
+          variables.add(new Expression.Variable(name, argument.type(),
+                                                RegisterDataContainer.fromValue(labels.get(renamedName).address)));
+          continue;
         }
+        throw new IllegalStateException("Could not parse " + renamedName + " as constant or label");
       }
     }
     

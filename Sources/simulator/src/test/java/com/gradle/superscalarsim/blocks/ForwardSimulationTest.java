@@ -1487,12 +1487,12 @@ public class ForwardSimulationTest
   public void simulate_oneStore_savesIntInMemory()
   {
     // Just a testing instruction
-    InputCodeArgument load1 = new InputCodeArgumentBuilder(unifiedRegisterFileBlock).hasName("rd").hasValue("x1")
+    InputCodeArgument load1 = new InputCodeArgumentBuilder(unifiedRegisterFileBlock).hasName("rd").hasRegister("x1")
             .build();
-    InputCodeArgument load2 = new InputCodeArgumentBuilder(unifiedRegisterFileBlock).hasName("rs1").hasValue("x2")
+    InputCodeArgument load2 = new InputCodeArgumentBuilder(unifiedRegisterFileBlock).hasName("rs1").hasRegister("x2")
             .build();
-    InputCodeArgument load3 = new InputCodeArgumentBuilder(unifiedRegisterFileBlock).hasName("imm").hasValue("0")
-            .build();
+    InputCodeArgument load3 = new InputCodeArgumentBuilder(unifiedRegisterFileBlock).hasName("imm")
+            .hasConstant("0", DataTypeEnum.kInt).build();
     InputCodeModel loadCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("lw")
             .hasCodeLine("lw x1,0(x2)").hasDataTypeEnum(DataTypeEnum.kInt)
             .hasInstructionTypeEnum(InstructionTypeEnum.kLoadstore).hasArguments(Arrays.asList(load1, load2, load3))

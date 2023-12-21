@@ -87,7 +87,7 @@ public class CodeBranchInterpreterTest
   public void unconditionalJump_interpret_returnsJumpDifference()
   {
     InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rd").hasRegister("x1").build();
-    InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("imm").hasValue("one").build();
+    InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("imm").hasLabel("one").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("jal")
             .hasArguments(Arrays.asList(argument1, argument2)).build();
     SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0, 0);
@@ -100,7 +100,7 @@ public class CodeBranchInterpreterTest
   {
     InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x1").build();
     InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x1").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("imm").hasValue("two").build();
+    InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("imm").hasLabel("two").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("beq")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0, 0);
@@ -114,7 +114,7 @@ public class CodeBranchInterpreterTest
   {
     InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x1").build();
     InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x2").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("imm").hasValue("two").build();
+    InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("imm").hasLabel("two").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("beq")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0, 0);
@@ -128,7 +128,7 @@ public class CodeBranchInterpreterTest
   {
     InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x1").build();
     InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x2").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("imm").hasValue("three").build();
+    InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("imm").hasLabel("three").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("bne")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0, 0);
@@ -142,7 +142,7 @@ public class CodeBranchInterpreterTest
   {
     InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x1").build();
     InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x1").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("imm").hasValue("three").build();
+    InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("imm").hasLabel("three").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("bne")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0, 0);
@@ -155,7 +155,7 @@ public class CodeBranchInterpreterTest
   {
     InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x4").build();
     InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x1").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("imm").hasValue("one").build();
+    InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("imm").hasLabel("one").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("blt")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0, 0);
@@ -178,7 +178,7 @@ public class CodeBranchInterpreterTest
     // blt x1 x4 one
     InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x1").build();
     InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x4").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("imm").hasValue("one").build();
+    InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("imm").hasLabel("one").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("blt")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0, 0);
@@ -191,7 +191,7 @@ public class CodeBranchInterpreterTest
   {
     InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x1").build();
     InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x4").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("imm").hasValue("one").build();
+    InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("imm").hasLabel("one").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("bltu")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0, 0);
@@ -205,7 +205,7 @@ public class CodeBranchInterpreterTest
   {
     InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x4").build();
     InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x1").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("imm").hasValue("one").build();
+    InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("imm").hasLabel("one").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("bltu")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0, 0);
@@ -219,7 +219,7 @@ public class CodeBranchInterpreterTest
   {
     InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x1").build();
     InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x4").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("imm").hasValue("one").build();
+    InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("imm").hasLabel("one").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("bge")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0, 0);
@@ -233,7 +233,7 @@ public class CodeBranchInterpreterTest
   {
     InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x1").build();
     InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x1").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("imm").hasValue("one").build();
+    InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("imm").hasLabel("one").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("bge")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0, 0);
@@ -247,7 +247,7 @@ public class CodeBranchInterpreterTest
   {
     InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x4").build();
     InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x1").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("imm").hasValue("one").build();
+    InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("imm").hasLabel("one").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("bge")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0, 0);
@@ -260,7 +260,7 @@ public class CodeBranchInterpreterTest
   {
     InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x4").build();
     InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x1").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("imm").hasValue("one").build();
+    InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("imm").hasLabel("one").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("bgeu")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0, 0);
@@ -274,7 +274,7 @@ public class CodeBranchInterpreterTest
   {
     InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x1").build();
     InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x1").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("imm").hasValue("one").build();
+    InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("imm").hasLabel("one").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("bgeu")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0, 0);
@@ -288,7 +288,7 @@ public class CodeBranchInterpreterTest
   {
     InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x1").build();
     InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x4").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("imm").hasValue("one").build();
+    InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("imm").hasLabel("one").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("bgeu")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0, 0);

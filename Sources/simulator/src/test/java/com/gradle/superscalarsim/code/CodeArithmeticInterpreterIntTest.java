@@ -234,7 +234,8 @@ public class CodeArithmeticInterpreterIntTest
   {
     InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rd").hasRegister("x1").build();
     InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x2").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasValue("2").build();
+    InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasConstant("2", DataTypeEnum.kInt)
+            .build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("shiftLeft")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
@@ -249,7 +250,8 @@ public class CodeArithmeticInterpreterIntTest
   {
     InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rd").hasRegister("x1").build();
     InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x2").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasValue("2").build();
+    InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasConstant("2", DataTypeEnum.kInt)
+            .build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("shiftRight")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
@@ -263,7 +265,8 @@ public class CodeArithmeticInterpreterIntTest
   {
     InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rd").hasRegister("x1").build();
     InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x4").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasValue("1").build();
+    InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasConstant("1", DataTypeEnum.kInt)
+            .build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("shiftRight")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
@@ -277,7 +280,8 @@ public class CodeArithmeticInterpreterIntTest
   {
     InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rd").hasRegister("x1").build();
     InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x4").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasValue("1").build();
+    InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasConstant("1", DataTypeEnum.kInt)
+            .build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader)
             .hasInstructionName("shiftRightLog").hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);

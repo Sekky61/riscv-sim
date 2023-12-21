@@ -46,7 +46,7 @@ public class InputCodeArgument
   /**
    * Parsed constant value of the argument. Uses type info from instruction definition.
    */
-  RegisterDataContainer constantValue;
+  private RegisterDataContainer constantValue;
   /**
    * Name of the argument.
    * Example: rs1, imm, labelName.
