@@ -55,6 +55,7 @@ import type {
   InstructionFunctionModel,
   Label,
   Reference,
+  RegisterDataContainer,
   RegisterModel,
   SimCodeModel,
 } from '@/lib/types/cpuApi';
@@ -404,6 +405,23 @@ export type ParsedArgument = {
   valid: boolean;
   origArg: InputCodeArgument;
 };
+
+/**
+ * Extract the value of an argument.
+ * TODO: move to utils
+ */
+export function getValue(arg: ParsedArgument): RegisterDataContainer {
+  if (arg.origArg.constantValue !== null) {
+    return arg.origArg.constantValue;
+  }
+
+  // Must be a register
+  if (!arg.register) {
+    throw new Error(`Argument ${arg.origArg.name} has no value`);
+  }
+
+  return arg.register.value;
+}
 
 type DetailedSimCodeModel = {
   simCodeModel: SimCodeModel;

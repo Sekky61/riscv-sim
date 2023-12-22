@@ -33,6 +33,7 @@ import clsx from 'clsx';
 
 import {
   ParsedArgument,
+  getValue,
   selectAluIssueWindowBlock,
   selectBranchIssueWindowBlock,
   selectFpIssueWindowBlock,
@@ -41,7 +42,7 @@ import {
   selectSimCodeModel,
 } from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
-import { Reference } from '@/lib/types/cpuApi';
+import { Reference, RegisterDataContainer } from '@/lib/types/cpuApi';
 
 import {
   Tooltip,
@@ -142,55 +143,43 @@ export function IssueWindowItem({ simCodeId }: IssueWindowItemProps) {
 
   const { args } = q;
 
-  let item1: ParsedArgument | null = null;
-  let item2: ParsedArgument | null = null;
+  let item1: RegisterDataContainer | null = null;
+  let item1Valid = false;
+  let item2: RegisterDataContainer | null = null;
+  let item2Valid = false;
   for (const arg of args) {
     if (arg.origArg.name !== 'rd') {
       if (item1 === null) {
-        item1 = arg;
+        item1 = getValue(arg);
+        item1Valid = arg.valid;
       } else {
-        item2 = arg;
+        item2 = getValue(arg);
+        item2Valid = arg.valid;
       }
     }
   }
 
   const item1Style = clsx(
     'instruction-bubble flex px-2',
-    item1?.valid && 'text-green-500',
-    item1 === undefined && 'invisible',
+    item1Valid && 'text-green-500',
+    item1 === null && 'invisible',
   );
   const item2Style = clsx(
     'instruction-bubble flex px-2',
-    item2?.valid && 'text-green-500',
-    item2 === undefined && 'invisible',
+    item2Valid && 'text-green-500',
+    item2 === null && 'invisible',
   );
-
-  // First try to get the value from the constant value, then from the register
-  let item1Value = item1?.origArg.constantValue;
-  if (item1Value === undefined || item1Value === null) {
-    item1Value = item1?.register?.value;
-  }
-
-  let item2Value = item2?.origArg.constantValue;
-  if (item2Value === undefined || item2Value === null) {
-    item2Value = item2?.register?.value;
-  }
 
   return (
     <>
       <InstructionField instructionId={simCodeId} />
       <Tooltip>
         <TooltipTrigger>
-          <div className={item1Style}>
-            {item1Value?.stringRepresentation ?? '-'}
-          </div>
+          <div className={item1Style}>{item1?.stringRepresentation ?? '-'}</div>
         </TooltipTrigger>
         <TooltipContent>
-          {item1Value ? (
-            <ValueInformation
-              value={item1Value}
-              valid={item1?.valid ?? false}
-            />
+          {item1 ? (
+            <ValueInformation value={item1} valid={item1Valid} />
           ) : (
             <div className='text-gray-400'>No value</div>
           )}
@@ -198,17 +187,12 @@ export function IssueWindowItem({ simCodeId }: IssueWindowItemProps) {
       </Tooltip>
       <Tooltip>
         <TooltipTrigger>
-          <div className={item2Style}>
-            {item2Value?.stringRepresentation ?? '-'}
-          </div>
+          <div className={item2Style}>{item2?.stringRepresentation ?? '-'}</div>
         </TooltipTrigger>
 
         <TooltipContent>
-          {item2Value ? (
-            <ValueInformation
-              value={item2Value}
-              valid={item2?.valid ?? false}
-            />
+          {item2 ? (
+            <ValueInformation value={item2} valid={item2Valid} />
           ) : (
             <div className='text-gray-400'>No value</div>
           )}

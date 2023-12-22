@@ -157,7 +157,8 @@ public class InputCodeArgument
   public void setRegisterValue(RegisterModel registerValue)
   {
     this.registerValue = registerValue;
-    this.stringValue   = registerValue.getName();
+    //
+    //    this.stringValue   = registerValue.getName();
   }
   //------------------------------------------------------
   

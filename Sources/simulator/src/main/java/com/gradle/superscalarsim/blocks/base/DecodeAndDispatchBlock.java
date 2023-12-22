@@ -372,6 +372,11 @@ public class DecodeAndDispatchBlock implements AbstractBlock
       {
         RegisterModel rename = renameMapTableBlock.getMappingForRegister(oldArgumentValue);
         argument.setRegisterValue(rename);
+        if (rename.isSpeculative())
+        {
+          // Rename the string only if the register is speculative. This is because of register aliases
+          argument.setValue(rename.getName());
+        }
         renameMapTableBlock.increaseReference(rename.getName());
       }
     }
@@ -396,6 +401,11 @@ public class DecodeAndDispatchBlock implements AbstractBlock
         assert mappedReg != null;
         // Get reference
         destinationArgument.setRegisterValue(mappedReg);
+        if (mappedReg.isSpeculative())
+        {
+          // Rename the string only if the register is speculative. This is because of register aliases
+          destinationArgument.setValue(mappedReg.getName());
+        }
       }
     }
   }// end of renameDestinationRegister
