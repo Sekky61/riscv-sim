@@ -37,7 +37,6 @@ import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.code.Expression;
-import com.gradle.superscalarsim.code.Label;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
@@ -47,7 +46,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @class SimCodeModel
@@ -391,59 +389,32 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
   }
   
   /**
-   * @return Variables used in the instruction in the form for expression evaluation
+   * @return All arguments of the instruction as variables for the interpreter
    * @brief reads current register values (including speculative values), the PC, constants
    */
-  public List<Expression.Variable> getVariables(List<String> variableNames, Map<String, Label> labels)
+  public List<Expression.Variable> getVariables()
   {
     List<Expression.Variable> variables                = new ArrayList<>();
     InstructionFunctionModel  instructionFunctionModel = getInstructionFunctionModel();
     
-    for (String varName : variableNames)
-    {
-      if (varName.equals("pc"))
-      {
-        variables.add(new Expression.Variable("pc", DataTypeEnum.kInt, RegisterDataContainer.fromValue(getSavedPc())));
-        continue;
-      }
-      
-      InstructionFunctionModel.Argument argument = instructionFunctionModel.getArgumentByName(varName);
-      if (argument == null)
-      {
-        throw new IllegalStateException("Argument " + varName + " not found in " + instructionFunctionModel.getName());
-      }
-      
-      // Variable is an argument of the instruction (rs1/imm)
-      String            name        = argument.name();
-      InputCodeArgument arg         = getArgumentByName(name);
-      String            renamedName = arg.getValue();
-      // Check if value is register
-      RegisterModel register = arg.getRegisterValue();
-      if (register != null)
-      {
-        // Register found (or its speculative rename)
-        variables.add(new Expression.Variable(name, argument.type(), register.getValueContainer()));
-      }
-      else
-      {
-        // It is an immediate - constant or a label
-        RegisterDataContainer constantValue = arg.getConstantValue();
-        if (constantValue != null)
-        {
-          variables.add(new Expression.Variable(name, argument.type(), constantValue));
-          continue;
-        }
-        // Must be a label
-        if (labels != null && labels.containsKey(renamedName))
-        {
-          variables.add(new Expression.Variable(name, argument.type(),
-                                                RegisterDataContainer.fromValue(labels.get(renamedName).address)));
-          continue;
-        }
-        throw new IllegalStateException("Could not parse " + renamedName + " as constant or label");
-      }
-    }
+    variables.add(new Expression.Variable("pc", DataTypeEnum.kInt, RegisterDataContainer.fromValue(getSavedPc())));
     
+    for (InputCodeArgument var : getArguments())
+    {
+      InstructionFunctionModel.Argument argument = instructionFunctionModel.getArgumentByName(var.getName());
+      RegisterDataContainer             val      = var.getConstantValue();
+      if (val == null)
+      {
+        // Try register
+        RegisterModel reg = var.getRegisterValue();
+        if (reg == null)
+        {
+          throw new IllegalStateException("Could not parse " + var.getValue() + " as constant or label");
+        }
+        val = reg.getValueContainer();
+      }
+      variables.add(new Expression.Variable(var.getName(), argument.type(), val));
+    }
     return variables;
   }
   

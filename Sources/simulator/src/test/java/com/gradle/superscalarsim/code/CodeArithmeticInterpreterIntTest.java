@@ -1,6 +1,5 @@
 package com.gradle.superscalarsim.code;
 
-import com.gradle.superscalarsim.blocks.base.InstructionMemoryBlock;
 import com.gradle.superscalarsim.blocks.base.UnifiedRegisterFileBlock;
 import com.gradle.superscalarsim.builders.InputCodeArgumentBuilder;
 import com.gradle.superscalarsim.builders.InputCodeModelBuilder;
@@ -21,7 +20,10 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 public class CodeArithmeticInterpreterIntTest
 {
@@ -44,9 +46,7 @@ public class CodeArithmeticInterpreterIntTest
     initLoader.setInstructionFunctionModels(setUpInstructions());
     urf = new UnifiedRegisterFileBlock(initLoader, 320, new RegisterModelFactory());
     
-    InstructionMemoryBlock instructionMemoryBlock = new InstructionMemoryBlock(new ArrayList<>(), new HashMap<>(),
-                                                                               null);
-    this.codeArithmeticInterpreter = new CodeArithmeticInterpreter(instructionMemoryBlock);
+    this.codeArithmeticInterpreter = new CodeArithmeticInterpreter();
   }
   
   private Map<String, InstructionFunctionModel> setUpInstructions()

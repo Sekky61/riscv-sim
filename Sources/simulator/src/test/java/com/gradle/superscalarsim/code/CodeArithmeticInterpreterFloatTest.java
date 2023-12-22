@@ -1,6 +1,5 @@
 package com.gradle.superscalarsim.code;
 
-import com.gradle.superscalarsim.blocks.base.InstructionMemoryBlock;
 import com.gradle.superscalarsim.blocks.base.UnifiedRegisterFileBlock;
 import com.gradle.superscalarsim.builders.InputCodeArgumentBuilder;
 import com.gradle.superscalarsim.builders.InputCodeModelBuilder;
@@ -21,7 +20,6 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 
 public class CodeArithmeticInterpreterFloatTest
@@ -52,9 +50,7 @@ public class CodeArithmeticInterpreterFloatTest
     urf.setRegistersWithList(new ArrayList<>());
     urf.loadRegisters(List.of(floatFile), new RegisterModelFactory());
     
-    InstructionMemoryBlock instructionMemoryBlock = new InstructionMemoryBlock(new ArrayList<>(), new HashMap<>(),
-                                                                               null);
-    this.codeArithmeticInterpreter = new CodeArithmeticInterpreter(instructionMemoryBlock);
+    this.codeArithmeticInterpreter = new CodeArithmeticInterpreter();
   }
   
   @Test

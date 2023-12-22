@@ -231,7 +231,7 @@ public class CpuState implements Serializable
     this.memoryModel = new MemoryModel(cache, cacheStatisticsCounter);
     
     
-    this.loadStoreInterpreter = new CodeLoadStoreInterpreter(memoryModel, instructionMemoryBlock);
+    this.loadStoreInterpreter = new CodeLoadStoreInterpreter(memoryModel);
     
     this.instructionFetchBlock = new InstructionFetchBlock(simCodeModelFactory, instructionMemoryBlock, gShareUnit,
                                                            branchTargetBuffer);
@@ -249,8 +249,8 @@ public class CpuState implements Serializable
     reorderBufferBlock.commitLimit = config.cpuConfig.commitWidth;
     
     // Issue
-    this.arithmeticInterpreter = new CodeArithmeticInterpreter(instructionMemoryBlock);
-    this.branchInterpreter     = new CodeBranchInterpreter(instructionMemoryBlock);
+    this.arithmeticInterpreter = new CodeArithmeticInterpreter();
+    this.branchInterpreter     = new CodeBranchInterpreter();
     
     // Memory blocks
     this.storeBufferBlock = new StoreBufferBlock(loadStoreInterpreter, unifiedRegisterFileBlock, reorderBufferBlock);

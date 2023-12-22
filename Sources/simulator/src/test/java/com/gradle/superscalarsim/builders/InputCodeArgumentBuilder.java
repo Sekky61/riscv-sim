@@ -27,9 +27,15 @@ public class InputCodeArgumentBuilder
     return this;
   }
   
-  public InputCodeArgumentBuilder hasLabel(String value)
+  /**
+   * @brief Sets label for the argument. Position is byte.
+   */
+  public InputCodeArgumentBuilder hasLabel(String value, int position)
   {
+    assert position % 4 == 0;
     this.value = value;
+    String posString = String.valueOf(position);
+    this.constantValue = RegisterDataContainer.parseAs(posString, DataTypeEnum.kInt);
     return this;
   }
   

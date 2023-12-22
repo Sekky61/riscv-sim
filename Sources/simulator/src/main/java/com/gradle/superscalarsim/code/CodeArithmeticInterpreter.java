@@ -32,8 +32,6 @@
  */
 package com.gradle.superscalarsim.code;
 
-import com.fasterxml.jackson.annotation.JsonIdentityReference;
-import com.gradle.superscalarsim.blocks.base.InstructionMemoryBlock;
 import com.gradle.superscalarsim.models.InstructionFunctionModel;
 import com.gradle.superscalarsim.models.SimCodeModel;
 
@@ -48,20 +46,13 @@ import java.util.List;
 public class CodeArithmeticInterpreter
 {
   /**
-   * Storage of labels and their addresses
-   */
-  @JsonIdentityReference(alwaysAsId = true)
-  private final InstructionMemoryBlock instructionMemoryBlock;
-  
-  /**
    * @param registerFileBlock Preceding table for operation priorities
    * @param labelMap          Map of labels and their addresses
    *
    * @brief Constructor
    */
-  public CodeArithmeticInterpreter(InstructionMemoryBlock instructionMemoryBlock)
+  public CodeArithmeticInterpreter()
   {
-    this.instructionMemoryBlock = instructionMemoryBlock;
   }// end of Constructor
   
   /**
@@ -80,8 +71,7 @@ public class CodeArithmeticInterpreter
     
     // Evaluate expression
     String                    expression = instruction.getInterpretableAs();
-    List<String>              varNames   = Expression.getVariableNames(expression);
-    List<Expression.Variable> variables  = simCodeModel.getVariables(varNames, instructionMemoryBlock.getLabels());
+    List<Expression.Variable> variables  = simCodeModel.getVariables();
     Expression.interpret(expression, variables);
     
     // return "rd"

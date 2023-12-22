@@ -31,6 +31,7 @@ package com.gradle.superscalarsim.serialization;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.kjetland.jackson.jsonSchema.JsonSchemaGenerator;
 
 /**
@@ -52,6 +53,8 @@ public class Serialization
   private static ObjectMapper createObjectMapper()
   {
     ObjectMapper objectMapper = new ObjectMapper();
+    // Allow serialization of empty beans (empty objects)
+    objectMapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
     // Configure that all fields are serialized, but getters and setters are not
     objectMapper.setVisibility(objectMapper.getSerializationConfig().getDefaultVisibilityChecker()
                                        .withFieldVisibility(JsonAutoDetect.Visibility.ANY)

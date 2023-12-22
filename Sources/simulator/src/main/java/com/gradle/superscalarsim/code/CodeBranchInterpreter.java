@@ -32,13 +32,9 @@
  */
 package com.gradle.superscalarsim.code;
 
-import com.fasterxml.jackson.annotation.JsonIdentityReference;
-import com.gradle.superscalarsim.blocks.base.InstructionMemoryBlock;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
-import com.gradle.superscalarsim.models.InputCodeArgument;
 import com.gradle.superscalarsim.models.InstructionFunctionModel;
 import com.gradle.superscalarsim.models.SimCodeModel;
-import com.gradle.superscalarsim.models.register.RegisterDataContainer;
 
 import java.util.List;
 import java.util.OptionalInt;
@@ -49,20 +45,14 @@ import java.util.OptionalInt;
  */
 public class CodeBranchInterpreter
 {
-  /**
-   * Instructions. Needed for label resolving.
-   */
-  @JsonIdentityReference(alwaysAsId = true)
-  private final InstructionMemoryBlock instructionMemoryBlock;
   
   /**
    * @param instructionMemoryBlock Instructions. Needed for label resolving.
    *
    * @brief Constructor
    */
-  public CodeBranchInterpreter(final InstructionMemoryBlock instructionMemoryBlock)
+  public CodeBranchInterpreter()
   {
-    this.instructionMemoryBlock = instructionMemoryBlock;
   }// end of Constructor
   //-------------------------------------------------------------------------------------------
   
@@ -82,26 +72,18 @@ public class CodeBranchInterpreter
   public OptionalInt interpretInstruction(final SimCodeModel codeModel, int instructionPosition)
   {
     final InstructionFunctionModel instruction = codeModel.getInstructionFunctionModel();
-    
-    if (instruction == null)
-    {
-      throw new IllegalArgumentException("Instruction " + codeModel.getInstructionName() + " not found");
-    }
+    assert instruction != null;
     
     String[] splitInterpretableAs = instruction.getInterpretableAs().split(":");
-    if (splitInterpretableAs.length != 2)
-    {
-      throw new IllegalArgumentException(
-              "InterpretableAs in instruction " + instruction.getName() + " is not valid: " + instruction.getInterpretableAs());
-    }
+    assert splitInterpretableAs.length == 2;
     String                    targetExpr    = splitInterpretableAs[0];
     String                    conditionExpr = splitInterpretableAs[1];
-    List<String>              varNames      = Expression.getVariableNames(targetExpr + " " + conditionExpr);
-    List<Expression.Variable> variables     = codeModel.getVariables(varNames, instructionMemoryBlock.getLabels());
+    List<Expression.Variable> variables     = codeModel.getVariables();
     
     // Check if condition is met
-    Expression.Variable exprResult    = Expression.interpret(conditionExpr, variables);
-    boolean             jumpCondition = (boolean) exprResult.value.getValue(DataTypeEnum.kBool);
+    Expression.Variable exprResult = Expression.interpret(conditionExpr, variables);
+    assert exprResult != null;
+    boolean jumpCondition = (boolean) exprResult.value.getValue(DataTypeEnum.kBool);
     if (!jumpCondition)
     {
       // Do not jump.
@@ -109,39 +91,8 @@ public class CodeBranchInterpreter
     }
     
     // We know that we have to jump, calculate jump target
-    
-    // Label case - label is usually in imm argument, extract the position, so it can be used in expression
-    InputCodeArgument labelArgument = codeModel.getArgumentByName("imm");
-    if (labelArgument != null)
-    {
-      // todo immediate values not handled
-      String labelName     = labelArgument.getValue();
-      int    labelPosition = instructionMemoryBlock.getLabelPosition(labelName);
-      if (labelPosition != -1)
-      {
-        // Label found - note the position in the variable
-        Expression.Variable foundLabel = variables.stream().filter(variable -> variable.tag.equals("imm")).findFirst()
-                .orElse(null);
-        if (foundLabel == null)
-        {
-          // It was skipped in the extraction
-          foundLabel = new Expression.Variable("imm", DataTypeEnum.kInt,
-                                               RegisterDataContainer.fromValue(labelPosition));
-          variables.add(foundLabel);
-        }
-        else
-        {
-          foundLabel.value.setValue(labelPosition, DataTypeEnum.kInt);
-        }
-      }
-    }
-    
-    // Expression - calculate target
     Expression.Variable targetVar = Expression.interpret(targetExpr, variables);
-    if (targetVar == null)
-    {
-      throw new IllegalArgumentException("Offset expression did not return any value");
-    }
+    assert targetVar != null;
     int target = (int) targetVar.value.getValue(DataTypeEnum.kInt);
     
     // Return relative position of the instruction to jump to

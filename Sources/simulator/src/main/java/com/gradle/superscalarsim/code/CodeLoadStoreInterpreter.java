@@ -35,7 +35,6 @@ package com.gradle.superscalarsim.code;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
-import com.gradle.superscalarsim.blocks.base.InstructionMemoryBlock;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.models.InstructionFunctionModel;
 import com.gradle.superscalarsim.models.Pair;
@@ -62,22 +61,15 @@ public class CodeLoadStoreInterpreter
   private final MemoryModel memoryModel;
   
   /**
-   * Storage of labels and their addresses
-   */
-  @JsonIdentityReference(alwaysAsId = true)
-  private final InstructionMemoryBlock instructionMemoryBlock;
-  
-  /**
    * @param memoryModel       Memory model
    * @param registerFileBlock Register file block
    * @param labelMap          Label map
    *
    * @brief Constructor
    */
-  public CodeLoadStoreInterpreter(final MemoryModel memoryModel, InstructionMemoryBlock instructionMemoryBlock)
+  public CodeLoadStoreInterpreter(final MemoryModel memoryModel)
   {
-    this.memoryModel            = memoryModel;
-    this.instructionMemoryBlock = instructionMemoryBlock;
+    this.memoryModel = memoryModel;
   }// end of Constructor
   //-------------------------------------------------------------------------------------------
   
@@ -160,10 +152,8 @@ public class CodeLoadStoreInterpreter
     {
       throw new IllegalStateException("Unexpected number of parameters: " + interpretableAsParams.length);
     }
-    String addressExpr = interpretableAsParams[2];
-    
-    List<String>              varNames  = Expression.getVariableNames(addressExpr);
-    List<Expression.Variable> variables = codeModel.getVariables(varNames, instructionMemoryBlock.getLabels());
+    String                    addressExpr = interpretableAsParams[2];
+    List<Expression.Variable> variables   = codeModel.getVariables();
     
     Expression.Variable addressResult = Expression.interpret(addressExpr, variables);
     if (addressResult == null)
