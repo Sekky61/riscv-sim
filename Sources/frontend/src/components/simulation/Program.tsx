@@ -186,7 +186,7 @@ function ProgramInstruction({
           return (
             <span key={arg.name}>
               {idx === 0 ? ' ' : ','}
-              {arg.value}
+              {arg.stringValue}
             </span>
           );
         })}

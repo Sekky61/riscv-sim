@@ -103,7 +103,7 @@ export default function InstructionField({
     // if a part matches an argument, wrap it in a tooltip
     return formatSplit.map((part, i) => {
       // This may cause problems in the future, if the argument is not unique (e.g. addi sp, sp, -40)
-      const arg = args.find((a) => a.value === part);
+      const arg = args.find((a) => a.stringValue === part);
       if (arg) {
         return (
           <InstructionArgument
@@ -152,10 +152,10 @@ function InstructionArgument({ arg }: InstructionArgumentProps) {
 
   const isRegister = arg.name.startsWith('r');
   if (isRegister) {
-    return <RegisterReference registerId={arg.value} className={cls} />;
+    return <RegisterReference registerId={arg.stringValue} className={cls} />;
   }
 
-  if (arg.constantValue === undefined) {
+  if (arg.constantValue === null) {
     throw new Error(
       `Constant value of argument ${arg.name} has undefined value`,
     );
@@ -164,7 +164,7 @@ function InstructionArgument({ arg }: InstructionArgumentProps) {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <span className={cls}>{arg.value}</span>
+        <span className={cls}>{arg.stringValue}</span>
       </TooltipTrigger>
       <TooltipContent>
         <ValueInformation value={arg.constantValue} valid={true} />

@@ -33,6 +33,7 @@
 package com.gradle.superscalarsim.blocks.base;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.blocks.AbstractBlock;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
@@ -52,6 +53,7 @@ public class IssueWindowBlock implements AbstractBlock
   /**
    * List of all instructions dispatched to this window, with their arguments.
    */
+  @JsonIdentityReference(alwaysAsId = true)
   private final List<SimCodeModel> issuedInstructions;
   
   /**

@@ -395,14 +395,15 @@ export const selectRegisterMap = createSelector(
 
 export type ParsedArgument = {
   /**
-   * Register model, if the argument is a register
+   * Register model, if the argument is a register. Useful for name aliases, not speculatives.
    */
-  arch: RegisterModel | null;
+  register: RegisterModel | null;
   /**
-   * True if the current argument value is valif
+   * True if the current argument value is valid
    */
   valid: boolean;
-} & InputCodeArgument;
+  origArg: InputCodeArgument;
+};
 
 type DetailedSimCodeModel = {
   simCodeModel: SimCodeModel;
@@ -413,6 +414,7 @@ type DetailedSimCodeModel = {
 
 /**
  * Select simcodemodel, inputcodemodel and instructionfunctionmodel for a given simcode id.
+ * Resolves references to registers.
  */
 const selectDetailedSimCodeModels = createSelector(
   [
@@ -459,16 +461,21 @@ const selectDetailedSimCodeModels = createSelector(
         args: [],
       };
       for (const renamedArg of simCodeModel.renamedArguments) {
-        const arg: ParsedArgument = { arch: null, valid: false, ...renamedArg };
-        const registerExpected = renamedArg.name.startsWith('r');
-        const a = registers[arg.value];
-        if (a === undefined && registerExpected) {
-          console.warn(`Register ${arg.name} not found ()`);
-          console.warn(registers);
-          throw new Error(`Register ${arg.value} not found`);
+        const arg: ParsedArgument = {
+          register: null,
+          valid: false,
+          origArg: renamedArg,
+        };
+        const regName = renamedArg.registerValue;
+        if (regName !== null) {
+          const arch = registers[regName];
+          if (arch === undefined) {
+            console.warn(`Register ${regName} not found ()`);
+            throw new Error(`Register ${regName} not found`);
+          }
+          arg.register = arch;
         }
-        arg.arch = a ?? null;
-        arg.valid = arg.arch === null || isValidRegisterValue(arg.arch);
+        arg.valid = arg.register === null || isValidRegisterValue(arg.register);
         detail.args.push(arg);
       }
       lookup[reference] = detail;

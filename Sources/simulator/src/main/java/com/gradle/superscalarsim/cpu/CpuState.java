@@ -59,6 +59,9 @@ import java.util.*;
  */
 public class CpuState implements Serializable
 {
+  /**
+   * The manager registry is used to keep track of all relevant models in the CPU.
+   */
   public ManagerRegistry managerRegistry;
   
   public int tick;
@@ -69,6 +72,8 @@ public class CpuState implements Serializable
   
   public StatisticsCounter statisticsCounter;
   public CacheStatisticsCounter cacheStatisticsCounter;
+  
+  // Branch prediction
   
   public BranchTargetBuffer branchTargetBuffer;
   public GlobalHistoryRegister globalHistoryRegister;
@@ -117,7 +122,6 @@ public class CpuState implements Serializable
   public CpuState()
   {
     // Empty constructor for serialization
-    
   }
   
   public CpuState(SimulationConfig config, InitLoader initLoader)
@@ -362,16 +366,6 @@ public class CpuState implements Serializable
     return defaultTaken;
   }
   
-  /**
-   * @brief Create a new CPU state - a deep copy of the current state.
-   */
-  public CpuState deepCopy()
-  {
-    // Serialize and deserialize
-    String serialized = this.serialize();
-    return CpuState.deserialize(serialized);
-  }
-  
   public String serialize()
   {
     ObjectMapper serializer = Serialization.getSerializer();
@@ -383,11 +377,6 @@ public class CpuState implements Serializable
     {
       throw new RuntimeException(e);
     }
-  }
-  
-  public static CpuState deserialize(String json)
-  {
-    throw new UnsupportedOperationException("Not implemented");
   }
   
   /**

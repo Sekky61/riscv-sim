@@ -197,9 +197,10 @@ export interface InputCodeModel {
 }
 
 export interface InputCodeArgument {
-  constantValue?: RegisterDataContainer;
   name: string;
-  value: string;
+  stringValue: string;
+  constantValue: RegisterDataContainer | null;
+  registerValue: StringReference | null;
 }
 
 export interface InstructionFunctionModel {

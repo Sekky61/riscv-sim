@@ -73,9 +73,9 @@ export const SimCodeDetailModal = ({ simCodeId }: SimCodeDetailModalProps) => {
             <h2 className='text-xl mt-2'>Operands</h2>
             <ul className='flex flex-col gap-4'>
               {args.map((operand) => {
-                const value = operand.constantValue ?? operand.arch?.value;
-                const valid = operand.arch
-                  ? isValidRegisterValue(operand.arch)
+                const value = operand.constantValue ?? operand.register?.value;
+                const valid = operand.register
+                  ? isValidRegisterValue(operand.register)
                   : true;
                 return (
                   <li

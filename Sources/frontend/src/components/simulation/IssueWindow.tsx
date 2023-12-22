@@ -32,11 +32,13 @@
 import clsx from 'clsx';
 
 import {
+  ParsedArgument,
   selectAluIssueWindowBlock,
   selectBranchIssueWindowBlock,
   selectFpIssueWindowBlock,
   selectLoadStoreIssueWindowBlock,
   selectRegisterById,
+  selectSimCodeModel,
 } from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
 import { Reference } from '@/lib/types/cpuApi';
@@ -114,10 +116,7 @@ export default function IssueWindow({ type }: IssueWindowProps) {
           </>
         }
         instructionRenderer={(instruction) => (
-          <IssueWindowItem
-            simCodeId={instruction}
-            items={instruction !== null ? validity[instruction] : undefined}
-          />
+          <IssueWindowItem simCodeId={instruction} />
         )}
       />
     </Block>
@@ -126,20 +125,14 @@ export default function IssueWindow({ type }: IssueWindowProps) {
 
 type IssueWindowItemProps = {
   simCodeId: Reference | null;
-  items?: IssueItemModel[];
 };
 
 /**
  * Displays a single item in the Issue Window
  */
-export function IssueWindowItem({ simCodeId, items }: IssueWindowItemProps) {
-  const reg1 = useAppSelector((state) =>
-    selectRegisterById(state, items?.[0]?.tag ?? 'INVALID'),
-  );
-  const reg2 = useAppSelector((state) =>
-    selectRegisterById(state, items?.[1]?.tag ?? 'INVALID'),
-  );
-  if (!items) {
+export function IssueWindowItem({ simCodeId }: IssueWindowItemProps) {
+  const q = useAppSelector((state) => selectSimCodeModel(state, simCodeId));
+  if (!q) {
     return (
       <div className='col-span-3'>
         <InstructionField instructionId={simCodeId} />
@@ -147,29 +140,40 @@ export function IssueWindowItem({ simCodeId, items }: IssueWindowItemProps) {
     );
   }
 
-  const item1 = items[0];
-  const item2 = items[1];
+  const { args } = q;
+
+  let item1: ParsedArgument | null = null;
+  let item2: ParsedArgument | null = null;
+  for (const arg of args) {
+    if (arg.origArg.name !== 'rd') {
+      if (item1 === null) {
+        item1 = arg;
+      } else {
+        item2 = arg;
+      }
+    }
+  }
 
   const item1Style = clsx(
     'instruction-bubble flex px-2',
-    item1?.validityBit && 'text-green-500',
+    item1?.valid && 'text-green-500',
     item1 === undefined && 'invisible',
   );
   const item2Style = clsx(
     'instruction-bubble flex px-2',
-    item2?.validityBit && 'text-green-500',
+    item2?.valid && 'text-green-500',
     item2 === undefined && 'invisible',
   );
 
   // First try to get the value from the constant value, then from the register
-  let item1Value = item1?.constantValue;
-  if (item1Value === undefined) {
-    item1Value = reg1?.value;
+  let item1Value = item1?.origArg.constantValue;
+  if (item1Value === undefined || item1Value === null) {
+    item1Value = item1?.register?.value;
   }
 
-  let item2Value = item2?.constantValue;
-  if (item2Value === undefined) {
-    item2Value = reg2?.value;
+  let item2Value = item2?.origArg.constantValue;
+  if (item2Value === undefined || item2Value === null) {
+    item2Value = item2?.register?.value;
   }
 
   return (
@@ -185,7 +189,7 @@ export function IssueWindowItem({ simCodeId, items }: IssueWindowItemProps) {
           {item1Value ? (
             <ValueInformation
               value={item1Value}
-              valid={item1?.validityBit ?? false}
+              valid={item1?.valid ?? false}
             />
           ) : (
             <div className='text-gray-400'>No value</div>
@@ -203,7 +207,7 @@ export function IssueWindowItem({ simCodeId, items }: IssueWindowItemProps) {
           {item2Value ? (
             <ValueInformation
               value={item2Value}
-              valid={item2?.validityBit ?? false}
+              valid={item2?.valid ?? false}
             />
           ) : (
             <div className='text-gray-400'>No value</div>
