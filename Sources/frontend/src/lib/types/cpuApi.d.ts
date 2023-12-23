@@ -172,13 +172,16 @@ export type InstructionTypeEnum =
   | 'kJumpbranch';
 
 export type DataTypeEnum =
+  | 'kByte'
+  | 'kShort'
   | 'kInt'
   | 'kUInt'
   | 'kLong'
   | 'kULong'
   | 'kFloat'
   | 'kDouble'
-  | 'kBool';
+  | 'kBool'
+  | 'kChar';
 
 export type RegisterReadinessEnum =
   | 'kFree'

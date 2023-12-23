@@ -70,6 +70,8 @@ export const dataTypes = [
   'kDouble',
   'kBool',
   'kChar',
+  'kByte',
+  'kShort',
 ] as const;
 export const dataTypesText = [
   'Integer',
@@ -80,6 +82,8 @@ export const dataTypesText = [
   'Double',
   'Boolean',
   'Char',
+  'Byte',
+  'Short',
 ] as const;
 
 /**
@@ -167,13 +171,13 @@ export const isaFormSchema = z
     // Name. Used for saving different configurations.
     name: z.string(),
     // Buffers
-    robSize: z.number().min(1).max(1000),
-    commitWidth: z.number().min(1).max(16),
-    flushPenalty: z.number().min(1).max(1000),
-    fetchWidth: z.number().min(1).max(16),
+    robSize: z.number().min(1).max(1024),
+    commitWidth: z.number().min(1).max(10),
+    flushPenalty: z.number().min(1).max(100),
+    fetchWidth: z.number().min(1).max(10),
     // Branch
-    btbSize: z.number().min(1).max(2048),
-    phtSize: z.number().min(1).max(16),
+    btbSize: z.number().min(1).max(16384),
+    phtSize: z.number().min(1).max(16384),
     predictorType: z.enum(predictorTypes),
     predictorDefault: z.enum(predictorStates),
     useGlobalHistory: z.boolean(),
@@ -181,20 +185,20 @@ export const isaFormSchema = z
     fUnits: z.array(fUnitSchema),
     // Cache
     useCache: z.boolean(),
-    cacheLines: z.number().min(1).max(1000),
-    cacheLineSize: z.number().min(1).max(1000),
-    cacheAssoc: z.number().min(1).max(1000),
+    cacheLines: z.number().min(1).max(65536),
+    cacheLineSize: z.number().min(1).max(512),
+    cacheAssoc: z.number().min(1),
     cacheReplacement: z.enum(cacheReplacementTypes),
     storeBehavior: z.enum(storeBehaviorTypes),
     laneReplacementDelay: z.number().min(0).max(1000),
     cacheAccessDelay: z.number().min(0).max(1000),
     // Memory
-    lbSize: z.number().min(1).max(1000),
-    sbSize: z.number().min(1).max(1000),
-    storeLatency: z.number().min(0).max(1000),
-    loadLatency: z.number().min(0).max(1000),
-    callStackSize: z.number().min(1).max(1000),
-    speculativeRegisters: z.number().min(1).max(16000),
+    lbSize: z.number().min(1).max(1024),
+    sbSize: z.number().min(1).max(1024),
+    storeLatency: z.number().min(0),
+    loadLatency: z.number().min(0),
+    callStackSize: z.number().min(0).max(65536),
+    speculativeRegisters: z.number().min(1).max(1024),
   })
   .refine((data) => {
     // Check the predictor
@@ -207,6 +211,11 @@ export const isaFormSchema = z
       )
     ) {
       return "Predictor default state doesn't match the predictor type";
+    }
+
+    // Check that cacheAssoc <= cacheLines
+    if (data.cacheAssoc > data.cacheLines) {
+      return 'Cache associativity must be less than or equal to cache lines';
     }
   });
 export type CpuConfig = z.infer<typeof isaFormSchema>;
