@@ -109,16 +109,17 @@ export default function InstructionField({
     return formatSplit.map((part, i) => {
       // This may cause problems in the future, if the argument is not unique (e.g. addi sp, sp, -40)
       const arg = args.find((a) => a.origArg.stringValue === part);
+      const key = `${simCodeModel.renamedCodeLine}-${i}`;
       if (arg) {
         return (
           <InstructionArgument
             arg={arg}
-            key={`${simCodeModel.renamedCodeLine}-${i}`}
+            key={key}
           />
         );
       }
       // Add z-index to make the argument highlight below the parentheses etc.
-      return <span className='relative z-10'>{part}</span>;
+      return <span className='relative z-10' key={key}>{part}</span>;
     });
   }
 

@@ -116,8 +116,8 @@ export default function IssueWindow({ type }: IssueWindowProps) {
             <div>Arg 2</div>
           </>
         }
-        instructionRenderer={(instruction) => (
-          <IssueWindowItem simCodeId={instruction} />
+        instructionRenderer={(instruction, i) => (
+          <IssueWindowItem simCodeId={instruction} key={`instr_${i}`} />
         )}
       />
     </Block>

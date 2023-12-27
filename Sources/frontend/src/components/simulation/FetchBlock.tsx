@@ -72,8 +72,8 @@ export default function FetchBlock() {
       <InstructionListDisplay
         instructions={fetchObject.fetchedCode}
         limit={fetchObject.numberOfWays}
-        instructionRenderer={(codeModel) => (
-          <InstructionField instructionId={codeModel} />
+        instructionRenderer={(codeModel, i) => (
+          <InstructionField instructionId={codeModel} key={`instr_${i}`} />
         )}
       />
     </Block>
