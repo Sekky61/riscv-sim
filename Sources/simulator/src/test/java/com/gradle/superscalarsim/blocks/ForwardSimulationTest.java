@@ -109,15 +109,16 @@ public class ForwardSimulationTest
             .hasRegisterList(Arrays.asList(float1, float2, float3, float4, float5)).build();
     
     CpuConfig cpuCfg = new CpuConfig();
-    cpuCfg.robSize          = 256;
-    cpuCfg.lbSize           = 64;
-    cpuCfg.sbSize           = 64;
-    cpuCfg.fetchWidth       = 3;
-    cpuCfg.commitWidth      = 4;
-    cpuCfg.btbSize          = 1024;
-    cpuCfg.phtSize          = 10;
-    cpuCfg.predictorType    = "2bit";
-    cpuCfg.predictorDefault = "Weakly Taken";
+    cpuCfg.robSize           = 256;
+    cpuCfg.lbSize            = 64;
+    cpuCfg.sbSize            = 64;
+    cpuCfg.fetchWidth        = 3;
+    cpuCfg.branchFollowLimit = 1;
+    cpuCfg.commitWidth       = 4;
+    cpuCfg.btbSize           = 1024;
+    cpuCfg.phtSize           = 10;
+    cpuCfg.predictorType     = "2bit";
+    cpuCfg.predictorDefault  = "Weakly Taken";
     // cache
     cpuCfg.cacheLines           = 16;
     cpuCfg.cacheAssoc           = 2;

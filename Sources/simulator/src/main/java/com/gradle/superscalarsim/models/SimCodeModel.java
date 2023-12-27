@@ -115,6 +115,7 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
   private boolean branchLogicResult;
   /**
    * Target of the branch instruction (offset from the savedPc).
+   * Result of the branch actual computation, not the prediction.
    * Used to fix BTB and PC in misprediction.
    */
   private int branchTargetOffset;
@@ -141,11 +142,6 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
     }
   }// end of Constructor
   
-  public int getIssueWindowId()
-  {
-    return issueWindowId;
-  }
-  
   /**
    * @param windowId ID, when was instruction accepted to issue window
    *
@@ -155,11 +151,6 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
   {
     this.issueWindowId = windowId;
   }// end of setIssueWindowId
-  
-  public int getFunctionUnitId()
-  {
-    return functionUnitId;
-  }
   
   /**
    * @param functionUnitId ID of function block, which processed this instruction

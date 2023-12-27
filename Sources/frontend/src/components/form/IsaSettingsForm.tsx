@@ -101,6 +101,10 @@ const isaFormMetadata: IsaFormMetadata = {
     title: 'Re-order buffer size',
     hint: 'Instruction capacity of re-order buffer (ROB).',
   },
+  branchFollowLimit: {
+    title: 'Branch follow limit',
+    hint: 'Number of branch instructions that can be evaluated in a single fetch.',
+  },
   lbSize: {
     title: 'Load buffer size',
     hint: 'Instruction capacity of load buffer (LB).',
@@ -313,6 +317,11 @@ export default function IsaSettingsForm({
                   />
                   <FormInput
                     {...simpleRegister('fetchWidth', { valueAsNumber: true })}
+                  />
+                  <FormInput
+                    {...simpleRegister('branchFollowLimit', {
+                      valueAsNumber: true,
+                    })}
                   />
                 </fieldset>
               </CardContent>

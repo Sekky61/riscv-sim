@@ -67,6 +67,11 @@ public class CpuConfig implements Serializable
   public int fetchWidth;
   
   /**
+   * Number of branch instructions that can be evaluated in one cycle.
+   */
+  public int branchFollowLimit;
+  
+  /**
    * Branch target buffer size.
    */
   public int btbSize;
@@ -179,10 +184,11 @@ public class CpuConfig implements Serializable
   {
     CpuConfig config = new CpuConfig();
     // ROB
-    config.robSize      = 256;
-    config.fetchWidth   = 3;
-    config.commitWidth  = 4;
-    config.flushPenalty = 1;
+    config.robSize           = 256;
+    config.fetchWidth        = 3;
+    config.branchFollowLimit = 1;
+    config.commitWidth       = 4;
+    config.flushPenalty      = 1;
     // Prediction
     config.btbSize          = 1024;
     config.phtSize          = 10;

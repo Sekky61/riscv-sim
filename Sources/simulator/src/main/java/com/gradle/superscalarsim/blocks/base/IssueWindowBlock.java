@@ -137,7 +137,6 @@ public class IssueWindowBlock implements AbstractBlock
         }
         
         // Instruction is ready for execution and there is a free FU -> issue the instruction
-        currentModel.setIssueWindowId(this.windowId);
         functionUnitBlock.resetCounter();
         functionUnitBlock.setSimCodeModel(currentModel);
         functionUnitBlock.setDelayBasedOnInstruction();
@@ -148,7 +147,7 @@ public class IssueWindowBlock implements AbstractBlock
       }
     }
     
-    this.windowId = this.windowId + 1;
+    this.windowId++;
   }
   
   /**
@@ -162,7 +161,6 @@ public class IssueWindowBlock implements AbstractBlock
       SimCodeModel codeModel = this.issuedInstructions.get(i);
       if (codeModel.hasFailed())
       {
-        codeModel.setIssueWindowId(this.windowId);
         this.issuedInstructions.remove(i);
       }
     }
@@ -186,6 +184,7 @@ public class IssueWindowBlock implements AbstractBlock
   public void dispatchInstruction(SimCodeModel codeModel)
   {
     this.issuedInstructions.add(codeModel);
+    codeModel.setIssueWindowId(this.windowId);
   }// end of dispatchInstruction
   //----------------------------------------------------------------------
   

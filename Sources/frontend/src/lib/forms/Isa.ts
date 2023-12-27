@@ -173,6 +173,7 @@ export const isaFormSchema = z
     // Buffers
     robSize: z.number().min(1).max(1024),
     commitWidth: z.number().min(1).max(10),
+    branchFollowLimit: z.number().min(1).max(10),
     flushPenalty: z.number().min(1).max(100),
     fetchWidth: z.number().min(1).max(10),
     // Branch
@@ -246,6 +247,7 @@ export const defaultCpuConfig: CpuConfig = {
   name: 'Default',
   robSize: 256,
   fetchWidth: 3,
+  branchFollowLimit: 1,
   commitWidth: 4,
   flushPenalty: 1,
   btbSize: 1024,

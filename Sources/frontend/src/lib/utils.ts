@@ -32,7 +32,7 @@
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
-import { Reference, RegisterModel } from '@/lib/types/cpuApi';
+import { InputCodeModel, Reference, RegisterModel } from '@/lib/types/cpuApi';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -86,4 +86,20 @@ export function isValidRegisterValue(register: RegisterModel): boolean {
   return (
     register.readiness === 'kExecuted' || register.readiness === 'kAssigned'
   );
+}
+
+/**
+ * Return the name of the instruction type.
+ */
+export function instructionTypeName(inputCodeModel: InputCodeModel): string {
+  switch (inputCodeModel.instructionTypeEnum) {
+    case 'kIntArithmetic':
+      return 'Arithmetic (int)';
+    case 'kFloatArithmetic':
+      return 'Arithmetic (float)';
+    case 'kLoadstore':
+      return 'Load/Store';
+    case 'kJumpbranch':
+      return 'Jump/Branch';
+  }
 }

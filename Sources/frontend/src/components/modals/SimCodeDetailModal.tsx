@@ -30,6 +30,7 @@
  */
 
 import {
+  getValue,
   selectRegisterById,
   selectSimCodeModel,
 } from '@/lib/redux/cpustateSlice';
@@ -42,7 +43,7 @@ import {
   CardTitle,
 } from '@/components/base/ui/card';
 import ValueInformation from '@/components/simulation/ValueTooltip';
-import { isValidRegisterValue } from '@/lib/utils';
+import { instructionTypeName, isValidRegisterValue } from '@/lib/utils';
 
 type SimCodeDetailModalProps = {
   simCodeId: number;
@@ -52,6 +53,7 @@ export const SimCodeDetailModal = ({ simCodeId }: SimCodeDetailModalProps) => {
   const q = useAppSelector((state) => selectSimCodeModel(state, simCodeId));
   if (!q) throw new Error(`InstructionId ${simCodeId} not found`);
   const { simCodeModel, inputCodeModel, functionModel, args } = q;
+  const isBranch = functionModel.instructionType === 'kJumpbranch';
 
   return (
     <>
@@ -68,22 +70,22 @@ export const SimCodeDetailModal = ({ simCodeId }: SimCodeDetailModalProps) => {
               {inputCodeModel.instructionName.toUpperCase()}
             </h1>
             <ul>
-              <li>Type: {inputCodeModel.instructionTypeEnum}</li>
+              <li>Type: {instructionTypeName(inputCodeModel)}</li>
             </ul>
             <h2 className='text-xl mt-2'>Operands</h2>
             <ul className='flex flex-col gap-4'>
               {args.map((operand) => {
-                const value = operand.constantValue ?? operand.register?.value;
+                const value = getValue(operand);
                 const valid = operand.register
                   ? isValidRegisterValue(operand.register)
                   : true;
                 return (
                   <li
-                    key={operand.name}
+                    key={operand.origArg.name}
                     className='text-sm border rounded-md p-4'
                   >
                     <span className='text-lg'>
-                      {operand.name}: {operand.value}
+                      {operand.origArg.name}: {value.stringRepresentation}
                     </span>
                     {value && <ValueInformation value={value} valid={valid} />}
                   </li>
@@ -99,9 +101,13 @@ export const SimCodeDetailModal = ({ simCodeId }: SimCodeDetailModalProps) => {
             <h2 className='text-xl mt-2'>Timestamps</h2>
             <ul>
               <li>Issued: {simCodeModel.issueWindowId}</li>
-              <li>Commited: {simCodeModel.commitId}</li>
+              <li>
+                Commited:{' '}
+                {simCodeModel.commitId === -1
+                  ? 'No'
+                  : `Yes (at ${simCodeModel.commitId})`}
+              </li>
               <li>Function unit: {simCodeModel.functionUnitId}</li>
-              <li>Pulled: {simCodeModel.instructionBulkNumber}</li>
               <li>PC: {simCodeModel.savedPc}</li>
             </ul>
             <h2 className='text-xl mt-2'>Flags</h2>
@@ -109,18 +115,24 @@ export const SimCodeDetailModal = ({ simCodeId }: SimCodeDetailModalProps) => {
               <li>Finished: {simCodeModel.finished ? 'Yes' : 'No'}</li>
               <li>Failed: {simCodeModel.hasFailed ? 'Yes' : 'No'}</li>
             </ul>
-            <h2 className='text-xl mt-2'>Branch</h2>
-            <ul>
-              <li>
-                {functionModel.unconditionalJump
-                  ? 'Unconditional'
-                  : 'Conditional'}
-              </li>
-              <li>Predicted: {simCodeModel.branchPredicted ? 'Yes' : 'No'}</li>
-              <li>
-                Prediction target offset: {simCodeModel.branchTargetOffset}
-              </li>
-            </ul>
+            {isBranch && (
+              <>
+                <h2 className='text-xl mt-2'>Branch</h2>
+                <ul>
+                  <li>
+                    {functionModel.unconditionalJump
+                      ? 'Unconditional'
+                      : 'Conditional'}
+                  </li>
+                  <li>
+                    Predicted: {simCodeModel.branchPredicted ? 'Yes' : 'No'}
+                  </li>
+                  <li>
+                    Prediction target offset: {simCodeModel.branchTargetOffset}
+                  </li>
+                </ul>
+              </>
+            )}
           </div>
         </div>
       </CardContent>

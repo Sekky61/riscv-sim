@@ -106,6 +106,7 @@ public abstract class AbstractFunctionUnitBlock implements AbstractBlock
                                    IssueWindowBlock issueWindowBlock,
                                    ReorderBufferBlock reorderBufferBlock)
   {
+    this.functionUnitId     = description.id;
     this.reorderBufferBlock = reorderBufferBlock;
     this.description        = description;
     this.counter            = 0;
@@ -209,6 +210,7 @@ public abstract class AbstractFunctionUnitBlock implements AbstractBlock
   public void setSimCodeModel(SimCodeModel simCodeModel)
   {
     this.simCodeModel = simCodeModel;
+    this.simCodeModel.setFunctionUnitId(this.functionUnitId);
   }// end of setDecodeCodeModel
   //----------------------------------------------------------------------
   
@@ -271,8 +273,7 @@ public abstract class AbstractFunctionUnitBlock implements AbstractBlock
    */
   private int getDelayBasedOnCapability()
   {
-    String                                   expr           = this.simCodeModel.getInstructionFunctionModel()
-            .getInterpretableAs();
+    String expr = this.simCodeModel.getInstructionFunctionModel().getInterpretableAs();
     FunctionalUnitDescription.CapabilityName capabilityName = FunctionalUnitDescription.classifyOperation(expr);
     if (capabilityName == null)
     {

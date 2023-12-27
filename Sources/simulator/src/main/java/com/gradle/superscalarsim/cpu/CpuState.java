@@ -237,9 +237,9 @@ public class CpuState implements Serializable
     
     this.loadStoreInterpreter = new CodeLoadStoreInterpreter(memoryModel);
     
-    this.instructionFetchBlock = new InstructionFetchBlock(simCodeModelFactory, instructionMemoryBlock, gShareUnit,
-                                                           branchTargetBuffer);
-    instructionFetchBlock.setNumberOfWays(config.cpuConfig.fetchWidth);
+    this.instructionFetchBlock = new InstructionFetchBlock(config.cpuConfig.fetchWidth,
+                                                           config.cpuConfig.branchFollowLimit, simCodeModelFactory,
+                                                           instructionMemoryBlock, gShareUnit, branchTargetBuffer);
     
     this.decodeAndDispatchBlock = new DecodeAndDispatchBlock(instructionFetchBlock, renameMapTableBlock,
                                                              globalHistoryRegister, branchTargetBuffer,

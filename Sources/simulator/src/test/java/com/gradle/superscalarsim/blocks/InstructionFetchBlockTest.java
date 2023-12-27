@@ -34,14 +34,14 @@ public class InstructionFetchBlockTest
                                                  new PatternHistoryTable(10, new boolean[]{true, false},
                                                                          PatternHistoryTable.PredictorType.TWO_BIT_PREDICTOR));
     SimCodeModelFactory simCodeModelFactory = new SimCodeModelFactory();
-    this.instructionFetchBlock = new InstructionFetchBlock(simCodeModelFactory, this.instructionMemoryBlock,
+    this.instructionFetchBlock = new InstructionFetchBlock(3, 1, simCodeModelFactory, this.instructionMemoryBlock,
                                                            this.gShareUnit, this.branchTargetBuffer);
   }
   
   @Test
   public void instructionFetchSimulateThreeWay_emptyCode_returnsThreeNops()
   {
-    instructionMemoryBlock.setCode(Arrays.asList());
+    instructionMemoryBlock.setCode(List.of());
     
     this.instructionFetchBlock.simulate();
     
@@ -140,6 +140,5 @@ public class InstructionFetchBlockTest
     Assert.assertEquals("ins1", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
     Assert.assertEquals("ins2", this.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
     Assert.assertEquals("ins3", this.instructionFetchBlock.getFetchedCode().get(2).getInstructionName());
-    
   }
 }

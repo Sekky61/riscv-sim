@@ -119,8 +119,11 @@ function InstructionRow({ instructionId }: InstructionRowProps) {
 
   let instructionType;
   switch (inputCodeModel.instructionTypeEnum) {
-    case 'kArithmetic':
-      instructionType = 'Arithmetic';
+    case 'kIntArithmetic':
+      instructionType = 'Arithmetic (int)';
+      break;
+    case 'kFloatArithmetic':
+      instructionType = 'Arithmetic (float)';
       break;
     case 'kLoadstore':
       instructionType = 'Load/Store';
