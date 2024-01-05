@@ -40,7 +40,6 @@ import {
   DataChunk,
   dataTypes,
   dataTypesText,
-  memoryLocation,
   memoryLocationDefaultValue,
   memoryLocationIsa,
 } from '@/lib/forms/Isa';
@@ -72,6 +71,10 @@ function getFileFromFileList(fileList: unknown): File | undefined {
   }
 }
 
+function isPowerOfTwo(n: number) {
+  return (n & (n - 1)) === 0;
+}
+
 /**
  * Expand the memoryLocation form with a data input.
  * These are internal fields, not part of the ISA.
@@ -85,26 +88,51 @@ const memoryLocationWithSource = memoryLocationIsa.extend({
    */
   file: z.any(),
   constant: z.number().optional(),
+  /**
+   * Expose alignment to the user - the isa expects the exponent, not the actual value
+   */
+  alignment: z
+    .number()
+    .min(1)
+    .max(65536)
+    .refine((v) => isPowerOfTwo(v), {
+      message: 'Must be a power of 2',
+    }),
   dataLength: z.number().min(1).optional(),
 });
 type MemoryLocationForm = z.infer<typeof memoryLocationWithSource>;
 
-const memoryLocationFormDefaultValue: MemoryLocationForm = {
-  ...memoryLocationDefaultValue,
-  dataType: 'kInt',
-  dataSource: 'constant',
-  constant: 0,
-  dataLength: 1,
-  file: null,
-};
+/**
+ * Converts the exponent, adds default values if needed
+ */
+function isaMemLocationToForm(memLoc?: MemoryLocationForm): MemoryLocationForm {
+  let memoryLocation = memLoc;
+  if (memoryLocation === undefined) {
+    memoryLocation = {
+      ...memoryLocationDefaultValue,
+      dataType: 'kInt',
+      dataSource: 'constant',
+      constant: 0,
+      dataLength: 1,
+      file: null,
+    };
+  }
+  const actualAlignment = 2 ** memoryLocation.alignment;
+
+  return {
+    ...memoryLocation,
+    alignment: actualAlignment,
+  };
+}
 
 /**
  * Filter out fields not belonging to memory location
  */
 export function memoryLocationFormToIsa(memoryLocation: MemoryLocationForm) {
+  const alignmentExponent = Math.log2(memoryLocation.alignment);
   return {
     name: memoryLocation.name,
-    alignment: memoryLocation.alignment,
+    alignment: alignmentExponent,
     dataChunks: memoryLocation.dataChunks.map((dataChunk) => ({
       dataType: dataChunk.dataType,
       values: dataChunk.values,
@@ -213,7 +241,7 @@ export default function MemoryForm({
 
   const form = useForm<MemoryLocationForm>({
     resolver,
-    defaultValues: memoryLocationFormDefaultValue,
+    defaultValues: isaMemLocationToForm(),
     mode: 'onChange',
   });
   const { register, handleSubmit, formState, reset, trigger, control } = form;
@@ -230,9 +258,9 @@ export default function MemoryForm({
   // watch for changes in the active memory location
   useEffect(() => {
     if (memoryLocation) {
-      reset(memoryLocation);
+      reset(isaMemLocationToForm(memoryLocation));
     } else if (memoryLocationName === 'new') {
-      reset(memoryLocationFormDefaultValue);
+      reset(isaMemLocationToForm());
     } else {
       return; // Do not trigger validation
     }
@@ -322,8 +350,8 @@ export default function MemoryForm({
         />
         <FormInput
           type='number'
-          title='Alignment Exponent'
-          hint='The final alignment will be 2^alignment. For example, 2^3 = 8 bytes. The .align directive in assembler works the same way.'
+          title='Alignment (Bytes)'
+          hint='The array will be aligned to this boundary. The .align directive in assembler works differently!'
           {...register('alignment', { valueAsNumber: true })}
           error={formState.errors.alignment}
         />
