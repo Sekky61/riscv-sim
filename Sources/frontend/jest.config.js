@@ -1,5 +1,6 @@
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const nextJest = require('next/jest');
+require('next');
 
 const createJestConfig = nextJest({
   // Provide the path to your Next.js app to load next.config.js and .env files in your test environment
@@ -16,7 +17,7 @@ const customJestConfig = {
   // if using TypeScript with a baseUrl set to the root directory then you need the below for alias' to work
   moduleDirectories: ['node_modules', '<rootDir>/'],
 
-  testEnvironment: 'jest-environment-jsdom',
+  testEnvironment: 'jsdom',
 
   /**
    * Absolute imports and Module Path Aliases
