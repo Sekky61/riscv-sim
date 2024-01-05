@@ -198,7 +198,10 @@ public class InstructionFetchBlock implements AbstractBlock
   //----------------------------------------------------------------------
   
   /**
-   * Mutates PC
+   * Mutates PC.
+   * Fetches instructions from the memory.
+   * If there is an entry in the BTB, it will follow the branch.
+   * Otherwise, it will fetch following instructions.
    *
    * @return Fetched instructions
    * @brief Fetching logic
