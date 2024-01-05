@@ -180,6 +180,16 @@ public class CpuConfig implements Serializable
    */
   public int speculativeRegisters;
   
+  /**
+   * @brief Core clock frequency in Hz
+   */
+  public int coreClockFrequency;
+  
+  /**
+   * @brief Cache clock frequency in Hz
+   */
+  public int cacheClockFrequency;
+  
   public static CpuConfig getDefaultConfiguration()
   {
     CpuConfig config = new CpuConfig();
@@ -234,6 +244,8 @@ public class CpuConfig implements Serializable
     config.callStackSize        = 512;
     // Misc
     config.speculativeRegisters = 320;
+    config.coreClockFrequency   = 100000000;
+    config.cacheClockFrequency  = 100000000;
     return config;
   }
 }

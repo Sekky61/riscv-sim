@@ -103,3 +103,34 @@ export function instructionTypeName(inputCodeModel: InputCodeModel): string {
       return 'Jump/Branch';
   }
 }
+
+/**
+ * Format a number with a unit.
+ * @param value the value to format
+ * @param base base of the unit to divide by
+ * @param units array of units to use. The first unit is used for values < base.
+ * @returns formatted string
+ */
+export function formatNumberWithUnit(
+  value: number,
+  base = 1000,
+  units: string[] = ['Hz', 'kHz', 'MHz', 'GHz', 'THz'],
+): string {
+  let unitIndex = 0;
+  let val = value;
+
+  while (val >= base && unitIndex < units.length - 1) {
+    val /= base;
+    unitIndex++;
+  }
+
+  // Cap the index at the last unit
+  const unitFinalIndex = Math.min(unitIndex, units.length - 1);
+
+  // If the value is less than 1, round to 1 decimal place
+  if (val < 1) {
+    return `${val.toFixed(1)} ${units[unitFinalIndex]}`;
+  }
+
+  return `${val} ${units[unitFinalIndex]}`;
+}

@@ -200,6 +200,8 @@ export const isaFormSchema = z
     loadLatency: z.number().min(0),
     callStackSize: z.number().min(0).max(65536),
     speculativeRegisters: z.number().min(1).max(1024),
+    coreClockFrequency: z.number().min(1),
+    cacheClockFrequency: z.number().min(1),
   })
   .refine((data) => {
     // Check the predictor
@@ -342,6 +344,8 @@ export const defaultCpuConfig: CpuConfig = {
   sbSize: 64,
   callStackSize: 512,
   speculativeRegisters: 320,
+  coreClockFrequency: 100000000,
+  cacheClockFrequency: 100000000,
 };
 
 export const defaultSimulationConfig: SimulationConfig = {

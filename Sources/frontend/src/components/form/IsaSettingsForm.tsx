@@ -76,6 +76,7 @@ import {
 
 import { FormInput } from './FormInput';
 import { ControlRadioInput, RadioInputWithTitle } from './RadioInput';
+import { formatNumberWithUnit } from '@/lib/utils';
 
 type IsaArrayFields = 'fUnits' | 'memoryLocations';
 type IsaSimpleFields = keyof Omit<CpuConfig, IsaArrayFields>;
@@ -194,6 +195,14 @@ const isaFormMetadata: IsaFormMetadata = {
   speculativeRegisters: {
     title: 'Number of speculative registers',
   },
+  coreClockFrequency: {
+    title: 'Core clock frequency (Hz)',
+    hint: 'Core clock frequency in Hz.',
+  },
+  cacheClockFrequency: {
+    title: 'Cache clock frequency (Hz)',
+    hint: 'Cache clock frequency in Hz.',
+  },
 };
 
 const capabilitiesMetadata: {
@@ -239,6 +248,8 @@ export default function IsaSettingsForm({
   } = form;
 
   const watchPredictorType = watch('predictorType');
+  const coreClockFrequency = watch('coreClockFrequency');
+  const cacheClockFrequency = watch('cacheClockFrequency');
 
   // When predictorType changes, set a new predictorDefault
   useEffect(() => {
@@ -295,6 +306,26 @@ export default function IsaSettingsForm({
               <CardContent>
                 <fieldset disabled={disabled}>
                   <FormInput {...simpleRegister('name')} />
+                  <div className='grid grid-cols-2 items-center gap-4'>
+                    <FormInput
+                      {...simpleRegister('coreClockFrequency', {
+                        valueAsNumber: true,
+                      })}
+                    />
+                    <p>
+                      {coreClockFrequency &&
+                        formatNumberWithUnit(coreClockFrequency)}
+                    </p>
+                    <FormInput
+                      {...simpleRegister('cacheClockFrequency', {
+                        valueAsNumber: true,
+                      })}
+                    />
+                    <p>
+                      {cacheClockFrequency &&
+                        formatNumberWithUnit(cacheClockFrequency)}
+                    </p>
+                  </div>
                 </fieldset>
               </CardContent>
             </Card>

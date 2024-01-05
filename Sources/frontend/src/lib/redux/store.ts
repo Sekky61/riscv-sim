@@ -36,8 +36,10 @@ import {
   PAUSE,
   PERSIST,
   PURGE,
+  PersistedState,
   REGISTER,
   REHYDRATE,
+  createMigrate,
   persistReducer,
   persistStore,
 } from 'redux-persist';
@@ -65,6 +67,18 @@ import shortcutsReducer from '@/lib/redux/shortcutsSlice';
  * - shortcutsSlice - for keyboard shortcuts
  */
 
+/**
+ * Migrations for the redux-persist.
+ * The migrations are used when the version number is increased.
+ * Returning undefined will result in the state being discarded.
+ * https://github.com/rt2zz/redux-persist/blob/HEAD/docs/migrations.md
+ */
+const migrations = {
+  10: (state: PersistedState) => {
+    return state;
+  },
+};
+
 // Persistance config
 // https://blog.logrocket.com/persist-state-redux-persist-redux-toolkit-react/
 // TODO: look at https://github.com/localForage/localForage
@@ -72,9 +86,11 @@ const persistIsaConfig = {
   // The key in localStorage
   key: 'root',
   // Change the version when changing the schema
-  version: 5,
+  version: 10,
   storage,
   stateReconciler: hardSet,
+  // This migration is used when the version number is increased
+  migrate: createMigrate(migrations),
 };
 
 // https://stackoverflow.com/questions/69978434/persist-reducer-function-giving-type-error-to-my-reducer-in-typescript

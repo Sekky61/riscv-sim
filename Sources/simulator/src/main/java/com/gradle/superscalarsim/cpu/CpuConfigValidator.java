@@ -75,7 +75,23 @@ public class CpuConfigValidator
     validateFus(cpuConfig);
     validateCache(cpuConfig);
     validateMemory(cpuConfig);
+    validateClock(cpuConfig);
     return isValid();
+  }
+  
+  /**
+   * Validates the clock configuration
+   */
+  private void validateClock(CpuConfig cpuConfig)
+  {
+    if (cpuConfig.coreClockFrequency < 1)
+    {
+      errors.add(new Error("Core clock frequency must be a positive integer", "coreClockFrequency"));
+    }
+    if (cpuConfig.cacheClockFrequency < 1)
+    {
+      errors.add(new Error("Memory clock frequency must be a positive integer", "memoryClockFrequency"));
+    }
   }
   
   /**
