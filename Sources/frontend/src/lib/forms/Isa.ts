@@ -220,6 +220,8 @@ export const isaFormSchema = z
     if (data.cacheAssoc > data.cacheLines) {
       return 'Cache associativity must be less than or equal to cache lines';
     }
+    // Config is correct
+    return true;
   });
 export type CpuConfig = z.infer<typeof isaFormSchema>;
 

@@ -127,10 +127,12 @@ export function formatNumberWithUnit(
   // Cap the index at the last unit
   const unitFinalIndex = Math.min(unitIndex, units.length - 1);
 
-  // If the value is less than 1, round to 1 decimal place
-  if (val < 1) {
+  // If the value is less than 1 and has a decimal part, show one decimal place
+  if (val % 1 !== 0) {
     return `${val.toFixed(1)} ${units[unitFinalIndex]}`;
   }
 
-  return `${val} ${units[unitFinalIndex]}`;
+  // Otherwise show no decimal places
+  const valInt = Math.round(val);
+  return `${valInt} ${units[unitFinalIndex]}`;
 }

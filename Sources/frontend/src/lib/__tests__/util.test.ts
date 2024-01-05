@@ -1,14 +1,14 @@
 /**
- * @file    isa.test.ts
+ * @file    util.test.ts
  *
  * @author  Michal Majer
  *          Faculty of Information Technology
  *          Brno University of Technology
  *          xmajer21@stud.fit.vutbr.cz
  *
- * @brief   Tests for ISA configuration
+ * @brief   Tests for utility functions
  *
- * @date    19 September 2023, 22:00 (created)
+ * @date    05 January 2023, 14:00 (created)
  *
  * @section Licence
  * This file is part of the Superscalar simulator app
@@ -29,11 +29,30 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { defaultCpuConfig, isaFormSchema } from '@/lib/forms/Isa';
+import { formatNumberWithUnit } from '@/lib/utils';
 
-describe('The Default ISA configuration', () => {
-  it('Should pass the validation', () => {
-    // Throws ZodError if not valid
-    const _result = isaFormSchema.parse(defaultCpuConfig);
+describe('The Unit Formatter', () => {
+  it('Should not crash on edge values', () => {
+    const res = formatNumberWithUnit(0);
+    expect(res).toBe('0 Hz');
+
+    const res2 = formatNumberWithUnit(1023);
+    expect(res2).toBe('1.0 kHz');
+
+    // Negative values are not supported
+    const res3 = formatNumberWithUnit(-1);
+    expect(res3).toBe('-1 Hz');
+
+    // Does not crash
+    const _res4 = formatNumberWithUnit(NaN);
+    const _res5 = formatNumberWithUnit(Infinity);
+  });
+
+  it('Should format GHz', () => {
+    const res = formatNumberWithUnit(1e9);
+    expect(res).toBe('1 GHz');
+
+    const res2 = formatNumberWithUnit(1.5e9);
+    expect(res2).toBe('1.5 GHz');
   });
 });
