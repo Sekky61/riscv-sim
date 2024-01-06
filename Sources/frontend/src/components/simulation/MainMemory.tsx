@@ -33,7 +33,7 @@ import { selectMemoryBytes, selectProgram } from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
 
 import Block from '@/components/simulation/Block';
-import React from 'react';
+import React, { useEffect } from 'react';
 
 /**
  * Display the memory like a hexdump.
@@ -50,29 +50,37 @@ export default function MainMemory() {
 
   const bytesInRow = 8;
   const rows = memory.length / bytesInRow;
-
   const labels = program.labels;
-  console.dir(labels);
 
   const startAddress = 624;
 
   const addresses = [];
   for (let i = 0; i < rows; i++) {
     addresses.push(
-      <div>{`0x${(i * bytesInRow).toString(16).padStart(4, '0')}`}</div>,
+      <div key={i}>{`0x${(i * bytesInRow)
+        .toString(16)
+        .padStart(4, '0')}`}</div>,
     );
   }
 
   const bytes = [];
-  for (const byte of memory) {
-    bytes.push(<div>{byte.toString(16).padStart(2, '0')}</div>);
+  for (const [index, byte] of memory.entries()) {
+    bytes.push(
+      <div key={index} className={byte === 0 ? 'text-gray-500' : undefined}>
+        {byte.toString(16).padStart(2, '0')}
+      </div>,
+    );
   }
   // Add labels
+  // TODO: separate the data labels and code labels using an extra field in the label object
   for (const label of Object.values(labels)) {
     const el = bytes[label.address];
     bytes[label.address] = (
-      <div className='relative bg-gray-200 -m-1 p-1 rounded hover:bg-red-500 hover:rounded-l-none duration-150 group'>
-        <div className='absolute top-0 right-full h-full p-1 rounded-l bg-red-500 opacity-0 group-hover:opacity-100 duration-150 translate-x-6 group-hover:translate-x-0'>
+      <div
+        key={label.address}
+        className='relative bg-gray-200 -m-1 p-1 rounded hover:bg-red-500 hover:rounded-l-none duration-150 group'
+      >
+        <div className='absolute top-0 right-full h-full p-1 rounded-l bg-red-500 invisible opacity-0 group-hover:visible group-hover:opacity-100 duration-150 translate-x-6 group-hover:translate-x-0'>
           {label.name}
         </div>
         {el}
@@ -90,36 +98,5 @@ export default function MainMemory() {
         <div className='grid memory-grid justify-center gap-1'>{bytes}</div>
       </div>
     </Block>
-  );
-}
-
-/**
- * Display a single row of the memory
- */
-function MemoryRow({
-  memory,
-  startAddress,
-  count,
-}: {
-  memory: Uint8Array;
-  startAddress: number;
-  count: number;
-}) {
-  const bytesInRow = 8;
-
-  const data = memory.slice(startAddress, startAddress + count);
-
-  // Pad the address with zeros
-  const address = `0x${startAddress.toString(16).padStart(4, '0')}`;
-
-  return (
-    <>
-      <div className=''>{address}</div>
-      {Array.from(Array(bytesInRow).keys()).map((index) => (
-        <div key={index} className=''>
-          {(data[index] ?? 0).toString(16).padStart(2, '0')}
-        </div>
-      ))}
-    </>
   );
 }
