@@ -254,37 +254,51 @@ public class CodeParser
    */
   private void collectMemoryLocations(String code)
   {
-    List<String>   lines = splitLines(code);
-    MemoryLocation mem   = new MemoryLocation(null, 1);
+    List<String>   lines       = splitLines(code);
+    MemoryLocation mem         = new MemoryLocation(null, 1);
+    boolean        isDataLabel = false;
     
     // Go through the program
-    // Take note of .byte, .hword, .word, .align, .ascii, .asciiz, .skip, .zero
+    // Take note of .byte, .hword, .word, .align, .ascii, .asciiz, .string, .skip, .zero
     for (String line : lines)
     {
-      if (!isDirective(line))
+      if ((!isDirective(line) || line.startsWith(".align")) && (!isLabel(line) || isDataLabel) && mem.name != null)
       {
-        // Save memory location when label ends
-        if (mem.name != null)
+        // Labeled memory ends. Save memory location.
+        if (isDataLabel)
         {
-          // Is it a data label?
-          if (!mem.getBytes().isEmpty())
-          {
-            memoryLocations.add(mem);
-          }
+          memoryLocations.add(mem);
           // Start new memory location
-          mem = new MemoryLocation(null, 1);
         }
-        if (isLabel(line))
+        mem         = new MemoryLocation(null, 1);
+        isDataLabel = false;
+        // We still want to parse .align and labels
+        if (!line.startsWith(".align") && !isLabel(line))
         {
-          // todo multiple labels on one line, multiple labels on multiple lines
-          mem.name = line.substring(0, line.length() - 1);
+          continue;
+        }
+      }
+      
+      if (isLabel(line))
+      {
+        // todo multiple labels on one line
+        String labelName = line.substring(0, line.length() - 1);
+        if (mem.name == null)
+        {
+          mem.name = labelName;
+        }
+        else
+        {
+          mem.addAlias(labelName);
         }
         continue;
       }
-      String[] tokens = line.split("[\\s,]+");
       
-      String directive = tokens[0];
-      int    argCount  = tokens.length - 1;
+      // Split, but do not split strings such as "Hello, world!"
+      List<String> tokens = tokenizeLine(line); //line.split("[\\s,]+");
+      
+      String directive = tokens.get(0);
+      int    argCount  = tokens.size() - 1;
       switch (directive)
       {
         case ".byte", ".hword", ".word" ->
@@ -308,9 +322,11 @@ public class CodeParser
             default -> null;
           };
           mem.addDataChunk(t);
-          for (int j = 1; j < tokens.length; j++)
+          isDataLabel = true;
+          for (int j = 1; j < tokens.size(); j++)
           {
-            mem.addValue(tokens[j]);
+            // It may be a label
+            mem.addValue(tokens.get(j));
           }
         }
         case ".align" ->
@@ -324,21 +340,23 @@ public class CodeParser
           {
             addError(new CodeToken(0, 0, directive, CodeToken.Type.EOF), ".align expected before a label");
           }
-          mem.alignment = Integer.parseInt(tokens[1]);
+          mem.alignment = Integer.parseInt(tokens.get(1));
         }
-        case ".ascii", ".asciiz" ->
+        case ".ascii", ".asciiz", ".string" ->
         {
+          // todo: escape sequences (https://ftp.gnu.org/old-gnu/Manuals/gas-2.9.1/html_chapter/as_3.html#SEC33)
           mem.addDataChunk(DataTypeEnum.kChar);
+          isDataLabel = true;
           if (argCount == 0)
           {
             addError(new CodeToken(0, 0, directive, CodeToken.Type.EOF),
-                     ".ascii expected at least 1 argument, got " + argCount);
+                     directive + " expected at least 1 argument, got " + argCount);
             break;
           }
           
-          for (int j = 1; j < tokens.length; j++)
+          for (int j = 1; j < tokens.size(); j++)
           {
-            String token = tokens[j];
+            String token = tokens.get(j);
             if (!token.startsWith("\"") || !token.endsWith("\""))
             {
               addError(new CodeToken(0, 0, token, CodeToken.Type.EOF), "Expected string literal, got " + token);
@@ -349,7 +367,7 @@ public class CodeParser
             {
               mem.addValue(c + "");
             }
-            if (directive.equals(".asciiz"))
+            if (directive.equals(".asciiz") || directive.equals(".string"))
             {
               mem.addValue("\0");
             }
@@ -364,11 +382,11 @@ public class CodeParser
             addError(new CodeToken(0, 0, directive, CodeToken.Type.EOF), ".skip expected 1 argument, got " + argCount);
             break;
           }
-          int    size = Integer.parseInt(tokens[1]);
+          int    size = Integer.parseInt(tokens.get(1));
           String fill = "0";
           if (argCount == 2)
           {
-            fill = tokens[2];
+            fill = tokens.get(2);
           }
           for (int j = 0; j < size; j++)
           {
@@ -467,6 +485,47 @@ public class CodeParser
   }
   
   /**
+   * @param line Line to tokenize
+   *
+   * @return Tokens of the assembly line, split by spaces and commas, but not inside strings
+   */
+  private List<String> tokenizeLine(String line)
+  {
+    List<String>  tokens       = new ArrayList<>();
+    StringBuilder currentToken = new StringBuilder();
+    boolean       inString     = false;
+    for (char c : line.toCharArray())
+    {
+      if (c == '"')
+      {
+        inString = !inString;
+      }
+      if (c == ',' && !inString)
+      {
+        tokens.add(currentToken.toString());
+        currentToken = new StringBuilder();
+      }
+      else if (c == ' ' && !inString)
+      {
+        if (!currentToken.isEmpty())
+        {
+          tokens.add(currentToken.toString());
+          currentToken = new StringBuilder();
+        }
+      }
+      else
+      {
+        currentToken.append(c);
+      }
+    }
+    if (!currentToken.isEmpty())
+    {
+      tokens.add(currentToken.toString());
+    }
+    return tokens;
+  }
+  
+  /**
    * @param token   Token where the error occurred
    * @param message Error message
    *
@@ -506,20 +565,7 @@ public class CodeParser
       {
         addError(currentToken, "Label '" + labelName + "' already defined");
       }
-      // If there already is a label with this address, point to it
-      Label lab = null;
-      for (Label label : labels.values())
-      {
-        if (label.address == instructions.size() * 4)
-        {
-          lab = label;
-          break;
-        }
-      }
-      if (lab == null)
-      {
-        lab = new Label(labelName, instructions.size() * 4);
-      }
+      Label lab = new Label(labelName, instructions.size() * 4);
       labels.put(labelName, lab);
       // Clear unconfirmed labels
       unconfirmedLabels.removeIf(token -> token.text().equals(labelName));

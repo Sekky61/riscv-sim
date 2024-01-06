@@ -76,6 +76,7 @@ public class MemoryInitializer
    */
   public void initializeMemory(SimulatedMemory memory, List<MemoryLocation> locations, Map<String, Label> labels)
   {
+    // First step - allocate memory
     for (MemoryLocation memoryLocation : locations)
     {
       // Align it (ceil to the next multiple of alignment)
@@ -85,12 +86,7 @@ public class MemoryInitializer
         int alignment = 1 << memoryLocation.alignment;
         memoryPtr = (memoryPtr + alignment - 1) / alignment * alignment;
       }
-      byte[] data = new byte[memoryLocation.getBytes().size()];
-      for (int i = 0; i < memoryLocation.getBytes().size(); i++)
-      {
-        data[i] = memoryLocation.getBytes().get(i);
-      }
-      memory.insertIntoMemory(memoryPtr, data);
+      
       // Save label address
       if (labels.containsKey(memoryLocation.name))
       {
@@ -100,7 +96,51 @@ public class MemoryInitializer
       {
         throw new RuntimeException("Label " + memoryLocation.name + " not found");
       }
+      
+      // Point other labels to the same address
+      if (memoryLocation.aliases != null)
+      {
+        for (String alias : memoryLocation.aliases)
+        {
+          if (labels.containsKey(alias))
+          {
+            labels.get(alias).address = (int) memoryPtr;
+          }
+          else
+          {
+            throw new RuntimeException("Label " + alias + " not found");
+          }
+        }
+      }
+      
       memoryPtr += memoryLocation.getByteSize();
+    }
+    
+    // Second step - fill the memory values
+    for (MemoryLocation memoryLocation : locations)
+    {
+      // The data may be a label or a value
+      for (MemoryLocation.DataChunk dataChunk : memoryLocation.dataChunks)
+      {
+        for (int i = 0; i < dataChunk.values.size(); i++)
+        {
+          String value = dataChunk.values.get(i);
+          if (labels.containsKey(value))
+          {
+            // Save label address
+            dataChunk.values.set(i, String.valueOf(labels.get(value).address));
+          }
+        }
+        
+        byte[] data = new byte[memoryLocation.getByteSize()];
+        for (int i = 0; i < memoryLocation.getByteSize(); i++)
+        {
+          data[i] = memoryLocation.getBytes().get(i);
+        }
+        
+        long pointer = labels.get(memoryLocation.name).address;
+        memory.insertIntoMemory(pointer, data);
+      }
     }
   }
   

@@ -61,12 +61,33 @@ public class AsmParser
     // Split into lines, remove comments, replace \t with spaces, trim
     List<String> stringLines = splitLines(program);
     
-    // Go through the program
-    // Take note of .loc [file index] [line] [column]
-    List<Line> lines = markCMapping(stringLines);
+    // Split into sections
+    List<Section> sections = splitSections(stringLines);
+    // Filter the allocatable sections
+    sections.removeIf(section -> !section.flags.contains("a"));
+    
+    // Join the lines of the sections. Put the code sections first, then the data sections
+    List<String> joinedLines = new ArrayList<>();
+    for (Section section : sections)
+    {
+      if (section.name.startsWith(".text"))
+      {
+        joinedLines.addAll(section.lines);
+      }
+    }
+    for (Section section : sections)
+    {
+      if (!section.name.startsWith(".text"))
+      {
+        joinedLines.addAll(section.lines);
+      }
+    }
+    
+    // Go through the program, mark the mapping from C to ASM
+    List<Line> lines = markCMapping(joinedLines);
     
     // Collect used labels
-    Set<String> usedLabels = collectUsedLabels(stringLines);
+    Set<String> usedLabels = collectUsedLabels(joinedLines);
     
     // Filter, mutates the lines
     List<Line> filteredLines = filterAsm(lines, usedLabels);
@@ -112,6 +133,49 @@ public class AsmParser
   }
   
   /**
+   * Split the program into sections. Takes into account the .text and .section directives.
+   * Filter empty sections and sections beginning with ".section .debug"
+   */
+  private static List<Section> splitSections(List<String> stringLines)
+  {
+    List<Section> sections      = new ArrayList<>();
+    int           activeSection = -1;
+    for (String line : stringLines)
+    {
+      if (line.startsWith(".section"))
+      {
+        // Format: .section name[, "flags"[, @type]]
+        String[] split = line.split("[ ,]");
+        String   name  = split[1];
+        String   flags = split.length > 2 ? split[2] : "";
+        
+        // If such section already exists, find it and make it active
+        boolean found = false;
+        for (int i = 0; i < sections.size(); i++)
+        {
+          if (sections.get(i).name.equals(name))
+          {
+            activeSection = i;
+            found         = true;
+            break;
+          }
+        }
+        if (!found)
+        {
+          sections.add(new Section(name, flags, new ArrayList<>()));
+          activeSection = sections.size() - 1;
+          
+        }
+      }
+      else if (activeSection != -1)
+      {
+        sections.get(activeSection).lines.add(line);
+      }
+    }
+    return sections;
+  }
+  
+  /**
    * .loc [file index] [line] [column] are directives that tell us position of the corresponding C code.
    * We will use this information to map the assembly to the C code.
    */
@@ -136,12 +200,13 @@ public class AsmParser
   {
     Set<String> labels     = collectLabels(program);
     Set<String> usedLabels = new HashSet<>();
+    
     for (String line : program)
     {
       String[] parts = line.split("[ ,()]+");
       // Do not regard the line if it is a directive
       // But do regard it if it is a ".type label, @function"
-      if (line.startsWith(".") && !line.contains("@function"))
+      if (line.startsWith(".") && !line.contains("@function") && !line.contains(".word"))
       {
         continue;
       }
@@ -265,10 +330,14 @@ public class AsmParser
   private static boolean isDataDirective(String line)
   {
     return line.startsWith(".byte") || line.startsWith(".word") || line.startsWith(".hword") || line.startsWith(
-            ".ascii") || line.startsWith(".asciz");
+            ".ascii") || line.startsWith(".asciz") || line.startsWith(".string");
   }
   
   record Line(int cLine, String asmLine)
+  {
+  }
+  
+  record Section(String name, String flags, List<String> lines)
   {
   }
 }

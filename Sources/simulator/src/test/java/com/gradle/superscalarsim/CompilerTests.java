@@ -1,14 +1,18 @@
 package com.gradle.superscalarsim;
 
 import com.gradle.superscalarsim.code.CodeParser;
+import com.gradle.superscalarsim.code.Label;
 import com.gradle.superscalarsim.compiler.AsmParser;
 import com.gradle.superscalarsim.compiler.CompiledProgram;
 import com.gradle.superscalarsim.compiler.GccCaller;
+import com.gradle.superscalarsim.cpu.Cpu;
+import com.gradle.superscalarsim.cpu.SimulationConfig;
 import com.gradle.superscalarsim.loader.InitLoader;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @brief Tests for the compiler
@@ -211,5 +215,61 @@ public class CompilerTests
       System.out.println(parser.getErrorMessages());
       Assert.fail();
     }
+  }
+  
+  @Test
+  public void test_c_string_allocation()
+  {
+    String cCode = """
+            char *str = "Hello World!";
+            char *str2 = "Second!";
+            
+            int add(int x) {
+              return str[x] + str2[x];
+            }
+            """;
+    InitLoader loader = new InitLoader();
+    CodeParser parser = new CodeParser(loader);
+    
+    // Exercise
+    GccCaller.CompileResult compileResult = GccCaller.compile(cCode, List.of("O2"));
+    CompiledProgram         program       = AsmParser.parse(compileResult.code, cCode.split("\n").length);
+    String                  asm           = String.join("\n", program.program);
+    parser.parseCode(asm);
+    
+    // Verify
+    try
+    {
+      Assert.assertTrue(compileResult.success);
+      Assert.assertTrue(parser.success());
+      Assert.assertFalse(parser.getInstructions().isEmpty());
+      // There is a add label
+      Assert.assertNotNull(parser.getLabels().get("add"));
+      
+      // There is a string label
+      Label str = parser.getLabels().get("str");
+      Assert.assertNotNull(str);
+      Assert.assertNotEquals(0, str.address);
+    }
+    catch (AssertionError e)
+    {
+      System.out.println(e.getMessage());
+      System.out.println("Unfiltered program:");
+      System.out.println(compileResult.code);
+      System.out.println("Program:");
+      System.out.println(asm);
+      System.out.println("Error messages:");
+      System.out.println(parser.getErrorMessages());
+      Assert.fail();
+    }
+    
+    // The program is loadable
+    SimulationConfig cpuConfig = SimulationConfig.getDefaultConfiguration();
+    cpuConfig.code = asm;
+    Cpu cpu = new Cpu(cpuConfig);
+    
+    Map<String, Label> labels = cpu.cpuState.instructionMemoryBlock.getLabels();
+    Assert.assertNotNull(labels.get("str"));
+    Assert.assertEquals("str", labels.get("str").name);
   }
 }
