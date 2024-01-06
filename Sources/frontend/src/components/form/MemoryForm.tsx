@@ -76,6 +76,13 @@ function isPowerOfTwo(n: number) {
 }
 
 /**
+ * Returns a random integer between min (inclusive) and max (exclusive)
+ */
+function getRandInt(min: number, max: number) {
+  return Math.floor(Math.random() * (max - min) + min);
+}
+
+/**
  * Expand the memoryLocation form with a data input.
  * These are internal fields, not part of the ISA.
  */
@@ -88,6 +95,11 @@ const memoryLocationWithSource = memoryLocationIsa.extend({
    */
   file: z.any(),
   constant: z.number().optional(),
+  randomRangeMin: z.number().min(0).optional(),
+  /**
+   * The maximum value is exclusive.
+   */
+  randomRangeMax: z.number().min(1).optional(),
   /**
    * Expose alignment to the user - the isa expects the exponent, not the actual value
    */
@@ -115,6 +127,8 @@ function isaMemLocationToForm(memLoc?: MemoryLocationForm): MemoryLocationForm {
       constant: 0,
       dataLength: 1,
       file: null,
+      randomRangeMin: 0,
+      randomRangeMax: 255,
     };
   }
   const actualAlignment = 2 ** memoryLocation.alignment;
@@ -141,6 +155,8 @@ export function memoryLocationFormToIsa(memoryLocation: MemoryLocationForm) {
     dataSource: memoryLocation.dataSource,
     constant: memoryLocation.constant,
     dataLength: memoryLocation.dataLength,
+    randomRangeMin: memoryLocation.randomRangeMin,
+    randomRangeMax: memoryLocation.randomRangeMax,
   };
 }
 
@@ -233,6 +249,26 @@ export default function MemoryForm({
       }
     }
 
+    // check if the random range is valid
+    if (values.dataSource === 'random') {
+      if (values.randomRangeMin === undefined) {
+        errors.randomRangeMin = {
+          type: 'manual',
+          message: 'Please fill in the lower bound',
+        };
+      } else if (values.randomRangeMax === undefined) {
+        errors.randomRangeMax = {
+          type: 'manual',
+          message: 'Please fill in the upper bound',
+        };
+      } else if (values.randomRangeMin >= values.randomRangeMax) {
+        errors.randomRangeMax = {
+          type: 'manual',
+          message: 'Lower bound must be lower than upper bound',
+        };
+      }
+    }
+
     return {
       values: val.values,
       errors,
@@ -274,7 +310,10 @@ export default function MemoryForm({
       const chunk: DataChunk = {
         dataType: data.dataType,
         values: Array.from({ length: data.dataLength ?? 0 }, () =>
-          Math.floor(Math.random() * 256).toString(),
+          getRandInt(
+            data.randomRangeMin ?? 0,
+            data.randomRangeMax ?? 255,
+          ).toString(),
         ),
       };
       data.dataChunks = [chunk];
@@ -359,12 +398,12 @@ export default function MemoryForm({
           name='dataSource'
           title='Data Source'
           choices={['constant', 'random', 'file']}
-          texts={['A Constant', 'Random Numbers', 'File']}
+          texts={['A Constant', 'Random Numbers', 'CSV File']}
           control={control}
         />
       </div>
       <Card className='my-4 p-4'>
-        <h2 className='text-xl mb-4'>Data</h2>
+        <h2 className='text-xl mb-4'>Data Options</h2>
         <div className='h-28'>
           {watchFields.dataSource === 'constant' && (
             <div>
@@ -391,14 +430,29 @@ export default function MemoryForm({
           {watchFields.dataSource === 'random' && (
             <div>
               <p className='text-gray-700'>
-                Random data will be generated on submit.
+                Random data will be generated after each time the memory
+                location is saved.
               </p>
-              <FormInput
-                type='number'
-                title='Number of Elements'
-                {...register('dataLength', { valueAsNumber: true })}
-                error={formState.errors.dataLength}
-              />
+              <div className='flex gap-4 justify-evenly'>
+                <FormInput
+                  type='number'
+                  title='Lower bound of random range'
+                  {...register('randomRangeMin', { valueAsNumber: true })}
+                  error={formState.errors.randomRangeMin}
+                />
+                <FormInput
+                  type='number'
+                  title='Upper bound of random range'
+                  {...register('randomRangeMax', { valueAsNumber: true })}
+                  error={formState.errors.randomRangeMax}
+                />
+                <FormInput
+                  type='number'
+                  title='Number of Elements'
+                  {...register('dataLength', { valueAsNumber: true })}
+                  error={formState.errors.dataLength}
+                />
+              </div>
             </div>
           )}
           {watchFields.dataSource === 'file' && (
