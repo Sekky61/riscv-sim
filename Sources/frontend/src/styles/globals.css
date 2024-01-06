@@ -455,14 +455,10 @@
   }
 
   .memory-grid {
-    grid-template-columns: repeat(9, max-content);
+    grid-template-columns: repeat(8, max-content);
   }
 
-  .memory-grid *:first-child {
-    margin-right: 0.5em;
-  }
-
-  .memory-grid *:nth-child(5) {
+  .memory-grid *:nth-child(4) {
     margin-right: 0.5em;
   }
   

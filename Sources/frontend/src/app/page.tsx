@@ -109,7 +109,7 @@ export default function HomePage() {
             </div>
           </div>
           <div>
-            <div className='flex gap-4 mb-4'>
+            <div className='flex gap-4 mb-4 items-start'>
               <MainMemory />
               <CacheBlock />
             </div>
