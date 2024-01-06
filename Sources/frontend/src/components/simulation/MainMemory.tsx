@@ -30,27 +30,61 @@
  */
 
 import { selectMemoryBytes, selectProgram } from '@/lib/redux/cpustateSlice';
-import { useAppSelector } from '@/lib/redux/hooks';
+import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 
 import Block from '@/components/simulation/Block';
-import React, { useEffect } from 'react';
+import React, { memo, useEffect } from 'react';
+import { openModal } from '@/lib/redux/modalSlice';
+import { Label } from '@/lib/types/cpuApi';
 
 /**
  * Display the memory like a hexdump.
  * Displays the whole memory, up to the highes touched address.
  */
 export default function MainMemory() {
+  const dispatch = useAppDispatch();
   const program = useAppSelector(selectProgram);
   const memory = useAppSelector(selectMemoryBytes) ?? new Uint8Array(0);
-  const containerRef = React.useRef<HTMLDivElement>(null);
 
   if (!program) {
     return null;
   }
 
-  const bytesInRow = 8;
+  program.labels;
+
+  const handleMore = () => {
+    dispatch(
+      openModal({
+        modalType: 'MAIN_MEMORY_DETAILS_MODAL',
+        modalProps: null,
+      }),
+    );
+  };
+
+  return (
+    <Block title='Main Memory' className='' handleMore={handleMore}>
+      <div className='overflow-y-auto max-h-80 flex text-sm gap-2 font-mono'>
+        {memory.length === 0 ? (
+          <div className='text-center text-gray-500'>Empty</div>
+        ) : (
+          <HexDump memory={memory} labels={program.labels} bytesInRow={8} />
+        )}
+      </div>
+    </Block>
+  );
+}
+
+export type HexDumpProps = {
+  memory: Uint8Array;
+  labels: { [k: string]: Label };
+  /**
+   * Should be a multiple of 4
+   */
+  bytesInRow: number;
+};
+
+export const HexDump = ({ memory, labels, bytesInRow }: HexDumpProps) => {
   const rows = memory.length / bytesInRow;
-  const labels = program.labels;
 
   const startAddress = 624;
 
@@ -89,14 +123,16 @@ export default function MainMemory() {
   }
 
   return (
-    <Block title='Main Memory' className=''>
+    <div className='flex text-sm gap-2 font-mono'>
+      <div className='flex flex-col gap-1'>{addresses}</div>
       <div
-        className='overflow-y-auto max-h-80 flex text-sm gap-2 font-mono'
-        ref={containerRef}
+        className='grid memory-grid justify-center gap-1'
+        style={{
+          gridTemplateColumns: `repeat(${bytesInRow}, max-content)`,
+        }}
       >
-        <div className='flex flex-col gap-1'>{addresses}</div>
-        <div className='grid memory-grid justify-center gap-1'>{bytes}</div>
+        {bytes}
       </div>
-    </Block>
+    </div>
   );
-}
+};
