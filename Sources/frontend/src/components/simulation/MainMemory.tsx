@@ -81,9 +81,15 @@ export type HexDumpProps = {
    * Should be a multiple of 4
    */
   bytesInRow: number;
+  showAscii?: boolean;
 };
 
-export const HexDump = ({ memory, labels, bytesInRow }: HexDumpProps) => {
+export const HexDump = ({
+  memory,
+  labels,
+  bytesInRow,
+  showAscii = false,
+}: HexDumpProps) => {
   const rows = memory.length / bytesInRow;
 
   const startAddress = 624;
@@ -122,6 +128,26 @@ export const HexDump = ({ memory, labels, bytesInRow }: HexDumpProps) => {
     );
   }
 
+  const ascii = [];
+  if (showAscii) {
+    // Build string of bytesInRow bytes
+    for (let i = 0; i < memory.length; i += bytesInRow) {
+      let str = '';
+      for (let j = 0; j < bytesInRow; j++) {
+        const byte = memory[i + j];
+        if (byte === undefined) {
+          break;
+        }
+        if (byte >= 32 && byte <= 126) {
+          str += String.fromCharCode(byte);
+        } else {
+          str += '.';
+        }
+      }
+      ascii.push(<div key={i}>{str}</div>);
+    }
+  }
+
   return (
     <div className='flex text-sm gap-2 font-mono'>
       <div className='flex flex-col gap-1'>{addresses}</div>
@@ -133,6 +159,7 @@ export const HexDump = ({ memory, labels, bytesInRow }: HexDumpProps) => {
       >
         {bytes}
       </div>
+      {showAscii && <div className='flex flex-col gap-1'>{ascii}</div>}
     </div>
   );
 };

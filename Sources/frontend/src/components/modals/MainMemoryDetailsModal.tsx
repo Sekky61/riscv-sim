@@ -73,7 +73,12 @@ export const MainMemoryDetailsModal = () => {
           <tbody>{labelTable}</tbody>
         </table>
         <div className='max-h-64 overflow-y-scroll'>
-          <HexDump memory={memory} labels={program.labels} bytesInRow={16} />
+          <HexDump
+            memory={memory}
+            labels={program.labels}
+            bytesInRow={16}
+            showAscii
+          />
         </div>
       </CardContent>
     </>
