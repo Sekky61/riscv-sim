@@ -33,9 +33,31 @@ import { selectMemoryBytes, selectProgram } from '@/lib/redux/cpustateSlice';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 
 import Block from '@/components/simulation/Block';
-import React, { memo, useEffect } from 'react';
+import React, { memo, useDeferredValue, useEffect } from 'react';
 import { openModal } from '@/lib/redux/modalSlice';
 import { Label } from '@/lib/types/cpuApi';
+
+/**
+ * Get the indexes of the memory that are different
+ */
+function getChangedIndexes(
+  oldMemory: Uint8Array,
+  newMemory: Uint8Array,
+): number[] {
+  const indexes: number[] = [];
+  const length = Math.min(oldMemory.length, newMemory.length);
+  for (let i = 0; i < length; i++) {
+    if (oldMemory[i] !== newMemory[i]) {
+      indexes.push(i);
+    }
+  }
+  // Add the rest of the bytes
+  const rest = oldMemory.length > newMemory.length ? oldMemory : newMemory;
+  for (let i = length; i < rest.length; i++) {
+    indexes.push(i);
+  }
+  return indexes;
+}
 
 /**
  * Display the memory like a hexdump.
@@ -45,12 +67,11 @@ export default function MainMemory() {
   const dispatch = useAppDispatch();
   const program = useAppSelector(selectProgram);
   const memory = useAppSelector(selectMemoryBytes) ?? new Uint8Array(0);
+  const oldMemory = useDeferredValue(memory);
 
   if (!program) {
     return null;
   }
-
-  program.labels;
 
   const handleMore = () => {
     dispatch(
@@ -63,11 +84,16 @@ export default function MainMemory() {
 
   return (
     <Block title='Main Memory' className='' handleMore={handleMore}>
-      <div className='overflow-y-auto max-h-80 flex text-sm gap-2 font-mono'>
+      <div className='max-h-80 flex text-sm gap-2 font-mono'>
         {memory.length === 0 ? (
           <div className='text-center text-gray-500'>Empty</div>
         ) : (
-          <HexDump memory={memory} labels={program.labels} bytesInRow={8} />
+          <HexDump
+            memory={memory}
+            labels={program.labels}
+            bytesInRow={8}
+            oldMemory={oldMemory}
+          />
         )}
       </div>
     </Block>
@@ -76,6 +102,7 @@ export default function MainMemory() {
 
 export type HexDumpProps = {
   memory: Uint8Array;
+  oldMemory?: Uint8Array;
   labels: { [k: string]: Label };
   /**
    * Should be a multiple of 4
@@ -86,6 +113,7 @@ export type HexDumpProps = {
 
 export const HexDump = ({
   memory,
+  oldMemory,
   labels,
   bytesInRow,
   showAscii = false,
@@ -127,6 +155,19 @@ export const HexDump = ({
       </div>
     );
   }
+  // Highlight changed bytes
+  // todo scroll to changed bytes
+  if (oldMemory) {
+    const changedIndexes = getChangedIndexes(oldMemory, memory);
+    for (const index of changedIndexes) {
+      const el = bytes[index];
+      bytes[index] = (
+        <div key={index} className='bg-yellow-300'>
+          {el}
+        </div>
+      );
+    }
+  }
 
   const ascii = [];
   if (showAscii) {
@@ -149,7 +190,7 @@ export const HexDump = ({
   }
 
   return (
-    <div className='flex text-sm gap-2 font-mono'>
+    <div className='overflow-y-auto flex text-sm gap-2 font-mono'>
       <div className='flex flex-col gap-1'>{addresses}</div>
       <div
         className='grid memory-grid justify-center gap-1'
