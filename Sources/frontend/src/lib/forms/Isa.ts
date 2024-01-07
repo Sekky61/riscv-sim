@@ -43,7 +43,12 @@ export type CacheReplacementType = (typeof cacheReplacementTypes)[number];
 export const storeBehaviorTypes = ['write-back'] as const;
 export type StoreBehaviorType = (typeof storeBehaviorTypes)[number];
 
+/**
+ * THe difference between byte and char is in display and memory definition.
+ */
 export const dataTypes = [
+  'kByte',
+  'kShort',
   'kInt',
   'kUInt',
   'kLong',
@@ -54,6 +59,8 @@ export const dataTypes = [
   'kChar',
 ] as const;
 export const dataTypesText = [
+  'Byte',
+  'Short',
   'Integer',
   'Unsigned Integer',
   'Long',

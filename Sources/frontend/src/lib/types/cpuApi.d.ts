@@ -160,13 +160,16 @@ export interface Label {
 export type InstructionTypeEnum = 'kArithmetic' | 'kLoadstore' | 'kJumpbranch';
 
 export type DataTypeEnum =
+  | 'kByte'
+  | 'kShort'
   | 'kInt'
   | 'kUInt'
   | 'kLong'
   | 'kULong'
   | 'kFloat'
   | 'kDouble'
-  | 'kBool';
+  | 'kBool'
+  | 'kChar';
 
 export type RegisterReadinessEnum =
   | 'kFree'

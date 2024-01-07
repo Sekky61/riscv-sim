@@ -72,6 +72,9 @@ export const MainMemoryDetailsModal = () => {
           </thead>
           <tbody>{labelTable}</tbody>
         </table>
+        <div>
+          Memory Inspector - shows the memory up to the highest touched address
+        </div>
         <div className='max-h-64 overflow-y-scroll'>
           <HexDump
             memory={memory}
