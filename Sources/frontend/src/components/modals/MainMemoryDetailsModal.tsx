@@ -72,10 +72,10 @@ export const MainMemoryDetailsModal = () => {
           </thead>
           <tbody>{labelTable}</tbody>
         </table>
-        <div>
+        <div className='py-1'>
           Memory Inspector - shows the memory up to the highest touched address
         </div>
-        <div className='max-h-64 overflow-y-scroll'>
+        <div className='max-h-64 flex'>
           <HexDump
             memory={memory}
             labels={program.labels}
