@@ -170,6 +170,7 @@ export default function Page() {
     dispatch(
       notify({
         title: `${theName} is now the active ISA.`,
+        message: 'To use this configuration, reload the simulation.',
         status: 'success',
       }),
     );

@@ -61,6 +61,7 @@ export const SaveIsaChangesModal = ({
         dispatch(
           notify({
             title: 'Updates have been saved.',
+            message: 'To use this configuration, reload the simulation.',
             status: 'success',
           }),
         );

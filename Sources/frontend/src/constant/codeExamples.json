@@ -13,5 +13,10 @@
     "name": "Loop unrolling",
     "type": "c",
     "code": "// Notice that iterations are independent\nint f(int *dest, int *src, int N)\n{\n  #pragma GCC unroll 4\n  for (int i = 0; i < N; ++i) {\n    dest[i] = 5;\n  }\n}\n"
+  },
+  {
+    "name": "Store to array",
+    "type": "c",
+    "code": "int ptr[32];\n\nint writeMem() {\n  for(int i = 0; i < 32; i++) {\n    ptr[i] = i;\n  }\n}\n"
   }
 ]
