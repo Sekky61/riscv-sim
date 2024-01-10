@@ -34,7 +34,7 @@ import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.blocks.loadstore.Cache;
-import com.gradle.superscalarsim.cpu.CacheStatisticsCounter;
+import com.gradle.superscalarsim.cpu.SimulationStatistics;
 import com.gradle.superscalarsim.models.MemoryAccess;
 import com.gradle.superscalarsim.models.Pair;
 
@@ -58,7 +58,7 @@ public class MemoryModel
    */
   @JsonIdentityReference(alwaysAsId = true)
   SimulatedMemory memory;
-  private CacheStatisticsCounter cacheStatisticsCounter;
+  private SimulationStatistics statistics;
   /**
    * Last access
    */
@@ -76,11 +76,11 @@ public class MemoryModel
   /**
    * @brief Constructor - Memory model holds cache
    */
-  public MemoryModel(Cache cache, CacheStatisticsCounter cacheStatisticsCounter)
+  public MemoryModel(Cache cache, SimulationStatistics statistics)
   {
-    this.memory                 = null;
-    this.cache                  = cache;
-    this.cacheStatisticsCounter = cacheStatisticsCounter;
+    this.memory     = null;
+    this.cache      = cache;
+    this.statistics = statistics;
   }
   
   /**
@@ -99,7 +99,7 @@ public class MemoryModel
     if (cache != null)
     {
       int delay = cache.storeData(address, data, size, id, currentCycle);
-      cacheStatisticsCounter.incrementTotalDelay(currentCycle, delay);
+      statistics.cache.incrementTotalDelay(currentCycle, delay);
       return delay;
     }
     
@@ -131,7 +131,7 @@ public class MemoryModel
       Pair<Integer, byte[]> returnVal = cache.getDataBytes(address, size, id, currentCycle);
       delay = returnVal.getFirst();
       System.arraycopy(returnVal.getSecond(), 0, bytes, 0, returnVal.getSecond().length);
-      cacheStatisticsCounter.incrementTotalDelay(currentCycle, returnVal.getFirst());
+      statistics.cache.incrementTotalDelay(currentCycle, returnVal.getFirst());
     }
     else
     {

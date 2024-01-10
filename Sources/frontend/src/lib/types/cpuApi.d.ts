@@ -41,8 +41,7 @@ export interface CpuState {
   managerRegistry: ManagerRegistry;
   tick: number;
   instructionMemoryBlock: InstructionMemoryBlock;
-  simulationStatistics: StatisticsCounter;
-  cacheStatisticsCounter: CacheStatisticsCounter;
+  simulationStatistics: SimulationStatistics;
   branchTargetBuffer: BranchTargetBuffer;
   globalHistoryRegister: GlobalHistoryRegister;
   patternHistoryTable: PatternHistoryTable;
@@ -72,6 +71,23 @@ export interface CpuState {
   reorderBufferBlock: ReorderBufferBlock;
 }
 
+export interface SimulationStatistics {
+  committedInstructions: number;
+  clockCycles: number;
+  failedInstructions: number;
+  correctlyPredictedBranches: number;
+  allBranches: number;
+  takenBranches: number;
+  statistics: SimulationStatistics;
+}
+export interface CacheStatistics {
+  accesses: number;
+  hits: number;
+  misses: number;
+  totalDelay: number;
+  last4accesses: number;
+}
+
 export interface Cache {
   numberOfLines: number;
   associativity: number;
@@ -87,7 +103,7 @@ export interface Cache {
   replacementPolicyType: 'FIFO' | 'LRU' | 'RANDOM';
   replacementPolicy: ReplacementPolicyModel;
   memory?: SimulatedMemory;
-  cacheStatisticsCounter?: CacheStatisticsCounter;
+  statistics: SimulationStatistics;
 }
 export interface CacheLineModel {
   line: string; // base64 encoded
@@ -126,6 +142,13 @@ export interface SimulatedMemory {
   size: number;
 }
 
+export interface MemoryModel {
+  cache: Cache;
+  memory: SimulatedMemory;
+  statistics: SimulationStatistics;
+  lastAccess: MemoryAccess;
+}
+
 export interface ReorderBufferBlock {
   reorderQueue: ReorderBufferItem[];
   commitLimit: number;
@@ -134,7 +157,7 @@ export interface ReorderBufferBlock {
   bufferSize: number;
   renameMapTableBlock?: RenameMapTableBlock;
   decodeAndDispatchBlock?: DecodeAndDispatchBlock;
-  statisticsCounter?: StatisticsCounter;
+  simulationStatistics?: SimulationStatistics;
   gShareUnit?: GShareUnit;
   branchTargetBuffer?: BranchTargetBuffer;
   instructionFetchBlock?: InstructionFetchBlock;

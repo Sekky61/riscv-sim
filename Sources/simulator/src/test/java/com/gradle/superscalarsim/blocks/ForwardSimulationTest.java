@@ -161,7 +161,7 @@ public class ForwardSimulationTest
     CpuState cpuState = this.cpu.cpuState;
     
     this.instructionMemoryBlock    = cpuState.instructionMemoryBlock;
-    this.simulationStatistics      = cpuState.simulationStatistics;
+    this.simulationStatistics      = cpuState.statistics;
     this.unifiedRegisterFileBlock  = cpuState.unifiedRegisterFileBlock;
     this.renameMapTableBlock       = cpuState.renameMapTableBlock;
     this.globalHistoryRegister     = cpuState.globalHistoryRegister;

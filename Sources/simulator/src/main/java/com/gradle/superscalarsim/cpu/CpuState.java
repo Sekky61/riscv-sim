@@ -68,8 +68,7 @@ public class CpuState implements Serializable
   
   // Housekeeping
   
-  public SimulationStatistics simulationStatistics;
-  public CacheStatisticsCounter cacheStatisticsCounter;
+  public SimulationStatistics statistics;
   
   // Branch prediction
   
@@ -169,8 +168,7 @@ public class CpuState implements Serializable
     }
     memoryInitializer.initializeMemory(simulatedMemory, codeParser.getMemoryLocations(), codeParser.getLabels());
     
-    this.simulationStatistics   = new SimulationStatistics();
-    this.cacheStatisticsCounter = new CacheStatisticsCounter();
+    this.statistics = new SimulationStatistics();
     
     InstructionFunctionModel nopFM = initLoader.getInstructionFunctionModel("nop");
     InputCodeModel nop = inputCodeModelFactory.createInstance(nopFM, new ArrayList<>(),
@@ -228,9 +226,9 @@ public class CpuState implements Serializable
     this.cache = new Cache(simulatedMemory, config.cpuConfig.cacheLines, config.cpuConfig.cacheAssoc,
                            config.cpuConfig.cacheLineSize, replacementPoliciesEnum, writeBack, false,
                            config.cpuConfig.storeLatency, config.cpuConfig.loadLatency,
-                           config.cpuConfig.laneReplacementDelay, this.cacheStatisticsCounter);
+                           config.cpuConfig.laneReplacementDelay, statistics);
     
-    this.memoryModel = new MemoryModel(cache, cacheStatisticsCounter);
+    this.memoryModel = new MemoryModel(cache, statistics);
     
     
     this.loadStoreInterpreter = new CodeLoadStoreInterpreter(memoryModel);
@@ -245,8 +243,7 @@ public class CpuState implements Serializable
     
     // ROB
     this.reorderBufferBlock        = new ReorderBufferBlock(renameMapTableBlock, decodeAndDispatchBlock, gShareUnit,
-                                                            branchTargetBuffer, instructionFetchBlock,
-                                                            simulationStatistics);
+                                                            branchTargetBuffer, instructionFetchBlock, statistics);
     reorderBufferBlock.bufferSize  = config.cpuConfig.robSize;
     reorderBufferBlock.commitLimit = config.cpuConfig.commitWidth;
     
@@ -364,19 +361,6 @@ public class CpuState implements Serializable
     return defaultTaken;
   }
   
-  public String serialize()
-  {
-    ObjectMapper serializer = Serialization.getSerializer();
-    try
-    {
-      return serializer.writeValueAsString(this);
-    }
-    catch (JsonProcessingException e)
-    {
-      throw new RuntimeException(e);
-    }
-  }
-  
   /**
    * Override equals to compare by value
    *
@@ -402,6 +386,19 @@ public class CpuState implements Serializable
     String otherJson = myObject.serialize();
     
     return meJson.equals(otherJson);
+  }
+  
+  public String serialize()
+  {
+    ObjectMapper serializer = Serialization.getSerializer();
+    try
+    {
+      return serializer.writeValueAsString(this);
+    }
+    catch (JsonProcessingException e)
+    {
+      throw new RuntimeException(e);
+    }
   }
   
   /**
@@ -442,7 +439,7 @@ public class CpuState implements Serializable
     // bump commit id of ROB
     reorderBufferBlock.bumpCommitID();
     // Stats
-    simulationStatistics.incrementClockCycles();
+    statistics.incrementClockCycles();
     
     this.tick++;
   }// end of run

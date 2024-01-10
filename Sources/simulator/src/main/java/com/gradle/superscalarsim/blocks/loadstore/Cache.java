@@ -35,7 +35,7 @@ import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.code.SimulatedMemory;
-import com.gradle.superscalarsim.cpu.CacheStatisticsCounter;
+import com.gradle.superscalarsim.cpu.SimulationStatistics;
 import com.gradle.superscalarsim.enums.cache.ReplacementPoliciesEnum;
 import com.gradle.superscalarsim.models.Pair;
 import com.gradle.superscalarsim.models.Triplet;
@@ -55,7 +55,7 @@ import java.util.Stack;
 public class Cache
 {
   @JsonIdentityReference(alwaysAsId = true)
-  private CacheStatisticsCounter cacheStatisticsCounter;
+  private SimulationStatistics statistics;
   
   /**
    * Number of cache lines
@@ -162,7 +162,7 @@ public class Cache
                int storeDelay,
                int loadDelay,
                int lineReplacementDelay,
-               CacheStatisticsCounter cacheStatisticsCounter)
+               SimulationStatistics statistics)
   {
     if (!areSettingsCorrect(numberOfLines, associativity, lineSize))
     {
@@ -180,7 +180,7 @@ public class Cache
     this.lineReplacementDelay     = lineReplacementDelay;
     this.addRemainingDelayToStore = addRemainingDelayToStore;
     this.cycleEndOfReplacement    = 0;
-    this.cacheStatisticsCounter   = cacheStatisticsCounter;
+    this.statistics               = statistics;
     this.replacementPolicy        = ReplacementPolicyModel.getReplacementPolicyModel(replacementPolicy, numberOfLines,
                                                                                      associativity);
     
@@ -406,7 +406,7 @@ public class Cache
     //Save last access for visualization
     if (lastAccess.peek().getId() != id)
     {
-      cacheStatisticsCounter.incrementAccesses();
+      statistics.cache.incrementAccesses();
       this.lastAccess.add(
               new CacheAccess(currentCycle, cycleEndOfReplacement, id, new Boolean[0], false, splittedAddress, 0,
                               new Integer[0], new Integer[0]));
@@ -419,7 +419,7 @@ public class Cache
       CacheLineModel line = cache[splittedAddress.getSecond()][i];
       if (line.getTag() == splittedAddress.getFirst() && line.isValid())
       {
-        cacheStatisticsCounter.incrementHits(currentCycle);
+        statistics.cache.incrementHits(currentCycle);
         
         replacementPolicy.updatePolicy(id, splittedAddress.getSecond(), i);
         lastAccess.peek()
@@ -450,7 +450,7 @@ public class Cache
     {
       selectedLine = emptyLine;
     }
-    cacheStatisticsCounter.incrementMisses(currentCycle);
+    statistics.cache.incrementMisses(currentCycle);
     
     long           baseMemoryAddress = address & -(1L << getLog(lineSize, 2));
     CacheLineModel line              = cache[splittedAddress.getSecond()][selectedLine];
@@ -567,7 +567,7 @@ public class Cache
     // Save last access for visualization
     if (lastAccess.peek().getId() != id)
     {
-      cacheStatisticsCounter.incrementAccesses();
+      statistics.cache.incrementAccesses();
       lastAccess.add(new CacheAccess(currentCycle, cycleEndOfReplacement, id, new Boolean[0], true, splitAddress, 0,
                                      new Integer[0], new Integer[0]));
     }
@@ -580,7 +580,7 @@ public class Cache
       if (line.getTag() == tag && line.isValid())
       {
         // Found the line
-        cacheStatisticsCounter.incrementHits(currentCycle);
+        statistics.cache.incrementHits(currentCycle);
         
         replacementPolicy.updatePolicy(id, index, i);
         lastAccess.peek().addLineAccess(true, index * associativity + i, offset);
@@ -611,7 +611,7 @@ public class Cache
         memory.insertIntoMemory(selectedLine.getBaseAddress(), selectedLine.getLineData());
       }
     }
-    cacheStatisticsCounter.incrementMisses(currentCycle);
+    statistics.cache.incrementMisses(currentCycle);
     
     // Load new line from memory
     long baseMemoryAddress = address & -(1L << getLog(lineSize, 2));

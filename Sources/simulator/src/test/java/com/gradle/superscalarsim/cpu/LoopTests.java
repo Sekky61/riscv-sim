@@ -52,7 +52,7 @@ public class LoopTests
     }
     
     Assert.assertTrue(true);
-    Assert.assertTrue(cpu.cpuState.simulationStatistics.getCommittedInstructions() > 10);
+    Assert.assertTrue(cpu.cpuState.statistics.getCommittedInstructions() > 10);
   }
   
   /**
