@@ -90,7 +90,7 @@ public class CpuConfigValidator
     }
     if (cpuConfig.cacheClockFrequency < 1)
     {
-      errors.add(new Error("Memory clock frequency must be a positive integer", "memoryClockFrequency"));
+      errors.add(new Error("Memory clock frequency must be a positive integer", "cacheClockFrequency"));
     }
   }
   
