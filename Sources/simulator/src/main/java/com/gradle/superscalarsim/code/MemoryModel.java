@@ -33,8 +33,8 @@ package com.gradle.superscalarsim.code;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
-import com.gradle.superscalarsim.blocks.CacheStatisticsCounter;
 import com.gradle.superscalarsim.blocks.loadstore.Cache;
+import com.gradle.superscalarsim.cpu.CacheStatisticsCounter;
 import com.gradle.superscalarsim.models.MemoryAccess;
 import com.gradle.superscalarsim.models.Pair;
 

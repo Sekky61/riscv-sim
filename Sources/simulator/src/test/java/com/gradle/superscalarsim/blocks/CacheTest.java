@@ -2,6 +2,7 @@ package com.gradle.superscalarsim.blocks;
 
 import com.gradle.superscalarsim.blocks.loadstore.Cache;
 import com.gradle.superscalarsim.code.SimulatedMemory;
+import com.gradle.superscalarsim.cpu.CacheStatisticsCounter;
 import com.gradle.superscalarsim.enums.cache.ReplacementPoliciesEnum;
 import com.gradle.superscalarsim.models.Pair;
 import com.gradle.superscalarsim.models.Triplet;

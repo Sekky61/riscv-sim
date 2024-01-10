@@ -24,7 +24,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.gradle.superscalarsim.blocks;
+package com.gradle.superscalarsim.cpu;
 
 import com.gradle.superscalarsim.models.Pair;
 

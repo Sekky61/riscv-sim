@@ -36,12 +36,12 @@ import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.blocks.AbstractBlock;
-import com.gradle.superscalarsim.blocks.StatisticsCounter;
 import com.gradle.superscalarsim.blocks.branch.BranchTargetBuffer;
 import com.gradle.superscalarsim.blocks.branch.GShareUnit;
 import com.gradle.superscalarsim.blocks.branch.GlobalHistoryRegister;
 import com.gradle.superscalarsim.blocks.loadstore.LoadBufferBlock;
 import com.gradle.superscalarsim.blocks.loadstore.StoreBufferBlock;
+import com.gradle.superscalarsim.cpu.SimulationStatistics;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.models.*;
 
@@ -101,7 +101,7 @@ public class ReorderBufferBlock implements AbstractBlock
    * Class for statistics gathering
    */
   @JsonIdentityReference(alwaysAsId = true)
-  private StatisticsCounter statisticsCounter;
+  private SimulationStatistics simulationStatistics;
   
   /**
    * GShare unit for getting correct prediction counters
@@ -154,7 +154,7 @@ public class ReorderBufferBlock implements AbstractBlock
                             GShareUnit gShareUnit,
                             BranchTargetBuffer branchTargetBuffer,
                             InstructionFetchBlock instructionFetchBlock,
-                            StatisticsCounter statisticsCounter)
+                            SimulationStatistics statisticsCounter)
   {
     this.renameMapTableBlock    = renameMapTableBlock;
     this.decodeAndDispatchBlock = decodeAndDispatchBlock;
@@ -163,7 +163,7 @@ public class ReorderBufferBlock implements AbstractBlock
     this.branchTargetBuffer    = branchTargetBuffer;
     this.instructionFetchBlock = instructionFetchBlock;
     
-    this.statisticsCounter = statisticsCounter;
+    this.simulationStatistics = statisticsCounter;
     
     this.reorderQueue = new ArrayDeque<>();
     
@@ -264,22 +264,22 @@ public class ReorderBufferBlock implements AbstractBlock
   private void processCommittableInstruction(SimCodeModel codeModel)
   {
     codeModel.setCommitId(this.commitId);
-    statisticsCounter.incrementCommittedInstructions();
+    simulationStatistics.incrementCommittedInstructions();
     if (codeModel.getInstructionTypeEnum() == InstructionTypeEnum.kJumpbranch)
     {
       boolean branchActuallyTaken = codeModel.isBranchLogicResult();
       int     pc                  = codeModel.getSavedPc();
       
-      statisticsCounter.incrementAllBranches();
+      simulationStatistics.incrementAllBranches();
       if (branchActuallyTaken)
       {
-        statisticsCounter.incrementTakenBranches();
+        simulationStatistics.incrementTakenBranches();
       }
       
       if (codeModel.isBranchPredicted() == branchActuallyTaken)
       {
         // Correct prediction
-        statisticsCounter.incrementCorrectlyPredictedBranches();
+        simulationStatistics.incrementCorrectlyPredictedBranches();
         this.gShareUnit.getPredictorFromOld(pc, codeModel.getIntegerId()).upTheProbability();
         this.gShareUnit.getGlobalHistoryRegister().removeHistoryValue(codeModel.getIntegerId());
         // Update committable status of subsequent instructions
@@ -392,7 +392,7 @@ public class ReorderBufferBlock implements AbstractBlock
       }
       
       // Notify all that instruction is invalid
-      statisticsCounter.incrementFailedInstructions();
+      simulationStatistics.incrementFailedInstructions();
       SimCodeModel currentInstruction = robItem.simCodeModel;
       currentInstruction.setCommitId(this.commitId); // todo: is this correct?
       if (currentInstruction.getInstructionTypeEnum() == InstructionTypeEnum.kJumpbranch)

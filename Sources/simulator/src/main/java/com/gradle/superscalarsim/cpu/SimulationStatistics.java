@@ -25,13 +25,13 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.gradle.superscalarsim.blocks;
+package com.gradle.superscalarsim.cpu;
 
 /**
  * @class StatisticsCounter
  * @brief Class that contains data from blocks for displaying statistics about the run
  */
-public class StatisticsCounter
+public class SimulationStatistics
 {
   /// Counter for committed instructions
   private long committedInstructions;
@@ -52,7 +52,7 @@ public class StatisticsCounter
   /**
    * @brief Constructor
    */
-  public StatisticsCounter()
+  public SimulationStatistics()
   {
     this.resetCounters();
   }// end of Constructor

@@ -55,7 +55,7 @@ public class InstructionTests
     cpu.execute();
     
     // Assert
-    Assert.assertEquals(1, cpu.cpuState.statisticsCounter.getCommittedInstructions());
+    Assert.assertEquals(1, cpu.cpuState.simulationStatistics.getCommittedInstructions());
     Assert.assertEquals(5, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt));
   }
   
@@ -69,7 +69,7 @@ public class InstructionTests
     cpu.execute();
     
     // Assert
-    Assert.assertEquals(1, cpu.cpuState.statisticsCounter.getCommittedInstructions());
+    Assert.assertEquals(1, cpu.cpuState.simulationStatistics.getCommittedInstructions());
     Assert.assertEquals(-15, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt));
   }
   
@@ -132,10 +132,10 @@ public class InstructionTests
     
     // Assert
     // TODO: How to assert that it jumped to 10+56=66?
-    Assert.assertEquals(1, cpu.cpuState.statisticsCounter.getCommittedInstructions());
+    Assert.assertEquals(1, cpu.cpuState.simulationStatistics.getCommittedInstructions());
     Assert.assertEquals(4, (int) cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").getValue(DataTypeEnum.kInt),
                         0.5);
-    Assert.assertEquals(1, cpu.cpuState.statisticsCounter.getAllBranches());
+    Assert.assertEquals(1, cpu.cpuState.simulationStatistics.getAllBranches());
   }
   
   /**
@@ -602,9 +602,9 @@ public class InstructionTests
     cpu.execute();
     
     // Assert
-    Assert.assertEquals(1, cpu.cpuState.statisticsCounter.getAllBranches());
+    Assert.assertEquals(1, cpu.cpuState.simulationStatistics.getAllBranches());
     // Default prediction is to jump, but there is not a BTB entry for this branch, so we couldn't predict
-    Assert.assertEquals(1, cpu.cpuState.statisticsCounter.getCorrectlyPredictedBranches());
+    Assert.assertEquals(1, cpu.cpuState.simulationStatistics.getCorrectlyPredictedBranches());
   }
   
   /**
@@ -621,9 +621,9 @@ public class InstructionTests
     cpu.execute();
     
     // Assert
-    Assert.assertEquals(1, cpu.cpuState.statisticsCounter.getAllBranches());
+    Assert.assertEquals(1, cpu.cpuState.simulationStatistics.getAllBranches());
     // Prediction was not made
-    Assert.assertEquals(0, cpu.cpuState.statisticsCounter.getCorrectlyPredictedBranches());
+    Assert.assertEquals(0, cpu.cpuState.simulationStatistics.getCorrectlyPredictedBranches());
   }
   
   /**
@@ -640,7 +640,7 @@ public class InstructionTests
     cpu.execute();
     
     // Assert
-    Assert.assertEquals(1, cpu.cpuState.statisticsCounter.getTakenBranches());
+    Assert.assertEquals(1, cpu.cpuState.simulationStatistics.getTakenBranches());
   }
   
   /**
@@ -657,7 +657,7 @@ public class InstructionTests
     cpu.execute();
     
     // Assert
-    Assert.assertEquals(1, cpu.cpuState.statisticsCounter.getTakenBranches());
+    Assert.assertEquals(1, cpu.cpuState.simulationStatistics.getTakenBranches());
   }
   
   /**
@@ -674,7 +674,7 @@ public class InstructionTests
     cpu.execute();
     
     // Assert
-    Assert.assertEquals(1, cpu.cpuState.statisticsCounter.getTakenBranches());
+    Assert.assertEquals(1, cpu.cpuState.simulationStatistics.getTakenBranches());
   }
   
   /**
@@ -691,7 +691,7 @@ public class InstructionTests
     cpu.execute();
     
     // Assert
-    Assert.assertEquals(1, cpu.cpuState.statisticsCounter.getTakenBranches());
+    Assert.assertEquals(1, cpu.cpuState.simulationStatistics.getTakenBranches());
   }
   
   /**
@@ -708,7 +708,7 @@ public class InstructionTests
     cpu.execute();
     
     // Assert
-    Assert.assertEquals(1, cpu.cpuState.statisticsCounter.getTakenBranches());
+    Assert.assertEquals(1, cpu.cpuState.simulationStatistics.getTakenBranches());
   }
   
   /**
@@ -725,7 +725,7 @@ public class InstructionTests
     cpu.execute();
     
     // Assert
-    Assert.assertEquals(1, cpu.cpuState.statisticsCounter.getTakenBranches());
+    Assert.assertEquals(1, cpu.cpuState.simulationStatistics.getTakenBranches());
   }
   
   /**
@@ -742,7 +742,7 @@ public class InstructionTests
     cpu.execute();
     
     // Assert
-    Assert.assertEquals(1, cpu.cpuState.statisticsCounter.getTakenBranches());
+    Assert.assertEquals(1, cpu.cpuState.simulationStatistics.getTakenBranches());
   }
   
   /**
@@ -759,7 +759,7 @@ public class InstructionTests
     cpu.execute();
     
     // Assert
-    Assert.assertEquals(1, cpu.cpuState.statisticsCounter.getTakenBranches());
+    Assert.assertEquals(1, cpu.cpuState.simulationStatistics.getTakenBranches());
   }
   
   /**
@@ -776,7 +776,7 @@ public class InstructionTests
     cpu.execute();
     
     // Assert
-    Assert.assertEquals(1, cpu.cpuState.statisticsCounter.getTakenBranches());
+    Assert.assertEquals(1, cpu.cpuState.simulationStatistics.getTakenBranches());
   }
   
   /**
@@ -794,7 +794,7 @@ public class InstructionTests
     cpu.execute();
     
     // Assert
-    Assert.assertEquals(1, cpu.cpuState.statisticsCounter.getTakenBranches());
+    Assert.assertEquals(1, cpu.cpuState.simulationStatistics.getTakenBranches());
   }
   
   /**
@@ -811,7 +811,7 @@ public class InstructionTests
     cpu.execute();
     
     // Assert
-    Assert.assertEquals(1, cpu.cpuState.statisticsCounter.getTakenBranches());
+    Assert.assertEquals(1, cpu.cpuState.simulationStatistics.getTakenBranches());
   }
   
   /**
@@ -829,7 +829,7 @@ public class InstructionTests
     cpu.execute();
     
     // Assert
-    Assert.assertEquals(1, cpu.cpuState.statisticsCounter.getTakenBranches());
+    Assert.assertEquals(1, cpu.cpuState.simulationStatistics.getTakenBranches());
   }
   
   /**
@@ -846,7 +846,7 @@ public class InstructionTests
     cpu.execute();
     
     // Assert
-    Assert.assertEquals(1, cpu.cpuState.statisticsCounter.getTakenBranches());
+    Assert.assertEquals(1, cpu.cpuState.simulationStatistics.getTakenBranches());
   }
   
   /**
@@ -863,7 +863,7 @@ public class InstructionTests
     cpu.execute();
     
     // Assert
-    Assert.assertEquals(1, cpu.cpuState.statisticsCounter.getTakenBranches());
+    Assert.assertEquals(1, cpu.cpuState.simulationStatistics.getTakenBranches());
   }
   
   /**
@@ -880,7 +880,7 @@ public class InstructionTests
     cpu.execute();
     
     // Assert
-    Assert.assertEquals(1, cpu.cpuState.statisticsCounter.getTakenBranches());
+    Assert.assertEquals(1, cpu.cpuState.simulationStatistics.getTakenBranches());
   }
   
   /**
@@ -898,7 +898,7 @@ public class InstructionTests
     cpu.execute();
     
     // Assert
-    Assert.assertEquals(0, cpu.cpuState.statisticsCounter.getTakenBranches());
+    Assert.assertEquals(0, cpu.cpuState.simulationStatistics.getTakenBranches());
   }
   
   /**
@@ -914,7 +914,7 @@ public class InstructionTests
     
     // Assert
     Assert.assertTrue(cpu.cpuState.instructionFetchBlock.getPc() > 200);
-    Assert.assertEquals(1, cpu.cpuState.statisticsCounter.getTakenBranches());
+    Assert.assertEquals(1, cpu.cpuState.simulationStatistics.getTakenBranches());
   }
   
   /**
@@ -931,7 +931,7 @@ public class InstructionTests
     
     // Assert
     Assert.assertTrue(cpu.cpuState.instructionFetchBlock.getPc() > 200);
-    Assert.assertEquals(1, cpu.cpuState.statisticsCounter.getTakenBranches());
+    Assert.assertEquals(1, cpu.cpuState.simulationStatistics.getTakenBranches());
   }
   
   /**
@@ -948,7 +948,7 @@ public class InstructionTests
     
     // Assert
     Assert.assertTrue(cpu.cpuState.instructionFetchBlock.getPc() > 200);
-    Assert.assertEquals(1, cpu.cpuState.statisticsCounter.getTakenBranches());
+    Assert.assertEquals(1, cpu.cpuState.simulationStatistics.getTakenBranches());
   }
   
   /**
@@ -964,7 +964,7 @@ public class InstructionTests
     
     // Assert
     Assert.assertTrue(cpu.cpuState.instructionFetchBlock.getPc() > 200);
-    Assert.assertEquals(1, cpu.cpuState.statisticsCounter.getTakenBranches());
+    Assert.assertEquals(1, cpu.cpuState.simulationStatistics.getTakenBranches());
     Assert.assertEquals(4, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt));
   }
   
@@ -982,7 +982,7 @@ public class InstructionTests
     
     // Assert
     Assert.assertTrue(cpu.cpuState.instructionFetchBlock.getPc() > 200);
-    Assert.assertEquals(1, cpu.cpuState.statisticsCounter.getTakenBranches());
+    Assert.assertEquals(1, cpu.cpuState.simulationStatistics.getTakenBranches());
   }
   
   /**

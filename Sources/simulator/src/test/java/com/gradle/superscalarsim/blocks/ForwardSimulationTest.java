@@ -14,10 +14,7 @@ import com.gradle.superscalarsim.builders.InputCodeArgumentBuilder;
 import com.gradle.superscalarsim.builders.InputCodeModelBuilder;
 import com.gradle.superscalarsim.builders.RegisterFileModelBuilder;
 import com.gradle.superscalarsim.code.*;
-import com.gradle.superscalarsim.cpu.Cpu;
-import com.gradle.superscalarsim.cpu.CpuConfig;
-import com.gradle.superscalarsim.cpu.CpuState;
-import com.gradle.superscalarsim.cpu.SimulationConfig;
+import com.gradle.superscalarsim.cpu.*;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
@@ -43,7 +40,7 @@ public class ForwardSimulationTest
   InitLoader initLoader;
   
   InstructionMemoryBlock instructionMemoryBlock;
-  private StatisticsCounter statisticsCounter;
+  private SimulationStatistics simulationStatistics;
   
   private InstructionFetchBlock instructionFetchBlock;
   private DecodeAndDispatchBlock decodeAndDispatchBlock;
@@ -164,7 +161,7 @@ public class ForwardSimulationTest
     CpuState cpuState = this.cpu.cpuState;
     
     this.instructionMemoryBlock    = cpuState.instructionMemoryBlock;
-    this.statisticsCounter         = cpuState.statisticsCounter;
+    this.simulationStatistics      = cpuState.simulationStatistics;
     this.unifiedRegisterFileBlock  = cpuState.unifiedRegisterFileBlock;
     this.renameMapTableBlock       = cpuState.renameMapTableBlock;
     this.globalHistoryRegister     = cpuState.globalHistoryRegister;

@@ -29,8 +29,6 @@ package com.gradle.superscalarsim.cpu;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.gradle.superscalarsim.blocks.CacheStatisticsCounter;
-import com.gradle.superscalarsim.blocks.StatisticsCounter;
 import com.gradle.superscalarsim.blocks.arithmetic.ArithmeticFunctionUnitBlock;
 import com.gradle.superscalarsim.blocks.base.*;
 import com.gradle.superscalarsim.blocks.branch.*;
@@ -70,7 +68,7 @@ public class CpuState implements Serializable
   
   // Housekeeping
   
-  public StatisticsCounter statisticsCounter;
+  public SimulationStatistics simulationStatistics;
   public CacheStatisticsCounter cacheStatisticsCounter;
   
   // Branch prediction
@@ -171,7 +169,7 @@ public class CpuState implements Serializable
     }
     memoryInitializer.initializeMemory(simulatedMemory, codeParser.getMemoryLocations(), codeParser.getLabels());
     
-    this.statisticsCounter      = new StatisticsCounter();
+    this.simulationStatistics   = new SimulationStatistics();
     this.cacheStatisticsCounter = new CacheStatisticsCounter();
     
     InstructionFunctionModel nopFM = initLoader.getInstructionFunctionModel("nop");
@@ -248,7 +246,7 @@ public class CpuState implements Serializable
     // ROB
     this.reorderBufferBlock        = new ReorderBufferBlock(renameMapTableBlock, decodeAndDispatchBlock, gShareUnit,
                                                             branchTargetBuffer, instructionFetchBlock,
-                                                            statisticsCounter);
+                                                            simulationStatistics);
     reorderBufferBlock.bufferSize  = config.cpuConfig.robSize;
     reorderBufferBlock.commitLimit = config.cpuConfig.commitWidth;
     
@@ -444,7 +442,7 @@ public class CpuState implements Serializable
     // bump commit id of ROB
     reorderBufferBlock.bumpCommitID();
     // Stats
-    statisticsCounter.incrementClockCycles();
+    simulationStatistics.incrementClockCycles();
     
     this.tick++;
   }// end of run

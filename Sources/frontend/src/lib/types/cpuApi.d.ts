@@ -41,7 +41,7 @@ export interface CpuState {
   managerRegistry: ManagerRegistry;
   tick: number;
   instructionMemoryBlock: InstructionMemoryBlock;
-  statisticsCounter: StatisticsCounter;
+  simulationStatistics: StatisticsCounter;
   cacheStatisticsCounter: CacheStatisticsCounter;
   branchTargetBuffer: BranchTargetBuffer;
   globalHistoryRegister: GlobalHistoryRegister;
