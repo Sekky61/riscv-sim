@@ -478,15 +478,8 @@
     grid-row: 1 / span 2;
   }
 
-  .memory-grid {
-    grid-template-columns: repeat(9, max-content);
-  }
-
-  .memory-grid *:first-child {
-    margin-right: 0.5em;
-  }
-
-  .memory-grid *:nth-child(5) {
+  /* make space every 4 bytes */
+  .memory-grid *:nth-child(4n) {
     margin-right: 0.5em;
   }
   

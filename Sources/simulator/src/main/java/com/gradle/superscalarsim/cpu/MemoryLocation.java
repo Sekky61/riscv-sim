@@ -51,6 +51,12 @@ public class MemoryLocation
   public String name;
   
   /**
+   * Alternative names of the memory location. Used when two labels point to the same memory location.
+   * Can be null.
+   */
+  public List<String> aliases;
+  
+  /**
    * Alignment of the memory location in bytes
    */
   public int alignment;
@@ -95,6 +101,7 @@ public class MemoryLocation
     this.name       = name;
     this.alignment  = alignment;
     this.dataChunks = new ArrayList<>();
+    this.aliases    = new ArrayList<>();
   }
   
   public List<DataChunk> getDataChunks()
@@ -111,7 +118,15 @@ public class MemoryLocation
   }
   
   /**
-   * @brief String representation of the memory location
+   * Add a new alias
+   */
+  public void addAlias(String alias)
+  {
+    aliases.add(alias);
+  }
+  
+  /**
+   * @brief String representation of the memory location.
    */
   @Override
   public String toString()
@@ -198,13 +213,21 @@ public class MemoryLocation
     public String toString()
     {
       boolean isArray = getByteSize() > dataType.getSize();
-      if (isArray)
+      try
       {
-        return dataType + "[" + getByteSize() / dataType.getSize() + "]";
+        
+        if (isArray)
+        {
+          return dataType + "[" + getByteSize() / dataType.getSize() + "]";
+        }
+        else
+        {
+          return dataType + " " + getBytes().get(0);
+        }
       }
-      else
+      catch (Exception e)
       {
-        return dataType + " " + getBytes().get(0);
+        return values.toString();
       }
     }
     
@@ -213,7 +236,7 @@ public class MemoryLocation
      */
     public int getByteSize()
     {
-      return getBytes().size();
+      return dataType.getSize() * values.size();
     }
     
     /**

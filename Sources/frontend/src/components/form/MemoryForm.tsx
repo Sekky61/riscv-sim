@@ -40,7 +40,6 @@ import {
   DataChunk,
   dataTypes,
   dataTypesText,
-  memoryLocation,
   memoryLocationDefaultValue,
   memoryLocationIsa,
 } from '@/lib/forms/Isa';
@@ -54,6 +53,7 @@ import { ErrorMessage } from '@hookform/error-message';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect } from 'react';
 import { FieldErrors, Resolver, useForm } from 'react-hook-form';
+import { notify } from 'reapop';
 import { z } from 'zod';
 
 /**
@@ -71,6 +71,17 @@ function getFileFromFileList(fileList: unknown): File | undefined {
   }
 }
 
+function isPowerOfTwo(n: number) {
+  return (n & (n - 1)) === 0;
+}
+
+/**
+ * Returns a random integer between min (inclusive) and max (exclusive)
+ */
+function getRandInt(min: number, max: number) {
+  return Math.floor(Math.random() * (max - min) + min);
+}
+
 /**
  * Expand the memoryLocation form with a data input.
  * These are internal fields, not part of the ISA.
@@ -84,26 +95,58 @@ const memoryLocationWithSource = memoryLocationIsa.extend({
    */
   file: z.any(),
   constant: z.number().optional(),
+  randomRangeMin: z.number().min(0).optional(),
+  /**
+   * The maximum value is exclusive.
+   */
+  randomRangeMax: z.number().min(1).optional(),
+  /**
+   * Expose alignment to the user - the isa expects the exponent, not the actual value
+   */
+  alignment: z
+    .number()
+    .min(1)
+    .max(65536)
+    .refine((v) => isPowerOfTwo(v), {
+      message: 'Must be a power of 2',
+    }),
   dataLength: z.number().min(1).optional(),
 });
 type MemoryLocationForm = z.infer<typeof memoryLocationWithSource>;
 
-const memoryLocationFormDefaultValue: MemoryLocationForm = {
-  ...memoryLocationDefaultValue,
-  dataType: 'kInt',
-  dataSource: 'constant',
-  constant: 0,
-  dataLength: 1,
-  file: null,
-};
+/**
+ * Converts the exponent, adds default values if needed
+ */
+function isaMemLocationToForm(memLoc?: MemoryLocationForm): MemoryLocationForm {
+  let memoryLocation = memLoc;
+  if (memoryLocation === undefined) {
+    memoryLocation = {
+      ...memoryLocationDefaultValue,
+      dataType: 'kInt',
+      dataSource: 'constant',
+      constant: 0,
+      dataLength: 1,
+      file: null,
+      randomRangeMin: 0,
+      randomRangeMax: 255,
+    };
+  }
+  const actualAlignment = 2 ** memoryLocation.alignment;
+
+  return {
+    ...memoryLocation,
+    alignment: actualAlignment,
+  };
+}
 
 /**
  * Filter out fields not belonging to memory location
  */
 export function memoryLocationFormToIsa(memoryLocation: MemoryLocationForm) {
+  const alignmentExponent = Math.log2(memoryLocation.alignment);
   return {
     name: memoryLocation.name,
-    alignment: memoryLocation.alignment,
+    alignment: alignmentExponent,
     dataChunks: memoryLocation.dataChunks.map((dataChunk) => ({
       dataType: dataChunk.dataType,
       values: dataChunk.values,
@@ -112,6 +155,8 @@ export function memoryLocationFormToIsa(memoryLocation: MemoryLocationForm) {
     dataSource: memoryLocation.dataSource,
     constant: memoryLocation.constant,
     dataLength: memoryLocation.dataLength,
+    randomRangeMin: memoryLocation.randomRangeMin,
+    randomRangeMax: memoryLocation.randomRangeMax,
   };
 }
 
@@ -204,6 +249,26 @@ export default function MemoryForm({
       }
     }
 
+    // check if the random range is valid
+    if (values.dataSource === 'random') {
+      if (values.randomRangeMin === undefined) {
+        errors.randomRangeMin = {
+          type: 'manual',
+          message: 'Please fill in the lower bound',
+        };
+      } else if (values.randomRangeMax === undefined) {
+        errors.randomRangeMax = {
+          type: 'manual',
+          message: 'Please fill in the upper bound',
+        };
+      } else if (values.randomRangeMin >= values.randomRangeMax) {
+        errors.randomRangeMax = {
+          type: 'manual',
+          message: 'Lower bound must be lower than upper bound',
+        };
+      }
+    }
+
     return {
       values: val.values,
       errors,
@@ -212,7 +277,7 @@ export default function MemoryForm({
 
   const form = useForm<MemoryLocationForm>({
     resolver,
-    defaultValues: memoryLocationFormDefaultValue,
+    defaultValues: isaMemLocationToForm(),
     mode: 'onChange',
   });
   const { register, handleSubmit, formState, reset, trigger, control } = form;
@@ -224,15 +289,14 @@ export default function MemoryForm({
     (ml) => ml.name === memoryLocationName,
   );
   // get file metadata
-  console.dir(watchFields.file);
   const file = getFileFromFileList(watchFields.file);
 
   // watch for changes in the active memory location
   useEffect(() => {
     if (memoryLocation) {
-      reset(memoryLocation);
+      reset(isaMemLocationToForm(memoryLocation));
     } else if (memoryLocationName === 'new') {
-      reset(memoryLocationFormDefaultValue);
+      reset(isaMemLocationToForm());
     } else {
       return; // Do not trigger validation
     }
@@ -246,7 +310,10 @@ export default function MemoryForm({
       const chunk: DataChunk = {
         dataType: data.dataType,
         values: Array.from({ length: data.dataLength ?? 0 }, () =>
-          Math.floor(Math.random() * 256).toString(),
+          getRandInt(
+            data.randomRangeMin ?? 0,
+            data.randomRangeMax ?? 255,
+          ).toString(),
         ),
       };
       data.dataChunks = [chunk];
@@ -284,8 +351,22 @@ export default function MemoryForm({
           memoryLocation: filtered,
         }),
       );
+      dispatch(
+        notify({
+          title: `Memory location ${memoryLocationName} updated.`,
+          message: 'Reload the simulation to see the changes.',
+          status: 'success',
+        }),
+      );
     } else {
       dispatch(addMemoryLocation(filtered));
+      dispatch(
+        notify({
+          title: `Memory location ${data.name} created.`,
+          message: 'Reload the simulation to see the changes.',
+          status: 'success',
+        }),
+      );
     }
   };
 
@@ -293,63 +374,93 @@ export default function MemoryForm({
     <form onSubmit={handleSubmit(onSubmit)}>
       <div className='flex flex-col gap-4'>
         <FormInput
-          title='Name'
+          title='Pointer Name'
+          hint='Name of the memory location. Will be used as the pointer name in C/assembler.'
           {...register('name')}
           error={formState.errors.name}
         />
         <RadioInputWithTitle
           name='dataType'
           title='Data type'
-          hint='Data type affects the size of each value in the memory location'
+          hint='Data type dictates the interpretation of provided values. For example, choosing Integer will allocate 4 bytes for each value.'
           control={control}
           choices={dataTypes}
           texts={dataTypesText}
         />
         <FormInput
           type='number'
-          title='Alignment'
+          title='Alignment (Bytes)'
+          hint='The array will be aligned to this boundary. The .align directive in assembler works differently!'
           {...register('alignment', { valueAsNumber: true })}
           error={formState.errors.alignment}
         />
         <RadioInputWithTitle
           name='dataSource'
-          title='Data source'
+          title='Data Source'
           choices={['constant', 'random', 'file']}
-          texts={['Constant', 'Random', 'File']}
+          texts={['A Constant', 'Random Numbers', 'CSV File']}
           control={control}
         />
       </div>
       <Card className='my-4 p-4'>
-        <h2 className='text-xl mb-4'>Data</h2>
-        <div className='h-24'>
+        <h2 className='text-xl mb-4'>Data Options</h2>
+        <div className='h-28'>
           {watchFields.dataSource === 'constant' && (
-            <div className='flex justify-evenly'>
-              <FormInput
-                type='number'
-                title='Constant'
-                {...register('constant', { valueAsNumber: true })}
-                error={formState.errors.constant}
-              />
-              <FormInput
-                type='number'
-                title='Data Size'
-                {...register('dataLength', { valueAsNumber: true })}
-                error={formState.errors.dataLength}
-              />
+            <div>
+              <p className='text-gray-700'>
+                The selected constant value will be duplicated a specified
+                number of times.
+              </p>
+              <div className='flex justify-evenly'>
+                <FormInput
+                  type='number'
+                  title='Constant'
+                  {...register('constant', { valueAsNumber: true })}
+                  error={formState.errors.constant}
+                />
+                <FormInput
+                  type='number'
+                  title='Number of Elements'
+                  {...register('dataLength', { valueAsNumber: true })}
+                  error={formState.errors.dataLength}
+                />
+              </div>
             </div>
           )}
           {watchFields.dataSource === 'random' && (
-            <div className='flex flex-col'>
-              <FormInput
-                type='number'
-                title='Data Size'
-                {...register('dataLength', { valueAsNumber: true })}
-                error={formState.errors.dataLength}
-              />
+            <div>
+              <p className='text-gray-700'>
+                Random data will be generated after each time the memory
+                location is saved.
+              </p>
+              <div className='flex gap-4 justify-evenly'>
+                <FormInput
+                  type='number'
+                  title='Lower bound of random range'
+                  {...register('randomRangeMin', { valueAsNumber: true })}
+                  error={formState.errors.randomRangeMin}
+                />
+                <FormInput
+                  type='number'
+                  title='Upper bound of random range'
+                  {...register('randomRangeMax', { valueAsNumber: true })}
+                  error={formState.errors.randomRangeMax}
+                />
+                <FormInput
+                  type='number'
+                  title='Number of Elements'
+                  {...register('dataLength', { valueAsNumber: true })}
+                  error={formState.errors.dataLength}
+                />
+              </div>
             </div>
           )}
           {watchFields.dataSource === 'file' && (
-            <div className='flex flex-col'>
+            <div>
+              <p className='text-gray-700'>
+                Choose a CSV file as the data source. The table may be of any
+                shape.
+              </p>
               <Input
                 title='File'
                 id='fileId'
@@ -378,10 +489,6 @@ export default function MemoryForm({
               </div>
             </div>
           )}
-        </div>
-        <div className='flex flex-col'>
-          <h3>Loaded values</h3>
-          <div className='flex flex-col'>Count: lul</div>
         </div>
       </Card>
       <div className='relative'>

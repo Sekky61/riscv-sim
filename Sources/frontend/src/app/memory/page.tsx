@@ -95,7 +95,7 @@ export default function HomePage() {
               </Button>
             </div>
           </div>
-          <div className='p-4'>
+          <div className='p-4 flex-grow'>
             <MemoryForm
               existing={activeMemoryLocation !== 'new'}
               memoryLocationName={activeMemoryLocation}
