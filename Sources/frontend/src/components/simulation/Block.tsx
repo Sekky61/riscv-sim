@@ -62,6 +62,7 @@ export default function Block({
         <span className='font-bold'>{title}</span>
         {handleMore && (
           <button
+            type='button'
             onClick={handleMore}
             className='iconHighlight h-6 w-6 rounded-full'
           >

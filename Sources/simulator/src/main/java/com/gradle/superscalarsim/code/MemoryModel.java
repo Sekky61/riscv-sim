@@ -37,11 +37,9 @@ import com.gradle.superscalarsim.blocks.CacheStatisticsCounter;
 import com.gradle.superscalarsim.blocks.loadstore.Cache;
 import com.gradle.superscalarsim.models.MemoryAccess;
 import com.gradle.superscalarsim.models.Pair;
-import com.gradle.superscalarsim.models.cache.CacheLineModel;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.Map;
 
 /**
  * @class MemoryModel
@@ -50,15 +48,20 @@ import java.util.Map;
 @JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
 public class MemoryModel
 {
-  private CacheStatisticsCounter cacheStatisticsCounter;
-  
-  /// Cache implementation
+  /**
+   * Cache implementation
+   */
   @JsonIdentityReference(alwaysAsId = true)
   Cache cache;
-  /// Memory - only when there is no cache - cache holds it's own memory
+  /**
+   * Memory - only when there is no cache - cache holds its own memory
+   */
   @JsonIdentityReference(alwaysAsId = true)
   SimulatedMemory memory;
-  /// Last access - doesn't account for reverting history - use cache for this
+  private CacheStatisticsCounter cacheStatisticsCounter;
+  /**
+   * Last access
+   */
   private MemoryAccess lastAccess;
   
   /**
@@ -81,11 +84,11 @@ public class MemoryModel
   }
   
   /**
-   * @param address      - starting byte of the access (can be misaligned)
-   * @param data         - data to be stored
-   * @param size         - Size of the access in bytes (1-8)
-   * @param id           - Id of accessing instruction
-   * @param currentCycle - Cycle in which this access is happening
+   * @param address      starting byte of the access (can be misaligned)
+   * @param data         data to be stored
+   * @param size         Size of the access in bytes (1-8)
+   * @param id           ID of accessing instruction
+   * @param currentCycle Cycle in which this access is happening
    *
    * @return delay caused by this access
    * @brief Sets data to memory
@@ -99,52 +102,46 @@ public class MemoryModel
       cacheStatisticsCounter.incrementTotalDelay(currentCycle, delay);
       return delay;
     }
-    else
-    {
-      ByteBuffer byteBuffer = ByteBuffer.allocate(8);
-      byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
-      byteBuffer.putLong(data);
-      byte[] bytes = byteBuffer.array();
-      for (int i = 0; i < size; i++)
-      {
-        memory.insertIntoMemory(address + i, bytes[i], id);
-      }
-      return 0;
-    }
+    
+    // Store without cache
+    ByteBuffer byteBuffer = ByteBuffer.allocate(8);
+    byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
+    byteBuffer.putLong(data);
+    byte[] bytes = byteBuffer.array();
+    memory.insertIntoMemory(address, bytes);
+    return 0;
   }
   
   /**
-   * @param address      - starting byte of the access (can be misaligned)
-   * @param size         - Size of the access in bytes (1-8)
-   * @param id           - Id of accessing instruction
-   * @param currentCycle - Cycle in which the access happened
+   * @param address      starting byte of the access (can be misaligned)
+   * @param size         Size of the access in bytes (1-8)
+   * @param id           ID of accessing instruction
+   * @param currentCycle Cycle in which the access happened
    *
    * @return Pair of delay of this access and data
    * @brief Gets data from memory
    */
   public Pair<Integer, Long> load(long address, int size, int id, int currentCycle)
   {
-    this.lastAccess = new MemoryAccess(false, address, 0, size);
+    byte[] bytes = new byte[8];
+    int    delay = 0;
     if (cache != null)
     {
-      com.gradle.superscalarsim.models.Pair<Integer, Long> returnValx = cache.getData(address, size, id, currentCycle);
-      Pair<Integer, Long>                                  returnVal  = new Pair<>(returnValx.getFirst(),
-                                                                                   returnValx.getSecond());
-      this.lastAccess.setData(returnVal.getSecond());
+      // Use cache
+      Pair<Integer, byte[]> returnVal = cache.getDataBytes(address, size, id, currentCycle);
+      delay = returnVal.getFirst();
+      System.arraycopy(returnVal.getSecond(), 0, bytes, 0, returnVal.getSecond().length);
       cacheStatisticsCounter.incrementTotalDelay(currentCycle, returnVal.getFirst());
-      return returnVal;
     }
     else
     {
-      long returnVal = ((long) memory.getFromMemory(address + size - 1) & ((1 << 8) - 1));
-      for (int i = size - 1; i > 0; i--)
-      {
-        returnVal = returnVal << 8;
-        returnVal = returnVal | ((long) memory.getFromMemory(address + i - 1) & ((1 << 8) - 1));
-      }
-      this.lastAccess.setData(returnVal);
-      return new Pair<>(0, returnVal);
+      // Use memory
+      byte[] readBytes = memory.getFromMemory(address, size);
+      System.arraycopy(readBytes, 0, bytes, 0, readBytes.length);
     }
+    long returnValLong = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN).getLong();
+    this.lastAccess = new MemoryAccess(false, address, returnValLong, size);
+    return new Pair<>(delay, returnValLong);
   }
   
   /**
@@ -162,29 +159,6 @@ public class MemoryModel
     }
   }
   
-  /**
-   * @brief Gets data stored in memory
-   */
-  public Map<Long, Byte> getMemoryMap()
-  {
-    if (memory != null)
-    {
-      return memory.getMemoryMap();
-    }
-    else
-    {
-      return cache.getMemoryMap();
-    }
-  }
-  
-  /**
-   * @brief Gets data stored in cache
-   */
-  public CacheLineModel[][] getCacheContent()
-  {
-    return cache.getCacheContent();
-  }
-  
   public Cache getCache()
   {
     return cache;
@@ -193,10 +167,5 @@ public class MemoryModel
   public void setCache(Cache cache)
   {
     this.cache = cache;
-  }
-  
-  public MemoryAccess getLastAccess()
-  {
-    return lastAccess;
   }
 }

@@ -49,9 +49,7 @@ import com.gradle.superscalarsim.models.InstructionFunctionModel;
 import com.gradle.superscalarsim.serialization.Serialization;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * @class CpuState
@@ -88,7 +86,6 @@ public class CpuState implements Serializable
   public MemoryModel memoryModel;
   public CodeLoadStoreInterpreter loadStoreInterpreter;
   public StoreBufferBlock storeBufferBlock;
-  // TODO this is serialized as ref
   public LoadBufferBlock loadBufferBlock;
   
   // ALU
@@ -122,7 +119,7 @@ public class CpuState implements Serializable
     
   }
   
-  public CpuState(CpuConfiguration config, InitLoader initLoader)
+  public CpuState(SimulationConfig config, InitLoader initLoader)
   {
     this.initState(config, initLoader);
   }
@@ -130,7 +127,7 @@ public class CpuState implements Serializable
   /**
    * @brief Initialize the CPU state - given the configuration.
    */
-  public void initState(CpuConfiguration config, InitLoader initLoader)
+  public void initState(SimulationConfig config, InitLoader initLoader)
   {
     this.tick            = 0;
     this.managerRegistry = new ManagerRegistry();
@@ -148,88 +145,114 @@ public class CpuState implements Serializable
     
     // Parse code
     CodeParser codeParser = new CodeParser(initLoader, inputCodeModelFactory);
-    codeParser.parseCode(config.code);
+    // Add data labels from config
+    Map<String, Label> dataLabels = new HashMap<>();
+    for (MemoryLocation memoryLocation : config.memoryLocations)
+    {
+      dataLabels.put(memoryLocation.name, new Label(memoryLocation.name, 0)); // Address will be set later
+    }
+    
+    this.simulatedMemory = new SimulatedMemory();
+    // Fill memory with data
+    MemoryInitializer memoryInitializer = new MemoryInitializer(128, 512);
+    // init these first, so that the values are set and written to argument list
+    memoryInitializer.initializeMemory(simulatedMemory, config.memoryLocations, dataLabels);
+    
+    codeParser.parseCode(config.code, dataLabels);
     
     if (!codeParser.success())
     {
       throw new IllegalStateException("Code parsing failed: " + codeParser.getErrorMessages());
     }
+    memoryInitializer.initializeMemory(simulatedMemory, codeParser.getMemoryLocations(), codeParser.getLabels());
+    
+    this.statisticsCounter      = new StatisticsCounter();
+    this.cacheStatisticsCounter = new CacheStatisticsCounter();
     
     InstructionFunctionModel nopFM = initLoader.getInstructionFunctionModel("nop");
     InputCodeModel nop = inputCodeModelFactory.createInstance(nopFM, new ArrayList<>(),
                                                               codeParser.getInstructions().size());
     this.instructionMemoryBlock = new InstructionMemoryBlock(codeParser.getInstructions(), codeParser.getLabels(), nop);
     
-    this.statisticsCounter      = new StatisticsCounter();
-    this.cacheStatisticsCounter = new CacheStatisticsCounter();
-    
+    // Create memory
     this.unifiedRegisterFileBlock = new UnifiedRegisterFileBlock(initLoader, registerModelFactory);
-    this.renameMapTableBlock      = new RenameMapTableBlock(unifiedRegisterFileBlock);
+    // Set the sp to the end of the stack
+    this.unifiedRegisterFileBlock.getRegister("sp").setValue(memoryInitializer.getStackPointer());
+    
+    this.renameMapTableBlock = new RenameMapTableBlock(unifiedRegisterFileBlock);
     
     this.globalHistoryRegister = new GlobalHistoryRegister(10);
-    PatternHistoryTable.PredictorType predictorType = switch (config.predictorType)
+    PatternHistoryTable.PredictorType predictorType = switch (config.cpuConfig.predictorType)
     {
       case "0bit" -> PatternHistoryTable.PredictorType.ZERO_BIT_PREDICTOR;
       case "1bit" -> PatternHistoryTable.PredictorType.ONE_BIT_PREDICTOR;
       case "2bit" -> PatternHistoryTable.PredictorType.TWO_BIT_PREDICTOR;
-      default -> throw new IllegalStateException("Unexpected value for predictor type: " + config.predictorType);
+      default ->
+              throw new IllegalStateException("Unexpected value for predictor type: " + config.cpuConfig.predictorType);
     };
     
-    boolean[] defaultTaken = getDefaultTaken(config);
+    boolean[] defaultTaken = getDefaultTaken(config.cpuConfig);
     
-    this.patternHistoryTable = new PatternHistoryTable(config.phtSize, defaultTaken, predictorType);
+    this.patternHistoryTable = new PatternHistoryTable(config.cpuConfig.phtSize, defaultTaken, predictorType);
     this.gShareUnit          = new GShareUnit(1024, this.globalHistoryRegister, this.patternHistoryTable);
-    this.branchTargetBuffer  = new BranchTargetBuffer(config.btbSize);
-    this.simulatedMemory     = new SimulatedMemory();
+    this.branchTargetBuffer  = new BranchTargetBuffer(config.cpuConfig.btbSize);
     
-    ReplacementPoliciesEnum replacementPoliciesEnum = switch (config.cacheReplacement)
+    ReplacementPoliciesEnum replacementPoliciesEnum = switch (config.cpuConfig.cacheReplacement)
     {
       case "LRU" -> ReplacementPoliciesEnum.LRU;
       case "FIFO" -> ReplacementPoliciesEnum.FIFO;
       case "Random" -> ReplacementPoliciesEnum.RANDOM;
-      default -> throw new IllegalStateException("Unexpected value for cache replacement: " + config.cacheReplacement);
+      default -> throw new IllegalStateException(
+              "Unexpected value for cache replacement: " + config.cpuConfig.cacheReplacement);
     };
     
+    // Define memory
     boolean writeBack = true;
-    if (!Objects.equals(config.storeBehavior, "write-back"))
+    if (!Objects.equals(config.cpuConfig.storeBehavior, "write-back"))
     {
-      throw new IllegalStateException("Unexpected value for store behavior: " + config.storeBehavior);
+      throw new IllegalStateException("Unexpected value for store behavior: " + config.cpuConfig.storeBehavior);
     }
     
-    this.cache = new Cache(simulatedMemory, config.cacheLines, config.cacheAssoc, config.cacheLineSize,
-                           replacementPoliciesEnum, writeBack, config.addRemainingDelay, config.storeLatency,
-                           config.loadLatency, config.laneReplacementDelay, this.cacheStatisticsCounter);
+    this.cache = new Cache(simulatedMemory, config.cpuConfig.cacheLines, config.cpuConfig.cacheAssoc,
+                           config.cpuConfig.cacheLineSize, replacementPoliciesEnum, writeBack,
+                           config.cpuConfig.addRemainingDelay, config.cpuConfig.storeLatency,
+                           config.cpuConfig.loadLatency, config.cpuConfig.laneReplacementDelay,
+                           this.cacheStatisticsCounter);
     
-    this.memoryModel          = new MemoryModel(cache, cacheStatisticsCounter);
-    this.loadStoreInterpreter = new CodeLoadStoreInterpreter(memoryModel, unifiedRegisterFileBlock);
+    this.memoryModel = new MemoryModel(cache, cacheStatisticsCounter);
+    
+    
+    this.loadStoreInterpreter = new CodeLoadStoreInterpreter(memoryModel, unifiedRegisterFileBlock,
+                                                             instructionMemoryBlock);
     
     this.instructionFetchBlock = new InstructionFetchBlock(simCodeModelFactory, instructionMemoryBlock, gShareUnit,
                                                            branchTargetBuffer);
-    instructionFetchBlock.setNumberOfWays(config.fetchWidth);
+    instructionFetchBlock.setNumberOfWays(config.cpuConfig.fetchWidth);
     
     this.decodeAndDispatchBlock = new DecodeAndDispatchBlock(instructionFetchBlock, renameMapTableBlock,
                                                              globalHistoryRegister, branchTargetBuffer,
-                                                             instructionMemoryBlock, config.fetchWidth);
-    this.reorderBufferBlock     = new ReorderBufferBlock(renameMapTableBlock, decodeAndDispatchBlock, gShareUnit,
-                                                         branchTargetBuffer, instructionFetchBlock, statisticsCounter);
-    // ROB state
-    reorderBufferBlock.bufferSize  = config.robSize;
-    reorderBufferBlock.commitLimit = config.commitWidth;
+                                                             instructionMemoryBlock, config.cpuConfig.fetchWidth);
     
+    // ROB
+    this.reorderBufferBlock        = new ReorderBufferBlock(renameMapTableBlock, decodeAndDispatchBlock, gShareUnit,
+                                                            branchTargetBuffer, instructionFetchBlock,
+                                                            statisticsCounter);
+    reorderBufferBlock.bufferSize  = config.cpuConfig.robSize;
+    reorderBufferBlock.commitLimit = config.cpuConfig.commitWidth;
+    
+    // Issue
     this.issueWindowSuperBlock = new IssueWindowSuperBlock(decodeAndDispatchBlock);
-    this.arithmeticInterpreter = new CodeArithmeticInterpreter(unifiedRegisterFileBlock);
-    this.branchInterpreter     = new CodeBranchInterpreter(instructionMemoryBlock, unifiedRegisterFileBlock);
+    this.arithmeticInterpreter = new CodeArithmeticInterpreter(unifiedRegisterFileBlock, instructionMemoryBlock);
+    this.branchInterpreter     = new CodeBranchInterpreter(unifiedRegisterFileBlock, instructionMemoryBlock);
     
-    this.storeBufferBlock = new StoreBufferBlock(loadStoreInterpreter, decodeAndDispatchBlock, unifiedRegisterFileBlock,
-                                                 reorderBufferBlock);
-    storeBufferBlock.setBufferSize(config.sbSize);
-    
-    this.loadBufferBlock = new LoadBufferBlock(storeBufferBlock, decodeAndDispatchBlock, unifiedRegisterFileBlock,
-                                               reorderBufferBlock, instructionFetchBlock);
-    loadBufferBlock.setBufferSize(config.lbSize);
+    // Memory blocks
+    this.storeBufferBlock = new StoreBufferBlock(loadStoreInterpreter, unifiedRegisterFileBlock, reorderBufferBlock);
+    storeBufferBlock.setBufferSize(config.cpuConfig.sbSize);
+    this.loadBufferBlock = new LoadBufferBlock(storeBufferBlock, unifiedRegisterFileBlock, reorderBufferBlock,
+                                               instructionFetchBlock);
+    loadBufferBlock.setBufferSize(config.cpuConfig.lbSize);
     
     // FUs
-    
     this.aluIssueWindowBlock       = new AluIssueWindowBlock(unifiedRegisterFileBlock);
     this.branchIssueWindowBlock    = new BranchIssueWindowBlock(unifiedRegisterFileBlock);
     this.fpIssueWindowBlock        = new FpIssueWindowBlock(unifiedRegisterFileBlock);
@@ -245,7 +268,7 @@ public class CpuState implements Serializable
     this.loadStoreFunctionUnits       = new ArrayList<>();
     this.branchFunctionUnitBlocks     = new ArrayList<>();
     this.memoryAccessUnits            = new ArrayList<>();
-    for (CpuConfiguration.FUnit fu : config.fUnits)
+    for (CpuConfig.FUnit fu : config.cpuConfig.fUnits)
     {
       switch (fu.fuType)
       {
@@ -311,7 +334,7 @@ public class CpuState implements Serializable
    *
    * @brief Get the default state for the predictor from the configuration
    */
-  private static boolean[] getDefaultTaken(CpuConfiguration config)
+  private static boolean[] getDefaultTaken(CpuConfig config)
   {
     boolean[] defaultTaken;
     if (config.predictorType.equals("0bit") || config.predictorType.equals("1bit"))
@@ -410,7 +433,7 @@ public class CpuState implements Serializable
     branchFunctionUnitBlocks.forEach(BranchFunctionUnitBlock::simulate);
     // Check which buffer contains older instruction at the top
     // Null check first, if any is empty, the order does not matter
-    if (loadBufferBlock.getLoadQueueFirst() == null || storeBufferBlock.getStoreQueueFirst() == null || loadBufferBlock.getLoadQueueFirst()
+    if (loadBufferBlock.getQueueSize() == 0 || storeBufferBlock.getQueueSize() == 0 || loadBufferBlock.getLoadQueueFirst()
             .getIntegerId() < storeBufferBlock.getStoreQueueFirst().getIntegerId())
     {
       loadBufferBlock.simulate();

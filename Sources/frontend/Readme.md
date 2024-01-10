@@ -7,7 +7,7 @@ Technology stack:
 - [TypeScript](https://www.typescriptlang.org/)
 - [Tailwind CSS](https://tailwindcss.com/)
 - [Jest](https://jestjs.io/)
-- [ESLint](https://eslint.org/)
+- [biomejs](https://biomejs.dev/)
 
 ## Structure
 
@@ -31,6 +31,13 @@ To install the dependencies, run this command:
 npm install
 ```
 
+### Define environment variables
+
+The variables do have default values, but you can override them.
+
+`NEXT_PUBLIC_SIMSERVER_PORT`
+`NEXT_PUBLIC_SIMSERVER_HOST`
+
 ### Run the development server
 
 You can start the server using this command:
@@ -48,7 +55,7 @@ Inspired by [this article](https://blog.logrocket.com/how-analyze-next-js-app-bu
 
 `ANALYZE=true npm run build` creates `client.html`, `nodejs.html`, and `edge.html`.
 
-### Main used libraries
+### The most important libraries used
 
 - [Codemirror](https://codemirror.net/) - Code editor
 - [Zod](https://www.npmjs.com/package/zod) - Data validation

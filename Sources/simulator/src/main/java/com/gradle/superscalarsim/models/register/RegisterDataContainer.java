@@ -26,6 +26,7 @@
  */
 package com.gradle.superscalarsim.models.register;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 
 /**
@@ -40,10 +41,10 @@ import com.gradle.superscalarsim.enums.DataTypeEnum;
 public class RegisterDataContainer
 {
   /**
-   * A bit representation of the register value
+   * A bit representation of the register value.
+   * Did not use java.nio.ByteBuffer because there is a problem with serialization.
    */
   private long bits;
-  
   /**
    * Last type of the register - used for inspection, display
    */
@@ -56,6 +57,36 @@ public class RegisterDataContainer
   {
     this.bits        = 0;
     this.currentType = DataTypeEnum.kULong;
+  }
+  
+  /**
+   * Copy constructor
+   */
+  public RegisterDataContainer(RegisterDataContainer other)
+  {
+    this.bits        = other.bits;
+    this.currentType = other.currentType;
+  }
+  
+  public static RegisterDataContainer parseAs(String value, DataTypeEnum type)
+  {
+    try
+    {
+      RegisterDataContainer container = new RegisterDataContainer();
+      byte[]                bytes     = type.getBytes(value);
+      long                  bits      = 0;
+      for (int i = 0; i < bytes.length; i++)
+      {
+        bits |= (bytes[i] & 0xFFL) << (i * 8);
+      }
+      container.bits        = bits;
+      container.currentType = type;
+      return container;
+    }
+    catch (Exception e)
+    {
+      return null;
+    }
   }
   
   public static <T> RegisterDataContainer fromValue(T value)
@@ -115,12 +146,28 @@ public class RegisterDataContainer
     this.currentType = DataTypeEnum.kBool;
   }
   
-  /**
-   * @return The bit representation of the register value
-   */
-  public long getBits()
+  public void setCurrentType(DataTypeEnum currentType)
   {
-    return bits;
+    this.currentType = currentType;
+  }
+  
+  /**
+   * @return string representation of the register value
+   */
+  @JsonProperty
+  public String getStringRepresentation()
+  {
+    return getString(currentType);
+  }
+  
+  public String getString(DataTypeEnum type)
+  {
+    if (type == null)
+    {
+      type = currentType;
+    }
+    Object v = getValue(type);
+    return v.toString();
   }
   
   /**
@@ -143,23 +190,23 @@ public class RegisterDataContainer
     }
     return switch (type)
     {
+      case kChar -> cls.cast((char) bits);
+      case kByte -> cls.cast((byte) bits);
+      case kShort -> cls.cast((short) bits);
       case kInt, kUInt -> cls.cast((int) bits);
       case kLong, kULong -> cls.cast(bits);
       case kFloat -> cls.cast(Float.intBitsToFloat((int) bits));
       case kDouble -> cls.cast(Double.longBitsToDouble(bits));
       case kBool -> cls.cast(bits != 0);
-      default -> throw new IllegalArgumentException("Unsupported type: " + type);
     };
   }
   
-  public String getString(DataTypeEnum type)
+  /**
+   * @return The bit representation of the register value
+   */
+  public long getBits()
   {
-    if (type == null)
-    {
-      type = currentType;
-    }
-    Object v = getValue(type);
-    return v.toString();
+    return bits;
   }
   
   /**

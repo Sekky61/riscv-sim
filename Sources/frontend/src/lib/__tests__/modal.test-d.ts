@@ -32,7 +32,6 @@
 import { expectNotType, expectType } from 'tsd';
 
 import { ModalProps, ModalType } from '@/components/modals/ModalRoot';
-import { RobDetailsModalProps } from '@/components/modals/RobDetailsModal';
 import { SaveIsaChangesModalProps } from '@/components/modals/SaveIsaChangesModal';
 
 function f<T extends ModalType>(): ModalProps<T> {
@@ -42,7 +41,7 @@ function f<T extends ModalType>(): ModalProps<T> {
 
 describe('The ModalType and ModalProps type inference', () => {
   expectType<SaveIsaChangesModalProps>(f<'CONFIRM_ISA_CHANGES_MODAL'>());
-  expectNotType<RobDetailsModalProps>(f<'CONFIRM_ISA_CHANGES_MODAL'>());
+  expectNotType<void>(f<'CONFIRM_ISA_CHANGES_MODAL'>());
 
   it('works', () => {
     expect(true).toBe(true);

@@ -32,7 +32,7 @@
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
-import { Reference } from '@/lib/types/cpuApi';
+import { Reference, RegisterModel } from '@/lib/types/cpuApi';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -44,8 +44,8 @@ export function cn(...inputs: ClassValue[]) {
  * @param ref  Reference to check
  * @returns True if reference present and valid, false otherwise
  */
-export function isValidReference(ref?: Reference): ref is Reference {
-  return typeof ref == 'number' && ref >= 0;
+export function isValidReference(ref: Reference | null): ref is Reference {
+  return typeof ref === 'number' && ref >= 0;
 }
 
 /**
@@ -54,4 +54,36 @@ export function isValidReference(ref?: Reference): ref is Reference {
  */
 export function inputCodeAddress(instructionId: number): string {
   return `0x${(instructionId * 4).toString(16)}`;
+}
+
+/**
+ * Converts number to hex string padded to even number of characters.
+ */
+export function hexPadEven(num: number): string {
+  const hex = num.toString(16);
+  return `0x${hex.length % 2 ? `0${hex}` : hex}`;
+}
+
+/**
+ * Converts number to hex string padded to 4B.
+ */
+export function hexPad(num: number): string {
+  const hex = num.toString(16).padStart(8, '0');
+  return `0x${hex}`;
+}
+
+/**
+ * Converts number to binary string padded to 32 bits.
+ */
+export function binPad32(num: number): string {
+  return `0b${num.toString(2).padStart(32, '0')}`;
+}
+
+/**
+ * Returns true if a register has a valid value.
+ */
+export function isValidRegisterValue(register: RegisterModel): boolean {
+  return (
+    register.readiness === 'kExecuted' || register.readiness === 'kAssigned'
+  );
 }

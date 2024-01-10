@@ -40,7 +40,7 @@ public class Cpu implements Serializable
   /**
    * CPU configuration
    */
-  public CpuConfiguration configuration;
+  public SimulationConfig configuration;
   
   /**
    * CPU state
@@ -55,25 +55,25 @@ public class Cpu implements Serializable
   /**
    * Assumes the cpuConfiguration is correct
    *
-   * @param cpuConfiguration CPU configuration to use
+   * @param cpuConfig CPU configuration to use
    */
-  public Cpu(CpuConfiguration cpuConfiguration, CpuState cpuState)
+  public Cpu(SimulationConfig simConfig, CpuState cpuState)
   {
-    this.configuration = cpuConfiguration;
+    this.configuration = simConfig;
     this.initLoader    = new InitLoader();
     this.cpuState      = cpuState;
   }
   
   /**
-   * @param cpuConfiguration CPU configuration to use
+   * @param cpuConfig CPU configuration to use
    *
    * @brief Create a CPU with a given configuration at the default state (tick 0)
    */
-  public Cpu(CpuConfiguration cpuConfiguration)
+  public Cpu(SimulationConfig simConfig)
   {
-    this.configuration = cpuConfiguration;
+    this.configuration = simConfig;
     this.initLoader    = new InitLoader();
-    this.cpuState      = new CpuState(cpuConfiguration, this.initLoader);
+    this.cpuState      = new CpuState(this.configuration, this.initLoader);
   }
   
   /**
@@ -81,7 +81,7 @@ public class Cpu implements Serializable
    */
   public Cpu()
   {
-    this.configuration = CpuConfiguration.getDefaultConfiguration();
+    this.configuration = SimulationConfig.getDefaultConfiguration();
     this.initLoader    = new InitLoader();
     this.cpuState      = new CpuState(this.configuration, this.initLoader);
   }
@@ -94,46 +94,6 @@ public class Cpu implements Serializable
     this.configuration.code = code;
     this.cpuState           = new CpuState(this.configuration, this.initLoader);
   }
-  
-  
-  /**
-   * Run the simulation for a given number of steps
-   *
-   * @param maxSteps Maximum number of steps to run
-   *
-   * @return Number of steps executed (may be less than maxSteps if simulation ended)
-   */
-  public int run(int maxSteps)
-  {
-    int steps = 0;
-    while (!simEnded() && steps < maxSteps)
-    {
-      step();
-      steps++;
-    }
-    return steps;
-  }
-  
-  public boolean simEnded()
-  {
-    boolean robEmpty = cpuState.reorderBufferBlock.getReorderQueueSize() == 0;
-    boolean pcEnd = cpuState.instructionFetchBlock.getPc() >= cpuState.instructionMemoryBlock.getCode().size() * 4;
-    boolean renameEmpty   = cpuState.decodeAndDispatchBlock.getAfterRenameCodeList().isEmpty();
-    boolean fetchNotEmpty = !cpuState.instructionFetchBlock.getFetchedCode().isEmpty();
-    boolean nop = fetchNotEmpty && cpuState.instructionFetchBlock.getFetchedCode().get(0).getInstructionName()
-            .equals("nop");
-    return robEmpty && pcEnd && renameEmpty && nop;
-  }
-  
-  /**
-   * @brief Calls all blocks and tell them to update their values (triggered by GlobalTimer)
-   * Runs ROB at the end again
-   */
-  public void step()
-  {
-    this.cpuState.step();
-  }// end of step
-  //-------------------------------------------------------------------------------------------
   
   public void stepBack()
   {
@@ -168,13 +128,39 @@ public class Cpu implements Serializable
       }
     }
   }
+  //-------------------------------------------------------------------------------------------
   
+  public boolean simEnded()
+  {
+    boolean robEmpty = cpuState.reorderBufferBlock.getReorderQueueSize() == 0;
+    boolean pcEnd = cpuState.instructionFetchBlock.getPc() >= cpuState.instructionMemoryBlock.getCode().size() * 4;
+    boolean renameEmpty   = cpuState.decodeAndDispatchBlock.getAfterRenameCodeList().isEmpty();
+    boolean fetchNotEmpty = !cpuState.instructionFetchBlock.getFetchedCode().isEmpty();
+    boolean nop = fetchNotEmpty && cpuState.instructionFetchBlock.getFetchedCode().get(0).getInstructionName()
+            .equals("nop");
+    return robEmpty && pcEnd && renameEmpty && nop;
+  }
+  
+  /**
+   * @brief Calls all blocks and tell them to update their values (triggered by GlobalTimer)
+   * Runs ROB at the end again
+   */
+  public void step()
+  {
+    this.cpuState.step();
+  }// end of step
+  
+  /**
+   * @brief Runs simulation from current state to the end
+   */
   public void execute()
   {
     while (!simEnded())
     {
       step();
     }
+    // Flush cache
+    this.cpuState.cache.flush();
   }
 }
 

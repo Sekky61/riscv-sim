@@ -43,6 +43,67 @@ export type CacheReplacementType = (typeof cacheReplacementTypes)[number];
 export const storeBehaviorTypes = ['write-back'] as const;
 export type StoreBehaviorType = (typeof storeBehaviorTypes)[number];
 
+/**
+ * THe difference between byte and char is in display and memory definition.
+ */
+export const dataTypes = [
+  'kByte',
+  'kShort',
+  'kInt',
+  'kUInt',
+  'kLong',
+  'kULong',
+  'kFloat',
+  'kDouble',
+  'kBool',
+  'kChar',
+] as const;
+export const dataTypesText = [
+  'Byte',
+  'Short',
+  'Integer',
+  'Unsigned Integer',
+  'Long',
+  'Unsigned Long',
+  'Float',
+  'Double',
+  'Boolean',
+  'Char',
+] as const;
+
+/**
+ * Definition of memory location, as the API expects it
+ */
+
+export const dataChunk = z.object({
+  dataType: z.enum(dataTypes),
+  values: z.array(z.string()),
+});
+export type DataChunk = z.infer<typeof dataChunk>;
+
+export const memoryLocation = z.object({
+  name: z.string().min(1),
+  alignment: z.number().min(1).max(16),
+  dataChunks: z.array(dataChunk),
+});
+export type MemoryLocationApi = z.infer<typeof memoryLocation>;
+
+export const memoryLocationDefaultValue: MemoryLocationApi = {
+  name: 'Array',
+  alignment: 4,
+  dataChunks: [],
+};
+
+/**
+ * This is the memory location with additional fields for the form.
+ * These extra fields are kept in the app, but not sent to the backend.
+ */
+export const memoryLocationIsa = memoryLocation.extend({
+  dataType: z.enum(dataTypes),
+  dataSource: z.enum(['constant', 'random', 'file']),
+});
+export type MemoryLocationIsa = z.infer<typeof memoryLocationIsa>;
+
 export const arithmeticUnits = ['FX', 'FP'] as const;
 export const otherUnits = ['L_S', 'Branch', 'Memory'] as const;
 export const fuTypes = [...arithmeticUnits, ...otherUnits] as const;
@@ -80,8 +141,13 @@ export function isArithmeticUnitConfig(
   return fUnit.fuType === 'FX' || fUnit.fuType === 'FP';
 }
 
-// Schema for form validation
-export const isaSchema = z.object({
+/**
+ * Schema for form validation.
+ * Contains all the fields that are used in the form, including name.
+ */
+export const isaFormSchema = z.object({
+  // Name. Used for saving different configurations.
+  name: z.string(),
   // Buffers
   robSize: z.number().min(1).max(1000),
   lbSize: z.number().min(1).max(1000),
@@ -107,16 +173,32 @@ export const isaSchema = z.object({
   laneReplacementDelay: z.number().min(1).max(1000),
   addRemainingDelay: z.boolean(), // todo
 });
+export type CpuConfig = z.infer<typeof isaFormSchema>;
 
-export type IsaConfig = z.infer<typeof isaSchema>;
-
-export const isaNamed = isaSchema.extend({
-  name: z.string(),
+/**
+ * The configuration that is sent to the backend.
+ */
+export const simulationConfig = z.object({
+  /**
+   * CPU configuration. Buffer sizes, functional units, etc.
+   */
+  cpuConfig: isaFormSchema,
+  /**
+   * Assembly code to be simulated.
+   */
+  code: z.string(),
+  /**
+   * Memory locations to be allocated.
+   */
+  memoryLocations: z.array(memoryLocationIsa),
 });
+export type SimulationConfig = z.infer<typeof simulationConfig>;
 
-export type IsaNamedConfig = z.infer<typeof isaNamed>;
-
-export const isaFormDefaultValues: IsaNamedConfig = {
+/**
+ * Default configuration
+ */
+export const defaultCpuConfig: CpuConfig = {
+  name: 'Default',
   robSize: 256,
   lbSize: 64,
   sbSize: 64,
@@ -178,5 +260,10 @@ export const isaFormDefaultValues: IsaNamedConfig = {
   loadLatency: 1,
   laneReplacementDelay: 10,
   addRemainingDelay: false,
-  name: 'Default',
+};
+
+export const defaultSimulationConfig: SimulationConfig = {
+  cpuConfig: defaultCpuConfig,
+  code: '',
+  memoryLocations: [],
 };

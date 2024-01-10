@@ -13,10 +13,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class CodeBranchInterpreterTest
 {
@@ -44,7 +41,7 @@ public class CodeBranchInterpreterTest
     unifiedRegisterFileBlock.getRegister("x3").setValue(6);
     unifiedRegisterFileBlock.getRegister("x4").setValue(-2);
     
-    this.codeBranchInterpreter = new CodeBranchInterpreter(instructionMemoryBlock, unifiedRegisterFileBlock);
+    this.codeBranchInterpreter = new CodeBranchInterpreter(unifiedRegisterFileBlock, instructionMemoryBlock);
   }
   
   private List<InputCodeModel> setUpParsedCode()
@@ -77,9 +74,13 @@ public class CodeBranchInterpreterTest
     return Arrays.asList(inputCodeModelAdd, inputCodeModelSub, inputCodeModelMul);
   }
   
-  private Map<String, Integer> setUpLabels()
+  private Map<String, Label> setUpLabels()
   {
-    return Map.of("one", 0, "two", 1, "three", 2);
+    Map<String, Label> labels = new HashMap<>();
+    labels.put("one", new Label("one", 0));
+    labels.put("two", new Label("two", 4));
+    labels.put("three", new Label("three", 8));
+    return labels;
   }
   
   @Test

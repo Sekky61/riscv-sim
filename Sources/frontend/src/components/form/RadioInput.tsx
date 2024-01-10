@@ -37,119 +37,146 @@
 // - a simple `value` and `onNewValue` props
 
 import React from 'react';
-import { useId } from 'react';
-import { FieldValues, Path, UseFormRegister } from 'react-hook-form';
+import { Control, FieldValues, Path, useController } from 'react-hook-form';
 
 import { ReactClassName } from '@/lib/types/reactTypes';
 import { cn } from '@/lib/utils';
+
+import { Label } from '@/components/base/ui/label';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/base/ui/tooltip';
+import * as RadioGroup from '@radix-ui/react-radio-group';
+
+/**
+ * Uses radix ui for accessibility
+ */
 
 interface RadioInputBaseProps extends ReactClassName {
   choices: readonly string[];
   texts?: readonly string[];
 }
 
-// The register function from react-hook-form
-interface RadioInputRegisterProps<Form extends FieldValues> {
-  name: Path<Form>;
-  register: UseFormRegister<Form>;
-}
+type RadioInputProps = RadioInputBaseProps & {
+  value: string;
+  onNewValue: (newValue: string) => void;
+};
 
-interface SimpleRadioInputProps<Val extends string> {
-  value: Val;
-  onNewValue: (newVal: Val) => void;
-}
-
-// Final type of props
-export type RadioInputProps<
-  Form extends FieldValues,
-  Val extends string = string,
-> = RadioInputBaseProps &
-  (RadioInputRegisterProps<Form> | SimpleRadioInputProps<Val>);
-
-export function RadioInput<T extends FieldValues, U extends string>({
+/**
+ * Uncontrolled radio input
+ */
+export function RadioInput({
   choices,
   texts,
-  className = '',
-  ...rest
-}: RadioInputProps<T, U>) {
-  const radioId = useId();
-  let inputProps = {};
-  let activeChoice = '';
-  if ('register' in rest) {
-    inputProps = { ...rest.register(rest.name) };
-  } else {
-    const handleClick: React.MouseEventHandler<HTMLInputElement> = (e) => {
-      rest.onNewValue(e.currentTarget.value as U);
-    };
-    inputProps = {
-      onClick: handleClick,
-      value: rest.value,
-      name: radioId, // The radios need to have the same name to be grouped
-    };
-    activeChoice = rest.value;
-  }
-
+  value,
+  onNewValue,
+}: RadioInputProps) {
   return (
-    <div
+    <RadioGroup.Root
       className={cn(
         'radio-field flex h-10 items-center justify-stretch rounded-md bg-muted p-1 text-muted-foreground',
-        className,
       )}
+      value={value}
+      onValueChange={onNewValue}
     >
       {choices.map((choice, i) => {
-        const inputId = `${radioId}-${choice}`;
+        const inputId = `${choice}`;
         const text = texts ? texts[i] : choice;
-        // Workaround for SimpleRadioInputs - initial value is not highlighted so JS is used
-        const active = choice === activeChoice;
         return (
           <React.Fragment key={choice}>
-            <input
-              type='radio'
-              id={inputId}
-              className='hidden'
-              hidden
-              {...inputProps}
-              value={choice}
-            />
+            <RadioGroup.Item value={choice} id={inputId}>
+              {/* <RadioGroup.Indicator className="flex items-center justify-center w-full h-full relative after:content-[''] after:block after:w-[11px] after:h-[11px] after:rounded-[50%] after:bg-violet11" /> */}
+            </RadioGroup.Item>
             <label
-              htmlFor={inputId}
               className={cn(
-                'flex-grow inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
-                active && 'radio-selected',
+                'hover:bg-white/60 cursor-pointer hover:text-gray-700 flex-grow inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
               )}
+              htmlFor={inputId}
             >
               {text}
             </label>
           </React.Fragment>
         );
       })}
-    </div>
+    </RadioGroup.Root>
+  );
+}
+
+type ControlledRadioInputProps<T extends FieldValues> = {
+  name: Path<T>;
+  control: Control<T>;
+} & RadioInputBaseProps;
+
+/**
+ * Controlled version of RadioInput.
+ * See react-hook-form docs for more info.
+ */
+export function ControlRadioInput<T extends FieldValues>({
+  choices,
+  texts,
+  control,
+  name,
+  className = '',
+}: ControlledRadioInputProps<T>) {
+  const { field } = useController({
+    name,
+    control,
+    rules: { required: true },
+  });
+
+  return (
+    <RadioInput
+      choices={choices}
+      texts={texts}
+      value={field.value}
+      onNewValue={field.onChange}
+      className={className}
+    />
   );
 }
 
 // Added title and hint
-export type RadioInputWithTitleProps<
-  Form extends FieldValues,
-  Val extends string,
-> = RadioInputProps<Form, Val> & { title: string; hint?: string };
+export type RadioInputWithTitleProps<T extends FieldValues> = {
+  title: string;
+  hint?: string;
+} & ControlledRadioInputProps<T>;
 
-export function RadioInputWithTitle<T extends FieldValues, U extends string>({
+/**
+ * Controlled version of RadioInput with title and hint. Works with control only.
+ * See react-hook-form docs for more info.
+ */
+export function RadioInputWithTitle<T extends FieldValues>({
+  choices,
+  texts,
+  control,
+  name,
+  className = '',
   title,
   hint,
-  className,
-  ...rest
-}: RadioInputWithTitleProps<T, U>) {
+}: RadioInputWithTitleProps<T>) {
   return (
     <div className={className}>
-      <label className='mb-1 text-sm font-medium '>{title}</label>
-      {hint ? (
-        <span className='tooltip ml-1 text-xs'>
-          &#9432;
-          <div className='tooltiptext ml-2 rounded bg-gray-100 p-1'>{hint}</div>
-        </span>
-      ) : null}
       <div>
-        <RadioInput {...rest} />
+        {hint ? (
+          <Tooltip>
+            <TooltipTrigger>
+              <Label htmlFor={name}>{title}&nbsp;&#9432;</Label>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{hint}</p>
+            </TooltipContent>
+          </Tooltip>
+        ) : (
+          <Label htmlFor={name}>{title}</Label>
+        )}
+        <ControlRadioInput
+          choices={choices}
+          texts={texts}
+          control={control}
+          name={name}
+        />
       </div>
     </div>
   );

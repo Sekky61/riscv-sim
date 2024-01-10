@@ -255,6 +255,20 @@ public class RegisterModel implements Identifiable
     value.setValue(bits);
   }
   
+  /**
+   * @brief Set register type metadata
+   */
+  public void setValue(long bits, DataTypeEnum type)
+  {
+    this.value.setValue(bits);
+    this.value.setCurrentType(type);
+  }
+  
+  /**
+   * @param type Type to cast to (example: `Integer.class`)
+   *
+   * @return Value of register, cast to given type. Consumer must cast the result to the correct type.
+   */
   public Object getValue(DataTypeEnum type)
   {
     return value.getValue(type);

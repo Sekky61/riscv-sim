@@ -34,18 +34,20 @@ import _examples from 'src/constant/codeExamples.json';
 
 import {
   callCompiler,
-  openExample,
+  openExampleAndCompile,
   selectAsmManuallyEdited,
+  toggleOptimizeFlag,
 } from '@/lib/redux/compilerSlice';
 import {
   enterEditorMode,
   selectEditorMode,
   selectOptimize,
-  setOptimize,
 } from '@/lib/redux/compilerSlice';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 
+import Tooltip from '@/components/Tooltip';
 import { Button } from '@/components/base/ui/button';
+import { Checkbox } from '@/components/base/ui/checkbox';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -54,7 +56,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/base/ui/dropdown-menu';
-import Tooltip from '@/components/Tooltip';
 
 import { CodeExample } from '@/constant/codeExamples';
 
@@ -81,8 +82,47 @@ export default function CompileOptions() {
     dispatch(callCompiler());
   }
 
+  const optimizeOptions = [
+    {
+      label: 'Optimize',
+      value: 'O2',
+      checked: optimize.includes('O2'),
+      clickCallback: () => dispatch(toggleOptimizeFlag('O2')),
+    },
+    {
+      label: 'Rename registers',
+      value: 'rename',
+      checked: optimize.includes('rename'),
+      clickCallback: () => dispatch(toggleOptimizeFlag('rename')),
+    },
+    {
+      label: 'Unroll loops',
+      value: 'unroll',
+      checked: optimize.includes('unroll'),
+      clickCallback: () => dispatch(toggleOptimizeFlag('unroll')),
+    },
+    {
+      label: 'Peel loops',
+      value: 'peel',
+      checked: optimize.includes('peel'),
+      clickCallback: () => dispatch(toggleOptimizeFlag('peel')),
+    },
+    {
+      label: 'Inline functions',
+      value: 'inline',
+      checked: optimize.includes('inline'),
+      clickCallback: () => dispatch(toggleOptimizeFlag('inline')),
+    },
+    {
+      label: 'Omit frame pointer',
+      value: 'omit-frame-pointer',
+      checked: optimize.includes('omit-frame-pointer'),
+      clickCallback: () => dispatch(toggleOptimizeFlag('omit-frame-pointer')),
+    },
+  ];
+
   const editorModeChanged = (newVal: string) => {
-    if (newVal != 'c' && newVal != 'asm') {
+    if (newVal !== 'c' && newVal !== 'asm') {
       console.error(`Unknown mode '${newVal}' while changing editor mode`);
       return;
     }
@@ -99,26 +139,24 @@ export default function CompileOptions() {
         onNewValue={editorModeChanged}
       />
       <ExamplesButton />
-      <div className='rounded border flex flex-col'>
-        <div className='ml-2 mt-1'>
-          <input type='checkbox' name='' id='floats' />
-          <label htmlFor='floats' className='ml-2 text-sm'>
-            Float instructions
-          </label>
-        </div>
-        <div className='ml-2 mb-1'>
-          <input
-            id='optimizeCheckbox'
-            type='checkbox'
-            checked={optimize}
-            onChange={() => dispatch(setOptimize(!optimize))}
-          />
-          <label htmlFor='optimizeCheckbox' className='ml-2 text-sm'>
-            Optimize
-          </label>
-        </div>
-        <CompileButton handleCompile={handleCompile} />
+      <div className='rounded border flex flex-col gap-2 p-2'>
+        {optimizeOptions.map((option) => (
+          <div key={option.value} className='flex items-center space-x-2'>
+            <Checkbox
+              id={option.value}
+              checked={option.checked}
+              onCheckedChange={option.clickCallback}
+            />
+            <label
+              htmlFor={option.value}
+              className='text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70'
+            >
+              {option.label}
+            </label>
+          </div>
+        ))}
       </div>
+      <CompileButton handleCompile={handleCompile} />
     </div>
   );
 }
@@ -140,7 +178,7 @@ function ExamplesButton() {
             <DropdownMenuItem
               key={example.name}
               onClick={() => {
-                dispatch(openExample(example));
+                dispatch(openExampleAndCompile(example));
               }}
               className='flex'
             >
@@ -174,15 +212,10 @@ function CompileButton({ handleCompile }: { handleCompile: () => void }) {
   );
 
   return (
-    <button
-      className={
-        'button-interactions border-t button-shape tooltip ' + statusStyle
-      }
-      onClick={handleCompile}
-    >
+    <Button className={statusStyle} onClick={handleCompile}>
       Compile
       <Tooltip text='Compile' shortcut={COMPILE_SHORTCUT} />
-    </button>
+    </Button>
   );
 }
 

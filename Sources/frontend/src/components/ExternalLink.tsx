@@ -47,6 +47,7 @@ export default function ExternalLink({
       className='inline-flex items-center font-medium text-blue-600 hover:cursor-pointer hover:underline'
     >
       {children}
+      {/* biome-ignore lint/a11y/noSvgWithoutTitle: <explanation> */}
       <svg
         className='ml-2 h-4 w-4'
         aria-hidden='true'

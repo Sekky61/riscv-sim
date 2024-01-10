@@ -33,12 +33,19 @@ import type { ReactElement } from 'react';
 
 export type InstructionListDisplayProps<T> = {
   instructions: Array<T>;
-  limit?: number;
-  instructionRenderer: (item?: T) => ReactElement<{ key: string }>;
-  legend?: React.ReactNode;
+  limit: number;
+  instructionRenderer: (item: T | null) => ReactElement<{ key: string }>;
+  legend?: ReactElement;
   columns?: number;
 };
 
+/**
+ * A component for displaying a list.
+ * It pads or truncates the list to the specified limit.
+ * Calls renderer for each item.
+ *
+ * Can render into multiple columns.
+ */
 export function InstructionListDisplay<T>({
   instructions,
   limit,
@@ -46,26 +53,22 @@ export function InstructionListDisplay<T>({
   legend,
   columns = 1,
 }: InstructionListDisplayProps<T>) {
-  let displayLimit = instructions.length;
-  let emptyCount = 0;
-  if (limit !== undefined) {
-    displayLimit = limit;
-    emptyCount = limit - instructions.length;
+  const displayLimit = Math.min(limit, instructions.length);
+  const emptyCount = limit - instructions.length;
+
+  // Pad the array with nulls, limit the length
+  const displayArray: Array<T | null> = instructions.slice(0, displayLimit);
+  if (emptyCount > 0) {
+    displayArray.push(...new Array(emptyCount).fill(null));
   }
 
-  const codeModels = instructions.slice(0, displayLimit);
-
   return (
-    <div>
-      <ul
-        className='grid gap-1'
-        style={{ gridTemplateColumns: `repeat(${columns}, auto)` }}
-      >
-        {legend && <li className='contents'>{legend}</li>}
-        {codeModels.map((inst) => instructionRenderer(inst))}
-        {emptyCount > 0 &&
-          [...Array(emptyCount)].map((_, i) => instructionRenderer(undefined))}
-      </ul>
-    </div>
+    <ol
+      className='grid gap-1'
+      style={{ gridTemplateColumns: `repeat(${columns}, auto)` }}
+    >
+      {legend && <li className='contents'>{legend}</li>}
+      {displayArray.map((inst) => instructionRenderer(inst))}
+    </ol>
   );
 }

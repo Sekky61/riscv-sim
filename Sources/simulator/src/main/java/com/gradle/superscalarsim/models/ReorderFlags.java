@@ -33,15 +33,23 @@ package com.gradle.superscalarsim.models;
  */
 public class ReorderFlags
 {
-  /// Is instruction valid
+  /**
+   * Is instruction valid
+   */
   private boolean isValid;
-  /// Is instruction busy
+  
+  /**
+   * Is instruction busy
+   */
   private boolean isBusy;
-  /// Is instruction speculative
+  
+  /**
+   * Is instruction speculative
+   */
   private boolean isSpeculative;
   
   /**
-   * @param [in] isSpeculative - Is instruction speculative
+   * @param isSpeculative Is instruction speculative
    *
    * @brief Constructor
    */
@@ -64,6 +72,17 @@ public class ReorderFlags
   //------------------------------------------------------
   
   /**
+   * @param busy New value of the busy bit
+   *
+   * @brief Sets busy bit
+   */
+  public void setBusy(boolean busy)
+  {
+    this.isBusy = busy;
+  }// end of setBusy
+  //------------------------------------------------------
+  
+  /**
    * @return Boolean value of valid bit
    * @brief Gets valid bit
    */
@@ -71,6 +90,17 @@ public class ReorderFlags
   {
     return this.isValid;
   }// end of isValid
+  //------------------------------------------------------
+  
+  /**
+   * @param valid New value of the valid bit
+   *
+   * @brief Sets valid bit
+   */
+  public void setValid(boolean valid)
+  {
+    this.isValid = valid;
+  }// end of setValid
   //------------------------------------------------------
   
   /**
@@ -84,29 +114,7 @@ public class ReorderFlags
   //------------------------------------------------------
   
   /**
-   * @param [in] busy - New value of the busy bit
-   *
-   * @brief Sets busy bit
-   */
-  public void setBusy(boolean busy)
-  {
-    this.isBusy = busy;
-  }// end of setBusy
-  //------------------------------------------------------
-  
-  /**
-   * @param [in] valid - New value of the valid bit
-   *
-   * @brief Sets valid bit
-   */
-  public void setValid(boolean valid)
-  {
-    this.isValid = valid;
-  }// end of setValid
-  //------------------------------------------------------
-  
-  /**
-   * @param [in] speculative - New value of the speculative bit
+   * @param speculative New value of the speculative bit
    *
    * @brief Sets speculative bit
    */

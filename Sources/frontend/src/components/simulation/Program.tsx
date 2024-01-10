@@ -53,18 +53,22 @@ import Block from '@/components/simulation/Block';
  */
 export default function Program() {
   const pcRef = React.useRef<HTMLDivElement>(null);
+  const containerRef = React.useRef<HTMLDivElement>(null);
   const program = useAppSelector(selectProgram);
   const fetch = useAppSelector(selectFetch);
   const codeOrder = useAppSelector(selectProgramWithLabels);
   const highlightedInputCodeId = useAppSelector(selectHighlightedInputCode);
 
-  // Scroll to PC on every render
+  // Scroll to PC on every render using scrollTop, because scrollIntoView makes the whole page jump
   useEffect(() => {
-    if (!pcRef.current) {
+    if (!pcRef.current || !containerRef.current) {
       return;
     }
-    pcRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  });
+    const pcTop = pcRef.current.offsetTop;
+    const containerTop = containerRef.current.offsetTop;
+    const containerHeight = containerRef.current.offsetHeight;
+    containerRef.current.scrollTop = pcTop - containerTop - containerHeight / 2;
+  }, [pcRef, containerRef]);
 
   if (!program || !fetch || !codeOrder) return null;
 
@@ -89,8 +93,9 @@ export default function Program() {
       className='program justify-self-stretch self-stretch'
     >
       <div
-        className='h-96 grid gap-1 overflow-y-auto pt-4'
+        className='max-h-96 grid gap-1 overflow-y-auto pt-4'
         style={{ gridTemplateColumns: 'auto auto' }}
+        ref={containerRef}
       >
         {codeOrder.map((instructionOrLabel) => {
           if (typeof instructionOrLabel === 'string') {
@@ -171,7 +176,9 @@ function ProgramInstruction({
   const cls = clsx(className, 'font-mono text-sm');
   return (
     <>
-      <span className='text-xs text-gray-600'>{address}</span>
+      <div className='text-xs text-gray-600 font-mono flex justify-center items-center'>
+        {address}
+      </div>
       <span className={cls}>
         {children}
         <span title={model.interpretableAs}>{model.name}</span>

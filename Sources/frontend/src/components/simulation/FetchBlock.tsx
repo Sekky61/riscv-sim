@@ -37,20 +37,14 @@ import Block from '@/components/simulation/Block';
 import InstructionField from '@/components/simulation/InstructionField';
 import { InstructionListDisplay } from '@/components/simulation/InstructionListDisplay';
 
+/**
+ * A component for displaying the Fetch block.
+ */
 export default function FetchBlock() {
-  const fetchObject = useAppSelector(selectFetch);
   const dispatch = useAppDispatch();
+  const fetchObject = useAppSelector(selectFetch);
 
   if (!fetchObject) return null;
-
-  const capacity = fetchObject.numberOfWays;
-
-  const fetchStats = (
-    <>
-      <div>PC: {fetchObject.pc}</div>
-      <div>{fetchObject.stallFlag ? 'Stalled' : null}</div>
-    </>
-  );
 
   const handleMore = () => {
     dispatch(
@@ -61,16 +55,23 @@ export default function FetchBlock() {
     );
   };
 
+  const fetchStats = (
+    <>
+      <div>PC: {fetchObject.pc}</div>
+      <div>{fetchObject.stallFlag ? 'Stalled' : null}</div>
+    </>
+  );
+
   return (
     <Block
       title='Fetch Block'
       stats={fetchStats}
       handleMore={handleMore}
-      className='fetch'
+      className='fetch-position'
     >
       <InstructionListDisplay
         instructions={fetchObject.fetchedCode}
-        limit={capacity}
+        limit={fetchObject.numberOfWays}
         instructionRenderer={(codeModel) => (
           <InstructionField instructionId={codeModel} />
         )}

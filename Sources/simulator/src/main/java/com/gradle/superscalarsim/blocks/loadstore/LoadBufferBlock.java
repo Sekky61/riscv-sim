@@ -36,13 +36,14 @@ import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.blocks.AbstractBlock;
-import com.gradle.superscalarsim.blocks.base.DecodeAndDispatchBlock;
 import com.gradle.superscalarsim.blocks.base.InstructionFetchBlock;
 import com.gradle.superscalarsim.blocks.base.ReorderBufferBlock;
 import com.gradle.superscalarsim.blocks.base.UnifiedRegisterFileBlock;
-import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
-import com.gradle.superscalarsim.models.*;
+import com.gradle.superscalarsim.models.InputCodeArgument;
+import com.gradle.superscalarsim.models.LoadBufferItem;
+import com.gradle.superscalarsim.models.SimCodeModel;
+import com.gradle.superscalarsim.models.StoreBufferItem;
 import com.gradle.superscalarsim.models.register.RegisterModel;
 
 import java.util.*;
@@ -54,43 +55,55 @@ import java.util.*;
 @JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
 public class LoadBufferBlock implements AbstractBlock
 {
-  /// Queue with all uncommitted load instructions
-  @JsonIdentityReference(alwaysAsId = true)
-  private final Queue<SimCodeModel> loadQueue;
   /**
-   * Map with additional info for specific load instructions
-   * The actual buffer of the load buffer
+   * Queue with all uncommitted load instructions
    */
-  private final Map<Integer, LoadBufferItem> loadMap;
-  /// Counter, which is used to calculate if buffer can hold instructions pulled into ROB
-  public int possibleNewEntries;
-  /// List holding all allocated memory access units
+  @JsonIdentityReference(alwaysAsId = true)
+  private final ArrayDeque<LoadBufferItem> loadQueue;
+  
+  /**
+   * List holding all allocated memory access units
+   */
   @JsonIdentityReference(alwaysAsId = true)
   private List<MemoryAccessUnit> memoryAccessUnitList;
-  /// Block keeping all in-flight store instructions
+  
+  /**
+   * Block keeping all in-flight store instructions
+   */
   @JsonIdentityReference(alwaysAsId = true)
   private StoreBufferBlock storeBufferBlock;
-  /// Class, which simulates instruction decode and renames registers
-  @JsonIdentityReference(alwaysAsId = true)
-  private DecodeAndDispatchBlock decodeAndDispatchBlock;
-  /// Class containing all registers, that simulator uses
+  
+  /**
+   * Class containing all registers, that simulator uses
+   */
   @JsonIdentityReference(alwaysAsId = true)
   private UnifiedRegisterFileBlock registerFileBlock;
-  /// Class contains simulated implementation of Reorder buffer
+  
+  /**
+   * Class contains simulated implementation of Reorder buffer
+   */
   @JsonIdentityReference(alwaysAsId = true)
   private ReorderBufferBlock reorderBufferBlock;
-  /// Class that fetches code from CodeParser
+  
+  /**
+   * Class that fetches code from CodeParser
+   */
   @JsonIdentityReference(alwaysAsId = true)
   private InstructionFetchBlock instructionFetchBlock;
-  /// Load Buffer size
+  
+  /**
+   * Load Buffer size
+   */
   private int bufferSize;
-  /// ID counter matching the one in ROB
+  
+  /**
+   * ID counter matching the one in ROB
+   */
   private int commitId;
   
   public LoadBufferBlock()
   {
-    loadQueue = new PriorityQueue<>();
-    loadMap   = new LinkedHashMap<>();
+    loadQueue = new ArrayDeque<>();
   }
   
   /**
@@ -103,23 +116,18 @@ public class LoadBufferBlock implements AbstractBlock
    * @brief Constructor
    */
   public LoadBufferBlock(StoreBufferBlock storeBufferBlock,
-                         DecodeAndDispatchBlock decodeAndDispatchBlock,
                          UnifiedRegisterFileBlock registerFileBlock,
                          ReorderBufferBlock reorderBufferBlock,
                          InstructionFetchBlock instructionFetchBlock)
   {
-    this.storeBufferBlock       = storeBufferBlock;
-    this.decodeAndDispatchBlock = decodeAndDispatchBlock;
-    this.registerFileBlock      = registerFileBlock;
-    this.reorderBufferBlock     = reorderBufferBlock;
-    this.instructionFetchBlock  = instructionFetchBlock;
-    this.bufferSize             = 64;
-    this.commitId               = 0;
-    this.possibleNewEntries     = 0;
+    this.storeBufferBlock      = storeBufferBlock;
+    this.registerFileBlock     = registerFileBlock;
+    this.reorderBufferBlock    = reorderBufferBlock;
+    this.instructionFetchBlock = instructionFetchBlock;
+    this.bufferSize            = 64;
+    this.commitId              = 0;
     
-    this.loadQueue = new PriorityQueue<>();
-    this.loadMap   = new LinkedHashMap<>();
-    
+    this.loadQueue            = new ArrayDeque<>();
     this.memoryAccessUnitList = new ArrayList<>();
     
     this.reorderBufferBlock.setLoadBufferBlock(this);
@@ -127,7 +135,7 @@ public class LoadBufferBlock implements AbstractBlock
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @param [in] memoryAccessUnit - Memory access unit to be added
+   * @param memoryAccessUnit Memory access unit to be added
    *
    * @brief Add memory access block to the load buffer
    */
@@ -152,17 +160,7 @@ public class LoadBufferBlock implements AbstractBlock
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @return Load buffer limit size
-   * @brief Get the load buffer limit size
-   */
-  public int getBufferSize()
-  {
-    return bufferSize;
-  }// end of getBufferSize
-  //-------------------------------------------------------------------------------------------
-  
-  /**
-   * @param [in] bufferSize - New load buffer size
+   * @param bufferSize New load buffer size
    *
    * @brief Set load buffer limit size
    */
@@ -173,46 +171,15 @@ public class LoadBufferBlock implements AbstractBlock
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @return Store buffer queue
-   * @brief Get whole store buffer queue
-   */
-  public Queue<SimCodeModel> getLoadQueue()
-  {
-    return this.loadQueue;
-  }// end of getLoadQueue
-  //-------------------------------------------------------------------------------------------
-  
-  /**
-   * @return List of memory access unit blocks
-   * @brief Get list of memory access units
-   */
-  public List<MemoryAccessUnit> getMemoryAccessBlockList()
-  {
-    return this.memoryAccessUnitList;
-  }// end of getMemoryAccessBlockList
-  //-------------------------------------------------------------------------------------------
-  
-  /**
-   * @brief Increment possible entries that were confirmed to the ROB
-   */
-  public void incrementPossibleNewEntries()
-  {
-    this.possibleNewEntries++;
-  }// end of incrementPossibleNewEntries
-  //-------------------------------------------------------------------------------------------
-  
-  /**
    * @brief Simulates Load buffer
    */
   @Override
   public void simulate()
   {
-    this.possibleNewEntries = 0;
-    pullLoadInstructionsFromDecode();
     checkIfProcessedHasConflict();
     removeInvalidInstructions();
     selectLoadForDataAccess();
-    this.commitId = this.commitId + 1;
+    this.commitId++;
   }// end of simulate
   //-------------------------------------------------------------------------------------------
   
@@ -224,65 +191,34 @@ public class LoadBufferBlock implements AbstractBlock
   {
     this.commitId = 0;
     this.loadQueue.clear();
-    this.loadMap.clear();
-    this.possibleNewEntries = 0;
   }// end of reset
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Pulls all load instructions from decode into the buffer.
-   * Creates entry for them in the load buffer.
-   */
-  private void pullLoadInstructionsFromDecode()
-  {
-    decodeAndDispatchBlock.getAfterRenameCodeList().forEach(codeModel ->
-                                                            {
-                                                              if (!isInstructionLoad(codeModel))
-                                                              {
-                                                                return;
-                                                              }
-                                                              boolean containsKey = this.reorderBufferBlock.getRobItem(
-                                                                      codeModel.getIntegerId()) != null;
-                                                              if (isBufferFull(1) || !containsKey)
-                                                              {
-                                                                return;
-                                                              }
-                                                              this.loadQueue.add(codeModel);
-                                                              // Create entry in the Load Buffer
-                                                              InputCodeArgument argument = codeModel.getArgumentByName(
-                                                                      "rd");
-                                                              this.loadMap.put(codeModel.getIntegerId(),
-                                                                               new LoadBufferItem(
-                                                                                       Objects.requireNonNull(argument)
-                                                                                               .getValue()));
-                                                              
-                                                            });
-  }// end of pullLoadInstructionsFromDecode
-  //-------------------------------------------------------------------------------------------
-  
-  /**
-   * @brief Checks if the instruction has no conflicts with all previously executed store instructions
+   * Can cause a flush of the ROB
+   *
+   * @brief Checks if the instruction has no conflicts with all previously executed store instructions.
    */
   private void checkIfProcessedHasConflict()
   {
-    
-    for (SimCodeModel simCodeModel : this.loadQueue)
+    for (LoadBufferItem bufferItem : this.loadQueue)
     {
-      LoadBufferItem bufferItem        = loadMap.get(simCodeModel.getIntegerId());
-      boolean        isDestReady       = bufferItem.isDestinationReady();
-      boolean        isAccessingMemory = bufferItem.isAccessingMemory();
-      if (!isDestReady && !isAccessingMemory)
+      if (!bufferItem.isDestinationReady() && !bufferItem.isAccessingMemory())
       {
         continue;
       }
       int     beforeMaId   = bufferItem.getMemoryAccessId();
       boolean beforeBypass = bufferItem.hasBypassed();
-      if (processLoadInstruction(simCodeModel) != null)
+      
+      if (findMatchingStore(bufferItem) == null)
       {
+        // No conflict
         continue;
       }
       
-      // Remove the load and anything after it from ROB
+      // Conflict detected
+      // Remove the load and flush ROB
+      SimCodeModel simCodeModel = bufferItem.getSimCodeModel();
       reorderBufferBlock.invalidateInstructions(simCodeModel);
       reorderBufferBlock.flushInvalidInstructions();
       bufferItem.setMemoryFailedId(this.commitId);
@@ -290,216 +226,249 @@ public class LoadBufferBlock implements AbstractBlock
       bufferItem.setHasBypassed(beforeBypass);
       // Fix PC
       instructionFetchBlock.setPc(simCodeModel.getSavedPc());
-      simCodeModel.setSavedPc(instructionFetchBlock.getPc());
     }
   }// end of checkIfProcessedHasConflict
-  //-------------------------------------------------------------------------------------------
   
   /**
    * @brief Removes all invalid load instructions from buffer
    */
   private void removeInvalidInstructions()
   {
-    List<SimCodeModel> removedInstructions = new ArrayList<>();
-    for (SimCodeModel simCodeModel : this.loadQueue)
+    // Iterate the queue from the end, remove until first valid instruction
+    Iterator<LoadBufferItem> it = this.loadQueue.descendingIterator();
+    while (it.hasNext())
     {
-      if (simCodeModel.hasFailed())
+      LoadBufferItem loadItem  = it.next();
+      SimCodeModel   codeModel = loadItem.getSimCodeModel();
+      
+      // Previous call of `checkIfProcessedHasConflict` might have cause a ROB flush
+      // ROB in turn invalidated instructions
+      if (codeModel.hasFailed())
       {
-        removedInstructions.add(simCodeModel);
-        if (this.loadMap.get(simCodeModel.getIntegerId()).isAccessingMemory())
+        // Remove
+        if (loadItem.isAccessingMemory())
         {
-          this.memoryAccessUnitList.forEach(ma -> ma.tryRemoveCodeModel(simCodeModel));
+          this.memoryAccessUnitList.forEach(ma -> ma.tryRemoveCodeModel(codeModel));
         }
-        this.loadMap.remove(simCodeModel.getIntegerId());
+        this.loadQueue.removeLast();
       }
     }
-    this.loadQueue.removeAll(removedInstructions);
   }// end of removeInvalidInstructions
   //-------------------------------------------------------------------------------------------
   
   /**
+   * Tries to find work for MA block. Tries to bypass load instructions by matching store instructions
+   *
    * @brief Selects load instructions for MA block
    */
   private void selectLoadForDataAccess()
   {
-    SimCodeModel codeModel = null;
-    for (SimCodeModel simCodeModel : this.loadQueue)
+    LoadBufferItem workForMa = null;
+    for (LoadBufferItem item : this.loadQueue)
     {
-      LoadBufferItem item             = this.loadMap.get(simCodeModel.getIntegerId());
-      boolean        isAvailableForMA = item.getAddress() != -1 && !item.isAccessingMemory() && !item.isDestinationReady();
-      
-      if (isAvailableForMA)
+      boolean isAvailableForMA = item.getAddress() != -1 && !item.isAccessingMemory() && !item.isDestinationReady();
+      if (!isAvailableForMA)
       {
-        SimCodeModel possibleCodeModel = processLoadInstruction(simCodeModel);
-        if (codeModel == null)
-        {
-          codeModel = possibleCodeModel;
-        }
-        else if (possibleCodeModel != null && codeModel.compareTo(possibleCodeModel) > 0)
-        {
-          codeModel = possibleCodeModel;
-        }
+        continue;
+      }
+      
+      StoreBufferItem resultStoreItem = findMatchingStore(item);
+      boolean         foundStore      = resultStoreItem != null;
+      if (foundStore)
+      {
+        // Bypass, if possible. But keep looking for work for MA
+        // If the bypass is not successful, it will be successful later when the store is executed
+        tryBypassLoad(item, resultStoreItem);
+      }
+      else
+      {
+        // Item found - conflict free
+        workForMa = item;
+        break;
       }
     }
     
-    if (codeModel == null)
+    if (workForMa == null)
     {
       return;
     }
     
+    // TODO: Does this mean load block can only dispatch one load in a tick? What about more MAs?
     for (MemoryAccessUnit memoryAccessUnit : this.memoryAccessUnitList)
     {
       if (memoryAccessUnit.isFunctionUnitEmpty())
       {
         memoryAccessUnit.resetCounter();
-        memoryAccessUnit.setSimCodeModel(codeModel);
-        this.loadMap.get(codeModel.getIntegerId()).setAccessingMemory(true);
-        this.loadMap.get(codeModel.getIntegerId()).setAccessingMemoryId(this.commitId);
+        memoryAccessUnit.setSimCodeModel(workForMa.getSimCodeModel());
+        workForMa.setAccessingMemory(true);
+        workForMa.setAccessingMemoryId(this.commitId);
+        return;
       }
     }
   }// end of selectLoadForDataAccess
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @param [in] codeModel - Code model to be checked
-   *
-   * @return True if the model is load instruction, false otherwise
-   * @brief Checks if specified code model is load instruction
+   * @brief finds matching store instruction in store buffer for given load instruction
    */
-  public boolean isInstructionLoad(SimCodeModel codeModel)
+  private StoreBufferItem findMatchingStore(LoadBufferItem loadItem)
   {
-    if (codeModel.getInstructionTypeEnum() != InstructionTypeEnum.kLoadstore)
+    assert loadItem != null;
+    long         loadAddress  = loadItem.getAddress();
+    SimCodeModel simCodeModel = loadItem.getSimCodeModel();
+    for (StoreBufferItem storeItem : this.storeBufferBlock.getStoreMapAsList())
     {
-      return false;
+      if (loadAddress == storeItem.getAddress() && simCodeModel.getIntegerId() > storeItem.getSourceResultId())
+      {
+        return storeItem;
+      }
     }
-    InstructionFunctionModel instruction = codeModel.getInstructionFunctionModel();
-    return instruction != null && instruction.getInterpretableAs().startsWith("load");
-  }// end of isInstructionLoad
+    return null;
+  }// end of findMatchingStore
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @param [in] possibleAddition - Number of instructions to be possibly added
+   * @param loadItem  Load instruction to be bypassed
+   * @param storeItem Store instruction to be bypassed
+   *
+   * @return True if successfully bypassed, false otherwise
+   * @brief Tries to bypass load instruction by store instruction
+   */
+  private boolean tryBypassLoad(LoadBufferItem loadItem, StoreBufferItem storeItem)
+  {
+    assert loadItem != null;
+    assert storeItem != null;
+    
+    RegisterModel         sourceReg        = registerFileBlock.getRegister(storeItem.getSourceRegister());
+    RegisterReadinessEnum resultState      = sourceReg.getReadiness();
+    boolean               storeSourceReady = resultState == RegisterReadinessEnum.kExecuted || resultState == RegisterReadinessEnum.kAssigned;
+    if (!storeSourceReady)
+    {
+      // Cannot speculatively load, the value is not computed yet
+      return false;
+    }
+    
+    // We found a matching store with computed value
+    // Bypass memory access by speculation
+    RegisterModel destinationReg = registerFileBlock.getRegister(loadItem.getDestinationRegister());
+    destinationReg.setValue(sourceReg.getValue());
+    destinationReg.setReadiness(RegisterReadinessEnum.kAssigned);
+    loadItem.setDestinationReady(true);
+    loadItem.setHasBypassed(true);
+    loadItem.setMemoryAccessId(this.commitId);
+    reorderBufferBlock.getRobItem(loadItem.getSimCodeModel().getIntegerId()).reorderFlags.setBusy(false);
+    return true;
+  }// end of processLoadInstruction
+  //-------------------------------------------------------------------------------------------
+  
+  /**
+   * Adds item to the load buffer
+   *
+   * @param simCodeModel Instruction to be added
+   */
+  public void addLoadToBuffer(SimCodeModel simCodeModel)
+  {
+    if (!simCodeModel.isLoad())
+    {
+      throw new RuntimeException("Trying to add non-load instruction to load buffer");
+    }
+    
+    if (isBufferFull(1))
+    {
+      throw new RuntimeException("Trying to add load instruction to full load buffer");
+    }
+    
+    // TODO check if load already in buffer
+    
+    // Create entry in the Load Buffer
+    InputCodeArgument argument = simCodeModel.getArgumentByName("rd");
+    this.loadQueue.add(new LoadBufferItem(simCodeModel, Objects.requireNonNull(argument).getValue()));
+  }
+  
+  /**
+   * @param possibleAddition Number of instructions to be possibly added
    *
    * @return True if buffer would be full, false otherwise
    * @brief Checks if buffer would be full if specified number of instructions were to be added
    */
   public boolean isBufferFull(int possibleAddition)
   {
-    return this.bufferSize < (this.loadQueue.size() + possibleAddition + this.possibleNewEntries);
+    return this.bufferSize < (this.loadQueue.size() + possibleAddition);
   }// end of isBufferFull
-  //-------------------------------------------------------------------------------------------
   
   /**
-   * @param [in] simCodeModel - load instruction to be matched
-   *
-   * @return Null if successfully matched, input if failed
-   * @brief Check if load instruction can be matched with previously executed store instruction
-   */
-  private SimCodeModel processLoadInstruction(SimCodeModel simCodeModel)
-  {
-    ReorderBufferItem robItem = this.reorderBufferBlock.getRobItem(simCodeModel.getIntegerId());
-    if (robItem == null)
-    {
-      //If current instruction has been flushed from reorder buffer stop computing it
-      return simCodeModel;
-    }
-    LoadBufferItem  loadItem        = this.loadMap.get(simCodeModel.getIntegerId());
-    StoreBufferItem resultStoreItem = null;
-    for (StoreBufferItem storeItem : this.storeBufferBlock.getStoreMapAsList())
-    {
-      if (loadItem.getAddress() == storeItem.getAddress() && simCodeModel.getIntegerId() > storeItem.getSourceResultId())
-      {
-        boolean isNewItemBetter = resultStoreItem == null || (storeItem.getSourceResultId() < resultStoreItem.getSourceResultId() && storeItem.getAddress() == loadItem.getAddress());
-        resultStoreItem = isNewItemBetter ? storeItem : resultStoreItem;
-      }
-    }
-    
-    if (resultStoreItem == null)
-    {
-      return simCodeModel;
-    }
-    RegisterModel         sourceReg   = registerFileBlock.getRegister(resultStoreItem.getSourceRegister());
-    RegisterReadinessEnum resultState = sourceReg.getReadiness();
-    
-    boolean storeSourceReady = resultState == RegisterReadinessEnum.kExecuted || resultState == RegisterReadinessEnum.kAssigned;
-    if (!storeSourceReady)
-    {
-      // Cannot speculatively load, the value is not computed yet
-      return null;
-    }
-    
-    // Bypass memory access by speculation
-    RegisterModel destinationReg = registerFileBlock.getRegister(loadItem.getDestinationRegister());
-    destinationReg.setValue(sourceReg.getValue());
-    destinationReg.setReadiness(RegisterReadinessEnum.kAssigned);
-    loadMap.get(simCodeModel.getIntegerId()).setDestinationReady(true);
-    loadMap.get(simCodeModel.getIntegerId()).setHasBypassed(true);
-    loadMap.get(simCodeModel.getIntegerId()).setMemoryAccessId(this.commitId);
-    reorderBufferBlock.getRobItem(simCodeModel.getIntegerId()).reorderFlags.setBusy(false);
-    return null;
-    
-  }// end of processLoadInstruction
-  //-------------------------------------------------------------------------------------------
-  
-  /**
-   * @param [in] codeModelId - Id identifying specific loadMap entry
-   * @param [in] address     - Load instruction address
+   * @param codeModelId ID identifying specific loadMap entry
+   * @param address     Load instruction address
    *
    * @brief Set load address
    */
   public void setAddress(int codeModelId, long address)
   {
-    this.loadMap.get(codeModelId).setAddress(address);
+    Objects.requireNonNull(getLoadBufferItem(codeModelId)).setAddress(address);
   }// end of setAddress
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @param [in] codeModelId - Id identifying specific loadMap entry
+   * @param codeModelId ID of the load instruction
+   *
+   * @return Load buffer entry
+   * @brief Finds the corresponding load buffer entry for given load instruction
+   */
+  public LoadBufferItem getLoadBufferItem(int codeModelId)
+  {
+    for (LoadBufferItem loadItem : this.loadQueue)
+    {
+      if (loadItem.getSimCodeModel().getIntegerId() == codeModelId)
+      {
+        return loadItem;
+      }
+    }
+    return null;
+  }// end of findLoadBufferItem
+  //-------------------------------------------------------------------------------------------
+  
+  /**
+   * @param codeModelId ID identifying specific loadMap entry
    *
    * @brief Set flag if the destination register of the load instruction is ready to be loaded into
    */
   public void setDestinationAvailable(int codeModelId)
   {
-    this.loadMap.get(codeModelId).setDestinationReady(true);
+    Objects.requireNonNull(getLoadBufferItem(codeModelId)).setDestinationReady(true);
   }// end of setCodeRegisterAvailable
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @param [in] codeModelId - Id identifying specific loadMap entry
+   * @param codeModelId ID identifying specific loadMap entry
    *
    * @brief Set flag marking if the instruction is in the MA block
    */
   public void setMemoryAccessFinished(int codeModelId)
   {
-    this.loadMap.get(codeModelId).setAccessingMemory(false);
+    Objects.requireNonNull(getLoadBufferItem(codeModelId)).setAccessingMemory(false);
   }// end of setMemoryAccessFinished
   //-------------------------------------------------------------------------------------------
   
   /**
+   * Expects that the load buffer is not empty
+   *
    * @return First instruction in queue
    * @brief Get first instruction in queue
    */
   public SimCodeModel getLoadQueueFirst()
   {
-    return loadQueue.peek();
+    assert !loadQueue.isEmpty();
+    return loadQueue.peek().getSimCodeModel();
   }// end of getLoadQueueFirst
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Release load instruction on top of the queue and commits it
+   * @brief Release load instruction on top of the queue (lowest ID)
    */
   public void releaseLoadFirst()
   {
-    if (!this.loadQueue.isEmpty())
-    {
-      SimCodeModel codeModel = loadQueue.poll();
-      
-      this.loadMap.remove(codeModel.getIntegerId());
-    }
-    else
-    {
-      throw new RuntimeException("Release store when load queue is empty");
-    }
+    assert !loadQueue.isEmpty();
+    loadQueue.poll();
   }// end of releaseLoadFirst
   //-------------------------------------------------------------------------------------------
   
@@ -511,24 +480,5 @@ public class LoadBufferBlock implements AbstractBlock
   {
     return this.loadQueue.size();
   }// end of getQueueSize
-  //-------------------------------------------------------------------------------------------
-  
-  /**
-   * @return Load map
-   * @brief Get whole load map
-   */
-  public Map<Integer, LoadBufferItem> getLoadMap()
-  {
-    return this.loadMap;
-  }// end of getLoadMap
-  //----------------------------------------------------------------------
-  
-  /**
-   * @brief Notifies all listeners that number of MA units has changed
-   */
-  public StoreBufferBlock getStoreBufferBlock()
-  {
-    return storeBufferBlock;
-  }// end of getStoreBufferBlock
   //-------------------------------------------------------------------------------------------
 }

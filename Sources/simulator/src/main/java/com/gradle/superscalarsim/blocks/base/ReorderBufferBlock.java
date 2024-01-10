@@ -60,56 +60,6 @@ public class ReorderBufferBlock implements AbstractBlock
 {
   
   /**
-   * Class holding mappings from architectural registers to speculative
-   */
-  @JsonIdentityReference(alwaysAsId = true)
-  private RenameMapTableBlock renameMapTableBlock;
-  
-  /**
-   * Class, which simulates instruction decode and renames registers
-   */
-  @JsonIdentityReference(alwaysAsId = true)
-  private DecodeAndDispatchBlock decodeAndDispatchBlock;
-  
-  /**
-   * Class for statistics gathering
-   */
-  @JsonIdentityReference(alwaysAsId = true)
-  private StatisticsCounter statisticsCounter;
-  
-  
-  /**
-   * GShare unit for getting correct prediction counters
-   */
-  @JsonIdentityReference(alwaysAsId = true)
-  private GShareUnit gShareUnit;
-  
-  /**
-   * Buffer holding information about branch instructions targets
-   */
-  @JsonIdentityReference(alwaysAsId = true)
-  private BranchTargetBuffer branchTargetBuffer;
-  
-  /**
-   * Class that fetches code from CodeParser
-   */
-  @JsonIdentityReference(alwaysAsId = true)
-  private InstructionFetchBlock instructionFetchBlock;
-  
-  
-  /**
-   * Buffer that tracks all in-flight load instructions
-   */
-  @JsonIdentityReference(alwaysAsId = true)
-  private LoadBufferBlock loadBufferBlock;
-  
-  /**
-   * Buffer that tracks all in-flight store instructions
-   */
-  @JsonIdentityReference(alwaysAsId = true)
-  private StoreBufferBlock storeBufferBlock;
-  
-  /**
    * Queue of scheduled instruction in backend
    */
   public ArrayDeque<ReorderBufferItem> reorderQueue;
@@ -134,6 +84,54 @@ public class ReorderBufferBlock implements AbstractBlock
    * Reorder buffer size limit.
    */
   public int bufferSize;
+  
+  /**
+   * Class holding mappings from architectural registers to speculative
+   */
+  @JsonIdentityReference(alwaysAsId = true)
+  private RenameMapTableBlock renameMapTableBlock;
+  
+  /**
+   * Class, which simulates instruction decode and renames registers
+   */
+  @JsonIdentityReference(alwaysAsId = true)
+  private DecodeAndDispatchBlock decodeAndDispatchBlock;
+  
+  /**
+   * Class for statistics gathering
+   */
+  @JsonIdentityReference(alwaysAsId = true)
+  private StatisticsCounter statisticsCounter;
+  
+  /**
+   * GShare unit for getting correct prediction counters
+   */
+  @JsonIdentityReference(alwaysAsId = true)
+  private GShareUnit gShareUnit;
+  
+  /**
+   * Buffer holding information about branch instructions targets
+   */
+  @JsonIdentityReference(alwaysAsId = true)
+  private BranchTargetBuffer branchTargetBuffer;
+  
+  /**
+   * Class that fetches code from CodeParser
+   */
+  @JsonIdentityReference(alwaysAsId = true)
+  private InstructionFetchBlock instructionFetchBlock;
+  
+  /**
+   * Buffer that tracks all in-flight load instructions
+   */
+  @JsonIdentityReference(alwaysAsId = true)
+  private LoadBufferBlock loadBufferBlock;
+  
+  /**
+   * Buffer that tracks all in-flight store instructions
+   */
+  @JsonIdentityReference(alwaysAsId = true)
+  private StoreBufferBlock storeBufferBlock;
   
   public ReorderBufferBlock()
   {
@@ -310,6 +308,13 @@ public class ReorderBufferBlock implements AbstractBlock
         
         this.instructionFetchBlock.setPc(resultPc);
       }
+      
+      // If we go to the end of the queue, we did not find a branch instruction.
+      // This means that we are not speculating at this point.
+      if (!reorderQueue.getLast().reorderFlags.isSpeculative())
+      {
+        this.speculativePulls = false;
+      }
     }
     else if (codeModel.getInstructionTypeEnum() == InstructionTypeEnum.kLoadstore)
     {
@@ -402,16 +407,34 @@ public class ReorderBufferBlock implements AbstractBlock
   
   /**
    * Stalls decode block if there is no room for new instructions.
+   * It takes until it can't take anymore.
    *
    * @brief Takes decoded instructions from decoder and orders them
    */
   private void pullNewDecodedInstructions()
   {
     int pulledCount = 0;
+    int loadCount   = 0;
+    int storeCount  = 0;
     for (SimCodeModel codeModel : this.decodeAndDispatchBlock.getAfterRenameCodeList())
     {
-      if (!instructionHasRoom(codeModel))
+      if (codeModel.isLoad())
       {
+        loadCount++;
+      }
+      else if (codeModel.isStore())
+      {
+        storeCount++;
+      }
+      
+      boolean robFull   = this.bufferSize < (this.reorderQueue.size() + 1);
+      boolean loadFull  = this.loadBufferBlock.isBufferFull(loadCount);
+      boolean storeFull = this.storeBufferBlock.isBufferFull(storeCount);
+      
+      boolean instructionHasRoom = !robFull && !loadFull && !storeFull;
+      if (!instructionHasRoom)
+      {
+        // No more space, stop
         this.decodeAndDispatchBlock.setStallFlag(true);
         this.decodeAndDispatchBlock.setStalledPullCount(pulledCount);
         return;
@@ -420,6 +443,14 @@ public class ReorderBufferBlock implements AbstractBlock
       ReorderBufferItem reorderBufferItem = new ReorderBufferItem(codeModel, new ReorderFlags(this.speculativePulls));
       this.reorderQueue.add(reorderBufferItem);
       this.speculativePulls = this.speculativePulls || codeModel.getInstructionTypeEnum() == InstructionTypeEnum.kJumpbranch;
+      if (codeModel.isLoad())
+      {
+        this.loadBufferBlock.addLoadToBuffer(codeModel);
+      }
+      else if (codeModel.isStore())
+      {
+        this.storeBufferBlock.addStoreToBuffer(codeModel);
+      }
       pulledCount++;
     }
   }// end of pullNewDecodedInstructions
@@ -446,9 +477,6 @@ public class ReorderBufferBlock implements AbstractBlock
         return;
       }
     }
-    // If we go to the end of the queue, we did not find a branch instruction.
-    // This means that we are not speculating at this point.
-    this.speculativePulls = false;
   }// end of validateInstructions
   //----------------------------------------------------------------------
   
@@ -492,31 +520,6 @@ public class ReorderBufferBlock implements AbstractBlock
     boolean lastKeptSpeculative = keptAnyInstruction && this.reorderQueue.getLast().reorderFlags.isSpeculative();
     this.speculativePulls = keptAnyInstruction && lastKeptSpeculative;
   }// end of invalidateInstructions
-  //----------------------------------------------------------------------
-  
-  /**
-   * @param codeModel Code model to be added into the buffers
-   *
-   * @return True if there is a space, false if one of the buffers does not have room
-   * @brief Verifies if Reorder/Load/Store buffers have space for newly decoded instructions
-   */
-  private boolean instructionHasRoom(SimCodeModel codeModel)
-  {
-    if (loadBufferBlock.isInstructionLoad(codeModel))
-    {
-      this.loadBufferBlock.incrementPossibleNewEntries();
-    }
-    else if (storeBufferBlock.isInstructionStore(codeModel))
-    {
-      this.storeBufferBlock.incrementPossibleNewEntries();
-    }
-    
-    boolean robFull   = this.bufferSize < (this.reorderQueue.size() + 1);
-    boolean loadFull  = this.loadBufferBlock.isBufferFull(0);
-    boolean storeFull = this.storeBufferBlock.isBufferFull(0);
-    
-    return !robFull && !loadFull && !storeFull;
-  }// end of checkIfInstructionsHaveRoom
   //----------------------------------------------------------------------
   
   public ReorderBufferItem getRobItem(int simCodeId)

@@ -45,11 +45,13 @@ import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import AnimatedButton from '@/components/AnimatedButton';
 import CanvasWindow from '@/components/CanvasWindow';
 import BranchBlock from '@/components/simulation/BranchBlock';
+import CacheBlock from '@/components/simulation/CacheBlock';
 import DecodeBlock from '@/components/simulation/DecodeBlock';
 import FetchBlock from '@/components/simulation/FetchBlock';
 import FunctionUnitGroup from '@/components/simulation/FunctionUnitGroup';
 import IssueWindow from '@/components/simulation/IssueWindow';
 import LoadBuffer from '@/components/simulation/LoadBuffer';
+import MainMemory from '@/components/simulation/MainMemory';
 import Program from '@/components/simulation/Program';
 import ReorderBuffer from '@/components/simulation/ReorderBuffer';
 import StoreBuffer from '@/components/simulation/StoreBuffer';
@@ -98,11 +100,19 @@ export default function HomePage() {
             <FunctionUnitGroup type='branch' />
           </div>
           <div className='sim-grid'>
-            <StoreBuffer />
-            <LoadBuffer />
+            <div className='flex justify-center'>
+              <FunctionUnitGroup type='memory' />
+            </div>
+            <div className='flex gap-4'>
+              <StoreBuffer />
+              <LoadBuffer />
+            </div>
           </div>
           <div>
-            <FunctionUnitGroup type='memory' />
+            <div className='flex gap-4 mb-4 items-start'>
+              <MainMemory />
+              <CacheBlock />
+            </div>
           </div>
         </div>
       </CanvasWindow>

@@ -32,7 +32,8 @@ test_frontend:
   stage: test
   script:
     - cd Sources/frontend
-    - docker build -t sources_riscvsim-web --target test .
+    - '[ -n "$END_EARLY" ] && echo "Environment variable is set. Exiting." && exit 1'
+    - docker build --tag riscvsim-frontend-tests --target test .
   tags:
     - riscvsim
 
@@ -75,14 +76,16 @@ stop_review:
   stage: deploy
   script:
     - echo "Remove review app"
+    - '[ -n "$END_EARLY" ] && echo "Environment variable is set. Exiting." && exit 1'
     - cd Sources
-    - docker compose -f "docker-compose.yml" down
+    - docker-compose -f "docker-compose.yml" down && true # Runner always succeeds
   environment:
     name: review/$CI_COMMIT_REF_SLUG
     action: stop
   rules:
     - if: $CI_MERGE_REQUEST_ID
       when: manual
+  retry: 1
   tags:
     - docker-deploy
 
@@ -92,7 +95,6 @@ test_backend:
   stage: test
   script:
     - cd Sources/simulator
-    - docker build -t sources_riscvsim-server --target test .
-  allow_failure: true
+    - docker build --tag riscvsim-backend-tests --target test .
   tags:
     - riscvsim

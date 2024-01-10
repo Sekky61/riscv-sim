@@ -35,6 +35,25 @@ import java.util.List;
 
 public class LoopTests
 {
+  /**
+   * jr ra
+   */
+  @Test
+  public void test_jump_on_yourself()
+  {
+    SimulationConfig cfg = SimulationConfig.getDefaultConfiguration();
+    cfg.code = "jr x0";
+    Cpu cpu = new Cpu(cfg);
+    
+    // Should not throw an exception, loop until infinity
+    for (int i = 0; i < 100; i++)
+    {
+      cpu.step();
+    }
+    
+    Assert.assertTrue(true);
+    Assert.assertTrue(cpu.cpuState.statisticsCounter.getCommittedInstructions() > 10);
+  }
   
   /**
    * Simcodes hold references to input code models.
@@ -43,9 +62,9 @@ public class LoopTests
   @Test
   public void LoopInstructionRenamingTest()
   {
-    CpuConfiguration cpuConfiguration = CpuConfiguration.getDefaultConfiguration();
-    cpuConfiguration.code = ExecuteUtil.getLoopProgram(5);
-    Cpu cpu = new Cpu(cpuConfiguration);
+    SimulationConfig cfg = SimulationConfig.getDefaultConfiguration();
+    cfg.code = ExecuteUtil.getLoopProgram(5);
+    Cpu cpu = new Cpu(cfg);
     
     // Obtain original value of inputcodemodels
     List<InputCodeModel> parsedCode = cpu.cpuState.instructionMemoryBlock.getCode();
@@ -66,5 +85,47 @@ public class LoopTests
     // Assert
     // TODO: manually check
     Assert.assertEquals(28, steps);
+  }
+  
+  /**
+   * The program writes numbers from 0 to 19 to memory
+   * TODO: go back to it later
+   */
+  //  @Test
+  public void test_write_memory()
+  {
+    SimulationConfig cfg = SimulationConfig.getDefaultConfiguration();
+    cfg.code = """
+            wr:
+                addi sp,sp,-32
+                sw s0,28(sp)
+                addi s0,sp,32
+                sw zero,-20(s0)
+                j .L2
+            .L3:
+                lw a5,-20(s0)
+                lw a4,-20(s0)
+                andi a4,a4,0xff
+                sb a4,0(a5)
+                lw a5,-20(s0)
+                addi a5,a5,1
+                sw a5,-20(s0)
+            .L2:
+                lw a4,-20(s0)
+                li a5,19
+                ble a4,a5,.L3
+                nop
+                mv a0,a5
+                lw s0,28(sp)
+                addi sp,sp,32
+                """;
+    Cpu cpu = new Cpu(cfg);
+    cpu.execute();
+    
+    // Assert that bytes 0 to 19 are written to memory
+    for (int i = 0; i < 20; i++)
+    {
+      Assert.assertEquals(i, cpu.cpuState.simulatedMemory.getFromMemory((long) i));
+    }
   }
 }

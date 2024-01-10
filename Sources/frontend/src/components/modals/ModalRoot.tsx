@@ -47,6 +47,7 @@ import { FetchDetailsModal } from '@/components/modals/FetchDetailsModal';
 import { RobDetailsModal } from '@/components/modals/RobDetailsModal';
 import { SaveIsaChangesModal } from '@/components/modals/SaveIsaChangesModal';
 import { SimCodeDetailModal } from '@/components/modals/SimCodeDetailModal';
+import { MainMemoryDetailsModal } from '@/components/modals/MainMemoryDetailsModal';
 
 /**
  * Modals to be rendered. They should define their size, padding from the edge of the modal and the content.
@@ -57,6 +58,7 @@ const MODAL_COMPONENTS = {
   ROB_DETAILS_MODAL: RobDetailsModal,
   FETCH_DETAILS_MODAL: FetchDetailsModal,
   SIMCODE_DETAILS_MODAL: SimCodeDetailModal,
+  MAIN_MEMORY_DETAILS_MODAL: MainMemoryDetailsModal,
 };
 
 export type ModalType = keyof typeof MODAL_COMPONENTS;
@@ -96,7 +98,7 @@ const ModalRoot = ({ appRef }: { appRef: RefObject<HTMLElement> }) => {
   // This is needed so that react-modal can add aria-hidden to the app root when the modal is open (accessibility)
   useEffect(() => {
     if (!appRef.current) {
-      throw new Error(`App ref is not set`);
+      throw new Error('App ref is not set');
     }
     ReactModal.setAppElement(appRef.current);
   }, [appRef]);

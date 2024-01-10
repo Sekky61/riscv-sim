@@ -31,13 +31,13 @@
 
 import { selectStoreBuffer } from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
-import { Reference, StoreBufferItem } from '@/lib/types/cpuApi';
+import { StoreBufferItem } from '@/lib/types/cpuApi';
+import { hexPadEven } from '@/lib/utils';
 
 import Block from '@/components/simulation/Block';
-import InstructionField, {
-  InstructionBubble,
-} from '@/components/simulation/InstructionField';
+import InstructionField from '@/components/simulation/InstructionField';
 import { InstructionListDisplay } from '@/components/simulation/InstructionListDisplay';
+import RegisterReference from '@/components/simulation/RegisterReference';
 
 export default function StoreBuffer() {
   const storeBuffer = useAppSelector(selectStoreBuffer);
@@ -59,15 +59,8 @@ export default function StoreBuffer() {
             <div>Data</div>
           </>
         }
-        instructionRenderer={(simCodeId) => (
-          <StoreBufferItem
-            simCodeId={simCodeId}
-            storeItem={
-              simCodeId !== undefined
-                ? storeBuffer.storeMap[simCodeId]
-                : undefined
-            }
-          />
+        instructionRenderer={(bufItem) => (
+          <StoreBufferItemComponent storeItem={bufItem} />
         )}
       />
     </Block>
@@ -75,33 +68,39 @@ export default function StoreBuffer() {
 }
 
 type StoreBufferItemProps = {
-  simCodeId?: Reference;
-  storeItem?: StoreBufferItem;
+  storeItem: StoreBufferItem | null;
 };
 
 /**
  * Displays address and loaded value of a single item in the Load Buffer
  */
-export function StoreBufferItem({
-  simCodeId,
+export function StoreBufferItemComponent({
   storeItem: item,
 }: StoreBufferItemProps) {
   if (!item) {
     return (
-      <InstructionBubble className='flex justify-center px-2 py-1 font-mono col-span-3'>
+      <div className='instruction-bubble flex justify-center px-2 py-1 font-mono col-span-3'>
         <span className='text-gray-400'>empty</span>
-      </InstructionBubble>
+      </div>
     );
   }
 
   // If address is -1, it is not known yet
-  const displayAddress = item.address === -1 ? '???' : item.address;
+  const displayAddress = item.address === -1 ? '???' : hexPadEven(item.address);
 
   return (
     <>
-      <InstructionField instructionId={simCodeId} />
-      <InstructionBubble>{displayAddress}</InstructionBubble>
-      <InstructionBubble>Data</InstructionBubble>
+      <InstructionField instructionId={item.simCodeModel} />
+      <div className='instruction-bubble h-full flex justify-center items-center'>
+        {displayAddress}
+      </div>
+      <div className='instruction-bubble'>
+        <RegisterReference
+          registerId={item.sourceRegister}
+          className='h-full flex justify-center items-center'
+          showValue
+        />
+      </div>
     </>
   );
 }

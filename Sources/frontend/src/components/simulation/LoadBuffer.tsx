@@ -31,13 +31,13 @@
 
 import { selectLoadBuffer } from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
-import { LoadBufferItem, Reference } from '@/lib/types/cpuApi';
+import { LoadBufferItem } from '@/lib/types/cpuApi';
+import { hexPadEven } from '@/lib/utils';
 
 import Block from '@/components/simulation/Block';
-import InstructionField, {
-  InstructionBubble,
-} from '@/components/simulation/InstructionField';
+import InstructionField from '@/components/simulation/InstructionField';
 import { InstructionListDisplay } from '@/components/simulation/InstructionListDisplay';
+import RegisterReference from '@/components/simulation/RegisterReference';
 
 export default function LoadBuffer() {
   const loadBuffer = useAppSelector(selectLoadBuffer);
@@ -60,15 +60,8 @@ export default function LoadBuffer() {
             <div>Bypass</div>
           </>
         }
-        instructionRenderer={(simCodeId) => (
-          <LoadBufferItem
-            simCodeId={simCodeId}
-            loadItem={
-              simCodeId !== undefined
-                ? loadBuffer.loadMap[simCodeId]
-                : undefined
-            }
-          />
+        instructionRenderer={(buffItem) => (
+          <LoadBufferItemComponent loadItem={buffItem} />
         )}
       />
     </Block>
@@ -76,36 +69,42 @@ export default function LoadBuffer() {
 }
 
 type LoadBufferItemProps = {
-  simCodeId?: Reference;
-  loadItem?: LoadBufferItem;
+  loadItem: LoadBufferItem | null;
 };
 
 /**
  * Displays address and loaded value of a single item in the Load Buffer
  */
-export function LoadBufferItem({
-  simCodeId,
+export function LoadBufferItemComponent({
   loadItem: item,
 }: LoadBufferItemProps) {
   if (!item) {
     return (
-      <InstructionBubble className='flex justify-center px-2 py-1 font-mono col-span-4'>
+      <div className='instruction-bubble flex justify-center px-2 py-1 font-mono col-span-4'>
         <span className='text-gray-400'>empty</span>
-      </InstructionBubble>
+      </div>
     );
   }
 
   // If address is -1, it is not known yet
-  const displayAddress = item.address === -1 ? '???' : item.address;
+  const displayAddress = item.address === -1 ? '???' : hexPadEven(item.address);
 
   return (
     <>
-      <InstructionField instructionId={simCodeId} />
-      <InstructionBubble>{displayAddress}</InstructionBubble>
-      <InstructionBubble>Data</InstructionBubble>
-      <InstructionBubble>
+      <InstructionField instructionId={item.simCodeModel} />
+      <div className='instruction-bubble h-full flex justify-center items-center'>
+        {displayAddress}
+      </div>
+      <div>
+        <RegisterReference
+          registerId={item.destinationRegister}
+          className='h-full flex justify-center items-center'
+          showValue
+        />
+      </div>
+      <div className='instruction-bubble h-full flex justify-center items-center'>
         {item.hasBypassed ? 'True' : 'False'}
-      </InstructionBubble>
+      </div>
     </>
   );
 }

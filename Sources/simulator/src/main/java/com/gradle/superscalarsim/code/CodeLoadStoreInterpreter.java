@@ -35,6 +35,7 @@ package com.gradle.superscalarsim.code;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import com.gradle.superscalarsim.blocks.base.InstructionMemoryBlock;
 import com.gradle.superscalarsim.blocks.base.UnifiedRegisterFileBlock;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.models.InstructionFunctionModel;
@@ -68,15 +69,25 @@ public class CodeLoadStoreInterpreter
   private final UnifiedRegisterFileBlock registerFileBlock;
   
   /**
-   * @param [in] initLoader - Initial loader of interpretable instructions and register files
-   * @param [in] memoryModel - Class simulating memory
+   * Storage of labels and their addresses
+   */
+  @JsonIdentityReference(alwaysAsId = true)
+  private final InstructionMemoryBlock instructionMemoryBlock;
+  
+  /**
+   * @param memoryModel       Memory model
+   * @param registerFileBlock Register file block
+   * @param labelMap          Label map
    *
    * @brief Constructor
    */
-  public CodeLoadStoreInterpreter(final MemoryModel memoryModel, final UnifiedRegisterFileBlock registerFileBlock)
+  public CodeLoadStoreInterpreter(final MemoryModel memoryModel,
+                                  final UnifiedRegisterFileBlock registerFileBlock,
+                                  InstructionMemoryBlock instructionMemoryBlock)
   {
-    this.memoryModel       = memoryModel;
-    this.registerFileBlock = registerFileBlock;
+    this.memoryModel            = memoryModel;
+    this.registerFileBlock      = registerFileBlock;
+    this.instructionMemoryBlock = instructionMemoryBlock;
   }// end of Constructor
   //-------------------------------------------------------------------------------------------
   
@@ -93,7 +104,7 @@ public class CodeLoadStoreInterpreter
    * @param codeModel    code to be interpreted
    * @param currentCycle current cycle
    *
-   * @return Returns the bits to be assigned to register.
+   * @return Returns pair - delay of this access and data
    * @brief Interprets load/store instruction from codeModel, returns loaded/stored data.
    */
   public Pair<Integer, Long> interpretInstruction(final SimCodeModel codeModel, int currentCycle)
@@ -162,8 +173,9 @@ public class CodeLoadStoreInterpreter
     }
     String addressExpr = interpretableAsParams[2];
     
-    List<String>              varNames  = Expression.getVariableNames(addressExpr);
-    List<Expression.Variable> variables = codeModel.getVariables(varNames, registerFileBlock);
+    List<String> varNames = Expression.getVariableNames(addressExpr);
+    List<Expression.Variable> variables = codeModel.getVariables(varNames, registerFileBlock,
+                                                                 instructionMemoryBlock.getLabels());
     
     Expression.Variable addressResult = Expression.interpret(addressExpr, variables);
     if (addressResult == null)
@@ -171,6 +183,11 @@ public class CodeLoadStoreInterpreter
       throw new IllegalStateException("Address result is null");
     }
     int address = (int) addressResult.value.getValue(DataTypeEnum.kInt);
+    
+    if (address < 0)
+    {
+      throw new IllegalStateException("Address is negative: " + address);
+    }
     
     return address;
   }// end of interpretAddress
@@ -224,6 +241,7 @@ public class CodeLoadStoreInterpreter
    */
   private int processStoreOperation(int sizeBits, long address, long valueBits, int id, int currentCycle)
   {
+    assert sizeBits <= 64 && sizeBits % 8 == 0;
     int numberOfBytes = sizeBits / 8;
     return memoryModel.store(address, valueBits, numberOfBytes, id, currentCycle);
   }// end of processStoreOperation

@@ -32,6 +32,7 @@
  */
 package com.gradle.superscalarsim.code;
 
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.gradle.superscalarsim.blocks.base.InstructionMemoryBlock;
 import com.gradle.superscalarsim.blocks.base.UnifiedRegisterFileBlock;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
@@ -52,24 +53,27 @@ public class CodeBranchInterpreter
   /**
    * Instructions. Needed for label resolving
    */
+  @JsonIdentityReference(alwaysAsId = true)
   private final InstructionMemoryBlock instructionMemoryBlock;
   
   /**
    * Registers. Needed for value resolving.
    */
+  @JsonIdentityReference(alwaysAsId = true)
   private final UnifiedRegisterFileBlock registerFileBlock;
   
   /**
-   * @param [in] codeParser - Object of the parser with parsed instructions
-   * @param [in] initLoader - InitLoader object with loaded instructions and registers
+   * @param codeParser        Object of the parser with parsed instructions
+   * @param registerFileBlock Preceding table for operation priorities
+   * @param labelMap          Map of labels and their addresses
    *
    * @brief Constructor
    */
-  public CodeBranchInterpreter(final InstructionMemoryBlock codeParser,
-                               final UnifiedRegisterFileBlock registerFileBlock)
+  public CodeBranchInterpreter(final UnifiedRegisterFileBlock registerFileBlock,
+                               final InstructionMemoryBlock instructionMemoryBlock)
   {
     this.registerFileBlock      = registerFileBlock;
-    this.instructionMemoryBlock = codeParser;
+    this.instructionMemoryBlock = instructionMemoryBlock;
   }// end of Constructor
   //-------------------------------------------------------------------------------------------
   
@@ -101,10 +105,11 @@ public class CodeBranchInterpreter
       throw new IllegalArgumentException(
               "InterpretableAs in instruction " + instruction.getName() + " is not valid: " + instruction.getInterpretableAs());
     }
-    String                    targetExpr    = splitInterpretableAs[0];
-    String                    conditionExpr = splitInterpretableAs[1];
-    List<String>              varNames      = Expression.getVariableNames(targetExpr + " " + conditionExpr);
-    List<Expression.Variable> variables     = codeModel.getVariables(varNames, registerFileBlock);
+    String       targetExpr    = splitInterpretableAs[0];
+    String       conditionExpr = splitInterpretableAs[1];
+    List<String> varNames      = Expression.getVariableNames(targetExpr + " " + conditionExpr);
+    List<Expression.Variable> variables = codeModel.getVariables(varNames, registerFileBlock,
+                                                                 instructionMemoryBlock.getLabels());
     
     // Check if condition is met
     Expression.Variable exprResult    = Expression.interpret(conditionExpr, variables);
@@ -121,6 +126,7 @@ public class CodeBranchInterpreter
     InputCodeArgument labelArgument = codeModel.getArgumentByName("imm");
     if (labelArgument != null)
     {
+      // todo immediate values not handled
       String labelName     = labelArgument.getValue();
       int    labelPosition = instructionMemoryBlock.getLabelPosition(labelName);
       if (labelPosition != -1)

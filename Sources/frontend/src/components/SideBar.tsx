@@ -36,6 +36,7 @@ import {
   Code,
   Cpu,
   Info,
+  MemoryStick,
   Settings,
 } from 'lucide-react';
 
@@ -58,16 +59,22 @@ export default function SideBar() {
           shortcut='Digit2'
         />
         <SideMenuButton
+          Icon={<MemoryStick strokeWidth={1.5} />}
+          href='/memory'
+          hoverText='Memory settings'
+          shortcut='Digit3'
+        />
+        <SideMenuButton
           Icon={<Cpu strokeWidth={1.5} />}
           href='/isa'
           hoverText='Architecture settings'
-          shortcut='Digit3'
+          shortcut='Digit4'
         />
         <SideMenuButton
           Icon={<BarChart3 strokeWidth={1.5} />}
           href='/stats'
           hoverText='Runtime statistics'
-          shortcut='Digit4'
+          shortcut='Digit5'
         />
       </div>
       <div className='flex flex-col gap-3'>
@@ -75,19 +82,19 @@ export default function SideBar() {
           Icon={<BookOpen strokeWidth={1.5} />}
           href='/docs'
           hoverText='RISC-V documentation'
-          shortcut='Digit5'
+          shortcut='Digit6'
         />
         <SideMenuButton
           Icon={<Settings strokeWidth={1.5} />}
           href='/settings'
           hoverText='App settings'
-          shortcut='Digit6'
+          shortcut='Digit7'
         />
         <SideMenuButton
           Icon={<Info strokeWidth={1.5} />}
           href='/help'
-          hoverText='About'
-          shortcut='Digit7'
+          hoverText='Help'
+          shortcut='Digit8'
         />
       </div>
     </div>

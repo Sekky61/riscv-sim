@@ -79,7 +79,7 @@ public class BranchFunctionUnitBlock extends AbstractFunctionUnitBlock
   //----------------------------------------------------------------------
   
   /**
-   * @param [in] branchInterpreter - Branch interpreter object
+   * @param branchInterpreter Branch interpreter object
    *
    * @brief Injects Branch interpreter to the FU
    */
@@ -90,7 +90,7 @@ public class BranchFunctionUnitBlock extends AbstractFunctionUnitBlock
   //----------------------------------------------------------------------
   
   /**
-   * @param [in] registerFileBlock - UnifiedRegisterFileBlock object with all registers
+   * @param registerFileBlock UnifiedRegisterFileBlock object with all registers
    *
    * @brief Injects UnifiedRegisterFileBlock to the FU
    */
@@ -106,48 +106,9 @@ public class BranchFunctionUnitBlock extends AbstractFunctionUnitBlock
   @Override
   public void simulate()
   {
-    if (!isFunctionUnitEmpty() && this.simCodeModel.hasFailed())
+    if (!isFunctionUnitEmpty())
     {
-      hasDelayPassed();
-      this.simCodeModel.setFunctionUnitId(this.functionUnitId);
-      this.simCodeModel = null;
-      this.zeroTheCounter();
-    }
-    
-    if (!isFunctionUnitEmpty() && hasTimerStarted())
-    {
-      this.simCodeModel.setFunctionUnitId(this.functionUnitId);
-    }
-    
-    if (!isFunctionUnitEmpty() && hasDelayPassed())
-    {
-      if (hasTimerStarted())
-      {
-        this.simCodeModel.setFunctionUnitId(this.functionUnitId);
-      }
-      int instructionPosition     = this.simCodeModel.getSavedPc();
-      int nextInstructionPosition = instructionPosition + 4;
-      
-      OptionalInt jumpOffset = branchInterpreter.interpretInstruction(this.simCodeModel, instructionPosition);
-      boolean     jumpTaken  = jumpOffset.isPresent();
-      // If the branch was taken or not
-      this.simCodeModel.setBranchLogicResult(jumpTaken);
-      // Used to fix BTB and PC in misprediction
-      if (jumpTaken)
-      {
-        this.simCodeModel.setBranchTargetOffset(jumpOffset.getAsInt());
-      }
-      // Write the result to the register
-      InputCodeArgument destinationArgument = simCodeModel.getArgumentByName("rd");
-      if (destinationArgument != null)
-      {
-        RegisterModel reg = registerFileBlock.getRegister(destinationArgument.getValue());
-        reg.setValue(nextInstructionPosition);
-        reg.setReadiness(RegisterReadinessEnum.kExecuted);
-      }
-      
-      this.reorderBufferBlock.getRobItem(this.simCodeModel.getIntegerId()).reorderFlags.setBusy(false);
-      this.simCodeModel = null;
+      handleInstruction();
     }
     
     if (isFunctionUnitEmpty())
@@ -155,5 +116,55 @@ public class BranchFunctionUnitBlock extends AbstractFunctionUnitBlock
       this.functionUnitId += this.functionUnitCount;
     }
   }// end of simulate
+  
+  /**
+   * @brief Processes instruction
+   */
+  public void handleInstruction()
+  {
+    if (this.simCodeModel.hasFailed())
+    {
+      this.simCodeModel.setFunctionUnitId(this.functionUnitId);
+      this.simCodeModel = null;
+      this.zeroTheCounter();
+      return;
+    }
+    
+    if (hasTimerStartedThisTick())
+    {
+      this.simCodeModel.setFunctionUnitId(this.functionUnitId);
+    }
+    
+    tickCounter();
+    if (!hasDelayPassed())
+    {
+      return;
+    }
+    
+    // Execute
+    int         instructionPosition = this.simCodeModel.getSavedPc();
+    OptionalInt jumpOffset          = branchInterpreter.interpretInstruction(this.simCodeModel, instructionPosition);
+    boolean     jumpTaken           = jumpOffset.isPresent();
+    // If the branch was taken or not
+    this.simCodeModel.setBranchLogicResult(jumpTaken);
+    // Used to fix BTB and PC in misprediction
+    if (jumpTaken)
+    {
+      this.simCodeModel.setBranchTargetOffset(jumpOffset.getAsInt());
+    }
+    InputCodeArgument destinationArgument = simCodeModel.getArgumentByName("rd");
+    if (destinationArgument != null)
+    {
+      // Write the result to the register
+      RegisterModel reg                     = registerFileBlock.getRegister(destinationArgument.getValue());
+      int           nextInstructionPosition = instructionPosition + 4;
+      reg.setValue(nextInstructionPosition);
+      reg.setReadiness(RegisterReadinessEnum.kExecuted);
+    }
+    
+    this.reorderBufferBlock.getRobItem(this.simCodeModel.getIntegerId()).reorderFlags.setBusy(false);
+    this.simCodeModel = null;
+  }
+  
   //----------------------------------------------------------------------
 }

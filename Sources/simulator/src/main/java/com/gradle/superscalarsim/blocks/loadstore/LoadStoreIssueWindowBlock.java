@@ -49,7 +49,10 @@ import java.util.List;
 public class LoadStoreIssueWindowBlock extends AbstractIssueWindowBlock
 {
   
-  /// List for all function units associated with this window
+  
+  /**
+   * List for all function units associated with this window
+   */
   private List<LoadStoreFunctionUnit> functionUnitBlockList;
   
   public LoadStoreIssueWindowBlock()
@@ -57,9 +60,7 @@ public class LoadStoreIssueWindowBlock extends AbstractIssueWindowBlock
   }
   
   /**
-   * @param [in] blockScheduleTask - Task class, where blocks are periodically triggered by the GlobalTimer
-   * @param [in] loader            - Initial loader of interpretable instructions and register files
-   * @param [in] registerFileBlock - Class containing all registers, that simulator uses
+   * @param registerFileBlock Class containing all registers, that simulator uses
    *
    * @brief Constructor
    */
@@ -71,7 +72,7 @@ public class LoadStoreIssueWindowBlock extends AbstractIssueWindowBlock
   //----------------------------------------------------------------------
   
   /**
-   * @param [in] instruction - instruction to be issued
+   * @param instruction instruction to be issued
    *
    * @return Suitable function unit
    * @brief Selects suitable function unit for certain instruction
@@ -92,7 +93,7 @@ public class LoadStoreIssueWindowBlock extends AbstractIssueWindowBlock
   //----------------------------------------------------------------------
   
   /**
-   * @param [in] instructionType - Type of the instruction (branch, arithmetic, eg.)
+   * @param instructionType Type of the instruction (branch, arithmetic, e.g.)
    *
    * @return True if compatible, false otherwise
    * @brief Checks if provided instruction type is compatible with this window and its FUs
@@ -105,7 +106,7 @@ public class LoadStoreIssueWindowBlock extends AbstractIssueWindowBlock
   //----------------------------------------------------------------------
   
   /**
-   * @param [in] dataType - Data type (int, float, eg.)
+   * @param dataType Data type (int, float, e.g.)
    *
    * @return True if compatible, false otherwise
    * @brief Checks if provided data type is compatible with this window and its FUs
@@ -132,7 +133,7 @@ public class LoadStoreIssueWindowBlock extends AbstractIssueWindowBlock
   
   
   /**
-   * @param [in] functionUnitBlock - FU to bind with this window
+   * @param functionUnitBlock FU to bind with this window
    *
    * @brief Associate function block with this window
    */
@@ -142,33 +143,5 @@ public class LoadStoreIssueWindowBlock extends AbstractIssueWindowBlock
     this.functionUnitBlockList.add(functionUnitBlock);
     this.setFunctionUnitCountInUnits();
   }// end of setFunctionUnitBlock
-  //----------------------------------------------------------------------
-  
-  /**
-   * @param [in] loadStoreFunctionUnitList - list of new function units
-   *
-   * @brief Adds list of function units to the Issue window
-   */
-  public void setAllFunctionUnits(List<LoadStoreFunctionUnit> loadStoreFunctionUnitList)
-  {
-    for (int i = 0; i < loadStoreFunctionUnitList.size(); i++)
-    {
-      loadStoreFunctionUnitList.get(i).setFunctionUnitId(i + 1);
-    }
-    this.functionUnitBlockList.clear();
-    this.functionUnitBlockList.addAll(loadStoreFunctionUnitList);
-    this.setFunctionUnitCountInUnits();
-  }// end of setAllFunctionUnits
-  //----------------------------------------------------------------------
-  
-  /**
-   * Gets list of all function units associated with this window
-   *
-   * @return List of function units
-   */
-  public List<LoadStoreFunctionUnit> getFunctionUnitBlockList()
-  {
-    return functionUnitBlockList;
-  }// end of getFunctionUnitBlockList
   //----------------------------------------------------------------------
 }

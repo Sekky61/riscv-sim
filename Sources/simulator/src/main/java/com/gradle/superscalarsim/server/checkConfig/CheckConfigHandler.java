@@ -28,7 +28,7 @@
 package com.gradle.superscalarsim.server.checkConfig;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.gradle.superscalarsim.cpu.CpuConfiguration;
+import com.gradle.superscalarsim.cpu.CpuConfig;
 import com.gradle.superscalarsim.serialization.Serialization;
 import com.gradle.superscalarsim.server.IRequestDeserializer;
 import com.gradle.superscalarsim.server.IRequestResolver;
@@ -57,7 +57,7 @@ public class CheckConfigHandler implements IRequestResolver<CheckConfigRequest, 
     else
     {
       // Validate
-      CpuConfiguration.ValidationResult res = request.config.validate();
+      CpuConfig.ValidationResult res = request.config.validate();
       response = new CheckConfigResponse(res.valid, res.messages);
     }
     return response;

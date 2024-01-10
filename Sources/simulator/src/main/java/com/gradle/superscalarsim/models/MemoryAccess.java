@@ -27,12 +27,33 @@
 
 package com.gradle.superscalarsim.models;
 
+/**
+ * Generated at each memory access (load/store).
+ *
+ * @class MemoryAccess
+ * @brief Class describing a memory access
+ */
 public class MemoryAccess
 {
+  /**
+   * True if store, false if load
+   */
   private boolean isStore;
+  
+  /**
+   * Data to be stored or data loaded
+   */
   private long data;
-  private long address;
+  
+  /**
+   * Size of the data in bytes (1-8)
+   */
   private int size;
+  
+  /**
+   * Address of the memory access
+   */
+  private long address;
   
   public MemoryAccess(boolean isStore, long address, long data, int size)
   {
@@ -52,19 +73,24 @@ public class MemoryAccess
     return data;
   }
   
+  public void setData(long data)
+  {
+    this.data = data;
+  }
+  
   public int getSize()
   {
     return size;
   }
   
+  public void setSize(int size)
+  {
+    this.size = size;
+  }
+  
   public void setLoadStore(boolean isStore)
   {
     this.isStore = isStore;
-  }
-  
-  public void setData(long data)
-  {
-    this.data = data;
   }
   
   public long getAddress()
@@ -75,10 +101,5 @@ public class MemoryAccess
   public void setAddress(long address)
   {
     this.address = address;
-  }
-  
-  public void setSize(int size)
-  {
-    this.size = size;
   }
 }

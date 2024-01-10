@@ -64,6 +64,60 @@ export interface CpuState {
   reorderBufferBlock: ReorderBufferBlock;
 }
 
+export interface Cache {
+  numberOfLines: number;
+  associativity: number;
+  lineSize: number;
+  cache: CacheLineModel[][];
+  writeBack: boolean;
+  lastAccess?: CacheAccess[]; // todo ?
+  storeDelay: number;
+  loadDelay: number;
+  lineReplacementDelay: number;
+  addRemainingDelayToStore: boolean;
+  cycleEndOfReplacement: number;
+  replacementPolicyType: 'FIFO' | 'LRU' | 'RANDOM';
+  replacementPolicy: ReplacementPolicyModel;
+  memory?: SimulatedMemory;
+  cacheStatisticsCounter?: CacheStatisticsCounter;
+}
+export interface CacheLineModel {
+  line: string; // base64 encoded
+  valid: boolean;
+  dirty: boolean;
+  tag: number;
+  lineSize: number;
+  index: number;
+  baseAddress: number;
+}
+export type ReplacementPolicyModel = object;
+export interface CacheAccess {
+  id: number;
+  clockCycle: number;
+  isHit?: boolean[];
+  isStore: boolean;
+  tag: number;
+  index: number;
+  offset: number;
+  data: number;
+  cacheIndex?: number[];
+  lineOffset?: number[];
+  delay: number;
+  endOfReplacement: number;
+  store: boolean;
+}
+
+export interface SimulatedMemory {
+  /**
+   * Memory encoded as a base64 string
+   */
+  memoryBase64: string | null;
+  /**
+   * Size of the memory in bytes
+   */
+  size: number;
+}
+
 export interface ReorderBufferBlock {
   reorderQueue: ReorderBufferItem[];
   commitLimit: number;
@@ -94,20 +148,28 @@ export interface InstructionMemoryBlock {
   nop: Reference;
   code: Reference[];
   labels: {
-    [k: string]: number;
+    [k: string]: Label;
   };
+}
+
+export interface Label {
+  name: string;
+  address: number;
 }
 
 export type InstructionTypeEnum = 'kArithmetic' | 'kLoadstore' | 'kJumpbranch';
 
 export type DataTypeEnum =
+  | 'kByte'
+  | 'kShort'
   | 'kInt'
   | 'kUInt'
   | 'kLong'
   | 'kULong'
   | 'kFloat'
   | 'kDouble'
-  | 'kBool';
+  | 'kBool'
+  | 'kChar';
 
 export type RegisterReadinessEnum =
   | 'kFree'
@@ -126,6 +188,7 @@ export interface InputCodeModel {
 }
 
 export interface InputCodeArgument {
+  constantValue?: RegisterDataContainer;
   name: string;
   value: string;
 }
@@ -155,6 +218,7 @@ export interface SimCodeModel {
   id: number;
   inputCodeModel: Reference;
   renamedArguments: InputCodeArgument[];
+  renamedCodeLine: string;
   instructionBulkNumber: number;
   issueWindowId: number;
   functionUnitId: number;
@@ -200,6 +264,7 @@ export interface RegisterModel {
 export interface RegisterDataContainer {
   bits: number;
   currentType: DataTypeEnum;
+  stringRepresentation?: string;
 }
 
 export interface RenameMapTableBlock {
@@ -259,8 +324,9 @@ export interface IssueWindowBlock {
 
 export interface IssueItemModel {
   tag: string;
-  value: number;
   validityBit: boolean;
+  value?: StringReference;
+  constantValue?: RegisterDataContainer;
 }
 
 export type AluIssueWindowBlock = IssueWindowBlock;
@@ -272,7 +338,7 @@ export type LoadStoreIssueWindowBlock = IssueWindowBlock;
 
 export interface FunctionUnitBlock {
   reorderBufferBlock?: Reference;
-  simCodeModel: Reference;
+  simCodeModel?: Reference; // todo it is actually a Reference | null
   functionUnitId: number;
   functionUnitCount: number;
   issueWindowBlock?: Reference;
@@ -292,19 +358,17 @@ export type MemoryAccessUnit = FunctionUnitBlock;
 // L/S
 
 export interface LoadBufferBlock {
-  loadQueue: Reference[]; // SimCodeModel
-  loadMap: Record<StringReference, LoadBufferItem>;
-  possibleNewEntries: number;
+  loadQueue: LoadBufferItem[];
   bufferSize: number;
   commitId: number;
+  memoryAccessUnitList?: MemoryAccessUnit[];
   storeBufferBlock?: StoreBufferBlock;
-  decodeAndDispatchBlock?: DecodeAndDispatchBlock;
   registerFileBlock?: UnifiedRegisterFileBlock;
   reorderBufferBlock?: ReorderBufferBlock;
   instructionFetchBlock?: InstructionFetchBlock;
-  memoryAccessUnitList?: MemoryAccessUnit[];
 }
 export interface LoadBufferItem {
+  simCodeModel: Reference;
   destinationRegister: string;
   destinationReady: boolean;
   address: number;
@@ -317,18 +381,17 @@ export interface LoadBufferItem {
 }
 
 export interface StoreBufferBlock {
-  storeQueue: Reference[]; // SimCodeModel
-  storeMap: Record<StringReference, StoreBufferItem>;
-  possibleNewEntries: number;
+  storeQueue: StoreBufferItem[];
   bufferSize: number;
   commitId: number;
+  memoryAccessUnitList?: MemoryAccessUnit[];
   loadStoreInterpreter?: CodeLoadStoreInterpreter;
-  decodeAndDispatchBlock?: DecodeAndDispatchBlock;
   registerFileBlock?: UnifiedRegisterFileBlock;
   reorderBufferBlock?: ReorderBufferBlock;
-  memoryAccessUnitList?: MemoryAccessUnit[];
 }
+
 export interface StoreBufferItem {
+  simCodeModel: Reference;
   sourceRegister: string;
   sourceResultId: number;
   sourceReady: boolean;

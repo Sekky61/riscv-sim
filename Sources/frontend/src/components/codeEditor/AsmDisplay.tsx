@@ -81,7 +81,7 @@ export default function AsmDisplay() {
   const mode = useAppSelector(selectEditorMode);
   const asmErrors = useAppSelector(selectAsmCodeMirrorErrors);
 
-  const isEnabled = mode == 'asm';
+  const isEnabled = mode === 'asm';
 
   const editor = useRef<HTMLDivElement>(null);
   const { setContainer, view, state } = useCodeMirror({
@@ -129,7 +129,7 @@ export default function AsmDisplay() {
 
   // The ref is on an inner div so that the gray background is always after the editor
   return (
-    <div className='flex flex-col flex-grow overflow-hidden rounded border'>
+    <div className='flex flex-col flex-grow overflow-y-scroll rounded border relative'>
       <EditorBar mode='asm' />
       <div className='flex-grow relative'>
         <div className='h-full w-full relative' ref={editor} />

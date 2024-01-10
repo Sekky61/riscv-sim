@@ -34,9 +34,11 @@ package com.gradle.superscalarsim.models;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.blocks.base.UnifiedRegisterFileBlock;
 import com.gradle.superscalarsim.code.Expression;
+import com.gradle.superscalarsim.code.Label;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.models.register.RegisterDataContainer;
@@ -45,6 +47,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @class SimCodeModel
@@ -349,6 +352,7 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
    * @return String with renamed code line
    * @brief Gets string representation of the instruction with renamed arguments
    */
+  @JsonProperty
   public String getRenamedCodeLine()
   {
     StringBuilder genericLine = new StringBuilder(getInstructionName());
@@ -463,7 +467,9 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
    * @return Variables used in the instruction in the form for expression evaluation
    * @brief reads current register values (including speculative values), the PC, constants
    */
-  public List<Expression.Variable> getVariables(List<String> variableNames, UnifiedRegisterFileBlock registerFileBlock)
+  public List<Expression.Variable> getVariables(List<String> variableNames,
+                                                UnifiedRegisterFileBlock registerFileBlock,
+                                                Map<String, Label> labels)
   {
     List<Expression.Variable> variables                = new ArrayList<>();
     InstructionFunctionModel  instructionFunctionModel = getInstructionFunctionModel();
@@ -504,8 +510,13 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
         }
         else
         {
-          // TODO: Handle labels: load their value or extract it in parse. Skip for now.
-          //throw new IllegalStateException("Could not parse " + renamedName + " as constant");
+          if (labels != null && labels.containsKey(renamedName))
+          {
+            variables.add(new Expression.Variable(name, argument.type(),
+                                                  RegisterDataContainer.fromValue(labels.get(renamedName).address)));
+            continue;
+          }
+          throw new IllegalStateException("Could not parse " + renamedName + " as constant or label");
         }
       }
     }
@@ -520,9 +531,38 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
   {
     return savedPc;
   }
+  //-------------------------------------------------------------------------------------------
   
   public void setSavedPc(int savedPc)
   {
     this.savedPc = savedPc;
   }
+  
+  /**
+   * @return True if the model is load instruction, false otherwise
+   * @brief Checks if specified code model is load instruction
+   */
+  public boolean isLoad()
+  {
+    if (getInstructionTypeEnum() != InstructionTypeEnum.kLoadstore)
+    {
+      return false;
+    }
+    InstructionFunctionModel instruction = getInstructionFunctionModel();
+    return instruction != null && instruction.getInterpretableAs().startsWith("load");
+  }// end of isInstructionLoad
+  
+  /**
+   * @return True if the model is store instruction, false otherwise
+   * @brief Checks if specified code model is store instruction
+   */
+  public boolean isStore()
+  {
+    if (getInstructionTypeEnum() != InstructionTypeEnum.kLoadstore)
+    {
+      return false;
+    }
+    InstructionFunctionModel instruction = getInstructionFunctionModel();
+    return instruction != null && instruction.getInterpretableAs().startsWith("store");
+  }// end of isInstructionStore
 }

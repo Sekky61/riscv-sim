@@ -5,6 +5,7 @@
     <option name="MAIN_CLASS_NAME" value="App" />
     <module name="superscalar-simulator.main" />
     <option name="PROGRAM_PARAMETERS" value="server" />
+    <option name="VM_PARAMETERS" value="-ea" />
     <method v="2">
       <option name="Make" enabled="true" />
     </method>

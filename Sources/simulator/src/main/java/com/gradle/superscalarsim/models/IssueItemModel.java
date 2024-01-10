@@ -32,6 +32,10 @@
  */
 package com.gradle.superscalarsim.models;
 
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.gradle.superscalarsim.models.register.RegisterDataContainer;
+import com.gradle.superscalarsim.models.register.RegisterModel;
+
 /**
  * @class IssueItemModel
  * @brief Container for item, which should be build into a list for updating
@@ -39,40 +43,65 @@ package com.gradle.superscalarsim.models;
  */
 public class IssueItemModel
 {
-  /// Register name
+  /**
+   * Register name
+   */
   private String tag;
-  /// Value inside the register TODO change
-  private double value;
-  /// If register has correct value
+  
+  /**
+   * Value of the operand. Reference to register in RegisterFile
+   */
+  @JsonIdentityReference(alwaysAsId = true)
+  private RegisterModel registerValue;
+  /**
+   * Constant value of the operand
+   */
+  private RegisterDataContainer constantValue;
+  /**
+   * True if register value is valid
+   */
   private boolean validityBit;
   
   /**
-   * @param [in] tag         - Register name
-   * @param [in] validityBit - Is register valid?
+   * @param tag         Register name
+   * @param value       Register value (if any)
+   * @param validityBit Is register valid?
    *
-   * @brief Constructor
+   * @brief Constructor for register operand
    */
-  public IssueItemModel(String tag, boolean validityBit)
+  public IssueItemModel(String tag, RegisterModel registerValue, boolean validityBit)
   {
-    this.tag         = tag;
-    this.value       = 0;
-    this.validityBit = validityBit;
+    this.tag           = tag;
+    this.registerValue = registerValue;
+    this.constantValue = null;
+    this.validityBit   = validityBit;
   }// end of Constructor
-  //------------------------------------------------------
   
   /**
-   * @param [in] tag         - Register name
-   * @param [in] value       - Register value (if any)
-   * @param [in] validityBit - Is register valid?
+   * @param tag         Register name
+   * @param value       Register value (if any)
+   * @param validityBit Is register valid?
    *
    * @brief Constructor
    */
-  public IssueItemModel(String tag, double value, boolean validityBit)
+  public IssueItemModel(String tag, RegisterDataContainer value, boolean validityBit)
   {
-    this.tag         = tag;
-    this.value       = value;
-    this.validityBit = validityBit;
+    this.tag           = tag;
+    this.registerValue = null;
+    this.constantValue = value;
+    this.validityBit   = validityBit;
   }// end of Constructor
+  
+  public RegisterDataContainer getConstantValue()
+  {
+    return constantValue;
+  }
+  //------------------------------------------------------
+  
+  public void setConstantValue(RegisterDataContainer constantValue)
+  {
+    this.constantValue = constantValue;
+  }
   //------------------------------------------------------
   
   /**
@@ -86,7 +115,7 @@ public class IssueItemModel
   //------------------------------------------------------
   
   /**
-   * @param [in] tag - New String value of a tag
+   * @param tag New String value of a tag
    *
    * @brief Sets item tag
    */
@@ -100,20 +129,20 @@ public class IssueItemModel
    * @return Double value
    * @brief Get item value
    */
-  public double getValue()
+  public RegisterModel getRegisterValue()
   {
-    return value;
+    return registerValue;
   }// end of getValue
   //------------------------------------------------------
   
   /**
-   * @param [in] value - New Double value of the item
+   * @param registerValue New Double value of the item
    *
    * @brief Sets item value
    */
-  public void setValue(double value)
+  public void setRegisterValue(RegisterModel registerValue)
   {
-    this.value = value;
+    this.registerValue = registerValue;
   }// end of setValue
   //------------------------------------------------------
   
@@ -128,7 +157,7 @@ public class IssueItemModel
   //------------------------------------------------------
   
   /**
-   * @param [in] validityBit - new value of the validity bit
+   * @param validityBit new value of the validity bit
    *
    * @brief Sets validity bit
    */
@@ -144,6 +173,6 @@ public class IssueItemModel
   @Override
   public String toString()
   {
-    return tag + " " + value + " Valid: " + validityBit;
+    return tag + " " + registerValue + " Valid: " + validityBit;
   }// end of toString
 }

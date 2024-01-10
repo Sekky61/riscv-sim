@@ -1,9 +1,14 @@
-FROM gradle:8.4.0-jdk17-focal AS base
+# Alpine image - originally ubuntu, but caused issues with olfer docker versions
+FROM alpine:3.18 AS base
 
 # Install dependencies only when needed
 FROM base AS deps
-# Ignore the error code from apt-get update - happens on old versions of docker
-RUN apt-get update && apt-get install -y gcc-riscv64-linux-gnu; exit 0
+# locking to specific versions threw errors
+RUN apk add \
+  gcc-riscv-none-elf \
+  gradle
+# RUN /usr/bin/riscv-none-elf-gcc-13.1.0 --version
+RUN /usr/bin/riscv-none-elf-gcc --version
 WORKDIR /app
 
 FROM deps AS build
@@ -18,9 +23,9 @@ FROM deps AS runner
 WORKDIR /app
 COPY . . 
 EXPOSE 8000
-CMD gradle run --args="server --host=0.0.0.0 --port=8000"
+CMD gradle run --args="server --host=0.0.0.0 --port=8000" -Dconfig.profile=prod
 
 FROM deps as test
 WORKDIR /app
 COPY . . 
-RUN gradle build
+RUN gradle build -i -Dconfig.profile=prod

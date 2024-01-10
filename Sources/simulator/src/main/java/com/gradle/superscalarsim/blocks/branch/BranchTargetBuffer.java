@@ -48,9 +48,14 @@ import java.util.TreeMap;
 @JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
 public class BranchTargetBuffer
 {
-  /// Buffer for branch instruction targets
+  /**
+   * Buffer for branch instruction targets
+   */
   private final Map<Integer, BranchTargetEntryModel> buffer;
-  /// Size of the buffer
+  
+  /**
+   * Size of the buffer
+   */
   private int size;
   
   /**
@@ -67,7 +72,7 @@ public class BranchTargetBuffer
   //----------------------------------------------------------------------
   
   /**
-   * @param [in] size - New size of the buffer
+   * @param size New size of the buffer
    *
    * @brief Reallocates buffer to new size
    */
@@ -88,7 +93,7 @@ public class BranchTargetBuffer
   }// end of reset
   
   /**
-   * @return List of BTB entries
+   * @return Map of BTB entries
    * @brief Get whole BTB
    */
   public Map<Integer, BranchTargetEntryModel> getBuffer()
@@ -98,10 +103,10 @@ public class BranchTargetBuffer
   //----------------------------------------------------------------------
   
   /**
-   * @param [in] programCounter - Position fo the instruction in program
-   * @param [in] codeModel      - Branch code model
-   * @param [in] target         - Target of the branch code model
-   * @param [in] commitId       - Id marking when branch instruction get committed
+   * @param programCounter Position fo the instruction in program
+   * @param codeModel      Branch code model
+   * @param target         Target of the branch code model
+   * @param commitId       ID marking when branch instruction get committed
    *
    * @brief Sets entry to BTB
    */
@@ -123,7 +128,7 @@ public class BranchTargetBuffer
   //----------------------------------------------------------------------
   
   /**
-   * @param [in] programCounter - Position of the instruction in program
+   * @param programCounter Position of the instruction in program
    *
    * @return Target of the branch instruction
    * @brief Gets entry target specified by the program position
@@ -140,7 +145,7 @@ public class BranchTargetBuffer
   //----------------------------------------------------------------------
   
   /**
-   * @param [in] programCounter - Position of the instruction in the program
+   * @param programCounter - Position of the instruction in the program
    *
    * @return True if the entry is unconditional, false otherwise
    * @brief Ccheck if an entry is of unconditional branch instruction

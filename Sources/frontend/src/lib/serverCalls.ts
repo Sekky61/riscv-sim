@@ -1,5 +1,5 @@
 /**
- * @file    callCompiler.ts
+ * @file    serverCalls.ts
  *
  * @author  Michal Majer
  *          Faculty of Information Technology
@@ -29,6 +29,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { SimulationConfig } from '@/lib/forms/Isa';
 import {
   AsyncEndpointFunction,
   CompileRequest,
@@ -40,7 +41,7 @@ import {
   SimulateResponse,
 } from '@/lib/types/simulatorApi';
 
-import { CompilerOptions } from '../redux/compilerSlice';
+import { CompilerOptions } from './redux/compilerSlice';
 
 export async function callCompilerImpl(
   code: string,
@@ -48,25 +49,26 @@ export async function callCompilerImpl(
 ): Promise<CompileResponse> {
   const body: CompileRequest = {
     code,
-    optimize: options.optimize,
+    optimizeFlags: options.optimizeFlags,
   };
   return await callApi('compile' as const, body);
 }
 
 export async function callParseAsmImpl(
   code: string,
+  cfg: SimulationConfig, // Does not need code
 ): Promise<ParseAsmResponse> {
   const body: ParseAsmRequest = {
     code,
+    config: cfg,
   };
   return await callApi('parseAsm' as const, body);
 }
 
 export async function callSimulationImpl(
   tick: number,
-  cfg: object,
+  cfg: SimulationConfig,
 ): Promise<SimulateResponse> {
-  // todo: cfg type
   const body: SimulateRequest = {
     tick,
     config: cfg,
@@ -80,8 +82,7 @@ async function callApi<T extends EndpointName>(
   const endpoint = args[0];
   const request = args[1];
 
-  const serverUrl =
-    process.env.NEXT_PUBLIC_SIMSERVER_URL || 'http://localhost:8000';
+  const serverUrl = getSimulatorServerUrl();
 
   const response = await fetch(`${serverUrl}/${endpoint}`, {
     method: 'POST',
@@ -91,4 +92,16 @@ async function callApi<T extends EndpointName>(
     body: JSON.stringify(request),
   });
   return response.json();
+}
+
+/**
+ * The default is the same host as the app is running on, but on port 8000.
+ * Can be overridden by setting the NEXT_PUBLIC_SIMSERVER_PORT and NEXT_PUBLIC_SIMSERVER_HOST env variables (see .env.example, Dockerfile).
+ * @returns The URL of the simulator server
+ */
+export function getSimulatorServerUrl(): string {
+  const hostName =
+    process.env.NEXT_PUBLIC_SIMSERVER_HOST ?? window.location.hostname;
+  const port = process.env.NEXT_PUBLIC_SIMSERVER_PORT ?? '8000';
+  return `http://${hostName}:${port}`;
 }

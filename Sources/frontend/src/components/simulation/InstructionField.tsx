@@ -32,24 +32,32 @@
 import clsx from 'clsx';
 
 import {
-  highlightRegister,
   highlightSimCode,
-  selectHighlightedRegister,
   selectHighlightedSimCode,
-  selectRegisterById,
   selectSimCodeModel,
-  unhighlightRegister,
   unhighlightSimCode,
 } from '@/lib/redux/cpustateSlice';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import { openModal } from '@/lib/redux/modalSlice';
-import { Reference } from '@/lib/types/cpuApi';
-import { ReactChildren, ReactClassName } from '@/lib/types/reactTypes';
+import { InputCodeArgument, Reference } from '@/lib/types/cpuApi';
+
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/base/ui/tooltip';
+import RegisterReference from '@/components/simulation/RegisterReference';
+import ValueInformation from '@/components/simulation/ValueTooltip';
 
 export type InstructionFieldProps = {
-  instructionId?: Reference;
+  instructionId: Reference | null;
 };
 
+/**
+ * A component for displaying instruction information.
+ * If no instruction is present, displays empty field.
+ * The instruction info is loaded from the redux store based on the instructionId.
+ */
 export default function InstructionField({
   instructionId: simCodeId,
 }: InstructionFieldProps) {
@@ -59,14 +67,15 @@ export default function InstructionField({
     selectHighlightedSimCode(state),
   );
   if (!q || simCodeId === undefined) {
+    // Empty field
     return (
-      <InstructionBubble className='flex justify-center px-2 py-1 font-mono'>
+      <div className='instruction-bubble flex justify-center items-center px-2 font-mono'>
         <span className='text-gray-400'>empty</span>
-      </InstructionBubble>
+      </div>
     );
   }
-  const { simCodeModel, inputCodeModel, functionModel } = q;
 
+  const { simCodeModel } = q;
   const args = simCodeModel.renamedArguments;
   const highlighted = highlightedId === simCodeId;
 
@@ -78,11 +87,6 @@ export default function InstructionField({
     dispatch(unhighlightSimCode(simCodeId));
   };
 
-  const cls = clsx(
-    'flex justify-between items-center gap-2 font-mono px-2 hover:cursor-pointer',
-    highlighted ? 'bg-gray-200' : '',
-  );
-
   const showDetail = () => {
     dispatch(
       openModal({
@@ -92,101 +96,79 @@ export default function InstructionField({
     );
   };
 
+  function renderInstructionSyntax() {
+    // simCodeModel.renamedCodeLine contains the instruction with renamed arguments, e.g. addi r1, r2, 5
+    // Wrap the arguments in a tooltip and make them highlightable
+    const formatSplit = simCodeModel.renamedCodeLine.split(/( |,|\)|\()/g);
+    // if a part matches an argument, wrap it in a tooltip
+    return formatSplit.map((part, i) => {
+      // This may cause problems in the future, if the argument is not unique (e.g. addi sp, sp, -40)
+      const arg = args.find((a) => a.value === part);
+      if (arg) {
+        return (
+          <InstructionArgument
+            arg={arg}
+            key={`${simCodeModel.renamedCodeLine}-${i}`}
+          />
+        );
+      }
+      // Add z-index to make the argument highlight below the parentheses etc.
+      return <span className='relative z-10'>{part}</span>;
+    });
+  }
+
+  const cls = clsx(
+    'group instruction-bubble w-full font-mono px-2 text-left whitespace-nowrap',
+    highlighted ? 'bg-gray-200' : '',
+  );
+
+  // Tabindex and button for accessibility
   return (
-    <InstructionBubble
+    <button
+      type='button'
       className={cls}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onClick={showDetail}
+      tabIndex={0}
     >
-      <InstructionName mnemonic={inputCodeModel.instructionName} />
-      <div className='flex gap-2'>
-        {args.map((arg) => (
-          <InstructionArgument
-            argName={arg.name}
-            idOrLiteral={arg.value}
-            key={arg.name}
-          />
-        ))}
-      </div>
-    </InstructionBubble>
-  );
-}
-
-interface InstructionBubbleProps extends ReactClassName {
-  children: ReactChildren;
-  [x: string]: unknown;
-}
-
-export function InstructionBubble({
-  children,
-  className,
-  ...props
-}: InstructionBubbleProps) {
-  const cls = clsx('rounded-sm border h-8', className);
-  return (
-    <div className={cls} {...props}>
-      {children}
-    </div>
-  );
-}
-
-function InstructionName({ mnemonic }: { mnemonic: string }) {
-  return (
-    <div className='font-mono hover:cursor-pointer hover:underline leading-4'>
-      {mnemonic}
-    </div>
+      {renderInstructionSyntax()}
+    </button>
   );
 }
 
 export interface InstructionArgumentProps {
-  argName: string;
-  idOrLiteral: string;
+  arg: InputCodeArgument;
 }
 
-function InstructionArgument({
-  argName,
-  idOrLiteral,
-}: InstructionArgumentProps) {
-  const dispatch = useAppDispatch();
-  const register = useAppSelector((state) =>
-    selectRegisterById(state, idOrLiteral),
-  );
-  const highlightedId = useAppSelector(selectHighlightedRegister);
+/**
+ * Displays a single argument of an instruction.
+ * Delegaltes to RegisterReference if the argument is a register.
+ * Highlights the argument on hover.
+ */
+function InstructionArgument({ arg }: InstructionArgumentProps) {
+  // Add negative margin so the highlight is bigger
+  const cls = clsx('relative rounded hover:bg-gray-300 -m-1 p-1');
 
-  const isRegister = register !== null;
-  const highlighted = highlightedId === idOrLiteral;
-
-  const displayText = idOrLiteral;
-  let hoverText;
-
+  const isRegister = arg.name.startsWith('r');
   if (isRegister) {
-    hoverText = `Argument ${argName}: ${register.name} (${register.value.bits})`;
-  } else {
-    hoverText = `Argument ${argName}: ${idOrLiteral}`;
+    return <RegisterReference registerId={arg.value} className={cls} />;
   }
 
-  const cls = clsx(
-    'rounded hover:bg-gray-300 min-w-[2em] h-6 flex justify-center items-center leading-4',
-    highlighted && 'bg-gray-200',
-  );
+  if (arg.constantValue === undefined) {
+    throw new Error(
+      `Constant value of argument ${arg.name} has undefined value`,
+    );
+  }
 
   return (
-    <div
-      className={cls}
-      title={hoverText}
-      onMouseEnter={() => {
-        if (isRegister) {
-          dispatch(highlightRegister(idOrLiteral));
-        }
-      }}
-      onMouseLeave={() => {
-        if (isRegister) {
-          dispatch(unhighlightRegister(idOrLiteral));
-        }
-      }}
-    >
-      {displayText}
-    </div>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span className={cls}>{arg.value}</span>
+      </TooltipTrigger>
+      <TooltipContent>
+        <ValueInformation value={arg.constantValue} valid={true} />
+      </TooltipContent>
+    </Tooltip>
   );
 }

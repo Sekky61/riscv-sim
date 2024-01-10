@@ -75,12 +75,13 @@ export default function ReorderBuffer() {
         instructions={rob.reorderQueue}
         limit={showLimit}
         instructionRenderer={(item) => {
-          const isPresent = item !== undefined;
-          const isConfirmed = !(item?.reorderFlags.isSpeculative ?? false);
+          if (item === null) {
+            return <InstructionField instructionId={null} />;
+          }
           return (
             <div className='relative'>
-              <InstructionField instructionId={item?.simCodeModel} />
-              {isPresent && isConfirmed && (
+              <InstructionField instructionId={item.simCodeModel} />
+              {!item.reorderFlags.isSpeculative && (
                 <span className='absolute right-0 top-0 w-1 h-full bg-green-300' />
               )}
             </div>

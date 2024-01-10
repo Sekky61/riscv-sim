@@ -109,10 +109,12 @@ public class UnifiedRegisterFileBlock
     int registerCount = 0;
     for (RegisterFileModel registerFile : registerFileModelList)
     {
-      RegisterFileModel fileCopy = new RegisterFileModel(registerFile);
-      // Put entry into the map for each register
-      for (RegisterModel register : fileCopy.getRegisterList())
+      // Place of a previous bug:
+      // copying register objects would mean that the original register,
+      // which is in the managers Weak map, would be deallocated
+      for (RegisterModel register : registerFile.getRegisterList())
       {
+        // Put entry into the map for each register
         this.registerMap.put(register.getName(), register);
       }
       registerCount = registerCount + registerFile.getRegisterList().size();

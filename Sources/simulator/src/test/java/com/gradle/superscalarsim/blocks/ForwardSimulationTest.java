@@ -11,8 +11,9 @@ import com.gradle.superscalarsim.builders.InputCodeModelBuilder;
 import com.gradle.superscalarsim.builders.RegisterFileModelBuilder;
 import com.gradle.superscalarsim.code.*;
 import com.gradle.superscalarsim.cpu.Cpu;
-import com.gradle.superscalarsim.cpu.CpuConfiguration;
+import com.gradle.superscalarsim.cpu.CpuConfig;
 import com.gradle.superscalarsim.cpu.CpuState;
+import com.gradle.superscalarsim.cpu.SimulationConfig;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
@@ -39,7 +40,6 @@ public class ForwardSimulationTest
   InitLoader initLoader;
   
   InstructionMemoryBlock instructionMemoryBlock;
-  private SimCodeModelAllocator simCodeModelAllocator;
   private StatisticsCounter statisticsCounter;
   
   private InstructionFetchBlock instructionFetchBlock;
@@ -107,7 +107,7 @@ public class ForwardSimulationTest
     RegisterFileModel floatFile = new RegisterFileModelBuilder().hasName("float").hasDataType(RegisterTypeEnum.kFloat)
             .hasRegisterList(Arrays.asList(float1, float2, float3, float4, float5)).build();
     
-    CpuConfiguration cpuCfg = new CpuConfiguration();
+    CpuConfig cpuCfg = new CpuConfig();
     cpuCfg.robSize          = 256;
     cpuCfg.lbSize           = 64;
     cpuCfg.sbSize           = 64;
@@ -132,30 +132,27 @@ public class ForwardSimulationTest
     // 1 L/S: (delay 1)
     // 2 branch: (delay 3)
     // 1 mem: (delay 1)
-    cpuCfg.fUnits    = new CpuConfiguration.FUnit[10];
-    cpuCfg.fUnits[0] = new CpuConfiguration.FUnit(1, CpuConfiguration.FUnit.Type.FX, 2,
-                                                  new CpuConfiguration.FUnit.Capability[]{CpuConfiguration.FUnit.Capability.addition});
-    cpuCfg.fUnits[1] = new CpuConfiguration.FUnit(2, CpuConfiguration.FUnit.Type.FX, 2,
-                                                  new CpuConfiguration.FUnit.Capability[]{CpuConfiguration.FUnit.Capability.addition});
-    cpuCfg.fUnits[2] = new CpuConfiguration.FUnit(3, CpuConfiguration.FUnit.Type.FX, 2,
-                                                  new CpuConfiguration.FUnit.Capability[]{CpuConfiguration.FUnit.Capability.addition});
-    cpuCfg.fUnits[3] = new CpuConfiguration.FUnit(4, CpuConfiguration.FUnit.Type.FP, 2,
-                                                  new CpuConfiguration.FUnit.Capability[]{CpuConfiguration.FUnit.Capability.addition});
-    cpuCfg.fUnits[4] = new CpuConfiguration.FUnit(5, CpuConfiguration.FUnit.Type.FP, 2,
-                                                  new CpuConfiguration.FUnit.Capability[]{CpuConfiguration.FUnit.Capability.addition});
-    cpuCfg.fUnits[5] = new CpuConfiguration.FUnit(6, CpuConfiguration.FUnit.Type.FP, 2,
-                                                  new CpuConfiguration.FUnit.Capability[]{CpuConfiguration.FUnit.Capability.addition});
-    cpuCfg.fUnits[6] = new CpuConfiguration.FUnit(7, CpuConfiguration.FUnit.Type.L_S, 1,
-                                                  new CpuConfiguration.FUnit.Capability[]{});
-    cpuCfg.fUnits[7] = new CpuConfiguration.FUnit(8, CpuConfiguration.FUnit.Type.Branch, 3,
-                                                  new CpuConfiguration.FUnit.Capability[]{});
-    cpuCfg.fUnits[8] = new CpuConfiguration.FUnit(9, CpuConfiguration.FUnit.Type.Branch, 3,
-                                                  new CpuConfiguration.FUnit.Capability[]{});
-    cpuCfg.fUnits[9] = new CpuConfiguration.FUnit(10, CpuConfiguration.FUnit.Type.Memory, 1,
-                                                  new CpuConfiguration.FUnit.Capability[]{});
-    cpuCfg.code      = "";
+    cpuCfg.fUnits    = new CpuConfig.FUnit[10];
+    cpuCfg.fUnits[0] = new CpuConfig.FUnit(1, CpuConfig.FUnit.Type.FX, 2,
+                                           new CpuConfig.FUnit.Capability[]{CpuConfig.FUnit.Capability.addition});
+    cpuCfg.fUnits[1] = new CpuConfig.FUnit(2, CpuConfig.FUnit.Type.FX, 2,
+                                           new CpuConfig.FUnit.Capability[]{CpuConfig.FUnit.Capability.addition});
+    cpuCfg.fUnits[2] = new CpuConfig.FUnit(3, CpuConfig.FUnit.Type.FX, 2,
+                                           new CpuConfig.FUnit.Capability[]{CpuConfig.FUnit.Capability.addition});
+    cpuCfg.fUnits[3] = new CpuConfig.FUnit(4, CpuConfig.FUnit.Type.FP, 2,
+                                           new CpuConfig.FUnit.Capability[]{CpuConfig.FUnit.Capability.addition});
+    cpuCfg.fUnits[4] = new CpuConfig.FUnit(5, CpuConfig.FUnit.Type.FP, 2,
+                                           new CpuConfig.FUnit.Capability[]{CpuConfig.FUnit.Capability.addition});
+    cpuCfg.fUnits[5] = new CpuConfig.FUnit(6, CpuConfig.FUnit.Type.FP, 2,
+                                           new CpuConfig.FUnit.Capability[]{CpuConfig.FUnit.Capability.addition});
+    cpuCfg.fUnits[6] = new CpuConfig.FUnit(7, CpuConfig.FUnit.Type.L_S, 1, new CpuConfig.FUnit.Capability[]{});
+    cpuCfg.fUnits[7] = new CpuConfig.FUnit(8, CpuConfig.FUnit.Type.Branch, 3, new CpuConfig.FUnit.Capability[]{});
+    cpuCfg.fUnits[8] = new CpuConfig.FUnit(9, CpuConfig.FUnit.Type.Branch, 3, new CpuConfig.FUnit.Capability[]{});
+    cpuCfg.fUnits[9] = new CpuConfig.FUnit(10, CpuConfig.FUnit.Type.Memory, 1, new CpuConfig.FUnit.Capability[]{});
     
-    this.cpu = new Cpu(cpuCfg);
+    SimulationConfig cfg = new SimulationConfig("", new ArrayList<>(), cpuCfg);
+    
+    this.cpu = new Cpu(cfg);
     CpuState cpuState = this.cpu.cpuState;
     
     this.instructionMemoryBlock    = cpuState.instructionMemoryBlock;
@@ -1056,7 +1053,12 @@ public class ForwardSimulationTest
     
     List<InputCodeModel> instructions = Arrays.asList(ins1, ins2, ins3, ins4);
     instructionMemoryBlock.setCode(instructions);
-    instructionMemoryBlock.setLabels(Map.of("lab1", 1, "lab2", 2, "lab3", 3, "labFinal", 4));
+    Map<String, Label> labelMap = new HashMap<>();
+    labelMap.put("lab1", new Label("lab1", 4));
+    labelMap.put("lab2", new Label("lab2", 2 * 4));
+    labelMap.put("lab3", new Label("lab3", 3 * 4));
+    labelMap.put("labFinal", new Label("labFinal", 4 * 4));
+    instructionMemoryBlock.setLabels(labelMap);
     
     this.cpu.step();
     Assert.assertEquals("jal", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
@@ -1211,7 +1213,10 @@ public class ForwardSimulationTest
     
     List<InputCodeModel> instructions = Arrays.asList(ins1, ins2, ins3);
     instructionMemoryBlock.setCode(instructions);
-    instructionMemoryBlock.setLabels(Map.of("loop", 0, "loopEnd", 3));
+    Map<String, Label> labelMap = new HashMap<>();
+    labelMap.put("loop", new Label("loop", 0));
+    labelMap.put("loopEnd", new Label("loopEnd", 3 * 4));
+    instructionMemoryBlock.setLabels(labelMap);
     
     // First fetch (3)
     this.cpu.step();
@@ -1485,7 +1490,10 @@ public class ForwardSimulationTest
     
     List<InputCodeModel> instructions = Arrays.asList(ins1, ins2, ins3, ins4);
     instructionMemoryBlock.setCode(instructions);
-    instructionMemoryBlock.setLabels(Map.of("labelIf", 3, "labelFin", 4));
+    Map<String, Label> labelMap = new HashMap<>();
+    labelMap.put("labelIf", new Label("labelIf", 3 * 4));
+    labelMap.put("labelFin", new Label("labelFin", 4 * 4));
+    instructionMemoryBlock.setLabels(labelMap);
     
     // First fetch
     this.cpu.step();
@@ -1615,7 +1623,10 @@ public class ForwardSimulationTest
     
     List<InputCodeModel> instructions = Arrays.asList(ins1, ins2, ins3, ins4);
     instructionMemoryBlock.setCode(instructions);
-    instructionMemoryBlock.setLabels(Map.of("labelIf", 3, "labelFin", 4));
+    Map<String, Label> labelMap = new HashMap<>();
+    labelMap.put("labelIf", new Label("labelIf", 3 * 4));
+    labelMap.put("labelFin", new Label("labelFin", 4 * 4));
+    instructionMemoryBlock.setLabels(labelMap);
     // Code:
     //
     // beq x3 x0 labelIf
@@ -1723,8 +1734,8 @@ public class ForwardSimulationTest
     Assert.assertEquals(0, this.loadBufferBlock.getQueueSize());
     Assert.assertEquals(1, this.storeBufferBlock.getQueueSize());
     Assert.assertEquals("sw x3,0(x2)", this.storeBufferBlock.getStoreQueueFirst().getRenamedCodeLine());
-    Assert.assertEquals(-1, this.storeBufferBlock.getStoreMap().get(0).getAddress());
-    Assert.assertTrue(this.storeBufferBlock.getStoreMap().get(0).isSourceReady());
+    Assert.assertEquals(-1, this.storeBufferBlock.getStoreBufferItem(0).getAddress());
+    Assert.assertTrue(this.storeBufferBlock.getStoreBufferItem(0).isSourceReady());
     Assert.assertEquals("sw x3,0(x2)",
                         this.loadStoreIssueWindowBlock.getIssuedInstructions().get(0).getRenamedCodeLine());
     
@@ -1732,15 +1743,15 @@ public class ForwardSimulationTest
     Assert.assertEquals(0, this.loadBufferBlock.getQueueSize());
     Assert.assertEquals(1, this.storeBufferBlock.getQueueSize());
     Assert.assertEquals("sw x3,0(x2)", this.loadStoreFunctionUnit.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertEquals(-1, this.storeBufferBlock.getStoreMap().get(0).getAddress());
-    Assert.assertTrue(this.storeBufferBlock.getStoreMap().get(0).isSourceReady());
+    Assert.assertEquals(-1, this.storeBufferBlock.getStoreBufferItem(0).getAddress());
+    Assert.assertTrue(this.storeBufferBlock.getStoreBufferItem(0).isSourceReady());
     
     this.cpu.step();
     Assert.assertEquals(0, this.loadBufferBlock.getQueueSize());
     Assert.assertEquals(1, this.storeBufferBlock.getQueueSize());
     Assert.assertNull(this.loadStoreFunctionUnit.getSimCodeModel());
-    Assert.assertEquals(25, this.storeBufferBlock.getStoreMap().get(0).getAddress());
-    Assert.assertTrue(this.storeBufferBlock.getStoreMap().get(0).isSourceReady());
+    Assert.assertEquals(25, this.storeBufferBlock.getStoreBufferItem(0).getAddress());
+    Assert.assertTrue(this.storeBufferBlock.getStoreBufferItem(0).isSourceReady());
     Assert.assertFalse(this.reorderBufferBlock.getRobItem(0).reorderFlags.isReadyToBeCommitted());
     this.cpu.step();
     Assert.assertTrue(this.reorderBufferBlock.getRobItem(0).reorderFlags.isReadyToBeCommitted());
@@ -1780,8 +1791,8 @@ public class ForwardSimulationTest
     Assert.assertEquals(1, this.loadBufferBlock.getQueueSize());
     Assert.assertEquals(0, this.storeBufferBlock.getQueueSize());
     Assert.assertEquals("lw tg0,0(x2)", this.loadBufferBlock.getLoadQueueFirst().getRenamedCodeLine());
-    Assert.assertEquals(-1, this.loadBufferBlock.getLoadMap().get(0).getAddress());
-    Assert.assertFalse(this.loadBufferBlock.getLoadMap().get(0).isDestinationReady());
+    Assert.assertEquals(-1, this.loadBufferBlock.getLoadBufferItem(0).getAddress());
+    Assert.assertFalse(this.loadBufferBlock.getLoadBufferItem(0).isDestinationReady());
     Assert.assertEquals("lw tg0,0(x2)",
                         this.loadStoreIssueWindowBlock.getIssuedInstructions().get(0).getRenamedCodeLine());
     
@@ -1789,24 +1800,24 @@ public class ForwardSimulationTest
     Assert.assertEquals(1, this.loadBufferBlock.getQueueSize());
     Assert.assertEquals(0, this.storeBufferBlock.getQueueSize());
     Assert.assertEquals("lw tg0,0(x2)", this.loadStoreFunctionUnit.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertEquals(-1, this.loadBufferBlock.getLoadMap().get(0).getAddress());
-    Assert.assertFalse(this.loadBufferBlock.getLoadMap().get(0).isDestinationReady());
+    Assert.assertEquals(-1, this.loadBufferBlock.getLoadBufferItem(0).getAddress());
+    Assert.assertFalse(this.loadBufferBlock.getLoadBufferItem(0).isDestinationReady());
     
     this.cpu.step();
     Assert.assertEquals(1, this.loadBufferBlock.getQueueSize());
     Assert.assertEquals(0, this.storeBufferBlock.getQueueSize());
     Assert.assertNull(this.loadStoreFunctionUnit.getSimCodeModel());
     Assert.assertEquals("lw tg0,0(x2)", this.memoryAccessUnit.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertEquals(25, this.loadBufferBlock.getLoadMap().get(0).getAddress());
-    Assert.assertFalse(this.loadBufferBlock.getLoadMap().get(0).isDestinationReady());
+    Assert.assertEquals(25, this.loadBufferBlock.getLoadBufferItem(0).getAddress());
+    Assert.assertFalse(this.loadBufferBlock.getLoadBufferItem(0).isDestinationReady());
     
     this.cpu.step();
     Assert.assertEquals(1, this.loadBufferBlock.getQueueSize());
     Assert.assertEquals(0, this.storeBufferBlock.getQueueSize());
     Assert.assertNull(this.loadStoreFunctionUnit.getSimCodeModel());
     Assert.assertNull(this.memoryAccessUnit.getSimCodeModel());
-    Assert.assertEquals(25, this.loadBufferBlock.getLoadMap().get(0).getAddress());
-    Assert.assertTrue(this.loadBufferBlock.getLoadMap().get(0).isDestinationReady());
+    Assert.assertEquals(25, this.loadBufferBlock.getLoadBufferItem(0).getAddress());
+    Assert.assertTrue(this.loadBufferBlock.getLoadBufferItem(0).isDestinationReady());
     Assert.assertTrue(this.reorderBufferBlock.getRobItem(0).reorderFlags.isReadyToBeCommitted());
     
     this.cpu.step();
@@ -1889,10 +1900,10 @@ public class ForwardSimulationTest
     Assert.assertEquals("sw x3,0(x2)", this.storeBufferBlock.getStoreQueueFirst().getRenamedCodeLine());
     Assert.assertEquals("lw tg1,0(x2)", this.loadBufferBlock.getLoadQueueFirst().getRenamedCodeLine());
     Assert.assertEquals("lw tg1,0(x2)", this.loadStoreFunctionUnit.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertFalse(this.loadBufferBlock.getLoadMap().get(2).isDestinationReady());
+    Assert.assertFalse(this.loadBufferBlock.getLoadBufferItem(2).isDestinationReady());
     Assert.assertFalse(this.reorderBufferBlock.getRobItem(2).reorderFlags.isReadyToBeCommitted());
-    Assert.assertTrue(this.storeBufferBlock.getStoreMap().get(1).isSourceReady());
-    Assert.assertEquals(25, this.storeBufferBlock.getStoreMap().get(1).getAddress());
+    Assert.assertTrue(this.storeBufferBlock.getStoreBufferItem(1).isSourceReady());
+    Assert.assertEquals(25, this.storeBufferBlock.getStoreBufferItem(1).getAddress());
     Assert.assertFalse(this.reorderBufferBlock.getRobItem(1).reorderFlags.isReadyToBeCommitted());
     Assert.assertEquals("subi tg0,x4,5", this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
     
@@ -1903,8 +1914,8 @@ public class ForwardSimulationTest
     Assert.assertNull(this.loadStoreFunctionUnit.getSimCodeModel());
     Assert.assertEquals("sw x3,0(x2)", this.storeBufferBlock.getStoreQueueFirst().getRenamedCodeLine());
     Assert.assertEquals("lw tg1,0(x2)", this.loadBufferBlock.getLoadQueueFirst().getRenamedCodeLine());
-    Assert.assertEquals(25, this.loadBufferBlock.getLoadMap().get(2).getAddress());
-    Assert.assertTrue(this.loadBufferBlock.getLoadMap().get(2).isDestinationReady());
+    Assert.assertEquals(25, this.loadBufferBlock.getLoadBufferItem(2).getAddress());
+    Assert.assertTrue(this.loadBufferBlock.getLoadBufferItem(2).isDestinationReady());
     Assert.assertTrue(this.reorderBufferBlock.getRobItem(2).reorderFlags.isReadyToBeCommitted());
     
     this.cpu.step();

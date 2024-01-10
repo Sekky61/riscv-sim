@@ -29,7 +29,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { CpuState } from '@/lib/types/cpuApi';
+import type { SimulationConfig } from '@/lib/forms/Isa';
+import type { OptimizeOption } from '@/lib/redux/compilerSlice';
+import type { CpuState } from '@/lib/types/cpuApi';
 
 export type EndpointName =
   | 'compile'
@@ -82,14 +84,13 @@ export interface CompileEndpoint {
 
 export interface CompileRequest {
   code: string;
-  optimize: boolean;
+  optimizeFlags: OptimizeOption[];
 }
 
 export type CompileResponse =
   | {
       success: true;
       program: string;
-      cLines: number[];
       asmToC: number[];
     }
   | {
@@ -129,6 +130,7 @@ export interface ParseAsmEndpoint {
 
 export interface ParseAsmRequest {
   code: string;
+  config?: SimulationConfig;
 }
 
 export type ParseAsmResponse =
@@ -179,7 +181,7 @@ export interface SimulateEndpoint {
 
 export interface SimulateRequest {
   tick: number;
-  config?: CpuConfiguration; // todo: make this required
+  config: SimulationConfig; // todo: make this required
 }
 
 export interface SimulateResponse {

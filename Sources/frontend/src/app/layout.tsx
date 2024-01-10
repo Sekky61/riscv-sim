@@ -41,11 +41,12 @@ import '@/styles/globals.css';
 import { persistor, store } from '@/lib/redux/store';
 import { cn } from '@/lib/utils';
 
-import ModalRoot from '@/components/modals/ModalRoot';
 import Notifications from '@/components/Notifications';
 import SideBar from '@/components/SideBar';
+import { TooltipProvider } from '@/components/base/ui/tooltip';
+import ModalRoot from '@/components/modals/ModalRoot';
 
-export const fontSans = FontSans({
+const fontSans = FontSans({
   subsets: ['latin'],
   variable: '--font-sans',
 });
@@ -54,7 +55,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   const appRef = useRef<HTMLDivElement>(null);
 
   return (
-    <html>
+    <html lang='en'>
       <head>
         <meta
           name='viewport'
@@ -71,12 +72,17 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <Provider store={store}>
           <PersistGate loading={null} persistor={persistor}>
             <ModalRoot appRef={appRef} />
-            <div className='flex h-screen max-h-screen w-full'>
-              <SideBar />
-              <div className='relative flex-grow overflow-y-auto' ref={appRef}>
-                {children}
+            <TooltipProvider delayDuration={0}>
+              <div className='flex h-screen max-h-screen w-full'>
+                <SideBar />
+                <div
+                  className='relative flex-grow overflow-y-auto'
+                  ref={appRef}
+                >
+                  {children}
+                </div>
               </div>
-            </div>
+            </TooltipProvider>
             <Notifications />
           </PersistGate>
         </Provider>

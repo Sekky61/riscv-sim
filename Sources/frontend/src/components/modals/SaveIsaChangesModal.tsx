@@ -31,7 +31,7 @@
 
 import { notify } from 'reapop';
 
-import { IsaNamedConfig } from '@/lib/forms/Isa';
+import { CpuConfig } from '@/lib/forms/Isa';
 import { useAppDispatch } from '@/lib/redux/hooks';
 import { updateIsa } from '@/lib/redux/isaSlice';
 import { closeModal } from '@/lib/redux/modalSlice';
@@ -39,7 +39,7 @@ import { closeModal } from '@/lib/redux/modalSlice';
 import ConfirmModal from '@/components/modals/ConfirmModal';
 
 export type SaveIsaChangesModalProps = {
-  isa: IsaNamedConfig;
+  isa: CpuConfig;
   oldName: string;
 };
 
@@ -60,7 +60,7 @@ export const SaveIsaChangesModal = ({
         dispatch(updateIsa({ isa, oldName }));
         dispatch(
           notify({
-            title: `Updates have been saved.`,
+            title: 'Updates have been saved.',
             status: 'success',
           }),
         );

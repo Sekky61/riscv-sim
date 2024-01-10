@@ -28,10 +28,8 @@
 package com.gradle.superscalarsim.cpu;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.gradle.superscalarsim.code.CodeParser;
 import com.gradle.superscalarsim.code.Expression;
 import com.gradle.superscalarsim.code.ParseError;
-import com.gradle.superscalarsim.loader.InitLoader;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -80,14 +78,8 @@ import java.util.Objects;
  * Can be used to create a CpuState
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class CpuConfiguration implements Serializable
+public class CpuConfig implements Serializable
 {
-  /**
-   * Code to run.
-   * <p>
-   * Must be part of the configuration because it is used to create the initial state
-   */
-  public String code;
   public int robSize;
   public int lbSize;
   public int sbSize;
@@ -112,16 +104,18 @@ public class CpuConfiguration implements Serializable
   public int cacheLineSize;
   public int cacheAssoc;
   public String cacheReplacement;
+  /**
+   * write-back, write-through
+   */
   public String storeBehavior;
   public int storeLatency;
   public int loadLatency;
   public int laneReplacementDelay;
   public boolean addRemainingDelay;
   
-  public static CpuConfiguration getDefaultConfiguration()
+  public static CpuConfig getDefaultConfiguration()
   {
-    CpuConfiguration config = new CpuConfiguration();
-    config.code             = "";
+    CpuConfig config = new CpuConfig();
     config.robSize          = 256;
     config.lbSize           = 64;
     config.sbSize           = 64;
@@ -182,23 +176,7 @@ public class CpuConfiguration implements Serializable
   public ValidationResult validate()
   {
     // List of error messages
-    List<String>     errorMessages = new ArrayList<>();
-    List<ParseError> codeErrors    = null;
-    
-    if (code == null)
-    {
-      errorMessages.add("Code must not be null");
-    }
-    
-    // Parse code
-    CodeParser codeParser = new CodeParser(new InitLoader());
-    codeParser.parseCode(code);
-    
-    if (!codeParser.success())
-    {
-      errorMessages.add("Code parsing failed");
-      codeErrors = codeParser.getErrorMessages();
-    }
+    List<String> errorMessages = new ArrayList<>();
     
     // Null checks
     if (fUnits == null)
@@ -385,7 +363,7 @@ public class CpuConfiguration implements Serializable
     }
     else
     {
-      return new ValidationResult(false, errorMessages, codeErrors);
+      return new ValidationResult(false, errorMessages, null);
     }
   }
   

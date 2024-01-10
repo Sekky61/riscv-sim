@@ -36,15 +36,20 @@ import {
   selectBranchIssueWindowBlock,
   selectFpIssueWindowBlock,
   selectLoadStoreIssueWindowBlock,
+  selectRegisterById,
 } from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
 import { IssueItemModel, Reference } from '@/lib/types/cpuApi';
 
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/base/ui/tooltip';
 import Block from '@/components/simulation/Block';
-import InstructionField, {
-  InstructionBubble,
-} from '@/components/simulation/InstructionField';
+import InstructionField from '@/components/simulation/InstructionField';
 import { InstructionListDisplay } from '@/components/simulation/InstructionListDisplay';
+import ValueInformation from '@/components/simulation/ValueTooltip';
 
 type IssueType = 'alu' | 'fp' | 'branch' | 'ls';
 
@@ -53,26 +58,26 @@ export type IssueWindowProps = {
 };
 
 function getSelector(type: IssueType) {
-  if (type == 'alu') return selectAluIssueWindowBlock;
-  if (type == 'fp') return selectFpIssueWindowBlock;
-  if (type == 'branch') return selectBranchIssueWindowBlock;
-  if (type == 'ls') return selectLoadStoreIssueWindowBlock;
+  if (type === 'alu') return selectAluIssueWindowBlock;
+  if (type === 'fp') return selectFpIssueWindowBlock;
+  if (type === 'branch') return selectBranchIssueWindowBlock;
+  if (type === 'ls') return selectLoadStoreIssueWindowBlock;
   throw new Error(`Invalid type ${type}`);
 }
 
 function getTitle(type: IssueType) {
-  if (type == 'alu') return 'ALU Issue Window';
-  if (type == 'fp') return 'FP Issue Window';
-  if (type == 'branch') return 'Branch Issue Window';
-  if (type == 'ls') return 'L/S Issue Window';
+  if (type === 'alu') return 'ALU Issue Window';
+  if (type === 'fp') return 'FP Issue Window';
+  if (type === 'branch') return 'Branch Issue Window';
+  if (type === 'ls') return 'L/S Issue Window';
   throw new Error(`Invalid type ${type}`);
 }
 
 function getGridClassName(type: IssueType) {
-  if (type == 'alu') return 'aluIssue';
-  if (type == 'fp') return 'fpIssue';
-  if (type == 'branch') return 'branchIssue';
-  if (type == 'ls') return 'lsIssue';
+  if (type === 'alu') return 'aluIssue';
+  if (type === 'fp') return 'fpIssue';
+  if (type === 'branch') return 'branchIssue';
+  if (type === 'ls') return 'lsIssue';
   throw new Error(`Invalid type ${type}`);
 }
 
@@ -119,9 +124,7 @@ export default function IssueWindow({ type }: IssueWindowProps) {
         instructionRenderer={(instruction) => (
           <IssueWindowItem
             simCodeId={instruction}
-            items={
-              instruction !== undefined ? validity[instruction] : undefined
-            }
+            items={instruction !== null ? validity[instruction] : undefined}
           />
         )}
       />
@@ -130,7 +133,7 @@ export default function IssueWindow({ type }: IssueWindowProps) {
 }
 
 type IssueWindowItemProps = {
-  simCodeId?: Reference;
+  simCodeId: Reference | null;
   items?: IssueItemModel[];
 };
 
@@ -138,6 +141,12 @@ type IssueWindowItemProps = {
  * Displays a single item in the Issue Window
  */
 export function IssueWindowItem({ simCodeId, items }: IssueWindowItemProps) {
+  const reg1 = useAppSelector((state) =>
+    selectRegisterById(state, items?.[0]?.tag ?? 'INVALID'),
+  );
+  const reg2 = useAppSelector((state) =>
+    selectRegisterById(state, items?.[1]?.tag ?? 'INVALID'),
+  );
   if (!items) {
     return (
       <div className='col-span-3'>
@@ -146,21 +155,69 @@ export function IssueWindowItem({ simCodeId, items }: IssueWindowItemProps) {
     );
   }
 
-  const item1 = items[0] || { value: '-', validityBit: false };
-  const item2 = items[1] || { value: '-', validityBit: false };
+  const item1 = items[0];
+  const item2 = items[1];
 
-  const item1Style = clsx('flex px-2', item1.validityBit && 'text-green-500');
-  const item2Style = clsx('flex px-2', item2.validityBit && 'text-green-500');
+  const item1Style = clsx(
+    'instruction-bubble flex px-2',
+    item1?.validityBit && 'text-green-500',
+    item1 === undefined && 'invisible',
+  );
+  const item2Style = clsx(
+    'instruction-bubble flex px-2',
+    item2?.validityBit && 'text-green-500',
+    item2 === undefined && 'invisible',
+  );
+
+  // First try to get the value from the constant value, then from the register
+  let item1Value = item1?.constantValue;
+  if (item1Value === undefined) {
+    item1Value = reg1?.value;
+  }
+
+  let item2Value = item2?.constantValue;
+  if (item2Value === undefined) {
+    item2Value = reg2?.value;
+  }
 
   return (
     <>
       <InstructionField instructionId={simCodeId} />
-      <InstructionBubble className={item1Style}>
-        {item1.value}
-      </InstructionBubble>
-      <InstructionBubble className={item2Style}>
-        {item2.value}
-      </InstructionBubble>
+      <Tooltip>
+        <TooltipTrigger>
+          <div className={item1Style}>
+            {item1Value?.stringRepresentation ?? '-'}
+          </div>
+        </TooltipTrigger>
+        <TooltipContent>
+          {item1Value ? (
+            <ValueInformation
+              value={item1Value}
+              valid={item1?.validityBit ?? false}
+            />
+          ) : (
+            <div className='text-gray-400'>No value</div>
+          )}
+        </TooltipContent>
+      </Tooltip>
+      <Tooltip>
+        <TooltipTrigger>
+          <div className={item2Style}>
+            {item2Value?.stringRepresentation ?? '-'}
+          </div>
+        </TooltipTrigger>
+
+        <TooltipContent>
+          {item2Value ? (
+            <ValueInformation
+              value={item2Value}
+              valid={item2?.validityBit ?? false}
+            />
+          ) : (
+            <div className='text-gray-400'>No value</div>
+          )}
+        </TooltipContent>
+      </Tooltip>
     </>
   );
 }

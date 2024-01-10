@@ -47,16 +47,16 @@ export function transformErrors(
 ): Array<Diagnostic> {
   // Add one to each line length to account for the fact that caret can be at the end of the line
   const lineLengths = code.split('\n').map((line) => line.length + 1);
-  const lineLengthsPrefixSum = lineLengths.reduce(
-    (acc, curr, i) => {
-      const prev = acc[i];
-      if (prev === undefined) {
-        throw new Error('Invalid line lengths');
-      }
-      return [...acc, curr + prev];
-    },
-    [0],
-  );
+  const lineLengthsPrefixSum = [0];
+  for (const lineLength of lineLengths) {
+    // todo test this
+    const prev = lineLengthsPrefixSum[lineLengthsPrefixSum.length - 1];
+    if (prev === undefined) {
+      throw new Error('Invalid line lengths');
+    }
+    lineLengthsPrefixSum.push(prev + lineLength);
+  }
+
   return errors.map((error: ComplexErrorItem): Diagnostic => {
     // We have a line and column, but code mirror expects a 1D character index
     // We need to convert the line and column to a character index

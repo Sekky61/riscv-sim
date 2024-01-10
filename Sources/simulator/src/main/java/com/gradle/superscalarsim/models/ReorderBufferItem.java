@@ -45,7 +45,7 @@ public class ReorderBufferItem implements Comparable<SimCodeModel>
   /**
    * Copies the comparison from SimCodeModel
    *
-   * @param [in] codeModel - Model to be compared to
+   * @param codeModel Model to be compared to
    *
    * @return -1 if <, 0 if ==, > if 1
    * @brief Comparator function for assigning to priorityQueue

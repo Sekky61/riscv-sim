@@ -1,7 +1,7 @@
 package com.gradle.superscalarsim.blocks;
 
 import com.gradle.superscalarsim.cpu.Cpu;
-import com.gradle.superscalarsim.cpu.CpuConfiguration;
+import com.gradle.superscalarsim.cpu.SimulationConfig;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -14,7 +14,7 @@ public class BackwardSimulationEqualityTest
   @Test
   public void test_forwardAndBack_sameAs_forward()
   {
-    CpuConfiguration cfg = CpuConfiguration.getDefaultConfiguration();
+    SimulationConfig cfg = SimulationConfig.getDefaultConfiguration();
     cfg.code = """
             addi x3, x0, 5
             loop:
@@ -57,7 +57,7 @@ public class BackwardSimulationEqualityTest
   @Test
   public void test_requesting_initialState()
   {
-    CpuConfiguration cfg = CpuConfiguration.getDefaultConfiguration();
+    SimulationConfig cfg = SimulationConfig.getDefaultConfiguration();
     cfg.code = """
             addi x3, x0, 10
             subi x3, x3, 1""";

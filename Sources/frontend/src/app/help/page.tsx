@@ -31,29 +31,86 @@
 
 export default function Page() {
   return (
-    <div>
-      <section>
+    <div className='grid grid-cols-2 gap-4'>
+      <section className='col-span-2'>
         <h1 className='text-2xl'>Help</h1>
         <p>This is the help page.</p>
       </section>
       <section>
-        <h2 className='text-xl'>Shortcuts</h2>
+        <h2 className='text-xl'>Navigation Shortcuts</h2>
         <div className='flex flex-col gap-6'>
           <div>
-            <div className='mb-2'>Show simulation tab</div>
+            <div className='mb-2'>
+              Show <b>Simulation</b> tab
+            </div>
             <kbd>1</kbd>
           </div>
           <div>
-            <div>Show compiler tab</div>
+            <div>
+              Show <b>Compiler</b> tab
+            </div>
             <kbd>2</kbd>
           </div>
           <div>
-            <div className='mb-2'>Show ISA settings tab</div>
+            <div className='mb-2'>
+              Show <b>Memory</b> tab
+            </div>
             <kbd>3</kbd>
           </div>
           <div>
-            <div>Show statistics tab</div>
+            <div className='mb-2'>
+              Show <b>ISA settings</b> tab
+            </div>
             <kbd>4</kbd>
+          </div>
+          <div>
+            <div>
+              Show <b>statistics</b> tab
+            </div>
+            <kbd>5</kbd>
+          </div>
+          <div>
+            <div>
+              Show <b>RISC-V documentation</b> tab
+            </div>
+            <kbd>6</kbd>
+          </div>
+          <div>
+            <div>
+              Show <b>Settings</b> tab
+            </div>
+            <kbd>7</kbd>
+          </div>
+          <div>
+            <div>
+              Show <b>Help</b> tab
+            </div>
+            <kbd>8</kbd>
+          </div>
+        </div>
+      </section>
+      <section>
+        <h2 className='text-xl'>Simulation Shortcuts</h2>
+        <div className='flex flex-col gap-6'>
+          <div>
+            <div className='mb-2'>Step simulation forward</div>
+            <kbd>→</kbd>
+          </div>
+          <div>
+            <div className='mb-2'>Step simulation backward</div>
+            <kbd>←</kbd>
+          </div>
+          <div>
+            <div className='mb-2'>Zoom in</div>
+            <kbd>Ctrl</kbd> + <kbd>+</kbd>
+          </div>
+          <div>
+            <div className='mb-2'>Zoom out</div>
+            <kbd>Ctrl</kbd> + <kbd>-</kbd>
+          </div>
+          <div>
+            <div className='mb-2'>Move around</div>
+            <kbd>Ctrl</kbd> + Click and drag
           </div>
         </div>
       </section>

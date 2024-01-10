@@ -52,26 +52,50 @@ import java.util.Objects;
  */
 public class MemoryAccessUnit extends AbstractFunctionUnitBlock
 {
-  /// Load buffer with all load instruction entries
+  /**
+   * Load buffer with all load instruction entries
+   */
   @JsonIdentityReference(alwaysAsId = true)
   private LoadBufferBlock loadBufferBlock;
-  /// Store buffer with all Store instruction entries
+  
+  /**
+   * Store buffer with all Store instruction entries
+   */
   @JsonIdentityReference(alwaysAsId = true)
   private StoreBufferBlock storeBufferBlock;
-  /// Interpreter for processing load store instructions
+  
+  /**
+   * Interpreter for processing load store instructions
+   */
   @JsonIdentityReference(alwaysAsId = true)
   private CodeLoadStoreInterpreter loadStoreInterpreter;
-  /// Class containing all registers, that simulator uses
+  
+  /**
+   * Class containing all registers, that simulator uses
+   */
   @JsonIdentityReference(alwaysAsId = true)
   private UnifiedRegisterFileBlock registerFileBlock;
-  /// Clock cycle counter
+  
+  /**
+   * Clock cycle counter
+   */
   private int cycleCount;
   
-  /// First delay is for MAU, second delay is for reply from memory
+  
+  /**
+   * The binary state of the MA unit.
+   * First delay is for MAU, second delay is for reply from memory.
+   */
   private boolean firstDelayPassed = false;
-  /// Data of the load operation to be able to store it later
+  
+  /**
+   * Data of the load operation to be able to store it later
+   */
   private long savedResult;
-  /// settings for first delay
+  
+  /**
+   * settings for first delay
+   */
   private int baseDelay;
   
   public MemoryAccessUnit()
@@ -115,72 +139,10 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
   public void simulate()
   {
     cycleCount++;
-    if (!isFunctionUnitEmpty() && this.simCodeModel.hasFailed())
-    {
-      hasDelayPassed();
-      this.simCodeModel.setFunctionUnitId(this.functionUnitId);
-      this.simCodeModel = null;
-      this.zeroTheCounter();
-      
-      this.setDelay(baseDelay);
-      this.firstDelayPassed = false;
-    }
     
-    if (!isFunctionUnitEmpty() && hasTimerStarted())
+    if (!isFunctionUnitEmpty())
     {
-      if (this.loadBufferBlock.getLoadMap().containsKey(this.simCodeModel.getIntegerId()))
-      {
-        this.loadBufferBlock.getLoadMap().get(this.simCodeModel.getIntegerId()).setMemoryAccessId(this.functionUnitId);
-      }
-      else if (this.storeBufferBlock.getStoreMap().containsKey(this.simCodeModel.getIntegerId()))
-      {
-        this.storeBufferBlock.getStoreMap().get(this.simCodeModel.getIntegerId())
-                .setMemoryAccessId(this.functionUnitId);
-      }
-    }
-    
-    if (!isFunctionUnitEmpty() && hasDelayPassed())
-    {
-      //If memory returns 0 delay for access, allow finish in the same execution
-      boolean allowAccessFinish = true;
-      if (!firstDelayPassed)
-      {
-        firstDelayPassed = true;
-        
-        Pair<Integer, Long> result = loadStoreInterpreter.interpretInstruction(this.simCodeModel, cycleCount);
-        savedResult = result.getSecond();
-        
-        //Set delay for memory response
-        this.setDelay(result.getFirst());
-        this.resetCounter();
-        if (result.getFirst() != 0)
-        {
-          allowAccessFinish = false;
-        }
-      }
-      
-      if (firstDelayPassed && allowAccessFinish)
-      {
-        firstDelayPassed = false;
-        this.setDelay(baseDelay);
-        this.reorderBufferBlock.getRobItem(this.simCodeModel.getIntegerId()).reorderFlags.setBusy(false);
-        if (this.loadBufferBlock.getLoadMap().containsKey(this.simCodeModel.getIntegerId()))
-        {
-          InputCodeArgument destinationArgument = simCodeModel.getArgumentByName("rd");
-          RegisterModel destRegister = registerFileBlock.getRegister(
-                  Objects.requireNonNull(destinationArgument).getValue());
-          destRegister.setBits(savedResult);
-          destRegister.setReadiness(RegisterReadinessEnum.kExecuted);
-          this.loadBufferBlock.setDestinationAvailable(simCodeModel.getIntegerId());
-          this.loadBufferBlock.setMemoryAccessFinished(simCodeModel.getIntegerId());
-        }
-        else if (this.storeBufferBlock.getStoreMap().containsKey(this.simCodeModel.getIntegerId()))
-        {
-          this.storeBufferBlock.setMemoryAccessFinished(simCodeModel.getIntegerId());
-        }
-        
-        this.simCodeModel = null;
-      }
+      handleInstruction();
     }
     
     if (isFunctionUnitEmpty())
@@ -188,6 +150,92 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
       this.functionUnitId += this.functionUnitCount;
     }
   }// end of simulate
+  
+  private void handleInstruction()
+  {
+    if (this.simCodeModel.hasFailed())
+    {
+      // Instruction has failed, remove it from MAU
+      this.simCodeModel.setFunctionUnitId(this.functionUnitId);
+      this.simCodeModel = null;
+      this.zeroTheCounter();
+      
+      this.setDelay(baseDelay);
+      this.firstDelayPassed = false;
+      return;
+    }
+    
+    if (hasTimerStartedThisTick())
+    {
+      // First tick of work, leave your ID in store and load buffers
+      if (simCodeModel.isLoad())
+      {
+        this.loadBufferBlock.getLoadBufferItem(simCodeModel.getIntegerId()).setMemoryAccessId(this.functionUnitId);
+      }
+      else if (simCodeModel.isStore())
+      {
+        this.storeBufferBlock.getStoreBufferItem(simCodeModel.getIntegerId()).setMemoryAccessId(this.functionUnitId);
+      }
+      else
+      {
+        throw new RuntimeException("Instruction is not load or store");
+      }
+    }
+    
+    // hasDelayPassed increments counter, checks if work (waiting) is done
+    tickCounter();
+    if (!hasDelayPassed())
+    {
+      return;
+    }
+    
+    // Execute
+    boolean allowAccessFinish = true;
+    if (!firstDelayPassed)
+    {
+      // First delay is over, start memory access
+      firstDelayPassed = true;
+      
+      // This contacts memoryModel, pulls data and delay
+      Pair<Integer, Long> result = loadStoreInterpreter.interpretInstruction(this.simCodeModel, cycleCount);
+      int                 delay  = result.getFirst();
+      savedResult = result.getSecond();
+      
+      // Set delay for memory response
+      this.setDelay(delay);
+      this.resetCounter();
+      if (delay != 0)
+      {
+        // Memory returned with delay for access, do not allow to finish in the same execution
+        allowAccessFinish = false;
+      }
+    }
+    
+    if (firstDelayPassed && allowAccessFinish)
+    {
+      // Wait for memory is over, instruction is finished
+      firstDelayPassed = false;
+      this.setDelay(baseDelay);
+      int simCodeId = this.simCodeModel.getIntegerId();
+      this.reorderBufferBlock.getRobItem(simCodeId).reorderFlags.setBusy(false);
+      if (this.simCodeModel.isLoad())
+      {
+        InputCodeArgument destinationArgument = simCodeModel.getArgumentByName("rd");
+        RegisterModel destRegister = registerFileBlock.getRegister(
+                Objects.requireNonNull(destinationArgument).getValue());
+        destRegister.setValue(savedResult, simCodeModel.getInstructionFunctionModel().getArgumentByName("rd").type());
+        destRegister.setReadiness(RegisterReadinessEnum.kExecuted);
+        this.loadBufferBlock.setDestinationAvailable(simCodeId);
+        this.loadBufferBlock.setMemoryAccessFinished(simCodeId);
+      }
+      else if (this.simCodeModel.isStore())
+      {
+        this.storeBufferBlock.setMemoryAccessFinished(simCodeId);
+      }
+      
+      this.simCodeModel = null;
+    }
+  }
   //----------------------------------------------------------------------
   
   @Override
@@ -200,42 +248,28 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
   }
   
   /**
-   * @return True if counter is at 0 or less, false otherwise
-   * @brief Checks if counter reached 0
-   */
-  @Override
-  public boolean hasReversedDelayPassed()
-  {
-    return getCounter() <= 0;
-  }// end of hasReversedDelayPassed
-  
-  /**
-   * @param [in] simCodeModel - Possible executing model
+   * @param simCodeModel Possible executing model
    *
    * @brief Removes instruction from MA block if there is one
    */
   public void tryRemoveCodeModel(SimCodeModel simCodeModel)
   {
-    if (this.simCodeModel != null && this.simCodeModel == simCodeModel)
+    if (this.simCodeModel == null || this.simCodeModel != simCodeModel)
     {
-      hasDelayPassed();
-      this.simCodeModel.setFunctionUnitId(this.functionUnitId - 1);
-      this.simCodeModel = null;
-      this.zeroTheCounter();
-      
-      this.setDelay(baseDelay);
-      this.firstDelayPassed = false;
+      // todo Maybe the 'this.simCodeModel != simCodeModel' is wrong, because buffers try to remove a lot of times
+      throw new RuntimeException("Trying to remove wrong code model from MAU");
     }
+    
+    tickCounter();
+    this.simCodeModel.setFunctionUnitId(this.functionUnitId - 1);
+    this.simCodeModel = null;
+    this.zeroTheCounter();
+    
+    this.setDelay(baseDelay);
+    this.firstDelayPassed = false;
+    
   }// end of tryRemoveCodeModel
   //----------------------------------------------------------------------
-  
-  /**
-   * @brief Gets base delay for this unit - first delay without response from cache
-   */
-  public int getBaseDelay()
-  {
-    return baseDelay;
-  }
   
   /**
    * @brief Sets base delay for this unit - first delay without response from cache
@@ -244,5 +278,4 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
   {
     this.baseDelay = baseDelay;
   }
-  
 }

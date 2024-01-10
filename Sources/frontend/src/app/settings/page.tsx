@@ -29,10 +29,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { SettingsForm } from '@/components/form/SettingsForm';
+
 export default function Page() {
   return (
     <main>
-      <div>Nothing here</div>
+      <h2 className='text-2xl mb-4'>Settings</h2>
+      <SettingsForm />
     </main>
   );
 }

@@ -39,19 +39,20 @@ import {
   Control,
   Controller,
   FieldError,
+  RegisterOptions,
+  UseFormReturn,
   useController,
   useForm,
-  UseFormReturn,
 } from 'react-hook-form';
 
 import {
-  cacheReplacementTypes,
+  CpuConfig,
   FUnitConfig,
+  Operations,
+  cacheReplacementTypes,
   fUnitSchema,
   fuTypes,
-  IsaNamedConfig,
   isArithmeticUnitConfig,
-  Operations,
   operations,
   predictorDefaults,
   predictorTypes,
@@ -75,10 +76,14 @@ import {
 } from '@/components/base/ui/tabs';
 
 import { FormInput } from './FormInput';
-import { RadioInput, RadioInputWithTitle } from './RadioInput';
+import {
+  ControlRadioInput,
+  RadioInput,
+  RadioInputWithTitle,
+} from './RadioInput';
 
-type IsaArrayFields = 'fUnits';
-type IsaSimpleFields = keyof Omit<IsaNamedConfig, IsaArrayFields>;
+type IsaArrayFields = 'fUnits' | 'memoryLocations';
+type IsaSimpleFields = keyof Omit<CpuConfig, IsaArrayFields>;
 type IsaKeys = IsaSimpleFields | IsaArrayFields;
 
 type IsaFormMetadata = {
@@ -167,6 +172,9 @@ const isaFormMetadata: IsaFormMetadata = {
   fUnits: {
     title: 'Functional units',
   },
+  memoryLocations: {
+    title: 'Memory locations',
+  },
 };
 
 const capabilitiesMetadata: {
@@ -196,7 +204,7 @@ const capabilitiesMetadata: {
 
 export type IsaSettingsFormProps = {
   disabled?: boolean;
-  form: UseFormReturn<IsaNamedConfig>;
+  form: UseFormReturn<CpuConfig>;
 };
 
 export default function IsaSettingsForm({
@@ -210,14 +218,16 @@ export default function IsaSettingsForm({
   } = form;
 
   // This function is valid for regular fields, but not arrays
-  const simpleRegister = (name: IsaSimpleFields) => {
+  const simpleRegister = (
+    name: IsaSimpleFields,
+    regOptions?: RegisterOptions,
+  ) => {
     const error: FieldError | undefined = errors[name];
     return {
-      register,
       error,
-      name,
       title: isaFormMetadata[name].title,
       hint: isaFormMetadata[name].hint,
+      ...register(name, regOptions),
     };
   };
 
@@ -226,7 +236,7 @@ export default function IsaSettingsForm({
       name,
       title: isaFormMetadata[name].title,
       hint: isaFormMetadata[name].hint,
-      register,
+      control,
     };
   };
 
@@ -260,9 +270,15 @@ export default function IsaSettingsForm({
             </CardHeader>
             <CardContent>
               <fieldset disabled={disabled}>
-                <FormInput {...simpleRegister('robSize')} type='number' />
-                <FormInput {...simpleRegister('lbSize')} type='number' />
-                <FormInput {...simpleRegister('sbSize')} type='number' />
+                <FormInput
+                  {...simpleRegister('robSize', { valueAsNumber: true })}
+                />
+                <FormInput
+                  {...simpleRegister('lbSize', { valueAsNumber: true })}
+                />
+                <FormInput
+                  {...simpleRegister('sbSize', { valueAsNumber: true })}
+                />
               </fieldset>
             </CardContent>
           </Card>
@@ -274,8 +290,12 @@ export default function IsaSettingsForm({
             </CardHeader>
             <CardContent>
               <fieldset disabled={disabled}>
-                <FormInput {...simpleRegister('fetchWidth')} type='number' />
-                <FormInput {...simpleRegister('commitWidth')} type='number' />
+                <FormInput
+                  {...simpleRegister('fetchWidth', { valueAsNumber: true })}
+                />
+                <FormInput
+                  {...simpleRegister('commitWidth', { valueAsNumber: true })}
+                />
               </fieldset>
             </CardContent>
           </Card>
@@ -290,9 +310,15 @@ export default function IsaSettingsForm({
             </CardHeader>
             <CardContent>
               <fieldset disabled={disabled}>
-                <FormInput {...simpleRegister('cacheLines')} type='number' />
-                <FormInput {...simpleRegister('cacheLineSize')} type='number' />
-                <FormInput {...simpleRegister('cacheAssoc')} type='number' />
+                <FormInput
+                  {...simpleRegister('cacheLines', { valueAsNumber: true })}
+                />
+                <FormInput
+                  {...simpleRegister('cacheLineSize', { valueAsNumber: true })}
+                />
+                <FormInput
+                  {...simpleRegister('cacheAssoc', { valueAsNumber: true })}
+                />
                 <div className='mb-6 flex justify-evenly'>
                   <RadioInputWithTitle
                     {...radioRegister('cacheReplacement')}
@@ -303,11 +329,16 @@ export default function IsaSettingsForm({
                     choices={storeBehaviorTypes}
                   />
                 </div>
-                <FormInput {...simpleRegister('storeLatency')} type='number' />
-                <FormInput {...simpleRegister('loadLatency')} type='number' />
                 <FormInput
-                  {...simpleRegister('laneReplacementDelay')}
-                  type='number'
+                  {...simpleRegister('storeLatency', { valueAsNumber: true })}
+                />
+                <FormInput
+                  {...simpleRegister('loadLatency', { valueAsNumber: true })}
+                />
+                <FormInput
+                  {...simpleRegister('laneReplacementDelay', {
+                    valueAsNumber: true,
+                  })}
                 />
                 <input
                   id='addRemainingDelay'
@@ -329,8 +360,12 @@ export default function IsaSettingsForm({
             </CardHeader>
             <CardContent>
               <fieldset disabled={disabled}>
-                <FormInput {...simpleRegister('btbSize')} type='number' />
-                <FormInput {...simpleRegister('phtSize')} type='number' />
+                <FormInput
+                  {...simpleRegister('btbSize', { valueAsNumber: true })}
+                />
+                <FormInput
+                  {...simpleRegister('phtSize', { valueAsNumber: true })}
+                />
                 <div className='mb-6 flex justify-evenly'>
                   <RadioInputWithTitle
                     {...radioRegister('predictorType')}
@@ -354,7 +389,7 @@ type OpMetadata = {
   name: string;
 };
 
-const opsMetadata: { [key in Operations]: OpMetadata } = {
+const opsMetadata: { [op in Operations]: OpMetadata } = {
   addition: { name: 'Addition' },
   bitwise: { name: 'Bitwise' },
   division: { name: 'Division' },
@@ -364,7 +399,7 @@ const opsMetadata: { [key in Operations]: OpMetadata } = {
 
 interface FunctionalUnitInputProps {
   disabled?: boolean;
-  control: Control<IsaNamedConfig>;
+  control: Control<CpuConfig>;
 }
 
 // Uses its own subform
@@ -427,6 +462,7 @@ function FunctionalUnitInput({
                     </div>
                     <div>
                       <button
+                        type='button'
                         onClick={() => removeUnit(i)}
                         className='shrink-0 px-1'
                       >
@@ -449,7 +485,7 @@ function FunctionalUnitInput({
 
 // Subform for adding a new FU
 // Controls the fUnits field
-function FUAdder({ control }: { control: Control<IsaNamedConfig> }) {
+function FUAdder({ control }: { control: Control<CpuConfig> }) {
   const { field } = useController({
     control,
     name: 'fUnits',
@@ -487,21 +523,24 @@ function FUAdder({ control }: { control: Control<IsaNamedConfig> }) {
   return (
     <div>
       <div className=''>
-        <RadioInput register={register} name='fuType' choices={fuTypes} />
+        <ControlRadioInput
+          control={subControl}
+          name='fuType'
+          choices={fuTypes}
+        />
       </div>
       <div className='mt-4 flex justify-evenly'>
         <div>
           <FormInput
-            register={register}
+            {...register('name')}
             name='name'
             title='Name'
             error={errors.name}
           />
           <FormInput
-            register={register}
+            {...register('latency', { valueAsNumber: true })}
             name='latency'
             title='Latency'
-            type='number'
             error={errors.latency}
           />
         </div>

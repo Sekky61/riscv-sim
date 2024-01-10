@@ -29,6 +29,8 @@ package com.gradle.superscalarsim.server.compile;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.List;
+
 public class CompileRequest
 {
   /**
@@ -36,11 +38,12 @@ public class CompileRequest
    */
   @JsonProperty(required = true)
   String code;
+  
   /**
-   * @brief True if the code should be optimized
+   * @brief List of optimization flags
    */
   @JsonProperty(required = true)
-  boolean optimize;
+  List<String> optimizeFlags;
   
   /**
    * @brief Default constructor for deserialization
@@ -50,9 +53,9 @@ public class CompileRequest
   
   }
   
-  public CompileRequest(String code, boolean optimize)
+  public CompileRequest(String code, List<String> optimizeFlags)
   {
-    this.code     = code;
-    this.optimize = optimize;
+    this.code          = code;
+    this.optimizeFlags = optimizeFlags;
   }
 }

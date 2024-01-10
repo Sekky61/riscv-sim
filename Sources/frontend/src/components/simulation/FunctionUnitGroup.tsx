@@ -60,26 +60,26 @@ export type FunctionUnitGroupProps = {
 };
 
 function getSelector(type: FUType) {
-  if (type == 'alu') return selectArithmeticFunctionUnitBlocks;
-  if (type == 'fp') return selectFpFunctionUnitBlocks;
-  if (type == 'branch') return selectBranchFunctionUnitBlocks;
-  if (type == 'memory') return selectMemoryAccessUnitBlocks;
+  if (type === 'alu') return selectArithmeticFunctionUnitBlocks;
+  if (type === 'fp') return selectFpFunctionUnitBlocks;
+  if (type === 'branch') return selectBranchFunctionUnitBlocks;
+  if (type === 'memory') return selectMemoryAccessUnitBlocks;
   throw new Error(`Invalid type ${type}`);
 }
 
 function getNameFromType(type: FUType) {
-  if (type == 'alu') return 'ALU';
-  if (type == 'fp') return 'FP';
-  if (type == 'branch') return 'Branch';
-  if (type == 'memory') return 'Memory Access';
+  if (type === 'alu') return 'ALU';
+  if (type === 'fp') return 'FP';
+  if (type === 'branch') return 'Branch';
+  if (type === 'memory') return 'Memory Access';
   throw new Error(`Invalid type ${type}`);
 }
 
 function getGridClassName(type: FUType) {
-  if (type == 'alu') return 'aluFu';
-  if (type == 'fp') return 'fpFu';
-  if (type == 'branch') return 'branchFu';
-  if (type == 'memory') return 'memoryFu';
+  if (type === 'alu') return 'aluFu';
+  if (type === 'fp') return 'fpFu';
+  if (type === 'branch') return 'branchFu';
+  if (type === 'memory') return 'memoryFu';
   throw new Error(`Invalid type ${type}`);
 }
 
@@ -93,18 +93,22 @@ export default function FunctionUnitGroup({ type }: FunctionUnitGroupProps) {
   // TODO: has no limit
   return (
     <>
-      {fus.map((fu, i) => (
-        <Fragment key={fu.functionUnitId}>
-          <Block
-            title={fu.name || getNameFromType(type)}
-            key={fu.name}
-            stats={`${fu.counter}/${fu.delay}`}
-            className={clsx(cl, 'row-span-1', rowPosition[i + 1])}
-          >
-            <InstructionField instructionId={fu.simCodeModel} />
-          </Block>
-        </Fragment>
-      ))}
+      {fus.map((fu, i) => {
+        const displayCounter = fu.simCodeModel === null ? 0 : fu.counter + 1;
+        const id = fu.simCodeModel ?? null;
+        return (
+          <Fragment key={fu.functionUnitId}>
+            <Block
+              title={fu.name || getNameFromType(type)}
+              key={fu.name}
+              stats={`${displayCounter}/${fu.delay}`}
+              className={clsx(cl, 'row-span-1', rowPosition[i + 1])}
+            >
+              <InstructionField instructionId={id} />
+            </Block>
+          </Fragment>
+        );
+      })}
     </>
   );
 }

@@ -312,6 +312,10 @@ public class InstructionFetchBlock implements AbstractBlock
    */
   public void setPc(int pc)
   {
+    if (pc < 0)
+    {
+      throw new IllegalArgumentException("PC cannot be negative");
+    }
     this.pc = pc;
   }// end of setPcCounter
 }

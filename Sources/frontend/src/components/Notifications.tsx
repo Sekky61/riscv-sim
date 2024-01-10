@@ -52,7 +52,7 @@ const Notifications = () => {
       defaultProps: {
         position: 'top-right',
         dismissible: true,
-        dismissAfter: 2000,
+        dismissAfter: 4000,
       },
     });
   }, []);

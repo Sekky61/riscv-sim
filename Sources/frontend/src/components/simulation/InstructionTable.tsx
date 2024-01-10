@@ -115,7 +115,7 @@ function InstructionRow({ instructionId }: InstructionRowProps) {
   const q = useAppSelector((state) => selectSimCodeModel(state, instructionId));
   const dispatch = useAppDispatch();
   if (!q) throw new Error('Instruction not found');
-  const { simCodeModel, inputCodeModel, functionModel } = q;
+  const { simCodeModel, inputCodeModel } = q;
 
   let instructionType;
   switch (inputCodeModel.instructionTypeEnum) {
@@ -140,7 +140,11 @@ function InstructionRow({ instructionId }: InstructionRowProps) {
   };
 
   return (
-    <tr onClick={showDetail} className='hover:bg-gray-100 hover:cursor-pointer'>
+    <tr
+      onClick={showDetail}
+      onKeyUp={showDetail}
+      className='hover:bg-gray-100 hover:cursor-pointer'
+    >
       <td>{simCodeModel.id}</td>
       <td>{inputCodeModel.instructionName}</td>
       <td>{instructionType}</td>

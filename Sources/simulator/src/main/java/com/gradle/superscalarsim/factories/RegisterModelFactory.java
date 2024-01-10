@@ -63,7 +63,7 @@ public class RegisterModelFactory
     RegisterModel instance = new RegisterModel(name, isConstant, type, value, readiness);
     if (manager == null)
     {
-      System.err.println("RegisterModelFactory: manager is null");
+      //      System.err.println("RegisterModelFactory: manager is null");
     }
     else
     {

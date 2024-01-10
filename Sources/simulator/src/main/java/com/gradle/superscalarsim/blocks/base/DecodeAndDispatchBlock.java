@@ -381,7 +381,8 @@ public class DecodeAndDispatchBlock implements AbstractBlock
       if (argument.writeBack())
       {
         InputCodeArgument destinationArgument = simCodeModel.getArgumentByName(argument.name());
-        String mappedReg = renameMapTableBlock.mapRegister(destinationArgument.getValue(), simCodeModel.getIntegerId());
+        String            mappedReg           = renameMapTableBlock.mapRegister(destinationArgument.getValue(),
+                                                                                simCodeModel.getIntegerId());
         destinationArgument.setValue(mappedReg);
       }
     }
@@ -409,9 +410,9 @@ public class DecodeAndDispatchBlock implements AbstractBlock
     int         realTarget    = realTargetOpt.orElse(-1);
     
     boolean globalHistoryBit = prediction && predTarget != 0;
-    boolean jumpBad          = unconditional && realTarget != predTarget;
-    boolean branchBad        = !unconditional && prediction && realTarget != predTarget;
-    if (jumpBad || branchBad)
+    boolean shouldJump       = unconditional || prediction;
+    boolean jumpBad          = shouldJump && realTarget != predTarget && realTargetOpt.isPresent();
+    if (jumpBad)
     {
       // Branch badly predicted
       // Fix entry in BTB, set correct PC
@@ -458,7 +459,7 @@ public class DecodeAndDispatchBlock implements AbstractBlock
   //----------------------------------------------------------------------
   
   /**
-   * @param [in] index - index of first instruction to remove
+   * @param index index of first instruction to remove
    *
    * @brief Remove all instructions from beforeRenameCodeList from specified index until the end
    */

@@ -33,27 +33,32 @@
 
 import {
   Action,
+  PayloadAction,
+  ThunkAction,
   createAsyncThunk,
   createSelector,
   createSlice,
-  PayloadAction,
-  ThunkAction,
 } from '@reduxjs/toolkit';
+import { toByteArray } from 'base64-js';
 import { notify } from 'reapop';
 
 import { selectAsmCode } from '@/lib/redux/compilerSlice';
-import { selectActiveIsa } from '@/lib/redux/isaSlice';
+import { selectActiveConfig } from '@/lib/redux/isaSlice';
 import type { RootState } from '@/lib/redux/store';
-import { callSimulationImpl } from '@/lib/serverCalls/callCompiler';
+import { callSimulationImpl } from '@/lib/serverCalls';
 import type {
+  Cache,
+  CacheLineModel,
   CpuState,
+  InputCodeArgument,
   InputCodeModel,
   InstructionFunctionModel,
+  Label,
   Reference,
   RegisterModel,
   SimCodeModel,
 } from '@/lib/types/cpuApi';
-import { isValidReference } from '@/lib/utils';
+import { isValidReference, isValidRegisterValue } from '@/lib/utils';
 
 /**
  * Redux state for CPU
@@ -160,7 +165,8 @@ export const simStepBackward = (): ThunkAction<
   return async (dispatch, getState) => {
     const state: RootState = getState();
     const currentTick = selectTick(state);
-    dispatch(callSimulation(currentTick - 1));
+    const cappedTick = Math.max(0, currentTick - 1);
+    dispatch(callSimulation(cappedTick));
   };
 };
 
@@ -175,7 +181,7 @@ export const callSimulation = createAsyncThunk<SimulationParsedResult, number>(
   async (arg, { getState, dispatch }) => {
     // @ts-ignore
     const state: RootState = getState();
-    const config = selectActiveIsa(state);
+    const config = selectActiveConfig(state);
     const code = state.cpu.code;
     const tick = arg;
     try {
@@ -185,12 +191,12 @@ export const callSimulation = createAsyncThunk<SimulationParsedResult, number>(
       // Log error and show simple error message to the user
       console.error(err);
       console.warn(
-        `Try clearing the local storage (application tab) and reloading the page`,
+        'Try clearing the local storage (application tab) and reloading the page',
       );
       dispatch(
         notify({
-          title: `API call failed`,
-          message: `See the console for more details`,
+          title: 'API call failed',
+          message: 'See the console for more details',
           status: 'error',
         }),
       );
@@ -281,6 +287,20 @@ export const selectAllSimCodeModels = (state: RootState) =>
 export const selectSimCodeModelById = (state: RootState, id: Reference) =>
   state.cpu.state?.managerRegistry.simCodeManager[id];
 
+export const selectMemory = (state: RootState) =>
+  state.cpu.state?.simulatedMemory;
+
+/**
+ * Parse the base64 string from the API into a Uint8Array.
+ */
+export const selectMemoryBytes = createSelector([selectMemory], (memory) => {
+  if (!memory) {
+    return null;
+  }
+  const arr = toByteArray(memory.memoryBase64 ?? '');
+  return arr;
+});
+
 export const selectProgram = (state: RootState) =>
   state.cpu.state?.instructionMemoryBlock;
 
@@ -293,26 +313,6 @@ export const selectHighlightedInputCode = (state: RootState) =>
 export const selectHighlightedRegister = (state: RootState) =>
   state.cpu.highlightedRegister;
 
-export type ParsedArgument = {
-  name: string;
-  value: string;
-  arch: RegisterModel | null;
-};
-
-type DetailedSimCodeModel = {
-  simCodeModel: SimCodeModel;
-  inputCodeModel: InputCodeModel;
-  functionModel: InstructionFunctionModel;
-  args: Array<ParsedArgument>;
-};
-
-export const selectSimCodeModel = (state: RootState, id?: Reference) => {
-  if (!isValidReference(id)) {
-    return null;
-  }
-  return selectDetailedSimCodeModels(state)?.[id];
-};
-
 /**
  * Returns program code with labels inserted before the instruction they point to.
  */
@@ -323,19 +323,37 @@ export const selectProgramWithLabels = createSelector(
       return null;
     }
 
-    // COPY code
-    const codeOrder: Array<Reference | string> = [...program.code];
-
-    // For each label, insert it before the instruction it points to
-    Object.entries(program.labels).forEach(([labelName, idx]) => {
-      let insertIndex = codeOrder.findIndex(
-        (instruction) => typeof instruction !== 'string' && instruction === idx,
-      );
-      if (insertIndex === -1) {
-        insertIndex = codeOrder.length;
+    // Collect labels that are not after the end of the program
+    const labels: Array<Label & { labelName: string }> = [];
+    for (const [labelName, label] of Object.entries(program.labels)) {
+      // Do not insert labels that are well after the end of the program
+      if (label.address >= (program.code.length + 1) * 4) {
+        continue;
       }
-      codeOrder.splice(insertIndex, 0, labelName);
-    });
+      labels.push({ ...label, labelName });
+    }
+
+    // Sort labels by address, ascending
+    labels.sort((a, b) => a.address - b.address);
+
+    // Upsert labels into the code
+    let offset = 0;
+    const codeOrder: Array<Reference | string> = [];
+    for (let i = 0; i < program.code.length; i++) {
+      const address = i * 4;
+      // Insert labels before the instruction they point to
+      let lab = labels[offset];
+      while (lab !== undefined && lab.address === address) {
+        codeOrder.push(lab.labelName);
+        offset++;
+        lab = labels[offset];
+      }
+      const instruction = program.code[i];
+      if (instruction === undefined) {
+        throw new Error(`Instruction at ${address} not found`);
+      }
+      codeOrder.push(instruction);
+    }
 
     return codeOrder;
   },
@@ -343,6 +361,7 @@ export const selectProgramWithLabels = createSelector(
 
 export const selectAllRegisters = (state: RootState) =>
   state.cpu.state?.managerRegistry.registerModelManager;
+
 export const selectRegisterIdMap = (state: RootState) =>
   state.cpu.state?.unifiedRegisterFileBlock.registerMap;
 
@@ -360,23 +379,37 @@ export const selectRegisterMap = createSelector(
     // Copy the registers
     const registerMap: Record<string, RegisterModel> = { ...registers };
 
-    if (registers['f8'] === undefined) {
-      console.warn('f8 is undefined', registers);
-      return registerMap;
-    }
-
     // Assign aliases (not in the map at the moment)
-    Object.entries(map).forEach(([alias, id]) => {
+    for (const [alias, id] of Object.entries(map)) {
       const register = registers[id];
       if (!register) {
+        console.warn(`Register ${id} not found`, alias, id);
         throw new Error(`Register ${id} not found`);
       }
       registerMap[alias] ??= register;
-    });
+    }
 
     return registerMap;
   },
 );
+
+export type ParsedArgument = {
+  /**
+   * Register model, if the argument is a register
+   */
+  arch: RegisterModel | null;
+  /**
+   * True if the current argument value is valif
+   */
+  valid: boolean;
+} & InputCodeArgument;
+
+type DetailedSimCodeModel = {
+  simCodeModel: SimCodeModel;
+  inputCodeModel: InputCodeModel;
+  functionModel: InstructionFunctionModel;
+  args: Array<ParsedArgument>;
+};
 
 /**
  * Select simcodemodel, inputcodemodel and instructionfunctionmodel for a given simcode id.
@@ -405,9 +438,9 @@ const selectDetailedSimCodeModels = createSelector(
 
     // Create a lookup table with entry for each simcode
     const lookup: Record<Reference, DetailedSimCodeModel> = {};
-    Object.entries(simCodeModels).forEach(([id, simCodeModel]) => {
+    for (const [id, simCodeModel] of Object.entries(simCodeModels)) {
       const reference = parseInt(id, 10);
-      if (isNaN(reference)) {
+      if (Number.isNaN(reference)) {
         throw new Error(`Invalid simcode id: ${id}`);
       }
       const inputCodeModel = inputCodeModels[simCodeModel.inputCodeModel];
@@ -426,19 +459,30 @@ const selectDetailedSimCodeModels = createSelector(
         args: [],
       };
       for (const renamedArg of simCodeModel.renamedArguments) {
-        const arg: ParsedArgument = { arch: null, ...renamedArg };
+        const arg: ParsedArgument = { arch: null, valid: false, ...renamedArg };
         const registerExpected = renamedArg.name.startsWith('r');
         const a = registers[arg.value];
         if (a === undefined && registerExpected) {
+          console.warn(`Register ${arg.name} not found ()`);
+          console.warn(registers);
           throw new Error(`Register ${arg.value} not found`);
         }
+        arg.arch = a ?? null;
+        arg.valid = arg.arch === null || isValidRegisterValue(arg.arch);
         detail.args.push(arg);
       }
       lookup[reference] = detail;
-    });
+    }
     return lookup;
   },
 );
+
+export const selectSimCodeModel = (state: RootState, id: Reference | null) => {
+  if (!isValidReference(id)) {
+    return null;
+  }
+  return selectDetailedSimCodeModels(state)?.[id];
+};
 
 /**
  * ID is a register name or alias.
@@ -522,21 +566,40 @@ export const selectMemoryAccessUnitBlocks = (state: RootState) =>
 export const selectStoreBuffer = (state: RootState) =>
   state.cpu.state?.storeBufferBlock;
 
-export const selectStoreBufferItemById = (state: RootState, id?: Reference) => {
-  if (!isValidReference(id)) {
-    return null;
-  }
-  return selectStoreBuffer(state)?.storeMap[id];
-};
-
 export const selectLoadBuffer = (state: RootState) =>
   state.cpu.state?.loadBufferBlock;
 
-export const selectLoadBufferItemById = (state: RootState, id?: Reference) => {
-  if (!isValidReference(id)) {
-    return null;
-  }
-  return selectLoadBuffer(state)?.loadMap[id];
-};
+// cache
+
+const selectCacheInternal = (state: RootState) => state.cpu.state?.cache;
+
+export interface DecodedCacheLine extends CacheLineModel {
+  decodedLine: number[];
+}
+
+export interface DecodedCache extends Cache {
+  cache: DecodedCacheLine[][];
+}
+
+export const selectCache = createSelector(
+  [selectCacheInternal],
+  (cache): DecodedCache | null => {
+    if (!cache) {
+      return null;
+    }
+
+    // deep copy the cache
+    const copy: DecodedCache = JSON.parse(JSON.stringify(cache));
+
+    // decode the base64 string in each cache line
+    for (const isl of copy.cache) {
+      for (const line of isl) {
+        const ba = toByteArray(line.line ?? '');
+        line.decodedLine = Array.from(ba);
+      }
+    }
+    return copy;
+  },
+);
 
 export default cpuSlice.reducer;

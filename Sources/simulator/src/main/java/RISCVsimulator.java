@@ -31,6 +31,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import com.gradle.superscalarsim.compiler.GccCaller;
+import com.gradle.superscalarsim.loader.ConfigLoader;
 import com.gradle.superscalarsim.server.Server;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
@@ -47,6 +49,9 @@ class App implements Runnable
   
   @Option(names = "--instruction-dir", description = "Directory with instruction description .json files", scope = CommandLine.ScopeType.INHERIT)
   String instructionDir = "./riscvisa/";
+  
+  @Option(names = "--gcc-path", description = "Path to the GCC compiler", scope = CommandLine.ScopeType.INHERIT)
+  String gccPath;
   
   @Option(names = {"-h", "--help"}, usageHelp = true, description = "display a help message", scope = CommandLine.ScopeType.INHERIT)
   boolean helpRequested = false;
@@ -74,6 +79,11 @@ class App implements Runnable
 @Command(name = "server", description = "Server subcommand")
 class ServerApp implements Callable<Integer>
 {
+  /**
+   * @brief Configuration loader. Runs before any other code.
+   */
+  static ConfigLoader configLoader = new ConfigLoader();
+  
   @CommandLine.ParentCommand
   private App parent;
   
@@ -86,6 +96,13 @@ class ServerApp implements Callable<Integer>
   @Override
   public Integer call()
   {
+    // override the configLoader
+    if (parent.gccPath != null)
+    {
+      System.out.println("Overriding GCC path to " + parent.gccPath);
+      GccCaller.compilerPath = parent.gccPath;
+    }
+    
     Server server = new Server(host, port);
     try
     {
