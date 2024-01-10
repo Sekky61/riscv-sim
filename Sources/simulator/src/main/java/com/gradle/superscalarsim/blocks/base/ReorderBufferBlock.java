@@ -138,8 +138,6 @@ public class ReorderBufferBlock implements AbstractBlock
   }
   
   /**
-   * @param blockScheduleTask      Task class, where blocks are periodically triggered by the GlobalTimer
-   * @param registerFileBlock      Class containing all registers, that simulator uses
    * @param renameMapTableBlock    Class holding mappings from architectural registers to speculative
    * @param decodeAndDispatchBlock Class, which simulates instruction decode and renames registers
    * @param gShareUnit             GShare unit for getting correct prediction counters
@@ -265,6 +263,7 @@ public class ReorderBufferBlock implements AbstractBlock
   {
     codeModel.setCommitId(this.commitId);
     simulationStatistics.incrementCommittedInstructions();
+    simulationStatistics.dynamicInstructionMix.increment(codeModel.getInstructionTypeEnum());
     if (codeModel.getInstructionTypeEnum() == InstructionTypeEnum.kJumpbranch)
     {
       boolean branchActuallyTaken = codeModel.isBranchLogicResult();

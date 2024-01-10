@@ -27,10 +27,7 @@
  */
 package com.gradle.superscalarsim.cpu;
 
-import com.gradle.superscalarsim.models.Pair;
-
-import java.util.ArrayList;
-import java.util.List;
+import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 
 /**
  * @class SimulationStatistics
@@ -38,6 +35,19 @@ import java.util.List;
  */
 public class SimulationStatistics
 {
+  /**
+   * Static instruction mix
+   */
+  public InstructionMix staticInstructionMix;
+  /**
+   * Dynamic instruction mix.
+   * Instructions are counted at the moment they are committed.
+   */
+  public InstructionMix dynamicInstructionMix;
+  /**
+   * Cache statistics
+   */
+  public CacheStatistics cache;
   /**
    * Counter for committed instructions.
    * A commited instruction is one that has successfully left ROB.
@@ -60,23 +70,19 @@ public class SimulationStatistics
    * Counter for all branch instructions.
    */
   private long allBranches;
-  
   /**
    * Number of taken branches
    */
   private long takenBranches;
   
   /**
-   * Cache statistics
-   */
-  public CacheStatistics cache;
-  
-  /**
    * @brief Constructor
    */
   public SimulationStatistics()
   {
-    this.cache = new CacheStatistics();
+    this.cache                 = new CacheStatistics();
+    this.staticInstructionMix  = new InstructionMix();
+    this.dynamicInstructionMix = new InstructionMix();
   }// end of Constructor
   //----------------------------------------------------------------------
   
@@ -188,26 +194,10 @@ public class SimulationStatistics
     private int totalDelay;
     
     /**
-     * List of data for line chart with delays, clockXdelay
-     */
-    private transient List<Pair<Integer, Float>> delayList;
-    /**
-     * List of data for line chart with delays, clockXhitMissAverage
-     */
-    private transient List<Pair<Integer, Float>> hitMissList;
-    
-    /**
-     * Value of last 4 accesses: positive means there were more hits than misses
-     */
-    private int last4accesses;
-    
-    /**
      * @brief Constructor
      */
     public CacheStatistics()
     {
-      delayList   = new ArrayList<>();
-      hitMissList = new ArrayList<>();
     }
     
     public void incrementAccesses()
@@ -217,22 +207,37 @@ public class SimulationStatistics
     
     public void incrementHits(int cycle)
     {
-      last4accesses = Math.min(last4accesses + 1, 4);
       hits++;
-      hitMissList.add(new Pair<>(cycle, (float) last4accesses));
     }
     
     public void incrementMisses(int cycle)
     {
-      last4accesses = Math.max(last4accesses - 1, -4);
       misses++;
-      hitMissList.add(new Pair<>(cycle, (float) last4accesses));
     }
     
     public void incrementTotalDelay(int cycle, int delay)
     {
-      delayList.add(new Pair<>(cycle, (float) delay));
       totalDelay += delay;
+    }
+  }
+  
+  public static class InstructionMix
+  {
+    public int intArithmetic;
+    public int floatArithmetic;
+    public int memory;
+    public int branch;
+    public int other;
+    
+    public void increment(InstructionTypeEnum type)
+    {
+      switch (type)
+      {
+        case kIntArithmetic -> intArithmetic++;
+        case kFloatArithmetic -> floatArithmetic++;
+        case kLoadstore -> memory++;
+        case kJumpbranch -> branch++;
+      }
     }
   }
 }

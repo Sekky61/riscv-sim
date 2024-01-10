@@ -133,6 +133,7 @@ public class CpuState implements Serializable
   {
     this.tick            = 0;
     this.managerRegistry = new ManagerRegistry();
+    this.statistics      = new SimulationStatistics();
     
     // Factories (for tracking instances of models)
     InputCodeModelFactory inputCodeModelFactory = new InputCodeModelFactory(managerRegistry.inputCodeManager);
@@ -168,7 +169,9 @@ public class CpuState implements Serializable
     }
     memoryInitializer.initializeMemory(simulatedMemory, codeParser.getMemoryLocations(), codeParser.getLabels());
     
-    this.statistics = new SimulationStatistics();
+    // Count static instruction mix
+    codeParser.getInstructions()
+            .forEach(ins -> statistics.staticInstructionMix.increment(ins.getInstructionTypeEnum()));
     
     InstructionFunctionModel nopFM = initLoader.getInstructionFunctionModel("nop");
     InputCodeModel nop = inputCodeModelFactory.createInstance(nopFM, new ArrayList<>(),
