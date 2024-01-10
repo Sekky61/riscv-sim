@@ -1,5 +1,5 @@
 /**
- * @file StatisticsCounter.java
+ * @file SimulationStatistics.java
  * @author Jan Vavra \n
  * Faculty of Information Technology \n
  * Brno University of Technology \n
@@ -33,24 +33,36 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @class StatisticsCounter
+ * @class SimulationStatistics
  * @brief Class that contains data from blocks for displaying statistics about the run
  */
 public class SimulationStatistics
 {
-  /// Counter for committed instructions
+  /**
+   * Counter for committed instructions.
+   * A commited instruction is one that has successfully left ROB.
+   */
   private long committedInstructions;
-  /// Counter for how many times was simulate() called
+  /**
+   * Counter for clocks passed.
+   */
   private long clockCycles;
-  /// Counter for how many instructions have failed
+  /**
+   * Counter for how many instructions have failed.
+   * Failed instructions are those that have been flushed from the pipeline.
+   */
   private long failedInstructions;
-  /// Counter for correctly predicted branching instructions
+  /**
+   * Counter for correctly predicted branching instructions.
+   */
   private long correctlyPredictedBranches;
-  /// Counter for all branch instructions
+  /**
+   * Counter for all branch instructions.
+   */
   private long allBranches;
   
   /**
-   * @brief Number of taken branches
+   * Number of taken branches
    */
   private long takenBranches;
   
@@ -122,89 +134,6 @@ public class SimulationStatistics
   //----------------------------------------------------------------------
   
   /**
-   * @brief Decrements number of committed instructions
-   */
-  public void decrementCommittedInstructions()
-  {
-    this.committedInstructions--;
-  }// end of decrementCommittedInstructions
-  //----------------------------------------------------------------------
-  
-  /**
-   * @brief Decrements number of simulate() calls
-   */
-  public void decrementClockCycles()
-  {
-    this.clockCycles--;
-  }// end of decrementClockCycles
-  //----------------------------------------------------------------------
-  
-  /**
-   * @brief Increment number of failed instructions
-   */
-  public void decrementFailedInstructions()
-  {
-    this.failedInstructions--;
-  }// end of decrementFailedInstructions
-  //----------------------------------------------------------------------
-  
-  /**
-   * @brief Increments number of correctly predicted branching instructions
-   */
-  public void decrementCorrectlyPredictedBranches()
-  {
-    this.correctlyPredictedBranches--;
-  }// end of decrementCorrectlyPredictedBranches
-  //----------------------------------------------------------------------
-  
-  /**
-   * @brief Increments number of all branch instructions that were committed
-   */
-  public void decrementAllBranches()
-  {
-    this.allBranches--;
-  }// end of decrementAllBranches
-  //----------------------------------------------------------------------
-  
-  /**
-   * @return Float value of CPI
-   * @brief Calculates CPI from values inside the class
-   */
-  public float calculateClocksPerInstruction()
-  {
-    if (this.committedInstructions <= 0)
-    {
-      return 0;
-    }
-    return (float) this.clockCycles / (float) this.committedInstructions;
-  }// end of calculateClocksPerInstruction
-  //----------------------------------------------------------------------
-  
-  /**
-   * @return Percent value of branch prediction accuracy
-   * @brief Calculate prediction accuracy in percent from values inside the class
-   */
-  public int calculateBranchPredictionPercentage()
-  {
-    if (this.allBranches <= 0)
-    {
-      return 100;
-    }
-    return (int) (((float) this.correctlyPredictedBranches / (float) this.allBranches) * 100.0f);
-  }// end of calculateBranchPredictionPercentage
-  //----------------------------------------------------------------------
-  
-  /**
-   * @return Number of failed instructions
-   * @brief Get number of failed instructions
-   */
-  public long getFailedInstructions()
-  {
-    return this.failedInstructions;
-  }// end of getFailedInstructions
-  //----------------------------------------------------------------------
-  
-  /**
    * @return Number of committed instructions
    * @brief Get number of committed instructions
    */
@@ -224,16 +153,6 @@ public class SimulationStatistics
   }// end of getAllBranches
   //----------------------------------------------------------------------
   
-  /**
-   * @return Number of clock cycles
-   * @brief Get number of clock cycles
-   */
-  public long getClockCycles()
-  {
-    return clockCycles;
-  }// end of getAllBranches
-  //----------------------------------------------------------------------
-  
   public long getCorrectlyPredictedBranches()
   {
     return correctlyPredictedBranches;
@@ -250,21 +169,36 @@ public class SimulationStatistics
    */
   public static class CacheStatistics
   {
-    /// Counter for committed instructions
+    /**
+     * Counter for how many times cache has been accessed (both read and write).
+     */
     private int accesses;
-    /// Counter for how many times was simulate() called
+    /**
+     * Counter for the number of cache hits.
+     */
     private int hits;
-    /// Counter for how many instructions have failed
+    /**
+     * Counter for the number of cache misses.
+     */
     private int misses;
-    /// Counter for correctly predicted branching instructions
+    /**
+     * Counter for the total delay caused by cache accesses.
+     * TODO
+     */
     private int totalDelay;
     
-    ///List of data for line chart with delays, clockXdelay
+    /**
+     * List of data for line chart with delays, clockXdelay
+     */
     private transient List<Pair<Integer, Float>> delayList;
-    ///List of data for line chart with delays, clockXhitMissAverage
+    /**
+     * List of data for line chart with delays, clockXhitMissAverage
+     */
     private transient List<Pair<Integer, Float>> hitMissList;
     
-    /// Value of last 4 accesses: positive means there were more hits than misses
+    /**
+     * Value of last 4 accesses: positive means there were more hits than misses
+     */
     private int last4accesses;
     
     /**
