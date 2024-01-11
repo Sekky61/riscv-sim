@@ -198,6 +198,19 @@ public class Cache
   }
   
   /**
+   * @param numberOfLines Number of cache lines
+   * @param associativity Number of lines per index
+   * @param lineSize      Size of line in bytes
+   *
+   * @return boolean - True if the values are valid, false otherwise
+   * @brief Checks if the cache parameters are valid
+   */
+  public boolean areSettingsCorrect(int numberOfLines, int associativity, int lineSize)
+  {
+    return numberOfLines % associativity == 0 && lineSize % 4 == 0 && numberOfLines % 2 == 0;
+  }
+  
+  /**
    * Flushes the cache - writes dirty lines to memory
    */
   public void flush()
@@ -216,19 +229,6 @@ public class Cache
         }
       }
     }
-  }
-  
-  /**
-   * @param numberOfLines Number of cache lines
-   * @param associativity Number of lines per index
-   * @param lineSize      Size of line in bytes
-   *
-   * @return boolean - True if the values are valid, false otherwise
-   * @brief Checks if the cache parameters are valid
-   */
-  public boolean areSettingsCorrect(int numberOfLines, int associativity, int lineSize)
-  {
-    return numberOfLines % associativity == 0 && lineSize % 4 == 0 && numberOfLines % 2 == 0;
   }
   
   /**
@@ -406,7 +406,7 @@ public class Cache
     //Save last access for visualization
     if (lastAccess.peek().getId() != id)
     {
-      statistics.cache.incrementAccesses();
+      statistics.cache.incrementReadAccesses(size);
       this.lastAccess.add(
               new CacheAccess(currentCycle, cycleEndOfReplacement, id, new Boolean[0], false, splittedAddress, 0,
                               new Integer[0], new Integer[0]));
@@ -559,6 +559,7 @@ public class Cache
   public int storeData(long address, long data, int size, int id, int currentCycle)
   {
     Triplet<Long, Integer, Integer> splitAddress = splitAddress(address);
+    statistics.cache.incrementWriteAccesses(size);
     
     long tag    = splitAddress.getFirst();
     int  index  = splitAddress.getSecond();
@@ -567,7 +568,6 @@ public class Cache
     // Save last access for visualization
     if (lastAccess.peek().getId() != id)
     {
-      statistics.cache.incrementAccesses();
       lastAccess.add(new CacheAccess(currentCycle, cycleEndOfReplacement, id, new Boolean[0], true, splitAddress, 0,
                                      new Integer[0], new Integer[0]));
     }

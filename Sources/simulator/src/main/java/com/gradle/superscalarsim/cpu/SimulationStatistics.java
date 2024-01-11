@@ -183,9 +183,13 @@ public class SimulationStatistics
   public static class CacheStatistics
   {
     /**
-     * Counter for how many times cache has been accessed (both read and write).
+     * Counter for how many times cache has been accessed for read.
      */
-    private int accesses;
+    private int readAccesses;
+    /**
+     * Counter for how many times cache has been accessed for write.
+     */
+    private int writeAccesses;
     /**
      * Counter for the number of cache hits.
      */
@@ -199,6 +203,14 @@ public class SimulationStatistics
      * TODO
      */
     private int totalDelay;
+    /**
+     * Number of bytes written to cache
+     */
+    private int bytesWritten;
+    /**
+     * Number of bytes read from cache
+     */
+    private int bytesRead;
     
     /**
      * @brief Constructor
@@ -207,9 +219,36 @@ public class SimulationStatistics
     {
     }
     
-    public void incrementAccesses()
+    public int getReadAccesses()
     {
-      accesses++;
+      return readAccesses;
+    }
+    
+    public int getWriteAccesses()
+    {
+      return writeAccesses;
+    }
+    
+    public int getBytesWritten()
+    {
+      return bytesWritten;
+    }
+    
+    public int getBytesRead()
+    {
+      return bytesRead;
+    }
+    
+    public void incrementReadAccesses(int bytesRead)
+    {
+      readAccesses++;
+      this.bytesRead += bytesRead;
+    }
+    
+    public void incrementWriteAccesses(int bytesWritten)
+    {
+      writeAccesses++;
+      this.bytesWritten += bytesWritten;
     }
     
     public void incrementHits(int cycle)

@@ -1718,6 +1718,10 @@ public class InstructionTests
     Assert.assertEquals(0x12345678,
                         cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt));
     Assert.assertEquals(0x12, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x3").getValue(DataTypeEnum.kInt));
+    Assert.assertEquals(1, cpu.cpuState.statistics.cache.getReadAccesses());
+    Assert.assertEquals(4, cpu.cpuState.statistics.cache.getBytesRead());
+    // !! This is caused by test setup (store)
+    Assert.assertEquals(1, cpu.cpuState.statistics.cache.getWriteAccesses());
   }
   
   /**
@@ -1782,6 +1786,8 @@ public class InstructionTests
     // Assert
     Assert.assertEquals(0x11, (long) cpu.cpuState.memoryModel.load(0x100, 1, 0, 0).getSecond());
     Assert.assertEquals(0x00, (long) cpu.cpuState.memoryModel.load(0x101, 1, 0, 0).getSecond());
+    Assert.assertEquals(1, cpu.cpuState.statistics.cache.getWriteAccesses());
+    Assert.assertEquals(1, cpu.cpuState.statistics.cache.getBytesWritten());
   }
   
   /**
