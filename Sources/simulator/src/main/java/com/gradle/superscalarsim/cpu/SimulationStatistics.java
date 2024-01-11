@@ -28,6 +28,7 @@
 package com.gradle.superscalarsim.cpu;
 
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
+import com.gradle.superscalarsim.models.SimCodeModel;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -118,9 +119,26 @@ public class SimulationStatistics
   /**
    * @brief Increments number of committed instructions
    */
-  public void incrementCommittedInstructions()
+  public void reportCommittedInstruction(SimCodeModel codeModel)
   {
     this.committedInstructions++;
+    this.dynamicInstructionMix.increment(codeModel.getInstructionFunctionModel().getInstructionType());
+    
+    boolean branchActuallyTaken = codeModel.isBranchLogicResult();
+    if (branchActuallyTaken)
+    {
+      incrementTakenBranches();
+    }
+    if (codeModel.isBranchPredicted() == branchActuallyTaken)
+    {
+      incrementCorrectlyPredictedBranches();
+    }
+    
+    if (codeModel.isConditionalBranch())
+    {
+      incrementConditionalBranches();
+    }
+    
   }// end of incrementCommittedInstructions
   //----------------------------------------------------------------------
   

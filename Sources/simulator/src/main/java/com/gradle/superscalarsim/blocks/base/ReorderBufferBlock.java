@@ -262,27 +262,15 @@ public class ReorderBufferBlock implements AbstractBlock
   private void processCommittableInstruction(SimCodeModel codeModel)
   {
     codeModel.setCommitId(this.commitId);
-    simulationStatistics.incrementCommittedInstructions();
-    simulationStatistics.dynamicInstructionMix.increment(codeModel.getInstructionTypeEnum());
+    simulationStatistics.reportCommittedInstruction(codeModel);
     if (codeModel.getInstructionTypeEnum() == InstructionTypeEnum.kJumpbranch)
     {
       boolean branchActuallyTaken = codeModel.isBranchLogicResult();
       int     pc                  = codeModel.getSavedPc();
       
-      if (branchActuallyTaken)
-      {
-        simulationStatistics.incrementTakenBranches();
-      }
-      
-      if (codeModel.isConditionalBranch())
-      {
-        simulationStatistics.incrementConditionalBranches();
-      }
-      
       if (codeModel.isBranchPredicted() == branchActuallyTaken)
       {
         // Correct prediction
-        simulationStatistics.incrementCorrectlyPredictedBranches();
         this.gShareUnit.getPredictorFromOld(pc, codeModel.getIntegerId()).upTheProbability();
         this.gShareUnit.getGlobalHistoryRegister().removeHistoryValue(codeModel.getIntegerId());
         // Update committable status of subsequent instructions
