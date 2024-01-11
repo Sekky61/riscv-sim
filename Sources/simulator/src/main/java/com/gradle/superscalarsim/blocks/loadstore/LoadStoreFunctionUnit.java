@@ -37,6 +37,7 @@ import com.gradle.superscalarsim.blocks.base.AbstractFunctionUnitBlock;
 import com.gradle.superscalarsim.blocks.base.IssueWindowBlock;
 import com.gradle.superscalarsim.blocks.base.ReorderBufferBlock;
 import com.gradle.superscalarsim.code.CodeLoadStoreInterpreter;
+import com.gradle.superscalarsim.cpu.SimulationStatistics;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.models.FunctionalUnitDescription;
 import com.gradle.superscalarsim.models.SimCodeModel;
@@ -82,13 +83,13 @@ public class LoadStoreFunctionUnit extends AbstractFunctionUnitBlock
   }
   
   /**
-   * @param name                 Name of function unit
+   * @param description          Description of the function unit
    * @param reorderBufferBlock   Class containing simulated Reorder Buffer
-   * @param delay                Delay for function unit
    * @param issueWindowBlock     Issue window block for comparing instruction and data types
    * @param loadBufferBlock      Load buffer with all load instruction entries
    * @param storeBufferBlock     Store buffer with all store instruction entries
    * @param loadStoreInterpreter Interpreter for processing load store instructions
+   * @param statistics           Statistics for reporting FU usage
    *
    * @brief Constructor
    */
@@ -97,9 +98,10 @@ public class LoadStoreFunctionUnit extends AbstractFunctionUnitBlock
                                IssueWindowBlock issueWindowBlock,
                                LoadBufferBlock loadBufferBlock,
                                StoreBufferBlock storeBufferBlock,
-                               CodeLoadStoreInterpreter loadStoreInterpreter)
+                               CodeLoadStoreInterpreter loadStoreInterpreter,
+                               SimulationStatistics statistics)
   {
-    super(description, issueWindowBlock, reorderBufferBlock);
+    super(description, issueWindowBlock, reorderBufferBlock, statistics);
     this.loadBufferBlock      = loadBufferBlock;
     this.storeBufferBlock     = storeBufferBlock;
     this.loadStoreInterpreter = loadStoreInterpreter;
@@ -130,6 +132,7 @@ public class LoadStoreFunctionUnit extends AbstractFunctionUnitBlock
    */
   private void handleInstruction()
   {
+    incrementBusyCycles();
     if (this.simCodeModel.hasFailed())
     {
       this.simCodeModel.setFunctionUnitId(this.functionUnitId);

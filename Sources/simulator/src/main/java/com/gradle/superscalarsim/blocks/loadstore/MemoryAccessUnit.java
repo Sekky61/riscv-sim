@@ -37,6 +37,7 @@ import com.gradle.superscalarsim.blocks.base.AbstractFunctionUnitBlock;
 import com.gradle.superscalarsim.blocks.base.IssueWindowBlock;
 import com.gradle.superscalarsim.blocks.base.ReorderBufferBlock;
 import com.gradle.superscalarsim.code.CodeLoadStoreInterpreter;
+import com.gradle.superscalarsim.cpu.SimulationStatistics;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.models.FunctionalUnitDescription;
@@ -92,13 +93,13 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
   private int baseDelay;
   
   /**
-   * @param name                 Name of function unit
+   * @param description          Description of the function unit
    * @param reorderBufferBlock   Class containing simulated Reorder Buffer
-   * @param delay                Delay for function unit
    * @param issueWindowBlock     Issue window block for comparing instruction and data types
    * @param loadBufferBlock      Buffer keeping all in-flight load instructions
    * @param storeBufferBlock     Buffer keeping all in-flight store instructions
    * @param loadStoreInterpreter Interpreter processing load/store instructions
+   * @param statistics           Statistics for reporting FU usage
    *
    * @brief Constructor
    */
@@ -107,9 +108,10 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
                           IssueWindowBlock issueWindowBlock,
                           LoadBufferBlock loadBufferBlock,
                           StoreBufferBlock storeBufferBlock,
-                          CodeLoadStoreInterpreter loadStoreInterpreter)
+                          CodeLoadStoreInterpreter loadStoreInterpreter,
+                          SimulationStatistics statistics)
   {
-    super(description, issueWindowBlock, reorderBufferBlock);
+    super(description, issueWindowBlock, reorderBufferBlock, statistics);
     this.loadBufferBlock      = loadBufferBlock;
     this.storeBufferBlock     = storeBufferBlock;
     this.loadStoreInterpreter = loadStoreInterpreter;
@@ -138,6 +140,7 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
   
   private void handleInstruction()
   {
+    incrementBusyCycles();
     if (this.simCodeModel.hasFailed())
     {
       // Instruction has failed, remove it from MAU

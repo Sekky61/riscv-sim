@@ -29,6 +29,9 @@ package com.gradle.superscalarsim.cpu;
 
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * @class SimulationStatistics
  * @brief Class that contains data from blocks for displaying statistics about the run
@@ -48,6 +51,10 @@ public class SimulationStatistics
    * Cache statistics
    */
   public CacheStatistics cache;
+  /**
+   * Functional unit statistics
+   */
+  public Map<String, FUStats> fuStats;
   /**
    * Counter for committed instructions.
    * A commited instruction is one that has successfully left ROB.
@@ -92,8 +99,21 @@ public class SimulationStatistics
     this.cache                 = new CacheStatistics();
     this.staticInstructionMix  = new InstructionMix();
     this.dynamicInstructionMix = new InstructionMix();
+    this.fuStats               = new HashMap<>();
   }// end of Constructor
   //----------------------------------------------------------------------
+  
+  /**
+   * @brief Increment busy cycles of FU with given name
+   */
+  public void incrementBusyCycles(String fuName)
+  {
+    if (!fuStats.containsKey(fuName))
+    {
+      fuStats.put(fuName, new FUStats());
+    }
+    fuStats.get(fuName).incrementBusyCycles();
+  }
   
   /**
    * @brief Increments number of committed instructions
@@ -312,6 +332,29 @@ public class SimulationStatistics
         case kLoadstore -> memory++;
         case kJumpbranch -> branch++;
       }
+    }
+  }
+  
+  public static class FUStats
+  {
+    /**
+     * The number of cycles that the FU was busy.
+     */
+    public int busyCycles;
+    
+    /**
+     * @brief Constructor
+     */
+    public FUStats()
+    {
+    }
+    
+    /**
+     * @brief Increments number of busy cycles
+     */
+    public void incrementBusyCycles()
+    {
+      this.busyCycles++;
     }
   }
 }

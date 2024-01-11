@@ -39,6 +39,7 @@ import com.gradle.superscalarsim.blocks.base.AbstractFunctionUnitBlock;
 import com.gradle.superscalarsim.blocks.base.IssueWindowBlock;
 import com.gradle.superscalarsim.blocks.base.ReorderBufferBlock;
 import com.gradle.superscalarsim.code.CodeBranchInterpreter;
+import com.gradle.superscalarsim.cpu.SimulationStatistics;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.models.FunctionalUnitDescription;
@@ -68,9 +69,10 @@ public class BranchFunctionUnitBlock extends AbstractFunctionUnitBlock
   public BranchFunctionUnitBlock(FunctionalUnitDescription description,
                                  IssueWindowBlock issueWindowBlock,
                                  ReorderBufferBlock reorderBufferBlock,
-                                 CodeBranchInterpreter branchInterpreter)
+                                 CodeBranchInterpreter branchInterpreter,
+                                 SimulationStatistics statistics)
   {
-    super(description, issueWindowBlock, reorderBufferBlock);
+    super(description, issueWindowBlock, reorderBufferBlock, statistics);
     this.branchInterpreter = branchInterpreter;
   }// end of Constructor
   
@@ -108,6 +110,7 @@ public class BranchFunctionUnitBlock extends AbstractFunctionUnitBlock
    */
   public void handleInstruction()
   {
+    incrementBusyCycles();
     if (this.simCodeModel.hasFailed())
     {
       this.simCodeModel.setFunctionUnitId(this.functionUnitId);

@@ -131,4 +131,19 @@ public class StatisticsTests
     // 10 loops, 9 bad predictions (last one is correct), 9 flushes
     Assert.assertEquals(9, cpu.cpuState.statistics.robFlushes);
   }
+  
+  @Test
+  public void testFuStats()
+  {
+    cpuConfig.code = """
+            addi t0,t0,1
+            addi t0,t0,1""";
+    
+    Cpu cpu = new Cpu(cpuConfig);
+    cpu.execute();
+    
+    // Assert
+    // There is a "FX" functional unit
+    Assert.assertEquals(2, cpu.cpuState.statistics.fuStats.get("FX").busyCycles);
+  }
 }

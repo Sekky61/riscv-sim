@@ -38,6 +38,7 @@ import com.gradle.superscalarsim.blocks.base.IssueWindowBlock;
 import com.gradle.superscalarsim.blocks.base.ReorderBufferBlock;
 import com.gradle.superscalarsim.code.CodeArithmeticInterpreter;
 import com.gradle.superscalarsim.code.Expression;
+import com.gradle.superscalarsim.cpu.SimulationStatistics;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.models.FunctionalUnitDescription;
@@ -74,20 +75,21 @@ public class ArithmeticFunctionUnitBlock extends AbstractFunctionUnitBlock
   }
   
   /**
-   * @param name               Name of the function unit
-   * @param delay              Delay for function unit
+   * @param description        Description of the function unit
    * @param issueWindowBlock   Issue window block for comparing instruction and data types
    * @param allowedOperators   Array of all supported operators by this FU
    * @param reorderBufferBlock Class containing simulated Reorder Buffer
+   * @param statistics         Statistics for reporting FU usage
    *
    * @brief Constructor
    */
   public ArithmeticFunctionUnitBlock(FunctionalUnitDescription description,
                                      IssueWindowBlock issueWindowBlock,
                                      List<String> allowedOperators,
-                                     ReorderBufferBlock reorderBufferBlock)
+                                     ReorderBufferBlock reorderBufferBlock,
+                                     SimulationStatistics statistics)
   {
-    super(description, issueWindowBlock, reorderBufferBlock);
+    super(description, issueWindowBlock, reorderBufferBlock, statistics);
     this.allowedOperators = allowedOperators;
   }// end of Constructor
   
@@ -165,6 +167,7 @@ public class ArithmeticFunctionUnitBlock extends AbstractFunctionUnitBlock
    */
   private void handleInstruction()
   {
+    incrementBusyCycles();
     if (this.simCodeModel.hasFailed())
     {
       this.simCodeModel.setFunctionUnitId(this.functionUnitId);
