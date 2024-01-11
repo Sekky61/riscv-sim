@@ -359,6 +359,9 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
     return inputCodeModel.getDataType();
   }
   
+  /**
+   * @return ID of the instruction (index in the code)
+   */
   @Override
   public int getCodeId()
   {

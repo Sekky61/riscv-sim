@@ -72,6 +72,12 @@ public class StatisticsTests
     // addi will be called 10 times. It is also intArithmetic
     Assert.assertEquals(12, cpu.cpuState.statistics.dynamicInstructionMix.intArithmetic);
     Assert.assertEquals(10, cpu.cpuState.statistics.dynamicInstructionMix.branch);
+    
+    // Per instruction stats
+    Assert.assertEquals(1, cpu.cpuState.statistics.instructionStats.get(0).committedCount);
+    Assert.assertEquals(1, cpu.cpuState.statistics.instructionStats.get(1).committedCount);
+    Assert.assertEquals(10, cpu.cpuState.statistics.instructionStats.get(2).committedCount);
+    Assert.assertEquals(10, cpu.cpuState.statistics.instructionStats.get(3).committedCount);
   }
   
   @Test

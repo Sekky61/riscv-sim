@@ -307,6 +307,7 @@ public class DecodeAndDispatchBlock implements AbstractBlock
       // Not sure if this does anything
       renameDestinationRegister(simCodeModel);
       this.afterRenameCodeList.add(simCodeModel);
+      statistics.reportDecodedInstruction(simCodeModel);
     }
     
     // Rename ended, report map table to statistics

@@ -30,7 +30,9 @@ package com.gradle.superscalarsim.cpu;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.models.SimCodeModel;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -56,6 +58,11 @@ public class SimulationStatistics
    * Functional unit statistics
    */
   public Map<String, FUStats> fuStats;
+  /**
+   * Per instruction statistics.
+   * Indexed as the instructions appear in code (id in InputCodeModel).
+   */
+  public List<InstructionStats> instructionStats;
   /**
    * Counter for committed instructions.
    * A commited instruction is one that has successfully left ROB.
@@ -93,16 +100,33 @@ public class SimulationStatistics
   public int maxAllocatedRegisters;
   
   /**
+   * @param instructionCount Number of instructions in the code
+   *
    * @brief Constructor
    */
-  public SimulationStatistics()
+  public SimulationStatistics(int instructionCount)
   {
     this.cache                 = new CacheStatistics();
     this.staticInstructionMix  = new InstructionMix();
     this.dynamicInstructionMix = new InstructionMix();
     this.fuStats               = new HashMap<>();
+    
+    allocateInstructionStats(instructionCount);
   }// end of Constructor
   //----------------------------------------------------------------------
+  
+  /**
+   * @brief Allocate new per instruction statistics.
+   * Used in tests.
+   */
+  public void allocateInstructionStats(int instructionCount)
+  {
+    this.instructionStats = new ArrayList<>();
+    for (int i = 0; i < instructionCount; i++)
+    {
+      this.instructionStats.add(new InstructionStats());
+    }
+  }
   
   /**
    * @brief Increment busy cycles of FU with given name
@@ -117,7 +141,16 @@ public class SimulationStatistics
   }
   
   /**
-   * @brief Increments number of committed instructions
+   * @brief Reports a decoded instruction
+   */
+  public void reportDecodedInstruction(SimCodeModel codeModel)
+  {
+    InstructionStats statObj = instructionStats.get(codeModel.getCodeId());
+    statObj.incrementDecoded();
+  }
+  
+  /**
+   * @brief Reports a committed instruction
    */
   public void reportCommittedInstruction(SimCodeModel codeModel)
   {
@@ -139,8 +172,42 @@ public class SimulationStatistics
       incrementConditionalBranches();
     }
     
+    // Per instruction statistics
+    InstructionStats statObj = instructionStats.get(codeModel.getCodeId());
+    statObj.incrementCommittedCycles();
+    if (codeModel.isConditionalBranch())
+    {
+      if (codeModel.isBranchPredicted() == branchActuallyTaken)
+      {
+        statObj.incrementCorrectlyPredicted();
+      }
+    }
   }// end of incrementCommittedInstructions
   //----------------------------------------------------------------------
+  
+  /**
+   * @brief Increments number of taken branches
+   */
+  public void incrementTakenBranches()
+  {
+    this.takenBranches++;
+  }
+  
+  /**
+   * @brief Increments number of correctly predicted branching instructions
+   */
+  public void incrementCorrectlyPredictedBranches()
+  {
+    this.correctlyPredictedBranches++;
+  }// end of incrementCorrectlyPredictedBranches
+  
+  /**
+   * @brief Increments number of conditional branch instructions that were committed
+   */
+  public void incrementConditionalBranches()
+  {
+    this.conditionalBranches++;
+  }
   
   /**
    * @brief Report number of allocated registers
@@ -152,14 +219,7 @@ public class SimulationStatistics
       maxAllocatedRegisters = allocatedRegisters;
     }
   }
-  
-  /**
-   * @brief Increments number of taken branches
-   */
-  public void incrementTakenBranches()
-  {
-    this.takenBranches++;
-  }
+  //----------------------------------------------------------------------
   
   /**
    * @brief Increment number of ROB flushes
@@ -169,6 +229,7 @@ public class SimulationStatistics
   {
     this.robFlushes++;
   }
+  //----------------------------------------------------------------------
   
   /**
    * @brief Increments number of simulate() calls
@@ -186,24 +247,6 @@ public class SimulationStatistics
   {
     this.flushedInstructions++;
   }// end of incrementFailedInstructions
-  //----------------------------------------------------------------------
-  
-  /**
-   * @brief Increments number of correctly predicted branching instructions
-   */
-  public void incrementCorrectlyPredictedBranches()
-  {
-    this.correctlyPredictedBranches++;
-  }// end of incrementCorrectlyPredictedBranches
-  //----------------------------------------------------------------------
-  
-  /**
-   * @brief Increments number of conditional branch instructions that were committed
-   */
-  public void incrementConditionalBranches()
-  {
-    this.conditionalBranches++;
-  }
   
   /**
    * @return Number of committed instructions
@@ -373,6 +416,56 @@ public class SimulationStatistics
     public void incrementBusyCycles()
     {
       this.busyCycles++;
+    }
+  }
+  
+  public static class InstructionStats
+  {
+    /**
+     * The number of cycles that instruction was committed.
+     */
+    public int committedCount;
+    
+    /**
+     * The number of times that instruction was decoded.
+     */
+    public int decoded;
+    /**
+     * The number of times that the (jump) instruction was correctly predicted.
+     * Zero for all other instructions.
+     * The number of times that the (jump) instruction was incorrectly predicted can be calculated as (fetched - correctlyPredicted).
+     */
+    public int correctlyPredicted;
+    
+    /**
+     * Constructor
+     */
+    public InstructionStats()
+    {
+    }
+    
+    /**
+     * @brief Increments number of committed cycles
+     */
+    public void incrementCommittedCycles()
+    {
+      this.committedCount++;
+    }
+    
+    /**
+     * @brief Increments number of times that instruction was decoded
+     */
+    public void incrementDecoded()
+    {
+      this.decoded++;
+    }
+    
+    /**
+     * @brief Increments number of times that instruction was correctly predicted
+     */
+    public void incrementCorrectlyPredicted()
+    {
+      this.correctlyPredicted++;
     }
   }
 }

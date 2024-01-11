@@ -159,6 +159,8 @@ public class ForwardSimulationTest
     this.initLoader = new InitLoader(Arrays.asList(integerFile, floatFile), new ArrayList<>());
     this.cpu        = new Cpu(cfg, null, initLoader);
     CpuState cpuState = this.cpu.cpuState;
+    // Fix the statistics - nothing gets allocated
+    cpuState.statistics.allocateInstructionStats(50);
     
     this.instructionMemoryBlock    = cpuState.instructionMemoryBlock;
     this.simulationStatistics      = cpuState.statistics;

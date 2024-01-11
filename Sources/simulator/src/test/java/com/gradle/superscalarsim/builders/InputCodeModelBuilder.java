@@ -24,7 +24,7 @@ public class InputCodeModelBuilder
   
   public InputCodeModelBuilder()
   {
-    this.id                  = -1;
+    this.id                  = 0; // TODO: this ruins per instruction statistics
     this.instructionName     = "";
     this.codeLine            = "";
     this.arguments           = new ArrayList<>();

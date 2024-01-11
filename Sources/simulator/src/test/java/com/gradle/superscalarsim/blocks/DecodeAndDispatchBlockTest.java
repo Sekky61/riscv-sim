@@ -70,13 +70,14 @@ public class DecodeAndDispatchBlockTest
     
     loader = new InitLoader(Arrays.asList(integerFile, floatFile), null);
     
-    loader                 = new InitLoader(Arrays.asList(integerFile, floatFile), null);
-    urf                    = new UnifiedRegisterFileBlock(loader, 320, new RegisterModelFactory());
-    renameMapTableBlock    = new RenameMapTableBlock(urf);
+    loader              = new InitLoader(Arrays.asList(integerFile, floatFile), null);
+    urf                 = new UnifiedRegisterFileBlock(loader, 320, new RegisterModelFactory());
+    renameMapTableBlock = new RenameMapTableBlock(urf);
+    int maximumInstructions = 20;
     decodeAndDispatchBlock = new DecodeAndDispatchBlock(instructionFetchBlock, renameMapTableBlock,
                                                         globalHistoryRegister, branchTargetBuffer,
                                                         instructionMemoryBlock, instructionFetchBlock.getNumberOfWays(),
-                                                        new SimulationStatistics());
+                                                        new SimulationStatistics(maximumInstructions));
   }
   
   @Test

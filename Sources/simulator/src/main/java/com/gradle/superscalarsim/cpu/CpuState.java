@@ -133,7 +133,6 @@ public class CpuState implements Serializable
   {
     this.tick            = 0;
     this.managerRegistry = new ManagerRegistry();
-    this.statistics      = new SimulationStatistics();
     
     // Factories (for tracking instances of models)
     InputCodeModelFactory inputCodeModelFactory = new InputCodeModelFactory(managerRegistry.inputCodeManager);
@@ -168,6 +167,7 @@ public class CpuState implements Serializable
       throw new IllegalStateException("Code parsing failed: " + codeParser.getErrorMessages());
     }
     memoryInitializer.initializeMemory(simulatedMemory, codeParser.getMemoryLocations(), codeParser.getLabels());
+    this.statistics = new SimulationStatistics(codeParser.getInstructions().size());
     
     // Count static instruction mix
     codeParser.getInstructions()
