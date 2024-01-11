@@ -59,7 +59,7 @@ public class StatisticsTests
     // Setup + exercise
     cpuConfig.code = """
                 li t0, 0
-                li a1, 40
+                li a1, 10
             .L2:
                 addi t0,t0,1
                 bne t0,a1,.L2""";
@@ -69,9 +69,9 @@ public class StatisticsTests
     
     // Assert
     // mv is a intArithmetic instruction
-    // addi will be called 40 times. It is also intArithmetic
-    Assert.assertEquals(42, cpu.cpuState.statistics.dynamicInstructionMix.intArithmetic);
-    Assert.assertEquals(40, cpu.cpuState.statistics.dynamicInstructionMix.branch);
+    // addi will be called 10 times. It is also intArithmetic
+    Assert.assertEquals(12, cpu.cpuState.statistics.dynamicInstructionMix.intArithmetic);
+    Assert.assertEquals(10, cpu.cpuState.statistics.dynamicInstructionMix.branch);
   }
   
   @Test
@@ -90,5 +90,45 @@ public class StatisticsTests
     // Assert
     // At most 4 spec. registers are needed
     Assert.assertEquals(4, cpu.cpuState.statistics.maxAllocatedRegisters);
+  }
+  
+  @Test
+  public void testRobNoFlush()
+  {
+    // Setup + exercise
+    cpuConfig.code = """
+            addi x1, x1, 5
+            addi x1, x1, 5
+            addi x1, x1, 5
+            addi x1, x1, 5
+            sb x1, 0(x0)""";
+    
+    Cpu cpu = new Cpu(cpuConfig);
+    cpu.execute();
+    
+    // Assert
+    // No flush can occur
+    Assert.assertEquals(0, cpu.cpuState.statistics.robFlushes);
+  }
+  
+  @Test
+  public void testRobLoopFlush()
+  {
+    // Setup + exercise
+    cpuConfig.cpuConfig.predictorType    = "0bit";
+    cpuConfig.cpuConfig.predictorDefault = "Not Taken";
+    cpuConfig.code                       = """
+            li t0, 0
+                li a1, 10
+            .L2:
+                addi t0,t0,1
+                bne t0,a1,.L2""";
+    
+    Cpu cpu = new Cpu(cpuConfig);
+    cpu.execute();
+    
+    // Assert
+    // 10 loops, 9 bad predictions (last one is correct), 9 flushes
+    Assert.assertEquals(9, cpu.cpuState.statistics.robFlushes);
   }
 }

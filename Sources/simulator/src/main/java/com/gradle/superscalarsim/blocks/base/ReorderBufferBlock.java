@@ -310,6 +310,9 @@ public class ReorderBufferBlock implements AbstractBlock
         activeRegister.shiftValue(false);
         
         this.instructionFetchBlock.setPc(resultPc);
+        
+        // Note the flush in statistics
+        simulationStatistics.incrementRobFlushes();
       }
       
       // If we go to the end of the queue, we did not find a branch instruction.

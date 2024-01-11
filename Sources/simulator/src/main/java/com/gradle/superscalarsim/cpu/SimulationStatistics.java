@@ -58,10 +58,14 @@ public class SimulationStatistics
    */
   public long clockCycles;
   /**
-   * Counter for how many instructions have failed.
+   * Counter for how many instructions have been discarded as a result of branch misprediction.
    * Failed instructions are those that have been flushed from the pipeline.
    */
-  public long failedInstructions;
+  public long flushedInstructions;
+  /**
+   * Counter for how many ROB flushes occured.
+   */
+  public long robFlushes;
   /**
    * Counter for correctly predicted branching instructions.
    */
@@ -120,6 +124,15 @@ public class SimulationStatistics
   }
   
   /**
+   * @brief Increment number of ROB flushes
+   * TODO: can a flush be caused by memory forwarding?
+   */
+  public void incrementRobFlushes()
+  {
+    this.robFlushes++;
+  }
+  
+  /**
    * @brief Increments number of simulate() calls
    */
   public void incrementClockCycles()
@@ -133,7 +146,7 @@ public class SimulationStatistics
    */
   public void incrementFailedInstructions()
   {
-    this.failedInstructions++;
+    this.flushedInstructions++;
   }// end of incrementFailedInstructions
   //----------------------------------------------------------------------
   
