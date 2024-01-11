@@ -67,9 +67,10 @@ public class SimulationStatistics
    */
   private long correctlyPredictedBranches;
   /**
-   * Counter for all branch instructions.
+   * Counter for all conditional branches.
+   * Count of unconditional branches can be calculated as (dynamicInstructionMix.branch - conditionalBranches).
    */
-  private long allBranches;
+  private long conditionalBranches;
   /**
    * Number of taken branches
    */
@@ -131,13 +132,12 @@ public class SimulationStatistics
   //----------------------------------------------------------------------
   
   /**
-   * @brief Increments number of all branch instructions that were committed
+   * @brief Increments number of conditional branch instructions that were committed
    */
-  public void incrementAllBranches()
+  public void incrementConditionalBranches()
   {
-    this.allBranches++;
-  }// end of incrementAllBranches
-  //----------------------------------------------------------------------
+    this.conditionalBranches++;
+  }
   
   /**
    * @return Number of committed instructions
@@ -150,14 +150,21 @@ public class SimulationStatistics
   //----------------------------------------------------------------------
   
   /**
-   * @return Number of committed branch instructions
-   * @brief Get all committed branch instructions
+   * @return Number of committed conditional branch instructions
    */
-  public long getAllBranches()
+  public long getConditionalBranches()
   {
-    return allBranches;
+    return conditionalBranches;
   }// end of getAllBranches
   //----------------------------------------------------------------------
+  
+  /**
+   * @return Number of commited unconditional branch instructions
+   */
+  public long getUnconditionalBranches()
+  {
+    return dynamicInstructionMix.branch - conditionalBranches;
+  }
   
   public long getCorrectlyPredictedBranches()
   {

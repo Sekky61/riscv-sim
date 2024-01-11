@@ -135,7 +135,8 @@ public class InstructionTests
     Assert.assertEquals(1, cpu.cpuState.statistics.getCommittedInstructions());
     Assert.assertEquals(4, (int) cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").getValue(DataTypeEnum.kInt),
                         0.5);
-    Assert.assertEquals(1, cpu.cpuState.statistics.getAllBranches());
+    Assert.assertEquals(0, cpu.cpuState.statistics.getConditionalBranches());
+    Assert.assertEquals(1, cpu.cpuState.statistics.getUnconditionalBranches());
   }
   
   /**
@@ -602,7 +603,8 @@ public class InstructionTests
     cpu.execute();
     
     // Assert
-    Assert.assertEquals(1, cpu.cpuState.statistics.getAllBranches());
+    Assert.assertEquals(1, cpu.cpuState.statistics.getConditionalBranches());
+    Assert.assertEquals(0, cpu.cpuState.statistics.getUnconditionalBranches());
     // Default prediction is to jump, but there is not a BTB entry for this branch, so we couldn't predict
     Assert.assertEquals(1, cpu.cpuState.statistics.getCorrectlyPredictedBranches());
   }
@@ -621,7 +623,8 @@ public class InstructionTests
     cpu.execute();
     
     // Assert
-    Assert.assertEquals(1, cpu.cpuState.statistics.getAllBranches());
+    Assert.assertEquals(1, cpu.cpuState.statistics.getConditionalBranches());
+    Assert.assertEquals(0, cpu.cpuState.statistics.getUnconditionalBranches());
     // Prediction was not made
     Assert.assertEquals(0, cpu.cpuState.statistics.getCorrectlyPredictedBranches());
   }

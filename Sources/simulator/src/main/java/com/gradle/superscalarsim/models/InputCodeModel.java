@@ -216,4 +216,13 @@ public class InputCodeModel implements IInputCodeModel, Identifiable
   {
     return String.valueOf(codeId);
   }
+  
+  /**
+   * @return True if the instruction is a conditional branch
+   */
+  public boolean isConditionalBranch()
+  {
+    // ! Depends on naming convention !
+    return instructionTypeEnum == InstructionTypeEnum.kJumpbranch && instructionName.startsWith("b");
+  }
 }

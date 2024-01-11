@@ -269,10 +269,14 @@ public class ReorderBufferBlock implements AbstractBlock
       boolean branchActuallyTaken = codeModel.isBranchLogicResult();
       int     pc                  = codeModel.getSavedPc();
       
-      simulationStatistics.incrementAllBranches();
       if (branchActuallyTaken)
       {
         simulationStatistics.incrementTakenBranches();
+      }
+      
+      if (codeModel.isConditionalBranch())
+      {
+        simulationStatistics.incrementConditionalBranches();
       }
       
       if (codeModel.isBranchPredicted() == branchActuallyTaken)

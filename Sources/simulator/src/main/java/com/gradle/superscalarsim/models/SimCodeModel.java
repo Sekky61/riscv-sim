@@ -472,4 +472,12 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
     }
     return true;
   }
+  
+  /**
+   * @return True if the instruction is a conditional branch
+   */
+  public boolean isConditionalBranch()
+  {
+    return inputCodeModel.isConditionalBranch();
+  }
 }
