@@ -57,15 +57,10 @@ import java.util.OptionalInt;
 public class DecodeAndDispatchBlock implements AbstractBlock
 {
   /**
-   * List holding code before renaming for difference highlight
-   */
-  @JsonIdentityReference(alwaysAsId = true)
-  private final List<SimCodeModel> beforeRenameCodeList;
-  /**
    * List holding code with renamed registers ready for dispatch
    */
   @JsonIdentityReference(alwaysAsId = true)
-  private final List<SimCodeModel> afterRenameCodeList;
+  private final List<SimCodeModel> codeBuffer;
   /**
    * Instruction Fetch Block holding fetched instructions
    */
@@ -143,11 +138,10 @@ public class DecodeAndDispatchBlock implements AbstractBlock
     this.renameMapTableBlock   = renameMapTableBlock;
     this.statistics            = statistics;
     
-    this.beforeRenameCodeList = new ArrayList<>();
-    this.afterRenameCodeList  = new ArrayList<>();
-    this.idCounter            = -2; // todo
-    this.stallFlag            = false;
-    this.stalledPullCount     = 0;
+    this.codeBuffer       = new ArrayList<>();
+    this.idCounter        = -2; // todo
+    this.stallFlag        = false;
+    this.stalledPullCount = 0;
     
     this.globalHistoryRegister  = globalHistoryRegister;
     this.branchTargetBuffer     = branchTargetBuffer;
@@ -157,22 +151,12 @@ public class DecodeAndDispatchBlock implements AbstractBlock
   //----------------------------------------------------------------------
   
   /**
-   * @return List of instructions before renaming
-   * @brief Gets list of instructions before renaming
-   */
-  public List<SimCodeModel> getBeforeRenameCodeList()
-  {
-    return beforeRenameCodeList;
-  }// end of getBeforeRenameCodeList
-  //----------------------------------------------------------------------
-  
-  /**
    * @return List of renamed instructions
    * @brief Gets list of instructions with renamed registers
    */
-  public List<SimCodeModel> getAfterRenameCodeList()
+  public List<SimCodeModel> getCodeBuffer()
   {
-    return afterRenameCodeList;
+    return codeBuffer;
   }// end of getAfterRenameCodeList
   //----------------------------------------------------------------------
   
@@ -248,7 +232,6 @@ public class DecodeAndDispatchBlock implements AbstractBlock
   {
     upStepId();
     int decodeId = getCurrentStepId();
-    this.beforeRenameCodeList.clear();
     if (stallFlag)
     {
       // Decode is stalled.
@@ -257,56 +240,55 @@ public class DecodeAndDispatchBlock implements AbstractBlock
       
       // Remove instructions loaded by ROB
       List<SimCodeModel> removeModel = new ArrayList<>();
-      for (int i = 0; i < this.afterRenameCodeList.size(); i++)
+      for (int i = 0; i < this.codeBuffer.size(); i++)
       {
-        SimCodeModel codeModel = this.afterRenameCodeList.get(i);
+        SimCodeModel codeModel = this.codeBuffer.get(i);
         if (i < stalledPullCount)
         {
           removeModel.add(codeModel);
         }
       }
-      this.afterRenameCodeList.removeAll(removeModel);
+      this.codeBuffer.removeAll(removeModel);
       
       // Take `fetchCount` instructions from fetch block, delete them from fetch block
       // TODO: is fetchCount correct given that it is configurable?
       List<SimCodeModel> removeInputModel = new ArrayList<>();
       int fetchCount = Math.min((int) this.instructionFetchBlock.getFetchedCode().stream()
                                         .filter(code -> !code.getInstructionName().equals("nop")).count(),
-                                this.instructionFetchBlock.getNumberOfWays() - this.afterRenameCodeList.size());
+                                this.instructionFetchBlock.getNumberOfWays() - this.codeBuffer.size());
       for (int i = 0; i < fetchCount; i++)
       {
         SimCodeModel codeModel = this.instructionFetchBlock.getFetchedCode().get(i);
-        this.beforeRenameCodeList.add(codeModel);
+        this.codeBuffer.add(codeModel);
         removeInputModel.add(codeModel);
       }
       this.instructionFetchBlock.getFetchedCode().removeAll(removeInputModel);
     }
     else
     {
-      // ROB took all instructions
-      this.afterRenameCodeList.clear();
+      // Not stalled. ROB took all instructions
+      this.codeBuffer.clear();
       // Copy fetched code to before rename list
-      this.beforeRenameCodeList.addAll(this.instructionFetchBlock.getFetchedCode());
+      this.codeBuffer.addAll(this.instructionFetchBlock.getFetchedCode());
     }
     
     // Filter out nops and labels
-    for (int i = this.beforeRenameCodeList.size() - 1; i >= 0; i--)
+    for (int i = this.codeBuffer.size() - 1; i >= 0; i--)
     {
-      SimCodeModel codeModel = this.beforeRenameCodeList.get(i);
+      SimCodeModel codeModel = this.codeBuffer.get(i);
       if (codeModel.getInstructionName().equals("nop") || codeModel.getInstructionName().equals("label"))
       {
         codeModel.setFinished(true);
-        this.beforeRenameCodeList.remove(i);
+        this.codeBuffer.remove(i);
       }
     }
     
     checkForBranchInstructions();
-    for (SimCodeModel simCodeModel : this.beforeRenameCodeList)
+    for (SimCodeModel simCodeModel : this.codeBuffer)
     {
       renameSourceRegisters(simCodeModel);
       // Not sure if this does anything
       renameDestinationRegister(simCodeModel);
-      this.afterRenameCodeList.add(simCodeModel);
       statistics.reportDecodedInstruction(simCodeModel);
     }
     
@@ -324,8 +306,7 @@ public class DecodeAndDispatchBlock implements AbstractBlock
   @Override
   public void reset()
   {
-    this.beforeRenameCodeList.clear();
-    this.afterRenameCodeList.clear();
+    this.codeBuffer.clear();
     this.renameMapTableBlock.clear();
     this.idCounter        = -2;
     this.stallFlag        = false;
@@ -358,9 +339,9 @@ public class DecodeAndDispatchBlock implements AbstractBlock
   private void checkForBranchInstructions()
   {
     int modelId = idCounter * this.instructionFetchBlock.getNumberOfWays();
-    for (int i = 0; i < this.beforeRenameCodeList.size(); i++)
+    for (int i = 0; i < this.codeBuffer.size(); i++)
     {
-      SimCodeModel codeModel = this.beforeRenameCodeList.get(i);
+      SimCodeModel codeModel = this.codeBuffer.get(i);
       if (codeModel.getInstructionTypeEnum() == InstructionTypeEnum.kJumpbranch)
       {
         processBranchInstruction(codeModel, i, modelId);
@@ -500,9 +481,9 @@ public class DecodeAndDispatchBlock implements AbstractBlock
    */
   private void removeInstructionsFromIndex(int index)
   {
-    while (index < this.beforeRenameCodeList.size())
+    while (index < this.codeBuffer.size())
     {
-      this.beforeRenameCodeList.remove(index);
+      this.codeBuffer.remove(index);
     }
   }// end of removeInstructionsFromIndex
   //----------------------------------------------------------------------

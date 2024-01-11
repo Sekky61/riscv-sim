@@ -410,7 +410,7 @@ public class ReorderBufferBlock implements AbstractBlock
     int pulledCount = 0;
     int loadCount   = 0;
     int storeCount  = 0;
-    for (SimCodeModel codeModel : this.decodeAndDispatchBlock.getAfterRenameCodeList())
+    for (SimCodeModel codeModel : this.decodeAndDispatchBlock.getCodeBuffer())
     {
       if (codeModel.isLoad())
       {
@@ -498,7 +498,7 @@ public class ReorderBufferBlock implements AbstractBlock
     // clear what you can
     this.decodeAndDispatchBlock.setFlush(true);
     // TODO: move to fetch and decode block
-    this.decodeAndDispatchBlock.getAfterRenameCodeList().forEach(
+    this.decodeAndDispatchBlock.getCodeBuffer().forEach(
             simCodeModel -> simCodeModel.getArguments().stream().filter(argument -> argument.getName().startsWith("r"))
                     .forEach(argument ->
                              {

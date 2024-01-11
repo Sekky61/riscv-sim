@@ -88,20 +88,18 @@ public class IssueWindowSuperBlock implements AbstractBlock
     // TODO: places like this, where simcodemodels are deleted, leave behind history of GlobalHistoryRegister
     if (decodeAndDispatchBlock.shouldFlush())
     {
-      this.decodeAndDispatchBlock.getAfterRenameCodeList().forEach(codeModel -> codeModel.setFinished(true));
-      this.decodeAndDispatchBlock.getAfterRenameCodeList().clear();
-      this.decodeAndDispatchBlock.getBeforeRenameCodeList().forEach(codeModel -> codeModel.setFinished(true));
-      this.decodeAndDispatchBlock.getBeforeRenameCodeList().clear();
+      this.decodeAndDispatchBlock.getCodeBuffer().forEach(codeModel -> codeModel.setFinished(true));
+      this.decodeAndDispatchBlock.getCodeBuffer().clear();
       this.decodeAndDispatchBlock.setFlush(false);
     }
     else
     {
-      int pullCount = !decodeAndDispatchBlock.shouldStall() ? this.decodeAndDispatchBlock.getAfterRenameCodeList()
+      int pullCount = !decodeAndDispatchBlock.shouldStall() ? this.decodeAndDispatchBlock.getCodeBuffer()
               .size() : this.decodeAndDispatchBlock.getStalledPullCount();
       
       for (int i = 0; i < pullCount; i++)
       {
-        SimCodeModel             codeModel = this.decodeAndDispatchBlock.getAfterRenameCodeList().get(i);
+        SimCodeModel             codeModel = this.decodeAndDispatchBlock.getCodeBuffer().get(i);
         InstructionFunctionModel model     = codeModel.getInstructionFunctionModel();
         selectCorrectIssueWindow(model, codeModel);
       }
