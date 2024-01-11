@@ -264,4 +264,12 @@ public class RenameMapTableBlock
     }
   }// end of directCopyMapping
   //----------------------------------------------------------------------
+  
+  /**
+   * @return Number of allocated speculative registers
+   */
+  public int getAllocatedSpeculativeRegistersCount()
+  {
+    return this.registerFileBlock.getSpeculativeRegisterFile().getRegisterCount() - this.freeList.size();
+  }
 }

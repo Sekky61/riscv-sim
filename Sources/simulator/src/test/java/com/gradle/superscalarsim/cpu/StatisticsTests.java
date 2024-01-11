@@ -73,4 +73,22 @@ public class StatisticsTests
     Assert.assertEquals(42, cpu.cpuState.statistics.dynamicInstructionMix.intArithmetic);
     Assert.assertEquals(40, cpu.cpuState.statistics.dynamicInstructionMix.branch);
   }
+  
+  @Test
+  public void testRegAllocationCounter()
+  {
+    // Setup + exercise
+    cpuConfig.code = """
+            addi x1, x1, 5
+            addi x1, x1, 5
+            addi x1, x1, 5
+            addi x1, x1, 5""";
+    
+    Cpu cpu = new Cpu(cpuConfig);
+    cpu.execute();
+    
+    // Assert
+    // At most 4 spec. registers are needed
+    Assert.assertEquals(4, cpu.cpuState.statistics.maxAllocatedRegisters);
+  }
 }

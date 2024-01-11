@@ -242,7 +242,8 @@ public class CpuState implements Serializable
     
     this.decodeAndDispatchBlock = new DecodeAndDispatchBlock(instructionFetchBlock, renameMapTableBlock,
                                                              globalHistoryRegister, branchTargetBuffer,
-                                                             instructionMemoryBlock, config.cpuConfig.fetchWidth);
+                                                             instructionMemoryBlock, config.cpuConfig.fetchWidth,
+                                                             statistics);
     
     // ROB
     this.reorderBufferBlock        = new ReorderBufferBlock(renameMapTableBlock, decodeAndDispatchBlock, gShareUnit,

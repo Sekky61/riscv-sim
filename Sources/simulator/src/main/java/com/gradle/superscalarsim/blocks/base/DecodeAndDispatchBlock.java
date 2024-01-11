@@ -38,6 +38,7 @@ import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.blocks.AbstractBlock;
 import com.gradle.superscalarsim.blocks.branch.BranchTargetBuffer;
 import com.gradle.superscalarsim.blocks.branch.GlobalHistoryRegister;
+import com.gradle.superscalarsim.cpu.SimulationStatistics;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.models.InputCodeArgument;
 import com.gradle.superscalarsim.models.InstructionFunctionModel;
@@ -91,6 +92,11 @@ public class DecodeAndDispatchBlock implements AbstractBlock
   @JsonIdentityReference(alwaysAsId = true)
   private final InstructionMemoryBlock instructionMemoryBlock;
   /**
+   * Parser holding parsed instructions
+   */
+  @JsonIdentityReference(alwaysAsId = true)
+  private final SimulationStatistics statistics;
+  /**
    * Counter giving out ids for instructions in order to correctly simulate backwards
    */
   private int idCounter;
@@ -121,6 +127,7 @@ public class DecodeAndDispatchBlock implements AbstractBlock
    * @param branchTargetBuffer    Buffer holding information about branch instructions targets
    * @param codeParser            Parser holding parsed instructions
    * @param decodeBufferSize      Size of the decode buffer
+   * @param statistics            Statistics class holding information about the run
    *
    * @brief Constructor
    */
@@ -129,10 +136,12 @@ public class DecodeAndDispatchBlock implements AbstractBlock
                                 GlobalHistoryRegister globalHistoryRegister,
                                 BranchTargetBuffer branchTargetBuffer,
                                 InstructionMemoryBlock codeParser,
-                                int decodeBufferSize)
+                                int decodeBufferSize,
+                                SimulationStatistics statistics)
   {
     this.instructionFetchBlock = instructionFetchBlock;
     this.renameMapTableBlock   = renameMapTableBlock;
+    this.statistics            = statistics;
     
     this.beforeRenameCodeList = new ArrayList<>();
     this.afterRenameCodeList  = new ArrayList<>();
@@ -299,6 +308,9 @@ public class DecodeAndDispatchBlock implements AbstractBlock
       renameDestinationRegister(simCodeModel);
       this.afterRenameCodeList.add(simCodeModel);
     }
+    
+    // Rename ended, report map table to statistics
+    statistics.reportAllocatedRegisters(renameMapTableBlock.getAllocatedSpeculativeRegistersCount());
     
     this.stallFlag        = false;
     this.stalledPullCount = 0;
@@ -492,14 +504,5 @@ public class DecodeAndDispatchBlock implements AbstractBlock
       this.beforeRenameCodeList.remove(index);
     }
   }// end of removeInstructionsFromIndex
-  //----------------------------------------------------------------------
-  
-  /**
-   * @brief Decrement ID for next decode step for backward simulation
-   */
-  private void lowerStepId()
-  {
-    idCounter = idCounter <= -2 ? -2 : idCounter - 1;
-  }// end of lowerStepId
   //----------------------------------------------------------------------
 }

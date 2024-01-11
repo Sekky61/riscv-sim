@@ -52,29 +52,33 @@ public class SimulationStatistics
    * Counter for committed instructions.
    * A commited instruction is one that has successfully left ROB.
    */
-  private long committedInstructions;
+  public long committedInstructions;
   /**
    * Counter for clocks passed.
    */
-  private long clockCycles;
+  public long clockCycles;
   /**
    * Counter for how many instructions have failed.
    * Failed instructions are those that have been flushed from the pipeline.
    */
-  private long failedInstructions;
+  public long failedInstructions;
   /**
    * Counter for correctly predicted branching instructions.
    */
-  private long correctlyPredictedBranches;
+  public long correctlyPredictedBranches;
   /**
    * Counter for all conditional branches.
    * Count of unconditional branches can be calculated as (dynamicInstructionMix.branch - conditionalBranches).
    */
-  private long conditionalBranches;
+  public long conditionalBranches;
   /**
    * Number of taken branches
    */
-  private long takenBranches;
+  public long takenBranches;
+  /**
+   * Maximal number of allocated speculative registers
+   */
+  public int maxAllocatedRegisters;
   
   /**
    * @brief Constructor
@@ -95,6 +99,17 @@ public class SimulationStatistics
     this.committedInstructions++;
   }// end of incrementCommittedInstructions
   //----------------------------------------------------------------------
+  
+  /**
+   * @brief Report number of allocated registers
+   */
+  public void reportAllocatedRegisters(int allocatedRegisters)
+  {
+    if (allocatedRegisters > maxAllocatedRegisters)
+    {
+      maxAllocatedRegisters = allocatedRegisters;
+    }
+  }
   
   /**
    * @brief Increments number of taken branches
