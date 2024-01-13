@@ -36,9 +36,12 @@ import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
+import static java.util.Arrays.copyOf;
+
 /**
  * Memory representation: continuous array of bytes
- * TODO Custom serialization to avoid transmitting the whole memory
+ * TODO Custom serialization to avoid transmitting the whole memory.
+ * TODO: some protection against resource exhaustion.
  *
  * @class SimulatedMemory
  * @brief Class simulating memory with read/write capabilities
@@ -47,7 +50,8 @@ import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 public class SimulatedMemory
 {
   /**
-   * Hash map with stored values, serves as memory
+   * Main memory. Grows as needed.
+   * Gets serialized to a base64 string.
    */
   @JsonProperty("memoryBase64")
   private byte[] memory;
@@ -62,39 +66,27 @@ public class SimulatedMemory
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @param address Hashmap key, pointing into specific place in memory
-   * @param value   Value to be saved into memory (hashmap)
-   *
-   * @brief Insert byte value into memory
-   */
-  public void insertIntoMemory(Long address, byte value)
-  {
-    if (this.memory.length < address + 1)
-    {
-      byte[] newMemory = new byte[(int) (address + 1)];
-      System.arraycopy(this.memory, 0, newMemory, 0, this.memory.length);
-      this.memory = newMemory;
-    }
-    this.memory[address.intValue()] = value;
-  }// end of insertIntoMemory
-  //-------------------------------------------------------------------------------------------
-  
-  /**
    * @param address Address to write to
    * @param value   Value to write
    *
    * @brief Insert a chunk of data into memory
    */
-  public void insertIntoMemory(Long address, byte[] data)
+  public void insertIntoMemory(long address, byte[] data)
   {
     if (this.memory.length < address + data.length)
     {
-      byte[] newMemory = new byte[(int) (address + data.length)];
-      System.arraycopy(this.memory, 0, newMemory, 0, this.memory.length);
-      this.memory = newMemory;
+      resizeArray((int) (address + data.length));
     }
-    System.arraycopy(data, 0, this.memory, address.intValue(), data.length);
+    System.arraycopy(data, 0, this.memory, (int) address, data.length);
   }// end of insertIntoMemory
+  
+  /**
+   * @brief Resize array to be at least of specified size
+   */
+  private void resizeArray(int size)
+  {
+    this.memory = copyOf(this.memory, size);
+  }
   
   /**
    * @param address Hashmap key, pointing into specific place in memory
@@ -102,39 +94,15 @@ public class SimulatedMemory
    * @return Value from hashmap pointed by key
    * @brief Get value from memory
    */
-  public byte getFromMemory(Long address)
+  public byte getFromMemory(long address)
   {
-    if (this.isInMemory(address))
+    if (!this.isInMemory(address))
     {
-      return this.memory[address.intValue()];
+      resizeArray((int) address + 1);
     }
-    else
-    {
-      return 0;
-    }
+    return this.memory[(int) address];
   }// end of getFromMemory
   //-------------------------------------------------------------------------------------------
-  
-  public byte[] getFromMemory(Long address, int size)
-  {
-    if (isInMemory(address + size - 1))
-    {
-      byte[] returnVal = new byte[size];
-      System.arraycopy(this.memory, address.intValue(), returnVal, 0, size);
-      return returnVal;
-    }
-    else if (isInMemory(address))
-    {
-      // Read part, rest fill with zeros
-      byte[] returnVal = new byte[size];
-      System.arraycopy(this.memory, address.intValue(), returnVal, 0, this.memory.length - address.intValue());
-      return returnVal;
-    }
-    else
-    {
-      return new byte[size];
-    }
-  }// end of getFromMemory
   
   /**
    * @param address Hashmap key, pointing into specific place in memory
@@ -142,10 +110,27 @@ public class SimulatedMemory
    * @return True if key has been set in the past, false otherwise
    * @brief Check if some memory space is filled with data
    */
-  public boolean isInMemory(Long address)
+  public boolean isInMemory(long address)
   {
     return address < this.memory.length;
   }// end of isInMemory
+  
+  /**
+   * @param address offset in memory
+   * @param size    size of data to get in bytes
+   *
+   * @return byte array of data from memory
+   */
+  public byte[] getFromMemory(long address, int size)
+  {
+    if (!this.isInMemory(address))
+    {
+      resizeArray((int) address + size);
+    }
+    byte[] returnVal = new byte[size];
+    System.arraycopy(this.memory, (int) address, returnVal, 0, size);
+    return returnVal;
+  }// end of getFromMemory
   //-------------------------------------------------------------------------------------------
   
   /**

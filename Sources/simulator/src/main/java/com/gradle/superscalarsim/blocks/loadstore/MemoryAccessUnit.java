@@ -126,15 +126,13 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
   public void simulate()
   {
     cycleCount++;
-    
-    if (!isFunctionUnitEmpty())
-    {
-      handleInstruction();
-    }
-    
     if (isFunctionUnitEmpty())
     {
       this.functionUnitId += this.functionUnitCount;
+    }
+    else
+    {
+      handleInstruction();
     }
   }// end of simulate
   
@@ -177,7 +175,7 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
       return;
     }
     
-    // Execute
+    // Delay passed, execute
     boolean allowAccessFinish = true;
     if (!firstDelayPassed)
     {

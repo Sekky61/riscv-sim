@@ -58,6 +58,9 @@ public class MemoryModel
    */
   @JsonIdentityReference(alwaysAsId = true)
   SimulatedMemory memory;
+  /**
+   * Statistics of simulation
+   */
   private SimulationStatistics statistics;
   /**
    * Last access

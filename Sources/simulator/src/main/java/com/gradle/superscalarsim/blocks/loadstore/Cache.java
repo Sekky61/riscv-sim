@@ -43,6 +43,7 @@ import com.gradle.superscalarsim.models.cache.CacheAccess;
 import com.gradle.superscalarsim.models.cache.CacheLineModel;
 import com.gradle.superscalarsim.models.cache.ReplacementPolicyModel;
 
+import java.nio.ByteBuffer;
 import java.util.Set;
 import java.util.Stack;
 
@@ -483,12 +484,12 @@ public class Cache
     // If the cache is write-through also store data to memory
     if (!writeBack)
     {
-      long memoryData = data;
-      for (int i = 0; i < size; i++)
-      {
-        memory.insertIntoMemory(address + i, (byte) memoryData);
-        memoryData = memoryData >> 8;
-      }
+      ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES);
+      buffer.putLong(data);
+      // Take first size bytes
+      byte[] memoryBytes = new byte[size];
+      System.arraycopy(buffer.array(), 0, memoryBytes, 0, size);
+      memory.insertIntoMemory(address, memoryBytes);
     }
     
     // Is address aligned?
