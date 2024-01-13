@@ -145,6 +145,7 @@ public class SimulationStatistics
    */
   public void incrementBusyCycles(String fuName)
   {
+    assert fuName != null; // Null breaks serialization
     if (!fuStats.containsKey(fuName))
     {
       fuStats.put(fuName, new FUStats());
@@ -475,6 +476,7 @@ public class SimulationStatistics
      */
     public FUStats()
     {
+      busyCycles = 0;
     }
     
     /**

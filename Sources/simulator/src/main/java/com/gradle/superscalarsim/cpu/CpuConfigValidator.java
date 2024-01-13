@@ -171,6 +171,16 @@ public class CpuConfigValidator
     {
       validateFu(unit);
     }
+    // Check name uniqueness
+    List<String> names = new ArrayList<>();
+    for (FunctionalUnitDescription unit : cpuConfig.fUnits)
+    {
+      if (names.contains(unit.name))
+      {
+        errors.add(new Error("Functional Unit (FU) name must be unique", "fuName"));
+      }
+      names.add(unit.name);
+    }
   }
   
   /**
@@ -280,6 +290,10 @@ public class CpuConfigValidator
     {
       errors.add(new Error("FU unit is null", "fu"));
       return;
+    }
+    if (unit.name == null || unit.name.isEmpty())
+    {
+      errors.add(new Error("FU name must not be null or empty", "fuName"));
     }
     switch (unit.fuType)
     {
