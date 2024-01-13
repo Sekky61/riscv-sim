@@ -77,6 +77,9 @@ const migrations = {
   10: (state: PersistedState) => {
     return state;
   },
+  11: (state: PersistedState) => {
+    return undefined;
+  },
 };
 
 // Persistance config
@@ -86,7 +89,7 @@ const persistIsaConfig = {
   // The key in localStorage
   key: 'root',
   // Change the version when changing the schema
-  version: 10,
+  version: 11,
   storage,
   stateReconciler: hardSet,
   // This migration is used when the version number is increased

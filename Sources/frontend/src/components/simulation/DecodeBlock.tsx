@@ -41,7 +41,7 @@ export default function DecodeBlock() {
 
   if (!decode) return null;
 
-  const after = decode.afterRenameCodeList;
+  const after = decode.codeBuffer;
 
   const decodeStats = (
     <>

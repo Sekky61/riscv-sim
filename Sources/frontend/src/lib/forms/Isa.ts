@@ -148,7 +148,7 @@ export type Capability = z.infer<typeof capability>;
 
 export const lsUnitSchema = z.object({
   id: z.number(),
-  name: z.optional(z.string()),
+  name: z.string(),
   latency: z.number().min(1).max(16),
   fuType: z.enum(otherUnits),
 });
@@ -325,16 +325,19 @@ export const defaultCpuConfig: CpuConfig = {
     },
     {
       id: 2,
+      name: 'L_S',
       fuType: 'L_S',
       latency: 1,
     },
     {
       id: 3,
+      name: 'Branch',
       fuType: 'Branch',
       latency: 2,
     },
     {
       id: 4,
+      name: 'Memory',
       fuType: 'Memory',
       latency: 1,
     },

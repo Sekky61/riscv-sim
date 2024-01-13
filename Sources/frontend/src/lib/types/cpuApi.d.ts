@@ -72,20 +72,56 @@ export interface CpuState {
 }
 
 export interface SimulationStatistics {
+  staticInstructionMix: InstructionMix;
+  dynamicInstructionMix: InstructionMix;
+  cache: CacheStatistics;
+  fuStats: {
+    [fuName: string]: FUStats;
+  };
+  instructionStats: InstructionStats[];
   committedInstructions: number;
   clockCycles: number;
-  failedInstructions: number;
+  flushedInstructions: number;
+  robFlushes: number;
+  clock: number;
   correctlyPredictedBranches: number;
-  allBranches: number;
+  conditionalBranches: number;
   takenBranches: number;
-  statistics: SimulationStatistics;
+  memoryTraffic: number;
+  maxAllocatedRegisters: number;
+  arithmeticIntensity: number;
+  flops: number;
+  ipc: number;
+  wallTime: number;
+  memoryThroughput: number;
 }
+
+export interface InstructionMix {
+  intArithmetic: number;
+  floatArithmetic: number;
+  memory: number;
+  branch: number;
+  other: number;
+}
+
 export interface CacheStatistics {
-  accesses: number;
+  readAccesses: number;
+  writeAccesses: number;
   hits: number;
   misses: number;
   totalDelay: number;
-  last4accesses: number;
+  bytesWritten: number;
+  bytesRead: number;
+}
+
+export interface FUStats {
+  busyCycles: number;
+}
+
+export interface InstructionStats {
+  committedCount: number;
+  decoded: number;
+  correctlyPredicted: number;
 }
 
 export interface Cache {
@@ -333,19 +369,20 @@ export interface SimCodeModelFactory {
   id: number;
   manager?: unknown;
 }
+
 export interface DecodeAndDispatchBlock {
-  beforeRenameCodeList: Reference[];
-  afterRenameCodeList: Reference[];
-  instructionFetchBlock?: InstructionFetchBlock;
-  renameMapTableBlock?: RenameMapTableBlock;
-  globalHistoryRegister?: GlobalHistoryRegister;
-  branchTargetBuffer?: BranchTargetBuffer;
-  instructionMemoryBlock?: InstructionMemoryBlock;
   idCounter: number;
   flush: boolean;
   stallFlag: boolean;
   stalledPullCount: number;
   decodeBufferSize: number;
+  codeBuffer: Reference[];
+  instructionFetchBlock?: InstructionFetchBlock;
+  renameMapTableBlock?: RenameMapTableBlock;
+  globalHistoryRegister?: GlobalHistoryRegister;
+  branchTargetBuffer?: BranchTargetBuffer;
+  instructionMemoryBlock?: InstructionMemoryBlock;
+  statistics?: SimulationStatistics;
 }
 
 // Issue window blocks

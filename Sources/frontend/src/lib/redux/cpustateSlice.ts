@@ -187,6 +187,7 @@ export const callSimulation = createAsyncThunk<SimulationParsedResult, number>(
     const tick = arg;
     try {
       const response = await callSimulationImpl(tick, { ...config, code });
+      console.log('callSimulation response', response);
       return { state: response.state };
     } catch (err) {
       // Log error and show simple error message to the user
