@@ -421,7 +421,7 @@ public class Cache
       {
         statistics.cache.incrementHits(currentCycle);
         
-        replacementPolicy.updatePolicy(id, splittedAddress.getSecond(), i);
+        replacementPolicy.updatePolicy(splittedAddress.getSecond(), i);
         lastAccess.peek()
                 .addLineAccess(true, splittedAddress.getSecond() * associativity + i, splittedAddress.getThird());
         Pair<Integer, byte[]> tmpReturnVal = getDataFromLines(line, address, size, id, currentCycle);
@@ -438,7 +438,7 @@ public class Cache
     int selectedLine;
     if (emptyLine == -1)
     {
-      selectedLine = replacementPolicy.getLineToReplace(id, splittedAddress.getSecond());
+      selectedLine = replacementPolicy.getLineToReplace(splittedAddress.getSecond());
       if (cache[splittedAddress.getSecond()][selectedLine].isDirty())
       {
         //Store victim line into memory
@@ -460,7 +460,7 @@ public class Cache
     line.setTag(splittedAddress.getFirst());
     line.setBaseAddress(baseMemoryAddress);
     
-    replacementPolicy.updatePolicy(id, splittedAddress.getSecond(), selectedLine);
+    replacementPolicy.updatePolicy(splittedAddress.getSecond(), selectedLine);
     lastAccess.peek().addLineAccess(false, splittedAddress.getSecond() * associativity + selectedLine,
                                     splittedAddress.getThird());
     Pair<Integer, byte[]> tmpReturnVal = getDataFromLines(line, address, size, id, currentCycle);
@@ -582,7 +582,7 @@ public class Cache
         // Found the line
         statistics.cache.incrementHits(currentCycle);
         
-        replacementPolicy.updatePolicy(id, index, i);
+        replacementPolicy.updatePolicy(index, i);
         lastAccess.peek().addLineAccess(true, index * associativity + i, offset);
         int tmpReturn = setDataToLines(line, address, data, size, id, currentCycle);
         return storeDelay + tmpReturn + computeRemainingDelay(true, true, currentCycle, tag, index);
@@ -603,7 +603,7 @@ public class Cache
     else
     {
       // No empty line - replace one according to replacement policy
-      int selectedLineIndex = replacementPolicy.getLineToReplace(id, index);
+      int selectedLineIndex = replacementPolicy.getLineToReplace(index);
       selectedLine = cache[index][selectedLineIndex];
       if (selectedLine.isDirty())
       {
@@ -621,7 +621,7 @@ public class Cache
     selectedLine.setTag(tag);
     selectedLine.setBaseAddress(baseMemoryAddress);
     
-    replacementPolicy.updatePolicy(id, index, selectedLine.getIndex() % associativity);
+    replacementPolicy.updatePolicy(index, selectedLine.getIndex() % associativity);
     // TODO: check
     lastAccess.peek().addLineAccess(false, selectedLine.getIndex(), offset);
     

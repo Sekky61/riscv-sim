@@ -59,7 +59,7 @@ public class LruReplacementPolicyModel extends ReplacementPolicyModel
     }
   }
   
-  public int getLineToReplace(int id, int index)
+  public int getLineToReplace(int index)
   {
     return lru[index].get(0);
   }
@@ -67,7 +67,7 @@ public class LruReplacementPolicyModel extends ReplacementPolicyModel
   /**
    * @brief Update policy with latest access
    */
-  public void updatePolicy(int id, int index, int line)
+  public void updatePolicy(int index, int line)
   {
     if (!lru[index].contains(line))
     {

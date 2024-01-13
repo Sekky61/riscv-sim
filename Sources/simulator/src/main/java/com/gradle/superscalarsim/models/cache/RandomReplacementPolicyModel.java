@@ -40,12 +40,12 @@ public class RandomReplacementPolicyModel extends ReplacementPolicyModel
     this.associativity = associativity;
   }
   
-  public int getLineToReplace(int id, int index)
+  public int getLineToReplace(int index)
   {
     return (int) (Math.random() * associativity);
   }
   
-  public void updatePolicy(int id, int index, int line)
+  public void updatePolicy(int index, int line)
   {
     // no-op
   }
