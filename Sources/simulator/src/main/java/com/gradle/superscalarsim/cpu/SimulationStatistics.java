@@ -27,6 +27,7 @@
  */
 package com.gradle.superscalarsim.cpu;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.models.SimCodeModel;
 
@@ -82,6 +83,11 @@ public class SimulationStatistics
    */
   public long robFlushes;
   /**
+   * Clock frequency (Hz).
+   * Used for calculating time based statistics.
+   */
+  public int clock;
+  /**
    * Counter for correctly predicted branching instructions.
    */
   public long correctlyPredictedBranches;
@@ -95,21 +101,27 @@ public class SimulationStatistics
    */
   public long takenBranches;
   /**
+   * Amount of data transfered from main memory
+   */
+  public long memoryTraffic;
+  /**
    * Maximal number of allocated speculative registers
    */
   public int maxAllocatedRegisters;
   
   /**
    * @param instructionCount Number of instructions in the code
+   * @param clockHz          Clock frequency (Hz)
    *
    * @brief Constructor
    */
-  public SimulationStatistics(int instructionCount)
+  public SimulationStatistics(int instructionCount, int clockHz)
   {
     this.cache                 = new CacheStatistics();
     this.staticInstructionMix  = new InstructionMix();
     this.dynamicInstructionMix = new InstructionMix();
     this.fuStats               = new HashMap<>();
+    this.clock                 = clockHz;
     
     allocateInstructionStats(instructionCount);
   }// end of Constructor
@@ -138,6 +150,14 @@ public class SimulationStatistics
       fuStats.put(fuName, new FUStats());
     }
     fuStats.get(fuName).incrementBusyCycles();
+  }
+  
+  /**
+   * @brief Increment main memory traffic
+   */
+  public void incrementMemoryTraffic(int bytes)
+  {
+    this.memoryTraffic += bytes;
   }
   
   /**
@@ -283,6 +303,53 @@ public class SimulationStatistics
   public long getTakenBranches()
   {
     return takenBranches;
+  }
+  
+  /**
+   * @return The arithmetic intensity of the code
+   */
+  @JsonProperty("arithmeticIntensity")
+  public double getArithmeticIntensity()
+  {
+    return (double) (dynamicInstructionMix.intArithmetic + dynamicInstructionMix.floatArithmetic) / committedInstructions;
+  }
+  
+  /**
+   * @return FLOPS
+   */
+  @JsonProperty("flops")
+  public double getFlops()
+  {
+    return (double) (dynamicInstructionMix.intArithmetic + dynamicInstructionMix.floatArithmetic) / clock;
+  }
+  
+  /**
+   * @return IPC
+   */
+  @JsonProperty("ipc")
+  public double getIpc()
+  {
+    return (double) committedInstructions / clockCycles;
+  }
+  
+  /**
+   * @param clock Clock frequency (Hz)
+   *
+   * @return Wall time
+   */
+  @JsonProperty("wallTime")
+  public double getWallTime()
+  {
+    return (double) clockCycles / clock;
+  }
+  
+  /**
+   * @return Memory throughput (bytes/s)
+   */
+  @JsonProperty("memoryThroughput")
+  public double getMemoryThroughput()
+  {
+    return (double) (memoryTraffic) / clock;
   }
   
   /**

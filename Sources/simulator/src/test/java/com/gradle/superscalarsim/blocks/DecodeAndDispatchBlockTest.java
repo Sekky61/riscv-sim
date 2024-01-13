@@ -77,7 +77,7 @@ public class DecodeAndDispatchBlockTest
     decodeAndDispatchBlock = new DecodeAndDispatchBlock(instructionFetchBlock, renameMapTableBlock,
                                                         globalHistoryRegister, branchTargetBuffer,
                                                         instructionMemoryBlock, instructionFetchBlock.getNumberOfWays(),
-                                                        new SimulationStatistics(maximumInstructions));
+                                                        new SimulationStatistics(maximumInstructions, 1));
   }
   
   @Test

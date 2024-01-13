@@ -110,8 +110,10 @@ public class MemoryModel
     ByteBuffer byteBuffer = ByteBuffer.allocate(8);
     byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
     byteBuffer.putLong(data);
-    byte[] bytes = byteBuffer.array();
-    memory.insertIntoMemory(address, bytes);
+    // Take only first size bytes
+    byte[] bytesToStore = new byte[size];
+    System.arraycopy(byteBuffer.array(), 0, bytesToStore, 0, size);
+    memory.insertIntoMemory(address, bytesToStore);
     return 0;
   }
   

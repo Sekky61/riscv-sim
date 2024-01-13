@@ -123,7 +123,7 @@ public class SimulatedMemory
    */
   public byte[] getFromMemory(long address, int size)
   {
-    if (!this.isInMemory(address))
+    if (!this.isInMemory(address + size))
     {
       resizeArray((int) address + size);
     }
