@@ -187,7 +187,6 @@ export const callSimulation = createAsyncThunk<SimulationParsedResult, number>(
     const tick = arg;
     try {
       const response = await callSimulationImpl(tick, { ...config, code });
-      console.log('callSimulation response', response);
       return { state: response.state };
     } catch (err) {
       // Log error and show simple error message to the user
@@ -607,6 +606,11 @@ export const selectLoadBuffer = (state: RootState) =>
 // cache
 
 const selectCacheInternal = (state: RootState) => state.cpu.state?.cache;
+
+// Statistics
+
+export const selectStatistics = (state: RootState) =>
+  state.cpu.state?.statistics;
 
 export interface DecodedCacheLine extends CacheLineModel {
   decodedLine: number[];
