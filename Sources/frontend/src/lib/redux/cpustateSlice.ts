@@ -195,10 +195,19 @@ export const callSimulation = createAsyncThunk<SimulationParsedResult, number>(
       console.warn(
         'Try clearing the local storage (application tab) and reloading the page',
       );
+      let message = 'See the console for more details';
+      if (err instanceof SyntaxError) {
+        // Unexpected token < in JSON
+        message = 'Invalid response from the server';
+      } else if (err instanceof TypeError) {
+        message = 'Server not reachable';
+      } else if (err instanceof Error) {
+        message = err.message;
+      }
       dispatch(
         notify({
           title: 'API call failed',
-          message: 'See the console for more details',
+          message: `Simulation failed: ${message}`,
           status: 'error',
         }),
       );

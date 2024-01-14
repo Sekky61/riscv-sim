@@ -76,6 +76,9 @@ export async function callSimulationImpl(
   return await callApi('simulate' as const, body);
 }
 
+/**
+ * Call the simulator server API. Parse the response as JSON.
+ */
 async function callApi<T extends EndpointName>(
   ...args: Parameters<AsyncEndpointFunction<T>>
 ): Promise<ReturnType<AsyncEndpointFunction<T>>> {
