@@ -167,8 +167,8 @@ public class CpuState implements Serializable
       throw new IllegalStateException("Code parsing failed: " + codeParser.getErrorMessages());
     }
     memoryInitializer.initializeMemory(simulatedMemory, codeParser.getMemoryLocations(), codeParser.getLabels());
-    this.statistics = new SimulationStatistics(codeParser.getInstructions().size(),
-                                               config.cpuConfig.coreClockFrequency);
+    this.statistics = new SimulationStatistics(codeParser.getInstructions().size(), config.cpuConfig.coreClockFrequency,
+                                               config.cpuConfig.fUnits);
     
     // Count static instruction mix
     codeParser.getInstructions()

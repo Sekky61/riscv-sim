@@ -29,6 +29,7 @@ package com.gradle.superscalarsim.cpu;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
+import com.gradle.superscalarsim.models.FunctionalUnitDescription;
 import com.gradle.superscalarsim.models.SimCodeModel;
 
 import java.util.ArrayList;
@@ -66,7 +67,7 @@ public class SimulationStatistics
   public List<InstructionStats> instructionStats;
   /**
    * Counter for committed instructions.
-   * A commited instruction is one that has successfully left ROB.
+   * A committed instruction is one that has successfully left ROB.
    */
   public long committedInstructions;
   /**
@@ -124,6 +125,23 @@ public class SimulationStatistics
     this.clock                 = clockHz;
     
     allocateInstructionStats(instructionCount);
+  }
+  
+  /**
+   * @param instructionCount Number of instructions in the code
+   * @param clockHz          Clock frequency (Hz)
+   * @param fUnits           List of functional units (for their names)
+   *
+   * @brief Constructor
+   */
+  public SimulationStatistics(int instructionCount, int clockHz, List<FunctionalUnitDescription> fUnits)
+  {
+    this(instructionCount, clockHz);
+    
+    for (FunctionalUnitDescription fUnit : fUnits)
+    {
+      this.fuStats.put(fUnit.name, new FUStats());
+    }
   }// end of Constructor
   //----------------------------------------------------------------------
   
@@ -312,7 +330,24 @@ public class SimulationStatistics
   @JsonProperty("arithmeticIntensity")
   public double getArithmeticIntensity()
   {
+    if (committedInstructions == 0)
+    {
+      return 0;
+    }
     return (double) (dynamicInstructionMix.intArithmetic + dynamicInstructionMix.floatArithmetic) / committedInstructions;
+  }
+  
+  /**
+   * @return Prediction accuracy. TODO: which to count
+   */
+  @JsonProperty("predictionAccuracy")
+  public double getPredictionAccuracy()
+  {
+    if (conditionalBranches == 0)
+    {
+      return 0;
+    }
+    return (double) correctlyPredictedBranches / conditionalBranches;
   }
   
   /**
@@ -321,6 +356,10 @@ public class SimulationStatistics
   @JsonProperty("flops")
   public double getFlops()
   {
+    if (clock == 0)
+    {
+      return 0;
+    }
     return (double) (dynamicInstructionMix.intArithmetic + dynamicInstructionMix.floatArithmetic) / clock;
   }
   
@@ -330,6 +369,10 @@ public class SimulationStatistics
   @JsonProperty("ipc")
   public double getIpc()
   {
+    if (clockCycles == 0)
+    {
+      return 0;
+    }
     return (double) committedInstructions / clockCycles;
   }
   
