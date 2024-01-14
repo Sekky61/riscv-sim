@@ -78,6 +78,7 @@ export interface SimulationStatistics {
   fuStats: {
     [fuName: string]: FUStats;
   };
+  predictionAccuracy: number;
   instructionStats: InstructionStats[];
   committedInstructions: number;
   clockCycles: number;

@@ -128,13 +128,15 @@ export default function Program() {
   );
 }
 
-function ProgramInstruction({
+export function ProgramInstruction({
   instructionId,
   className,
   children,
+  showAddress = true,
 }: {
   instructionId: Reference;
   children?: React.ReactNode;
+  showAddress?: boolean;
 } & ReactClassName) {
   const instruction = useAppSelector((state) =>
     selectInputCodeModelById(state, instructionId),
@@ -177,9 +179,11 @@ function ProgramInstruction({
   const cls = clsx(className, 'font-mono text-sm');
   return (
     <>
-      <div className='text-xs text-gray-600 font-mono flex justify-center items-center'>
-        {address}
-      </div>
+      {showAddress && (
+        <div className='text-xs text-gray-600 font-mono flex justify-center items-center'>
+          {address}
+        </div>
+      )}
       <span className={cls}>
         {children}
         <span title={model.interpretableAs}>{model.name}</span>

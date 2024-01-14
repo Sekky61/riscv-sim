@@ -45,13 +45,19 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/base/ui/table';
-import { selectStatistics } from '@/lib/redux/cpustateSlice';
+import { ProgramInstruction } from '@/components/simulation/Program';
+import {
+  selectProgramWithLabels,
+  selectStatistics,
+} from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
 import {
   FUStats,
   InstructionMix,
+  InstructionStats,
   SimulationStatistics,
 } from '@/lib/types/cpuApi';
+import clsx from 'clsx';
 
 /**
  * @return The ratio in percentage, formatted. Zero if the denominator is zero.
@@ -115,12 +121,87 @@ export function SimulationStats() {
           totalCycles={statistics.clockCycles}
           stats={statistics.fuStats}
         />
-        <div className='col-span-2'>
+        <div className=''>
           <DetailedSimulationStats stats={statistics} />
         </div>
         <CacheStatistics stats={statistics} />
+        <InstructionStatsCard instructionStats={statistics.instructionStats} />
       </div>
     </div>
+  );
+}
+
+interface InstructionStatsProps {
+  instructionStats: InstructionStats[];
+}
+
+const heatMapColors = [
+  'bg-red-100',
+  'bg-red-200',
+  'bg-red-300',
+  'bg-red-400',
+  'bg-red-500',
+];
+
+function InstructionStatsCard({ instructionStats }: InstructionStatsProps) {
+  const codeOrder = useAppSelector(selectProgramWithLabels);
+
+  if (!codeOrder) {
+    return null;
+  }
+
+  const allDecoded = instructionStats.reduce(
+    (acc, { decoded }) => acc + decoded,
+    0,
+  );
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Instruction Statistics</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className='pt-4'>
+          {codeOrder.map((instructionOrLabel) => {
+            if (typeof instructionOrLabel === 'string') {
+              return (
+                <div
+                  key={`lab-${instructionOrLabel}`}
+                  className='font-bold text-sm'
+                >
+                  {instructionOrLabel}:
+                </div>
+              );
+            }
+            const st = instructionStats[instructionOrLabel];
+            if (!st) {
+              return null;
+            }
+            const { committedCount, decoded, correctlyPredicted } = st;
+            const colorIndex = Math.floor(
+              (correctlyPredicted / decoded) * heatMapColors.length,
+            );
+            const color = heatMapColors[colorIndex];
+            console.log(colorIndex, color);
+            return (
+              <div
+                className={clsx('flex', color)}
+                key={`ins-${instructionOrLabel}`}
+              >
+                <div>
+                  {decoded} / {allDecoded}
+                </div>
+                <ProgramInstruction
+                  key={`ins-${instructionOrLabel}`}
+                  instructionId={instructionOrLabel}
+                  showAddress={false}
+                />
+              </div>
+            );
+          })}
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
