@@ -93,17 +93,33 @@ class ServerApp implements Callable<Integer>
   @Option(names = "--port", description = "Port to listen on")
   int port = 8000;
   
+  @Option(names = "--timeout-ms", description = "Timeout for requests in milliseconds")
+  Integer timeout_ms;
+  
   @Override
   public Integer call()
   {
     // override the configLoader
     if (parent.gccPath != null)
     {
-      System.out.println("Overriding GCC path to " + parent.gccPath);
       GccCaller.compilerPath = parent.gccPath;
     }
     
-    Server server = new Server(host, port);
+    // Handle the server timeout parameter
+    Integer timeout_ms = ConfigLoader.serverTimeoutMs;
+    if (timeout_ms == null)
+    {
+      if (this.timeout_ms != null)
+      {
+        timeout_ms = this.timeout_ms;
+      }
+      else
+      {
+        throw new RuntimeException("Server timeout not specified");
+      }
+    }
+    
+    Server server = new Server(host, port, timeout_ms);
     try
     {
       server.start();
