@@ -36,6 +36,7 @@ import {
   CardContent,
   CardTitle,
   CardHeader,
+  CardDescription,
 } from '@/components/base/ui/card';
 import {
   Table,
@@ -57,7 +58,7 @@ import {
   InstructionStats,
   SimulationStatistics,
 } from '@/lib/types/cpuApi';
-import clsx from 'clsx';
+import Link from 'next/link';
 
 /**
  * @return The ratio in percentage, formatted. Zero if the denominator is zero.
@@ -77,7 +78,15 @@ export function SimulationStats() {
 
   console.log(statistics);
   if (!statistics) {
-    return null;
+    return (
+      <div className='text-2xl'>
+        No Simulation Running.{' '}
+        <Link href='/' className='link'>
+          Start Simulating
+        </Link>{' '}
+        and come back here later.
+      </div>
+    );
   }
 
   const branchAccuracy = `${(statistics.predictionAccuracy * 100).toFixed(2)}%`;
@@ -125,7 +134,10 @@ export function SimulationStats() {
           <DetailedSimulationStats stats={statistics} />
         </div>
         <CacheStatistics stats={statistics} />
-        <InstructionStatsCard instructionStats={statistics.instructionStats} />
+        <InstructionStatsCard
+          instructionStats={statistics.instructionStats}
+          commitCount={statistics.committedInstructions}
+        />
       </div>
     </div>
   );
@@ -133,17 +145,24 @@ export function SimulationStats() {
 
 interface InstructionStatsProps {
   instructionStats: InstructionStats[];
+  commitCount: number;
 }
 
-const heatMapColors = [
-  'bg-red-100',
-  'bg-red-200',
-  'bg-red-300',
-  'bg-red-400',
-  'bg-red-500',
-];
+/**
+ * Color gradient from #0600f9 to #f90006, linearly interpolated.
+ * @param value The value to get the color for, range [0, 1]
+ */
+function getHeatMapColor(value: number) {
+  const r = 6 + Math.floor(value * 249);
+  const g = 0;
+  const b = 249 - Math.floor(value * 249);
+  return `${r}, ${g}, ${b}`;
+}
 
-function InstructionStatsCard({ instructionStats }: InstructionStatsProps) {
+function InstructionStatsCard({
+  instructionStats,
+  commitCount,
+}: InstructionStatsProps) {
   const codeOrder = useAppSelector(selectProgramWithLabels);
 
   if (!codeOrder) {
@@ -155,10 +174,36 @@ function InstructionStatsCard({ instructionStats }: InstructionStatsProps) {
     0,
   );
 
+  // Calculate normalized instruction counts
+  const norms = Array.from({ length: codeOrder.length }, () => 0);
+  let maxVal = 0;
+  for (const instruction of codeOrder) {
+    if (typeof instruction === 'string') {
+      continue;
+    }
+    const st = instructionStats[instruction];
+    if (!st) {
+      continue;
+    }
+    const c = st.committedCount / commitCount;
+    norms[instruction] = c;
+    if (c > maxVal) {
+      maxVal = c;
+    }
+  }
+  // Normalize
+  if (maxVal === 0) {
+    maxVal = 1;
+  }
+  for (let i = 0; i < norms.length; i++) {
+    norms[i] /= maxVal;
+  }
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>Instruction Statistics</CardTitle>
+        <CardDescription>Heat Map of execution counts</CardDescription>
       </CardHeader>
       <CardContent>
         <div className='pt-4'>
@@ -178,18 +223,21 @@ function InstructionStatsCard({ instructionStats }: InstructionStatsProps) {
               return null;
             }
             const { committedCount, decoded, correctlyPredicted } = st;
-            const colorIndex = Math.floor(
-              (correctlyPredicted / decoded) * heatMapColors.length,
-            );
-            const color = heatMapColors[colorIndex];
-            console.log(colorIndex, color);
+            const heatCoef = norms[instructionOrLabel] ?? 0;
+            const percentage = formatRatio(committedCount, commitCount);
             return (
               <div
-                className={clsx('flex', color)}
+                className='flex'
+                style={
+                  {
+                    '--heat': getHeatMapColor(heatCoef),
+                    backgroundColor: 'rgba(var(--heat), 0.2)',
+                  } as React.CSSProperties
+                }
                 key={`ins-${instructionOrLabel}`}
               >
-                <div>
-                  {decoded} / {allDecoded}
+                <div className='font-mono text-sm text-gray-800 w-14 mr-2'>
+                  {percentage}
                 </div>
                 <ProgramInstruction
                   key={`ins-${instructionOrLabel}`}
@@ -230,7 +278,7 @@ const detailedStatNames = {
 
 function DetailedSimulationStats({ stats }: DetailedStatsProps) {
   return (
-    <Card className='col-span-2'>
+    <Card>
       <CardHeader>
         <CardTitle>Detailed Statistics</CardTitle>
       </CardHeader>
@@ -238,7 +286,7 @@ function DetailedSimulationStats({ stats }: DetailedStatsProps) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Category</TableHead>
+              <TableHead>Attribute</TableHead>
               <TableHead>Value</TableHead>
             </TableRow>
           </TableHeader>
@@ -279,7 +327,7 @@ function CacheStatistics({ stats }: DetailedStatsProps) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Category</TableHead>
+              <TableHead>Attribute</TableHead>
               <TableHead>Value</TableHead>
             </TableRow>
           </TableHeader>
@@ -316,8 +364,8 @@ function FuStatsDash({ stats, totalCycles }: FuStatsProps) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className='w-[100px]'>Category</TableHead>
-              <TableHead>Busy cycles</TableHead>
+              <TableHead>Name</TableHead>
+              <TableHead>Busy Cycles</TableHead>
               <TableHead>Percentage</TableHead>
             </TableRow>
           </TableHeader>
