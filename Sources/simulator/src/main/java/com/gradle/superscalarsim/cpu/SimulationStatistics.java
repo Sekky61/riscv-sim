@@ -113,23 +113,6 @@ public class SimulationStatistics
   /**
    * @param instructionCount Number of instructions in the code
    * @param clockHz          Clock frequency (Hz)
-   *
-   * @brief Constructor
-   */
-  public SimulationStatistics(int instructionCount, int clockHz)
-  {
-    this.cache                 = new CacheStatistics();
-    this.staticInstructionMix  = new InstructionMix();
-    this.dynamicInstructionMix = new InstructionMix();
-    this.fuStats               = new HashMap<>();
-    this.clock                 = clockHz;
-    
-    allocateInstructionStats(instructionCount);
-  }
-  
-  /**
-   * @param instructionCount Number of instructions in the code
-   * @param clockHz          Clock frequency (Hz)
    * @param fUnits           List of functional units (for their names)
    *
    * @brief Constructor
@@ -143,6 +126,23 @@ public class SimulationStatistics
       this.fuStats.put(fUnit.name, new FUStats());
     }
   }// end of Constructor
+  
+  /**
+   * @param instructionCount Number of instructions in the code
+   * @param clockHz          Clock frequency (Hz)
+   *
+   * @brief Constructor
+   */
+  public SimulationStatistics(int instructionCount, int clockHz)
+  {
+    this.cache                 = new CacheStatistics();
+    this.staticInstructionMix  = new InstructionMix();
+    this.dynamicInstructionMix = new InstructionMix();
+    this.fuStats               = new HashMap<>();
+    this.clock                 = clockHz;
+    
+    allocateInstructionStats(instructionCount);
+  }
   //----------------------------------------------------------------------
   
   /**
@@ -196,27 +196,31 @@ public class SimulationStatistics
     this.committedInstructions++;
     this.dynamicInstructionMix.increment(codeModel.getInstructionFunctionModel().getInstructionType());
     
-    boolean branchActuallyTaken = codeModel.isBranchLogicResult();
-    if (branchActuallyTaken)
+    boolean isBranch = codeModel.getInstructionTypeEnum() == InstructionTypeEnum.kJumpbranch;
+    if (isBranch)
     {
-      incrementTakenBranches();
-    }
-    if (codeModel.isBranchPredicted() == branchActuallyTaken)
-    {
-      incrementCorrectlyPredictedBranches();
-    }
-    
-    if (codeModel.isConditionalBranch())
-    {
-      incrementConditionalBranches();
+      boolean branchActuallyTaken = codeModel.isBranchLogicResult();
+      if (branchActuallyTaken)
+      {
+        incrementTakenBranches();
+      }
+      if (codeModel.isBranchPredicted() == branchActuallyTaken)
+      {
+        incrementCorrectlyPredictedBranches();
+      }
+      
+      if (codeModel.isConditionalBranch())
+      {
+        incrementConditionalBranches();
+      }
     }
     
     // Per instruction statistics
     InstructionStats statObj = instructionStats.get(codeModel.getCodeId());
     statObj.incrementCommittedCycles();
-    if (codeModel.isConditionalBranch())
+    if (isBranch && codeModel.isConditionalBranch())
     {
-      if (codeModel.isBranchPredicted() == branchActuallyTaken)
+      if (codeModel.isBranchPredicted() == codeModel.isBranchLogicResult())
       {
         statObj.incrementCorrectlyPredicted();
       }
@@ -347,7 +351,7 @@ public class SimulationStatistics
     {
       return 0;
     }
-    return (double) correctlyPredictedBranches / conditionalBranches;
+    return (double) correctlyPredictedBranches / dynamicInstructionMix.branch;
   }
   
   /**

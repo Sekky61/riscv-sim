@@ -265,7 +265,7 @@ export const defaultCpuConfig: CpuConfig = {
   phtSize: 10,
   predictorType: '2bit',
   predictorDefault: 'Weakly Taken',
-  useGlobalHistory: true,
+  useGlobalHistory: false,
   fUnits: [
     {
       id: 0,

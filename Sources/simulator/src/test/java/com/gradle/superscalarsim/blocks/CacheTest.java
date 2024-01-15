@@ -19,7 +19,7 @@ public class CacheTest
   {
     memory = new SimulatedMemory();
     cache  = new Cache(memory, 16, 2, 16, ReplacementPoliciesEnum.RANDOM, true, true, 1, 1, 1,
-                       new SimulationStatistics(0, 1, config.cpuConfig.fUnits));
+                       new SimulationStatistics(0, 1));
     Triplet<Long, Integer, Integer> returnTriplet = cache.splitAddress(0xff00f3);
     Assert.assertEquals(3, (int) returnTriplet.getThird());
     Assert.assertEquals(7, (int) returnTriplet.getSecond());
@@ -35,7 +35,7 @@ public class CacheTest
   {
     memory = new SimulatedMemory();
     cache  = new Cache(memory, 16, 2, 16, ReplacementPoliciesEnum.RANDOM, true, true, 1, 1, 1,
-                       new SimulationStatistics(0, 1, config.cpuConfig.fUnits));
+                       new SimulationStatistics(0, 1));
     cache.storeData(128, 0x01020304, 4, 0, 0);
     Assert.assertEquals(0x01020304, (long) cache.getData(128, 4, 0, 0).getSecond());
   }
@@ -45,7 +45,7 @@ public class CacheTest
   {
     memory = new SimulatedMemory();
     cache  = new Cache(memory, 16, 2, 16, ReplacementPoliciesEnum.RANDOM, true, true, 1, 1, 1,
-                       new SimulationStatistics(0, 1, config.cpuConfig.fUnits));
+                       new SimulationStatistics(0, 1));
     Assert.assertEquals(0, (long) cache.getData(128, 4, 0, 0).getSecond());
     cache.storeData(128, 123456789L, 4, 0, 0);
     Assert.assertEquals(123456789L, (long) cache.getData(128, 4, 0, 0).getSecond());
@@ -56,7 +56,7 @@ public class CacheTest
   {
     memory = new SimulatedMemory();
     cache  = new Cache(memory, 16, 2, 16, ReplacementPoliciesEnum.RANDOM, true, true, 1, 1, 1,
-                       new SimulationStatistics(0, 1, config.cpuConfig.fUnits));
+                       new SimulationStatistics(0, 1));
     Assert.assertEquals(0, (long) cache.getData(128, 4, 0, 0).getSecond());
     cache.storeData(128, 123456789L, 4, 0, 0);
     Assert.assertEquals(123456789L, (long) cache.getData(128, 4, 0, 0).getSecond());
@@ -68,7 +68,7 @@ public class CacheTest
   {
     memory = new SimulatedMemory();
     cache  = new Cache(memory, 16, 2, 16, ReplacementPoliciesEnum.RANDOM, true, true, 1, 1, 1,
-                       new SimulationStatistics(0, 1, config.cpuConfig.fUnits));
+                       new SimulationStatistics(0, 1));
     Assert.assertEquals(0, (long) cache.getData(130, 4, 0, 0).getSecond());
     cache.storeData(130, 0x23456789L, 4, 0, 0);
     Assert.assertEquals(0x23456789, (long) cache.getData(130, 4, 0, 0).getSecond());
@@ -80,7 +80,7 @@ public class CacheTest
   {
     memory = new SimulatedMemory();
     cache  = new Cache(memory, 16, 2, 16, ReplacementPoliciesEnum.RANDOM, true, true, 1, 1, 1,
-                       new SimulationStatistics(0, 1, config.cpuConfig.fUnits));
+                       new SimulationStatistics(0, 1));
     Assert.assertEquals(0, (long) cache.getData(130, 4, 0, 0).getSecond());
     cache.storeData(130, 0x23456789L, 4, 0, 0);
     cache.storeData(134, 0x1122L, 2, 0, 0);
@@ -97,7 +97,7 @@ public class CacheTest
   {
     memory = new SimulatedMemory();
     cache  = new Cache(memory, 16, 2, 16, ReplacementPoliciesEnum.RANDOM, true, true, 1, 1, 1,
-                       new SimulationStatistics(0, 1, config.cpuConfig.fUnits));
+                       new SimulationStatistics(0, 1));
     cache.storeData(128, 0x9988776623456789L, 8, 0, 0);
     Assert.assertEquals(0x23456789L, (long) cache.getData(128, 4, 0, 0).getSecond());
     Assert.assertEquals(0x99887766L, (long) cache.getData(132, 4, 0, 0).getSecond());
@@ -111,7 +111,7 @@ public class CacheTest
   {
     memory = new SimulatedMemory();
     cache  = new Cache(memory, 16, 2, 16, ReplacementPoliciesEnum.RANDOM, true, true, 1, 1, 1,
-                       new SimulationStatistics(0, 1, config.cpuConfig.fUnits));
+                       new SimulationStatistics(0, 1));
     cache.storeData(126, 0x23456789L, 4, 0, 0);
     Assert.assertEquals(0x23456789L, (long) cache.getData(126, 4, 0, 0).getSecond());
     Assert.assertEquals(0x6789L, (long) cache.getData(126, 2, 0, 0).getSecond());
@@ -123,7 +123,7 @@ public class CacheTest
   {
     memory = new SimulatedMemory();
     cache  = new Cache(memory, 4, 2, 16, ReplacementPoliciesEnum.LRU, true, false, 1, 1, 10,
-                       new SimulationStatistics(0, 1, config.cpuConfig.fUnits));
+                       new SimulationStatistics(0, 1));
     
     
     //Store first line
@@ -176,7 +176,7 @@ public class CacheTest
   {
     memory = new SimulatedMemory();
     cache  = new Cache(memory, 2, 2, 4, ReplacementPoliciesEnum.LRU, true, false, 10, 10, 0,
-                       new SimulationStatistics(0, 1, config.cpuConfig.fUnits));
+                       new SimulationStatistics(0, 1));
     
     //Store 4 lines
     cache.storeData(0, 0x11223344L, 4, 1, 1);

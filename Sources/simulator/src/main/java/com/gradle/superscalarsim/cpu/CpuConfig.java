@@ -204,7 +204,7 @@ public class CpuConfig implements Serializable
     config.phtSize          = 10;
     config.predictorType    = "2bit";
     config.predictorDefault = "Weakly Taken";
-    config.useGlobalHistory = true;
+    config.useGlobalHistory = false;
     // FunctionalUnitDescriptions
     config.fUnits = Arrays.asList(new FunctionalUnitDescription(0, FunctionalUnitDescription.Type.FX, Arrays.asList(
                                           new FunctionalUnitDescription.Capability(FunctionalUnitDescription.CapabilityName.addition, 1),

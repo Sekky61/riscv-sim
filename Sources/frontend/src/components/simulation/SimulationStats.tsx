@@ -76,7 +76,6 @@ function formatRatio(numerator: number, denominator: number) {
 export function SimulationStats() {
   const statistics = useAppSelector(selectStatistics);
 
-  console.log(statistics);
   if (!statistics) {
     return (
       <div className='text-2xl'>
@@ -120,10 +119,12 @@ export function SimulationStats() {
         </Card>
         <InstructionMixDash
           title='Static Instruction Mix'
+          description='Instruction mix of the program'
           mix={statistics.staticInstructionMix}
         />
         <InstructionMixDash
           title='Dynamic Instruction Mix'
+          description='Instruction mix of committed instructions'
           mix={statistics.dynamicInstructionMix}
         />
         <FuStatsDash
@@ -359,6 +360,9 @@ function FuStatsDash({ stats, totalCycles }: FuStatsProps) {
     <Card>
       <CardHeader>
         <CardTitle>Functional Units</CardTitle>
+        <CardDescription>
+          Amount of time a unit spends computing
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <Table>
@@ -366,7 +370,7 @@ function FuStatsDash({ stats, totalCycles }: FuStatsProps) {
             <TableRow>
               <TableHead>Name</TableHead>
               <TableHead>Busy Cycles</TableHead>
-              <TableHead>Percentage</TableHead>
+              <TableHead>Utilization</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -390,10 +394,11 @@ function FuStatsDash({ stats, totalCycles }: FuStatsProps) {
 
 interface InstructionMixProps {
   title: string;
+  description?: string;
   mix: InstructionMix;
 }
 
-function InstructionMixDash({ mix, title }: InstructionMixProps) {
+function InstructionMixDash({ mix, title, description }: InstructionMixProps) {
   const total =
     mix.intArithmetic +
     mix.floatArithmetic +
@@ -412,14 +417,15 @@ function InstructionMixDash({ mix, title }: InstructionMixProps) {
     <Card>
       <CardHeader>
         <CardTitle>{title}</CardTitle>
+        {description && <CardDescription>{description}</CardDescription>}
       </CardHeader>
       <CardContent>
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className='w-[100px]'>Category</TableHead>
+              <TableHead>Category</TableHead>
               <TableHead>Value</TableHead>
-              <TableHead>Percentage</TableHead>
+              <TableHead>Proportion</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

@@ -41,18 +41,13 @@ import {
 } from '@/lib/redux/cpustateSlice';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import { openModal } from '@/lib/redux/modalSlice';
-import {
-  InputCodeArgument,
-  Reference,
-  RegisterDataContainer,
-} from '@/lib/types/cpuApi';
+import { Reference } from '@/lib/types/cpuApi';
 
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@/components/base/ui/tooltip';
-import RegisterReference from '@/components/simulation/RegisterReference';
 import ValueInformation from '@/components/simulation/ValueTooltip';
 
 export type InstructionFieldProps = {
@@ -111,15 +106,14 @@ export default function InstructionField({
       const arg = args.find((a) => a.origArg.stringValue === part);
       const key = `${simCodeModel.renamedCodeLine}-${i}`;
       if (arg) {
-        return (
-          <InstructionArgument
-            arg={arg}
-            key={key}
-          />
-        );
+        return <InstructionArgument arg={arg} key={key} />;
       }
       // Add z-index to make the argument highlight below the parentheses etc.
-      return <span className='relative z-10' key={key}>{part}</span>;
+      return (
+        <span className='relative z-10' key={key}>
+          {part}
+        </span>
+      );
     });
   }
 
