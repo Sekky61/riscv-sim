@@ -46,6 +46,12 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/base/ui/table';
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@/components/base/ui/tabs';
 import { ProgramInstruction } from '@/components/simulation/Program';
 import {
   selectProgramWithLabels,
@@ -59,6 +65,7 @@ import {
   SimulationStatistics,
 } from '@/lib/types/cpuApi';
 import Link from 'next/link';
+import { PieChart } from 'react-minimal-pie-chart';
 
 /**
  * @return The ratio in percentage, formatted. Zero if the denominator is zero.
@@ -420,47 +427,114 @@ function InstructionMixDash({ mix, title, description }: InstructionMixProps) {
         {description && <CardDescription>{description}</CardDescription>}
       </CardHeader>
       <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Category</TableHead>
-              <TableHead>Value</TableHead>
-              <TableHead>Proportion</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            <TableRow>
-              <TableCell className='font-medium'>Integer</TableCell>
-              <TableCell>{mix.intArithmetic}</TableCell>
-              <TableCell className='text-right'>
-                {percentages.intArithmetic}
-              </TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell className='font-medium'>Float</TableCell>
-              <TableCell>{mix.floatArithmetic}</TableCell>
-              <TableCell className='text-right'>
-                {percentages.floatArithmetic}
-              </TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell className='font-medium'>Branch</TableCell>
-              <TableCell>{mix.branch}</TableCell>
-              <TableCell className='text-right'>{percentages.branch}</TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell className='font-medium'>Memory</TableCell>
-              <TableCell>{mix.memory}</TableCell>
-              <TableCell className='text-right'>{percentages.memory}</TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell className='font-medium'>Other</TableCell>
-              <TableCell>{mix.other}</TableCell>
-              <TableCell className='text-right'>{percentages.other}</TableCell>
-            </TableRow>
-          </TableBody>
-        </Table>
+        <Tabs defaultValue='table'>
+          <TabsContent value='table' className='h-80'>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Category</TableHead>
+                  <TableHead>Value</TableHead>
+                  <TableHead>Proportion</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                <TableRow>
+                  <TableCell className='font-medium'>Integer</TableCell>
+                  <TableCell>{mix.intArithmetic}</TableCell>
+                  <TableCell className='text-right'>
+                    {percentages.intArithmetic}
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className='font-medium'>Float</TableCell>
+                  <TableCell>{mix.floatArithmetic}</TableCell>
+                  <TableCell className='text-right'>
+                    {percentages.floatArithmetic}
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className='font-medium'>Branch</TableCell>
+                  <TableCell>{mix.branch}</TableCell>
+                  <TableCell className='text-right'>
+                    {percentages.branch}
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className='font-medium'>Memory</TableCell>
+                  <TableCell>{mix.memory}</TableCell>
+                  <TableCell className='text-right'>
+                    {percentages.memory}
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className='font-medium'>Other</TableCell>
+                  <TableCell>{mix.other}</TableCell>
+                  <TableCell className='text-right'>
+                    {percentages.other}
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </TabsContent>
+          <TabsContent value='chart' className='h-80'>
+            <MixPieChart mix={mix} />
+          </TabsContent>
+          <TabsList className='w-full'>
+            <TabsTrigger value='table'>Table</TabsTrigger>
+            <TabsTrigger value='chart'>Chart</TabsTrigger>
+          </TabsList>
+        </Tabs>
       </CardContent>
     </Card>
+  );
+}
+
+interface PieChartProps {
+  mix: InstructionMix;
+}
+/*
+<PieChart
+  data={[
+    { title: 'One', value: 10, color: '#E38627' },
+    { title: 'Two', value: 15, color: '#C13C37' },
+    { title: 'Three', value: 20, color: '#6A2135' },
+  ]}
+/>;
+*/
+
+function MixPieChart({ mix }: PieChartProps) {
+  const data = [
+    { title: 'Integer', value: mix.intArithmetic, color: '#f3bc00' },
+    { title: 'Float', value: mix.floatArithmetic, color: '#00af82' },
+    { title: 'Branch', value: mix.branch, color: '#a6d854' },
+    { title: 'Memory', value: mix.memory, color: '#fc8d62' },
+    { title: 'Other', value: mix.other, color: '#9f9f9f' },
+  ];
+
+  const allEmpty = data.every((d) => d.value === 0);
+  if (allEmpty) {
+    return (
+      <div className='text-lg flex justify-center items-center h-full'>
+        Nothing to show
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <PieChart
+        data={data}
+        label={(p) => {
+          if (p.dataEntry.value === 0) {
+            return '';
+          }
+          return p.dataEntry.title;
+        }}
+        labelStyle={{
+          fontSize: '5px',
+          fontFamily: 'sans-serif',
+        }}
+      />
+    </div>
   );
 }
