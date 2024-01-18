@@ -69,7 +69,7 @@ public class Cache
   private int associativity;
   
   /**
-   * Size of line in bytes. Must be a multiple of 4
+   * Size of line in bytes. Must be a power of 2.
    */
   private int lineSize;
   
@@ -150,6 +150,7 @@ public class Cache
    * @param storeDelay               Delay of the store operation
    * @param loadDelay                Delay of the load operation
    * @param lineReplacementDelay     How long does it take to replace line
+   * @param statistics               Statistics of the simulation
    *
    * @brief Constructor
    */
@@ -203,16 +204,18 @@ public class Cache
    * @param associativity Number of lines per index
    * @param lineSize      Size of line in bytes
    *
-   * @return boolean - True if the values are valid, false otherwise
+   * @return True if the settings are valid, false otherwise
    * @brief Checks if the cache parameters are valid
    */
   public boolean areSettingsCorrect(int numberOfLines, int associativity, int lineSize)
   {
-    return numberOfLines % associativity == 0 && lineSize % 4 == 0 && numberOfLines % 2 == 0;
+    // Line size must be a power of 2
+    boolean isLineSizePowerOfTwo = Integer.bitCount(lineSize) == 1;
+    return numberOfLines % associativity == 0 && isLineSizePowerOfTwo && numberOfLines % 2 == 0;
   }
   
   /**
-   * Flushes the cache - writes dirty lines to memory
+   * Flushes the cache - writes dirty lines to memory. No delay.
    */
   public void flush()
   {
@@ -311,9 +314,22 @@ public class Cache
     return (!isStore) ? lineReplacementDelay : 0;
   }
   
-  private int getLog(int value, int log)
+  /**
+   * @return Number of bits needed to index the contents of a cache line.
+   */
+  public int getOffsetBits()
   {
-    return (int) (Math.log((float) (value)) / Math.log(log));
+    // Basically a log2
+    return 31 - Integer.numberOfLeadingZeros(lineSize);
+  }
+  
+  /**
+   * @return Number of bits needed to index the associativity sets.
+   */
+  public int getIndexBits()
+  {
+    // Basically a log2
+    return 31 - Integer.numberOfLeadingZeros(numberOfLines / associativity);
   }
   
   
@@ -327,8 +343,8 @@ public class Cache
   public Triplet<Long, Integer, Integer> splitAddress(long address)
   {
     int  offset = (int) (address & (lineSize - 1));
-    int  index  = (int) ((address >>> getLog(lineSize, 2)) & ((numberOfLines / associativity) - 1));
-    long tag    = (address >>> (getLog(lineSize, 2) + getLog(numberOfLines / associativity, 2)));
+    int  index  = (int) ((address >>> getOffsetBits()) & ((numberOfLines / associativity) - 1));
+    long tag    = (address >>> (getOffsetBits() + getIndexBits()));
     return new Triplet<>(tag, index, offset);
   }
   
@@ -416,15 +432,18 @@ public class Cache
    * Does not touch the line itself.
    * Updates replacement policy.
    *
+   * @param address starting byte of the access (can be misaligned)
+   *
    * @return Cache line to use for the new data. Either an empty line is found or a line is replaced.
    */
   public CacheLineModel pickLineToUse(long address)
   {
-    Triplet<Long, Integer, Integer> splittedAddress = splitAddress(address);
+    Triplet<Long, Integer, Integer> addressSplit = splitAddress(address);
+    int                             index        = addressSplit.getSecond();
     // Go through all lines - compare if tag matches
     for (int i = 0; i < associativity; i++)
     {
-      CacheLineModel lineCandidate = cache[splittedAddress.getSecond()][i];
+      CacheLineModel lineCandidate = cache[index][i];
       if (!lineCandidate.isValid())
       {
         return lineCandidate;
@@ -432,11 +451,11 @@ public class Cache
     }
     
     // Pick victim, store victim line into memory
-    int            victimIndex = replacementPolicy.getLineToReplace(splittedAddress.getSecond());
-    CacheLineModel line        = cache[splittedAddress.getSecond()][victimIndex];
+    int            victimIndex = replacementPolicy.getLineToReplace(index);
+    CacheLineModel line        = cache[index][victimIndex];
     if (line.isDirty())
     {
-      CacheLineModel victimLine = cache[splittedAddress.getSecond()][victimIndex];
+      CacheLineModel victimLine = cache[index][victimIndex];
       memory.insertIntoMemory(victimLine.getBaseAddress(), victimLine.getLineData());
     }
     
@@ -454,14 +473,14 @@ public class Cache
    */
   public Pair<Integer, byte[]> getDataBytes(long address, int size, int id, int currentCycle)
   {
-    Triplet<Long, Integer, Integer> splittedAddress = splitAddress(address);
+    Triplet<Long, Integer, Integer> addressSplit = splitAddress(address);
     
     // Save last access for visualization
     if (lastAccess.peek().getId() != id)
     {
       statistics.cache.incrementReadAccesses(size);
       this.lastAccess.add(
-              new CacheAccess(currentCycle, cycleEndOfReplacement, id, new Boolean[0], false, splittedAddress, 0,
+              new CacheAccess(currentCycle, cycleEndOfReplacement, id, new Boolean[0], false, addressSplit, 0,
                               new Integer[0], new Integer[0]));
     }
     
@@ -477,23 +496,23 @@ public class Cache
       statistics.cache.incrementMisses();
       line = pickLineToUse(address);
       
-      long baseMemoryAddress = address & -(1L << getLog(lineSize, 2));
+      long baseMemoryAddress = address & -(1L << getOffsetBits());
       line.setLineData(memory.getFromMemory(baseMemoryAddress, lineSize));
       line.setDirty(false);
       line.setValid(true);
-      line.setTag(splittedAddress.getFirst());
+      line.setTag(addressSplit.getFirst());
       line.setBaseAddress(baseMemoryAddress);
     }
     
     int selectedLine = line.getIndex() % associativity;
-    replacementPolicy.updatePolicy(splittedAddress.getSecond(), line.getIndex() % associativity);
-    lastAccess.peek().addLineAccess(isHit, splittedAddress.getSecond() * associativity + selectedLine,
-                                    splittedAddress.getThird());
+    replacementPolicy.updatePolicy(addressSplit.getSecond(), line.getIndex() % associativity);
+    lastAccess.peek()
+            .addLineAccess(isHit, addressSplit.getSecond() * associativity + selectedLine, addressSplit.getThird());
     
     Pair<Integer, byte[]> tmpReturnVal = getDataFromLines(line, address, size, id, currentCycle);
     return new Pair<>(tmpReturnVal.getFirst() + loadDelay + computeRemainingDelay(isHit, false, currentCycle,
-                                                                                  splittedAddress.getFirst(),
-                                                                                  splittedAddress.getSecond()),
+                                                                                  addressSplit.getFirst(),
+                                                                                  addressSplit.getSecond()),
                       tmpReturnVal.getSecond());
   }
   
@@ -507,9 +526,9 @@ public class Cache
    */
   private void setDataToLine(CacheLineModel line, long address, final int offset, long data, final int size)
   {
-    // If the cache is write-through also store data to memory
     if (!writeBack)
     {
+      // The cache is write-through. Store data to memory
       ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES);
       buffer.putLong(data);
       // Take first size bytes
@@ -549,8 +568,7 @@ public class Cache
   private int setDataToLines(CacheLineModel line, long address, long data, int size, int id, int currentCycle)
   {
     Triplet<Long, Integer, Integer> splitAddress = splitAddress(address);
-    
-    int offset = splitAddress.getThird();
+    int                             offset       = splitAddress.getThird();
     
     if (writeBack)
     {
@@ -586,11 +604,11 @@ public class Cache
   public int storeData(long address, long data, int size, int id, int currentCycle)
   {
     Triplet<Long, Integer, Integer> splitAddress = splitAddress(address);
-    statistics.cache.incrementWriteAccesses(size);
+    long                            tag          = splitAddress.getFirst();
+    int                             index        = splitAddress.getSecond();
+    int                             offset       = splitAddress.getThird();
     
-    long tag    = splitAddress.getFirst();
-    int  index  = splitAddress.getSecond();
-    int  offset = splitAddress.getThird();
+    statistics.cache.incrementWriteAccesses(size);
     
     // Save last access for visualization
     if (lastAccess.peek().getId() != id)
@@ -612,7 +630,7 @@ public class Cache
       statistics.cache.incrementMisses();
       // Load new line from memory
       line = pickLineToUse(address);
-      long baseMemoryAddress = address & -(1L << getLog(lineSize, 2));
+      long baseMemoryAddress = address & -(1L << getOffsetBits());
       line.setLineData(memory.getFromMemory(baseMemoryAddress, lineSize));
       line.setValid(true);
       line.setDirty(false);
