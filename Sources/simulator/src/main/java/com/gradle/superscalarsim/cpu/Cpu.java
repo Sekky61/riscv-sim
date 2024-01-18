@@ -136,8 +136,9 @@ public class Cpu implements Serializable
   
   public boolean simEnded()
   {
-    boolean robEmpty = cpuState.reorderBufferBlock.getReorderQueueSize() == 0;
-    boolean pcEnd = cpuState.instructionFetchBlock.getPc() >= cpuState.instructionMemoryBlock.getCode().size() * 4;
+    boolean robEmpty      = cpuState.reorderBufferBlock.getReorderQueueSize() == 0;
+    boolean pcEnd         = cpuState.instructionFetchBlock.getPc() >= cpuState.instructionMemoryBlock.getCode()
+            .size() * 4;
     boolean renameEmpty   = cpuState.decodeAndDispatchBlock.getCodeBuffer().isEmpty();
     boolean fetchNotEmpty = !cpuState.instructionFetchBlock.getFetchedCode().isEmpty();
     boolean nop = fetchNotEmpty && cpuState.instructionFetchBlock.getFetchedCode().get(0).getInstructionName()
@@ -155,7 +156,7 @@ public class Cpu implements Serializable
   }// end of step
   
   /**
-   * @brief Runs simulation from current state to the end
+   * @brief Runs simulation from current state to the end. Flushes cache at the end!
    */
   public void execute()
   {

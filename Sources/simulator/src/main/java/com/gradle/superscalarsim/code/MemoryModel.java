@@ -62,10 +62,6 @@ public class MemoryModel
    * Statistics of simulation
    */
   private SimulationStatistics statistics;
-  /**
-   * Last access
-   */
-  private MemoryAccess lastAccess;
   
   /**
    * @brief Constructor - Memory model holds only memory
@@ -87,22 +83,21 @@ public class MemoryModel
   }
   
   /**
-   * @param address      starting byte of the access (can be misaligned)
-   * @param data         data to be stored
-   * @param size         Size of the access in bytes (1-8)
-   * @param id           ID of accessing instruction
-   * @param currentCycle Cycle in which this access is happening
+   * @param memoryAccess Description of the access
    *
    * @return delay caused by this access
    * @brief Sets data to memory
    */
-  public int store(long address, long data, int size, int id, int currentCycle)
+  public int store(MemoryAccess memoryAccess)
   {
-    this.lastAccess = new MemoryAccess(true, address, data, size);
+    assert memoryAccess.isStore();
+    long address = memoryAccess.getAddress();
+    long data    = memoryAccess.getData();
+    int  size    = memoryAccess.getSize();
     if (cache != null)
     {
-      int delay = cache.storeData(address, data, size, id, currentCycle);
-      statistics.cache.incrementTotalDelay(currentCycle, delay);
+      int delay = cache.storeData(address, data, size, 0, 0);
+      statistics.cache.incrementTotalDelay(delay);
       return delay;
     }
     
@@ -115,6 +110,19 @@ public class MemoryModel
     System.arraycopy(byteBuffer.array(), 0, bytesToStore, 0, size);
     memory.insertIntoMemory(address, bytesToStore);
     return 0;
+  }
+  
+  public Pair<Integer, Long> execute(MemoryAccess access)
+  {
+    if (access.isStore())
+    {
+      int delay = store(access);
+      return new Pair<>(delay, access.getData());
+    }
+    else
+    {
+      return load(access.getAddress(), access.getSize(), 0, 0);
+    }
   }
   
   /**
@@ -136,7 +144,7 @@ public class MemoryModel
       Pair<Integer, byte[]> returnVal = cache.getDataBytes(address, size, id, currentCycle);
       delay = returnVal.getFirst();
       System.arraycopy(returnVal.getSecond(), 0, bytes, 0, returnVal.getSecond().length);
-      statistics.cache.incrementTotalDelay(currentCycle, returnVal.getFirst());
+      statistics.cache.incrementTotalDelay(returnVal.getFirst());
     }
     else
     {
@@ -145,7 +153,6 @@ public class MemoryModel
       System.arraycopy(readBytes, 0, bytes, 0, readBytes.length);
     }
     long returnValLong = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN).getLong();
-    this.lastAccess = new MemoryAccess(false, address, returnValLong, size);
     return new Pair<>(delay, returnValLong);
   }
   

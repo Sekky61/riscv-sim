@@ -28,6 +28,7 @@
 package com.gradle.superscalarsim.cpu;
 
 import com.gradle.superscalarsim.enums.DataTypeEnum;
+import com.gradle.superscalarsim.models.memory.MemoryAccess;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -1669,7 +1670,7 @@ public class InstructionTests
     Cpu cpu = new Cpu(cpuConfig);
     cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(0x100);
     cpu.cpuState.unifiedRegisterFileBlock.getRegister("x4").setValue(0xfe);
-    cpu.cpuState.memoryModel.store(0x100, 0b11, 1, 0, 0);
+    cpu.cpuState.memoryModel.execute(MemoryAccess.store(0x100, 1, 0b11, false));
     cpu.execute();
     
     // Assert
@@ -1690,8 +1691,8 @@ public class InstructionTests
     Cpu cpu = new Cpu(cpuConfig);
     cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(0x100);
     cpu.cpuState.unifiedRegisterFileBlock.getRegister("x4").setValue(0x101);
-    cpu.cpuState.memoryModel.store(0x100, 0x10, 1, 0, 0);
-    cpu.cpuState.memoryModel.store(0x102, 0xff, 1, 0, 0);
+    cpu.cpuState.memoryModel.execute(MemoryAccess.store(0x100, 1, 0x10, false));
+    cpu.cpuState.memoryModel.execute(MemoryAccess.store(0x102, 1, 0xff, false));
     cpu.execute();
     
     // Assert
@@ -1711,7 +1712,7 @@ public class InstructionTests
     Cpu cpu = new Cpu(cpuConfig);
     cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(0x100);
     cpu.cpuState.unifiedRegisterFileBlock.getRegister("x4").setValue(0x103);
-    cpu.cpuState.memoryModel.store(0x100, 0x12345678, 4, 0, 0);
+    cpu.cpuState.memoryModel.execute(MemoryAccess.store(0x100, 4, 0x12345678, false));
     cpu.execute();
     
     // Assert
@@ -1735,7 +1736,7 @@ public class InstructionTests
     Cpu cpu = new Cpu(cpuConfig);
     cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(0x100);
     cpu.cpuState.unifiedRegisterFileBlock.getRegister("x4").setValue(0xff);
-    cpu.cpuState.memoryModel.store(0x100, 255, 1, 0, 0);
+    cpu.cpuState.memoryModel.execute(MemoryAccess.store(0x100, 1, 255, false));
     cpu.execute();
     
     // Assert
@@ -1754,7 +1755,7 @@ public class InstructionTests
     Cpu cpu = new Cpu(cpuConfig);
     cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(0x100);
     cpu.cpuState.unifiedRegisterFileBlock.getRegister("x4").setValue(0xff);
-    cpu.cpuState.memoryModel.store(0x100, 0xffff, 2, 0, 0);
+    cpu.cpuState.memoryModel.execute(MemoryAccess.store(0x100, 2, 0xffff, false));
     cpu.execute();
     
     // Assert

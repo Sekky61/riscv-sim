@@ -475,17 +475,17 @@ public class SimulationStatistics
       this.bytesWritten += bytesWritten;
     }
     
-    public void incrementHits(int cycle)
+    public void incrementHits()
     {
       hits++;
     }
     
-    public void incrementMisses(int cycle)
+    public void incrementMisses()
     {
       misses++;
     }
     
-    public void incrementTotalDelay(int cycle, int delay)
+    public void incrementTotalDelay(int delay)
     {
       totalDelay += delay;
     }

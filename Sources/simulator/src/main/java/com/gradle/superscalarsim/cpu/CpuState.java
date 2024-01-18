@@ -322,7 +322,7 @@ public class CpuState implements Serializable
         case Memory ->
         {
           MemoryAccessUnit memoryAccessUnit = new MemoryAccessUnit(fu, reorderBufferBlock, loadStoreIssueWindowBlock,
-                                                                   loadBufferBlock, storeBufferBlock,
+                                                                   loadBufferBlock, storeBufferBlock, memoryModel,
                                                                    loadStoreInterpreter, statistics);
           this.loadBufferBlock.addMemoryAccessUnit(memoryAccessUnit);
           this.storeBufferBlock.addMemoryAccessUnit(memoryAccessUnit);

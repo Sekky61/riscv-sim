@@ -37,6 +37,7 @@ import com.gradle.superscalarsim.blocks.base.AbstractFunctionUnitBlock;
 import com.gradle.superscalarsim.blocks.base.IssueWindowBlock;
 import com.gradle.superscalarsim.blocks.base.ReorderBufferBlock;
 import com.gradle.superscalarsim.code.CodeLoadStoreInterpreter;
+import com.gradle.superscalarsim.code.MemoryModel;
 import com.gradle.superscalarsim.cpu.SimulationStatistics;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
@@ -44,6 +45,7 @@ import com.gradle.superscalarsim.models.FunctionalUnitDescription;
 import com.gradle.superscalarsim.models.InputCodeArgument;
 import com.gradle.superscalarsim.models.Pair;
 import com.gradle.superscalarsim.models.SimCodeModel;
+import com.gradle.superscalarsim.models.memory.MemoryAccess;
 import com.gradle.superscalarsim.models.register.RegisterModel;
 
 /**
@@ -53,23 +55,25 @@ import com.gradle.superscalarsim.models.register.RegisterModel;
 public class MemoryAccessUnit extends AbstractFunctionUnitBlock
 {
   /**
+   * Memory. Used for load/store operations
+   */
+  @JsonIdentityReference(alwaysAsId = true)
+  private final MemoryModel memoryModel;
+  /**
    * Load buffer with all load instruction entries
    */
   @JsonIdentityReference(alwaysAsId = true)
   private LoadBufferBlock loadBufferBlock;
-  
   /**
    * Store buffer with all Store instruction entries
    */
   @JsonIdentityReference(alwaysAsId = true)
   private StoreBufferBlock storeBufferBlock;
-  
   /**
    * Interpreter for processing load store instructions
    */
   @JsonIdentityReference(alwaysAsId = true)
   private CodeLoadStoreInterpreter loadStoreInterpreter;
-  
   /**
    * Clock cycle counter
    */
@@ -108,6 +112,7 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
                           IssueWindowBlock issueWindowBlock,
                           LoadBufferBlock loadBufferBlock,
                           StoreBufferBlock storeBufferBlock,
+                          MemoryModel memoryModel,
                           CodeLoadStoreInterpreter loadStoreInterpreter,
                           SimulationStatistics statistics)
   {
@@ -116,6 +121,7 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
     this.storeBufferBlock     = storeBufferBlock;
     this.loadStoreInterpreter = loadStoreInterpreter;
     this.baseDelay            = description.latency;
+    this.memoryModel          = memoryModel;
   }// end of Constructor
   //----------------------------------------------------------------------
   
@@ -183,8 +189,23 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
       firstDelayPassed = true;
       
       // This contacts memoryModel, pulls data and delay
-      Pair<Integer, Long> result = loadStoreInterpreter.interpretInstruction(this.simCodeModel, cycleCount);
-      int                 delay  = result.getFirst();
+      MemoryAccess access        = loadStoreInterpreter.interpretInstruction(this.simCodeModel, cycleCount);
+      long         address       = access.getAddress();
+      int          numberOfBytes = access.getSize();
+      int          id            = this.simCodeModel.getIntegerId();
+      
+      Pair<Integer, Long> result;
+      if (access.isStore())
+      {
+        int delay = processStoreOperation(access);
+        result = new Pair<>(delay, access.getData());
+      }
+      else
+      {
+        result = processLoadOperation(numberOfBytes * 8, address, access.isSigned(), id, cycleCount);
+      }
+      
+      int delay = result.getFirst();
       savedResult = result.getSecond();
       
       // Set delay for memory response
@@ -222,6 +243,59 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
     }
   }
   //----------------------------------------------------------------------
+  
+  /**
+   * @param sizeBits     How many bits to store
+   * @param address      Address to store to
+   * @param valueBits    Value to store (lower sizeBits bits are used)
+   * @param id           ID of a store instruction, that is being executed
+   * @param currentCycle Current cycle
+   *
+   * @return Delay of this access
+   */
+  private int processStoreOperation(MemoryAccess memoryAccess)
+  {
+    int numberOfBytes = memoryAccess.getSize();
+    return memoryModel.store(memoryAccess);
+  }// end of processStoreOperation
+  //-------------------------------------------------------------------------------------------
+  
+  /**
+   * @param sizeBits     Size of the loaded value (8, 16, 32)
+   * @param address      Address to read from
+   * @param isSigned     True in case of signed value, false otherwise
+   * @param id           ID of a load instruction, that is being executed
+   * @param currentCycle Current cycle
+   *
+   * @return Pair of delay of this access and data (64 bits, suitable for assignment to register)
+   */
+  private Pair<Integer, Long> processLoadOperation(int sizeBits,
+                                                   long address,
+                                                   boolean isSigned,
+                                                   int id,
+                                                   int currentCycle)
+  {
+    int                 numberOfBytes = sizeBits / 8;
+    Pair<Integer, Long> loadedData    = memoryModel.load(address, numberOfBytes, id, currentCycle);
+    
+    // Apply mask to zero out or sign extend the value
+    long bits      = loadedData.getSecond();
+    long validMask = (1L << sizeBits) - 1;
+    if (sizeBits >= 64)
+    {
+      validMask = -1;
+    }
+    bits = bits & validMask;
+    if (isSigned && ((1L << (sizeBits - 1)) & bits) != 0)
+    {
+      // Fill with sign bit
+      long signMask = ~validMask;
+      bits = bits | signMask;
+    }
+    
+    return new Pair<>(loadedData.getFirst(), bits);
+  }// end of processLoadOperation
+  //-------------------------------------------------------------------------------------------
   
   @Override
   public void reset()

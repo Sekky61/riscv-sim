@@ -49,18 +49,61 @@ public class MemoryAccess
    * Size of the data in bytes (1-8)
    */
   private int size;
-  
+  /**
+   * True if the data is signed
+   */
+  private boolean isSigned;
   /**
    * Address of the memory access
    */
   private long address;
   
-  public MemoryAccess(boolean isStore, long address, long data, int size)
+  /**
+   * Constructor
+   *
+   * @param isStore  True if store, false if load
+   * @param address  Address of the memory access
+   * @param data     Data to be stored
+   * @param size     Size of the data in bytes (1-8)
+   * @param isSigned True if the data is signed
+   */
+  public MemoryAccess(boolean isStore, long address, long data, int size, boolean isSigned)
   {
-    this.isStore = isStore;
-    this.address = address;
-    this.data    = data;
-    this.size    = size;
+    this.isStore  = isStore;
+    this.address  = address;
+    this.data     = data;
+    this.size     = size;
+    this.isSigned = isSigned;
+  }
+  
+  /**
+   * Constructor for store access
+   *
+   * @param address  Address of the memory access
+   * @param data     Data to be stored
+   * @param size     Size of the data in bytes (1-8)
+   * @param isSigned True if the data is signed
+   */
+  public static MemoryAccess store(long address, int size, long data, boolean isSigned)
+  {
+    return new MemoryAccess(true, address, data, size, isSigned);
+  }
+  
+  /**
+   * Constructor for load access
+   *
+   * @param address  Address of the memory access
+   * @param size     Size of the data in bytes (1-8)
+   * @param isSigned True if the data is signed
+   */
+  public static MemoryAccess load(long address, int size, boolean isSigned)
+  {
+    return new MemoryAccess(false, address, 0, size, isSigned);
+  }
+  
+  public boolean isSigned()
+  {
+    return isSigned;
   }
   
   public boolean isStore()

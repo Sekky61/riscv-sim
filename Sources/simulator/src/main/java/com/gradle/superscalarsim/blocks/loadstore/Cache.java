@@ -420,7 +420,7 @@ public class Cache
       CacheLineModel line = cache[splittedAddress.getSecond()][i];
       if (line.getTag() == splittedAddress.getFirst() && line.isValid())
       {
-        statistics.cache.incrementHits(currentCycle);
+        statistics.cache.incrementHits();
         
         replacementPolicy.updatePolicy(splittedAddress.getSecond(), i);
         lastAccess.peek()
@@ -451,7 +451,7 @@ public class Cache
     {
       selectedLine = emptyLine;
     }
-    statistics.cache.incrementMisses(currentCycle);
+    statistics.cache.incrementMisses();
     
     long           baseMemoryAddress = address & -(1L << getLog(lineSize, 2));
     CacheLineModel line              = cache[splittedAddress.getSecond()][selectedLine];
@@ -581,7 +581,7 @@ public class Cache
       if (line.getTag() == tag && line.isValid())
       {
         // Found the line
-        statistics.cache.incrementHits(currentCycle);
+        statistics.cache.incrementHits();
         
         replacementPolicy.updatePolicy(index, i);
         lastAccess.peek().addLineAccess(true, index * associativity + i, offset);
@@ -612,7 +612,7 @@ public class Cache
         memory.insertIntoMemory(selectedLine.getBaseAddress(), selectedLine.getLineData());
       }
     }
-    statistics.cache.incrementMisses(currentCycle);
+    statistics.cache.incrementMisses();
     
     // Load new line from memory
     long baseMemoryAddress = address & -(1L << getLog(lineSize, 2));
