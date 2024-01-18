@@ -235,7 +235,7 @@ public class CpuState implements Serializable
     this.memoryModel = new MemoryModel(cache, statistics);
     
     
-    this.loadStoreInterpreter = new CodeLoadStoreInterpreter(memoryModel);
+    this.loadStoreInterpreter = new CodeLoadStoreInterpreter();
     
     this.instructionFetchBlock = new InstructionFetchBlock(config.cpuConfig.fetchWidth,
                                                            config.cpuConfig.branchFollowLimit, simCodeModelFactory,

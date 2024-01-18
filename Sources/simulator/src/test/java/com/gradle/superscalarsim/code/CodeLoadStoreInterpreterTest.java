@@ -68,7 +68,7 @@ public class CodeLoadStoreInterpreterTest
     InstructionMemoryBlock instructionMemoryBlock = new InstructionMemoryBlock(new ArrayList<>(), new HashMap<>(),
                                                                                null);
     memoryModel                   = new MemoryModel(new SimulatedMemory());
-    this.codeLoadStoreInterpreter = new CodeLoadStoreInterpreter(memoryModel);
+    this.codeLoadStoreInterpreter = new CodeLoadStoreInterpreter();
   }
   
   private Map<String, InstructionFunctionModel> setUpInstructions()
@@ -198,7 +198,7 @@ public class CodeLoadStoreInterpreterTest
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("sb")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
-    MemoryAccess access = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1), 0);
+    MemoryAccess access = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1));
     long         value  = memoryModel.execute(access).getSecond();
     Assert.assertEquals(6, value);
     
@@ -208,7 +208,7 @@ public class CodeLoadStoreInterpreterTest
     inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("lbu")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
-    MemoryAccess access2 = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1), 0);
+    MemoryAccess access2 = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1));
     long         value2  = memoryModel.execute(access2).getSecond();
     Assert.assertEquals(6, value2);
   }
@@ -222,7 +222,7 @@ public class CodeLoadStoreInterpreterTest
             .build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("sh")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    MemoryAccess access = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1), 0);
+    MemoryAccess access = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1));
     long         value  = memoryModel.execute(access).getSecond();
     Assert.assertEquals(6, value);
     
@@ -232,7 +232,7 @@ public class CodeLoadStoreInterpreterTest
     inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("lhu")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
-    MemoryAccess access2 = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1), 0);
+    MemoryAccess access2 = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1));
     long         value2  = memoryModel.execute(access2).getSecond();
     Assert.assertEquals(6, value2);
   }
@@ -246,7 +246,7 @@ public class CodeLoadStoreInterpreterTest
             .build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("sw")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    MemoryAccess access = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1), 0);
+    MemoryAccess access = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1));
     long         value  = memoryModel.execute(access).getSecond();
     Assert.assertEquals(6, value);
     
@@ -256,7 +256,7 @@ public class CodeLoadStoreInterpreterTest
     inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("lwu")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
-    MemoryAccess access2 = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1), 0);
+    MemoryAccess access2 = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1));
     long         value2  = memoryModel.execute(access2).getSecond();
     Assert.assertEquals(6, value2);
   }
@@ -270,7 +270,7 @@ public class CodeLoadStoreInterpreterTest
             .build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("sd")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    MemoryAccess access = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1), 0);
+    MemoryAccess access = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1));
     long         value  = memoryModel.execute(access).getSecond();
     Assert.assertEquals(6, value);
     
@@ -280,7 +280,7 @@ public class CodeLoadStoreInterpreterTest
     inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("ld")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
-    MemoryAccess access2 = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1), 0);
+    MemoryAccess access2 = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1));
     long         value2  = memoryModel.execute(access2).getSecond();
     Assert.assertEquals(6, value2);
   }
@@ -294,7 +294,7 @@ public class CodeLoadStoreInterpreterTest
             .build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("fsw")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    MemoryAccess access = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1), 0);
+    MemoryAccess access = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1));
     long         value  = memoryModel.execute(access).getSecond();
     float        r      = (float) interpretAs(value, DataTypeEnum.kFloat);
     Assert.assertEquals(6.0f, r, 0.001);
@@ -305,7 +305,7 @@ public class CodeLoadStoreInterpreterTest
     inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("flw")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
-    MemoryAccess access2 = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1), 0);
+    MemoryAccess access2 = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1));
     long         value2  = memoryModel.execute(access2).getSecond();
     float        r2      = (float) interpretAs(value, DataTypeEnum.kFloat);
     Assert.assertEquals(6, r2, 0.001);
@@ -321,7 +321,7 @@ public class CodeLoadStoreInterpreterTest
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("fsd")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
-    MemoryAccess access = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1), 0);
+    MemoryAccess access = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1));
     long         value  = memoryModel.execute(access).getSecond();
     double       r      = (double) interpretAs(value, DataTypeEnum.kDouble);
     Assert.assertEquals(6.0d, r, 0.001);
@@ -332,7 +332,7 @@ public class CodeLoadStoreInterpreterTest
     inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("fld")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
-    MemoryAccess access2 = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1), 0);
+    MemoryAccess access2 = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1));
     long         value2  = memoryModel.execute(access2).getSecond();
     double       r2      = (double) interpretAs(value2, DataTypeEnum.kDouble);
     Assert.assertEquals(6.0d, r2, 0.001);
@@ -348,7 +348,7 @@ public class CodeLoadStoreInterpreterTest
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("fsd")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
-    MemoryAccess access = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1), 0);
+    MemoryAccess access = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1));
     long         value  = memoryModel.execute(access).getSecond();
     double       r      = (double) interpretAs(value, DataTypeEnum.kDouble);
     Assert.assertEquals(6.0d, r, 0.001);
@@ -359,7 +359,7 @@ public class CodeLoadStoreInterpreterTest
     inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("flw")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
-    MemoryAccess access2 = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1), 0);
+    MemoryAccess access2 = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1));
     long         value2  = memoryModel.execute(access2).getSecond();
     Assert.assertNotEquals(6, value2);
   }
@@ -374,7 +374,7 @@ public class CodeLoadStoreInterpreterTest
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("fsw")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
-    MemoryAccess access = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1), 0);
+    MemoryAccess access = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1));
     long         value  = memoryModel.execute(access).getSecond();
     // Cast to float
     float r = (float) interpretAs(value, DataTypeEnum.kFloat);
@@ -386,7 +386,7 @@ public class CodeLoadStoreInterpreterTest
     inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("fld")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
-    MemoryAccess access2 = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1), 0);
+    MemoryAccess access2 = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1));
     long         value2  = memoryModel.execute(access2).getSecond();
     Assert.assertNotEquals(6, value2);
   }
@@ -401,7 +401,7 @@ public class CodeLoadStoreInterpreterTest
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("sw")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
-    MemoryAccess access = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1), 0);
+    MemoryAccess access = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1));
     long         value  = memoryModel.execute(access).getSecond();
     // The bits have to be interpreted as int
     int signedValue = (int) interpretAs(value, DataTypeEnum.kInt);
@@ -413,7 +413,7 @@ public class CodeLoadStoreInterpreterTest
     inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("lb")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
-    MemoryAccess access2 = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1), 0);
+    MemoryAccess access2 = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1));
     long         value2  = memoryModel.execute(access2).getSecond();
     Assert.assertEquals(24, value2);
   }
@@ -428,7 +428,7 @@ public class CodeLoadStoreInterpreterTest
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("sd")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
-    MemoryAccess access = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1), 0);
+    MemoryAccess access = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1));
     long         value  = memoryModel.execute(access).getSecond();
     Assert.assertEquals(-4294967295L, value);
     
@@ -438,7 +438,7 @@ public class CodeLoadStoreInterpreterTest
     inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("lw")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
-    MemoryAccess access2 = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1), 0);
+    MemoryAccess access2 = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1));
     long         value2  = memoryModel.execute(access2).getSecond();
     Assert.assertEquals(1, value2);
   }
@@ -453,8 +453,7 @@ public class CodeLoadStoreInterpreterTest
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("sw")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
-    MemoryAccess access      = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1),
-                                                                                  0);
+    MemoryAccess access      = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1));
     long         value       = memoryModel.execute(access).getSecond();
     int          signedValue = (int) interpretAs(value, DataTypeEnum.kInt);
     Assert.assertEquals(-65535, signedValue);
@@ -465,7 +464,7 @@ public class CodeLoadStoreInterpreterTest
     inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("lh")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
-    MemoryAccess access2 = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1), 0);
+    MemoryAccess access2 = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1));
     long         value2  = memoryModel.execute(access2).getSecond();
     Assert.assertEquals(1, value2);
   }
@@ -479,9 +478,9 @@ public class CodeLoadStoreInterpreterTest
             .build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("lw")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    MemoryAccess access1 = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1), 0);
+    MemoryAccess access1 = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1));
     long         value   = memoryModel.execute(access1).getSecond();
-    MemoryAccess access2 = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1), 0);
+    MemoryAccess access2 = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1));
     long         value2  = memoryModel.execute(access2).getSecond();
     Assert.assertEquals(0, value);
     Assert.assertEquals(0, value2);
@@ -497,7 +496,7 @@ public class CodeLoadStoreInterpreterTest
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("sw")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
-    MemoryAccess access = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1), 0);
+    MemoryAccess access = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1));
     long         value  = memoryModel.execute(access).getSecond();
     Assert.assertEquals(25, value);
     
@@ -507,7 +506,7 @@ public class CodeLoadStoreInterpreterTest
     inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("lw")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
-    MemoryAccess access2  = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1), 0);
+    MemoryAccess access2  = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1));
     long         value2   = memoryModel.execute(access2).getSecond();
     int          valueInt = (int) interpretAs(value2, DataTypeEnum.kInt);
     Assert.assertEquals(25, valueInt);
@@ -523,7 +522,7 @@ public class CodeLoadStoreInterpreterTest
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("sb")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
-    MemoryAccess access = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1), 0);
+    MemoryAccess access = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1));
     long         value  = memoryModel.execute(access).getSecond();
     Assert.assertEquals(6, value);
     
@@ -533,7 +532,7 @@ public class CodeLoadStoreInterpreterTest
     inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("sb")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
-    MemoryAccess access2 = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1), 0);
+    MemoryAccess access2 = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1));
     long         value2  = memoryModel.execute(access2).getSecond();
     Assert.assertEquals(6, value2);
     
@@ -543,7 +542,7 @@ public class CodeLoadStoreInterpreterTest
     inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("lhu")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
-    MemoryAccess access3 = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1), 0);
+    MemoryAccess access3 = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1));
     long         value3  = memoryModel.execute(access3).getSecond();
     Assert.assertEquals(1542, value3);
   }
@@ -558,7 +557,7 @@ public class CodeLoadStoreInterpreterTest
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("sh")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
-    MemoryAccess access = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1), 0);
+    MemoryAccess access = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1));
     long         value  = memoryModel.execute(access).getSecond();
     Assert.assertEquals(6, value);
     
@@ -568,7 +567,7 @@ public class CodeLoadStoreInterpreterTest
     inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("sh")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
-    MemoryAccess access2 = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1), 0);
+    MemoryAccess access2 = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1));
     long         value2  = memoryModel.execute(access2).getSecond();
     Assert.assertEquals(6, value2);
     
@@ -578,7 +577,7 @@ public class CodeLoadStoreInterpreterTest
     inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("lwu")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
-    MemoryAccess access3 = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1), 0);
+    MemoryAccess access3 = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1));
     long         value3  = memoryModel.execute(access3).getSecond();
     Assert.assertEquals(393222, value3);
   }
@@ -593,7 +592,7 @@ public class CodeLoadStoreInterpreterTest
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("sh")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
-    MemoryAccess access = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1), 0);
+    MemoryAccess access = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1));
     long         value  = memoryModel.execute(access).getSecond();
     Assert.assertEquals(6, value);
     
@@ -603,9 +602,9 @@ public class CodeLoadStoreInterpreterTest
     inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("lwu")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     
-    MemoryAccess access1 = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1), 0);
+    MemoryAccess access1 = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1));
     long         result1 = memoryModel.execute(access1).getSecond();
-    MemoryAccess access2 = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1), 0);
+    MemoryAccess access2 = this.codeLoadStoreInterpreter.interpretInstruction(new SimCodeModel(inputCodeModel, -1));
     long         result2 = memoryModel.execute(access2).getSecond();
     
     Assert.assertEquals(6.0, result1, 0.0001);

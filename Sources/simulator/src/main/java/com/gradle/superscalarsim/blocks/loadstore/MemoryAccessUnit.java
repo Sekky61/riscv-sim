@@ -189,7 +189,7 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
       firstDelayPassed = true;
       
       // This contacts memoryModel, pulls data and delay
-      MemoryAccess access        = loadStoreInterpreter.interpretInstruction(this.simCodeModel, cycleCount);
+      MemoryAccess access        = loadStoreInterpreter.interpretInstruction(this.simCodeModel);
       long         address       = access.getAddress();
       int          numberOfBytes = access.getSize();
       int          id            = this.simCodeModel.getIntegerId();

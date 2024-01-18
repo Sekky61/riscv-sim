@@ -33,7 +33,6 @@
 package com.gradle.superscalarsim.code;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.models.InstructionFunctionModel;
@@ -49,47 +48,26 @@ import java.util.List;
  * For explanation of the syntax, see {@link Expression}
  *
  * @class CodeLoadStoreInterpreter
- * @brief Interprets load/store instruction provided in InputCodeModel class
+ * @brief Interprets load/store instruction provided in InputCodeModel class. Does _not_ perform the actual load/store.
  */
 @JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
 public class CodeLoadStoreInterpreter
 {
   /**
-   * Memory. Used for load/store operations
-   */
-  @JsonIdentityReference(alwaysAsId = true)
-  private final MemoryModel memoryModel;
-  
-  /**
-   * @param memoryModel       Memory model
-   * @param registerFileBlock Register file block
-   * @param labelMap          Label map
-   *
    * @brief Constructor
    */
-  public CodeLoadStoreInterpreter(final MemoryModel memoryModel)
+  public CodeLoadStoreInterpreter()
   {
-    this.memoryModel = memoryModel;
   }// end of Constructor
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Resets the memory
-   */
-  public void resetMemory()
-  {
-    this.memoryModel.reset();
-  }// end of Constructor
-  //-------------------------------------------------------------------------------------------
-  
-  /**
-   * @param codeModel    code to be interpreted
-   * @param currentCycle current cycle
+   * @param codeModel code to be interpreted
    *
-   * @return Returns pair - delay of this access and data
-   * @brief Interprets load/store instruction from codeModel, returns loaded/stored data.
+   * @return Returns a description of a memory operation to be performed
+   * @brief Interprets load/store instruction from codeModel, does not perform the actual load/store
    */
-  public MemoryAccess interpretInstruction(final SimCodeModel codeModel, int currentCycle)
+  public MemoryAccess interpretInstruction(final SimCodeModel codeModel)
   {
     final InstructionFunctionModel instruction = codeModel.getInstructionFunctionModel();
     if (instruction == null)

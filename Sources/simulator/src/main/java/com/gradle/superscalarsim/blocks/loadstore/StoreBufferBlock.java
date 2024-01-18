@@ -165,7 +165,6 @@ public class StoreBufferBlock implements AbstractBlock
   {
     this.commitId = 0;
     this.storeQueue.clear();
-    this.loadStoreInterpreter.resetMemory();
   }// end of reset
   //-------------------------------------------------------------------------------------------
   
@@ -221,7 +220,8 @@ public class StoreBufferBlock implements AbstractBlock
       SimCodeModel simCodeModel = item.getSimCodeModel();
       assert !simCodeModel.hasFailed();
       
-      boolean isSpeculative = reorderBufferBlock.getRobItem(simCodeModel.getIntegerId()).reorderFlags.isSpeculative();
+      boolean isSpeculative    = reorderBufferBlock.getRobItem(
+              simCodeModel.getIntegerId()).reorderFlags.isSpeculative();
       boolean isAvailableForMA = !isSpeculative && item.getAddress() != -1 && !item.isAccessingMemory() && item.getAccessingMemoryId() == -1 && item.isSourceReady();
       if (!isAvailableForMA)
       {
