@@ -42,7 +42,7 @@ import com.gradle.superscalarsim.code.CodeLoadStoreInterpreter;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.models.InputCodeArgument;
 import com.gradle.superscalarsim.models.SimCodeModel;
-import com.gradle.superscalarsim.models.StoreBufferItem;
+import com.gradle.superscalarsim.models.memory.StoreBufferItem;
 
 import java.util.*;
 
@@ -221,8 +221,7 @@ public class StoreBufferBlock implements AbstractBlock
       SimCodeModel simCodeModel = item.getSimCodeModel();
       assert !simCodeModel.hasFailed();
       
-      boolean isSpeculative    = reorderBufferBlock.getRobItem(
-              simCodeModel.getIntegerId()).reorderFlags.isSpeculative();
+      boolean isSpeculative = reorderBufferBlock.getRobItem(simCodeModel.getIntegerId()).reorderFlags.isSpeculative();
       boolean isAvailableForMA = !isSpeculative && item.getAddress() != -1 && !item.isAccessingMemory() && item.getAccessingMemoryId() == -1 && item.isSourceReady();
       if (!isAvailableForMA)
       {

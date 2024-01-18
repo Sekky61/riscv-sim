@@ -35,8 +35,8 @@ import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.blocks.loadstore.Cache;
 import com.gradle.superscalarsim.cpu.SimulationStatistics;
-import com.gradle.superscalarsim.models.MemoryAccess;
 import com.gradle.superscalarsim.models.Pair;
+import com.gradle.superscalarsim.models.memory.MemoryAccess;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;

@@ -1,12 +1,17 @@
 /**
- * @file LoadBufferItem.java
+ * @file StoreBufferItem.java
  * @author Jan Vavra \n
  * Faculty of Information Technology \n
  * Brno University of Technology \n
  * xvavra20@fit.vutbr.cz
- * @brief File contains container class additional info for Load instruction
+ * @author Michal Majer
+ * Faculty of Information Technology
+ * Brno University of Technology
+ * xmajer21@stud.fit.vutbr.cz
+ * @brief File contains container class additional info for Store instruction
  * @date 14 March   2021 12:00 (created) \n
- * 28 April   2021 18:00 (revised)
+ * 17 March   2021 20:00 (revised)
+ * 26 Sep      2023 10:00 (revised)
  * @section Licence
  * This file is part of the Superscalar simulator app
  * <p>
@@ -25,35 +30,37 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.gradle.superscalarsim.models;
+package com.gradle.superscalarsim.models.memory;
 
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.gradle.superscalarsim.models.SimCodeModel;
 
 /**
- * @class LoadBufferItem
- * @brief Container for all the additional info required for instructions inside of load buffer
+ * @class StoreBufferItem
+ * @brief Container for all the additional info required for instructions inside of store buffer
  */
-public class LoadBufferItem
+public class StoreBufferItem
 {
   /**
-   * Name of the destination register (result)
+   * Name of the source register from where store takes the result
    * TODO: change to a reference to the register
    */
-  private final String destinationRegister;
-  
+  private final String sourceRegister;
+  /**
+   * ID used when getting correct store for bypassing
+   */
+  private final int sourceResultId;
   /**
    * The instruction itself
    */
   @JsonIdentityReference(alwaysAsId = true)
-  private SimCodeModel simCodeModel;
-  
+  SimCodeModel simCodeModel;
   /**
-   * Is the register ready for load instruction
+   * Is the register ready for store instruction
    */
-  private boolean destinationReady;
-  
+  private boolean sourceReady;
   /**
-   * Calculated load address
+   * Store result address
    */
   private long address;
   
@@ -61,93 +68,35 @@ public class LoadBufferItem
    * Is instruction accessing memory
    */
   private boolean isAccessingMemory;
-  
   private int accessingMemoryId;
-  
   /**
    * ID of the MA block in which was memory access done
    */
   private int memoryAccessId;
-  
-  /**
-   * Has instruction bypassed MA?
-   */
-  private boolean hasBypassed;
-  
   /**
    * ID when the instruction failed
    */
   private int memoryFailedId;
   
   /**
-   * @param destinationRegister Register name where the result will be stored
+   * @param sourceRegister Name of the source register from where store takes the result
+   * @param sourceId       ID used when getting correct store for bypassing
    *
    * @brief Constructor
    */
-  public LoadBufferItem(SimCodeModel simCodeModel, String destinationRegister)
+  public StoreBufferItem(SimCodeModel simCodeModel, String sourceRegister, int sourceId)
   {
-    this.simCodeModel        = simCodeModel;
-    this.destinationRegister = destinationRegister;
-    this.destinationReady    = false;
-    this.address             = -1;
-    this.isAccessingMemory   = false;
-    this.memoryAccessId      = -1;
-    this.hasBypassed         = false;
-    this.memoryFailedId      = -1;
-    this.accessingMemoryId   = -1;
+    this.simCodeModel   = simCodeModel;
+    this.sourceRegister = sourceRegister;
+    this.sourceReady    = false;
+    this.address        = -1;
+    this.sourceResultId = sourceId;
+    
+    this.isAccessingMemory = false;
+    this.memoryAccessId    = -1;
+    this.memoryFailedId    = -1;
+    this.accessingMemoryId = -1;
   }// end of Constructor
-  //-------------------------------------------------------------------------------------------
-  
-  /**
-   * @return Name of the destination register
-   * @brief Get destination register name
-   */
-  public String getDestinationRegister()
-  {
-    return destinationRegister;
-  }// end of getDestinationRegister
-  //-------------------------------------------------------------------------------------------
-  
-  /**
-   * @return True if yes, false if no
-   * @brief Is destination register ready to be saved into?
-   */
-  public boolean isDestinationReady()
-  {
-    return destinationReady;
-  }// end of isDestinationReady
-  //-------------------------------------------------------------------------------------------
-  
-  /**
-   * @param destinationReady boolean value marking readiness of that register
-   *
-   * @brief Set if destination register is ready
-   */
-  public void setDestinationReady(boolean destinationReady)
-  {
-    this.destinationReady = destinationReady;
-  }// end of setDestinationReady
-  //-------------------------------------------------------------------------------------------
-  
-  /**
-   * @return Address from where load data
-   * @brief Get load address
-   */
-  public long getAddress()
-  {
-    return address;
-  }// end of getAddress
-  //-------------------------------------------------------------------------------------------
-  
-  /**
-   * @param address Address from where load data
-   *
-   * @brief Set load address
-   */
-  public void setAddress(long address)
-  {
-    this.address = address;
-  }// end of setAddress
   //-------------------------------------------------------------------------------------------
   
   /**
@@ -193,27 +142,6 @@ public class LoadBufferItem
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @return True if yes, false if no
-   * @brief Has instruction bypassed MA?
-   */
-  public boolean hasBypassed()
-  {
-    return hasBypassed;
-  }// end of hasBypassed
-  //-------------------------------------------------------------------------------------------
-  
-  /**
-   * @param hasBypassed flag if instruction bypassed MA
-   *
-   * @brief Set flag if instruction bypassed MA
-   */
-  public void setHasBypassed(boolean hasBypassed)
-  {
-    this.hasBypassed = hasBypassed;
-  }// end of setHasBypassed
-  //-------------------------------------------------------------------------------------------
-  
-  /**
    * @return ID when instruction has failed
    * @brief Get id when instruction has failed
    */
@@ -253,14 +181,76 @@ public class LoadBufferItem
   {
     this.accessingMemoryId = accessingMemoryId;
   }// end of setAccessingMemoryId
+  //-------------------------------------------------------------------------------------------
+  
+  /**
+   * @return Name of the source register
+   * @brief Get name of the source register
+   */
+  public String getSourceRegister()
+  {
+    return sourceRegister;
+  }// end of getSourceRegister
+  //-------------------------------------------------------------------------------------------
+  
+  /**
+   * @return True if yes, false if no
+   * @brief Is source register ready to be read from?
+   */
+  public boolean isSourceReady()
+  {
+    return sourceReady;
+  }// end of isSourceReady
+  //-------------------------------------------------------------------------------------------
+  
+  /**
+   * @param destinationReady Flag if source register is ready for reading from
+   *
+   * @brief Sets flag if source register is ready for reading from
+   */
+  public void setSourceReady(boolean destinationReady)
+  {
+    this.sourceReady = destinationReady;
+  }// end of setSourceReady
+  //-------------------------------------------------------------------------------------------
+  
+  /**
+   * @return Store address
+   * @brief Get store address
+   */
+  public long getAddress()
+  {
+    return address;
+  }// end of getAddress
+  //-------------------------------------------------------------------------------------------
+  
+  /**
+   * @param address Address to store result into
+   *
+   * @brief Set store address
+   */
+  public void setAddress(long address)
+  {
+    this.address = address;
+  }// end of setAddress
+  //-------------------------------------------------------------------------------------------
+  
+  /**
+   * @return ID used when getting correct store for bypassing
+   * @brief Get id used when getting correct store for bypassing
+   */
+  public int getSourceResultId()
+  {
+    return sourceResultId;
+  }// end of getSourceResultId
   
   /**
    * @return Instruction itself
-   * @brief Get instruction itself
    */
   public SimCodeModel getSimCodeModel()
   {
     return simCodeModel;
   }
   //-------------------------------------------------------------------------------------------
+  
 }
