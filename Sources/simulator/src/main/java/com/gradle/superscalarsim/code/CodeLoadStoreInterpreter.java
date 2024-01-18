@@ -35,8 +35,6 @@ package com.gradle.superscalarsim.code;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
-import com.gradle.superscalarsim.blocks.base.InstructionMemoryBlock;
-import com.gradle.superscalarsim.blocks.base.UnifiedRegisterFileBlock;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.models.InstructionFunctionModel;
 import com.gradle.superscalarsim.models.Pair;
@@ -63,31 +61,15 @@ public class CodeLoadStoreInterpreter
   private final MemoryModel memoryModel;
   
   /**
-   * Register file. Used for calculating addresses and getting values for store operations.
-   */
-  @JsonIdentityReference(alwaysAsId = true)
-  private final UnifiedRegisterFileBlock registerFileBlock;
-  
-  /**
-   * Storage of labels and their addresses
-   */
-  @JsonIdentityReference(alwaysAsId = true)
-  private final InstructionMemoryBlock instructionMemoryBlock;
-  
-  /**
    * @param memoryModel       Memory model
    * @param registerFileBlock Register file block
    * @param labelMap          Label map
    *
    * @brief Constructor
    */
-  public CodeLoadStoreInterpreter(final MemoryModel memoryModel,
-                                  final UnifiedRegisterFileBlock registerFileBlock,
-                                  InstructionMemoryBlock instructionMemoryBlock)
+  public CodeLoadStoreInterpreter(final MemoryModel memoryModel)
   {
-    this.memoryModel            = memoryModel;
-    this.registerFileBlock      = registerFileBlock;
-    this.instructionMemoryBlock = instructionMemoryBlock;
+    this.memoryModel = memoryModel;
   }// end of Constructor
   //-------------------------------------------------------------------------------------------
   
@@ -138,11 +120,10 @@ public class CodeLoadStoreInterpreter
       case "store" ->
       {
         String        storeRegisterName = interpretableAsParams[3];
-        String        regName           = codeModel.getArgumentByName(storeRegisterName).getValue();
-        RegisterModel reg               = registerFileBlock.getRegister(regName);
+        RegisterModel reg               = codeModel.getArgumentByName(storeRegisterName).getRegisterValue();
         if (reg == null)
         {
-          throw new IllegalStateException("Register " + regName + " not found");
+          throw new IllegalStateException("Register " + storeRegisterName + " not found");
         }
         long valueBits = (long) reg.getValue(DataTypeEnum.kLong);
         int  delay     = processStoreOperation(sizeBits, address, valueBits, codeModel.getIntegerId(), currentCycle);
@@ -171,11 +152,8 @@ public class CodeLoadStoreInterpreter
     {
       throw new IllegalStateException("Unexpected number of parameters: " + interpretableAsParams.length);
     }
-    String addressExpr = interpretableAsParams[2];
-    
-    List<String> varNames = Expression.getVariableNames(addressExpr);
-    List<Expression.Variable> variables = codeModel.getVariables(varNames, registerFileBlock,
-                                                                 instructionMemoryBlock.getLabels());
+    String                    addressExpr = interpretableAsParams[2];
+    List<Expression.Variable> variables   = codeModel.getVariables();
     
     Expression.Variable addressResult = Expression.interpret(addressExpr, variables);
     if (addressResult == null)

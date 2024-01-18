@@ -170,6 +170,7 @@ export default function Page() {
     dispatch(
       notify({
         title: `${theName} is now the active ISA.`,
+        message: 'To use this configuration, reload the simulation.',
         status: 'success',
       }),
     );
@@ -234,13 +235,7 @@ export default function Page() {
         </div>
         <MemoryInfo />
       </div>
-      <div
-        className={cn(
-          blockEditing &&
-            'pointer-events-none opacity-60 hover:cursor-not-allowed',
-          'flex justify-center',
-        )}
-      >
+      <div className='flex justify-center pb-8'>
         <IsaSettingsForm form={form} disabled={blockEditing} />
       </div>
     </div>

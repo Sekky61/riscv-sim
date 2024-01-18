@@ -20,7 +20,7 @@ public class RegisterTests
   public void setUp()
   {
     initLoader               = new InitLoader();
-    unifiedRegisterFileBlock = new UnifiedRegisterFileBlock(initLoader, new RegisterModelFactory());
+    unifiedRegisterFileBlock = new UnifiedRegisterFileBlock(initLoader, 320, new RegisterModelFactory());
   }
   
   /**

@@ -115,7 +115,9 @@ public class InstructionFetchBlock implements AbstractBlock
    *
    * @brief Constructor
    */
-  public InstructionFetchBlock(SimCodeModelFactory simCodeModelAllocator,
+  public InstructionFetchBlock(int numberOfWays,
+                               int branchFollowLimit,
+                               SimCodeModelFactory simCodeModelAllocator,
                                InstructionMemoryBlock parser,
                                GShareUnit gShareUnit,
                                BranchTargetBuffer branchTargetBuffer)
@@ -125,12 +127,12 @@ public class InstructionFetchBlock implements AbstractBlock
     this.gShareUnit             = gShareUnit;
     this.branchTargetBuffer     = branchTargetBuffer;
     
-    this.numberOfWays      = 3;
+    this.numberOfWays      = numberOfWays;
     this.pc                = 0;
     this.fetchedCode       = new ArrayList<>();
     this.stallFlag         = false;
     this.cycleId           = -1;
-    this.branchFollowLimit = 1;
+    this.branchFollowLimit = branchFollowLimit;
   }// end of Constructor
   //----------------------------------------------------------------------
   
@@ -196,7 +198,10 @@ public class InstructionFetchBlock implements AbstractBlock
   //----------------------------------------------------------------------
   
   /**
-   * Mutates PC
+   * Mutates PC.
+   * Fetches instructions from the memory.
+   * If there is an entry in the BTB, it will follow the branch.
+   * Otherwise, it will fetch following instructions.
    *
    * @return Fetched instructions
    * @brief Fetching logic
@@ -212,8 +217,7 @@ public class InstructionFetchBlock implements AbstractBlock
       // Unique ID of the instruction
       int simCodeId = this.cycleId * numberOfWays + i;
       SimCodeModel codeModel = this.simCodeModelFactory.createInstance(instructionMemoryBlock.getInstructionAt(pc),
-                                                                       simCodeId, cycleId);
-      
+                                                                       simCodeId);
       codeModel.setSavedPc(pc);
       
       // This if emulates the in my opinion wrong logic. Removing it will cause the program to fetch
@@ -221,14 +225,14 @@ public class InstructionFetchBlock implements AbstractBlock
       if (codeModel.getInstructionTypeEnum() == InstructionTypeEnum.kJumpbranch)
       {
         encounteredJumps++;
-        if (encounteredJumps > 1)
+        if (encounteredJumps > branchFollowLimit)
         {
           // Stop loading instructions, fill with nops
           codeModel.setBranchPredicted(false);
           for (int j = i; j < numberOfWays; j++)
           {
             SimCodeModel nopCodeModel = this.simCodeModelFactory.createInstance(instructionMemoryBlock.getNop(),
-                                                                                simCodeId, cycleId);
+                                                                                simCodeId);
             nopCodeModel.setSavedPc(pc);
             fetchedCode.add(nopCodeModel);
           }
@@ -241,6 +245,7 @@ public class InstructionFetchBlock implements AbstractBlock
       boolean branchPredicted = isBranchingPredicted(pc);
       if (branchPredicted && followedBranches < branchFollowLimit)
       {
+        // todo: the default example program, first fetch of jump instruction has weird behaviour
         // Follow that branch
         codeModel.setBranchPredicted(true);
         int newPc = this.branchTargetBuffer.getEntryTarget(pc);
@@ -272,17 +277,6 @@ public class InstructionFetchBlock implements AbstractBlock
   //----------------------------------------------------------------------
   
   /**
-   * Get fetched instructions
-   *
-   * @return Fetched instructions
-   */
-  public List<SimCodeModel> getFetchedCode()
-  {
-    return fetchedCode;
-  }// end of getFetchedCode
-  //----------------------------------------------------------------------
-  
-  /**
    * @brief Clears fetched code buffer
    */
   public void clearFetchedCode()
@@ -293,6 +287,17 @@ public class InstructionFetchBlock implements AbstractBlock
     }
     this.fetchedCode.clear();
   }
+  //----------------------------------------------------------------------
+  
+  /**
+   * Get fetched instructions
+   *
+   * @return Fetched instructions
+   */
+  public List<SimCodeModel> getFetchedCode()
+  {
+    return fetchedCode;
+  }// end of getFetchedCode
   
   /**
    * Gets current PC counter value

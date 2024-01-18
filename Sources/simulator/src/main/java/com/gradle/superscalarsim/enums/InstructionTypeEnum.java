@@ -31,7 +31,8 @@ package com.gradle.superscalarsim.enums;
  */
 public enum InstructionTypeEnum
 {
-  kArithmetic,   ///< Instruction is arithmetic
+  kIntArithmetic,   ///< Instruction is arithmetic operation on int/long
+  kFloatArithmetic, ///< Instruction is arithmetic operation on float/double
   kLoadstore,    ///< Instruction does load/store operation
   kJumpbranch   ///< Instruction does un/conditional jump in code
 }

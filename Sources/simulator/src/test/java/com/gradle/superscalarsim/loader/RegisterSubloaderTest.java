@@ -7,6 +7,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.IOException;
+
 public class RegisterSubloaderTest
 {
   private RegisterSubloader registerSubloader;
@@ -65,13 +67,17 @@ public class RegisterSubloaderTest
     loader.setRegisterAliasesFilePath("testFiles/registerAliases.json");
     
     // Exercise
-    loader.loadFromConfigFiles();
+    try
+    {
+      loader.loadFromConfigFiles();
+    }
+    catch (IOException e)
+    {
+      throw new RuntimeException(e);
+    }
     
     //Assert
-    Assert.assertEquals("x0", loader.getRegisterAliases().get(0).register);
-    Assert.assertEquals("zero", loader.getRegisterAliases().get(0).alias);
-    
-    Assert.assertEquals("x1", loader.getRegisterAliases().get(1).register);
-    Assert.assertEquals("ra", loader.getRegisterAliases().get(1).alias);
+    Assert.assertEquals("x0", loader.getRegisterFile().getRegister("zero").getName());
+    Assert.assertEquals("x1", loader.getRegisterFile().getRegister("ra").getName());
   }
 }

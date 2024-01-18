@@ -36,14 +36,9 @@ import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.blocks.AbstractBlock;
-import com.gradle.superscalarsim.blocks.arithmetic.AluIssueWindowBlock;
-import com.gradle.superscalarsim.blocks.arithmetic.FpIssueWindowBlock;
-import com.gradle.superscalarsim.blocks.branch.BranchIssueWindowBlock;
-import com.gradle.superscalarsim.blocks.loadstore.LoadStoreIssueWindowBlock;
 import com.gradle.superscalarsim.models.InstructionFunctionModel;
 import com.gradle.superscalarsim.models.SimCodeModel;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -58,83 +53,29 @@ public class IssueWindowSuperBlock implements AbstractBlock
    */
   @JsonIdentityReference(alwaysAsId = true)
   private DecodeAndDispatchBlock decodeAndDispatchBlock;
+  
   /**
    * List of all issue windows.
    */
-  private List<AbstractIssueWindowBlock> issueWindowBlockList;
+  private List<IssueWindowBlock> issueWindowBlockList;
   
   public IssueWindowSuperBlock()
   {
   }
   
   /**
-   * @param [in] blockScheduleTask      - Task class, where blocks are periodically triggered by the GlobalTimer
-   * @param [in] decodeAndDispatchBlock - Class, which simulates instruction decode and renames registers
-   * @param [in] loader                 - Initial loader of interpretable instructions and register files
+   * @param blockScheduleTask      Task class, where blocks are periodically triggered by the GlobalTimer
+   * @param decodeAndDispatchBlock Class, which simulates instruction decode and renames registers
+   * @param loader                 Initial loader of interpretable instructions and register files
    *
    * @brief Constructor
    */
-  public IssueWindowSuperBlock(DecodeAndDispatchBlock decodeAndDispatchBlock)
+  public IssueWindowSuperBlock(DecodeAndDispatchBlock decodeAndDispatchBlock, List<IssueWindowBlock> issueWindowBlocks)
   {
     this.decodeAndDispatchBlock = decodeAndDispatchBlock;
-    this.issueWindowBlockList   = new ArrayList<>();
+    this.issueWindowBlockList   = issueWindowBlocks;
     
   }// end of Constructor
-  //----------------------------------------------------------------------
-  
-  /**
-   * @param [in] aluIssueWindowBlock - Specific Issue window class for all ALU FUs (processing int or long instructions)
-   *
-   * @brief Injects ALU Issue window to the list
-   */
-  public void addAluIssueWindow(AluIssueWindowBlock aluIssueWindowBlock)
-  {
-    this.issueWindowBlockList.add(aluIssueWindowBlock);
-  }// end of addAluIssueWindow
-  //----------------------------------------------------------------------
-  
-  /**
-   * @param [in] fpIssueWindowBlock - Specific Issue window class for all
-   *             Floating point FUs (processing float or double instructions)
-   *
-   * @brief Injects Floating point Issue window to the list
-   */
-  public void addFpIssueWindow(FpIssueWindowBlock fpIssueWindowBlock)
-  {
-    this.issueWindowBlockList.add(fpIssueWindowBlock);
-  }// end of addFpIssueWindow
-  //----------------------------------------------------------------------
-  
-  /**
-   * @param [in] branchIssueWindowBlock - Specific Issue window class for all
-   *             Branch FUs (processing jump and branch instructions)
-   *
-   * @brief Injects Branch Issue window to the list
-   */
-  public void addBranchIssueWindow(BranchIssueWindowBlock branchIssueWindowBlock)
-  {
-    this.issueWindowBlockList.add(branchIssueWindowBlock);
-  }// end of addBranchIssueWindow
-  //----------------------------------------------------------------------
-  
-  /**
-   * @param [in] loadStoreIssueWindowBlock - Specific Issue window class for all LoadStore FUs
-   *
-   * @brief Injects LoadStore Issue window to the list
-   */
-  public void addLoadStoreIssueWindow(LoadStoreIssueWindowBlock loadStoreIssueWindowBlock)
-  {
-    this.issueWindowBlockList.add(loadStoreIssueWindowBlock);
-  }// end of addLoadStoreIssueWindow
-  //----------------------------------------------------------------------
-  
-  /**
-   * @brief Resets the failed instruction stack
-   */
-  @Override
-  public void reset()
-  {
-  }// end of reset
   //----------------------------------------------------------------------
   
   /**
@@ -169,20 +110,29 @@ public class IssueWindowSuperBlock implements AbstractBlock
   //----------------------------------------------------------------------
   
   /**
-   * @param [in] instruction - Instruction model on which Issue window is chosen
-   * @param [in] codeModel   - Model representing instruction with set arguments
+   * @brief Resets the failed instruction stack
+   */
+  @Override
+  public void reset()
+  {
+  }// end of reset
+  //----------------------------------------------------------------------
+  
+  /**
+   * @param instruction Instruction model on which Issue window is chosen
+   * @param codeModel   Model representing instruction with set arguments
    *
    * @brief Selects issue window based on instruction type and instruction data type and dispatches the instruction
+   * TODO: is it guaranteed that a window will be found?
    */
   private void selectCorrectIssueWindow(InstructionFunctionModel instruction, SimCodeModel codeModel)
   {
-    for (AbstractIssueWindowBlock issueWindow : this.issueWindowBlockList)
+    for (IssueWindowBlock issueWindow : this.issueWindowBlockList)
     {
-      if (issueWindow.isCorrectInstructionType(instruction.getInstructionType()) && issueWindow.isCorrectDataType(
-              instruction.getDataType()))
+      if (issueWindow.canHold(instruction))
       {
         issueWindow.dispatchInstruction(codeModel);
-        issueWindow.createArgumentValidityEntry(codeModel);
+        return;
       }
     }
   }// end of selectCorrectIssueWindow

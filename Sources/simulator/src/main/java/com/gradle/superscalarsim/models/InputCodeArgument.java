@@ -32,55 +32,75 @@
  */
 package com.gradle.superscalarsim.models;
 
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.gradle.superscalarsim.models.register.RegisterDataContainer;
+import com.gradle.superscalarsim.models.register.RegisterModel;
 
 /**
  * @class InputCodeArgument
- * @brief Container of argument of parsed instruction
+ * @brief Container of argument of parsed instruction.
+ * Can either be a register, constant or label.
  */
 public class InputCodeArgument
 {
-  
   /**
    * Parsed constant value of the argument. Uses type info from instruction definition.
    */
-  RegisterDataContainer constantValue;
+  private RegisterDataContainer constantValue;
   /**
    * Name of the argument.
    * Example: rs1, imm, labelName.
    */
   private String name;
   /**
+   * Register value of the argument.
+   */
+  @JsonIdentityReference(alwaysAsId = true)
+  private RegisterModel registerValue;
+  /**
    * Value of the argument.
    * Example: x5, 10, name of a label.
    */
-  private String value;
+  private String stringValue;
   
   /**
    * @param name  Name of the argument
    * @param value Value of the argument
    *
-   * @brief Constructor
+   * @brief Constructor for textual argument
    */
   public InputCodeArgument(final String name, final String value)
   {
     this.name          = name;
-    this.value         = value;
+    this.stringValue   = value;
     this.constantValue = null;
+    this.registerValue = null;
+  }// end of Constructor
+  
+  /**
+   * @brief Constructor for constant argument
+   */
+  public InputCodeArgument(final String name, final RegisterDataContainer constantValue)
+  {
+    this.name          = name;
+    this.constantValue = constantValue;
+    this.stringValue   = constantValue.getStringRepresentation();
+    this.registerValue = null;
   }// end of Constructor
   
   /**
    * @param name          Name of the argument
-   * @param value         Value of the argument
-   * @param constantValue Constant value of the argument
+   * @param regName       Name of the register
+   * @param registerValue Register value of the argument. May be null.
    *
-   * @brief Constructor
+   * @brief Constructor for register argument.
    */
-  public InputCodeArgument(final String name, final String value, final RegisterDataContainer constantValue)
+  public InputCodeArgument(final String name, final String regName, final RegisterModel registerValue)
   {
     this.name          = name;
-    this.value         = value;
-    this.constantValue = constantValue;
+    this.registerValue = registerValue;
+    this.stringValue   = regName;
+    this.constantValue = null;
   }// end of Constructor
   
   /**
@@ -90,8 +110,9 @@ public class InputCodeArgument
    */
   public InputCodeArgument(final InputCodeArgument argument)
   {
-    this.name  = argument.getName();
-    this.value = argument.getValue();
+    this.name          = argument.getName();
+    this.stringValue   = argument.getValue();
+    this.registerValue = argument.getRegisterValue();
     if (argument.getConstantValue() != null)
     {
       this.constantValue = new RegisterDataContainer(argument.getConstantValue());
@@ -101,7 +122,6 @@ public class InputCodeArgument
       this.constantValue = null;
     }
   }// end of Constructor
-  //------------------------------------------------------
   
   /**
    * @return Argument name
@@ -111,7 +131,6 @@ public class InputCodeArgument
   {
     return name;
   }// end of getName
-  //------------------------------------------------------
   
   /**
    * @return Argument value
@@ -119,19 +138,28 @@ public class InputCodeArgument
    */
   public String getValue()
   {
-    return value;
+    return stringValue;
   }// end of getValue
   //------------------------------------------------------
   
   /**
-   * @param value New value of argument
-   *
-   * @brief Sets new value of the argument
+   * @return Register value of the argument
    */
-  public void setValue(final String value)
+  public RegisterModel getRegisterValue()
   {
-    this.value = value;
-  }// end of setValue
+    return registerValue;
+  }
+  //------------------------------------------------------
+  
+  /**
+   * @brief Set register value of the argument. Used for speculative register renaming.
+   */
+  public void setRegisterValue(RegisterModel registerValue)
+  {
+    this.registerValue = registerValue;
+    //
+    //    this.stringValue   = registerValue.getName();
+  }
   //------------------------------------------------------
   
   /**
@@ -150,11 +178,22 @@ public class InputCodeArgument
   //------------------------------------------------------
   
   /**
+   * @param stringValue New value of argument
+   *
+   * @brief Sets new value of the argument
+   */
+  public void setValue(final String stringValue)
+  {
+    this.stringValue = stringValue;
+  }// end of setValue
+  //------------------------------------------------------
+  
+  /**
    * String representation of the object
    */
   @Override
   public String toString()
   {
-    return name + " = " + value;
+    return name + " = " + stringValue;
   }
 }

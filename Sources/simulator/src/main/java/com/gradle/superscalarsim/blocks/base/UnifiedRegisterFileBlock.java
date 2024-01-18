@@ -43,7 +43,6 @@ import com.gradle.superscalarsim.models.register.RegisterFileModel;
 import com.gradle.superscalarsim.models.register.RegisterModel;
 import com.gradle.superscalarsim.models.register.SpeculativeRegisterFile;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -54,11 +53,6 @@ import java.util.Map;
 @JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
 public class UnifiedRegisterFileBlock
 {
-  /**
-   * Multiplier on how many speculative registers should be created based on existing number of ISA registers
-   * TODO: Take the total number of registers on construction
-   */
-  private static final int specRegisterMultiplier = 10;
   
   /**
    * Mapping of names to register objects.
@@ -75,24 +69,19 @@ public class UnifiedRegisterFileBlock
   private SpeculativeRegisterFile speculativeRegisterFile;
   
   /**
-   * Constructor for (de)serialization
-   */
-  public UnifiedRegisterFileBlock()
-  {
-    registerMap = new HashMap<>();
-  }// end of Constructor
-  
-  /**
-   * @param loader               InitLoader class holding information about instruction and registers. Only needed during initialization.
-   * @param registerModelFactory Factory for creating register models.
+   * @param loader                   InitLoader class holding information about instruction and registers. Only needed during initialization.
+   * @param speculativeRegisterCount Number of speculative registers to create.
+   * @param registerModelFactory     Factory for creating register models.
    *
    * @brief Constructor
    */
-  public UnifiedRegisterFileBlock(final InitLoader loader, RegisterModelFactory registerModelFactory)
+  public UnifiedRegisterFileBlock(final InitLoader loader,
+                                  int speculativeRegisterCount,
+                                  RegisterModelFactory registerModelFactory)
   {
-    this.registerMap = new HashMap<>();
-    loadRegisters(loader.getRegisterFileModelList(), registerModelFactory);
-    loadAliases(loader.getRegisterAliases());
+    assert speculativeRegisterCount > 0;
+    registerMap             = loader.getRegisterFile().getRegisterMap(true);
+    speculativeRegisterFile = new SpeculativeRegisterFile(speculativeRegisterCount, registerModelFactory);
   }// end of Constructor
   
   /**
@@ -100,6 +89,7 @@ public class UnifiedRegisterFileBlock
    * as the owner (initLoader) does not get destroyed during backwards simulation.
    *
    * @param registerFileModelList List of all architectural register files
+   * @param registerModelFactory  Factory for creating register models.
    *
    * @brief Load all register files to this class and create the speculative file
    */
@@ -119,35 +109,7 @@ public class UnifiedRegisterFileBlock
       }
       registerCount = registerCount + registerFile.getRegisterList().size();
     }
-    speculativeRegisterFile = new SpeculativeRegisterFile(registerCount * specRegisterMultiplier, registerModelFactory);
   }// end of loadRegisters
-  //----------------------------------------------------------------------
-  
-  private void loadAliases(List<InitLoader.RegisterMapping> registerAliases)
-  {
-    for (InitLoader.RegisterMapping alias : registerAliases)
-    {
-      RegisterModel register = getRegister(alias.register);
-      registerMap.put(alias.alias, register);
-    }
-  }
-  //----------------------------------------------------------------------
-  
-  /**
-   * @param registerName Name (tag) of the register
-   *
-   * @return The register object
-   * @brief Get register object based on provided name (tag or arch. name)
-   */
-  public RegisterModel getRegister(final String registerName)
-  {
-    RegisterModel reg = this.registerMap.get(registerName);
-    if (reg == null)
-    {
-      return speculativeRegisterFile.getRegister(registerName);
-    }
-    return reg;
-  }// end of getRegisterValue
   //----------------------------------------------------------------------
   
   /**
@@ -174,6 +136,7 @@ public class UnifiedRegisterFileBlock
   {
     return speculativeRegisterFile;
   }
+  //----------------------------------------------------------------------
   
   /**
    * @param fromRegister Register to copy from
@@ -190,6 +153,22 @@ public class UnifiedRegisterFileBlock
     toRegisterModel.setValue(value);
     fromRegisterModel.setReadiness(RegisterReadinessEnum.kFree);
   }// end of copyAndFree
+  
+  /**
+   * @param registerName Name (tag) of the register
+   *
+   * @return The register object
+   * @brief Get register object based on provided name (tag or arch. name)
+   */
+  public RegisterModel getRegister(final String registerName)
+  {
+    RegisterModel reg = this.registerMap.get(registerName);
+    if (reg == null)
+    {
+      return speculativeRegisterFile.getRegister(registerName);
+    }
+    return reg;
+  }// end of getRegisterValue
   //----------------------------------------------------------------------
   
 }

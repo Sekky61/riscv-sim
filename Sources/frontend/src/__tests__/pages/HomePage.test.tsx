@@ -29,8 +29,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// !STARTERCONF You should delete this page
-
+/**
+ * @jest-environment jsdom
+ */
 import { render } from '@testing-library/react';
 import { Provider } from 'react-redux';
 
@@ -47,7 +48,7 @@ describe('Homepage', () => {
     );
 
     // Check if there is a button for simulation forward
-    // There should be a button with aria-label="Forward"
+    // There should be a button with aria-label="Step Forward"
     const buttonForward = document.querySelector(
       'button[aria-label="Step forward"]',
     );

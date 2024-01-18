@@ -36,18 +36,16 @@ import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
-import com.gradle.superscalarsim.blocks.base.UnifiedRegisterFileBlock;
 import com.gradle.superscalarsim.code.Expression;
-import com.gradle.superscalarsim.code.Label;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
+import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.models.register.RegisterDataContainer;
 import com.gradle.superscalarsim.models.register.RegisterModel;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @class SimCodeModel
@@ -73,85 +71,69 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
    * The order of arguments is the same as in the original code line and tests depend on this order.
    */
   private final List<InputCodeArgument> renamedArguments;
-  
-  /**
-   * Number marking bulk of instructions, which was fetched together
-   */
-  private int instructionBulkNumber;
-  
   /**
    * ID, when was instructions accepted by the issue window
    */
   private int issueWindowId;
-  
   /**
    * ID of the function block, which processed this instruction
    */
   private int functionUnitId;
-  
   /**
    * ID marking when was result ready
    */
   private int readyId;
-  
   /**
    * ID marking when was instruction committed from ROB
    */
   private int commitId;
-  
   /**
    * True if simcodemodel has left the system (committed, flushed).
    * A finished simcodemodel can be safely deleted.
    */
   private boolean isFinished;
-  
   /**
    * Bit value marking failure due to wrong branch prediction
    */
   private boolean hasFailed;
-  
   /**
    * Saved value of the PC, when instruction was fetched
    * Used for load/store and branch instructions
    * TODO: Optional
    */
   private int savedPc;
-  
   /**
    * Prediction made by branch predictor at the time of fetching.
    * Used for branch instructions.
    */
   private boolean branchPredicted;
-  
   /**
    * Result of the branch computation.
    * Used to check for mispredictions.
    * True means branch was taken.
    */
   private boolean branchLogicResult;
-  
   /**
    * Target of the branch instruction (offset from the savedPc).
+   * Result of the branch actual computation, not the prediction.
    * Used to fix BTB and PC in misprediction.
    */
   private int branchTargetOffset;
   
   /**
-   * @param inputCodeModel        Original code model
-   * @param id                    Number marking when was code accepted
-   * @param instructionBulkNumber Number marking bulk of instructions, which was fetched together
+   * @param inputCodeModel Original code model
+   * @param id             Number marking when was code accepted
    *
    * @brief Constructor which copies original InputCodeModel
    * This constructor can be used only through the SimCodeModelAllocator
    */
-  public SimCodeModel(InputCodeModel inputCodeModel, int id, int instructionBulkNumber)
+  public SimCodeModel(InputCodeModel inputCodeModel, int id)
   {
-    this.inputCodeModel        = inputCodeModel;
-    this.id                    = id;
-    this.commitId              = -1;
-    this.isFinished            = false;
-    this.instructionBulkNumber = instructionBulkNumber;
-    this.hasFailed             = false;
+    this.inputCodeModel = inputCodeModel;
+    this.id             = id;
+    this.commitId       = -1;
+    this.isFinished     = false;
+    this.hasFailed      = false;
     // Copy arguments
     this.renamedArguments = new ArrayList<>();
     for (InputCodeArgument argument : inputCodeModel.getArguments())
@@ -159,7 +141,49 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
       this.renamedArguments.add(new InputCodeArgument(argument));
     }
   }// end of Constructor
+  
+  /**
+   * @param windowId ID, when was instruction accepted to issue window
+   *
+   * @brief Sets accepted id to issue window
+   */
+  public void setIssueWindowId(int windowId)
+  {
+    this.issueWindowId = windowId;
+  }// end of setIssueWindowId
+  
+  /**
+   * @param functionUnitId ID of function block, which processed this instruction
+   *
+   * @brief Sets id of function block, which processed this instruction
+   */
+  public void setFunctionUnitId(int functionUnitId)
+  {
+    this.functionUnitId = functionUnitId;
+  }// end of setFunctionUnitId
   //------------------------------------------------------
+  
+  public int getReadyId()
+  {
+    return readyId;
+  }
+  //------------------------------------------------------
+  
+  public int getCommitId()
+  {
+    return commitId;
+  }
+  //------------------------------------------------------
+  
+  /**
+   * @param commitId ID of when was instruction committed
+   *
+   * @brief Sets id of when was instruction's result ready
+   */
+  public void setCommitId(int commitId)
+  {
+    this.commitId = commitId;
+  }// end of setCommitId
   
   /**
    * @param codeModel Model to be compared to
@@ -192,98 +216,6 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
   {
     return Integer.toString(this.id);
   }
-  
-  /**
-   * @return Integer value of bulk number
-   * @brief Gets number marking when was code processed
-   */
-  public int getInstructionBulkNumber()
-  {
-    return instructionBulkNumber;
-  }// end of getId
-  //------------------------------------------------------
-  
-  /**
-   * @return tick when the instruction was accepted to issue window, 0 if not yet processed
-   * @brief Gets accepted id to issue window
-   */
-  public int getIssueWindowId()
-  {
-    return issueWindowId;
-  }// end of getIssueWindowId
-  //------------------------------------------------------
-  
-  /**
-   * @param [in] windowId - Id, when was instruction accepted to issue window
-   *
-   * @brief Sets accepted id to issue window
-   */
-  public void setIssueWindowId(int windowId)
-  {
-    this.issueWindowId = windowId;
-  }// end of setIssueWindowId
-  //------------------------------------------------------
-  
-  /**
-   * @return ID of function block, which processed this instruction, 0 if not yet processed
-   * @brief Gets id of function block, which processed this instruction
-   */
-  public int getFunctionUnitId()
-  {
-    return functionUnitId;
-  }// end of getFunctionUnitId
-  //------------------------------------------------------
-  
-  /**
-   * @param functionUnitId ID of function block, which processed this instruction
-   *
-   * @brief Sets id of function block, which processed this instruction
-   */
-  public void setFunctionUnitId(int functionUnitId)
-  {
-    this.functionUnitId = functionUnitId;
-  }// end of setFunctionUnitId
-  //------------------------------------------------------
-  
-  /**
-   * @return ID of when was instruction's result ready, 0 if not yet processed
-   * @brief Gets id of when was instruction's result ready
-   */
-  public int getReadyId()
-  {
-    return readyId;
-  }// end of getReadyId
-  
-  /**
-   * @param readyId ID of when was instruction's result ready
-   *
-   * @brief Sets id of when was instruction's result ready
-   */
-  public void setReadyId(int readyId)
-  {
-    this.readyId = readyId;
-  }// end of setReadyId
-  //------------------------------------------------------
-  
-  /**
-   * @return ID of when was instruction committed, 0 if not yet processed
-   * @brief Gets id of when was instruction committed
-   */
-  public int getCommitId()
-  {
-    return commitId;
-  }// end of getCommitId
-  //------------------------------------------------------
-  
-  /**
-   * @param commitId ID of when was instruction committed
-   *
-   * @brief Sets id of when was instruction's result ready
-   */
-  public void setCommitId(int commitId)
-  {
-    this.commitId = commitId;
-  }// end of setCommitId
   //------------------------------------------------------
   
   /**
@@ -297,7 +229,7 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
   //------------------------------------------------------
   
   /**
-   * @param hasFailed - Has instruction failed to finish due to missprediction?
+   * @param hasFailed - Has instruction failed to finish due to miss-prediction?
    *
    * @brief Set bit marking to failure due to wrong prediction
    */
@@ -440,22 +372,6 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
   }
   
   /**
-   * @return Original arguments of the instruction (without renaming)
-   */
-  public List<InputCodeArgument> getOriginalArguments()
-  {
-    return inputCodeModel.getArguments();
-  }
-  
-  /**
-   * @return True if simcodemodel has left the system (committed, flushed)
-   */
-  public boolean isFinished()
-  {
-    return isFinished;
-  }
-  
-  /**
    * @param finished True if simcodemodel has left the system (committed, flushed)
    */
   public void setFinished(boolean finished)
@@ -464,63 +380,32 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
   }
   
   /**
-   * @return Variables used in the instruction in the form for expression evaluation
+   * @return All arguments of the instruction as variables for the interpreter
    * @brief reads current register values (including speculative values), the PC, constants
    */
-  public List<Expression.Variable> getVariables(List<String> variableNames,
-                                                UnifiedRegisterFileBlock registerFileBlock,
-                                                Map<String, Label> labels)
+  public List<Expression.Variable> getVariables()
   {
     List<Expression.Variable> variables                = new ArrayList<>();
     InstructionFunctionModel  instructionFunctionModel = getInstructionFunctionModel();
     
-    for (String varName : variableNames)
-    {
-      if (varName.equals("pc"))
-      {
-        variables.add(new Expression.Variable("pc", DataTypeEnum.kInt, RegisterDataContainer.fromValue(getSavedPc())));
-        continue;
-      }
-      
-      InstructionFunctionModel.Argument argument = instructionFunctionModel.getArgumentByName(varName);
-      if (argument == null)
-      {
-        throw new IllegalStateException("Argument " + varName + " not found in " + instructionFunctionModel.getName());
-      }
-      
-      // Variable is an argument of the instruction (rs1/imm)
-      String name        = argument.name();
-      String renamedName = getArgumentByName(name).getValue();
-      // Check if value is register
-      RegisterModel register = registerFileBlock.getRegister(renamedName);
-      if (register != null)
-      {
-        // Register found (or its speculative rename)
-        variables.add(new Expression.Variable(name, argument.type(), register.getValueContainer()));
-      }
-      else
-      {
-        //It is an immediate - constant or a label
-        Expression.Variable parsed = Expression.parseConstant(renamedName);
-        if (parsed != null)
-        {
-          parsed.tag  = name;
-          parsed.type = argument.type();
-          variables.add(parsed);
-        }
-        else
-        {
-          if (labels != null && labels.containsKey(renamedName))
-          {
-            variables.add(new Expression.Variable(name, argument.type(),
-                                                  RegisterDataContainer.fromValue(labels.get(renamedName).address)));
-            continue;
-          }
-          throw new IllegalStateException("Could not parse " + renamedName + " as constant or label");
-        }
-      }
-    }
+    variables.add(new Expression.Variable("pc", DataTypeEnum.kInt, RegisterDataContainer.fromValue(getSavedPc())));
     
+    for (InputCodeArgument var : getArguments())
+    {
+      InstructionFunctionModel.Argument argument = instructionFunctionModel.getArgumentByName(var.getName());
+      RegisterDataContainer             val      = var.getConstantValue();
+      if (val == null)
+      {
+        // Try register
+        RegisterModel reg = var.getRegisterValue();
+        if (reg == null)
+        {
+          throw new IllegalStateException("Could not parse " + var.getValue() + " as constant or label");
+        }
+        val = reg.getValueContainer();
+      }
+      variables.add(new Expression.Variable(var.getName(), argument.type(), val));
+    }
     return variables;
   }
   
@@ -565,4 +450,26 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
     InstructionFunctionModel instruction = getInstructionFunctionModel();
     return instruction != null && instruction.getInterpretableAs().startsWith("store");
   }// end of isInstructionStore
+  
+  /**
+   * @return True if the instruction is ready to be executed, false otherwise.
+   */
+  public boolean isReadyToExecute()
+  {
+    for (InputCodeArgument argument : getArguments())
+    {
+      if (!argument.getName().startsWith("rs"))
+      {
+        continue;
+      }
+      RegisterModel         reg       = argument.getRegisterValue();
+      RegisterReadinessEnum readiness = reg.getReadiness();
+      boolean               validity  = readiness == RegisterReadinessEnum.kExecuted || readiness == RegisterReadinessEnum.kAssigned;
+      if (!validity)
+      {
+        return false;
+      }
+    }
+    return true;
+  }
 }

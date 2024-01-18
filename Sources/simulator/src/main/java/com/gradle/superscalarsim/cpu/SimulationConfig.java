@@ -91,17 +91,18 @@ public class SimulationConfig
   /**
    * @brief Validate the configuration
    */
-  public CpuConfig.ValidationResult validate()
+  public ValidationResult validate()
   {
-    CpuConfig.ValidationResult result        = cpuConfig.validate();
-    List<String>               errorMessages = new ArrayList<>();
-    List<ParseError>           codeErrors    = null;
+    CpuConfigValidator configValidator = new CpuConfigValidator();
+    configValidator.validate(cpuConfig);
+    List<CpuConfigValidator.Error> errorMessages = new ArrayList<>();
+    List<ParseError>               codeErrors    = null;
     
     // Add validation for memory locations and code
     
     if (code == null)
     {
-      errorMessages.add("Code must not be null");
+      errorMessages.add(new CpuConfigValidator.Error("Code must not be null", "code"));
     }
     
     // Parse code
@@ -110,14 +111,14 @@ public class SimulationConfig
     
     if (!codeParser.success())
     {
-      errorMessages.add("Code parsing failed");
+      errorMessages.add(new CpuConfigValidator.Error("Code contains errors", "code"));
       codeErrors = codeParser.getErrorMessages();
     }
     
     // Memory allocations
     if (memoryLocations == null)
     {
-      errorMessages.add("Memory locations must not be null");
+      errorMessages.add(new CpuConfigValidator.Error("Memory locations must not be null", "memoryLocations"));
     }
     else
     {
@@ -125,32 +126,31 @@ public class SimulationConfig
       {
         if (memoryLocation.alignment < 0)
         {
-          errorMessages.add("Memory location alignment must be greater than 0");
+          errorMessages.add(
+                  new CpuConfigValidator.Error("Memory location alignment must be greater than 0", "memoryLocations"));
         }
         if (memoryLocation.getBytes() == null)
         {
-          errorMessages.add("Memory location value must not be null");
+          errorMessages.add(new CpuConfigValidator.Error("Memory location bytes must not be null", "memoryLocations"));
         }
         if (memoryLocation.name == null || memoryLocation.name.isEmpty())
         {
-          errorMessages.add("Memory location name must not be empty");
+          errorMessages.add(
+                  new CpuConfigValidator.Error("Memory location name must not be null or empty", "memoryLocations"));
         }
       }
     }
     
-    
-    if (errorMessages.isEmpty() && result.messages == null)
+    if (errorMessages.isEmpty() && configValidator.isValid())
     {
-      return new CpuConfig.ValidationResult(true, null, null);
+      return new ValidationResult(true, null, null);
     }
     else
     {
       // Join error messages
-      if (result.messages != null)
-      {
-        errorMessages.addAll(result.messages);
-      }
-      return new CpuConfig.ValidationResult(false, errorMessages, codeErrors);
+      List<CpuConfigValidator.Error> errors = configValidator.getErrors();
+      errorMessages.addAll(errors);
+      return new ValidationResult(false, errorMessages, codeErrors);
     }
   }
   
@@ -165,5 +165,19 @@ public class SimulationConfig
       names.put(memoryLocation.name, new Label(memoryLocation.name, -1));
     }
     return names;
+  }
+  
+  public static class ValidationResult
+  {
+    public boolean valid;
+    public List<CpuConfigValidator.Error> messages;
+    public List<ParseError> codeErrors;
+    
+    public ValidationResult(boolean valid, List<CpuConfigValidator.Error> messages, List<ParseError> codeErrors)
+    {
+      this.valid      = valid;
+      this.messages   = messages;
+      this.codeErrors = codeErrors;
+    }
   }
 }

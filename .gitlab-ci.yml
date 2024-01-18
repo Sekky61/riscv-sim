@@ -10,13 +10,6 @@
 #
 # There are two stages: test and deploy
 
-default:
-  image: docker:24.0.5
-  services:
-    - docker:24.0.5-dind
-  before_script:
-    - docker info
-
 # Source: https://docs.gitlab.com/ee/ci/docker/using_docker_build.html#use-docker-in-docker
 variables:
   DOCKER_TLS_CERTDIR: "/certs"

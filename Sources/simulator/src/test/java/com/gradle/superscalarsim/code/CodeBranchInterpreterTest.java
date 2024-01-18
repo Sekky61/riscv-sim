@@ -23,25 +23,25 @@ public class CodeBranchInterpreterTest
   private InstructionMemoryBlock instructionMemoryBlock;
   
   private CodeBranchInterpreter codeBranchInterpreter;
+  private UnifiedRegisterFileBlock urf;
   
   @Before
   public void setUp()
   {
     this.initLoader = new InitLoader();
+    urf             = new UnifiedRegisterFileBlock(initLoader, 320, new RegisterModelFactory());
     List<InputCodeModel> inputCodeModels = setUpParsedCode();
     var                  labels          = setUpLabels();
     var                  nopFM           = initLoader.getInstructionFunctionModel("nop");
     InputCodeModel       nop             = new InputCodeModel(nopFM, new ArrayList<>(), 0);
     instructionMemoryBlock = new InstructionMemoryBlock(inputCodeModels, labels, nop);
     
-    UnifiedRegisterFileBlock unifiedRegisterFileBlock = new UnifiedRegisterFileBlock(initLoader,
-                                                                                     new RegisterModelFactory());
-    unifiedRegisterFileBlock.getRegister("x1").setValue(0);
-    unifiedRegisterFileBlock.getRegister("x2").setValue(25);
-    unifiedRegisterFileBlock.getRegister("x3").setValue(6);
-    unifiedRegisterFileBlock.getRegister("x4").setValue(-2);
+    urf.getRegister("x1").setValue(0);
+    urf.getRegister("x2").setValue(25);
+    urf.getRegister("x3").setValue(6);
+    urf.getRegister("x4").setValue(-2);
     
-    this.codeBranchInterpreter = new CodeBranchInterpreter(unifiedRegisterFileBlock, instructionMemoryBlock);
+    this.codeBranchInterpreter = new CodeBranchInterpreter();
   }
   
   private List<InputCodeModel> setUpParsedCode()
@@ -53,21 +53,21 @@ public class CodeBranchInterpreterTest
     // three:
     // mul x1 x3 x2
     
-    InputCodeArgument argumentAdd1 = new InputCodeArgumentBuilder().hasName("rd").hasValue("x1").build();
-    InputCodeArgument argumentAdd2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x3").build();
-    InputCodeArgument argumentAdd3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x2").build();
+    InputCodeArgument argumentAdd1 = new InputCodeArgumentBuilder(urf).hasName("rd").hasRegister("x1").build();
+    InputCodeArgument argumentAdd2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x3").build();
+    InputCodeArgument argumentAdd3 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x2").build();
     InputCodeModel inputCodeModelAdd = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("add")
             .hasArguments(Arrays.asList(argumentAdd1, argumentAdd2, argumentAdd3)).build();
     
-    InputCodeArgument argumentSub1 = new InputCodeArgumentBuilder().hasName("rd").hasValue("x1").build();
-    InputCodeArgument argumentSub2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x3").build();
-    InputCodeArgument argumentSub3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x2").build();
+    InputCodeArgument argumentSub1 = new InputCodeArgumentBuilder(urf).hasName("rd").hasRegister("x1").build();
+    InputCodeArgument argumentSub2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x3").build();
+    InputCodeArgument argumentSub3 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x2").build();
     InputCodeModel inputCodeModelSub = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("sub")
             .hasArguments(Arrays.asList(argumentSub1, argumentSub2, argumentSub3)).build();
     
-    InputCodeArgument argumentMul1 = new InputCodeArgumentBuilder().hasName("rd").hasValue("x1").build();
-    InputCodeArgument argumentMul2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x3").build();
-    InputCodeArgument argumentMul3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x2").build();
+    InputCodeArgument argumentMul1 = new InputCodeArgumentBuilder(urf).hasName("rd").hasRegister("x1").build();
+    InputCodeArgument argumentMul2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x3").build();
+    InputCodeArgument argumentMul3 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x2").build();
     InputCodeModel inputCodeModelMul = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("mul")
             .hasArguments(Arrays.asList(argumentMul1, argumentMul2, argumentMul3)).build();
     
@@ -86,11 +86,11 @@ public class CodeBranchInterpreterTest
   @Test
   public void unconditionalJump_interpret_returnsJumpDifference()
   {
-    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rd").hasValue("x1").build();
-    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("imm").hasValue("one").build();
+    InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rd").hasRegister("x1").build();
+    InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("imm").hasLabel("one", 0).build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("jal")
             .hasArguments(Arrays.asList(argument1, argument2)).build();
-    SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0, 0);
+    SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0);
     
     Assert.assertEquals(-3 * 4, this.codeBranchInterpreter.interpretInstruction(simCodeModel, 3 * 4).getAsInt());
   }
@@ -98,12 +98,12 @@ public class CodeBranchInterpreterTest
   @Test
   public void conditionalJumpEqual_conditionTrue_returnsJumpDifference()
   {
-    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x1").build();
-    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x1").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("two").build();
+    InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x1").build();
+    InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x1").build();
+    InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("imm").hasLabel("two", 4).build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("beq")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0, 0);
+    SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0);
     
     // Should jump to the label "two" which is at index 1
     Assert.assertEquals(-2 * 4, this.codeBranchInterpreter.interpretInstruction(simCodeModel, 3 * 4).getAsInt());
@@ -112,12 +112,12 @@ public class CodeBranchInterpreterTest
   @Test
   public void conditionalJumpEqual_conditionFalse_returnsOne()
   {
-    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x1").build();
-    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x2").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("two").build();
+    InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x1").build();
+    InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x2").build();
+    InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("imm").hasLabel("two", 4).build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("beq")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0, 0);
+    SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0);
     
     // Should not jump
     Assert.assertFalse(this.codeBranchInterpreter.interpretInstruction(simCodeModel, 3).isPresent());
@@ -126,12 +126,12 @@ public class CodeBranchInterpreterTest
   @Test
   public void conditionalJumpNotEqual_conditionTrue_returnsJumpDifference()
   {
-    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x1").build();
-    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x2").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("three").build();
+    InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x1").build();
+    InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x2").build();
+    InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("imm").hasLabel("three", 8).build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("bne")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0, 0);
+    SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0);
     
     // Should jump to the label "three" which is at index 2
     Assert.assertEquals(-1 * 4, this.codeBranchInterpreter.interpretInstruction(simCodeModel, 3 * 4).getAsInt());
@@ -140,12 +140,12 @@ public class CodeBranchInterpreterTest
   @Test
   public void conditionalJumpNotEqual_conditionFalse_returnsOne()
   {
-    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x1").build();
-    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x1").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("three").build();
+    InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x1").build();
+    InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x1").build();
+    InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("imm").hasLabel("three", 8).build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("bne")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0, 0);
+    SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0);
     
     Assert.assertFalse(this.codeBranchInterpreter.interpretInstruction(simCodeModel, 3).isPresent());
   }
@@ -153,12 +153,12 @@ public class CodeBranchInterpreterTest
   @Test
   public void conditionalJumpLessThan_conditionTrue_returnsJumpDifference()
   {
-    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x4").build();
-    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x1").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("one").build();
+    InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x4").build();
+    InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x1").build();
+    InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("imm").hasLabel("one", 0).build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("blt")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0, 0);
+    SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0);
     
     // Should jump to the label "one" which is at index 0
     Assert.assertEquals(-3 * 4, this.codeBranchInterpreter.interpretInstruction(simCodeModel, 3 * 4).getAsInt());
@@ -176,12 +176,12 @@ public class CodeBranchInterpreterTest
     // mul x1 x3 x2
     //
     // blt x1 x4 one
-    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x1").build();
-    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x4").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("one").build();
+    InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x1").build();
+    InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x4").build();
+    InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("imm").hasLabel("one", 0).build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("blt")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0, 0);
+    SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0);
     
     Assert.assertFalse(this.codeBranchInterpreter.interpretInstruction(simCodeModel, 3).isPresent());
   }
@@ -189,12 +189,12 @@ public class CodeBranchInterpreterTest
   @Test
   public void conditionalJumpLessThanUnsigned_conditionTrue_returnsJumpDifference()
   {
-    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x1").build();
-    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x4").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("one").build();
+    InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x1").build();
+    InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x4").build();
+    InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("imm").hasLabel("one", 0).build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("bltu")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0, 0);
+    SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0);
     
     // Should jump to the label "one" which is at index 0
     Assert.assertEquals(-3 * 4, this.codeBranchInterpreter.interpretInstruction(simCodeModel, 3 * 4).getAsInt());
@@ -203,12 +203,12 @@ public class CodeBranchInterpreterTest
   @Test
   public void conditionalJumpLessThanUnsigned_conditionFalse_returnsOne()
   {
-    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x4").build();
-    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x1").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("one").build();
+    InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x4").build();
+    InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x1").build();
+    InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("imm").hasLabel("one", 0).build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("bltu")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0, 0);
+    SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0);
     
     // Should not jump
     Assert.assertFalse(this.codeBranchInterpreter.interpretInstruction(simCodeModel, 3 * 4).isPresent());
@@ -217,12 +217,12 @@ public class CodeBranchInterpreterTest
   @Test
   public void conditionalJumpGreaterOrEqual_conditionGreaterTrue_returnsJumpDifference()
   {
-    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x1").build();
-    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x4").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("one").build();
+    InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x1").build();
+    InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x4").build();
+    InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("imm").hasLabel("one", 0).build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("bge")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0, 0);
+    SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0);
     
     // Should jump to the label "one" which is at index 0
     Assert.assertEquals(-3 * 4, this.codeBranchInterpreter.interpretInstruction(simCodeModel, 3 * 4).getAsInt());
@@ -231,12 +231,12 @@ public class CodeBranchInterpreterTest
   @Test
   public void conditionalJumpGreaterOrEqual_conditionEqualTrue_returnsJumpDifference()
   {
-    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x1").build();
-    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x1").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("one").build();
+    InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x1").build();
+    InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x1").build();
+    InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("imm").hasLabel("one", 0).build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("bge")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0, 0);
+    SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0);
     
     // Should jump to the label "one" which is at index 0
     Assert.assertEquals(-3 * 4, this.codeBranchInterpreter.interpretInstruction(simCodeModel, 3 * 4).getAsInt());
@@ -245,12 +245,12 @@ public class CodeBranchInterpreterTest
   @Test
   public void conditionalJumpGreaterOrEqual_conditionFalse_returnsOne()
   {
-    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x4").build();
-    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x1").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("one").build();
+    InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x4").build();
+    InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x1").build();
+    InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("imm").hasLabel("one", 0).build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("bge")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0, 0);
+    SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0);
     
     Assert.assertFalse(this.codeBranchInterpreter.interpretInstruction(simCodeModel, 3).isPresent());
   }
@@ -258,12 +258,12 @@ public class CodeBranchInterpreterTest
   @Test
   public void conditionalJumpGreaterOrEqualUnsigned_conditionGreaterTrue_returnsJumpDifference()
   {
-    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x4").build();
-    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x1").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("one").build();
+    InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x4").build();
+    InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x1").build();
+    InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("imm").hasLabel("one", 0).build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("bgeu")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0, 0);
+    SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0);
     
     // Should jump to the label "one" which is at index 0
     Assert.assertEquals(-3 * 4, this.codeBranchInterpreter.interpretInstruction(simCodeModel, 3 * 4).getAsInt());
@@ -272,12 +272,12 @@ public class CodeBranchInterpreterTest
   @Test
   public void conditionalJumpGreaterOrEqualUnsigned_conditionEqualTrue_returnsJumpDifference()
   {
-    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x1").build();
-    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x1").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("one").build();
+    InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x1").build();
+    InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x1").build();
+    InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("imm").hasLabel("one", 0).build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("bgeu")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0, 0);
+    SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0);
     
     // Should jump to the label "one" which is at index 0
     Assert.assertEquals(-3 * 4, this.codeBranchInterpreter.interpretInstruction(simCodeModel, 3 * 4).getAsInt());
@@ -286,12 +286,12 @@ public class CodeBranchInterpreterTest
   @Test
   public void conditionalJumpGreaterOrEqualUnsigned_conditionFalse_returnsOne()
   {
-    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x1").build();
-    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x4").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("imm").hasValue("one").build();
+    InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x1").build();
+    InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x4").build();
+    InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("imm").hasLabel("one", 0).build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("bgeu")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0, 0);
+    SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0);
     
     // Should not jump
     Assert.assertFalse(this.codeBranchInterpreter.interpretInstruction(simCodeModel, 3 * 4).isPresent());

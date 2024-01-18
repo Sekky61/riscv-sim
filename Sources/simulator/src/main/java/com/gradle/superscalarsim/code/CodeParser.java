@@ -29,15 +29,14 @@ package com.gradle.superscalarsim.code;
 
 import com.gradle.superscalarsim.cpu.MemoryLocation;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
-import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.enums.RegisterTypeEnum;
 import com.gradle.superscalarsim.factories.InputCodeModelFactory;
 import com.gradle.superscalarsim.loader.InitLoader;
 import com.gradle.superscalarsim.models.InputCodeArgument;
 import com.gradle.superscalarsim.models.InputCodeModel;
 import com.gradle.superscalarsim.models.InstructionFunctionModel;
+import com.gradle.superscalarsim.models.register.IRegisterFile;
 import com.gradle.superscalarsim.models.register.RegisterDataContainer;
-import com.gradle.superscalarsim.models.register.RegisterFileModel;
 import com.gradle.superscalarsim.models.register.RegisterModel;
 
 import java.util.ArrayList;
@@ -69,7 +68,7 @@ public class CodeParser
   /**
    * Descriptions of all register files
    */
-  List<RegisterFileModel> registerFileModelList;
+  IRegisterFile registerFileModelList;
   
   /**
    * Factory for creating instances of InputCodeModel
@@ -120,20 +119,11 @@ public class CodeParser
   Pattern immediatePattern;
   
   /**
-   * The aliases between registers.
-   * The key is the architecture name (x0), the value is the alias (zero).
-   * Must be a list - register x8 has two aliases (s0 and fp).
-   */
-  private List<InitLoader.RegisterMapping> registerAliases;
-  
-  /**
    * For cases when instance manager is not needed
    */
   public CodeParser(InitLoader initLoader)
   {
-    this(initLoader.getInstructionFunctionModels(), initLoader.getRegisterFileModelList(),
-         initLoader.getRegisterAliases(), null);
-    
+    this(initLoader.getInstructionFunctionModels(), initLoader.getRegisterFile(), null);
     // todo: maybe a dummyManager?
     this.inputCodeModelFactory = new InputCodeModelFactory();
   }
@@ -142,15 +132,13 @@ public class CodeParser
    * @brief Constructor
    */
   public CodeParser(Map<String, InstructionFunctionModel> instructionModels,
-                    List<RegisterFileModel> registerFileModelList,
-                    List<InitLoader.RegisterMapping> registerAliases,
+                    IRegisterFile registerFileModelList,
                     InputCodeModelFactory manager)
   {
     this.inputCodeModelFactory = manager;
     
     this.registerFileModelList = registerFileModelList;
     this.instructionModels     = instructionModels;
-    this.registerAliases       = registerAliases;
     this.lexer                 = null;
     this.currentToken          = null;
     this.peekToken             = null;
@@ -173,8 +161,7 @@ public class CodeParser
    */
   public CodeParser(InitLoader initLoader, InputCodeModelFactory manager)
   {
-    this(initLoader.getInstructionFunctionModels(), initLoader.getRegisterFileModelList(),
-         initLoader.getRegisterAliases(), manager);
+    this(initLoader.getInstructionFunctionModels(), initLoader.getRegisterFile(), manager);
   }
   
   /**
@@ -691,13 +678,37 @@ public class CodeParser
     {
       CodeToken argumentToken = args.get(argument.name());
       String    argumentName  = argument.name();
-      // Try to parse as a constant. May be null for labels, registers
-      RegisterDataContainer constantValue = RegisterDataContainer.parseAs(argumentToken.text(), argument.type());
-      InputCodeArgument inputCodeArgument = new InputCodeArgument(argumentName, argumentToken.text(), constantValue);
-      boolean      isLValue            = argumentName.equals("rd");
-      DataTypeEnum instructionDataType = instructionModel.getArgumentByName(argumentName).type();
-      boolean isValid = validateArgument(inputCodeArgument, instructionModel.getInstructionType(), instructionDataType,
-                                         isLValue, argumentToken);
+      // Try to find the register
+      boolean           isValid             = true;
+      boolean           isLValue            = argumentName.equals("rd");
+      InputCodeArgument inputCodeArgument   = null;
+      DataTypeEnum      instructionDataType = instructionModel.getArgumentByName(argumentName).type();
+      if (argument.isRegister())
+      {
+        RegisterModel register = registerFileModelList.getRegister(argumentToken.text());
+        inputCodeArgument = new InputCodeArgument(argumentName, argumentToken.text(), register);
+        isValid &= checkRegisterArgument(inputCodeArgument, instructionDataType, argumentToken);
+      }
+      else if (argument.isImmediate())
+      {
+        // May be a label or a constant
+        RegisterDataContainer constantValue = RegisterDataContainer.parseAs(argumentToken.text(), argument.type());
+        if (constantValue != null)
+        {
+          // Constant
+          inputCodeArgument = new InputCodeArgument(argumentName, constantValue);
+        }
+        else
+        {
+          // Label
+          inputCodeArgument = new InputCodeArgument(argumentName, argumentToken.text());
+        }
+        isValid &= checkImmediateArgument(inputCodeArgument, isLValue, argumentToken);
+      }
+      else
+      {
+        throw new RuntimeException("Unknown argument type");
+      }
       if (isValid)
       {
         codeArguments.add(inputCodeArgument);
@@ -790,66 +801,50 @@ public class CodeParser
   }
   
   /**
-   * @param inputCodeArgument   Argument to be verified
-   * @param instructionType     Type of the instruction
-   * @param instructionDataType Data type of argument according to instruction template
-   * @param isLValue            True, if the currently verified argument lvalue, false otherwise
-   * @param token               Token of the argument, for error reporting
+   * @param argument         Argument to be verified. Must be a register, but register can be null
+   * @param argumentDataType Data type of argument according to instruction template
+   * @param token            Token of the argument, for error reporting
    *
-   * @return True in case of valid argument, false otherwise
-   * @brief Validates argument's value and data type
+   * @return True if register argument is valid, false otherwise
+   * @brief Verifies if argument that is supposed to be a register is valid
    */
-  private boolean validateArgument(final InputCodeArgument inputCodeArgument,
-                                   final InstructionTypeEnum instructionType,
-                                   final DataTypeEnum instructionDataType,
-                                   final boolean isLValue,
-                                   CodeToken token)
+  private boolean checkRegisterArgument(final InputCodeArgument argument,
+                                        final DataTypeEnum argumentDataType,
+                                        CodeToken token)
   {
-    String  argumentName  = inputCodeArgument.getName();
-    String  argumentValue = inputCodeArgument.getValue();
-    boolean isDirectValue = isNumeralLiteral(argumentValue);
-    
-    if (this.immediatePattern.matcher(argumentName).matches())
+    String        argumentValue = token.text();
+    RegisterModel register      = argument.getRegisterValue();
+    if (register == null)
     {
-      // if instruction is jump/branch, expected imm value can be a label or a direct value in the +-1MiB range
-      // numeral values are already checked in the previous step
-      return checkImmediateArgument(argumentValue, isLValue, isDirectValue, token);
+      this.addError(token, "Argument \"" + argumentValue + "\" is not a register nor a value.");
+      return false;
     }
-    else if (this.registerPattern.matcher(argumentName).matches())
+    if (!checkDatatype(argumentDataType, register.getType()))
     {
-      // A register (rd, rs1, ...)
-      return checkRegisterArgument(argumentValue, instructionDataType, isLValue, isDirectValue, token);
+      this.addError(token, "Argument \"" + argumentValue + "\" is a register of wrong type.");
+      return false;
     }
-    return false;
-  }// end of validateArgument
-  
-  private boolean isNumeralLiteral(String argValue)
-  {
-    return this.hexadecimalPattern.matcher(argValue).matches() || this.decimalPattern.matcher(argValue).matches();
-  }
+    return true;
+  }// end of checkRegisterArgument
   
   /**
-   * @param argumentValue Value of an argument in string format
-   * @param isLValue      True, if the currently verified argument lvalue (destination), false otherwise
-   * @param isDirectValue True, if argument is decimal or hexadecimal , false otherwise
-   * @param isBranch      True, if instruction is branch/jump, false otherwise
-   * @param token         Token of the argument, for error reporting
+   * @param argument Argument to be verified. Must be an immediate value, either a label or a constant
+   * @param isLValue True if the argument is a lvalue, false otherwise
+   * @param token    Token of the argument, for error reporting
    *
    * @return True if argument is valid immediate value, otherwise false
    * @brief Verifies if argument is immediate value
    */
-  private boolean checkImmediateArgument(final String argumentValue,
-                                         final boolean isLValue,
-                                         final boolean isDirectValue,
-                                         CodeToken token)
+  private boolean checkImmediateArgument(final InputCodeArgument argument, final boolean isLValue, CodeToken token)
   {
+    boolean isDirectValue = isNumeralLiteral(token.text());
     if (isLValue)
     {
       this.addError(token, "LValue cannot be immediate value.");
       return false;
     }
     
-    if (!isDirectValue && !this.labels.containsKey(argumentValue))
+    if (!isDirectValue && !this.labels.containsKey(argument.getValue()))
     {
       this.unconfirmedLabels.add(token);
     }
@@ -858,68 +853,10 @@ public class CodeParser
   }// end of checkImmediateArgument
   
   /**
-   * @param argumentValue    Value of an argument in string format
-   * @param argumentDataType Expected data type of argument
-   * @param isLValue         True, if the currently verified argument lvalue, false otherwise
-   * @param isDirectValue    True, if argument is decimal or hexadecimal , false otherwise
-   * @param token            Token of the argument, for error reporting
-   *
-   * @return True if argument is valid register, otherwise false
-   * @brief Verifies if argument is register
-   */
-  private boolean checkRegisterArgument(final String argumentValue,
-                                        final DataTypeEnum argumentDataType,
-                                        final boolean isLValue,
-                                        final boolean isDirectValue,
-                                        CodeToken token)
-  {
-    if (isDirectValue && isLValue)
-    {
-      this.addError(token, "LValue cannot be immediate value.");
-      return false;
-    }
-    if (isDirectValue)
-    {
-      this.addError(token, "Expected register, got : \"" + argumentValue + "\".");
-      return false;
-    }
-    
-    // Lookup all register files and aliases, check if the register exists
-    // Assumes that the register names and aliases are unique
-    // First try to find alias
-    String registerToLookFor = argumentValue;
-    for (InitLoader.RegisterMapping alias : registerAliases)
-    {
-      if (alias.alias.equals(argumentValue))
-      {
-        // Look for this register instead of the alias
-        registerToLookFor = alias.register;
-        break;
-      }
-    }
-    for (RegisterFileModel registerFileModel : registerFileModelList)
-    {
-      if (!checkDatatype(argumentDataType, registerFileModel.getDataType()))
-      {
-        // Incorrect data type in this register file, skip
-        continue;
-      }
-      RegisterModel reg = registerFileModel.getRegister(registerToLookFor);
-      if (reg != null)
-      {
-        return true;
-      }
-    }
-    this.addError(token, "Argument \"" + argumentValue + "\" is not a register nor a value.");
-    return false;
-  }// end of checkRegisterArgument
-  //-------------------------------------------------------------------------------------------
-  
-  /**
    * @param argumentDataType The datatype of an argument
    * @param registerDataType The datatype of a register file
    *
-   * @return True if argument can fit inside the register, false otherwise
+   * @return True if argument is compatible with register, otherwise false
    * @brief Check argument and register data types if they fit within each other
    */
   private boolean checkDatatype(final DataTypeEnum argumentDataType, final RegisterTypeEnum registerDataType)
@@ -929,9 +866,13 @@ public class CodeParser
     {
       case kInt, kUInt, kLong, kULong, kBool, kByte, kShort, kChar -> registerDataType == RegisterTypeEnum.kInt;
       case kFloat, kDouble -> registerDataType == RegisterTypeEnum.kFloat;
-      
     };
   }// end of checkDatatype
+  
+  private boolean isNumeralLiteral(String argValue)
+  {
+    return this.hexadecimalPattern.matcher(argValue).matches() || this.decimalPattern.matcher(argValue).matches();
+  }
   //-------------------------------------------------------------------------------------------
   
   /**

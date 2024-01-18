@@ -36,12 +36,14 @@ import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.blocks.base.AbstractFunctionUnitBlock;
-import com.gradle.superscalarsim.blocks.base.AbstractIssueWindowBlock;
+import com.gradle.superscalarsim.blocks.base.IssueWindowBlock;
 import com.gradle.superscalarsim.blocks.base.ReorderBufferBlock;
-import com.gradle.superscalarsim.blocks.base.UnifiedRegisterFileBlock;
 import com.gradle.superscalarsim.code.CodeBranchInterpreter;
+import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
+import com.gradle.superscalarsim.models.FunctionalUnitDescription;
 import com.gradle.superscalarsim.models.InputCodeArgument;
+import com.gradle.superscalarsim.models.SimCodeModel;
 import com.gradle.superscalarsim.models.register.RegisterModel;
 
 import java.util.OptionalInt;
@@ -49,17 +51,11 @@ import java.util.OptionalInt;
 @JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
 public class BranchFunctionUnitBlock extends AbstractFunctionUnitBlock
 {
-  /// Interpreter for interpreting executing instructions
+  /**
+   * Interpreter for interpreting executing instructions
+   */
   @JsonIdentityReference(alwaysAsId = true)
-  private CodeBranchInterpreter branchInterpreter;
-  /// Class containing all registers, that simulator uses
-  @JsonIdentityReference(alwaysAsId = true)
-  private UnifiedRegisterFileBlock registerFileBlock;
-  
-  public BranchFunctionUnitBlock()
-  {
-  
-  }
+  private final CodeBranchInterpreter branchInterpreter;
   
   /**
    * @param name               Name of the function unit
@@ -69,35 +65,25 @@ public class BranchFunctionUnitBlock extends AbstractFunctionUnitBlock
    *
    * @brief Constructor
    */
-  public BranchFunctionUnitBlock(String name,
-                                 AbstractIssueWindowBlock issueWindowBlock,
-                                 int delay,
-                                 ReorderBufferBlock reorderBufferBlock)
+  public BranchFunctionUnitBlock(FunctionalUnitDescription description,
+                                 IssueWindowBlock issueWindowBlock,
+                                 ReorderBufferBlock reorderBufferBlock,
+                                 CodeBranchInterpreter branchInterpreter)
   {
-    super(name, delay, issueWindowBlock, reorderBufferBlock);
-  }// end of Constructor
-  //----------------------------------------------------------------------
-  
-  /**
-   * @param branchInterpreter Branch interpreter object
-   *
-   * @brief Injects Branch interpreter to the FU
-   */
-  public void addBranchInterpreter(CodeBranchInterpreter branchInterpreter)
-  {
+    super(description, issueWindowBlock, reorderBufferBlock);
     this.branchInterpreter = branchInterpreter;
-  }// end of addBranchInterpreter
-  //----------------------------------------------------------------------
+  }// end of Constructor
   
   /**
-   * @param registerFileBlock UnifiedRegisterFileBlock object with all registers
+   * @param simCodeModel Instruction to be executed
    *
-   * @brief Injects UnifiedRegisterFileBlock to the FU
+   * @return True if the function unit can execute the instruction, false otherwise.
    */
-  public void addRegisterFileBlock(UnifiedRegisterFileBlock registerFileBlock)
+  @Override
+  public boolean canExecuteInstruction(SimCodeModel simCodeModel)
   {
-    this.registerFileBlock = registerFileBlock;
-  }// end of addRegisterFileBlock
+    return simCodeModel.getInstructionFunctionModel().getInstructionType() == InstructionTypeEnum.kJumpbranch;
+  }
   //----------------------------------------------------------------------
   
   /**
@@ -156,7 +142,7 @@ public class BranchFunctionUnitBlock extends AbstractFunctionUnitBlock
     if (destinationArgument != null)
     {
       // Write the result to the register
-      RegisterModel reg                     = registerFileBlock.getRegister(destinationArgument.getValue());
+      RegisterModel reg                     = destinationArgument.getRegisterValue();
       int           nextInstructionPosition = instructionPosition + 4;
       reg.setValue(nextInstructionPosition);
       reg.setReadiness(RegisterReadinessEnum.kExecuted);

@@ -28,48 +28,11 @@
 package com.gradle.superscalarsim.cpu;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.gradle.superscalarsim.code.Expression;
-import com.gradle.superscalarsim.code.ParseError;
+import com.gradle.superscalarsim.models.FunctionalUnitDescription;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
-
-// The corresponding Typescript type is:
-//
-//type IsaConfig = {
-//        robSize: number;
-//        lbSize: number;
-//        sbSize: number;
-//        fetchWidth: number;
-//        commitWidth: number;
-//        btbSize: number;
-//        phtSize: number;
-//        predictorType: "1bit" | "2bit";
-//        predictorDefault: "taken" | "not-taken";
-//        fUnits: ({
-//            id: number;
-//            fuType: "L/S" | "Branch" | "Memory";
-//            latency: number;
-//            } | {
-//            id: number;
-//            fuType: "FX" | "FP";
-//            latency: number;
-//            operations: ("+" | "-" | "*" | "/" | "%" | "&" | "|" | ">>" | "<<" | ">>>" | "<" | ">" | "<=" | ">=" |
-//            "==" | "!" | "++" | "--" | "#" | "<-" | "(" | ")")[];
-//        })[];
-//        cacheLines: number;
-//        cacheLineSize: number;
-//        cacheAssoc: number;
-//        cacheReplacement: "LRU" | "FIFO" | "Random";
-//        storeBehavior: "write-back";
-//        storeLatency: number;
-//        loadLatency: number;
-//        laneReplacementDelay: number;
-//        addRemainingDelay: boolean;
-//    };
 
 /**
  * @details @JsonIgnoreProperties makes deserialization ignore any extra properties (client sends 'name' of config)
@@ -80,397 +43,209 @@ import java.util.Objects;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class CpuConfig implements Serializable
 {
-  public int robSize;
-  public int lbSize;
-  public int sbSize;
-  public int fetchWidth;
-  /// Number of instructions that can be committed in one cycle - commitLimit on the ROB
-  public int commitWidth;
-  public int btbSize;
-  public int phtSize;
   /**
-   * One of 0bit, 1bit, 2bit
+   * Maximum number of instructions that can be in the ROB
+   */
+  public int robSize;
+  
+  /**
+   * Number of instructions that can be committed in one cycle - commitLimit on the ROB
+   */
+  public int commitWidth;
+  
+  /**
+   * Number of clock cycles the CPU will take to flush the pipeline.
+   * For example, if a branch is mispredicted, the CPU will take this many cycles to clear the fetch, decode, and ROB.
+   */
+  public int flushPenalty;
+  
+  /**
+   * Number of instructions that can be fetched in one cycle.
+   * Also determines the decode width.
+   * Fetch unit can _evaluate_ one branch instruction per cycle. This means the fetch will stop before a second branch.
+   */
+  public int fetchWidth;
+  
+  /**
+   * Number of branch instructions that can be evaluated in one cycle.
+   */
+  public int branchFollowLimit;
+  
+  /**
+   * Branch target buffer size.
+   */
+  public int btbSize;
+  
+  /**
+   * Pattern history table size.
+   */
+  public int phtSize;
+  
+  /**
+   * Type of the predictor held in the PHT.
+   * One of 0bit, 1bit, 2bit.
    */
   public String predictorType;
+  
   /**
-   * For zero bit one of "Taken", "Not Taken"
-   * For one bit one of "Taken", "Not Taken"
-   * For two bit one of "Strongly Not Taken", "Weakly Not Taken", "Weakly Taken", "Strongly Taken"
+   * All predictors have this default state.
+   * For zero bit one of "Taken", "Not Taken".
+   * For one bit one of "Taken", "Not Taken".
+   * For two bit one of "Strongly Not Taken", "Weakly Not Taken", "Weakly Taken", "Strongly Taken".
    */
   public String predictorDefault;
-  public FUnit[] fUnits;
-  public boolean useCache;
-  public int cacheLines;
-  public int cacheLineSize;
-  public int cacheAssoc;
-  public String cacheReplacement;
+  
   /**
-   * write-back, write-through
+   * Use global history vector in the PHT.
+   * The GHV is a register that holds the last N branches. It effects addressing of the PHT.
+   */
+  public boolean useGlobalHistory;
+  
+  /**
+   * Defined function units.
+   */
+  public List<FunctionalUnitDescription> fUnits;
+  
+  /**
+   * Use single level cache.
+   */
+  public boolean useCache;
+  
+  /**
+   * Number of cache lines.
+   */
+  public int cacheLines;
+  
+  /**
+   * Size of one cache line in bytes.
+   */
+  public int cacheLineSize;
+  
+  /**
+   * Cache associativity.
+   */
+  public int cacheAssoc;
+  
+  /**
+   * Cache replacement policy.
+   * One of Random, LRU, FIFO.
+   */
+  public String cacheReplacement;
+  
+  /**
+   * One of write-back, write-through.
    */
   public String storeBehavior;
-  public int storeLatency;
-  public int loadLatency;
+  
+  /**
+   * Number of cycles that it takes to replace a cache line.
+   * New line is loaded into the cache after this many cycles.
+   */
   public int laneReplacementDelay;
-  public boolean addRemainingDelay;
+  
+  /**
+   * Cache access delay in cycles.
+   */
+  public int cacheAccessDelay;
+  
+  /**
+   * Load buffer size.
+   */
+  public int lbSize;
+  
+  /**
+   * Store buffer size.
+   */
+  public int sbSize;
+  
+  /**
+   * Main memory latency for store.
+   */
+  public int storeLatency;
+  
+  /**
+   * Main memory latency for load.
+   */
+  public int loadLatency;
+  
+  /**
+   * Call stack size in bytes.
+   * Amount of memory allocated for the call stack.
+   */
+  public int callStackSize;
+  
+  /**
+   * Number of speculative registers.
+   * This is in addition to the 32 integer and 32 floating point architectural registers.
+   */
+  public int speculativeRegisters;
+  
+  /**
+   * @brief Core clock frequency in Hz
+   */
+  public int coreClockFrequency;
+  
+  /**
+   * @brief Cache clock frequency in Hz
+   */
+  public int cacheClockFrequency;
   
   public static CpuConfig getDefaultConfiguration()
   {
     CpuConfig config = new CpuConfig();
-    config.robSize          = 256;
-    config.lbSize           = 64;
-    config.sbSize           = 64;
-    config.fetchWidth       = 3;
-    config.commitWidth      = 4;
+    // ROB
+    config.robSize           = 256;
+    config.fetchWidth        = 3;
+    config.branchFollowLimit = 1;
+    config.commitWidth       = 4;
+    config.flushPenalty      = 1;
+    // Prediction
     config.btbSize          = 1024;
     config.phtSize          = 10;
     config.predictorType    = "2bit";
     config.predictorDefault = "Weakly Taken";
-    config.fUnits           = new FUnit[5];
-    // FX with all ops
-    config.fUnits[0]            = new FUnit();
-    config.fUnits[0].id         = 0;
-    config.fUnits[0].fuType     = FUnit.Type.FX;
-    config.fUnits[0].latency    = 2;
-    config.fUnits[0].operations = new FUnit.Capability[]{FUnit.Capability.addition, FUnit.Capability.bitwise, FUnit.Capability.multiplication, FUnit.Capability.division, FUnit.Capability.special};
-    // FP with all ops
-    config.fUnits[1]            = new FUnit();
-    config.fUnits[1].id         = 1;
-    config.fUnits[1].fuType     = FUnit.Type.FP;
-    config.fUnits[1].latency    = 2;
-    config.fUnits[1].operations = new FUnit.Capability[]{FUnit.Capability.addition, FUnit.Capability.bitwise, FUnit.Capability.multiplication, FUnit.Capability.division, FUnit.Capability.special};
-    // L/S
-    config.fUnits[2]         = new FUnit();
-    config.fUnits[2].id      = 2;
-    config.fUnits[2].fuType  = FUnit.Type.L_S;
-    config.fUnits[2].latency = 1;
+    config.useGlobalHistory = true;
+    // FunctionalUnitDescriptions
+    config.fUnits = Arrays.asList(new FunctionalUnitDescription(0, FunctionalUnitDescription.Type.FX, Arrays.asList(
+                                          new FunctionalUnitDescription.Capability(FunctionalUnitDescription.CapabilityName.addition, 1),
+                                          new FunctionalUnitDescription.Capability(FunctionalUnitDescription.CapabilityName.bitwise, 1),
+                                          new FunctionalUnitDescription.Capability(FunctionalUnitDescription.CapabilityName.multiplication, 2),
+                                          new FunctionalUnitDescription.Capability(FunctionalUnitDescription.CapabilityName.division, 10),
+                                          new FunctionalUnitDescription.Capability(FunctionalUnitDescription.CapabilityName.special, 2)), "FX"),
+                                  new FunctionalUnitDescription(1, FunctionalUnitDescription.Type.FP, Arrays.asList(
+                                          new FunctionalUnitDescription.Capability(
+                                                  FunctionalUnitDescription.CapabilityName.addition, 1),
+                                          new FunctionalUnitDescription.Capability(
+                                                  FunctionalUnitDescription.CapabilityName.bitwise, 1),
+                                          new FunctionalUnitDescription.Capability(
+                                                  FunctionalUnitDescription.CapabilityName.multiplication, 2),
+                                          new FunctionalUnitDescription.Capability(
+                                                  FunctionalUnitDescription.CapabilityName.division, 2),
+                                          new FunctionalUnitDescription.Capability(
+                                                  FunctionalUnitDescription.CapabilityName.special, 2)), "FP"),
+                                  new FunctionalUnitDescription(2, FunctionalUnitDescription.Type.L_S, 1, "L/S"),
+                                  new FunctionalUnitDescription(3, FunctionalUnitDescription.Type.Branch, 2, "Branch"),
+                                  new FunctionalUnitDescription(4, FunctionalUnitDescription.Type.Memory, 1, "Memory"));
     
-    // Branch
-    config.fUnits[3]         = new FUnit();
-    config.fUnits[3].id      = 3;
-    config.fUnits[3].fuType  = FUnit.Type.Branch;
-    config.fUnits[3].latency = 2;
-    
+    // Cache
+    config.useCache         = true;
+    config.cacheLines       = 16;
+    config.cacheLineSize    = 32;
+    config.cacheAssoc       = 2;
+    config.cacheReplacement = "LRU"; // TODO: Other policies have problem deserializing
+    config.storeBehavior    = "write-back";
+    config.cacheAccessDelay = 1;
     // Memory
-    config.fUnits[4]         = new FUnit();
-    config.fUnits[4].id      = 4;
-    config.fUnits[4].fuType  = FUnit.Type.Memory;
-    config.fUnits[4].latency = 1;
-    
-    config.useCache             = true;
-    config.cacheLines           = 16;
-    config.cacheLineSize        = 32;
-    config.cacheAssoc           = 2;
-    config.cacheReplacement     = "Random"; // TODO: Other policies have problem deserializing
-    config.storeBehavior        = "write-back";
     config.storeLatency         = 0;
     config.loadLatency          = 1;
     config.laneReplacementDelay = 10;
-    config.addRemainingDelay    = false;
+    config.lbSize               = 64;
+    config.sbSize               = 64;
+    config.callStackSize        = 512;
+    // Misc
+    config.speculativeRegisters = 320;
+    config.coreClockFrequency   = 100000000;
+    config.cacheClockFrequency  = 100000000;
     return config;
-  }
-  
-  /**
-   * @return ValidationResult
-   * @brief Validates configuration, including code
-   */
-  public ValidationResult validate()
-  {
-    // List of error messages
-    List<String> errorMessages = new ArrayList<>();
-    
-    // Null checks
-    if (fUnits == null)
-    {
-      errorMessages.add("FUnits must not be null");
-    }
-    if (predictorType == null)
-    {
-      errorMessages.add("Predictor type must not be null");
-    }
-    if (predictorDefault == null)
-    {
-      errorMessages.add("Predictor default must not be null");
-    }
-    if (cacheReplacement == null)
-    {
-      errorMessages.add("Cache replacement must not be null");
-    }
-    if (storeBehavior == null)
-    {
-      errorMessages.add("Store behavior must not be null");
-    }
-    
-    // ROB
-    if (robSize < 1)
-    {
-      errorMessages.add("ROB size must be greater than 0");
-    }
-    
-    // LB
-    if (lbSize < 1)
-    {
-      errorMessages.add("LB size must be greater than 0");
-    }
-    
-    // SB
-    if (sbSize < 1)
-    {
-      errorMessages.add("SB size must be greater than 0");
-    }
-    
-    // Fetch width
-    if (fetchWidth < 1)
-    {
-      errorMessages.add("Fetch width must be greater than 0");
-    }
-    
-    // Commit width
-    if (commitWidth < 1)
-    {
-      errorMessages.add("Commit width must be greater than 0");
-    }
-    
-    // BTB
-    if (btbSize < 1)
-    {
-      errorMessages.add("BTB size must be greater than 0");
-    }
-    
-    // PHT
-    if (phtSize < 1)
-    {
-      errorMessages.add("PHT size must be greater than 0");
-    }
-    
-    // FUnits
-    if (fUnits.length < 1)
-    {
-      errorMessages.add("FUnits size must be greater than 0");
-    }
-    
-    // Cache
-    if (useCache)
-    {
-      
-      // Cache line size
-      if (cacheLineSize < 1)
-      {
-        errorMessages.add("Cache line size must be greater than 0");
-      }
-      
-      // Cache lines
-      if (cacheLines < 1)
-      {
-        errorMessages.add("Cache lines must be greater than 0");
-      }
-      
-      // Cache assoc
-      if (cacheAssoc < 1)
-      {
-        errorMessages.add("Cache assoc must be greater than 0");
-      }
-      
-      // Lane replacement delay
-      if (laneReplacementDelay < 0)
-      {
-        errorMessages.add("Lane replacement delay must be greater than 0");
-      }
-    }
-    
-    // Store latency
-    if (storeLatency < 0)
-    {
-      errorMessages.add("Store latency must be greater than 0");
-    }
-    
-    // Load latency
-    if (loadLatency < 0)
-    {
-      errorMessages.add("Load latency must be greater than 0");
-    }
-    
-    // TODO: move thorough validation
-    
-    // Allowed predictor types: 0bit, 1bit, 2bit
-    if (!Objects.equals(predictorType, "0bit") && !Objects.equals(predictorType, "1bit") && !Objects.equals(
-            predictorType, "2bit"))
-    {
-      errorMessages.add("Predictor type must be one of 0bit, 1bit, 2bit");
-    }
-    
-    if (predictorType.equals("0bit"))
-    {
-      // Allowed predictor defaults: Taken, Not Taken
-      if (!Objects.equals(predictorDefault, "Taken") && !Objects.equals(predictorDefault, "Not Taken"))
-      {
-        errorMessages.add("Predictor default form 0bit predictor must be one of Taken, Not Taken");
-      }
-    }
-    
-    if (predictorType.equals("1bit"))
-    {
-      // Allowed predictor defaults: Taken, Not Taken
-      if (!Objects.equals(predictorDefault, "Taken") && !Objects.equals(predictorDefault, "Not Taken"))
-      {
-        errorMessages.add("Predictor default form 1bit predictor must be one of Taken, Not Taken");
-      }
-    }
-    
-    if (predictorType.equals("2bit"))
-    {
-      // Allowed predictor defaults: Strongly Not Taken, Weakly Not Taken, Weakly Taken, Strongly Taken
-      if (!Objects.equals(predictorDefault, "Strongly Not Taken") && !Objects.equals(predictorDefault,
-                                                                                     "Weakly Not " + "Taken") && !Objects.equals(
-              predictorDefault, "Weakly Taken") && !Objects.equals(predictorDefault, "Strongly Taken"))
-      {
-        errorMessages.add(
-                "Predictor default form 2bit predictor must be one of Strongly Not Taken, Weakly Not Taken," + " Weakly " + "Taken, Strongly Taken");
-      }
-    }
-    
-    // FU
-    for (int i = 0; i < fUnits.length; i++)
-    {
-      FUnit fu = fUnits[i];
-      if (fu.latency < 0)
-      {
-        errorMessages.add(String.format("FU %d: latency must be greater than 0", i));
-      }
-      
-      switch (fu.fuType)
-      {
-        case L_S, Branch, Memory ->
-        {
-          if (fu.operations != null)
-          {
-            errorMessages.add(String.format("FU %d: %s FU must not have operations", i, fu.fuType));
-          }
-        }
-        case FX, FP ->
-        {
-          if (fu.operations == null)
-          {
-            errorMessages.add(String.format("FU %d: %s FU must have operations", i, fu.fuType));
-          }
-        }
-        default -> errorMessages.add("Unknown FU type: " + fu.fuType);
-      }
-    }
-    
-    if (errorMessages.isEmpty())
-    {
-      return new ValidationResult(true, null, null);
-    }
-    else
-    {
-      return new ValidationResult(false, errorMessages, null);
-    }
-  }
-  
-  /**
-   * @brief Function unit description
-   */
-  public static class FUnit
-  {
-    /**
-     * AFAIK not used
-     */
-    public int id;
-    
-    /**
-     * Optional name of the FUnit. Shows up in simulation visualisation, also used for debugging
-     */
-    public String name;
-    
-    /**
-     * Type of the FUnit
-     */
-    public Type fuType;
-    
-    /**
-     * Latency of the FUnit
-     */
-    public int latency;
-    
-    /**
-     * Classes of operations that this FUnit can perform
-     */
-    public Capability[] operations;
-    
-    public FUnit()
-    {
-    
-    }
-    
-    public FUnit(int id, Type fuType, int latency, Capability[] operations, String name)
-    {
-      this.id         = id;
-      this.name       = name;
-      this.fuType     = fuType;
-      this.latency    = latency;
-      this.operations = operations;
-    }
-    
-    public FUnit(int id, Type fuType, int latency, Capability[] operations)
-    {
-      this.id         = id;
-      this.name       = "FUnit " + id;
-      this.fuType     = fuType;
-      this.latency    = latency;
-      this.operations = operations;
-    }
-    
-    /**
-     * @return List of operations that this FUnit can perform based on its capabilities
-     * {@link Expression}
-     */
-    public List<String> getAllowedOperations()
-    {
-      // Base
-      List<String> ops = new ArrayList<>(Arrays.asList(Expression.baseOperators));
-      // Add operations based on capabilities
-      for (Capability capability : operations)
-      {
-        switch (capability)
-        {
-          case addition -> ops.addAll(Arrays.asList(Expression.additionOperators));
-          case bitwise -> ops.addAll(Arrays.asList(Expression.bitwiseOperators));
-          case multiplication -> ops.addAll(Arrays.asList(Expression.multiplicationOperators));
-          case division -> ops.addAll(Arrays.asList(Expression.divisionOperators));
-          case special -> ops.addAll(Arrays.asList(Expression.specialOperators));
-        }
-      }
-      return ops;
-    }
-    
-    /**
-     * Types of FUnits
-     */
-    public enum Type
-    {
-      FX, FP, L_S, Branch, Memory,
-    }
-    
-    /**
-     * Enumeration of Funit capabilities
-     */
-    public enum Capability
-    {
-      addition, bitwise, multiplication, division, special,
-    }
-  }
-  
-  public static class ValidationResult
-  {
-    public boolean valid;
-    public List<String> messages;
-    public List<ParseError> codeErrors;
-    
-    public ValidationResult(boolean valid, List<String> messages, List<ParseError> codeErrors)
-    {
-      this.valid      = valid;
-      this.messages   = messages;
-      this.codeErrors = codeErrors;
-    }
   }
 }

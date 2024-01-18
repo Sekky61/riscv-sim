@@ -31,9 +31,9 @@
 
 import { defaultCpuConfig, isaFormSchema } from '@/lib/forms/Isa';
 
-describe('The ISA configuration', () => {
-  it('Default config should pass the validation', () => {
-    // Should throw if not valid
+describe('The Default ISA configuration', () => {
+  it('Should pass the validation', () => {
+    // Throws ZodError if not valid
     const _result = isaFormSchema.parse(defaultCpuConfig);
   });
 });

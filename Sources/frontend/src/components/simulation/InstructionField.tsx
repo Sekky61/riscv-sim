@@ -32,6 +32,8 @@
 import clsx from 'clsx';
 
 import {
+  ParsedArgument,
+  getValue,
   highlightSimCode,
   selectHighlightedSimCode,
   selectSimCodeModel,
@@ -39,7 +41,11 @@ import {
 } from '@/lib/redux/cpustateSlice';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import { openModal } from '@/lib/redux/modalSlice';
-import { InputCodeArgument, Reference } from '@/lib/types/cpuApi';
+import {
+  InputCodeArgument,
+  Reference,
+  RegisterDataContainer,
+} from '@/lib/types/cpuApi';
 
 import {
   Tooltip,
@@ -75,8 +81,7 @@ export default function InstructionField({
     );
   }
 
-  const { simCodeModel } = q;
-  const args = simCodeModel.renamedArguments;
+  const { simCodeModel, args } = q;
   const highlighted = highlightedId === simCodeId;
 
   const handleMouseEnter = () => {
@@ -103,17 +108,18 @@ export default function InstructionField({
     // if a part matches an argument, wrap it in a tooltip
     return formatSplit.map((part, i) => {
       // This may cause problems in the future, if the argument is not unique (e.g. addi sp, sp, -40)
-      const arg = args.find((a) => a.value === part);
+      const arg = args.find((a) => a.origArg.stringValue === part);
+      const key = `${simCodeModel.renamedCodeLine}-${i}`;
       if (arg) {
         return (
           <InstructionArgument
             arg={arg}
-            key={`${simCodeModel.renamedCodeLine}-${i}`}
+            key={key}
           />
         );
       }
       // Add z-index to make the argument highlight below the parentheses etc.
-      return <span className='relative z-10'>{part}</span>;
+      return <span className='relative z-10' key={key}>{part}</span>;
     });
   }
 
@@ -138,7 +144,7 @@ export default function InstructionField({
 }
 
 export interface InstructionArgumentProps {
-  arg: InputCodeArgument;
+  arg: ParsedArgument;
 }
 
 /**
@@ -147,27 +153,18 @@ export interface InstructionArgumentProps {
  * Highlights the argument on hover.
  */
 function InstructionArgument({ arg }: InstructionArgumentProps) {
+  const value = getValue(arg);
+
   // Add negative margin so the highlight is bigger
-  const cls = clsx('relative rounded hover:bg-gray-300 -m-1 p-1');
-
-  const isRegister = arg.name.startsWith('r');
-  if (isRegister) {
-    return <RegisterReference registerId={arg.value} className={cls} />;
-  }
-
-  if (arg.constantValue === undefined) {
-    throw new Error(
-      `Constant value of argument ${arg.name} has undefined value`,
-    );
-  }
-
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <span className={cls}>{arg.value}</span>
+        <span className='relative rounded hover:bg-gray-300 -m-1 p-1'>
+          {arg.origArg.stringValue}
+        </span>
       </TooltipTrigger>
       <TooltipContent>
-        <ValueInformation value={arg.constantValue} valid={true} />
+        <ValueInformation value={value} valid={arg.valid} />
       </TooltipContent>
     </Tooltip>
   );

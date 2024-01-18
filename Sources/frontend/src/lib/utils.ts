@@ -32,7 +32,7 @@
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
-import { Reference, RegisterModel } from '@/lib/types/cpuApi';
+import { InputCodeModel, Reference, RegisterModel } from '@/lib/types/cpuApi';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -86,4 +86,53 @@ export function isValidRegisterValue(register: RegisterModel): boolean {
   return (
     register.readiness === 'kExecuted' || register.readiness === 'kAssigned'
   );
+}
+
+/**
+ * Return the name of the instruction type.
+ */
+export function instructionTypeName(inputCodeModel: InputCodeModel): string {
+  switch (inputCodeModel.instructionTypeEnum) {
+    case 'kIntArithmetic':
+      return 'Arithmetic (int)';
+    case 'kFloatArithmetic':
+      return 'Arithmetic (float)';
+    case 'kLoadstore':
+      return 'Load/Store';
+    case 'kJumpbranch':
+      return 'Jump/Branch';
+  }
+}
+
+/**
+ * Format a number with a unit.
+ * @param value the value to format
+ * @param base base of the unit to divide by
+ * @param units array of units to use. The first unit is used for values < base.
+ * @returns formatted string
+ */
+export function formatNumberWithUnit(
+  value: number,
+  base = 1000,
+  units: string[] = ['Hz', 'kHz', 'MHz', 'GHz', 'THz'],
+): string {
+  let unitIndex = 0;
+  let val = value;
+
+  while (val >= base && unitIndex < units.length - 1) {
+    val /= base;
+    unitIndex++;
+  }
+
+  // Cap the index at the last unit
+  const unitFinalIndex = Math.min(unitIndex, units.length - 1);
+
+  // If the value is less than 1 and has a decimal part, show one decimal place
+  if (val % 1 !== 0) {
+    return `${val.toFixed(1)} ${units[unitFinalIndex]}`;
+  }
+
+  // Otherwise show no decimal places
+  const valInt = Math.round(val);
+  return `${valInt} ${units[unitFinalIndex]}`;
 }

@@ -37,6 +37,7 @@ import { openModal } from '@/lib/redux/modalSlice';
 import { Reference } from '@/lib/types/cpuApi';
 
 import { Button } from '@/components/base/ui/button';
+import { instructionTypeName } from '@/lib/utils';
 
 type InstructionTableProps = {
   instructions: Reference[];
@@ -117,18 +118,7 @@ function InstructionRow({ instructionId }: InstructionRowProps) {
   if (!q) throw new Error('Instruction not found');
   const { simCodeModel, inputCodeModel } = q;
 
-  let instructionType;
-  switch (inputCodeModel.instructionTypeEnum) {
-    case 'kArithmetic':
-      instructionType = 'Arithmetic';
-      break;
-    case 'kLoadstore':
-      instructionType = 'Load/Store';
-      break;
-    case 'kJumpbranch':
-      instructionType = 'Branch';
-      break;
-  }
+  const instructionType = instructionTypeName(inputCodeModel);
 
   const showDetail = () => {
     dispatch(

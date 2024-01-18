@@ -81,7 +81,7 @@ public class InstructionFunctionModel implements Identifiable
   public InstructionFunctionModel()
   {
     this.name            = "";
-    this.instructionType = InstructionTypeEnum.kArithmetic;
+    this.instructionType = InstructionTypeEnum.kIntArithmetic;
     this.arguments       = new ArrayList<>();
     this.interpretableAs = "";
     this.dataType        = null;
@@ -144,7 +144,7 @@ public class InstructionFunctionModel implements Identifiable
   
   /**
    * @return Instruction type
-   * @brief Get type of an instruction
+   * @brief Get type of instruction
    */
   public InstructionTypeEnum getInstructionType()
   {
@@ -319,6 +319,22 @@ public class InstructionFunctionModel implements Identifiable
     public String toString()
     {
       return name + ":" + type + (defaultValue != null ? ":" + defaultValue : "");
+    }
+    
+    /**
+     * @return True if the argument is a register
+     */
+    public boolean isRegister()
+    {
+      return name.startsWith("r");
+    }
+    
+    /**
+     * @return True if the argument is an immediate
+     */
+    public boolean isImmediate()
+    {
+      return name.startsWith("i");
     }
   }
 }

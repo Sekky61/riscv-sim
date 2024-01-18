@@ -59,8 +59,8 @@ export default function StoreBuffer() {
             <div>Data</div>
           </>
         }
-        instructionRenderer={(bufItem) => (
-          <StoreBufferItemComponent storeItem={bufItem} />
+        instructionRenderer={(bufItem, i) => (
+          <StoreBufferItemComponent storeItem={bufItem} key={`item_${i}`} />
         )}
       />
     </Block>

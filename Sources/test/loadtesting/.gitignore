@@ -1,0 +1,8 @@
+# Ignore jmeter
+*.zip
+apache-jmeter*/
+*.log
+
+# Ignore reports
+report/
+*.jtl

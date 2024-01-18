@@ -41,6 +41,7 @@ public class DecodeAndDispatchBlockTest
   
   private RenameMapTableBlock renameMapTableBlock;
   private DecodeAndDispatchBlock decodeAndDispatchBlock;
+  private UnifiedRegisterFileBlock urf;
   
   @Before
   public void setUp()
@@ -66,12 +67,11 @@ public class DecodeAndDispatchBlockTest
     RegisterFileModel floatFile = new RegisterFileModelBuilder().hasName("float").hasDataType(RegisterTypeEnum.kFloat)
             .hasRegisterList(Arrays.asList(float1, float2, float3, float4)).build();
     
-    List<RegisterFileModel> registerFileModels = Arrays.asList(integerFile, floatFile);
-    loader = new InitLoader();
-    loader.setRegisterFileModelList(registerFileModels);
+    loader = new InitLoader(Arrays.asList(integerFile, floatFile), null);
     
-    
-    renameMapTableBlock    = new RenameMapTableBlock(new UnifiedRegisterFileBlock(loader, new RegisterModelFactory()));
+    loader                 = new InitLoader(Arrays.asList(integerFile, floatFile), null);
+    urf                    = new UnifiedRegisterFileBlock(loader, 320, new RegisterModelFactory());
+    renameMapTableBlock    = new RenameMapTableBlock(urf);
     decodeAndDispatchBlock = new DecodeAndDispatchBlock(instructionFetchBlock, renameMapTableBlock,
                                                         globalHistoryRegister, branchTargetBuffer,
                                                         instructionMemoryBlock,
@@ -81,19 +81,19 @@ public class DecodeAndDispatchBlockTest
   @Test
   public void decodeAndDispatchSimulate_wawDependency_renamesDestinationRegisters()
   {
-    InputCodeArgument argument1 = new InputCodeArgumentBuilder().hasName("rd").hasValue("x1").build();
-    InputCodeArgument argument2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x2").build();
-    InputCodeArgument argument3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x3").build();
+    InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rd").hasRegister("x1").build();
+    InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x2").build();
+    InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x3").build();
     
     InputCodeModel ins1 = new InputCodeModelBuilder().hasLoader(loader).hasInstructionName("add")
             .hasCodeLine("add x1,x2,x3").hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    SimCodeModel sim1 = new SimCodeModel(ins1, 0, 0);
+    SimCodeModel sim1 = new SimCodeModel(ins1, 0);
     InputCodeModel ins2 = new InputCodeModelBuilder().hasLoader(loader).hasInstructionName("sub")
             .hasCodeLine("sub x1,x2,x3").hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    SimCodeModel sim2 = new SimCodeModel(ins2, 0, 0);
+    SimCodeModel sim2 = new SimCodeModel(ins2, 0);
     InputCodeModel ins3 = new InputCodeModelBuilder().hasLoader(loader).hasInstructionName("mul")
             .hasCodeLine("mul x1,x2,x3").hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    SimCodeModel       sim3         = new SimCodeModel(ins3, 0, 0);
+    SimCodeModel       sim3         = new SimCodeModel(ins3, 0);
     List<SimCodeModel> instructions = Arrays.asList(sim1, sim2, sim3);
     Mockito.when(instructionFetchBlock.getFetchedCode()).thenReturn(instructions);
     
@@ -108,28 +108,28 @@ public class DecodeAndDispatchBlockTest
   @Test
   public void decodeAndDispatchSimulate_warDependency_renamesDestinationRegisters()
   {
-    InputCodeArgument argumentAdd1 = new InputCodeArgumentBuilder().hasName("rd").hasValue("x1").build();
-    InputCodeArgument argumentAdd2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x2").build();
-    InputCodeArgument argumentAdd3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x3").build();
+    InputCodeArgument argumentAdd1 = new InputCodeArgumentBuilder(urf).hasName("rd").hasRegister("x1").build();
+    InputCodeArgument argumentAdd2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x2").build();
+    InputCodeArgument argumentAdd3 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x3").build();
     
-    InputCodeArgument argumentSub1 = new InputCodeArgumentBuilder().hasName("rd").hasValue("x2").build();
-    InputCodeArgument argumentSub2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x3").build();
-    InputCodeArgument argumentSub3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x4").build();
+    InputCodeArgument argumentSub1 = new InputCodeArgumentBuilder(urf).hasName("rd").hasRegister("x2").build();
+    InputCodeArgument argumentSub2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x3").build();
+    InputCodeArgument argumentSub3 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x4").build();
     
-    InputCodeArgument argumentMul1 = new InputCodeArgumentBuilder().hasName("rd").hasValue("x3").build();
-    InputCodeArgument argumentMul2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x4").build();
-    InputCodeArgument argumentMul3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x5").build();
+    InputCodeArgument argumentMul1 = new InputCodeArgumentBuilder(urf).hasName("rd").hasRegister("x3").build();
+    InputCodeArgument argumentMul2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x4").build();
+    InputCodeArgument argumentMul3 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x5").build();
     
     
     InputCodeModel ins1 = new InputCodeModelBuilder().hasLoader(loader).hasInstructionName("add")
             .hasCodeLine("add x1,x2,x3").hasArguments(Arrays.asList(argumentAdd1, argumentAdd2, argumentAdd3)).build();
-    SimCodeModel sim1 = new SimCodeModel(ins1, 0, 0);
+    SimCodeModel sim1 = new SimCodeModel(ins1, 0);
     InputCodeModel ins2 = new InputCodeModelBuilder().hasLoader(loader).hasInstructionName("sub")
             .hasCodeLine("sub x2,x3,x4").hasArguments(Arrays.asList(argumentSub1, argumentSub2, argumentSub3)).build();
-    SimCodeModel sim2 = new SimCodeModel(ins2, 0, 0);
+    SimCodeModel sim2 = new SimCodeModel(ins2, 0);
     InputCodeModel ins3 = new InputCodeModelBuilder().hasLoader(loader).hasInstructionName("mul")
             .hasCodeLine("mul x3,x4,x5").hasArguments(Arrays.asList(argumentMul1, argumentMul2, argumentMul3)).build();
-    SimCodeModel       sim3         = new SimCodeModel(ins3, 0, 0);
+    SimCodeModel       sim3         = new SimCodeModel(ins3, 0);
     List<SimCodeModel> instructions = Arrays.asList(sim1, sim2, sim3);
     Mockito.when(instructionFetchBlock.getFetchedCode()).thenReturn(instructions);
     
@@ -144,28 +144,28 @@ public class DecodeAndDispatchBlockTest
   @Test
   public void decodeAndDispatchSimulate_rawDependency_renamesAllRegisters()
   {
-    InputCodeArgument argumentAdd1 = new InputCodeArgumentBuilder().hasName("rd").hasValue("x3").build();
-    InputCodeArgument argumentAdd2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x4").build();
-    InputCodeArgument argumentAdd3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x5").build();
+    InputCodeArgument argumentAdd1 = new InputCodeArgumentBuilder(urf).hasName("rd").hasRegister("x3").build();
+    InputCodeArgument argumentAdd2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x4").build();
+    InputCodeArgument argumentAdd3 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x5").build();
     
-    InputCodeArgument argumentSub1 = new InputCodeArgumentBuilder().hasName("rd").hasValue("x2").build();
-    InputCodeArgument argumentSub2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x3").build();
-    InputCodeArgument argumentSub3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x4").build();
+    InputCodeArgument argumentSub1 = new InputCodeArgumentBuilder(urf).hasName("rd").hasRegister("x2").build();
+    InputCodeArgument argumentSub2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x3").build();
+    InputCodeArgument argumentSub3 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x4").build();
     
-    InputCodeArgument argumentMul1 = new InputCodeArgumentBuilder().hasName("rd").hasValue("x1").build();
-    InputCodeArgument argumentMul2 = new InputCodeArgumentBuilder().hasName("rs1").hasValue("x2").build();
-    InputCodeArgument argumentMul3 = new InputCodeArgumentBuilder().hasName("rs2").hasValue("x3").build();
+    InputCodeArgument argumentMul1 = new InputCodeArgumentBuilder(urf).hasName("rd").hasRegister("x1").build();
+    InputCodeArgument argumentMul2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x2").build();
+    InputCodeArgument argumentMul3 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x3").build();
     
     
     InputCodeModel ins1 = new InputCodeModelBuilder().hasLoader(loader).hasInstructionName("add")
             .hasCodeLine("add x3,x4,x5").hasArguments(Arrays.asList(argumentAdd1, argumentAdd2, argumentAdd3)).build();
-    SimCodeModel sim1 = new SimCodeModel(ins1, 0, 0);
+    SimCodeModel sim1 = new SimCodeModel(ins1, 0);
     InputCodeModel ins2 = new InputCodeModelBuilder().hasLoader(loader).hasInstructionName("sub")
             .hasCodeLine("sub x2,x3,x4").hasArguments(Arrays.asList(argumentSub1, argumentSub2, argumentSub3)).build();
-    SimCodeModel sim2 = new SimCodeModel(ins2, 0, 0);
+    SimCodeModel sim2 = new SimCodeModel(ins2, 0);
     InputCodeModel ins3 = new InputCodeModelBuilder().hasLoader(loader).hasInstructionName("mul")
             .hasCodeLine("mul x1,x2,x3").hasArguments(Arrays.asList(argumentMul1, argumentMul2, argumentMul3)).build();
-    SimCodeModel       sim3         = new SimCodeModel(ins3, 0, 0);
+    SimCodeModel       sim3         = new SimCodeModel(ins3, 0);
     List<SimCodeModel> instructions = Arrays.asList(sim1, sim2, sim3);
     Mockito.when(instructionFetchBlock.getFetchedCode()).thenReturn(instructions);
     

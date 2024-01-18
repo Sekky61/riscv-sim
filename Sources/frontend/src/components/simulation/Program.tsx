@@ -64,11 +64,12 @@ export default function Program() {
     if (!pcRef.current || !containerRef.current) {
       return;
     }
+    const _ = fetch?.cycleId; // stop biome from complaining
     const pcTop = pcRef.current.offsetTop;
     const containerTop = containerRef.current.offsetTop;
     const containerHeight = containerRef.current.offsetHeight;
     containerRef.current.scrollTop = pcTop - containerTop - containerHeight / 2;
-  }, [pcRef, containerRef]);
+  }, [pcRef, containerRef, fetch]);
 
   if (!program || !fetch || !codeOrder) return null;
 
@@ -186,7 +187,7 @@ function ProgramInstruction({
           return (
             <span key={arg.name}>
               {idx === 0 ? ' ' : ','}
-              {arg.value}
+              {arg.stringValue}
             </span>
           );
         })}

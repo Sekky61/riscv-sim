@@ -42,7 +42,7 @@
   },
   "add": {
     "name": "add",
-    "instructionType": "kArithmetic",
+    "instructionType": "kIntArithmetic",
     "arguments": [
       {
         "name": "rd",
@@ -82,7 +82,7 @@
   },
   "inc": {
     "name": "inc",
-    "instructionType": "kArithmetic",
+    "instructionType": "kIntArithmetic",
     "arguments": [
       {
         "name": "rd",
@@ -98,7 +98,7 @@
   },
   "fdiv.s": {
     "name": "fdiv.s",
-    "instructionType": "kArithmetic",
+    "instructionType": "kFloatArithmetic",
     "arguments": [
       {
         "name": "rd",
@@ -137,7 +137,7 @@
   },
   "dec": {
     "name": "dec",
-    "instructionType": "kArithmetic",
+    "instructionType": "kIntArithmetic",
     "arguments": [
       {
         "name": "rd",
@@ -153,7 +153,7 @@
   },
   "fcvt.l.s": {
     "name": "fcvt.l.s",
-    "instructionType": "kArithmetic",
+    "instructionType": "kIntArithmetic",
     "arguments": [
       {
         "name": "rd",
@@ -188,7 +188,7 @@
   },
   "nop": {
     "name": "nop",
-    "instructionType": "kArithmetic",
+    "instructionType": "kIntArithmetic",
     "arguments": [],
     "interpretableAs": "0"
   },
@@ -213,7 +213,7 @@
   },
   "sub": {
     "name": "sub",
-    "instructionType": "kArithmetic",
+    "instructionType": "kIntArithmetic",
     "arguments": [
       {
         "name": "rd",
@@ -250,7 +250,7 @@
   },
   "srli": {
     "name": "srli",
-    "instructionType": "kArithmetic",
+    "instructionType": "kIntArithmetic",
     "arguments": [
       {
         "name": "rd",
@@ -270,7 +270,7 @@
   },
   "fmul.s": {
     "name": "fmul.s",
-    "instructionType": "kArithmetic",
+    "instructionType": "kFloatArithmetic",
     "arguments": [
       {
         "name": "rd",
@@ -328,7 +328,7 @@
   },
   "fcvt.s.l": {
     "name": "fcvt.s.l",
-    "instructionType": "kArithmetic",
+    "instructionType": "kFloatArithmetic",
     "arguments": [
       {
         "name": "rd",
@@ -364,7 +364,7 @@
   },
   "div": {
     "name": "div",
-    "instructionType": "kArithmetic",
+    "instructionType": "kIntArithmetic",
     "arguments": [
       {
         "name": "rd",
@@ -384,7 +384,7 @@
   },
   "divu": {
     "name": "divu",
-    "instructionType": "kArithmetic",
+    "instructionType": "kIntArithmetic",
     "arguments": [
       {
         "name": "rd",
@@ -404,7 +404,7 @@
   },
   "rem": {
     "name": "rem",
-    "instructionType": "kArithmetic",
+    "instructionType": "kIntArithmetic",
     "arguments": [
       {
         "name": "rd",
@@ -424,7 +424,7 @@
   },
   "remu": {
     "name": "remu",
-    "instructionType": "kArithmetic",
+    "instructionType": "kIntArithmetic",
     "arguments": [
       {
         "name": "rd",
@@ -464,7 +464,7 @@
   },
   "fcvt.w.s": {
     "name": "fcvt.w.s",
-    "instructionType": "kArithmetic",
+    "instructionType": "kIntArithmetic",
     "arguments": [
       {
         "name": "rd",
@@ -480,7 +480,7 @@
   },
   "subi": {
     "name": "subi",
-    "instructionType": "kArithmetic",
+    "instructionType": "kIntArithmetic",
     "arguments": [
       {
         "name": "rd",
@@ -520,7 +520,7 @@
   },
   "addi": {
     "name": "addi",
-    "instructionType": "kArithmetic",
+    "instructionType": "kIntArithmetic",
     "arguments": [
       {
         "name": "rd",
@@ -559,7 +559,7 @@
   },
   "srai": {
     "name": "srai",
-    "instructionType": "kArithmetic",
+    "instructionType": "kIntArithmetic",
     "arguments": [
       {
         "name": "rd",
@@ -579,7 +579,7 @@
   },
   "or": {
     "name": "or",
-    "instructionType": "kArithmetic",
+    "instructionType": "kIntArithmetic",
     "arguments": [
       {
         "name": "rd",
@@ -637,7 +637,7 @@
   },
   "and": {
     "name": "and",
-    "instructionType": "kArithmetic",
+    "instructionType": "kIntArithmetic",
     "arguments": [
       {
         "name": "rd",
@@ -677,7 +677,7 @@
   },
   "slli": {
     "name": "slli",
-    "instructionType": "kArithmetic",
+    "instructionType": "kIntArithmetic",
     "arguments": [
       {
         "name": "rd",
@@ -697,7 +697,7 @@
   },
   "fsqrt.s": {
     "name": "fsqrt.s",
-    "instructionType": "kArithmetic",
+    "instructionType": "kFloatArithmetic",
     "arguments": [
       {
         "name": "rd",
@@ -713,7 +713,7 @@
   },
   "fsub.s": {
     "name": "fsub.s",
-    "instructionType": "kArithmetic",
+    "instructionType": "kFloatArithmetic",
     "arguments": [
       {
         "name": "rd",
@@ -733,7 +733,7 @@
   },
   "not": {
     "name": "not",
-    "instructionType": "kArithmetic",
+    "instructionType": "kIntArithmetic",
     "arguments": [
       {
         "name": "rd",
@@ -789,7 +789,7 @@
   },
   "fadd.s": {
     "name": "fadd.s",
-    "instructionType": "kArithmetic",
+    "instructionType": "kFloatArithmetic",
     "arguments": [
       {
         "name": "rd",
@@ -848,7 +848,7 @@
   },
   "fcvt.s.w": {
     "name": "fcvt.s.w",
-    "instructionType": "kArithmetic",
+    "instructionType": "kFloatArithmetic",
     "arguments": [
       {
         "name": "rd",
@@ -922,7 +922,7 @@
   },
   "mul": {
     "name": "mul",
-    "instructionType": "kArithmetic",
+    "instructionType": "kIntArithmetic",
     "arguments": [
       {
         "name": "rd",
@@ -942,7 +942,7 @@
   },
   "xor": {
     "name": "xor",
-    "instructionType": "kArithmetic",
+    "instructionType": "kIntArithmetic",
     "arguments": [
       {
         "name": "rd",
@@ -962,7 +962,7 @@
   },
   "xori": {
     "name": "xori",
-    "instructionType": "kArithmetic",
+    "instructionType": "kIntArithmetic",
     "arguments": [
       {
         "name": "rd",
@@ -982,7 +982,7 @@
   },
   "sll": {
     "name": "sll",
-    "instructionType": "kArithmetic",
+    "instructionType": "kIntArithmetic",
     "arguments": [
       {
         "name": "rd",
@@ -1002,7 +1002,7 @@
   },
   "srl": {
     "name": "srl",
-    "instructionType": "kArithmetic",
+    "instructionType": "kIntArithmetic",
     "arguments": [
       {
         "name": "rd",
@@ -1022,7 +1022,7 @@
   },
   "sra": {
     "name": "sra",
-    "instructionType": "kArithmetic",
+    "instructionType": "kIntArithmetic",
     "arguments": [
       {
         "name": "rd",
@@ -1042,7 +1042,7 @@
   },
   "slt": {
     "name": "slt",
-    "instructionType": "kArithmetic",
+    "instructionType": "kIntArithmetic",
     "arguments": [
       {
         "name": "rd",
@@ -1062,7 +1062,7 @@
   },
   "slti": {
     "name": "slti",
-    "instructionType": "kArithmetic",
+    "instructionType": "kIntArithmetic",
     "arguments": [
       {
         "name": "rd",
@@ -1082,7 +1082,7 @@
   },
   "sltu": {
     "name": "sltu",
-    "instructionType": "kArithmetic",
+    "instructionType": "kIntArithmetic",
     "arguments": [
       {
         "name": "rd",
@@ -1102,7 +1102,7 @@
   },
   "sltiu": {
     "name": "sltiu",
-    "instructionType": "kArithmetic",
+    "instructionType": "kIntArithmetic",
     "arguments": [
       {
         "name": "rd",
@@ -1122,7 +1122,7 @@
   },
   "ori": {
     "name": "ori",
-    "instructionType": "kArithmetic",
+    "instructionType": "kIntArithmetic",
     "arguments": [
       {
         "name": "rd",
@@ -1142,7 +1142,7 @@
   },
   "andi": {
     "name": "andi",
-    "instructionType": "kArithmetic",
+    "instructionType": "kIntArithmetic",
     "arguments": [
       {
         "name": "rd",
@@ -1162,7 +1162,7 @@
   },
   "lui": {
     "name": "lui",
-    "instructionType": "kArithmetic",
+    "instructionType": "kIntArithmetic",
     "arguments": [
       {
         "name": "rd",
@@ -1178,7 +1178,7 @@
   },
   "auipc": {
     "name": "auipc",
-    "instructionType": "kArithmetic",
+    "instructionType": "kIntArithmetic",
     "arguments": [
       {
         "name": "rd",
@@ -1194,7 +1194,7 @@
   },
   "li": {
     "name": "li",
-    "instructionType": "kArithmetic",
+    "instructionType": "kIntArithmetic",
     "arguments": [
       {
         "name": "rd",
@@ -1210,7 +1210,7 @@
   },
   "mv": {
     "name": "mv",
-    "instructionType": "kArithmetic",
+    "instructionType": "kIntArithmetic",
     "arguments": [
       {
         "name": "rd",
@@ -1226,7 +1226,7 @@
   },
   "neg": {
     "name": "neg",
-    "instructionType": "kArithmetic",
+    "instructionType": "kIntArithmetic",
     "arguments": [
       {
         "name": "rd",
@@ -1242,7 +1242,7 @@
   },
   "seqz": {
     "name": "seqz",
-    "instructionType": "kArithmetic",
+    "instructionType": "kIntArithmetic",
     "arguments": [
       {
         "name": "rd",
@@ -1258,7 +1258,7 @@
   },
   "snez": {
     "name": "snez",
-    "instructionType": "kArithmetic",
+    "instructionType": "kIntArithmetic",
     "arguments": [
       {
         "name": "rd",
@@ -1274,7 +1274,7 @@
   },
   "sltz": {
     "name": "sltz",
-    "instructionType": "kArithmetic",
+    "instructionType": "kIntArithmetic",
     "arguments": [
       {
         "name": "rd",
@@ -1290,7 +1290,7 @@
   },
   "sgtz": {
     "name": "sgtz",
-    "instructionType": "kArithmetic",
+    "instructionType": "kIntArithmetic",
     "arguments": [
       {
         "name": "rd",
@@ -1536,7 +1536,7 @@
   },
   "mulh": {
     "name": "mulh",
-    "instructionType": "kArithmetic",
+    "instructionType": "kIntArithmetic",
     "arguments": [
       {
         "name": "rd",
@@ -1556,7 +1556,7 @@
   },
   "mulhu": {
     "name": "mulhu",
-    "instructionType": "kArithmetic",
+    "instructionType": "kIntArithmetic",
     "arguments": [
       {
         "name": "rd",
@@ -1576,7 +1576,7 @@
   },
   "mulhsu": {
     "name": "mulhsu",
-    "instructionType": "kArithmetic",
+    "instructionType": "kIntArithmetic",
     "arguments": [
       {
         "name": "rd",
@@ -1596,7 +1596,7 @@
   },
   "fmin.s": {
     "name": "fmin.s",
-    "instructionType": "kArithmetic",
+    "instructionType": "kFloatArithmetic",
     "arguments": [
       {
         "name": "rd",
@@ -1616,7 +1616,7 @@
   },
   "fmax.s": {
     "name": "fmax.s",
-    "instructionType": "kArithmetic",
+    "instructionType": "kFloatArithmetic",
     "arguments": [
       {
         "name": "rd",
@@ -1636,7 +1636,7 @@
   },
   "fmadd.s": {
     "name": "fmadd.s",
-    "instructionType": "kArithmetic",
+    "instructionType": "kFloatArithmetic",
     "arguments": [
       {
         "name": "rd",
@@ -1660,7 +1660,7 @@
   },
   "fmsub.s": {
     "name": "fmsub.s",
-    "instructionType": "kArithmetic",
+    "instructionType": "kFloatArithmetic",
     "arguments": [
       {
         "name": "rd",
@@ -1684,7 +1684,7 @@
   },
   "fnmadd.s": {
     "name": "fnmadd.s",
-    "instructionType": "kArithmetic",
+    "instructionType": "kFloatArithmetic",
     "arguments": [
       {
         "name": "rd",
@@ -1708,7 +1708,7 @@
   },
   "fnmsub.s": {
     "name": "fnmsub.s",
-    "instructionType": "kArithmetic",
+    "instructionType": "kFloatArithmetic",
     "arguments": [
       {
         "name": "rd",
@@ -1732,7 +1732,7 @@
   },
   "fsgnj.s": {
     "name": "fsgnj.s",
-    "instructionType": "kArithmetic",
+    "instructionType": "kFloatArithmetic",
     "arguments": [
       {
         "name": "rd",
@@ -1752,7 +1752,7 @@
   },
   "fsgnjn.s": {
     "name": "fsgnjn.s",
-    "instructionType": "kArithmetic",
+    "instructionType": "kFloatArithmetic",
     "arguments": [
       {
         "name": "rd",
@@ -1772,7 +1772,7 @@
   },
   "fsgnjx.s": {
     "name": "fsgnjx.s",
-    "instructionType": "kArithmetic",
+    "instructionType": "kFloatArithmetic",
     "arguments": [
       {
         "name": "rd",
@@ -1792,7 +1792,7 @@
   },
   "fmv.s": {
     "name": "fmv.s",
-    "instructionType": "kArithmetic",
+    "instructionType": "kFloatArithmetic",
     "arguments": [
       {
         "name": "rd",
@@ -1808,7 +1808,7 @@
   },
   "fneg.s": {
     "name": "fneg.s",
-    "instructionType": "kArithmetic",
+    "instructionType": "kFloatArithmetic",
     "arguments": [
       {
         "name": "rd",
@@ -1824,7 +1824,7 @@
   },
   "fabs.s": {
     "name": "fabs.s",
-    "instructionType": "kArithmetic",
+    "instructionType": "kFloatArithmetic",
     "arguments": [
       {
         "name": "rd",
@@ -1840,7 +1840,7 @@
   },
   "fmv.x.w": {
     "name": "fmv.x.w",
-    "instructionType": "kArithmetic",
+    "instructionType": "kFloatArithmetic",
     "arguments": [
       {
         "name": "rd",
@@ -1856,7 +1856,7 @@
   },
   "fmv.w.x": {
     "name": "fmv.w.x",
-    "instructionType": "kArithmetic",
+    "instructionType": "kFloatArithmetic",
     "arguments": [
       {
         "name": "rd",
@@ -1872,7 +1872,7 @@
   },
   "flt.s": {
     "name": "flt.s",
-    "instructionType": "kArithmetic",
+    "instructionType": "kFloatArithmetic",
     "arguments": [
       {
         "name": "rd",
@@ -1892,7 +1892,7 @@
   },
   "fle.s": {
     "name": "fle.s",
-    "instructionType": "kArithmetic",
+    "instructionType": "kFloatArithmetic",
     "arguments": [
       {
         "name": "rd",
@@ -1912,7 +1912,7 @@
   },
   "feq.s": {
     "name": "feq.s",
-    "instructionType": "kArithmetic",
+    "instructionType": "kFloatArithmetic",
     "arguments": [
       {
         "name": "rd",
@@ -1932,7 +1932,7 @@
   },
   "fclass.s": {
     "name": "fclass.s",
-    "instructionType": "kArithmetic",
+    "instructionType": "kFloatArithmetic",
     "dataType": "kFloat",
     "arguments": [
       {
@@ -1949,7 +1949,7 @@
   },
   "la": {
     "name": "la",
-    "instructionType": "kArithmetic",
+    "instructionType": "kIntArithmetic",
     "arguments": [
       {
         "name": "rd",
@@ -1965,7 +1965,7 @@
   },
   "lla": {
     "name": "lla",
-    "instructionType": "kArithmetic",
+    "instructionType": "kIntArithmetic",
     "arguments": [
       {
         "name": "rd",

@@ -60,8 +60,8 @@ export default function LoadBuffer() {
             <div>Bypass</div>
           </>
         }
-        instructionRenderer={(buffItem) => (
-          <LoadBufferItemComponent loadItem={buffItem} />
+        instructionRenderer={(buffItem, i) => (
+          <LoadBufferItemComponent loadItem={buffItem} key={`item_${i}`} />
         )}
       />
     </Block>

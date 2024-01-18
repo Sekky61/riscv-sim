@@ -91,21 +91,25 @@ public class MyRequestHandler<T, U> implements HttpHandler
     ObjectMapper mapper = Serialization.getSerializer();
     
     // Deserialize
-    InputStream requestJson    = exchange.getInputStream();
-    T           compileRequest = null;
+    InputStream requestJson = exchange.getInputStream();
+    T           request     = null;
     try
     {
-      compileRequest = deserializer.deserialize(requestJson);
+      request = deserializer.deserialize(requestJson);
     }
     catch (Exception e)
     {
-      exchange.setStatusCode(400);
+      // Log it
       System.err.println("Invalid request: " + e.getMessage());
-      exchange.getResponseSender().send("Bad request");
+      // Send back
+      exchange.setStatusCode(400);
+      ErrorResponse errorResponse = new ErrorResponse(e.getMessage());
+      ObjectMapper  serializer    = Serialization.getSerializer();
+      exchange.getResponseSender().send(serializer.writeValueAsString(errorResponse));
       return;
     }
     
-    U response = resolver.resolve(compileRequest);
+    U response = resolver.resolve(request);
     
     // Serialize
     OutputStream outputStream = exchange.getOutputStream();
@@ -159,5 +163,13 @@ public class MyRequestHandler<T, U> implements HttpHandler
       }
     }
     return false;
+  }
+  
+  /**
+   * Error explanation for the client.
+   * Reports the cause of the error, if it its known in the handler.
+   */
+  public record ErrorResponse(String error)
+  {
   }
 }

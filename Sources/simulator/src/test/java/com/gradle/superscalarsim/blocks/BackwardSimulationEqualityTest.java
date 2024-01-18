@@ -65,7 +65,7 @@ public class BackwardSimulationEqualityTest
     cpu.simulateState(4);
     
     // Exercise
-    Cpu cpuSpy = Mockito.spy(new Cpu(cfg, cpu.cpuState));
+    Cpu cpuSpy = Mockito.spy(new Cpu(cfg, cpu.cpuState, null));
     cpuSpy.simulateState(0);
     
     // Assert that zero simulation steps were called

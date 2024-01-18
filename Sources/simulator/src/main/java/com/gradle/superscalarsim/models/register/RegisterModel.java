@@ -309,4 +309,21 @@ public class RegisterModel implements Identifiable
   {
     return name;
   }
+  
+  /**
+   * @return the type of register
+   */
+  public RegisterTypeEnum getType()
+  {
+    return type;
+  }
+  
+  /**
+   * @return true if the register is speculative
+   */
+  public boolean isSpeculative()
+  {
+    // todo: a small hack
+    return this.name.startsWith("tg");
+  }
 }

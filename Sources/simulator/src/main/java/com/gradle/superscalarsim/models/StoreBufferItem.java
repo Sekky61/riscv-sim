@@ -42,6 +42,7 @@ public class StoreBufferItem
 {
   /**
    * Name of the source register from where store takes the result
+   * TODO: change to a reference to the register
    */
   private final String sourceRegister;
   /**

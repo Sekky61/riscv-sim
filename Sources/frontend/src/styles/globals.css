@@ -255,6 +255,30 @@
 
 @layer utilities {
 
+  /* ===== Scrollbar CSS ===== */
+  /* Source: https://codepen.io/stephenpaton-tech/full/JjRvGmY */
+  /* Firefox */
+  * {
+    scrollbar-width: auto;
+    scrollbar-color: #a1a1a1 #f5f5f5;
+  }
+
+  /* Chrome, Edge, and Safari */
+  *::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: #ffffff;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background-color: #a1a1a1;
+    border-radius: 10px;
+    border: 3px solid #ffffff;
+  }
+
   /* Link underline */
   .link {
     @apply underline decoration-2 decoration-gray-300 hover:decoration-gray-400;

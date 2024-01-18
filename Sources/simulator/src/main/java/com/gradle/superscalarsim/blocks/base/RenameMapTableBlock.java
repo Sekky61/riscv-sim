@@ -73,7 +73,7 @@ public class RenameMapTableBlock
   private final UnifiedRegisterFileBlock registerFileBlock;
   
   /**
-   * @brief Constructor - call initiateFreeList or clear before using
+   * @brief Constructor call initiateFreeList or clear before using
    */
   public RenameMapTableBlock()
   {
@@ -84,7 +84,7 @@ public class RenameMapTableBlock
   }
   
   /**
-   * @param [in] loader - InitLoader class holding information about instruction and registers
+   * @param registerFileBlock Registers
    *
    * @brief Constructor
    */
@@ -101,7 +101,7 @@ public class RenameMapTableBlock
   //----------------------------------------------------------------------
   
   /**
-   * @param [in] registerMap - Set of all registers in unified register file
+   * @param specRegistersCount Number of speculative registers to create in free list
    *
    * @brief Creates speculative registers in free list, where for each one architectural one creates one speculative
    */
@@ -119,7 +119,7 @@ public class RenameMapTableBlock
    */
   public void clear()
   {
-    // Broken clear. TODO: remove all clearing and reseting. We have CpuConfiguration for that
+    // Broken clear. TODO: remove all clearing and resetting. We have CpuConfiguration for that
     //    this.registerFileBlock.refreshRegisters();
     this.freeList.clear();
     this.registerMap.clear();
@@ -132,23 +132,23 @@ public class RenameMapTableBlock
    * @param registerName Name of the architectural register
    * @param order        Id specifying order between mappings to same register
    *
-   * @return Name of the speculative register, which is mapped to architectural
+   * @return Reference to the speculative register
    * @brief Maps architectural register to free speculative one
    */
-  public String mapRegister(String registerName, int order)
+  public RegisterModel mapRegister(String registerName, int order)
   {
-    // TODO: what if there is no free tag or free register in the field
+    // TODO: what if there is no free tag or free register in the field? Currently it throws exception
     String speculativeRegister = this.freeList.iterator().next();
     this.registerMap.put(speculativeRegister, new RenameMapModel(registerName, order));
     this.freeList.remove(speculativeRegister);
     this.referenceMap.put(speculativeRegister, 1);
     this.registerFileBlock.getRegister(speculativeRegister).setReadiness(RegisterReadinessEnum.kAllocated);
-    return speculativeRegister;
+    return registerFileBlock.getRegister(speculativeRegister);
   }// end of mapRegister
   //----------------------------------------------------------------------
   
   /**
-   * @param [in] speculativeRegister - Speculative register to be referenced
+   * @param speculativeRegister Speculative register to be referenced
    *
    * @brief Increases number of references on certain speculative register
    */
@@ -167,7 +167,7 @@ public class RenameMapTableBlock
   //----------------------------------------------------------------------
   
   /**
-   * @param [in] speculativeRegister - Speculative speculativeRegister to be freed
+   * @param speculativeRegister Speculative speculativeRegister to be freed
    *
    * @return True if the reference count reached 0, false otherwise (not found or above 0)
    * @brief Lowers speculative register reference count and eventually frees the register from registerMap
@@ -211,7 +211,7 @@ public class RenameMapTableBlock
   //----------------------------------------------------------------------
   
   /**
-   * @param [in] register - Name of the register to be checked
+   * @param register Name of the register to be checked
    *
    * @return True if register is speculative, false otherwise
    * @brief Checks if the provided register if speculative or not
@@ -223,17 +223,15 @@ public class RenameMapTableBlock
   //----------------------------------------------------------------------
   
   /**
-   * @param [in] register - Speculative register
+   * @param register architectural register
    *
-   * @return Architectural register
-   * @brief Gives speculative register for mapped architectural one.
-   * Expects a register name as input, throws exception if not found.
+   * @return Reference to a register that is currently mapped to `register`
    */
-  public String getMappingForRegister(String register)
+  public RegisterModel getMappingForRegister(String register)
   {
     if (this.registerFileBlock.getRegister(register).isConstant())
     {
-      return register;
+      return registerFileBlock.getRegister(register);
     }
     // Iterate all renames, get the freshest rename
     String newestMapping = register;
@@ -246,12 +244,12 @@ public class RenameMapTableBlock
         newestOrder   = entry.getValue().getOrder();
       }
     }
-    return newestMapping;
+    return registerFileBlock.getRegister(newestMapping);
   }// end of getMappingForRegister
   //----------------------------------------------------------------------
   
   /**
-   * @param [in] speculativeRegister - Name of the register to transfer value from
+   * @param speculativeRegister Name of the register to transfer value from
    *
    * @brief Directly copy the value from speculative to the mapped one
    */

@@ -31,16 +31,34 @@
 
 import { z } from 'zod';
 
-export const predictorTypes = ['1bit', '2bit'] as const;
+export const predictorDefaults = {
+  '0bit': ['Taken', 'Not Taken'],
+  '1bit': ['Taken', 'Not Taken'],
+  '2bit': [
+    'Strongly Not Taken',
+    'Weakly Not Taken',
+    'Weakly Taken',
+    'Strongly Taken',
+  ],
+} as const;
+
+export const predictorTypes = ['0bit', '1bit', '2bit'] as const;
 export type PredictorType = (typeof predictorTypes)[number];
 
-export const predictorDefaults = ['Taken', 'Not Taken'] as const;
-export type PredictorDefault = (typeof predictorDefaults)[number];
+export const predictorStates = [
+  'Taken',
+  'Not Taken',
+  'Strongly Taken',
+  'Strongly Not Taken',
+  'Weakly Taken',
+  'Weakly Not Taken',
+] as const;
+export type PredictorState = (typeof predictorStates)[number];
 
 export const cacheReplacementTypes = ['LRU', 'FIFO', 'Random'] as const;
 export type CacheReplacementType = (typeof cacheReplacementTypes)[number];
 
-export const storeBehaviorTypes = ['write-back'] as const;
+export const storeBehaviorTypes = ['write-back', 'write-through'] as const;
 export type StoreBehaviorType = (typeof storeBehaviorTypes)[number];
 
 /**
@@ -57,6 +75,8 @@ export const dataTypes = [
   'kDouble',
   'kBool',
   'kChar',
+  'kByte',
+  'kShort',
 ] as const;
 export const dataTypesText = [
   'Byte',
@@ -69,6 +89,8 @@ export const dataTypesText = [
   'Double',
   'Boolean',
   'Char',
+  'Byte',
+  'Short',
 ] as const;
 
 /**
@@ -118,17 +140,23 @@ export const operations = [
 ] as const;
 export type Operations = (typeof operations)[number];
 
+export const capability = z.object({
+  name: z.enum(operations),
+  latency: z.number().min(0),
+});
+export type Capability = z.infer<typeof capability>;
+
 export const lsUnitSchema = z.object({
   id: z.number(),
   name: z.optional(z.string()),
-  fuType: z.enum(otherUnits),
   latency: z.number().min(1).max(16),
+  fuType: z.enum(otherUnits),
 });
 export type LsUnitConfig = z.infer<typeof lsUnitSchema>;
 
 export const arithmeticUnitSchema = lsUnitSchema.extend({
   fuType: z.enum(arithmeticUnits), // Field overwrite
-  operations: z.array(z.enum(operations)),
+  operations: z.array(capability),
 });
 export type ArithmeticUnitConfig = z.infer<typeof arithmeticUnitSchema>;
 
@@ -145,34 +173,63 @@ export function isArithmeticUnitConfig(
  * Schema for form validation.
  * Contains all the fields that are used in the form, including name.
  */
-export const isaFormSchema = z.object({
-  // Name. Used for saving different configurations.
-  name: z.string(),
-  // Buffers
-  robSize: z.number().min(1).max(1000),
-  lbSize: z.number().min(1).max(1000),
-  sbSize: z.number().min(1).max(1000),
-  // Fetch
-  fetchWidth: z.number().min(1).max(16),
-  commitWidth: z.number().min(1).max(16),
-  // Branch
-  btbSize: z.number().min(1).max(2048),
-  phtSize: z.number().min(1).max(16),
-  predictorType: z.enum(predictorTypes),
-  predictorDefault: z.enum(predictorDefaults),
-  // Functional Units
-  fUnits: z.array(fUnitSchema),
-  // Cache
-  cacheLines: z.number().min(1).max(1000),
-  cacheLineSize: z.number().min(1).max(1000),
-  cacheAssoc: z.number().min(1).max(1000),
-  cacheReplacement: z.enum(cacheReplacementTypes),
-  storeBehavior: z.enum(storeBehaviorTypes),
-  storeLatency: z.number().min(0).max(1000),
-  loadLatency: z.number().min(0).max(1000),
-  laneReplacementDelay: z.number().min(1).max(1000),
-  addRemainingDelay: z.boolean(), // todo
-});
+export const isaFormSchema = z
+  .object({
+    // Name. Used for saving different configurations.
+    name: z.string(),
+    // Buffers
+    robSize: z.number().min(1).max(1024),
+    commitWidth: z.number().min(1).max(10),
+    branchFollowLimit: z.number().min(1).max(10),
+    flushPenalty: z.number().min(1).max(100),
+    fetchWidth: z.number().min(1).max(10),
+    // Branch
+    btbSize: z.number().min(1).max(16384),
+    phtSize: z.number().min(1).max(16384),
+    predictorType: z.enum(predictorTypes),
+    predictorDefault: z.enum(predictorStates),
+    useGlobalHistory: z.boolean(),
+    // Functional Units
+    fUnits: z.array(fUnitSchema),
+    // Cache
+    useCache: z.boolean(),
+    cacheLines: z.number().min(1).max(65536),
+    cacheLineSize: z.number().min(1).max(512),
+    cacheAssoc: z.number().min(1),
+    cacheReplacement: z.enum(cacheReplacementTypes),
+    storeBehavior: z.enum(storeBehaviorTypes),
+    laneReplacementDelay: z.number().min(0).max(1000),
+    cacheAccessDelay: z.number().min(0).max(1000),
+    // Memory
+    lbSize: z.number().min(1).max(1024),
+    sbSize: z.number().min(1).max(1024),
+    storeLatency: z.number().min(0),
+    loadLatency: z.number().min(0),
+    callStackSize: z.number().min(0).max(65536),
+    speculativeRegisters: z.number().min(1).max(1024),
+    coreClockFrequency: z.number().min(1),
+    cacheClockFrequency: z.number().min(1),
+  })
+  .refine((data) => {
+    // Check the predictor
+    const predictorDefault = data.predictorDefault;
+    const predictorType = data.predictorType;
+    const predictorDefaultsForType = predictorDefaults[predictorType];
+    if (
+      !(predictorDefaultsForType as readonly PredictorState[]).includes(
+        predictorDefault,
+      )
+    ) {
+      return "Predictor default state doesn't match the predictor type";
+    }
+
+    // Check that cacheAssoc <= cacheLines
+    if (data.cacheAssoc > data.cacheLines) {
+      return 'Cache associativity must be less than or equal to cache lines';
+    }
+    // Config is correct
+    return true;
+  });
 export type CpuConfig = z.infer<typeof isaFormSchema>;
 
 /**
@@ -200,14 +257,15 @@ export type SimulationConfig = z.infer<typeof simulationConfig>;
 export const defaultCpuConfig: CpuConfig = {
   name: 'Default',
   robSize: 256,
-  lbSize: 64,
-  sbSize: 64,
   fetchWidth: 3,
+  branchFollowLimit: 1,
   commitWidth: 4,
+  flushPenalty: 1,
   btbSize: 1024,
   phtSize: 10,
-  predictorType: '1bit',
-  predictorDefault: 'Not Taken',
+  predictorType: '2bit',
+  predictorDefault: 'Weakly Taken',
+  useGlobalHistory: true,
   fUnits: [
     {
       id: 0,
@@ -215,11 +273,26 @@ export const defaultCpuConfig: CpuConfig = {
       fuType: 'FX',
       latency: 2,
       operations: [
-        'bitwise',
-        'addition',
-        'multiplication',
-        'division',
-        'special',
+        {
+          name: 'bitwise',
+          latency: 1,
+        },
+        {
+          name: 'addition',
+          latency: 1,
+        },
+        {
+          name: 'multiplication',
+          latency: 2,
+        },
+        {
+          name: 'division',
+          latency: 10,
+        },
+        {
+          name: 'special',
+          latency: 2,
+        },
       ],
     },
     {
@@ -228,17 +301,32 @@ export const defaultCpuConfig: CpuConfig = {
       fuType: 'FP',
       latency: 2,
       operations: [
-        'bitwise',
-        'addition',
-        'multiplication',
-        'division',
-        'special',
+        {
+          name: 'bitwise',
+          latency: 1,
+        },
+        {
+          name: 'addition',
+          latency: 1,
+        },
+        {
+          name: 'multiplication',
+          latency: 2,
+        },
+        {
+          name: 'division',
+          latency: 10,
+        },
+        {
+          name: 'special',
+          latency: 2,
+        },
       ],
     },
     {
       id: 2,
       fuType: 'L_S',
-      latency: 2,
+      latency: 1,
     },
     {
       id: 3,
@@ -251,15 +339,22 @@ export const defaultCpuConfig: CpuConfig = {
       latency: 1,
     },
   ],
+  useCache: true,
   cacheLines: 16,
   cacheLineSize: 32,
   cacheAssoc: 2,
   cacheReplacement: 'LRU',
   storeBehavior: 'write-back',
+  cacheAccessDelay: 1,
   storeLatency: 0,
   loadLatency: 1,
   laneReplacementDelay: 10,
-  addRemainingDelay: false,
+  lbSize: 64,
+  sbSize: 64,
+  callStackSize: 512,
+  speculativeRegisters: 320,
+  coreClockFrequency: 100000000,
+  cacheClockFrequency: 100000000,
 };
 
 export const defaultSimulationConfig: SimulationConfig = {

@@ -122,7 +122,8 @@ export const callCompiler = createAsyncThunk<CompileResponse>(
         if (res.success) {
           dispatch(
             notify({
-              message: 'Compilation successful',
+              title: 'Compilation successful',
+              message: 'To use this code, reload the simulation.',
               status: 'success',
             }),
           );
