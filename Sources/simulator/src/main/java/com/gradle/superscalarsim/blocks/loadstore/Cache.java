@@ -392,6 +392,58 @@ public class Cache
   }
   
   /**
+   * @return True the cache line if it is in the cache, null otherwise
+   */
+  public CacheLineModel findLane(long address)
+  {
+    Triplet<Long, Integer, Integer> splittedAddress = splitAddress(address);
+    long                            tag             = splittedAddress.getFirst();
+    int                             index           = splittedAddress.getSecond();
+    
+    for (int i = 0; i < associativity; i++)
+    {
+      CacheLineModel line = cache[index][i];
+      if (line.getTag() == tag && line.isValid())
+      {
+        return line;
+      }
+    }
+    return null;
+  }
+  
+  /**
+   * Finds a suitable cache line to store.
+   * Does not touch the line itself.
+   * Updates replacement policy.
+   *
+   * @return Cache line to use for the new data. Either an empty line is found or a line is replaced.
+   */
+  public CacheLineModel pickLineToUse(long address)
+  {
+    Triplet<Long, Integer, Integer> splittedAddress = splitAddress(address);
+    // Go through all lines - compare if tag matches
+    for (int i = 0; i < associativity; i++)
+    {
+      CacheLineModel lineCandidate = cache[splittedAddress.getSecond()][i];
+      if (!lineCandidate.isValid())
+      {
+        return lineCandidate;
+      }
+    }
+    
+    // Pick victim, store victim line into memory
+    int            victimIndex = replacementPolicy.getLineToReplace(splittedAddress.getSecond());
+    CacheLineModel line        = cache[splittedAddress.getSecond()][victimIndex];
+    if (line.isDirty())
+    {
+      CacheLineModel victimLine = cache[splittedAddress.getSecond()][victimIndex];
+      memory.insertIntoMemory(victimLine.getBaseAddress(), victimLine.getLineData());
+    }
+    
+    return line;
+  }
+  
+  /**
    * @param address      starting byte of the access (can be misaligned)
    * @param size         Size of the access in bytes (1-8)
    * @param id           ID of accessing instruction
@@ -404,7 +456,7 @@ public class Cache
   {
     Triplet<Long, Integer, Integer> splittedAddress = splitAddress(address);
     
-    //Save last access for visualization
+    // Save last access for visualization
     if (lastAccess.peek().getId() != id)
     {
       statistics.cache.incrementReadAccesses(size);
@@ -413,59 +465,33 @@ public class Cache
                               new Integer[0], new Integer[0]));
     }
     
-    //Go through all lines - compare if tag matches
-    int emptyLine = -1;
-    for (int i = 0; i < associativity; i++)
+    CacheLineModel line  = findLane(address);
+    boolean        isHit = line != null;
+    if (isHit)
     {
-      CacheLineModel line = cache[splittedAddress.getSecond()][i];
-      if (line.getTag() == splittedAddress.getFirst() && line.isValid())
-      {
-        statistics.cache.incrementHits();
-        
-        replacementPolicy.updatePolicy(splittedAddress.getSecond(), i);
-        lastAccess.peek()
-                .addLineAccess(true, splittedAddress.getSecond() * associativity + i, splittedAddress.getThird());
-        Pair<Integer, byte[]> tmpReturnVal = getDataFromLines(line, address, size, id, currentCycle);
-        return new Pair<>(tmpReturnVal.getFirst() + loadDelay + computeRemainingDelay(true, false, currentCycle,
-                                                                                      splittedAddress.getFirst(),
-                                                                                      splittedAddress.getSecond()),
-                          tmpReturnVal.getSecond());
-      }
-      if (emptyLine == -1 && !line.isValid())
-      {
-        emptyLine = i;
-      }
-    }
-    int selectedLine;
-    if (emptyLine == -1)
-    {
-      selectedLine = replacementPolicy.getLineToReplace(splittedAddress.getSecond());
-      if (cache[splittedAddress.getSecond()][selectedLine].isDirty())
-      {
-        //Store victim line into memory
-        CacheLineModel line = cache[splittedAddress.getSecond()][selectedLine];
-        memory.insertIntoMemory(line.getBaseAddress(), line.getLineData());
-      }
+      statistics.cache.incrementHits();
     }
     else
     {
-      selectedLine = emptyLine;
+      // Not found, need to load from memory -> miss
+      statistics.cache.incrementMisses();
+      line = pickLineToUse(address);
+      
+      long baseMemoryAddress = address & -(1L << getLog(lineSize, 2));
+      line.setLineData(memory.getFromMemory(baseMemoryAddress, lineSize));
+      line.setDirty(false);
+      line.setValid(true);
+      line.setTag(splittedAddress.getFirst());
+      line.setBaseAddress(baseMemoryAddress);
     }
-    statistics.cache.incrementMisses();
     
-    long           baseMemoryAddress = address & -(1L << getLog(lineSize, 2));
-    CacheLineModel line              = cache[splittedAddress.getSecond()][selectedLine];
-    line.setLineData(memory.getFromMemory(baseMemoryAddress, lineSize));
-    line.setDirty(false);
-    line.setValid(true);
-    line.setTag(splittedAddress.getFirst());
-    line.setBaseAddress(baseMemoryAddress);
-    
-    replacementPolicy.updatePolicy(splittedAddress.getSecond(), selectedLine);
-    lastAccess.peek().addLineAccess(false, splittedAddress.getSecond() * associativity + selectedLine,
+    int selectedLine = line.getIndex() % associativity;
+    replacementPolicy.updatePolicy(splittedAddress.getSecond(), line.getIndex() % associativity);
+    lastAccess.peek().addLineAccess(isHit, splittedAddress.getSecond() * associativity + selectedLine,
                                     splittedAddress.getThird());
+    
     Pair<Integer, byte[]> tmpReturnVal = getDataFromLines(line, address, size, id, currentCycle);
-    return new Pair<>(tmpReturnVal.getFirst() + loadDelay + computeRemainingDelay(false, false, currentCycle,
+    return new Pair<>(tmpReturnVal.getFirst() + loadDelay + computeRemainingDelay(isHit, false, currentCycle,
                                                                                   splittedAddress.getFirst(),
                                                                                   splittedAddress.getSecond()),
                       tmpReturnVal.getSecond());
@@ -573,61 +599,31 @@ public class Cache
                                      new Integer[0], new Integer[0]));
     }
     
-    // Go through all lines in the index - compare if tag matches
-    CacheLineModel emptyLine = null;
-    for (int i = 0; i < associativity; i++)
-    {
-      CacheLineModel line = cache[index][i];
-      if (line.getTag() == tag && line.isValid())
-      {
-        // Found the line
-        statistics.cache.incrementHits();
-        
-        replacementPolicy.updatePolicy(index, i);
-        lastAccess.peek().addLineAccess(true, index * associativity + i, offset);
-        int tmpReturn = setDataToLines(line, address, data, size, id, currentCycle);
-        return storeDelay + tmpReturn + computeRemainingDelay(true, true, currentCycle, tag, index);
-      }
-      if (emptyLine == null && !line.isValid())
-      {
-        emptyLine = line;
-      }
-    }
+    CacheLineModel line  = findLane(address);
+    boolean        isHit = line != null;
     
-    // Line not found (miss), need to use empty one or replace one
-    CacheLineModel selectedLine;
-    if (emptyLine != null)
+    if (isHit)
     {
-      // Empty line - use it
-      selectedLine = emptyLine;
+      // Found the line
+      statistics.cache.incrementHits();
     }
     else
     {
-      // No empty line - replace one according to replacement policy
-      int selectedLineIndex = replacementPolicy.getLineToReplace(index);
-      selectedLine = cache[index][selectedLineIndex];
-      if (selectedLine.isDirty())
-      {
-        //Store victim line into memory
-        memory.insertIntoMemory(selectedLine.getBaseAddress(), selectedLine.getLineData());
-      }
+      statistics.cache.incrementMisses();
+      // Load new line from memory
+      line = pickLineToUse(address);
+      long baseMemoryAddress = address & -(1L << getLog(lineSize, 2));
+      line.setLineData(memory.getFromMemory(baseMemoryAddress, lineSize));
+      line.setValid(true);
+      line.setDirty(false);
+      line.setTag(tag);
+      line.setBaseAddress(baseMemoryAddress);
     }
-    statistics.cache.incrementMisses();
     
-    // Load new line from memory
-    long baseMemoryAddress = address & -(1L << getLog(lineSize, 2));
-    selectedLine.setLineData(memory.getFromMemory(baseMemoryAddress, lineSize));
-    selectedLine.setValid(true);
-    selectedLine.setDirty(false);
-    selectedLine.setTag(tag);
-    selectedLine.setBaseAddress(baseMemoryAddress);
-    
-    replacementPolicy.updatePolicy(index, selectedLine.getIndex() % associativity);
-    // TODO: check
-    lastAccess.peek().addLineAccess(false, selectedLine.getIndex(), offset);
-    
-    int tmpReturn = setDataToLines(selectedLine, address, data, size, id, currentCycle);
-    return storeDelay + tmpReturn + computeRemainingDelay(false, true, currentCycle, tag, index);
+    replacementPolicy.updatePolicy(index, line.getIndex() % associativity);
+    lastAccess.peek().addLineAccess(isHit, line.getIndex(), offset);
+    int tmpReturn = setDataToLines(line, address, data, size, id, currentCycle);
+    return storeDelay + tmpReturn + computeRemainingDelay(isHit, true, currentCycle, tag, index);
   }
   
   /**
