@@ -433,6 +433,7 @@ public class CpuState implements Serializable
       storeBufferBlock.simulate(tick);
       loadBufferBlock.simulate(tick);
     }
+    simulatedMemory.simulate(tick);
     // run all AbstractIssueWindowBlock blocks
     aluIssueWindowBlock.simulate(tick);
     fpIssueWindowBlock.simulate(tick);

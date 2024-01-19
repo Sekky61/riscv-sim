@@ -38,8 +38,8 @@ import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.blocks.AbstractBlock;
 import com.gradle.superscalarsim.models.memory.MemoryTransaction;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 import static java.util.Arrays.copyOf;
 
@@ -74,7 +74,7 @@ public class SimulatedMemory implements AbstractBlock
   /**
    * List of parallel operations in progress or recently finished.
    */
-  private Map<Integer, MemoryTransaction> operations;
+  private List<MemoryTransaction> operations;
   
   /**
    * @brief Constructor
@@ -84,8 +84,95 @@ public class SimulatedMemory implements AbstractBlock
     this.storeLatency = storeLatency;
     this.loadLatency  = loadLatency;
     this.memory       = new byte[0];
-    this.operations   = new HashMap<>();
+    this.operations   = new ArrayList<>();
   }// end of Constructor
+  //-------------------------------------------------------------------------------------------
+  
+  /**
+   * @param address Hashmap key, pointing into specific place in memory
+   *
+   * @return Value from hashmap pointed by key
+   * @brief Get value from memory
+   */
+  public byte getFromMemory(long address)
+  {
+    if (!this.isInMemory(address))
+    {
+      resizeArray((int) address + 1);
+    }
+    return this.memory[(int) address];
+  }// end of getFromMemory
+  
+  /**
+   * @param address Hashmap key, pointing into specific place in memory
+   *
+   * @return True if key has been set in the past, false otherwise
+   * @brief Check if some memory space is filled with data
+   */
+  private boolean isInMemory(long address)
+  {
+    return address < this.memory.length;
+  }// end of isInMemory
+  
+  /**
+   * @brief Resize array to be at least of specified size
+   */
+  private void resizeArray(int size)
+  {
+    this.memory = copyOf(this.memory, size);
+  }
+  //-------------------------------------------------------------------------------------------
+  
+  /**
+   * @param address offset in memory
+   * @param size    size of data to get in bytes
+   *
+   * @return byte array of data from memory
+   */
+  public byte[] getFromMemory(long address, int size)
+  {
+    if (!this.isInMemory(address + size))
+    {
+      resizeArray((int) address + size);
+    }
+    byte[] returnVal = new byte[size];
+    System.arraycopy(this.memory, (int) address, returnVal, 0, size);
+    return returnVal;
+  }// end of getFromMemory
+  
+  /**
+   * Schedule a memory access. It will be finished after the specified number of cycles.
+   *
+   * @param transaction Memory transaction to schedule
+   */
+  public void scheduleMemoryAccess(MemoryTransaction transaction)
+  {
+    this.operations.add(transaction);
+  }
+  
+  /**
+   * @brief Simulate finished memory accesses
+   */
+  @Override
+  public void simulate(int cycle)
+  {
+    for (MemoryTransaction transaction : this.operations)
+    {
+      assert !transaction.isFinished(); // All finished transactions should be removed from the list by the requester
+      // Check if the operation is finished this cycle
+      int finishCycle = transaction.timestamp() + (transaction.isStore() ? this.storeLatency : this.loadLatency);
+      if (finishCycle == cycle)
+      {
+        // Operation finished, write data to memory
+        // Do not remove operation from the list, the requester will do that
+        transaction.finish();
+        if (transaction.isStore())
+        {
+          this.insertIntoMemory(transaction.address(), transaction.data());
+        }
+      }
+    }
+  }
   //-------------------------------------------------------------------------------------------
   
   /**
@@ -104,77 +191,35 @@ public class SimulatedMemory implements AbstractBlock
   }// end of insertIntoMemory
   
   /**
-   * @brief Resize array to be at least of specified size
-   */
-  private void resizeArray(int size)
-  {
-    this.memory = copyOf(this.memory, size);
-  }
-  
-  /**
-   * @param address Hashmap key, pointing into specific place in memory
-   *
-   * @return Value from hashmap pointed by key
-   * @brief Get value from memory
-   */
-  public byte getFromMemory(long address)
-  {
-    if (!this.isInMemory(address))
-    {
-      resizeArray((int) address + 1);
-    }
-    return this.memory[(int) address];
-  }// end of getFromMemory
-  //-------------------------------------------------------------------------------------------
-  
-  /**
-   * @param address Hashmap key, pointing into specific place in memory
-   *
-   * @return True if key has been set in the past, false otherwise
-   * @brief Check if some memory space is filled with data
-   */
-  public boolean isInMemory(long address)
-  {
-    return address < this.memory.length;
-  }// end of isInMemory
-  
-  /**
-   * @param address offset in memory
-   * @param size    size of data to get in bytes
-   *
-   * @return byte array of data from memory
-   */
-  public byte[] getFromMemory(long address, int size)
-  {
-    if (!this.isInMemory(address + size))
-    {
-      resizeArray((int) address + size);
-    }
-    byte[] returnVal = new byte[size];
-    System.arraycopy(this.memory, (int) address, returnVal, 0, size);
-    return returnVal;
-  }// end of getFromMemory
-  //-------------------------------------------------------------------------------------------
-  
-  /**
-   * @brief Simulate finished memory accesses
-   */
-  @Override
-  public void simulate(int cycle)
-  {
-    for (MemoryTransaction transaction : this.operations.values())
-    {
-      transaction.address();
-    }
-  }
-  
-  /**
    * @brief Resets memory to its initial state
    */
   public void reset()
   {
     this.memory = new byte[0];
   }// end of reset
+  
+  /**
+   * Throws if the requested transaction is not in the list or not finished yet, as it would be a bug.
+   *
+   * @param id ID of the transaction
+   *
+   * @return Data from the transaction (if it was a load, original data if it was a store)
+   * @brief Take the result of a memory access. Remove the operation from the list.
+   */
+  public byte[] takeResult(int id)
+  {
+    MemoryTransaction transaction = this.operations.get(id);
+    if (transaction == null)
+    {
+      throw new IllegalArgumentException("No such transaction");
+    }
+    if (!transaction.isFinished())
+    {
+      throw new IllegalArgumentException("Transaction not finished yet");
+    }
+    this.operations.remove(id);
+    return transaction.data();
+  }
   //-------------------------------------------------------------------------------------------
   
   /**

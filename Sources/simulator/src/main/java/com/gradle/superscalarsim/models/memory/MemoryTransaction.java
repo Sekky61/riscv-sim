@@ -27,20 +27,116 @@
 
 package com.gradle.superscalarsim.models.memory;
 
+import java.util.Objects;
+
 /**
  * @class MemoryTransaction
  * @brief Data class describing a memory transaction
  */
-public record MemoryTransaction(int timestamp, long address, byte[] data, int size, boolean isStore, boolean isSigned)
+public final class MemoryTransaction
 {
+  private final int id;
+  private final int timestamp;
+  private final long address;
+  private final byte[] data;
+  private final int size;
+  private final boolean isStore;
+  private final boolean isSigned;
+  private boolean isFinished = false;
+  
   /**
    * Constructor
    */
-  public MemoryTransaction
+  public MemoryTransaction(int id,
+                           int timestamp,
+                           long address,
+                           byte[] data,
+                           int size,
+                           boolean isStore,
+                           boolean isSigned)
   {
     if (size < 1 || size > 64)
     {
       throw new IllegalArgumentException("Size must be between 1 and 8");
     }
+    this.id        = id;
+    this.timestamp = timestamp;
+    this.address   = address;
+    this.data      = data;
+    this.size      = size;
+    this.isStore   = isStore;
+    this.isSigned  = isSigned;
   }
+  
+  public int timestamp()
+  {
+    return timestamp;
+  }
+  
+  public long address()
+  {
+    return address;
+  }
+  
+  public byte[] data()
+  {
+    return data;
+  }
+  
+  public int size()
+  {
+    return size;
+  }
+  
+  public boolean isStore()
+  {
+    return isStore;
+  }
+  
+  public boolean isSigned()
+  {
+    return isSigned;
+  }
+  
+  public boolean isFinished()
+  {
+    return isFinished;
+  }
+  
+  /**
+   * @brief Marks the transaction as finished
+   */
+  public void finish()
+  {
+    this.isFinished = true;
+  }
+  
+  @Override
+  public boolean equals(Object obj)
+  {
+    if (obj == this)
+    {
+      return true;
+    }
+    if (obj == null || obj.getClass() != this.getClass())
+    {
+      return false;
+    }
+    var that = (MemoryTransaction) obj;
+    return this.timestamp == that.timestamp && this.address == that.address && Objects.equals(this.data,
+                                                                                              that.data) && this.size == that.size && this.isStore == that.isStore && this.isSigned == that.isSigned;
+  }
+  
+  @Override
+  public int hashCode()
+  {
+    return Objects.hash(timestamp, address, data, size, isStore, isSigned);
+  }
+  
+  @Override
+  public String toString()
+  {
+    return "MemoryTransaction[" + "timestamp=" + timestamp + ", " + "address=" + address + ", " + "data=" + data + ", " + "size=" + size + ", " + "isStore=" + isStore + ", " + "isSigned=" + isSigned + ']';
+  }
+  
 }
