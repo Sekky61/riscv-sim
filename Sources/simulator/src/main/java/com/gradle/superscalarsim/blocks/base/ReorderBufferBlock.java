@@ -70,11 +70,6 @@ public class ReorderBufferBlock implements AbstractBlock
   public int commitLimit;
   
   /**
-   * ID (tick( counter for marking when an instruction was committed/ready
-   */
-  public int commitId;
-  
-  /**
    * Flag to mark newly added instructions as speculative.
    * This flag is set after encountering branch instruction.
    */
@@ -165,7 +160,6 @@ public class ReorderBufferBlock implements AbstractBlock
     
     this.reorderQueue = new ArrayDeque<>();
     
-    this.commitId         = 0;
     this.speculativePulls = false;
     
     this.commitLimit = 4;
@@ -204,7 +198,7 @@ public class ReorderBufferBlock implements AbstractBlock
    * @brief Simulates committing of instructions
    */
   @Override
-  public void simulate()
+  public void simulate(int cycle)
   {
     // Go through queue and commit all instructions you can
     // until you reach un-committable instruction, or you reach limit
@@ -219,14 +213,14 @@ public class ReorderBufferBlock implements AbstractBlock
       }
       
       commitCount++;
-      processCommittableInstruction(robItem.simCodeModel);
+      processCommittableInstruction(robItem.simCodeModel, cycle);
       removeInstruction(robItem);
       // Remove item from the front of the queue
       this.reorderQueue.remove();
     }
     
     // Check all instructions if after commit some can be removed, remove them in other units
-    flushInvalidInstructions();
+    flushInvalidInstructions(cycle);
     
     // Pull new instructions from decoder, unless you are flushing
     if (!this.decodeAndDispatchBlock.shouldFlush())
@@ -244,7 +238,6 @@ public class ReorderBufferBlock implements AbstractBlock
   {
     this.reorderQueue.clear();
     
-    this.commitId         = 0;
     this.speculativePulls = false;
     
     gShareUnit.getGlobalHistoryRegister().reset();
@@ -259,9 +252,9 @@ public class ReorderBufferBlock implements AbstractBlock
    *
    * @brief Process instruction that is ready to be committed
    */
-  private void processCommittableInstruction(SimCodeModel codeModel)
+  private void processCommittableInstruction(SimCodeModel codeModel, int cycle)
   {
-    codeModel.setCommitId(this.commitId);
+    codeModel.setCommitId(cycle);
     simulationStatistics.reportCommittedInstruction(codeModel);
     if (codeModel.getInstructionTypeEnum() == InstructionTypeEnum.kJumpbranch)
     {
@@ -282,7 +275,7 @@ public class ReorderBufferBlock implements AbstractBlock
         int resultPc = pc + codeModel.getBranchTargetOffset();
         // TODO: Why down? Shouldn't the feedback be in the opposite direction of the wrong prediction?
         this.gShareUnit.getPredictorFromOld(pc, codeModel.getIntegerId()).downTheProbability();
-        this.branchTargetBuffer.setEntry(pc, codeModel, resultPc, -1, this.commitId);
+        this.branchTargetBuffer.setEntry(pc, codeModel, resultPc, -1, cycle);
         
         // Get the second instruction in the queue and invalidate it
         
@@ -373,7 +366,7 @@ public class ReorderBufferBlock implements AbstractBlock
    *
    * @brief Removes all invalid (ready to removed) instructions from ROB
    */
-  public void flushInvalidInstructions()
+  public void flushInvalidInstructions(int cycle)
   {
     // Iterate the queue from the end, remove until first valid instruction
     Iterator<ReorderBufferItem> it = this.reorderQueue.descendingIterator();
@@ -388,7 +381,7 @@ public class ReorderBufferBlock implements AbstractBlock
       // Notify all that instruction is invalid
       simulationStatistics.incrementFailedInstructions();
       SimCodeModel currentInstruction = robItem.simCodeModel;
-      currentInstruction.setCommitId(this.commitId); // todo: is this correct?
+      currentInstruction.setCommitId(cycle); // todo: is this correct?
       if (currentInstruction.getInstructionTypeEnum() == InstructionTypeEnum.kJumpbranch)
       {
         this.gShareUnit.getGlobalHistoryRegister().removeHistoryValue(currentInstruction.getIntegerId());
@@ -521,12 +514,6 @@ public class ReorderBufferBlock implements AbstractBlock
     return this.reorderQueue.stream().filter(robItem -> robItem.simCodeModel.getIntegerId() == simCodeId).findFirst()
             .orElse(null);
   }// end of getFlagsMap
-  //----------------------------------------------------------------------
-  
-  public void bumpCommitID()
-  {
-    this.commitId = this.commitId + 1;
-  }
   //----------------------------------------------------------------------
   
   /**

@@ -413,36 +413,34 @@ public class CpuState implements Serializable
    */
   public void step()
   {
-    reorderBufferBlock.simulate();
+    reorderBufferBlock.simulate(tick);
     // Run all FUs
-    arithmeticFunctionUnitBlocks.forEach(ArithmeticFunctionUnitBlock::simulate);
-    fpFunctionUnitBlocks.forEach(ArithmeticFunctionUnitBlock::simulate);
-    loadStoreFunctionUnits.forEach(LoadStoreFunctionUnit::simulate);
-    memoryAccessUnits.forEach(MemoryAccessUnit::simulate);
-    branchFunctionUnitBlocks.forEach(BranchFunctionUnitBlock::simulate);
+    arithmeticFunctionUnitBlocks.forEach(arithmeticFunctionUnitBlock -> arithmeticFunctionUnitBlock.simulate(tick));
+    fpFunctionUnitBlocks.forEach(arithmeticFunctionUnitBlock -> arithmeticFunctionUnitBlock.simulate(tick));
+    loadStoreFunctionUnits.forEach(loadStoreFunctionUnit -> loadStoreFunctionUnit.simulate(tick));
+    memoryAccessUnits.forEach(memoryAccessUnit -> memoryAccessUnit.simulate(tick));
+    branchFunctionUnitBlocks.forEach(branchFunctionUnitBlock -> branchFunctionUnitBlock.simulate(tick));
     // Check which buffer contains older instruction at the top
     // Null check first, if any is empty, the order does not matter
     if (loadBufferBlock.getQueueSize() == 0 || storeBufferBlock.getQueueSize() == 0 || loadBufferBlock.getLoadQueueFirst()
             .getIntegerId() < storeBufferBlock.getStoreQueueFirst().getIntegerId())
     {
-      loadBufferBlock.simulate();
-      storeBufferBlock.simulate();
+      loadBufferBlock.simulate(tick);
+      storeBufferBlock.simulate(tick);
     }
     else
     {
-      storeBufferBlock.simulate();
-      loadBufferBlock.simulate();
+      storeBufferBlock.simulate(tick);
+      loadBufferBlock.simulate(tick);
     }
     // run all AbstractIssueWindowBlock blocks
-    aluIssueWindowBlock.simulate();
-    fpIssueWindowBlock.simulate();
-    branchIssueWindowBlock.simulate();
-    loadStoreIssueWindowBlock.simulate();
-    issueWindowSuperBlock.simulate();
-    decodeAndDispatchBlock.simulate();
-    instructionFetchBlock.simulate();
-    // bump commit id of ROB
-    reorderBufferBlock.bumpCommitID();
+    aluIssueWindowBlock.simulate(tick);
+    fpIssueWindowBlock.simulate(tick);
+    branchIssueWindowBlock.simulate(tick);
+    loadStoreIssueWindowBlock.simulate(tick);
+    issueWindowSuperBlock.simulate(tick);
+    decodeAndDispatchBlock.simulate(tick);
+    instructionFetchBlock.simulate(tick);
     // Stats
     statistics.incrementClockCycles();
     

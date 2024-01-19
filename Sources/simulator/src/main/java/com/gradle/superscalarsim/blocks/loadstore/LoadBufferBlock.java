@@ -96,11 +96,6 @@ public class LoadBufferBlock implements AbstractBlock
    */
   private int bufferSize;
   
-  /**
-   * ID counter matching the one in ROB
-   */
-  private int commitId;
-  
   public LoadBufferBlock()
   {
     loadQueue = new ArrayDeque<>();
@@ -125,7 +120,6 @@ public class LoadBufferBlock implements AbstractBlock
     this.reorderBufferBlock    = reorderBufferBlock;
     this.instructionFetchBlock = instructionFetchBlock;
     this.bufferSize            = 64;
-    this.commitId              = 0;
     
     this.loadQueue            = new ArrayDeque<>();
     this.memoryAccessUnitList = new ArrayList<>();
@@ -174,12 +168,11 @@ public class LoadBufferBlock implements AbstractBlock
    * @brief Simulates Load buffer
    */
   @Override
-  public void simulate()
+  public void simulate(int cycle)
   {
-    checkIfProcessedHasConflict();
+    checkIfProcessedHasConflict(cycle);
     removeInvalidInstructions();
-    selectLoadForDataAccess();
-    this.commitId++;
+    selectLoadForDataAccess(cycle);
   }// end of simulate
   //-------------------------------------------------------------------------------------------
   
@@ -189,7 +182,6 @@ public class LoadBufferBlock implements AbstractBlock
   @Override
   public void reset()
   {
-    this.commitId = 0;
     this.loadQueue.clear();
   }// end of reset
   //-------------------------------------------------------------------------------------------
@@ -199,7 +191,7 @@ public class LoadBufferBlock implements AbstractBlock
    *
    * @brief Checks if the instruction has no conflicts with all previously executed store instructions.
    */
-  private void checkIfProcessedHasConflict()
+  private void checkIfProcessedHasConflict(int cycle)
   {
     for (LoadBufferItem bufferItem : this.loadQueue)
     {
@@ -220,8 +212,8 @@ public class LoadBufferBlock implements AbstractBlock
       // Remove the load and flush ROB
       SimCodeModel simCodeModel = bufferItem.getSimCodeModel();
       reorderBufferBlock.invalidateInstructions(simCodeModel);
-      reorderBufferBlock.flushInvalidInstructions();
-      bufferItem.setMemoryFailedId(this.commitId);
+      reorderBufferBlock.flushInvalidInstructions(cycle);
+      bufferItem.setMemoryFailedId(cycle);
       bufferItem.setMemoryAccessId(beforeMaId);
       bufferItem.setHasBypassed(beforeBypass);
       // Fix PC
@@ -261,7 +253,7 @@ public class LoadBufferBlock implements AbstractBlock
    *
    * @brief Selects load instructions for MA block
    */
-  private void selectLoadForDataAccess()
+  private void selectLoadForDataAccess(int cycle)
   {
     LoadBufferItem workForMa = null;
     for (LoadBufferItem item : this.loadQueue)
@@ -278,7 +270,7 @@ public class LoadBufferBlock implements AbstractBlock
       {
         // Bypass, if possible. But keep looking for work for MA
         // If the bypass is not successful, it will be successful later when the store is executed
-        tryBypassLoad(item, resultStoreItem);
+        tryBypassLoad(item, resultStoreItem, cycle);
       }
       else
       {
@@ -301,7 +293,7 @@ public class LoadBufferBlock implements AbstractBlock
         memoryAccessUnit.resetCounter();
         memoryAccessUnit.setSimCodeModel(workForMa.getSimCodeModel());
         workForMa.setAccessingMemory(true);
-        workForMa.setAccessingMemoryId(this.commitId);
+        workForMa.setAccessingMemoryId(cycle);
         return;
       }
     }
@@ -334,7 +326,7 @@ public class LoadBufferBlock implements AbstractBlock
    * @return True if successfully bypassed, false otherwise
    * @brief Tries to bypass load instruction by store instruction
    */
-  private boolean tryBypassLoad(LoadBufferItem loadItem, StoreBufferItem storeItem)
+  private boolean tryBypassLoad(LoadBufferItem loadItem, StoreBufferItem storeItem, int cycle)
   {
     assert loadItem != null;
     assert storeItem != null;
@@ -355,7 +347,7 @@ public class LoadBufferBlock implements AbstractBlock
     destinationReg.setReadiness(RegisterReadinessEnum.kAssigned);
     loadItem.setDestinationReady(true);
     loadItem.setHasBypassed(true);
-    loadItem.setMemoryAccessId(this.commitId);
+    loadItem.setMemoryAccessId(cycle);
     reorderBufferBlock.getRobItem(loadItem.getSimCodeModel().getIntegerId()).reorderFlags.setBusy(false);
     return true;
   }// end of processLoadInstruction

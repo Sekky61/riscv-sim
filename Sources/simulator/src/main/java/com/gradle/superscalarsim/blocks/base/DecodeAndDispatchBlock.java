@@ -92,10 +92,6 @@ public class DecodeAndDispatchBlock implements AbstractBlock
   @JsonIdentityReference(alwaysAsId = true)
   private final SimulationStatistics statistics;
   /**
-   * Counter giving out ids for instructions in order to correctly simulate backwards
-   */
-  private int idCounter;
-  /**
    * Boolean flag indicating if the decode block should be flushed
    */
   private boolean flush;
@@ -139,7 +135,6 @@ public class DecodeAndDispatchBlock implements AbstractBlock
     this.statistics            = statistics;
     
     this.codeBuffer       = new ArrayList<>();
-    this.idCounter        = -2; // todo
     this.stallFlag        = false;
     this.stalledPullCount = 0;
     
@@ -228,10 +223,8 @@ public class DecodeAndDispatchBlock implements AbstractBlock
    * @brief Simulates decoding and renaming of instructions before dispatching
    */
   @Override
-  public void simulate()
+  public void simulate(int cycle)
   {
-    upStepId();
-    int decodeId = getCurrentStepId();
     if (stallFlag)
     {
       // Decode is stalled.
@@ -308,29 +301,9 @@ public class DecodeAndDispatchBlock implements AbstractBlock
   {
     this.codeBuffer.clear();
     this.renameMapTableBlock.clear();
-    this.idCounter        = -2;
     this.stallFlag        = false;
     this.stalledPullCount = 0;
   }// end of reset
-  //----------------------------------------------------------------------
-  
-  /**
-   * @brief Increment ID for next decode step for backward simulation
-   */
-  private void upStepId()
-  {
-    idCounter = idCounter + 1;
-  }// end of upStepId
-  //----------------------------------------------------------------------
-  
-  /**
-   * @return Id of current step
-   * @brief Gets id for current block step
-   */
-  public int getCurrentStepId()
-  {
-    return idCounter;
-  }// end of getCurrentStepId
   //----------------------------------------------------------------------
   
   /**
@@ -338,15 +311,13 @@ public class DecodeAndDispatchBlock implements AbstractBlock
    */
   private void checkForBranchInstructions()
   {
-    int modelId = idCounter * this.instructionFetchBlock.getNumberOfWays();
     for (int i = 0; i < this.codeBuffer.size(); i++)
     {
       SimCodeModel codeModel = this.codeBuffer.get(i);
       if (codeModel.getInstructionTypeEnum() == InstructionTypeEnum.kJumpbranch)
       {
-        processBranchInstruction(codeModel, i, modelId);
+        processBranchInstruction(codeModel, i);
       }
-      modelId++;
     }
   }// end of checkForBranchInstructions
   //----------------------------------------------------------------------
@@ -408,11 +379,10 @@ public class DecodeAndDispatchBlock implements AbstractBlock
   /**
    * @param codeModel Branch code model with arguments
    * @param position  Position of instruction in a fetched block
-   * @param modelId   future ID that this instruction will receive
    *
    * @brief Processes branch instructions in decode block
    */
-  private void processBranchInstruction(final SimCodeModel codeModel, int position, int modelId)
+  private void processBranchInstruction(final SimCodeModel codeModel, int position)
   {
     InstructionFunctionModel instruction = codeModel.getInstructionFunctionModel();
     
@@ -433,13 +403,13 @@ public class DecodeAndDispatchBlock implements AbstractBlock
       // Branch badly predicted
       // Fix entry in BTB, set correct PC
       codeModel.setBranchPredicted(true);
-      this.branchTargetBuffer.setEntry(instructionPosition, codeModel, realTarget, modelId, -1);
+      this.branchTargetBuffer.setEntry(instructionPosition, codeModel, realTarget, codeModel.getIntegerId(), -1);
       this.instructionFetchBlock.setPc(realTarget);
       // Drop instructions after branch
       removeInstructionsFromIndex(position + 1);
       globalHistoryBit = true;
     }
-    this.globalHistoryRegister.shiftSpeculativeValue(modelId, globalHistoryBit);
+    this.globalHistoryRegister.shiftSpeculativeValue(codeModel.getIntegerId(), globalHistoryBit);
   }// end of processBranchInstruction
   //----------------------------------------------------------------------
   

@@ -112,7 +112,7 @@ public class IssueWindowBlock implements AbstractBlock
    * Shared behavior for all issue windows
    */
   @Override
-  public void simulate()
+  public void simulate(int cycle)
   {
     removeFailedInstructions();
     
@@ -147,7 +147,7 @@ public class IssueWindowBlock implements AbstractBlock
       }
     }
     
-    this.windowId++;
+    this.windowId = cycle;
   }
   
   /**

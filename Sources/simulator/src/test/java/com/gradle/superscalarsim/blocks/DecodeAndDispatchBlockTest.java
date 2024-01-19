@@ -99,7 +99,7 @@ public class DecodeAndDispatchBlockTest
     List<SimCodeModel> instructions = Arrays.asList(sim1, sim2, sim3);
     Mockito.when(instructionFetchBlock.getFetchedCode()).thenReturn(instructions);
     
-    decodeAndDispatchBlock.simulate();
+    decodeAndDispatchBlock.simulate(0);
     
     Assert.assertEquals(3, decodeAndDispatchBlock.getCodeBuffer().size());
     Assert.assertEquals("add tg0,x2,x3", decodeAndDispatchBlock.getCodeBuffer().get(0).getRenamedCodeLine());
@@ -135,7 +135,7 @@ public class DecodeAndDispatchBlockTest
     List<SimCodeModel> instructions = Arrays.asList(sim1, sim2, sim3);
     Mockito.when(instructionFetchBlock.getFetchedCode()).thenReturn(instructions);
     
-    decodeAndDispatchBlock.simulate();
+    decodeAndDispatchBlock.simulate(0);
     
     Assert.assertEquals(3, decodeAndDispatchBlock.getCodeBuffer().size());
     Assert.assertEquals("add tg0,x2,x3", decodeAndDispatchBlock.getCodeBuffer().get(0).getRenamedCodeLine());
@@ -171,7 +171,7 @@ public class DecodeAndDispatchBlockTest
     List<SimCodeModel> instructions = Arrays.asList(sim1, sim2, sim3);
     Mockito.when(instructionFetchBlock.getFetchedCode()).thenReturn(instructions);
     
-    decodeAndDispatchBlock.simulate();
+    decodeAndDispatchBlock.simulate(0);
     
     Assert.assertEquals(3, decodeAndDispatchBlock.getCodeBuffer().size());
     Assert.assertEquals("add tg0,x4,x5", decodeAndDispatchBlock.getCodeBuffer().get(0).getRenamedCodeLine());

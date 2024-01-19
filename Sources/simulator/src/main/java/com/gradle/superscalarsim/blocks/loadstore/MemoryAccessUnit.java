@@ -74,11 +74,6 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
    */
   @JsonIdentityReference(alwaysAsId = true)
   private CodeLoadStoreInterpreter loadStoreInterpreter;
-  /**
-   * Clock cycle counter
-   */
-  private int cycleCount;
-  
   
   /**
    * The binary state of the MA unit.
@@ -129,20 +124,19 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
    * @brief Simulates memory access
    */
   @Override
-  public void simulate()
+  public void simulate(int cycle)
   {
-    cycleCount++;
     if (isFunctionUnitEmpty())
     {
       this.functionUnitId += this.functionUnitCount;
     }
     else
     {
-      handleInstruction();
+      handleInstruction(cycle);
     }
   }// end of simulate
   
-  private void handleInstruction()
+  private void handleInstruction(int cycle)
   {
     incrementBusyCycles();
     if (this.simCodeModel.hasFailed())
@@ -202,7 +196,7 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
       }
       else
       {
-        result = processLoadOperation(numberOfBytes * 8, address, access.isSigned(), id, cycleCount);
+        result = processLoadOperation(numberOfBytes * 8, address, access.isSigned(), id, cycle);
       }
       
       int delay = result.getFirst();
@@ -301,7 +295,6 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
   {
     super.reset();
     firstDelayPassed = false;
-    cycleCount       = 0;
     this.setDelay(baseDelay);
   }
   

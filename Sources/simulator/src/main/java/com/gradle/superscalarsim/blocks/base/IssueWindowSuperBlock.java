@@ -82,7 +82,7 @@ public class IssueWindowSuperBlock implements AbstractBlock
    * @brief Simulates dispatching instructions to Issue windows
    */
   @Override
-  public void simulate()
+  public void simulate(int cycle)
   {
     // TODO: move to decode block
     // TODO: places like this, where simcodemodels are deleted, leave behind history of GlobalHistoryRegister

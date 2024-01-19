@@ -160,7 +160,7 @@ public class SimulatedMemory implements AbstractBlock
    * @brief Simulate finished memory accesses
    */
   @Override
-  public void simulate()
+  public void simulate(int cycle)
   {
     for (MemoryTransaction transaction : this.operations.values())
     {

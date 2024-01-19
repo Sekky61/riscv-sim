@@ -90,11 +90,6 @@ public class StoreBufferBlock implements AbstractBlock
   private int bufferSize;
   
   /**
-   * ID counter matching the one in ROB
-   */
-  private int commitId;
-  
-  /**
    * @param loadStoreInterpreter   Interpreter for processing load store instructions
    * @param decodeAndDispatchBlock Class, which simulates instruction decode and renames registers
    * @param registerFileBlock      Class containing all registers, that simulator uses
@@ -110,7 +105,6 @@ public class StoreBufferBlock implements AbstractBlock
     this.registerFileBlock    = registerFileBlock;
     this.reorderBufferBlock   = reorderBufferBlock;
     this.bufferSize           = 64;
-    this.commitId             = 0;
     
     this.storeQueue           = new ArrayDeque<>();
     this.memoryAccessUnitList = new ArrayList<>();
@@ -148,12 +142,11 @@ public class StoreBufferBlock implements AbstractBlock
    * @brief Simulates store buffer
    */
   @Override
-  public void simulate()
+  public void simulate(int cycle)
   {
     removeInvalidInstructions();
     updateMapValues();
-    selectStoreForDataAccess();
-    this.commitId++;
+    selectStoreForDataAccess(cycle);
   }// end of simulate
   //-------------------------------------------------------------------------------------------
   
@@ -163,7 +156,6 @@ public class StoreBufferBlock implements AbstractBlock
   @Override
   public void reset()
   {
-    this.commitId = 0;
     this.storeQueue.clear();
   }// end of reset
   //-------------------------------------------------------------------------------------------
@@ -206,7 +198,7 @@ public class StoreBufferBlock implements AbstractBlock
   /**
    * @brief Selects store instructions for MA block
    */
-  private void selectStoreForDataAccess()
+  private void selectStoreForDataAccess(int cycle)
   {
     StoreBufferItem storeItem = null;
     for (StoreBufferItem item : this.storeQueue)
@@ -263,7 +255,7 @@ public class StoreBufferBlock implements AbstractBlock
         memoryAccessUnit.resetCounter();
         memoryAccessUnit.setSimCodeModel(storeItem.getSimCodeModel());
         storeItem.setAccessingMemory(true);
-        storeItem.setAccessingMemoryId(this.commitId);
+        storeItem.setAccessingMemoryId(cycle);
         // todo: return here??
         return;
       }

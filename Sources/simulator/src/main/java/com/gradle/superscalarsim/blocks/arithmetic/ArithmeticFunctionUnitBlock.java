@@ -146,7 +146,7 @@ public class ArithmeticFunctionUnitBlock extends AbstractFunctionUnitBlock
    * @brief Simulates execution of an instruction
    */
   @Override
-  public void simulate()
+  public void simulate(int cycle)
   {
     if (!isFunctionUnitEmpty())
     {
