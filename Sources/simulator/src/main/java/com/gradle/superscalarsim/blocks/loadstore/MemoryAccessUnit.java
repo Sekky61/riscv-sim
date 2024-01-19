@@ -255,7 +255,6 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
    */
   private int processStoreOperation(MemoryAccess memoryAccess)
   {
-    int numberOfBytes = memoryAccess.getSize();
     return memoryModel.store(memoryAccess);
   }// end of processStoreOperation
   //-------------------------------------------------------------------------------------------

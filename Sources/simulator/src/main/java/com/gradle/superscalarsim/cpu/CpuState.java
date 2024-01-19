@@ -154,7 +154,7 @@ public class CpuState implements Serializable
       dataLabels.put(memoryLocation.name, new Label(memoryLocation.name, 0)); // Address will be set later
     }
     
-    this.simulatedMemory = new SimulatedMemory();
+    this.simulatedMemory = new SimulatedMemory(config.cpuConfig.storeLatency, config.cpuConfig.loadLatency);
     // Fill memory with data
     MemoryInitializer memoryInitializer = new MemoryInitializer(128, 512);
     // init these first, so that the values are set and written to argument list

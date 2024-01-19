@@ -67,7 +67,7 @@ public class CodeLoadStoreInterpreterTest
     
     InstructionMemoryBlock instructionMemoryBlock = new InstructionMemoryBlock(new ArrayList<>(), new HashMap<>(),
                                                                                null);
-    memoryModel                   = new MemoryModel(new SimulatedMemory());
+    memoryModel                   = new MemoryModel(new SimulatedMemory(0, 0));
     this.codeLoadStoreInterpreter = new CodeLoadStoreInterpreter();
   }
   

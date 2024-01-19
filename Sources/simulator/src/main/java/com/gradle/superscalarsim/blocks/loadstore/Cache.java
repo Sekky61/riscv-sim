@@ -50,7 +50,16 @@ import java.util.Stack;
 /**
  * @class Cache
  * @brief Implements cache functionality
- * @details Implementation of the cache with various settings of sizes and replacement policies
+ * @details Implementation of the cache with various settings of sizes and replacement policies.
+ * Physical addresses only.
+ * <p>
+ * The cache is non-blocking. This means, that the cache can resolve multiple misses at the same time.
+ * It can also work on multiple transactions at the same time.
+ * </p>
+ * <p>
+ * Only {@link MemoryAccessUnit} can work with the cache.
+ * A MAU can issue one operation at a time. If there are multiple MAUs, each can "work" on one cache access at a time.
+ * </p>
  */
 @JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
 public class Cache

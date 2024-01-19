@@ -717,7 +717,7 @@ public class CodeParserTest
     Assert.assertEquals(1, codeParser.getMemoryLocations().size());
     
     MemoryInitializer memoryInitializer = new MemoryInitializer(0, 0);
-    SimulatedMemory   memory            = new SimulatedMemory();
+    SimulatedMemory   memory            = new SimulatedMemory(0, 0);
     memoryInitializer.initializeMemory(memory, codeParser.getMemoryLocations(), codeParser.getLabels());
     
     Assert.assertEquals((byte) 25, memory.getFromMemory(0L));
@@ -736,7 +736,7 @@ public class CodeParserTest
     Assert.assertEquals(1, codeParser.getMemoryLocations().size());
     
     MemoryInitializer memoryInitializer = new MemoryInitializer(0, 0);
-    SimulatedMemory   memory            = new SimulatedMemory();
+    SimulatedMemory   memory            = new SimulatedMemory(0, 0);
     memoryInitializer.initializeMemory(memory, codeParser.getMemoryLocations(), codeParser.getLabels());
     
     Assert.assertEquals((byte) 0x34, memory.getFromMemory(0L));
@@ -760,7 +760,7 @@ public class CodeParserTest
     Assert.assertEquals(1, codeParser.getMemoryLocations().size());
     
     MemoryInitializer memoryInitializer = new MemoryInitializer(1, 0);
-    SimulatedMemory   memory            = new SimulatedMemory();
+    SimulatedMemory   memory            = new SimulatedMemory(0, 0);
     memoryInitializer.initializeMemory(memory, codeParser.getMemoryLocations(), codeParser.getLabels());
     
     Assert.assertEquals((byte) 0x34, memory.getFromMemory(8L));

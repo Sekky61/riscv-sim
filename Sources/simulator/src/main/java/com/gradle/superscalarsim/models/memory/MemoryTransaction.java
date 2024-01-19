@@ -1,21 +1,15 @@
 /**
- * @file AbstractBlock.java
- * @author Jan Vavra \n
+ * @file MemoryTransaction.java
+ * @author Michal Majer \n
  * Faculty of Information Technology \n
  * Brno University of Technology \n
- * xvavra20@fit.vutbr.cz
- * @author Michal Majer
- * Faculty of Information Technology
- * Brno University of Technology
- * xmajer21@stud.fit.vutbr.cz
- * @brief File containing abstract class for simulation blocks to implement
- * @date 1  February  2021 16:00 (created) \n
- * 28 April     2021 17:00 (revised)
- * 26 Sep      2023 10:00 (revised)
+ * xmajer21@fit.vutbr.cz
+ * @brief Class for memory transaction
+ * @date 19 Jan      2024 10:00 (created)
  * @section Licence
  * This file is part of the Superscalar simulator app
  * <p>
- * Copyright (C) 2020  Jan Vavra
+ * Copyright (C) 2023 Michal Majer
  * <p>
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -30,24 +24,23 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.gradle.superscalarsim.blocks;
 
-import java.io.Serializable;
+package com.gradle.superscalarsim.models.memory;
 
 /**
- * @class AbstractBlock
- * @brief Abstract class, which every block must implement
+ * @class MemoryTransaction
+ * @brief Data class describing a memory transaction
  */
-public interface AbstractBlock extends Serializable
+public record MemoryTransaction(int timestamp, long address, byte[] data, int size, boolean isStore, boolean isSigned)
 {
   /**
-   * @brief Simulates in right direction from InstructionFetch to ROB
-   * TODO: add parameter currentCycle
+   * Constructor
    */
-  void simulate();
-  
-  /**
-   * @brief Resets the lists/stacks/variables inside the block
-   */
-  void reset();
+  public MemoryTransaction
+  {
+    if (size < 1 || size > 64)
+    {
+      throw new IllegalArgumentException("Size must be between 1 and 8");
+    }
+  }
 }

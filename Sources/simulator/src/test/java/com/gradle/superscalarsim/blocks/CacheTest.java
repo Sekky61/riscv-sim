@@ -17,7 +17,7 @@ public class CacheTest
   @Test
   public void cache_SplitAddress()
   {
-    memory = new SimulatedMemory();
+    memory = new SimulatedMemory(0, 0);
     cache  = new Cache(memory, 16, 2, 16, ReplacementPoliciesEnum.RANDOM, true, true, 1, 1, 1,
                        new SimulationStatistics(0, 1));
     Triplet<Long, Integer, Integer> returnTriplet = cache.splitAddress(0xff00f3);
@@ -33,7 +33,7 @@ public class CacheTest
   @Test
   public void cache_BasicWriteAndRead()
   {
-    memory = new SimulatedMemory();
+    memory = new SimulatedMemory(0, 0);
     cache  = new Cache(memory, 16, 2, 16, ReplacementPoliciesEnum.RANDOM, true, true, 1, 1, 1,
                        new SimulationStatistics(0, 1));
     cache.storeData(128, 0x01020304, 4, 0, 0);
@@ -43,7 +43,7 @@ public class CacheTest
   @Test
   public void cache_BasicReadWriteAndRead()
   {
-    memory = new SimulatedMemory();
+    memory = new SimulatedMemory(0, 0);
     cache  = new Cache(memory, 16, 2, 16, ReplacementPoliciesEnum.RANDOM, true, true, 1, 1, 1,
                        new SimulationStatistics(0, 1));
     Assert.assertEquals(0, (long) cache.getData(128, 4, 0, 0).getSecond());
@@ -54,7 +54,7 @@ public class CacheTest
   @Test
   public void cache_BasicReplaceReadWriteAndRead()
   {
-    memory = new SimulatedMemory();
+    memory = new SimulatedMemory(0, 0);
     cache  = new Cache(memory, 16, 2, 16, ReplacementPoliciesEnum.RANDOM, true, true, 1, 1, 1,
                        new SimulationStatistics(0, 1));
     Assert.assertEquals(0, (long) cache.getData(128, 4, 0, 0).getSecond());
@@ -66,7 +66,7 @@ public class CacheTest
   @Test
   public void cache_MisalignedWriteAndReadFollowedByAlignedRead()
   {
-    memory = new SimulatedMemory();
+    memory = new SimulatedMemory(0, 0);
     cache  = new Cache(memory, 16, 2, 16, ReplacementPoliciesEnum.RANDOM, true, true, 1, 1, 1,
                        new SimulationStatistics(0, 1));
     Assert.assertEquals(0, (long) cache.getData(130, 4, 0, 0).getSecond());
@@ -78,7 +78,7 @@ public class CacheTest
   @Test
   public void cache_MixedAccesses()
   {
-    memory = new SimulatedMemory();
+    memory = new SimulatedMemory(0, 0);
     cache  = new Cache(memory, 16, 2, 16, ReplacementPoliciesEnum.RANDOM, true, true, 1, 1, 1,
                        new SimulationStatistics(0, 1));
     Assert.assertEquals(0, (long) cache.getData(130, 4, 0, 0).getSecond());
@@ -95,7 +95,7 @@ public class CacheTest
   @Test
   public void cache_64b()
   {
-    memory = new SimulatedMemory();
+    memory = new SimulatedMemory(0, 0);
     cache  = new Cache(memory, 16, 2, 16, ReplacementPoliciesEnum.RANDOM, true, true, 1, 1, 1,
                        new SimulationStatistics(0, 1));
     cache.storeData(128, 0x9988776623456789L, 8, 0, 0);
@@ -109,7 +109,7 @@ public class CacheTest
   @Test
   public void cache_32bMultipleCacheLines()
   {
-    memory = new SimulatedMemory();
+    memory = new SimulatedMemory(0, 0);
     cache  = new Cache(memory, 16, 2, 16, ReplacementPoliciesEnum.RANDOM, true, true, 1, 1, 1,
                        new SimulationStatistics(0, 1));
     cache.storeData(126, 0x23456789L, 4, 0, 0);
@@ -121,7 +121,7 @@ public class CacheTest
   @Test
   public void cache_lru()
   {
-    memory = new SimulatedMemory();
+    memory = new SimulatedMemory(0, 0);
     cache  = new Cache(memory, 4, 2, 16, ReplacementPoliciesEnum.LRU, true, false, 1, 1, 10,
                        new SimulationStatistics(0, 1));
     
@@ -174,7 +174,7 @@ public class CacheTest
   @Test
   public void cache_lruSmall_dataOnly()
   {
-    memory = new SimulatedMemory();
+    memory = new SimulatedMemory(0, 0);
     cache  = new Cache(memory, 2, 2, 4, ReplacementPoliciesEnum.LRU, true, false, 10, 10, 0,
                        new SimulationStatistics(0, 1));
     

@@ -35,6 +35,11 @@ package com.gradle.superscalarsim.code;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import com.gradle.superscalarsim.blocks.AbstractBlock;
+import com.gradle.superscalarsim.models.memory.MemoryTransaction;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static java.util.Arrays.copyOf;
 
@@ -47,7 +52,7 @@ import static java.util.Arrays.copyOf;
  * @brief Class simulating memory with read/write capabilities
  */
 @JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
-public class SimulatedMemory
+public class SimulatedMemory implements AbstractBlock
 {
   /**
    * Main memory. Grows as needed.
@@ -57,11 +62,29 @@ public class SimulatedMemory
   private byte[] memory;
   
   /**
+   * Delay of store access to main memory in clocks.
+   */
+  private int storeLatency;
+  
+  /**
+   * Delay of load access to main memory in clocks.
+   */
+  private int loadLatency;
+  
+  /**
+   * List of parallel operations in progress or recently finished.
+   */
+  private Map<Integer, MemoryTransaction> operations;
+  
+  /**
    * @brief Constructor
    */
-  public SimulatedMemory()
+  public SimulatedMemory(int storeLatency, int loadLatency)
   {
-    this.memory = new byte[0];
+    this.storeLatency = storeLatency;
+    this.loadLatency  = loadLatency;
+    this.memory       = new byte[0];
+    this.operations   = new HashMap<>();
   }// end of Constructor
   //-------------------------------------------------------------------------------------------
   
@@ -132,6 +155,18 @@ public class SimulatedMemory
     return returnVal;
   }// end of getFromMemory
   //-------------------------------------------------------------------------------------------
+  
+  /**
+   * @brief Simulate finished memory accesses
+   */
+  @Override
+  public void simulate()
+  {
+    for (MemoryTransaction transaction : this.operations.values())
+    {
+      transaction.address();
+    }
+  }
   
   /**
    * @brief Resets memory to its initial state
