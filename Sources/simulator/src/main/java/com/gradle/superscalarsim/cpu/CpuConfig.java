@@ -248,7 +248,7 @@ public class CpuConfig implements Serializable
     config.storeBehavior     = "write-back";
     config.cacheAccessDelay  = 1;
     // Memory
-    config.storeLatency         = 0;
+    config.storeLatency         = 1;
     config.loadLatency          = 1;
     config.laneReplacementDelay = 10;
     config.lbSize               = 64;

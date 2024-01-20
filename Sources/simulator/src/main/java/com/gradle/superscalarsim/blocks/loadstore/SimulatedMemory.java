@@ -175,6 +175,7 @@ public class SimulatedMemory implements AbstractBlock, MemoryBlock
       assert !transaction.isFinished(); // All finished transactions should be removed from the list by the requester
       // Check if the operation is finished this cycle
       int finishCycle = transaction.timestamp() + transaction.latency();
+      assert finishCycle >= cycle;
       if (finishCycle == cycle)
       {
         // Operation finished, write data to memory

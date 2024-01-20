@@ -201,13 +201,13 @@ public class CpuConfigValidator
     {
       errors.add(new Error("Cache line size must be a power of two", "cacheLineSize"));
     }
-    if (cpuConfig.cacheStoreLatency < 0)
+    if (cpuConfig.cacheStoreLatency < 1)
     {
-      errors.add(new Error("Cache store latency must be non-negative", "cacheStoreLatency"));
+      errors.add(new Error("Cache store latency must be positive", "cacheStoreLatency"));
     }
-    if (cpuConfig.cacheLoadLatency < 0)
+    if (cpuConfig.cacheLoadLatency < 1)
     {
-      errors.add(new Error("Cache load latency must be non-negative", "cacheLoadLatency"));
+      errors.add(new Error("Cache load latency must be positive", "cacheLoadLatency"));
     }
     if (cpuConfig.cacheAssoc < 1)
     {
@@ -249,13 +249,13 @@ public class CpuConfigValidator
     {
       errors.add(new Error("Store buffer size must be between 1 and 1024", "sbSize"));
     }
-    if (cpuConfig.storeLatency < 0)
+    if (cpuConfig.storeLatency < 1)
     {
-      errors.add(new Error("Store latency must be non-negative", "storeLatency"));
+      errors.add(new Error("Store latency must be positive", "storeLatency"));
     }
-    if (cpuConfig.loadLatency < 0)
+    if (cpuConfig.loadLatency < 1)
     {
-      errors.add(new Error("Load latency must be non-negative", "loadLatency"));
+      errors.add(new Error("Load latency must be positive", "loadLatency"));
     }
     if (cpuConfig.callStackSize < 1 || cpuConfig.callStackSize > 65536)
     {

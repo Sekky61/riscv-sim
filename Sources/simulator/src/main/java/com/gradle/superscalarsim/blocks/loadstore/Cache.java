@@ -248,7 +248,10 @@ public class Cache implements AbstractBlock, MemoryBlock
   public long getData(long address, int size)
   {
     CacheLineModel line = findLane(address);
-    assert line != null;
+    if (line == null)
+    {
+      throw new IllegalArgumentException("No such line in cache");
+    }
     byte[] returnData = line.getDataBytes((int) (address & (lineSize - 1)), size);
     long   returnVal  = 0;
     for (int i = 0; i < size; i++)
@@ -577,8 +580,27 @@ public class Cache implements AbstractBlock, MemoryBlock
     long baseAddress = address & -(1L << getOffsetBits());
     MemoryTransaction lineTransaction = new MemoryTransaction(-1, CACHE_ID, timestamp, baseAddress, null, lineSize,
                                                               false, false);
+    MemoryTransaction existingTransaction = findTransactionByBaseAddress(baseAddress);
+    if (existingTransaction != null)
+    {
+      // The line is already being loaded, just wait for it
+      int timeLeft = existingTransaction.latency() - (timestamp - existingTransaction.timestamp());
+      return timeLeft;
+    }
     memoryTransactions.add(lineTransaction);
     return memory.scheduleTransaction(lineTransaction);
+  }
+  
+  private MemoryTransaction findTransactionByBaseAddress(long baseAddress)
+  {
+    for (MemoryTransaction transaction : memoryTransactions)
+    {
+      if (transaction.address() == baseAddress)
+      {
+        return transaction;
+      }
+    }
+    return null;
   }
   
   /**

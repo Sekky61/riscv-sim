@@ -28,7 +28,7 @@ public class CacheTest
   @Before
   public void setup()
   {
-    memory = new SimulatedMemory(0, 0);
+    memory = new SimulatedMemory(1, 1);
     cache  = new Cache(memory, 16, 2, 16, 1, 1, ReplacementPoliciesEnum.RANDOM, true, new SimulationStatistics(0, 1));
   }
   
@@ -65,8 +65,8 @@ public class CacheTest
   public void cache_BasicWriteAndRead()
   {
     cache.scheduleTransaction(MemoryTransaction.store(128, new byte[]{0x04, 0x03, 0x02, 0x01}));
-    simulateCycles(0, 2);
-    // Delay is 1 (memory has no delay), so first cycle, the transaction is scheduled, second cycle it is finished
+    simulateCycles(0, 3);
+    // Delay is 2 (1+1), so first cycle, the transaction is scheduled, second cycle it is sent to memory, third cycle it is finished
     Assert.assertEquals(0x01020304, cache.getData(128, 4));
   }
   
@@ -74,7 +74,7 @@ public class CacheTest
   public void cache_MisalignedWriteAndReadFollowedByAlignedRead()
   {
     cache.scheduleTransaction(MemoryTransaction.store(130, new byte[]{(byte) 0x89, 0x67, 0x45, 0x23}));
-    simulateCycles(0, 2);
+    simulateCycles(0, 3);
     Assert.assertEquals(0x23456789, cache.getData(130, 4));
     Assert.assertEquals(0x00002345, cache.getData(132, 4));
   }
@@ -86,7 +86,7 @@ public class CacheTest
     MemoryTransaction store2 = MemoryTransaction.store(134, new byte[]{0x22, 0x11});
     cache.scheduleTransaction(store1);
     cache.scheduleTransaction(store2);
-    simulateCycles(0, 2);
+    simulateCycles(0, 3);
     // The consumer of the cache takes the results (mandatory)
     cache.finishTransaction(store1.id());
     cache.finishTransaction(store2.id());
@@ -107,7 +107,7 @@ public class CacheTest
     MemoryTransaction store1 = MemoryTransaction.store(128,
                                                        new byte[]{(byte) 0x89, 0x67, 0x45, 0x23, 0x66, 0x77, (byte) 0x88, (byte) 0x99});
     cache.scheduleTransaction(store1);
-    simulateCycles(0, 2);
+    simulateCycles(0, 3);
     // The consumer of the cache takes the results (mandatory)
     cache.finishTransaction(store1.id());
     
@@ -124,7 +124,7 @@ public class CacheTest
   {
     MemoryTransaction store1 = MemoryTransaction.store(126, new byte[]{(byte) 0x89, 0x67, 0x45, 0x23});
     cache.scheduleTransaction(store1);
-    simulateCycles(0, 2);
+    simulateCycles(0, 3);
     // The consumer of the cache takes the results (mandatory)
     cache.finishTransaction(store1.id());
     
@@ -135,19 +135,30 @@ public class CacheTest
   @Test
   public void cache_lru()
   {
+    // 4 lines TOTAL, 2 ways, 16 bytes per line.
+    // This means that addresses 0, 32 (!) and 64 (!) are in the same set
+    // Storing to 0 and 64, the cache should accommodate both
     cache = new Cache(memory, 4, 2, 16, 1, 1, ReplacementPoliciesEnum.LRU, true, new SimulationStatistics(0, 1));
     
     //Store first line
-    cache.scheduleTransaction(MemoryTransaction.store(0, new byte[]{(byte) 0x44, 0x33, 0x22, 0x11}));
-    cache.scheduleTransaction(MemoryTransaction.store(4, new byte[]{(byte) 0x88, 0x77, 0x66, 0x55}));
-    cache.scheduleTransaction(MemoryTransaction.store(8, new byte[]{(byte) 0x28, (byte) 0x82, 0x19, (byte) 0x91}));
-    cache.scheduleTransaction(MemoryTransaction.store(12, new byte[]{0x11, 0x44, 0x37, 0x73}));
+    MemoryTransaction store1 = MemoryTransaction.store(0, new byte[]{(byte) 0x44, 0x33, 0x22, 0x11});
+    MemoryTransaction store2 = MemoryTransaction.store(4, new byte[]{(byte) 0x88, 0x77, 0x66, 0x55});
+    MemoryTransaction store3 = MemoryTransaction.store(8, new byte[]{(byte) 0x28, (byte) 0x82, 0x19, (byte) 0x91});
+    MemoryTransaction store4 = MemoryTransaction.store(12, new byte[]{0x11, 0x44, 0x37, 0x73});
+    cache.scheduleTransaction(store1);
+    cache.scheduleTransaction(store2);
+    cache.scheduleTransaction(store3);
+    cache.scheduleTransaction(store4);
     //Store second line
-    cache.scheduleTransaction(MemoryTransaction.store(32, new byte[]{0x33, 0x33, (byte) 0x97, 0x79}));
-    cache.scheduleTransaction(MemoryTransaction.store(36, new byte[]{0x45, 0x55, 0x32, 0x32}));
-    cache.scheduleTransaction(MemoryTransaction.store(40, new byte[]{0x66, 0x77, (byte) 0x97, (byte) 0x99}));
-    cache.scheduleTransaction(MemoryTransaction.store(44, new byte[]{0x63, (byte) 0x94, 0x32, (byte) 0x87}));
-    simulateCycles(0, 2);
+    MemoryTransaction store5 = MemoryTransaction.store(32, new byte[]{0x33, 0x33, (byte) 0x97, 0x79});
+    MemoryTransaction store6 = MemoryTransaction.store(36, new byte[]{0x45, 0x55, 0x32, 0x32});
+    MemoryTransaction store7 = MemoryTransaction.store(40, new byte[]{0x66, 0x77, (byte) 0x97, (byte) 0x99});
+    MemoryTransaction store8 = MemoryTransaction.store(44, new byte[]{0x63, (byte) 0x94, 0x32, (byte) 0x87});
+    cache.scheduleTransaction(store5);
+    cache.scheduleTransaction(store6);
+    cache.scheduleTransaction(store7);
+    cache.scheduleTransaction(store8);
+    simulateCycles(0, 3);
     
     //Read first line
     Assert.assertEquals(0x11223344L, cache.getData(0, 4));
@@ -160,10 +171,22 @@ public class CacheTest
     Assert.assertEquals(0x99977766L, cache.getData(40, 4));
     Assert.assertEquals(0x87329463L, cache.getData(44, 4));
     
+    // Confirm stores
+    cache.finishTransaction(store1.id());
+    cache.finishTransaction(store2.id());
+    cache.finishTransaction(store3.id());
+    cache.finishTransaction(store4.id());
+    cache.finishTransaction(store5.id());
+    cache.finishTransaction(store6.id());
+    cache.finishTransaction(store7.id());
+    cache.finishTransaction(store8.id());
+    
     //Store third line (should replace the first)
-    cache.scheduleTransaction(MemoryTransaction.store(64, new byte[]{0x54, 0x23, (byte) 0x97, 0x31}));
-    cache.scheduleTransaction(MemoryTransaction.store(68, new byte[]{0x29, 0x43, (byte) 0x87, 0x65}));
-    simulateCycles(2, 1);
+    MemoryTransaction store9  = MemoryTransaction.store(64, new byte[]{0x54, 0x23, (byte) 0x97, 0x31}, 3);
+    MemoryTransaction store10 = MemoryTransaction.store(68, new byte[]{0x29, 0x43, (byte) 0x87, 0x65}, 3);
+    cache.scheduleTransaction(store9);
+    cache.scheduleTransaction(store10);
+    simulateCycles(3, 3);
     
     //Read third line
     Assert.assertEquals(0x31972354L, cache.getData(64, 4));
@@ -177,25 +200,25 @@ public class CacheTest
     Assert.assertEquals(0x99977766L, cache.getData(40, 4));
     Assert.assertEquals(0x87329463L, cache.getData(44, 4));
     
-    //Read the first line
-    Assert.assertEquals(0x11223344L, cache.getData(0, 4));
-    Assert.assertEquals(0x55667788L, cache.getData(4, 4));
-    Assert.assertEquals(0x91198228L, cache.getData(8, 4));
-    Assert.assertEquals(0x73374411L, cache.getData(12, 4));
+    // Cannot read the first line from cache. It is not there anymore
+    Assert.assertThrows(IllegalArgumentException.class, () -> cache.getData(0, 4));
   }
   
   @Test
   public void cache_lruSmall_dataOnly()
   {
-    memory = new SimulatedMemory(0, 0);
+    // 2 lines, 2 ways, 4 bytes per line.
+    // This means that every address is in the same set
+    memory = new SimulatedMemory(1, 1);
     cache  = new Cache(memory, 2, 2, 4, 1, 1, ReplacementPoliciesEnum.LRU, true, new SimulationStatistics(0, 1));
     
-    //Store 4 lines
+    // Store 4 lines
+    // todo The 4 stores fight over the two lines, who ends up in the cache if it is parallel?
     cache.scheduleTransaction(MemoryTransaction.store(0, new byte[]{(byte) 0x44, 0x33, 0x22, 0x11}));
     cache.scheduleTransaction(MemoryTransaction.store(4, new byte[]{(byte) 0x88, 0x77, 0x66, 0x55}));
     cache.scheduleTransaction(MemoryTransaction.store(8, new byte[]{(byte) 0x28, (byte) 0x82, 0x19, (byte) 0x91}));
     cache.scheduleTransaction(MemoryTransaction.store(12, new byte[]{0x11, 0x44, 0x37, 0x73}));
-    simulateCycles(0, 2);
+    simulateCycles(0, 3);
     
     //Read them
     Assert.assertEquals(0x11223344L, cache.getData(0, 4));
