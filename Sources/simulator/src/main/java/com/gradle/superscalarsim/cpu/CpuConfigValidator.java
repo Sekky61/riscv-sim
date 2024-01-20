@@ -196,6 +196,19 @@ public class CpuConfigValidator
     {
       errors.add(new Error("Cache line size must be between 1 and 512", "cacheLineSize"));
     }
+    boolean isLineSizePowerOfTwo = Integer.bitCount(cpuConfig.cacheLineSize) == 1;
+    if (!isLineSizePowerOfTwo)
+    {
+      errors.add(new Error("Cache line size must be a power of two", "cacheLineSize"));
+    }
+    if (cpuConfig.cacheStoreLatency < 0)
+    {
+      errors.add(new Error("Cache store latency must be non-negative", "cacheStoreLatency"));
+    }
+    if (cpuConfig.cacheLoadLatency < 0)
+    {
+      errors.add(new Error("Cache load latency must be non-negative", "cacheLoadLatency"));
+    }
     if (cpuConfig.cacheAssoc < 1)
     {
       errors.add(new Error("Cache associativity must be greater than 0", "cacheAssociativity"));

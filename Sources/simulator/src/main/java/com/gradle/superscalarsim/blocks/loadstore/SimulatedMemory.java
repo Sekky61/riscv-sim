@@ -30,7 +30,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.gradle.superscalarsim.code;
+package com.gradle.superscalarsim.blocks.loadstore;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -52,7 +52,7 @@ import static java.util.Arrays.copyOf;
  * @brief Class simulating memory with read/write capabilities
  */
 @JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
-public class SimulatedMemory implements AbstractBlock
+public class SimulatedMemory implements AbstractBlock, MemoryBlock
 {
   /**
    * Main memory. Grows as needed.
@@ -63,6 +63,7 @@ public class SimulatedMemory implements AbstractBlock
   
   /**
    * Delay of store access to main memory in clocks.
+   * A store is executed after this many cycles.
    */
   private int storeLatency;
   
@@ -77,14 +78,20 @@ public class SimulatedMemory implements AbstractBlock
   private List<MemoryTransaction> operations;
   
   /**
+   * ID generator for memory transactions
+   */
+  private int transactionId;
+  
+  /**
    * @brief Constructor
    */
   public SimulatedMemory(int storeLatency, int loadLatency)
   {
-    this.storeLatency = storeLatency;
-    this.loadLatency  = loadLatency;
-    this.memory       = new byte[0];
-    this.operations   = new ArrayList<>();
+    this.storeLatency  = storeLatency;
+    this.loadLatency   = loadLatency;
+    this.memory        = new byte[0];
+    this.operations    = new ArrayList<>();
+    this.transactionId = 77;
   }// end of Constructor
   //-------------------------------------------------------------------------------------------
   
@@ -144,10 +151,17 @@ public class SimulatedMemory implements AbstractBlock
    * Schedule a memory access. It will be finished after the specified number of cycles.
    *
    * @param transaction Memory transaction to schedule
+   *
+   * @return Number of cycles until the transaction is finished
    */
-  public void scheduleMemoryAccess(MemoryTransaction transaction)
+  @Override
+  public int scheduleTransaction(MemoryTransaction transaction)
   {
     this.operations.add(transaction);
+    int latency = transaction.isStore() ? this.storeLatency : this.loadLatency;
+    transaction.setLatency(latency);
+    transaction.setId(this.transactionId++);
+    return latency;
   }
   
   /**
@@ -160,7 +174,7 @@ public class SimulatedMemory implements AbstractBlock
     {
       assert !transaction.isFinished(); // All finished transactions should be removed from the list by the requester
       // Check if the operation is finished this cycle
-      int finishCycle = transaction.timestamp() + (transaction.isStore() ? this.storeLatency : this.loadLatency);
+      int finishCycle = transaction.timestamp() + transaction.latency();
       if (finishCycle == cycle)
       {
         // Operation finished, write data to memory
@@ -169,6 +183,11 @@ public class SimulatedMemory implements AbstractBlock
         if (transaction.isStore())
         {
           this.insertIntoMemory(transaction.address(), transaction.data());
+        }
+        else
+        {
+          // A load
+          transaction.setData(this.getFromMemory(transaction.address(), transaction.size()));
         }
       }
     }
@@ -203,22 +222,54 @@ public class SimulatedMemory implements AbstractBlock
    *
    * @param id ID of the transaction
    *
-   * @return Data from the transaction (if it was a load, original data if it was a store)
-   * @brief Take the result of a memory access. Remove the operation from the list.
+   * @brief Remove the operation from the list.
    */
-  public byte[] takeResult(int id)
+  @Override
+  public MemoryTransaction finishTransaction(int id)
   {
-    MemoryTransaction transaction = this.operations.get(id);
-    if (transaction == null)
+    MemoryTransaction tr = findTransaction(id);
+    if (tr == null)
     {
       throw new IllegalArgumentException("No such transaction");
     }
-    if (!transaction.isFinished())
+    if (!tr.isFinished())
     {
       throw new IllegalArgumentException("Transaction not finished yet");
     }
-    this.operations.remove(id);
-    return transaction.data();
+    this.operations.remove(tr);
+    return tr;
+  }
+  
+  private MemoryTransaction findTransaction(int id)
+  {
+    for (MemoryTransaction tr : this.operations)
+    {
+      if (tr.id() == id)
+      {
+        return tr;
+      }
+    }
+    return null;
+  }
+  
+  /**
+   * @param id ID of the transaction
+   *
+   * @brief Cancel the transaction. It must be present and not finished.
+   */
+  @Override
+  public void cancelTransaction(int id)
+  {
+    MemoryTransaction tr = findTransaction(id);
+    if (tr == null)
+    {
+      throw new IllegalArgumentException("No such transaction");
+    }
+    if (tr.isFinished())
+    {
+      throw new IllegalArgumentException("Transaction already finished");
+    }
+    this.operations.remove(tr);
   }
   //-------------------------------------------------------------------------------------------
   

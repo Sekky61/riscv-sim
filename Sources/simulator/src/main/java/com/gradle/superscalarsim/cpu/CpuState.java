@@ -228,9 +228,8 @@ public class CpuState implements Serializable
     }
     
     this.cache = new Cache(simulatedMemory, config.cpuConfig.cacheLines, config.cpuConfig.cacheAssoc,
-                           config.cpuConfig.cacheLineSize, replacementPoliciesEnum, writeBack, false,
-                           config.cpuConfig.storeLatency, config.cpuConfig.loadLatency,
-                           config.cpuConfig.laneReplacementDelay, statistics);
+                           config.cpuConfig.cacheLineSize, config.cpuConfig.storeLatency, config.cpuConfig.loadLatency,
+                           replacementPoliciesEnum, writeBack, statistics);
     
     this.memoryModel = new MemoryModel(cache, statistics);
     
@@ -413,6 +412,10 @@ public class CpuState implements Serializable
    */
   public void step()
   {
+    // memory
+    simulatedMemory.simulate(tick);
+    cache.simulate(tick);
+    // rob
     reorderBufferBlock.simulate(tick);
     // Run all FUs
     arithmeticFunctionUnitBlocks.forEach(arithmeticFunctionUnitBlock -> arithmeticFunctionUnitBlock.simulate(tick));
@@ -433,7 +436,6 @@ public class CpuState implements Serializable
       storeBufferBlock.simulate(tick);
       loadBufferBlock.simulate(tick);
     }
-    simulatedMemory.simulate(tick);
     // run all AbstractIssueWindowBlock blocks
     aluIssueWindowBlock.simulate(tick);
     fpIssueWindowBlock.simulate(tick);

@@ -27,6 +27,8 @@
 
 package com.gradle.superscalarsim.models.memory;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.Objects;
 
 /**
@@ -35,19 +37,26 @@ import java.util.Objects;
  */
 public final class MemoryTransaction
 {
-  private final int id;
+  private final int mmuId;
   private final int timestamp;
   private final long address;
-  private final byte[] data;
   private final int size;
   private final boolean isStore;
   private final boolean isSigned;
+  private int id;
+  /**
+   * Data to be written to memory or the result of a read.
+   * Mutated by memory at transaction completion.
+   */
+  private byte[] data;
   private boolean isFinished = false;
+  private int latency;
   
   /**
    * Constructor
    */
   public MemoryTransaction(int id,
+                           int mmuId,
                            int timestamp,
                            long address,
                            byte[] data,
@@ -60,12 +69,91 @@ public final class MemoryTransaction
       throw new IllegalArgumentException("Size must be between 1 and 8");
     }
     this.id        = id;
+    this.mmuId     = mmuId;
     this.timestamp = timestamp;
     this.address   = address;
     this.data      = data;
     this.size      = size;
     this.isStore   = isStore;
     this.isSigned  = isSigned;
+    latency        = 0;
+  }
+  
+  /**
+   * Constructor for store access
+   *
+   * @param address Address of the memory access
+   * @param data    Data to be stored
+   */
+  public static MemoryTransaction store(long address, byte[] data)
+  {
+    return store(address, data, 0);
+  }
+  
+  /**
+   * Constructor for store access
+   *
+   * @param address   Address of the memory access
+   * @param data      Data to be stored
+   * @param timestamp Timestamp of the memory access
+   */
+  public static MemoryTransaction store(long address, byte[] data, int timestamp)
+  {
+    return new MemoryTransaction(-1, -1, timestamp, address, data, data.length, true, false);
+  }
+  
+  /**
+   * Constructor for load access
+   *
+   * @param address Address of the memory access
+   * @param size    Size of the data in bytes (1-8)
+   */
+  public static MemoryTransaction load(long address, int size)
+  {
+    return load(address, size, 0);
+  }
+  
+  /**
+   * Constructor for load access
+   *
+   * @param address  Address of the memory access
+   * @param size     Size of the data in bytes (1-8)
+   * @param isSigned True if the data is signed
+   */
+  public static MemoryTransaction load(long address, int size, int timestamp)
+  {
+    return new MemoryTransaction(-1, -1, timestamp, address, null, size, false, false);
+  }
+  
+  public int latency()
+  {
+    return latency;
+  }
+  
+  /**
+   * @brief Once latency is known, it is saved here
+   */
+  public void setLatency(int latency)
+  {
+    this.latency = latency;
+  }
+  
+  /**
+   * ID is set by the memory model
+   */
+  public void setId(int id)
+  {
+    this.id = id;
+  }
+  
+  public int id()
+  {
+    return id;
+  }
+  
+  public void setData(byte[] data)
+  {
+    this.data = data;
   }
   
   public int timestamp()
@@ -81,6 +169,42 @@ public final class MemoryTransaction
   public byte[] data()
   {
     return data;
+  }
+  
+  public long dataAsLong()
+  {
+    byte[] expandedData;
+    if (data.length == 8)
+    {
+      expandedData = data;
+    }
+    else
+    {
+      // expand data to 8 bytes
+      expandedData = new byte[8];
+      System.arraycopy(data, 0, expandedData, 0, data.length);
+    }
+    long returnValLong = ByteBuffer.wrap(expandedData).order(ByteOrder.LITTLE_ENDIAN).getLong();
+    
+    // Sign extend
+    if (isSigned)
+    {
+      int  sizeBits  = size * 8;
+      long validMask = (1L << sizeBits) - 1;
+      if (sizeBits >= 64)
+      {
+        validMask = -1;
+      }
+      returnValLong = returnValLong & validMask;
+      if (((1L << (sizeBits - 1)) & returnValLong) != 0)
+      {
+        // Fill with sign bit
+        long signMask = ~validMask;
+        returnValLong = returnValLong | signMask;
+      }
+    }
+    
+    return returnValLong;
   }
   
   public int size()
@@ -112,6 +236,12 @@ public final class MemoryTransaction
   }
   
   @Override
+  public int hashCode()
+  {
+    return Objects.hash(timestamp, address, data, size, isStore, isSigned);
+  }
+  
+  @Override
   public boolean equals(Object obj)
   {
     if (obj == this)
@@ -125,12 +255,6 @@ public final class MemoryTransaction
     var that = (MemoryTransaction) obj;
     return this.timestamp == that.timestamp && this.address == that.address && Objects.equals(this.data,
                                                                                               that.data) && this.size == that.size && this.isStore == that.isStore && this.isSigned == that.isSigned;
-  }
-  
-  @Override
-  public int hashCode()
-  {
-    return Objects.hash(timestamp, address, data, size, isStore, isSigned);
   }
   
   @Override

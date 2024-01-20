@@ -28,8 +28,8 @@
 
 package com.gradle.superscalarsim.cpu;
 
+import com.gradle.superscalarsim.blocks.loadstore.SimulatedMemory;
 import com.gradle.superscalarsim.code.Label;
-import com.gradle.superscalarsim.code.SimulatedMemory;
 
 import java.util.List;
 import java.util.Map;

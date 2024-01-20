@@ -28,7 +28,6 @@
 package com.gradle.superscalarsim.cpu;
 
 import com.gradle.superscalarsim.enums.DataTypeEnum;
-import com.gradle.superscalarsim.models.memory.MemoryAccess;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -1670,7 +1669,7 @@ public class InstructionTests
     Cpu cpu = new Cpu(cpuConfig);
     cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(0x100);
     cpu.cpuState.unifiedRegisterFileBlock.getRegister("x4").setValue(0xfe);
-    cpu.cpuState.memoryModel.execute(MemoryAccess.store(0x100, 1, 0b11, false));
+    cpu.cpuState.simulatedMemory.insertIntoMemory(0x100, new byte[]{(byte) 0b11});
     cpu.execute();
     
     // Assert
@@ -1691,8 +1690,8 @@ public class InstructionTests
     Cpu cpu = new Cpu(cpuConfig);
     cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(0x100);
     cpu.cpuState.unifiedRegisterFileBlock.getRegister("x4").setValue(0x101);
-    cpu.cpuState.memoryModel.execute(MemoryAccess.store(0x100, 1, 0x10, false));
-    cpu.cpuState.memoryModel.execute(MemoryAccess.store(0x102, 1, 0xff, false));
+    cpu.cpuState.simulatedMemory.insertIntoMemory(0x100, new byte[]{(byte) 0x10});
+    cpu.cpuState.simulatedMemory.insertIntoMemory(0x102, new byte[]{(byte) 0xff});
     cpu.execute();
     
     // Assert
@@ -1712,17 +1711,18 @@ public class InstructionTests
     Cpu cpu = new Cpu(cpuConfig);
     cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(0x100);
     cpu.cpuState.unifiedRegisterFileBlock.getRegister("x4").setValue(0x103);
-    cpu.cpuState.memoryModel.execute(MemoryAccess.store(0x100, 4, 0x12345678, false));
+    cpu.cpuState.simulatedMemory.insertIntoMemory(0x100,
+                                                  new byte[]{(byte) 0x78, (byte) 0x56, (byte) 0x34, (byte) 0x12});
     cpu.execute();
     
     // Assert
     Assert.assertEquals(0x12345678,
                         cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt));
     Assert.assertEquals(0x12, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x3").getValue(DataTypeEnum.kInt));
-    Assert.assertEquals(1, cpu.cpuState.statistics.cache.getReadAccesses());
-    Assert.assertEquals(4, cpu.cpuState.statistics.cache.getBytesRead());
-    // !! This is caused by test setup (store)
-    Assert.assertEquals(1, cpu.cpuState.statistics.cache.getWriteAccesses());
+    Assert.assertEquals(2, cpu.cpuState.statistics.cache.getReadAccesses());
+    Assert.assertEquals(8, cpu.cpuState.statistics.cache.getBytesRead());
+    // !! The test setup does not touch cache
+    Assert.assertEquals(0, cpu.cpuState.statistics.cache.getWriteAccesses());
   }
   
   /**
@@ -1736,7 +1736,7 @@ public class InstructionTests
     Cpu cpu = new Cpu(cpuConfig);
     cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(0x100);
     cpu.cpuState.unifiedRegisterFileBlock.getRegister("x4").setValue(0xff);
-    cpu.cpuState.memoryModel.execute(MemoryAccess.store(0x100, 1, 255, false));
+    cpu.cpuState.simulatedMemory.insertIntoMemory(0x100, new byte[]{(byte) 255});
     cpu.execute();
     
     // Assert
@@ -1755,7 +1755,7 @@ public class InstructionTests
     Cpu cpu = new Cpu(cpuConfig);
     cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(0x100);
     cpu.cpuState.unifiedRegisterFileBlock.getRegister("x4").setValue(0xff);
-    cpu.cpuState.memoryModel.execute(MemoryAccess.store(0x100, 2, 0xffff, false));
+    cpu.cpuState.simulatedMemory.insertIntoMemory(0x100, new byte[]{(byte) 0xff, (byte) 0xff});
     cpu.execute();
     
     // Assert
@@ -1784,9 +1784,9 @@ public class InstructionTests
     cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(0x100);
     cpu.execute();
     
-    // Assert
-    Assert.assertEquals(0x11, (long) cpu.cpuState.memoryModel.load(0x100, 1, 0, 0).getSecond());
-    Assert.assertEquals(0x00, (long) cpu.cpuState.memoryModel.load(0x101, 1, 0, 0).getSecond());
+    // Assert (load from main memory is safe, execute flushes cache
+    Assert.assertEquals(0x11, cpu.cpuState.simulatedMemory.getFromMemory(0x100));
+    Assert.assertEquals(0x00, cpu.cpuState.simulatedMemory.getFromMemory(0x101));
     Assert.assertEquals(1, cpu.cpuState.statistics.cache.getWriteAccesses());
     Assert.assertEquals(1, cpu.cpuState.statistics.cache.getBytesWritten());
   }
@@ -1805,10 +1805,10 @@ public class InstructionTests
     cpu.execute();
     
     // Assert
-    Assert.assertEquals(0x33, (long) cpu.cpuState.memoryModel.load(0x100, 1, 0, 0).getSecond());
-    Assert.assertEquals(0x22, (long) cpu.cpuState.memoryModel.load(0x101, 1, 0, 0).getSecond());
-    Assert.assertEquals(0x00, (long) cpu.cpuState.memoryModel.load(0x102, 1, 0, 0).getSecond());
-    Assert.assertEquals(0x00, (long) cpu.cpuState.memoryModel.load(0x103, 1, 0, 0).getSecond());
+    Assert.assertEquals(0x33, cpu.cpuState.simulatedMemory.getFromMemory(0x100));
+    Assert.assertEquals(0x22, cpu.cpuState.simulatedMemory.getFromMemory(0x101));
+    Assert.assertEquals(0x00, cpu.cpuState.simulatedMemory.getFromMemory(0x102));
+    Assert.assertEquals(0x00, cpu.cpuState.simulatedMemory.getFromMemory(0x103));
   }
   
   /**
@@ -1825,10 +1825,11 @@ public class InstructionTests
     cpu.execute();
     
     // Assert
-    Assert.assertEquals(0x33, (long) cpu.cpuState.memoryModel.load(0x100, 1, 0, 0).getSecond());
-    Assert.assertEquals(0x22, (long) cpu.cpuState.memoryModel.load(0x101, 1, 0, 0).getSecond());
-    Assert.assertEquals(0x11, (long) cpu.cpuState.memoryModel.load(0x102, 1, 0, 0).getSecond());
-    Assert.assertEquals(0xff, (long) cpu.cpuState.memoryModel.load(0x103, 1, 0, 0).getSecond());
+    Assert.assertEquals(0x33, cpu.cpuState.simulatedMemory.getFromMemory(0x100));
+    Assert.assertEquals(0x22, cpu.cpuState.simulatedMemory.getFromMemory(0x101));
+    Assert.assertEquals(0x11, cpu.cpuState.simulatedMemory.getFromMemory(0x102));
+    byte ff = (byte) 0xff; // java bytes are signed
+    Assert.assertEquals(ff, cpu.cpuState.simulatedMemory.getFromMemory(0x103));
   }
   
   /**

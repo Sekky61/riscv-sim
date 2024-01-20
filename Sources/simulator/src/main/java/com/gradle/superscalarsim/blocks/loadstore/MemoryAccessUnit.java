@@ -43,10 +43,13 @@ import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.models.FunctionalUnitDescription;
 import com.gradle.superscalarsim.models.InputCodeArgument;
-import com.gradle.superscalarsim.models.Pair;
 import com.gradle.superscalarsim.models.SimCodeModel;
 import com.gradle.superscalarsim.models.memory.MemoryAccess;
+import com.gradle.superscalarsim.models.memory.MemoryTransaction;
 import com.gradle.superscalarsim.models.register.RegisterModel;
+
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 /**
  * @class MemoryAccessUnit
@@ -76,20 +79,15 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
   private CodeLoadStoreInterpreter loadStoreInterpreter;
   
   /**
-   * The binary state of the MA unit.
-   * First delay is for MAU, second delay is for reply from memory.
-   */
-  private boolean firstDelayPassed = false;
-  
-  /**
-   * Data of the load operation to be able to store it later
-   */
-  private long savedResult;
-  
-  /**
-   * settings for first delay
+   * Delay added to the memory access by this unit.
    */
   private int baseDelay;
+  
+  /**
+   * Current memory transaction, or null if no transaction is in progress.
+   * TODO do not serialize (or maybe it does not matter here)
+   */
+  private MemoryTransaction transaction;
   
   /**
    * @param description          Description of the function unit
@@ -117,6 +115,7 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
     this.loadStoreInterpreter = loadStoreInterpreter;
     this.baseDelay            = description.latency;
     this.memoryModel          = memoryModel;
+    transaction               = null;
   }// end of Constructor
   //----------------------------------------------------------------------
   
@@ -128,6 +127,7 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
   {
     if (isFunctionUnitEmpty())
     {
+      // todo why
       this.functionUnitId += this.functionUnitCount;
     }
     else
@@ -144,10 +144,8 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
       // Instruction has failed, remove it from MAU
       this.simCodeModel.setFunctionUnitId(this.functionUnitId);
       this.simCodeModel = null;
-      this.zeroTheCounter();
-      
-      this.setDelay(baseDelay);
-      this.firstDelayPassed = false;
+      zeroTheCounter();
+      setDelay(baseDelay);
       return;
     }
     
@@ -166,63 +164,29 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
       {
         throw new RuntimeException("Instruction is not load or store");
       }
+      
+      // Start execution
+      int delay = startExecution(cycle);
+      this.setDelay(delay);
+      // todo +baseDelay ? But careful to take the transaction result in time
     }
     
     // hasDelayPassed increments counter, checks if work (waiting) is done
-    tickCounter();
-    if (!hasDelayPassed())
+    if (hasDelayPassed())
     {
-      return;
-    }
-    
-    // Delay passed, execute
-    boolean allowAccessFinish = true;
-    if (!firstDelayPassed)
-    {
-      // First delay is over, start memory access
-      firstDelayPassed = true;
-      
-      // This contacts memoryModel, pulls data and delay
-      MemoryAccess access        = loadStoreInterpreter.interpretInstruction(this.simCodeModel);
-      long         address       = access.getAddress();
-      int          numberOfBytes = access.getSize();
-      int          id            = this.simCodeModel.getIntegerId();
-      
-      Pair<Integer, Long> result;
-      if (access.isStore())
-      {
-        int delay = processStoreOperation(access);
-        result = new Pair<>(delay, access.getData());
-      }
-      else
-      {
-        result = processLoadOperation(numberOfBytes * 8, address, access.isSigned(), id, cycle);
-      }
-      
-      int delay = result.getFirst();
-      savedResult = result.getSecond();
-      
-      // Set delay for memory response
-      this.setDelay(delay);
-      this.resetCounter();
-      if (delay != 0)
-      {
-        // Memory returned with delay for access, do not allow to finish in the same execution
-        allowAccessFinish = false;
-      }
-    }
-    
-    if (firstDelayPassed && allowAccessFinish)
-    {
+      assert simCodeModel != null;
+      assert transaction != null;
       // Wait for memory is over, instruction is finished
-      firstDelayPassed = false;
       this.setDelay(baseDelay);
-      int simCodeId = this.simCodeModel.getIntegerId();
+      int simCodeId = simCodeModel.getIntegerId();
       this.reorderBufferBlock.getRobItem(simCodeId).reorderFlags.setBusy(false);
+      // Take result
+      memoryModel.finishTransaction(transaction.id());
       if (this.simCodeModel.isLoad())
       {
         InputCodeArgument destinationArgument = simCodeModel.getArgumentByName("rd");
         RegisterModel     destRegister        = destinationArgument.getRegisterValue();
+        long              savedResult         = transaction.dataAsLong();
         destRegister.setValue(savedResult, simCodeModel.getInstructionFunctionModel().getArgumentByName("rd").type());
         destRegister.setReadiness(RegisterReadinessEnum.kExecuted);
         this.loadBufferBlock.setDestinationAvailable(simCodeId);
@@ -234,67 +198,47 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
       }
       
       this.simCodeModel = null;
+      this.transaction  = null;
+      zeroTheCounter();
     }
+    
+    tickCounter();
   }
   //----------------------------------------------------------------------
   
   /**
-   * @param sizeBits     How many bits to store
-   * @param address      Address to store to
-   * @param valueBits    Value to store (lower sizeBits bits are used)
-   * @param id           ID of a store instruction, that is being executed
-   * @param currentCycle Current cycle
-   *
-   * @return Delay of this access
+   * @return Delay of this access and id of the transaction
+   * @brief starts execution of instruction
    */
-  private int processStoreOperation(MemoryAccess memoryAccess)
+  private int startExecution(int cycle)
   {
-    return memoryModel.store(memoryAccess);
-  }// end of processStoreOperation
-  //-------------------------------------------------------------------------------------------
-  
-  /**
-   * @param sizeBits     Size of the loaded value (8, 16, 32)
-   * @param address      Address to read from
-   * @param isSigned     True in case of signed value, false otherwise
-   * @param id           ID of a load instruction, that is being executed
-   * @param currentCycle Current cycle
-   *
-   * @return Pair of delay of this access and data (64 bits, suitable for assignment to register)
-   */
-  private Pair<Integer, Long> processLoadOperation(int sizeBits,
-                                                   long address,
-                                                   boolean isSigned,
-                                                   int id,
-                                                   int currentCycle)
-  {
-    int                 numberOfBytes = sizeBits / 8;
-    Pair<Integer, Long> loadedData    = memoryModel.load(address, numberOfBytes, id, currentCycle);
+    // This contacts memoryModel, pulls data and delay
+    MemoryAccess access        = loadStoreInterpreter.interpretInstruction(this.simCodeModel);
+    long         address       = access.getAddress();
+    int          numberOfBytes = access.getSize();
     
-    // Apply mask to zero out or sign extend the value
-    long bits      = loadedData.getSecond();
-    long validMask = (1L << sizeBits) - 1;
-    if (sizeBits >= 64)
+    // Convert to a MemoryTransaction
+    byte[] data = null;
+    if (access.isStore())
     {
-      validMask = -1;
-    }
-    bits = bits & validMask;
-    if (isSigned && ((1L << (sizeBits - 1)) & bits) != 0)
-    {
-      // Fill with sign bit
-      long signMask = ~validMask;
-      bits = bits | signMask;
+      ByteBuffer byteBuffer = ByteBuffer.allocate(8);
+      byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
+      byteBuffer.putLong(access.getData());
+      // Take only first size bytes
+      data = new byte[numberOfBytes];
+      System.arraycopy(byteBuffer.array(), 0, data, 0, numberOfBytes);
     }
     
-    return new Pair<>(loadedData.getFirst(), bits);
-  }// end of processLoadOperation
-  //-------------------------------------------------------------------------------------------
+    transaction = new MemoryTransaction(-1, functionUnitId, cycle, address, data, numberOfBytes, access.isStore(),
+                                        access.isSigned());
+    // return memory delay
+    return memoryModel.execute(transaction);
+  }
   
   @Override
   public void reset()
   {
     super.reset();
-    firstDelayPassed = false;
     this.setDelay(baseDelay);
   }
   
@@ -328,8 +272,7 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
     this.zeroTheCounter();
     
     this.setDelay(baseDelay);
-    this.firstDelayPassed = false;
-    
+    // todo cancel transaction?
   }// end of tryRemoveCodeModel
   //----------------------------------------------------------------------
   

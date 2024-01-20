@@ -122,6 +122,16 @@ public class CpuConfig implements Serializable
   public int cacheLineSize;
   
   /**
+   * Load delay of the cache in cycles.
+   */
+  public int cacheLoadLatency;
+  
+  /**
+   * Store delay of the cache in cycles.
+   */
+  public int cacheStoreLatency;
+  
+  /**
    * Cache associativity.
    */
   public int cacheAssoc;
@@ -228,13 +238,15 @@ public class CpuConfig implements Serializable
                                   new FunctionalUnitDescription(4, FunctionalUnitDescription.Type.Memory, 1, "Memory"));
     
     // Cache
-    config.useCache         = true;
-    config.cacheLines       = 16;
-    config.cacheLineSize    = 32;
-    config.cacheAssoc       = 2;
-    config.cacheReplacement = "LRU"; // TODO: Other policies have problem deserializing
-    config.storeBehavior    = "write-back";
-    config.cacheAccessDelay = 1;
+    config.useCache          = true;
+    config.cacheLoadLatency  = 1;
+    config.cacheStoreLatency = 1;
+    config.cacheLines        = 16;
+    config.cacheLineSize     = 32;
+    config.cacheAssoc        = 2;
+    config.cacheReplacement  = "LRU"; // TODO: Other policies have problem deserializing
+    config.storeBehavior     = "write-back";
+    config.cacheAccessDelay  = 1;
     // Memory
     config.storeLatency         = 0;
     config.loadLatency          = 1;

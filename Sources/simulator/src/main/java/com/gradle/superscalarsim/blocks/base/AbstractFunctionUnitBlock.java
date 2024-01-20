@@ -90,12 +90,12 @@ public abstract class AbstractFunctionUnitBlock implements AbstractBlock
   /**
    * Delay for function unit. Can change based on the instruction.
    */
-  private int delay;
+  protected int delay;
   
   /**
    * Counter variable. Used for counting delay of the function unit.
    */
-  private int counter;
+  protected int counter;
   
   public AbstractFunctionUnitBlock()
   {
@@ -282,8 +282,7 @@ public abstract class AbstractFunctionUnitBlock implements AbstractBlock
    */
   private int getDelayBasedOnCapability()
   {
-    String                                   expr           = this.simCodeModel.getInstructionFunctionModel()
-            .getInterpretableAs();
+    String expr = this.simCodeModel.getInstructionFunctionModel().getInterpretableAs();
     FunctionalUnitDescription.CapabilityName capabilityName = FunctionalUnitDescription.classifyOperation(expr);
     if (capabilityName == null)
     {

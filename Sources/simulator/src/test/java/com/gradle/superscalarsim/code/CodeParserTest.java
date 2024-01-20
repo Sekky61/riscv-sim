@@ -1,5 +1,6 @@
 package com.gradle.superscalarsim.code;
 
+import com.gradle.superscalarsim.blocks.loadstore.SimulatedMemory;
 import com.gradle.superscalarsim.cpu.MemoryInitializer;
 import com.gradle.superscalarsim.cpu.MemoryLocation;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
