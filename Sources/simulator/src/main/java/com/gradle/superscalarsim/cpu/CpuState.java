@@ -259,11 +259,10 @@ public class CpuState implements Serializable
     this.branchInterpreter     = new CodeBranchInterpreter();
     
     // Memory blocks
-    this.storeBufferBlock = new StoreBufferBlock(loadStoreInterpreter, unifiedRegisterFileBlock, reorderBufferBlock);
-    storeBufferBlock.setBufferSize(config.cpuConfig.sbSize);
-    this.loadBufferBlock = new LoadBufferBlock(storeBufferBlock, unifiedRegisterFileBlock, reorderBufferBlock,
-                                               instructionFetchBlock);
-    loadBufferBlock.setBufferSize(config.cpuConfig.lbSize);
+    this.storeBufferBlock = new StoreBufferBlock(config.cpuConfig.sbSize, loadStoreInterpreter,
+                                                 unifiedRegisterFileBlock, reorderBufferBlock);
+    this.loadBufferBlock  = new LoadBufferBlock(config.cpuConfig.lbSize, storeBufferBlock, unifiedRegisterFileBlock,
+                                                reorderBufferBlock, instructionFetchBlock);
     
     // FUs
     this.aluIssueWindowBlock       = new IssueWindowBlock(InstructionTypeEnum.kIntArithmetic);

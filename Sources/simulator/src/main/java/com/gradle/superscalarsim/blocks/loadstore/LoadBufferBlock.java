@@ -50,7 +50,11 @@ import java.util.*;
 
 /**
  * @class LoadBufferBlock
- * @brief Class that holds all in-flight load instructions
+ * @brief Class that holds all in-flight load instructions.
+ * @details After computing the address, it is compared with older store instructions (stores without address are ignored).
+ * In case of a match, the load value is bypassed from the store.
+ * If there is no match, a load from memory is performed.
+ * The correctness of a loads is checked at retirement of every _store_ instruction.
  */
 @JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
 public class LoadBufferBlock implements AbstractBlock
@@ -110,7 +114,8 @@ public class LoadBufferBlock implements AbstractBlock
    *
    * @brief Constructor
    */
-  public LoadBufferBlock(StoreBufferBlock storeBufferBlock,
+  public LoadBufferBlock(int bufferSize,
+                         StoreBufferBlock storeBufferBlock,
                          UnifiedRegisterFileBlock registerFileBlock,
                          ReorderBufferBlock reorderBufferBlock,
                          InstructionFetchBlock instructionFetchBlock)
@@ -119,7 +124,7 @@ public class LoadBufferBlock implements AbstractBlock
     this.registerFileBlock     = registerFileBlock;
     this.reorderBufferBlock    = reorderBufferBlock;
     this.instructionFetchBlock = instructionFetchBlock;
-    this.bufferSize            = 64;
+    this.bufferSize            = bufferSize;
     
     this.loadQueue            = new ArrayDeque<>();
     this.memoryAccessUnitList = new ArrayList<>();
@@ -154,23 +159,11 @@ public class LoadBufferBlock implements AbstractBlock
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @param bufferSize New load buffer size
-   *
-   * @brief Set load buffer limit size
-   */
-  public void setBufferSize(int bufferSize)
-  {
-    this.bufferSize = bufferSize;
-  }// end of setBufferSize
-  //-------------------------------------------------------------------------------------------
-  
-  /**
    * @brief Simulates Load buffer
    */
   @Override
   public void simulate(int cycle)
   {
-    checkIfProcessedHasConflict(cycle);
     removeInvalidInstructions();
     selectLoadForDataAccess(cycle);
   }// end of simulate
@@ -187,42 +180,7 @@ public class LoadBufferBlock implements AbstractBlock
   //-------------------------------------------------------------------------------------------
   
   /**
-   * Can cause a flush of the ROB
-   *
-   * @brief Checks if the instruction has no conflicts with all previously executed store instructions.
-   */
-  private void checkIfProcessedHasConflict(int cycle)
-  {
-    for (LoadBufferItem bufferItem : this.loadQueue)
-    {
-      if (!bufferItem.isDestinationReady() && !bufferItem.isAccessingMemory())
-      {
-        continue;
-      }
-      int     beforeMaId   = bufferItem.getMemoryAccessId();
-      boolean beforeBypass = bufferItem.hasBypassed();
-      
-      if (findMatchingStore(bufferItem) == null)
-      {
-        // No conflict
-        continue;
-      }
-      
-      // Conflict detected
-      // Remove the load and flush ROB
-      SimCodeModel simCodeModel = bufferItem.getSimCodeModel();
-      reorderBufferBlock.invalidateInstructions(simCodeModel);
-      reorderBufferBlock.flushInvalidInstructions(cycle);
-      bufferItem.setMemoryFailedId(cycle);
-      bufferItem.setMemoryAccessId(beforeMaId);
-      bufferItem.setHasBypassed(beforeBypass);
-      // Fix PC
-      instructionFetchBlock.setPc(simCodeModel.getSavedPc());
-    }
-  }// end of checkIfProcessedHasConflict
-  
-  /**
-   * @brief Removes all invalid load instructions from buffer
+   * @brief Removes all invalid load instructions from buffer. Instructions become invalid when they are flushed from ROB.
    */
   private void removeInvalidInstructions()
   {
@@ -246,10 +204,10 @@ public class LoadBufferBlock implements AbstractBlock
       }
     }
   }// end of removeInvalidInstructions
-  //-------------------------------------------------------------------------------------------
   
   /**
-   * Tries to find work for MA block. Tries to bypass load instructions by matching store instructions
+   * Tries to find work for MAU block.
+   * Tries to bypass load instructions by matching store instructions.
    *
    * @brief Selects load instructions for MA block
    */
@@ -258,19 +216,19 @@ public class LoadBufferBlock implements AbstractBlock
     LoadBufferItem workForMa = null;
     for (LoadBufferItem item : this.loadQueue)
     {
-      boolean isAvailableForMA = item.getAddress() != -1 && !item.isAccessingMemory() && !item.isDestinationReady();
-      if (!isAvailableForMA)
+      boolean dataShouldBeLoaded = item.getAddress() != -1 && !item.isAccessingMemory() && !item.isDestinationReady();
+      if (!dataShouldBeLoaded)
       {
         continue;
       }
       
-      StoreBufferItem resultStoreItem = findMatchingStore(item);
+      StoreBufferItem resultStoreItem = storeBufferBlock.findMatchingStore(item);
       boolean         foundStore      = resultStoreItem != null;
       if (foundStore)
       {
-        // Bypass, if possible. But keep looking for work for MA
-        // If the bypass is not successful, it will be successful later when the store is executed
-        tryBypassLoad(item, resultStoreItem, cycle);
+        // Store with the same address and a loaded value found! Forward the value.
+        forwardLoad(item, resultStoreItem, cycle);
+        // But keep looking for work for MA (no break)
       }
       else
       {
@@ -288,45 +246,26 @@ public class LoadBufferBlock implements AbstractBlock
     // TODO: Does this mean load block can only dispatch one load in a tick? What about more MAs?
     for (MemoryAccessUnit memoryAccessUnit : this.memoryAccessUnitList)
     {
-      if (memoryAccessUnit.isFunctionUnitEmpty())
+      if (!memoryAccessUnit.isFunctionUnitEmpty())
       {
-        memoryAccessUnit.resetCounter();
-        memoryAccessUnit.setSimCodeModel(workForMa.getSimCodeModel());
-        workForMa.setAccessingMemory(true);
-        workForMa.setAccessingMemoryId(cycle);
-        return;
+        continue;
       }
+      memoryAccessUnit.resetCounter();
+      memoryAccessUnit.setSimCodeModel(workForMa.getSimCodeModel());
+      workForMa.setAccessingMemory(true);
+      workForMa.setAccessingMemoryId(cycle);
+      return;
     }
   }// end of selectLoadForDataAccess
-  //-------------------------------------------------------------------------------------------
-  
-  /**
-   * @brief finds matching store instruction in store buffer for given load instruction
-   */
-  private StoreBufferItem findMatchingStore(LoadBufferItem loadItem)
-  {
-    assert loadItem != null;
-    long         loadAddress  = loadItem.getAddress();
-    SimCodeModel simCodeModel = loadItem.getSimCodeModel();
-    for (StoreBufferItem storeItem : this.storeBufferBlock.getStoreMapAsList())
-    {
-      if (loadAddress == storeItem.getAddress() && simCodeModel.getIntegerId() > storeItem.getSourceResultId())
-      {
-        return storeItem;
-      }
-    }
-    return null;
-  }// end of findMatchingStore
   //-------------------------------------------------------------------------------------------
   
   /**
    * @param loadItem  Load instruction to be bypassed
    * @param storeItem Store instruction to be bypassed
    *
-   * @return True if successfully bypassed, false otherwise
-   * @brief Tries to bypass load instruction by store instruction
+   * @brief Forwards value from store to the load
    */
-  private boolean tryBypassLoad(LoadBufferItem loadItem, StoreBufferItem storeItem, int cycle)
+  private void forwardLoad(LoadBufferItem loadItem, StoreBufferItem storeItem, int cycle)
   {
     assert loadItem != null;
     assert storeItem != null;
@@ -334,23 +273,42 @@ public class LoadBufferBlock implements AbstractBlock
     RegisterModel         sourceReg        = registerFileBlock.getRegister(storeItem.getSourceRegister());
     RegisterReadinessEnum resultState      = sourceReg.getReadiness();
     boolean               storeSourceReady = resultState == RegisterReadinessEnum.kExecuted || resultState == RegisterReadinessEnum.kAssigned;
-    if (!storeSourceReady)
-    {
-      // Cannot speculatively load, the value is not computed yet
-      return false;
-    }
+    assert storeSourceReady;
     
-    // We found a matching store with computed value
-    // Bypass memory access by speculation
+    // Write to the load dest. register
     RegisterModel destinationReg = registerFileBlock.getRegister(loadItem.getDestinationRegister());
     destinationReg.setValue(sourceReg.getValue());
     destinationReg.setReadiness(RegisterReadinessEnum.kAssigned);
     loadItem.setDestinationReady(true);
     loadItem.setHasBypassed(true);
     loadItem.setMemoryAccessId(cycle);
+    // The load is done, ready for commit
     reorderBufferBlock.getRobItem(loadItem.getSimCodeModel().getIntegerId()).reorderFlags.setBusy(false);
-    return true;
   }// end of processLoadInstruction
+  //-------------------------------------------------------------------------------------------
+  
+  /**
+   * @param address Address of store instruction being committed.
+   * @param cycle   The cycle of store instruction being committed.
+   *
+   * @brief Checks if there is a badly speculated load instruction in the load buffer.
+   * If there are multiple, the oldest one is chosen.
+   */
+  public LoadBufferItem findConflictingLoad(long address, int cycle)
+  {
+    // The queue is ordered, so we search from the oldest to the newest
+    for (LoadBufferItem bufferItem : this.loadQueue)
+    {
+      boolean addressesMatch = bufferItem.getAddress() == address;
+      boolean isAfterStore   = bufferItem.getSimCodeModel().getIntegerId() > cycle;
+      // TODO: what if the load is not yet in MA/executed?
+      if (addressesMatch && isAfterStore)
+      {
+        return bufferItem;
+      }
+    }
+    return null;
+  }// end of checkIfProcessedHasConflict
   //-------------------------------------------------------------------------------------------
   
   /**
@@ -364,8 +322,7 @@ public class LoadBufferBlock implements AbstractBlock
     {
       throw new RuntimeException("Trying to add non-load instruction to load buffer");
     }
-    
-    if (isBufferFull(1))
+    if (!hasSpace())
     {
       throw new RuntimeException("Trying to add load instruction to full load buffer");
     }
@@ -378,14 +335,11 @@ public class LoadBufferBlock implements AbstractBlock
   }
   
   /**
-   * @param possibleAddition Number of instructions to be possibly added
-   *
-   * @return True if buffer would be full, false otherwise
-   * @brief Checks if buffer would be full if specified number of instructions were to be added
+   * @return True if buffer has space for a single item, false otherwise
    */
-  public boolean isBufferFull(int possibleAddition)
+  public boolean hasSpace()
   {
-    return this.bufferSize < (this.loadQueue.size() + possibleAddition);
+    return this.bufferSize > this.loadQueue.size();
   }// end of isBufferFull
   
   /**

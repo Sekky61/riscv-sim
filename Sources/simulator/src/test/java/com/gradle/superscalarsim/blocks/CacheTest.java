@@ -32,21 +32,6 @@ public class CacheTest
     cache  = new Cache(memory, 16, 2, 16, 1, 1, ReplacementPoliciesEnum.RANDOM, true, new SimulationStatistics(0, 1));
   }
   
-  /**
-   * Simulate the cache and memory for a number of cycles.
-   *
-   * @param from  inclusive
-   * @param count number of cycles to simulate
-   */
-  public void simulateCycles(int from, int count)
-  {
-    for (int i = from; i < from + count; i++)
-    {
-      memory.simulate(i);
-      cache.simulate(i);
-    }
-  }
-  
   @Test
   public void cache_SplitAddress()
   {
@@ -68,6 +53,21 @@ public class CacheTest
     simulateCycles(0, 3);
     // Delay is 2 (1+1), so first cycle, the transaction is scheduled, second cycle it is sent to memory, third cycle it is finished
     Assert.assertEquals(0x01020304, cache.getData(128, 4));
+  }
+  
+  /**
+   * Simulate the cache and memory for a number of cycles.
+   *
+   * @param from  inclusive
+   * @param count number of cycles to simulate
+   */
+  public void simulateCycles(int from, int count)
+  {
+    for (int i = from; i < from + count; i++)
+    {
+      memory.simulate(i);
+      cache.simulate(i);
+    }
   }
   
   @Test
@@ -202,6 +202,64 @@ public class CacheTest
     
     // Cannot read the first line from cache. It is not there anymore
     Assert.assertThrows(IllegalArgumentException.class, () -> cache.getData(0, 4));
+  }
+  
+  @Test
+  public void cache_fifo()
+  {
+    // 2 groups per 4 bytes
+    // This means that addresses 0, 8, 16 are in the same set
+    cache = new Cache(memory, 8, 4, 4, 1, 1, ReplacementPoliciesEnum.FIFO, true, new SimulationStatistics(0, 1));
+    
+    MemoryTransaction store1 = MemoryTransaction.store(0, new byte[]{0x11, 0x22});
+    cache.scheduleTransaction(store1);
+    simulateCycles(0, 1);
+    
+    MemoryTransaction store2 = MemoryTransaction.store(8, new byte[]{0x33, 0x44}, 1);
+    cache.scheduleTransaction(store2);
+    simulateCycles(1, 1);
+    
+    MemoryTransaction store3 = MemoryTransaction.store(16, new byte[]{0x55, 0x66}, 2);
+    cache.scheduleTransaction(store3);
+    simulateCycles(2, 1);
+    cache.finishTransaction(store1.id());
+    
+    MemoryTransaction store4 = MemoryTransaction.store(24, new byte[]{0x77, (byte) 0x88}, 3);
+    cache.scheduleTransaction(store4);
+    simulateCycles(3, 1);
+    cache.finishTransaction(store2.id());
+    
+    // Finish the transactions
+    
+    simulateCycles(4, 1);
+    cache.finishTransaction(store3.id());
+    
+    simulateCycles(5, 1);
+    cache.finishTransaction(store4.id());
+    
+    // At this point, the associative set is full, all is accessible
+    Assert.assertEquals(0x2211, cache.getData(0, 2));
+    Assert.assertEquals(0x4433, cache.getData(8, 2));
+    Assert.assertEquals(0x6655, cache.getData(16, 2));
+    Assert.assertEquals(0x8877, cache.getData(24, 2));
+    
+    // Now lets store to the same address again
+    MemoryTransaction store5 = MemoryTransaction.store(0, new byte[]{0x34, 0x12}, 6);
+    cache.scheduleTransaction(store5);
+    simulateCycles(6, 2); // 2 because it is already in cache
+    cache.finishTransaction(store5.id());
+    
+    // The first line was written to
+    Assert.assertEquals(0x1234, cache.getData(0, 2));
+    
+    // Let's store more data to the same group (address not in cache)
+    MemoryTransaction store6 = MemoryTransaction.store(32, new byte[]{0x56, 0x78}, 8);
+    cache.scheduleTransaction(store6);
+    simulateCycles(8, 3); // 3 because memory delay
+    cache.finishTransaction(store6.id());
+    
+    // The first line was written to, because it is the oldest
+    Assert.assertThrows(IllegalArgumentException.class, () -> cache.getData(0, 2));
   }
   
   @Test

@@ -42,6 +42,7 @@ import com.gradle.superscalarsim.code.CodeLoadStoreInterpreter;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.models.InputCodeArgument;
 import com.gradle.superscalarsim.models.SimCodeModel;
+import com.gradle.superscalarsim.models.memory.LoadBufferItem;
 import com.gradle.superscalarsim.models.memory.StoreBufferItem;
 
 import java.util.*;
@@ -97,14 +98,15 @@ public class StoreBufferBlock implements AbstractBlock
    *
    * @brief Constructor
    */
-  public StoreBufferBlock(CodeLoadStoreInterpreter loadStoreInterpreter,
+  public StoreBufferBlock(int bufferSize,
+                          CodeLoadStoreInterpreter loadStoreInterpreter,
                           UnifiedRegisterFileBlock registerFileBlock,
                           ReorderBufferBlock reorderBufferBlock)
   {
     this.loadStoreInterpreter = loadStoreInterpreter;
     this.registerFileBlock    = registerFileBlock;
     this.reorderBufferBlock   = reorderBufferBlock;
-    this.bufferSize           = 64;
+    this.bufferSize           = bufferSize;
     
     this.storeQueue           = new ArrayDeque<>();
     this.memoryAccessUnitList = new ArrayList<>();
@@ -196,7 +198,7 @@ public class StoreBufferBlock implements AbstractBlock
   //----------------------------------------------------------------------
   
   /**
-   * @brief Selects store instructions for MA block
+   * @brief Selects store instructions for MA block. The selected store is a non-speculative store with address.
    */
   private void selectStoreForDataAccess(int cycle)
   {
@@ -212,7 +214,8 @@ public class StoreBufferBlock implements AbstractBlock
       SimCodeModel simCodeModel = item.getSimCodeModel();
       assert !simCodeModel.hasFailed();
       
-      boolean isSpeculative = reorderBufferBlock.getRobItem(simCodeModel.getIntegerId()).reorderFlags.isSpeculative();
+      boolean isSpeculative    = reorderBufferBlock.getRobItem(
+              simCodeModel.getIntegerId()).reorderFlags.isSpeculative();
       boolean isAvailableForMA = !isSpeculative && item.getAddress() != -1 && !item.isAccessingMemory() && item.getAccessingMemoryId() == -1 && item.isSourceReady();
       if (!isAvailableForMA)
       {
@@ -264,14 +267,11 @@ public class StoreBufferBlock implements AbstractBlock
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @param possibleAddition Number of instructions to be possibly added
-   *
-   * @return True if buffer would be full, false otherwise
-   * @brief Checks if buffer would be full if specified number of instructions were to be added
+   * @return True if buffer has space for a single item, false otherwise
    */
-  public boolean isBufferFull(int possibleAddition)
+  public boolean hasSpace()
   {
-    return this.bufferSize < (this.storeQueue.size() + possibleAddition);
+    return this.bufferSize > this.storeQueue.size();
   }// end of isBufferFull
   //-------------------------------------------------------------------------------------------
   
@@ -301,14 +301,32 @@ public class StoreBufferBlock implements AbstractBlock
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @param bufferSize New store buffer size
-   *
-   * @brief Set store buffer limit size
+   * @brief Finds a matching store instruction in store buffer for given load instruction.
+   * The store must be preceding the load instruction in program order.
+   * It also has to be the most recent one if multiple stores to the same address exist.
+   * It also has to have the value computed.
    */
-  public void setBufferSize(int bufferSize)
+  public StoreBufferItem findMatchingStore(LoadBufferItem loadItem)
   {
-    this.bufferSize = bufferSize;
-  }// end of setBufferSize
+    // TODO: can be more optimal - the stores are sorted by program order
+    assert loadItem != null;
+    long            loadAddress     = loadItem.getAddress();
+    SimCodeModel    simCodeModel    = loadItem.getSimCodeModel();
+    StoreBufferItem bestCandidate   = null;
+    int             bestCandidateId = -1;
+    for (StoreBufferItem storeItem : this.storeQueue)
+    {
+      int     candidateId             = storeItem.getSourceResultId();
+      boolean moreRecentButStillOlder = bestCandidateId < candidateId && simCodeModel.getIntegerId() > candidateId;
+      boolean isSourceReady           = storeItem.isSourceReady();
+      if (loadAddress == storeItem.getAddress() && moreRecentButStillOlder && isSourceReady)
+      {
+        bestCandidateId = candidateId;
+        bestCandidate   = storeItem;
+      }
+    }
+    return bestCandidate;
+  }// end of findMatchingStore
   //-------------------------------------------------------------------------------------------
   
   /**
@@ -331,7 +349,6 @@ public class StoreBufferBlock implements AbstractBlock
     assert !this.storeQueue.isEmpty();
     return storeQueue.peek().getSimCodeModel();
   }// end of getStoreQueueFirst
-  //-------------------------------------------------------------------------------------------
   
   /**
    * @brief Release store instruction on top of the queue (instruction has been committed)
@@ -344,6 +361,7 @@ public class StoreBufferBlock implements AbstractBlock
     }
     storeQueue.poll();
   }// end of releaseStoreFirst
+  //-------------------------------------------------------------------------------------------
   
   /**
    * @return Queue size
@@ -353,16 +371,6 @@ public class StoreBufferBlock implements AbstractBlock
   {
     return this.storeQueue.size();
   }// end of getQueueSize
-  //-------------------------------------------------------------------------------------------
-  
-  /**
-   * @return List of store map values
-   * @brief Get all store map values as list
-   */
-  List<StoreBufferItem> getStoreMapAsList()
-  {
-    return storeQueue.stream().toList();
-  }// end of updateMapValues
   
   /**
    * @param codeModel The store instruction to be added to the buffer

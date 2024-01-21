@@ -363,6 +363,7 @@ public class Cache implements AbstractBlock, MemoryBlock
       assert !transaction.isFinished(); // All finished transactions should be removed from the list by the requester
       // Check if the operation is finished this cycle
       int finishCycle = transaction.timestamp() + transaction.latency();
+      assert finishCycle >= cycle;
       if (finishCycle == cycle)
       {
         // Cache transaction finished, write/read from cache

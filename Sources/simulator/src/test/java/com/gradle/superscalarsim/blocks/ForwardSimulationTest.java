@@ -6,23 +6,15 @@ import com.gradle.superscalarsim.blocks.branch.BranchFunctionUnitBlock;
 import com.gradle.superscalarsim.blocks.branch.BranchTargetBuffer;
 import com.gradle.superscalarsim.blocks.branch.GShareUnit;
 import com.gradle.superscalarsim.blocks.branch.GlobalHistoryRegister;
-import com.gradle.superscalarsim.blocks.loadstore.LoadBufferBlock;
-import com.gradle.superscalarsim.blocks.loadstore.LoadStoreFunctionUnit;
-import com.gradle.superscalarsim.blocks.loadstore.MemoryAccessUnit;
-import com.gradle.superscalarsim.blocks.loadstore.StoreBufferBlock;
-import com.gradle.superscalarsim.builders.InputCodeArgumentBuilder;
-import com.gradle.superscalarsim.builders.InputCodeModelBuilder;
+import com.gradle.superscalarsim.blocks.loadstore.*;
 import com.gradle.superscalarsim.builders.RegisterFileModelBuilder;
 import com.gradle.superscalarsim.code.*;
 import com.gradle.superscalarsim.cpu.*;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
-import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.enums.RegisterTypeEnum;
 import com.gradle.superscalarsim.loader.InitLoader;
 import com.gradle.superscalarsim.models.FunctionalUnitDescription;
-import com.gradle.superscalarsim.models.InputCodeArgument;
-import com.gradle.superscalarsim.models.InputCodeModel;
 import com.gradle.superscalarsim.models.register.RegisterFileModel;
 import com.gradle.superscalarsim.models.register.RegisterModel;
 import org.junit.Assert;
@@ -80,6 +72,8 @@ public class ForwardSimulationTest
   
   private MemoryModel memoryModel;
   
+  private Cache cache;
+  
   @Before
   public void setUp()
   {
@@ -117,6 +111,7 @@ public class ForwardSimulationTest
     cpuCfg.predictorType     = "2bit";
     cpuCfg.predictorDefault  = "Weakly Taken";
     // cache
+    cpuCfg.useCache             = true;
     cpuCfg.cacheLines           = 16;
     cpuCfg.cacheAssoc           = 2;
     cpuCfg.cacheLineSize        = 16;
@@ -184,6 +179,7 @@ public class ForwardSimulationTest
     this.fpIssueWindowBlock        = cpuState.fpIssueWindowBlock;
     this.loadStoreIssueWindowBlock = cpuState.loadStoreIssueWindowBlock;
     this.branchIssueWindowBlock    = cpuState.branchIssueWindowBlock;
+    this.cache                     = cpuState.cache;
     
     // FU
     this.addFunctionBlock = cpuState.arithmeticFunctionUnitBlocks.get(0);
@@ -1448,18 +1444,6 @@ public class ForwardSimulationTest
   @Test
   public void simulate_oneStore_savesIntInMemory()
   {
-    // Just a testing instruction
-    InputCodeArgument load1 = new InputCodeArgumentBuilder(unifiedRegisterFileBlock).hasName("rd").hasRegister("x1")
-            .build();
-    InputCodeArgument load2 = new InputCodeArgumentBuilder(unifiedRegisterFileBlock).hasName("rs1").hasRegister("x2")
-            .build();
-    InputCodeArgument load3 = new InputCodeArgumentBuilder(unifiedRegisterFileBlock).hasName("imm")
-            .hasConstant("0", DataTypeEnum.kInt).build();
-    InputCodeModel loadCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("lw")
-            .hasCodeLine("lw x1,0(x2)").hasDataTypeEnum(DataTypeEnum.kInt)
-            .hasInstructionTypeEnum(InstructionTypeEnum.kLoadstore).hasArguments(Arrays.asList(load1, load2, load3))
-            .build();
-    
     CodeParser codeParser = new CodeParser(initLoader);
     codeParser.parseCode("""
                                   sw x3,0(x2)
@@ -1495,6 +1479,7 @@ public class ForwardSimulationTest
     Assert.assertTrue(this.storeBufferBlock.getStoreBufferItem(0).isSourceReady());
     
     this.cpu.step();
+    // Out of L/S. Address computed. Already in MAU.
     Assert.assertEquals(0, this.loadBufferBlock.getQueueSize());
     Assert.assertEquals(1, this.storeBufferBlock.getQueueSize());
     Assert.assertNull(this.loadStoreFunctionUnit.getSimCodeModel());
@@ -1502,11 +1487,15 @@ public class ForwardSimulationTest
     Assert.assertTrue(this.storeBufferBlock.getStoreBufferItem(0).isSourceReady());
     Assert.assertFalse(this.reorderBufferBlock.getRobItem(0).reorderFlags.isReadyToBeCommitted());
     this.cpu.step();
+    // The store delay is 1, MAU delay is 1, so after two clocks...
+    this.cpu.step();
+    this.cpu.step();
+    // ... it should be executed and ready to be committed
     Assert.assertTrue(this.reorderBufferBlock.getRobItem(0).reorderFlags.isReadyToBeCommitted());
+    this.cpu.step();
+    Assert.assertEquals(0, this.reorderBufferBlock.getReorderQueueSize());
     
-    //    this.cpu.step();
-    //    Assert.assertEquals(6, loadStoreInterpreter.interpretInstruction(new SimCodeModel(loadCodeModel, -1, -1), 0)
-    //            .getSecond(), 0.01);
+    Assert.assertEquals(6, this.cache.getData(25, 4));
   }
   
   @Test

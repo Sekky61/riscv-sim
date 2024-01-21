@@ -44,6 +44,8 @@ import com.gradle.superscalarsim.blocks.loadstore.StoreBufferBlock;
 import com.gradle.superscalarsim.cpu.SimulationStatistics;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.models.*;
+import com.gradle.superscalarsim.models.memory.LoadBufferItem;
+import com.gradle.superscalarsim.models.memory.StoreBufferItem;
 
 import java.util.ArrayDeque;
 import java.util.Iterator;
@@ -249,6 +251,7 @@ public class ReorderBufferBlock implements AbstractBlock
    * Writes into architectural register, updates statistics
    *
    * @param codeModel Code model of committable instruction
+   * @param cycle     Current cycle
    *
    * @brief Process instruction that is ready to be committed
    */
@@ -305,14 +308,29 @@ public class ReorderBufferBlock implements AbstractBlock
     }
     else if (codeModel.getInstructionTypeEnum() == InstructionTypeEnum.kLoadstore)
     {
-      // Release load/store buffer entry
-      if (loadBufferBlock.getQueueSize() > 0 && loadBufferBlock.getLoadQueueFirst() == codeModel)
+      if (codeModel.isStore())
       {
-        loadBufferBlock.releaseLoadFirst();
-      }
-      else if (storeBufferBlock.getQueueSize() > 0 && storeBufferBlock.getStoreQueueFirst() == codeModel)
-      {
+        assert storeBufferBlock.getStoreQueueFirst() == codeModel; // store should be at the front of the queue
+        // Store checks later loads that are already executed
+        StoreBufferItem storeBufferItem = storeBufferBlock.getStoreBufferItem(codeModel.getIntegerId());
+        LoadBufferItem badLoad = loadBufferBlock.findConflictingLoad(storeBufferItem.getAddress(),
+                                                                     codeModel.getIntegerId());
+        if (badLoad != null)
+        {
+          // Bad load found, invalidate it
+          invalidateInstructions(badLoad.getSimCodeModel());
+        }
+        // Release store buffer entry
         storeBufferBlock.releaseStoreFirst();
+      }
+      else
+      {
+        // Release load buffer entry
+        // todo assert it?
+        if (loadBufferBlock.getQueueSize() > 0 && loadBufferBlock.getLoadQueueFirst() == codeModel)
+        {
+          loadBufferBlock.releaseLoadFirst();
+        }
       }
     }
     
@@ -401,24 +419,10 @@ public class ReorderBufferBlock implements AbstractBlock
   private void pullNewDecodedInstructions()
   {
     int pulledCount = 0;
-    int loadCount   = 0;
-    int storeCount  = 0;
     for (SimCodeModel codeModel : this.decodeAndDispatchBlock.getCodeBuffer())
     {
-      if (codeModel.isLoad())
-      {
-        loadCount++;
-      }
-      else if (codeModel.isStore())
-      {
-        storeCount++;
-      }
-      
-      boolean robFull   = this.bufferSize < (this.reorderQueue.size() + 1);
-      boolean loadFull  = this.loadBufferBlock.isBufferFull(loadCount);
-      boolean storeFull = this.storeBufferBlock.isBufferFull(storeCount);
-      
-      boolean instructionHasRoom = !robFull && !loadFull && !storeFull;
+      boolean robFull            = this.bufferSize < (this.reorderQueue.size() + 1);
+      boolean instructionHasRoom = !robFull && loadBufferBlock.hasSpace() && storeBufferBlock.hasSpace();
       if (!instructionHasRoom)
       {
         // No more space, stop
