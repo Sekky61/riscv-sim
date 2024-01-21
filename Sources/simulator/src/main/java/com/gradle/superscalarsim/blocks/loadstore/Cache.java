@@ -58,6 +58,9 @@ import java.util.List;
  * Only {@link MemoryAccessUnit} can work with the cache.
  * A MAU can issue one operation at a time. If there are multiple MAUs, each can "work" on one cache access at a time.
  * </p>
+ * <p>
+ *   TODO
+ *   Issues: If the number of cache requests in a single cycle is greater than the associativity, the cache will fail
  */
 @JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
 public class Cache implements AbstractBlock, MemoryBlock
@@ -247,7 +250,7 @@ public class Cache implements AbstractBlock, MemoryBlock
    */
   public long getData(long address, int size)
   {
-    CacheLineModel line = findLane(address);
+    CacheLineModel line = findLane(address, false);
     if (line == null)
     {
       throw new IllegalArgumentException("No such line in cache");
@@ -263,9 +266,12 @@ public class Cache implements AbstractBlock, MemoryBlock
   }
   
   /**
-   * @return True the cache line if it is in the cache, null otherwise
+   * @param address      starting byte of the access (can be misaligned)
+   * @param updatePolicy Should the replacement policy be updated?
+   *
+   * @return The cache line if it is in the cache, null otherwise.
    */
-  public CacheLineModel findLane(long address)
+  public CacheLineModel findLane(long address, boolean updatePolicy)
   {
     Triplet<Long, Integer, Integer> addressSplit = splitAddress(address);
     long                            tag          = addressSplit.getFirst();
@@ -276,6 +282,10 @@ public class Cache implements AbstractBlock, MemoryBlock
       CacheLineModel line = cache[index][i];
       if (line.getTag() == tag && line.isValid())
       {
+        if (updatePolicy)
+        {
+          replacementPolicy.updatePolicy(index, i);
+        }
         return line;
       }
     }
@@ -318,6 +328,7 @@ public class Cache implements AbstractBlock, MemoryBlock
   @Override
   public void simulate(int cycle)
   {
+    List<MemoryTransaction> toRemove = new ArrayList<>();
     for (int i = memoryTransactions.size() - 1; i >= 0; i--)
     {
       MemoryTransaction transaction = memoryTransactions.get(i);
@@ -328,12 +339,14 @@ public class Cache implements AbstractBlock, MemoryBlock
       {
         // Main memory transaction finished
         memory.finishTransaction(transaction.id());
-        this.memoryTransactions.remove(i);
+        toRemove.add(transaction);
         if (!transaction.isStore())
         {
-          // Save the line that we just loaded into cache
-          long           tag  = splitAddress(transaction.address()).getFirst();
-          CacheLineModel line = pickLineToUse(transaction.address());
+          // Load new line into cache
+          Triplet<Long, Integer, Integer> split = splitAddress(transaction.address());
+          long                            tag   = split.getFirst();
+          CacheLineModel                  line  = pickLineToUse(transaction.address(), cycle);
+          // The replacement policy was updated when the line was picked
           line.setLineData(transaction.data());
           line.setValid(true);
           line.setDirty(false);
@@ -342,6 +355,7 @@ public class Cache implements AbstractBlock, MemoryBlock
         }
       }
     }
+    memoryTransactions.removeAll(toRemove);
     
     // Cache operations
     for (MemoryTransaction transaction : this.cacheTransactions)
@@ -395,7 +409,7 @@ public class Cache implements AbstractBlock, MemoryBlock
     Triplet<Long, Integer, Integer> splitAddress = splitAddress(address);
     int                             offset       = splitAddress.getThird();
     
-    CacheLineModel line = findLane(address);
+    CacheLineModel line = findLane(address, true);
     assert line != null;
     
     // todo what if the line disappears from cache later?
@@ -409,7 +423,7 @@ public class Cache implements AbstractBlock, MemoryBlock
       byte[] data1 = line.getDataBytes(offset, size1);
       
       int            address2 = (int) (address + size1);
-      CacheLineModel line2    = findLane(address2);
+      CacheLineModel line2    = findLane(address2, true);
       int            size2    = size - size1;
       byte[]         data2    = line2.getDataBytes(0, size2);
       data = new byte[size];
@@ -425,36 +439,36 @@ public class Cache implements AbstractBlock, MemoryBlock
   
   /**
    * Finds a suitable cache line to store.
-   * Does not touch the line itself.
    * Updates replacement policy.
    *
    * @param address starting byte of the access (can be misaligned)
    *
    * @return Cache line to use for the new data. Either an empty line is found or a line is replaced.
    */
-  public CacheLineModel pickLineToUse(long address)
+  public CacheLineModel pickLineToUse(long address, int timestamp)
   {
     Triplet<Long, Integer, Integer> addressSplit = splitAddress(address);
     int                             index        = addressSplit.getSecond();
-    // todo elsewhere?
-    replacementPolicy.updatePolicy(index, index % associativity);
-    // Go through all lines - compare if tag matches
+    // Find a free line in the right group
     for (int i = 0; i < associativity; i++)
     {
       CacheLineModel lineCandidate = cache[index][i];
       if (!lineCandidate.isValid())
       {
+        replacementPolicy.updatePolicy(index, i);
         return lineCandidate;
       }
     }
     
-    // Pick victim, store victim line into memory
+    // All lines in group used. Pick victim line, store it into memory
     int            victimIndex = replacementPolicy.getLineToReplace(index);
     CacheLineModel line        = cache[index][victimIndex];
     if (line.isDirty())
     {
       CacheLineModel victimLine = cache[index][victimIndex];
-      memory.insertIntoMemory(victimLine.getBaseAddress(), victimLine.getLineData());
+      // The request will be confirmed by cache later
+      requestCacheLineStore(victimLine, timestamp);
+      replacementPolicy.updatePolicy(index, victimIndex);
     }
     
     return line;
@@ -475,11 +489,11 @@ public class Cache implements AbstractBlock, MemoryBlock
     Triplet<Long, Integer, Integer> splitAddress = splitAddress(address);
     int                             offset       = splitAddress.getThird();
     
-    CacheLineModel line = findLane(address);
+    CacheLineModel line = findLane(address, true);
     assert line != null;
     if (writeBack)
     {
-      // todo memory transaction here
+      // todo memory transaction here (into else)
       line.setDirty(true);
     }
     
@@ -492,7 +506,7 @@ public class Cache implements AbstractBlock, MemoryBlock
       System.arraycopy(data, 0, data1, 0, size1);
       
       int            address2 = (int) (address + size1);
-      CacheLineModel line2    = findLane(address2);
+      CacheLineModel line2    = findLane(address2, true);
       if (writeBack)
       {
         // todo memory transaction here
@@ -522,7 +536,7 @@ public class Cache implements AbstractBlock, MemoryBlock
   public int scheduleTransaction(MemoryTransaction transaction)
   {
     // Check if line is in cache
-    CacheLineModel line = findLane(transaction.address());
+    CacheLineModel line = findLane(transaction.address(), false);
     cacheTransactions.add(transaction);
     boolean isHit      = line != null;
     int     cacheDelay = (transaction.isStore() ? storeDelay : loadDelay);
@@ -543,7 +557,7 @@ public class Cache implements AbstractBlock, MemoryBlock
     {
       // Schedule second line load. The next address is at the next lineSize boundary
       long           nextAddress = ((transaction.address() >>> getOffsetBits()) + 1) << getOffsetBits();
-      CacheLineModel nextLine    = findLane(nextAddress);
+      CacheLineModel nextLine    = findLane(nextAddress, false);
       if (nextLine == null)
       {
         isHit = false;
@@ -656,5 +670,25 @@ public class Cache implements AbstractBlock, MemoryBlock
       throw new IllegalArgumentException("Transaction already finished");
     }
     cacheTransactions.remove(transaction);
+  }
+  
+  /**
+   * @brief starts the transaction to store data from cache to memory
+   * After this call, cache line will be free to use
+   */
+  private int requestCacheLineStore(CacheLineModel line, int timestamp)
+  {
+    // Create a memory transaction for the whole cache line
+    MemoryTransaction lineTransaction = new MemoryTransaction(-1, CACHE_ID, timestamp, line.getBaseAddress(),
+                                                              line.getLineData(), lineSize, true, false);
+    MemoryTransaction existingTransaction = findTransactionByBaseAddress(line.getBaseAddress());
+    if (existingTransaction != null)
+    {
+      // The line is already being loaded, just wait for it
+      int timeLeft = existingTransaction.latency() - (timestamp - existingTransaction.timestamp());
+      return timeLeft;
+    }
+    memoryTransactions.add(lineTransaction);
+    return memory.scheduleTransaction(lineTransaction);
   }
 }
