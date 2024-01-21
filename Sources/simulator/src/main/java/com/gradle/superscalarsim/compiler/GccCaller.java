@@ -37,8 +37,11 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * `-mno-explicit-relocs` - disable symbolic address splitting (%hi/%lo) for RISC-V
- * `-ffunction-sections` - put each function in its own section
+ * <ul>
+ *   <li>`-mno-explicit-relocs` - disable symbolic address splitting (%hi/%lo) for RISC-V</li>
+ *   <li>`-ffunction-sections`  - put each function in its own section</li>
+ *   <li>`-mstrict-align`       - Generate aligned memory accesses</li>
+ * </ul>
  *
  * @brief Class to call GCC
  */
@@ -145,7 +148,7 @@ public class GccCaller
     command.addAll(List.of("-xc", "-march=rv32imfd", "-mabi=ilp32d", "-o", "/dev/stdout", "-S", "-g", "-fverbose-asm",
                            "-fcf-protection=none", "-fno-stack-protector", "-fno-asynchronous-unwind-tables",
                            "-mno-explicit-relocs", "-ffunction-sections", "-fdata-sections", "-fno-dwarf2-cfi-asm",
-                           "-nostdlib", "-fdiagnostics-format=json", "-fpic", "-xc", "-"));
+                           "-mstrict-align", "-nostdlib", "-fdiagnostics-format=json", "-fpic", "-xc", "-"));
     return command;
   }
   

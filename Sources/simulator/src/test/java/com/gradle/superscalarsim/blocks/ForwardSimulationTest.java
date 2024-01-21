@@ -122,8 +122,9 @@ public class ForwardSimulationTest
     cpuCfg.cacheLineSize        = 16;
     cpuCfg.cacheReplacement     = "Random";
     cpuCfg.storeBehavior        = "write-back";
-    cpuCfg.storeLatency         = 0;
-    cpuCfg.loadLatency          = 0;
+    cpuCfg.cacheAccessDelay     = 1;
+    cpuCfg.storeLatency         = 1;
+    cpuCfg.loadLatency          = 1;
     cpuCfg.laneReplacementDelay = 0;
     cpuCfg.speculativeRegisters = 320;
     // 3 FX: +, +, - (delay 2)
@@ -1546,6 +1547,7 @@ public class ForwardSimulationTest
     Assert.assertFalse(this.loadBufferBlock.getLoadBufferItem(0).isDestinationReady());
     
     this.cpu.step();
+    // load arrived to MMU. The cache delay is 1, main memory delay is 1. So after two clocks, it should be executed
     Assert.assertEquals(1, this.loadBufferBlock.getQueueSize());
     Assert.assertEquals(0, this.storeBufferBlock.getQueueSize());
     Assert.assertNull(this.loadStoreFunctionUnit.getSimCodeModel());
@@ -1554,6 +1556,9 @@ public class ForwardSimulationTest
     Assert.assertFalse(this.loadBufferBlock.getLoadBufferItem(0).isDestinationReady());
     
     this.cpu.step();
+    this.cpu.step();
+    this.cpu.step();
+    
     Assert.assertEquals(1, this.loadBufferBlock.getQueueSize());
     Assert.assertEquals(0, this.storeBufferBlock.getQueueSize());
     Assert.assertNull(this.loadStoreFunctionUnit.getSimCodeModel());
@@ -1703,7 +1708,7 @@ public class ForwardSimulationTest
     Assert.assertNull(this.memoryAccessUnit.getSimCodeModel());
     
     this.cpu.step();
-    // Load got to mem access
+    // Load got to mem access. Cache line must be loaded (1 clock), cache will respond in 2 clocks total
     Assert.assertEquals("lw tg1,0(x2)", this.memoryAccessUnit.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals(1, this.loadBufferBlock.getQueueSize());
     Assert.assertEquals(1, this.storeBufferBlock.getQueueSize());
@@ -1714,8 +1719,9 @@ public class ForwardSimulationTest
     Assert.assertEquals("subi tg0,x3,5", this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
     
     this.cpu.step();
-    // Mem load should be done, load should be ready to be committed
     Assert.assertTrue(this.reorderBufferBlock.getRobItem(0).reorderFlags.isReadyToBeCommitted());
+    this.cpu.step();
+    // Mem load should be done, load should be ready to be committed
     Assert.assertTrue(this.reorderBufferBlock.getRobItem(2).reorderFlags.isReadyToBeCommitted());
     Assert.assertNull(this.memoryAccessUnit.getSimCodeModel());
     // Load is in load buffer

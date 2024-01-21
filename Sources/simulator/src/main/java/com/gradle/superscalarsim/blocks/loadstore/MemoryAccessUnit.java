@@ -53,7 +53,7 @@ import java.nio.ByteOrder;
 
 /**
  * @class MemoryAccessUnit
- * @brief Specific function unit class for memory access required by load instructions
+ * @brief Function unit class for memory access required by load instructions
  */
 public class MemoryAccessUnit extends AbstractFunctionUnitBlock
 {

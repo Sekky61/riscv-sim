@@ -43,8 +43,11 @@ import com.gradle.superscalarsim.models.FunctionalUnitDescription;
 import com.gradle.superscalarsim.models.SimCodeModel;
 
 /**
- * @class ArithmeticFunctionUnitBlock
- * @brief Specific function unit class for executing load/store instructions (computing address)
+ * @class LoadStoreFunctionUnit
+ * @brief Function unit class for executing load/store instructions (computing address).
+ * @details When an instruction gets to this stage, the data to load/store must already be in the register (otherwise issue wouldn't have happened).
+ * So this function unit only computes the address and puts the address into the load/store buffer.
+ * The store in store buffer also needs to know the value to store, but it is read from the register field.
  */
 public class LoadStoreFunctionUnit extends AbstractFunctionUnitBlock
 {

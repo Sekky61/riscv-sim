@@ -54,6 +54,9 @@ import java.util.*;
  * @class CpuState
  * @brief The state of the CPU.
  * @details The order of the fields is important for serialization.
+ * This class sets up the RISC-V execution environment interface (EEI), which is responsible for the ISA (supported instructions).
+ * This is a user-level, bare-metal interface simulator.
+ * The simulation will stop when the program returns from the entry function, or once the PC runs past the code and all instructions are retired.
  */
 public class CpuState implements Serializable
 {
@@ -228,8 +231,8 @@ public class CpuState implements Serializable
     }
     
     this.cache = new Cache(simulatedMemory, config.cpuConfig.cacheLines, config.cpuConfig.cacheAssoc,
-                           config.cpuConfig.cacheLineSize, config.cpuConfig.storeLatency, config.cpuConfig.loadLatency,
-                           replacementPoliciesEnum, writeBack, statistics);
+                           config.cpuConfig.cacheLineSize, config.cpuConfig.cacheAccessDelay,
+                           config.cpuConfig.cacheAccessDelay, replacementPoliciesEnum, writeBack, statistics);
     
     this.memoryModel = new MemoryModel(cache, statistics);
     
