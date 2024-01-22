@@ -22,14 +22,17 @@ public class CacheTest
    */
   SimulatedMemory memory;
   
+  SimulationStatistics statistics;
+  
   /**
    * Set up the cache and memory.
    */
   @Before
   public void setup()
   {
-    memory = new SimulatedMemory(1, 1);
-    cache  = new Cache(memory, 16, 2, 16, 1, 1, ReplacementPoliciesEnum.RANDOM, true, new SimulationStatistics(0, 1));
+    statistics = new SimulationStatistics(0, 1);
+    memory     = new SimulatedMemory(1, 1, statistics);
+    cache      = new Cache(memory, 16, 2, 16, 1, 1, ReplacementPoliciesEnum.RANDOM, true, statistics);
   }
   
   @Test
@@ -53,6 +56,8 @@ public class CacheTest
     simulateCycles(0, 3);
     // Delay is 2 (1+1), so first cycle, the transaction is scheduled, second cycle it is sent to memory, third cycle it is finished
     Assert.assertEquals(0x01020304, cache.getData(128, 4));
+    // One cache line was loaded
+    Assert.assertEquals(16, statistics.mainMemoryLoadedBytes);
   }
   
   /**
@@ -75,6 +80,27 @@ public class CacheTest
   {
     cache.scheduleTransaction(MemoryTransaction.store(130, new byte[]{(byte) 0x89, 0x67, 0x45, 0x23}));
     simulateCycles(0, 3);
+    Assert.assertEquals(0x23456789, cache.getData(130, 4));
+    Assert.assertEquals(0x00002345, cache.getData(132, 4));
+  }
+  
+  @Test
+  public void cache_bigDelay()
+  {
+    memory = new SimulatedMemory(10, 10, statistics);
+    cache  = new Cache(memory, 16, 2, 16, 2, 2, ReplacementPoliciesEnum.RANDOM, true, statistics);
+    
+    // Start transaction at clock 0
+    // It will take 10 clocks to load line from memory, then additional 2 clocks to store it to cache
+    cache.scheduleTransaction(MemoryTransaction.store(130, new byte[]{(byte) 0x89, 0x67, 0x45, 0x23}));
+    simulateCycles(0, 10);
+    Assert.assertThrows(IllegalArgumentException.class, () -> cache.getData(130, 4));
+    simulateCycles(10, 1);
+    Assert.assertEquals(0, cache.getData(130, 4));
+    simulateCycles(11, 1);
+    Assert.assertEquals(0, cache.getData(130, 4));
+    simulateCycles(12, 1);
+    
     Assert.assertEquals(0x23456789, cache.getData(130, 4));
     Assert.assertEquals(0x00002345, cache.getData(132, 4));
   }
@@ -138,7 +164,7 @@ public class CacheTest
     // 4 lines TOTAL, 2 ways, 16 bytes per line.
     // This means that addresses 0, 32 (!) and 64 (!) are in the same set
     // Storing to 0 and 64, the cache should accommodate both
-    cache = new Cache(memory, 4, 2, 16, 1, 1, ReplacementPoliciesEnum.LRU, true, new SimulationStatistics(0, 1));
+    cache = new Cache(memory, 4, 2, 16, 1, 1, ReplacementPoliciesEnum.LRU, true, statistics);
     
     //Store first line
     MemoryTransaction store1 = MemoryTransaction.store(0, new byte[]{(byte) 0x44, 0x33, 0x22, 0x11});
@@ -209,7 +235,7 @@ public class CacheTest
   {
     // 2 groups per 4 bytes
     // This means that addresses 0, 8, 16 are in the same set
-    cache = new Cache(memory, 8, 4, 4, 1, 1, ReplacementPoliciesEnum.FIFO, true, new SimulationStatistics(0, 1));
+    cache = new Cache(memory, 8, 4, 4, 1, 1, ReplacementPoliciesEnum.FIFO, true, statistics);
     
     MemoryTransaction store1 = MemoryTransaction.store(0, new byte[]{0x11, 0x22});
     cache.scheduleTransaction(store1);
@@ -267,8 +293,8 @@ public class CacheTest
   {
     // 2 lines, 2 ways, 4 bytes per line.
     // This means that every address is in the same set
-    memory = new SimulatedMemory(1, 1);
-    cache  = new Cache(memory, 2, 2, 4, 1, 1, ReplacementPoliciesEnum.LRU, true, new SimulationStatistics(0, 1));
+    memory = new SimulatedMemory(1, 1, statistics);
+    cache  = new Cache(memory, 2, 2, 4, 1, 1, ReplacementPoliciesEnum.LRU, true, statistics);
     
     // Store 4 lines. separated into two sets, because of bug in the cache
     MemoryTransaction store1 = MemoryTransaction.store(0, new byte[]{(byte) 0x44, 0x33, 0x22, 0x11});

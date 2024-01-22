@@ -98,6 +98,7 @@ public class MemoryLocation
    */
   public MemoryLocation(String name, int alignment)
   {
+    assert alignment > 0;
     this.name       = name;
     this.alignment  = alignment;
     this.dataChunks = new ArrayList<>();

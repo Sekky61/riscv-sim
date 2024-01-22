@@ -57,7 +57,7 @@ public class SimulationConfig
   /**
    * Configuration of the CPU.
    */
-  CpuConfig cpuConfig;
+  public CpuConfig cpuConfig;
   
   /**
    * @brief Default constructor for deserialization

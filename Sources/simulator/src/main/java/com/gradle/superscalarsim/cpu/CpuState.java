@@ -157,7 +157,8 @@ public class CpuState implements Serializable
       dataLabels.put(memoryLocation.name, new Label(memoryLocation.name, 0)); // Address will be set later
     }
     
-    this.simulatedMemory = new SimulatedMemory(config.cpuConfig.storeLatency, config.cpuConfig.loadLatency);
+    this.statistics      = new SimulationStatistics(-1, config.cpuConfig.coreClockFrequency, config.cpuConfig.fUnits);
+    this.simulatedMemory = new SimulatedMemory(config.cpuConfig.storeLatency, config.cpuConfig.loadLatency, statistics);
     // Fill memory with data
     MemoryInitializer memoryInitializer = new MemoryInitializer(128, 512);
     // init these first, so that the values are set and written to argument list
@@ -170,8 +171,7 @@ public class CpuState implements Serializable
       throw new IllegalStateException("Code parsing failed: " + codeParser.getErrorMessages());
     }
     memoryInitializer.initializeMemory(simulatedMemory, codeParser.getMemoryLocations(), codeParser.getLabels());
-    this.statistics = new SimulationStatistics(codeParser.getInstructions().size(), config.cpuConfig.coreClockFrequency,
-                                               config.cpuConfig.fUnits);
+    this.statistics.allocateInstructionStats(codeParser.getInstructions().size());
     
     // Count static instruction mix
     codeParser.getInstructions()
@@ -230,11 +230,18 @@ public class CpuState implements Serializable
       throw new IllegalStateException("Unexpected value for store behavior: " + config.cpuConfig.storeBehavior);
     }
     
-    this.cache = new Cache(simulatedMemory, config.cpuConfig.cacheLines, config.cpuConfig.cacheAssoc,
-                           config.cpuConfig.cacheLineSize, config.cpuConfig.cacheAccessDelay,
-                           config.cpuConfig.cacheAccessDelay, replacementPoliciesEnum, writeBack, statistics);
+    if (config.cpuConfig.useCache)
+    {
+      this.cache = new Cache(simulatedMemory, config.cpuConfig.cacheLines, config.cpuConfig.cacheAssoc,
+                             config.cpuConfig.cacheLineSize, config.cpuConfig.cacheAccessDelay,
+                             config.cpuConfig.cacheAccessDelay, replacementPoliciesEnum, writeBack, statistics);
+    }
+    else
+    {
+      this.cache = null;
+    }
     
-    this.memoryModel = new MemoryModel(cache, statistics);
+    this.memoryModel = new MemoryModel(cache, simulatedMemory, statistics);
     
     
     this.loadStoreInterpreter = new CodeLoadStoreInterpreter();
@@ -416,7 +423,10 @@ public class CpuState implements Serializable
   {
     // memory
     simulatedMemory.simulate(tick);
-    cache.simulate(tick);
+    if (cache != null)
+    {
+      cache.simulate(tick);
+    }
     // rob
     reorderBufferBlock.simulate(tick);
     // Run all FUs

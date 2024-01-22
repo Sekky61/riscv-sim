@@ -36,6 +36,7 @@ import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.blocks.AbstractBlock;
+import com.gradle.superscalarsim.cpu.SimulationStatistics;
 import com.gradle.superscalarsim.models.memory.MemoryTransaction;
 
 import java.util.ArrayList;
@@ -83,15 +84,21 @@ public class SimulatedMemory implements AbstractBlock, MemoryBlock
   private int transactionId;
   
   /**
+   * Statistics for memory traffic
+   */
+  private SimulationStatistics statistics;
+  
+  /**
    * @brief Constructor
    */
-  public SimulatedMemory(int storeLatency, int loadLatency)
+  public SimulatedMemory(int storeLatency, int loadLatency, SimulationStatistics statistics)
   {
     this.storeLatency  = storeLatency;
     this.loadLatency   = loadLatency;
     this.memory        = new byte[0];
     this.operations    = new ArrayList<>();
     this.transactionId = 77;
+    this.statistics    = statistics;
   }// end of Constructor
   //-------------------------------------------------------------------------------------------
   
@@ -238,6 +245,7 @@ public class SimulatedMemory implements AbstractBlock, MemoryBlock
       throw new IllegalArgumentException("Transaction not finished yet");
     }
     this.operations.remove(tr);
+    this.statistics.incrementMemoryTraffic(tr.isStore(), tr.size());
     return tr;
   }
   

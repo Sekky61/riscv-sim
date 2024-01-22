@@ -40,7 +40,8 @@ import com.gradle.superscalarsim.models.memory.MemoryTransaction;
 
 /**
  * @class MemoryModel
- * @brief Class implementing common functions for accessing cache or memory, holds the cache or memory
+ * @brief Class implementing common functions for accessing cache or memory, holds the cache or memory.
+ * Uses cache if it is present, otherwise uses memory.
  * TODO move elsewhere
  */
 @JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
@@ -62,21 +63,12 @@ public class MemoryModel
   private SimulationStatistics statistics;
   
   /**
-   * @brief Constructor - Memory model holds only memory
+   * @brief Constructor
+   * Provide both memory and cache, only one will be used.
    */
-  public MemoryModel(SimulatedMemory simulatedMemory)
+  public MemoryModel(Cache cache, SimulatedMemory simulatedMemory, SimulationStatistics statistics)
   {
     this.memory     = simulatedMemory;
-    this.cache      = null;
-    this.statistics = null;
-  }
-  
-  /**
-   * @brief Constructor - Memory model holds cache
-   */
-  public MemoryModel(Cache cache, SimulationStatistics statistics)
-  {
-    this.memory     = null;
     this.cache      = cache;
     this.statistics = statistics;
   }

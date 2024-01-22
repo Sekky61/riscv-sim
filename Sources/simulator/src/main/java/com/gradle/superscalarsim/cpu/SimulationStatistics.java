@@ -102,16 +102,20 @@ public class SimulationStatistics
    */
   public long takenBranches;
   /**
-   * Amount of data transfered from main memory
+   * Amount of data transferred from main memory
    */
-  public long memoryTraffic;
+  public long mainMemoryLoadedBytes;
+  /**
+   * Amount of data transferred to main memory
+   */
+  public long mainMemoryStoredBytes;
   /**
    * Maximal number of allocated speculative registers
    */
   public int maxAllocatedRegisters;
   
   /**
-   * @param instructionCount Number of instructions in the code
+   * @param instructionCount Number of instructions in the code. Use -1 if unknown.
    * @param clockHz          Clock frequency (Hz)
    * @param fUnits           List of functional units (for their names)
    *
@@ -140,7 +144,6 @@ public class SimulationStatistics
     this.dynamicInstructionMix = new InstructionMix();
     this.fuStats               = new HashMap<>();
     this.clock                 = clockHz;
-    
     allocateInstructionStats(instructionCount);
   }
   //----------------------------------------------------------------------
@@ -174,9 +177,16 @@ public class SimulationStatistics
   /**
    * @brief Increment main memory traffic
    */
-  public void incrementMemoryTraffic(int bytes)
+  public void incrementMemoryTraffic(boolean isStore, int bytes)
   {
-    this.memoryTraffic += bytes;
+    if (isStore)
+    {
+      this.mainMemoryStoredBytes += bytes;
+    }
+    else
+    {
+      this.mainMemoryLoadedBytes += bytes;
+    }
   }
   
   /**
@@ -397,7 +407,7 @@ public class SimulationStatistics
   @JsonProperty("memoryThroughput")
   public double getMemoryThroughput()
   {
-    return (double) (memoryTraffic) / clock;
+    return (double) (mainMemoryLoadedBytes + mainMemoryStoredBytes) / clock;
   }
   
   /**

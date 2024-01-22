@@ -816,7 +816,7 @@ public class CodeParser
     RegisterModel register      = argument.getRegisterValue();
     if (register == null)
     {
-      this.addError(token, "Argument \"" + argumentValue + "\" is not a register nor a value.");
+      this.addError(token, "Argument \"" + argumentValue + "\" is not a register.");
       return false;
     }
     if (!checkDatatype(argumentDataType, register.getType()))
