@@ -1571,6 +1571,8 @@ public class ForwardSimulationTest
                                  """);
     instructionMemoryBlock.setCode(codeParser.getInstructions());
     instructionMemoryBlock.setLabels(codeParser.getLabels());
+    // The store will execute first, load will take the value from the store buffer
+    // Load will not touch memory.
     
     this.cpu.step();
     Assert.assertEquals("subi", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
@@ -1612,8 +1614,6 @@ public class ForwardSimulationTest
     this.cpu.step();
     Assert.assertEquals(1, this.loadBufferBlock.getQueueSize());
     Assert.assertEquals(1, this.storeBufferBlock.getQueueSize());
-    Assert.assertEquals("sw x3,0(x2)", this.storeBufferBlock.getStoreQueueFirst().getRenamedCodeLine());
-    Assert.assertEquals("lw tg1,0(x2)", this.loadBufferBlock.getLoadQueueFirst().getRenamedCodeLine());
     Assert.assertEquals("lw tg1,0(x2)", this.loadStoreFunctionUnit.getSimCodeModel().getRenamedCodeLine());
     Assert.assertFalse(this.loadBufferBlock.getLoadBufferItem(2).isDestinationReady());
     Assert.assertFalse(this.reorderBufferBlock.getRobItem(2).reorderFlags.isReadyToBeCommitted());
@@ -1621,21 +1621,32 @@ public class ForwardSimulationTest
     Assert.assertEquals(25, this.storeBufferBlock.getStoreBufferItem(1).getAddress());
     Assert.assertFalse(this.reorderBufferBlock.getRobItem(1).reorderFlags.isReadyToBeCommitted());
     Assert.assertEquals("subi tg0,x4,5", this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
+    // Store moved to MAU (as it is about to commit)
+    Assert.assertEquals("sw x3,0(x2)", this.memoryAccessUnit.getSimCodeModel().getRenamedCodeLine());
     
     this.cpu.step();
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(1).reorderFlags.isReadyToBeCommitted());
+    Assert.assertEquals("sw x3,0(x2)", this.memoryAccessUnit.getSimCodeModel().getRenamedCodeLine());
+    Assert.assertNull(this.subFunctionBlock.getSimCodeModel());
     Assert.assertEquals(1, this.loadBufferBlock.getQueueSize());
     Assert.assertEquals(1, this.storeBufferBlock.getQueueSize());
     Assert.assertNull(this.loadStoreFunctionUnit.getSimCodeModel());
-    Assert.assertEquals("sw x3,0(x2)", this.storeBufferBlock.getStoreQueueFirst().getRenamedCodeLine());
-    Assert.assertEquals("lw tg1,0(x2)", this.loadBufferBlock.getLoadQueueFirst().getRenamedCodeLine());
     Assert.assertEquals(25, this.loadBufferBlock.getLoadBufferItem(2).getAddress());
     Assert.assertTrue(this.loadBufferBlock.getLoadBufferItem(2).isDestinationReady());
     Assert.assertTrue(this.reorderBufferBlock.getRobItem(2).reorderFlags.isReadyToBeCommitted());
     
     this.cpu.step();
+    Assert.assertEquals("sw x3,0(x2)", this.memoryAccessUnit.getSimCodeModel().getRenamedCodeLine());
+    this.cpu.step();
+    // store and load in rob
+    Assert.assertNull(this.memoryAccessUnit.getSimCodeModel());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(1).reorderFlags.isReadyToBeCommitted());
+    Assert.assertTrue(this.loadBufferBlock.getLoadBufferItem(2).hasBypassed());
+    this.cpu.step();
+    // Nothing in ROB
     Assert.assertEquals(0, this.reorderBufferBlock.getReorderQueueSize());
-    Assert.assertEquals(6, (int) this.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt), 0.01);
+    
+    
+    Assert.assertEquals(6, (int) this.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt));
   }
   
   @Test
@@ -1674,7 +1685,7 @@ public class ForwardSimulationTest
     Assert.assertEquals(1, this.storeBufferBlock.getQueueSize());
     Assert.assertEquals("nop", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
     Assert.assertEquals(0, this.decodeAndDispatchBlock.getCodeBuffer().size());
-    // Both instructions have ready operands, load is in the buffer first, so it will get to EX first
+    // Both are in l/s issue, only load has both sources ready. Only address is computed here, but as of now, both operands are needed.
     Assert.assertEquals("sw tg0,0(x2)",
                         this.loadStoreIssueWindowBlock.getIssuedInstructions().get(0).getRenamedCodeLine());
     Assert.assertEquals("lw tg1,0(x2)",
@@ -1684,10 +1695,6 @@ public class ForwardSimulationTest
     Assert.assertEquals("subi tg0,x3,5", this.aluIssueWindowBlock.getIssuedInstructions().get(0).getRenamedCodeLine());
     
     this.cpu.step();
-    Assert.assertEquals(1, this.loadBufferBlock.getQueueSize());
-    Assert.assertEquals(1, this.storeBufferBlock.getQueueSize());
-    Assert.assertEquals("lw tg1,0(x2)", this.loadBufferBlock.getLoadQueueFirst().getRenamedCodeLine());
-    Assert.assertEquals("sw tg0,0(x2)", this.storeBufferBlock.getStoreQueueFirst().getRenamedCodeLine());
     // Load got to EX
     Assert.assertEquals("lw tg1,0(x2)", this.loadStoreFunctionUnit.getSimCodeModel().getRenamedCodeLine());
     // Store stays in issue window
@@ -1697,40 +1704,53 @@ public class ForwardSimulationTest
     Assert.assertNull(this.memoryAccessUnit.getSimCodeModel());
     
     this.cpu.step();
+    // Load address is done computing. The store is not ready to be computed, subi is not done!
+    Assert.assertNull(this.loadStoreFunctionUnit.getSimCodeModel());
+    Assert.assertEquals("subi tg0,x3,5", this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
     // Load got to mem access. Cache line must be loaded (1 clock), cache will respond in 2 clocks total
     Assert.assertEquals("lw tg1,0(x2)", this.memoryAccessUnit.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals(1, this.loadBufferBlock.getQueueSize());
     Assert.assertEquals(1, this.storeBufferBlock.getQueueSize());
-    Assert.assertEquals("lw tg1,0(x2)", this.loadBufferBlock.getLoadQueueFirst().getRenamedCodeLine());
-    Assert.assertEquals("sw tg0,0(x2)", this.storeBufferBlock.getStoreQueueFirst().getRenamedCodeLine());
     Assert.assertEquals("sw tg0,0(x2)",
                         this.loadStoreIssueWindowBlock.getIssuedInstructions().get(0).getRenamedCodeLine());
     Assert.assertEquals("subi tg0,x3,5", this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
     
     this.cpu.step();
+    // subi is done (leaves ROB), store can be computed
     Assert.assertTrue(this.reorderBufferBlock.getRobItem(0).reorderFlags.isReadyToBeCommitted());
+    Assert.assertEquals("sw tg0,0(x2)", this.loadStoreFunctionUnit.getSimCodeModel().getRenamedCodeLine());
+    this.cpu.step();
+    // Store address done, can be written to cache
+    Assert.assertNull(this.loadStoreFunctionUnit.getSimCodeModel());
     this.cpu.step();
     // Mem load should be done, load should be ready to be committed
     Assert.assertTrue(this.reorderBufferBlock.getRobItem(2).reorderFlags.isReadyToBeCommitted());
-    Assert.assertNull(this.memoryAccessUnit.getSimCodeModel());
+    Assert.assertEquals("sw tg0,0(x2)", this.memoryAccessUnit.getSimCodeModel().getRenamedCodeLine());
     // Load is in load buffer
     Assert.assertEquals("lw tg1,0(x2)", this.loadBufferBlock.getLoadQueueFirst().getRenamedCodeLine());
     Assert.assertEquals("sw tg0,0(x2)", this.storeBufferBlock.getStoreQueueFirst().getRenamedCodeLine());
-    Assert.assertEquals("sw tg0,0(x2)", this.loadStoreFunctionUnit.getSimCodeModel().getRenamedCodeLine());
     
     this.cpu.step();
-    Assert.assertEquals(1, this.reorderBufferBlock.getReorderQueueSize());
-    Assert.assertEquals(0, this.loadBufferBlock.getQueueSize());
+    Assert.assertEquals("sw tg0,0(x2)", this.memoryAccessUnit.getSimCodeModel().getRenamedCodeLine());
+    this.cpu.step();
+    // store ready
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(1).reorderFlags.isReadyToBeCommitted());
+    Assert.assertNull(this.memoryAccessUnit.getSimCodeModel());
+    Assert.assertEquals(2, this.reorderBufferBlock.getReorderQueueSize());
+    Assert.assertEquals(1, this.loadBufferBlock.getQueueSize());
     Assert.assertEquals(1, this.storeBufferBlock.getQueueSize());
     Assert.assertEquals("sw tg0,0(x2)", this.storeBufferBlock.getStoreQueueFirst().getRenamedCodeLine());
+    
+    this.cpu.step();
+    // Store committed, load got destroyed because of bad speculation
+    Assert.assertEquals(0, this.reorderBufferBlock.getReorderQueueSize());
+    Assert.assertEquals(0, this.loadBufferBlock.getQueueSize());
+    Assert.assertEquals(0, this.storeBufferBlock.getQueueSize());
+    // Flush, fetch from the bad load
     Assert.assertEquals("lw", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
     
     this.cpu.step();
-    Assert.assertEquals(1, this.reorderBufferBlock.getReorderQueueSize());
-    Assert.assertEquals(0, this.loadBufferBlock.getQueueSize());
-    Assert.assertEquals(1, this.storeBufferBlock.getQueueSize());
     Assert.assertEquals("lw tg2,0(x2)", this.decodeAndDispatchBlock.getCodeBuffer().get(0).getRenamedCodeLine());
-    
     this.cpu.step();
     Assert.assertEquals(1, this.reorderBufferBlock.getReorderQueueSize());
     Assert.assertEquals(1, this.loadBufferBlock.getQueueSize());
@@ -1746,10 +1766,12 @@ public class ForwardSimulationTest
     
     this.cpu.step();
     Assert.assertEquals("lw tg2,0(x2)", this.memoryAccessUnit.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertEquals("lw tg2,0(x2)", this.loadBufferBlock.getLoadQueueFirst().getRenamedCodeLine());
     
     this.cpu.step();
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(18).reorderFlags.isReadyToBeCommitted());
+    Assert.assertEquals("lw tg2,0(x2)", this.memoryAccessUnit.getSimCodeModel().getRenamedCodeLine());
+    this.cpu.step();
+    Assert.assertNull(this.memoryAccessUnit.getSimCodeModel());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(30).reorderFlags.isReadyToBeCommitted());
     Assert.assertEquals("lw tg2,0(x2)", this.loadBufferBlock.getLoadQueueFirst().getRenamedCodeLine());
     Assert.assertNull(this.memoryAccessUnit.getSimCodeModel());
     
@@ -1774,6 +1796,8 @@ public class ForwardSimulationTest
                                  """);
     instructionMemoryBlock.setCode(codeParser.getInstructions());
     instructionMemoryBlock.setLabels(codeParser.getLabels());
+    // Load will be ready to execute first. It will go to MAU, because the store address will not be computed yet.
+    // Store will finish later. The load will be flushed and re-executed.
     
     this.memoryAccessUnit.setDelay(3);
     this.memoryAccessUnit.setBaseDelay(3);
@@ -1830,59 +1854,65 @@ public class ForwardSimulationTest
     Assert.assertEquals("subi tg0,x3,5", this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
     
     this.cpu.step();
-    Assert.assertEquals(1, this.loadBufferBlock.getQueueSize());
-    Assert.assertEquals(1, this.storeBufferBlock.getQueueSize());
-    Assert.assertEquals("lw tg1,0(x2)", this.loadBufferBlock.getLoadQueueFirst().getRenamedCodeLine());
-    Assert.assertEquals("sw tg0,0(x2)", this.storeBufferBlock.getStoreQueueFirst().getRenamedCodeLine());
+    // Sub is ready
+    Assert.assertNull(this.subFunctionBlock.getSimCodeModel());
     Assert.assertTrue(this.reorderBufferBlock.getRobItem(0).reorderFlags.isReadyToBeCommitted());
+    // Store can start computing address
     Assert.assertEquals("lw tg1,0(x2)", this.memoryAccessUnit.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("sw tg0,0(x2)", this.loadStoreFunctionUnit.getSimCodeModel().getRenamedCodeLine());
     
     
     this.cpu.step();
+    Assert.assertEquals("lw tg1,0(x2)", this.memoryAccessUnit.getSimCodeModel().getRenamedCodeLine());
+    Assert.assertNull(this.loadStoreFunctionUnit.getSimCodeModel());
     // Conflict detected (bad load), throw it out, fetch again (fetch stops being stalled)
-    Assert.assertEquals("lw", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
     Assert.assertEquals(1, this.storeBufferBlock.getQueueSize());
     Assert.assertEquals("sw tg0,0(x2)", this.storeBufferBlock.getStoreQueueFirst().getRenamedCodeLine());
-    Assert.assertEquals(1, this.reorderBufferBlock.getReorderQueueSize());
-    Assert.assertEquals(0, this.loadBufferBlock.getQueueSize());
+    Assert.assertEquals(2, this.reorderBufferBlock.getReorderQueueSize());
     //Assert.assertNull(this.memoryAccessUnit.getSimCodeModel());
     
     this.cpu.step();
-    Assert.assertEquals(1, this.reorderBufferBlock.getReorderQueueSize());
-    Assert.assertEquals(0, this.loadBufferBlock.getQueueSize());
-    Assert.assertEquals(1, this.storeBufferBlock.getQueueSize());
-    Assert.assertEquals("lw tg2,0(x2)", this.decodeAndDispatchBlock.getCodeBuffer().get(0).getRenamedCodeLine());
+    // Load memory access done, now for the store. It should be in cache so 1+1 clocks
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(2).reorderFlags.isReadyToBeCommitted());
     Assert.assertEquals("sw tg0,0(x2)", this.memoryAccessUnit.getSimCodeModel().getRenamedCodeLine());
     
     this.cpu.step();
-    Assert.assertEquals(2, this.reorderBufferBlock.getReorderQueueSize());
-    Assert.assertEquals(1, this.loadBufferBlock.getQueueSize());
-    Assert.assertEquals(1, this.storeBufferBlock.getQueueSize());
-    Assert.assertEquals("lw tg2,0(x2)",
-                        this.loadStoreIssueWindowBlock.getIssuedInstructions().get(0).getRenamedCodeLine());
-    Assert.assertEquals("lw tg2,0(x2)", this.loadBufferBlock.getLoadQueueFirst().getRenamedCodeLine());
-    Assert.assertEquals("sw tg0,0(x2)", this.memoryAccessUnit.getSimCodeModel().getRenamedCodeLine());
-    
+    Assert.assertFalse(this.reorderBufferBlock.getRobItem(1).reorderFlags.isReadyToBeCommitted());
     this.cpu.step();
-    Assert.assertEquals(2, this.reorderBufferBlock.getReorderQueueSize());
-    Assert.assertEquals(1, this.loadBufferBlock.getQueueSize());
-    Assert.assertEquals(1, this.storeBufferBlock.getQueueSize());
-    Assert.assertEquals("lw tg2,0(x2)", this.loadStoreFunctionUnit.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertEquals("lw tg2,0(x2)", this.loadBufferBlock.getLoadQueueFirst().getRenamedCodeLine());
-    Assert.assertEquals("sw tg0,0(x2)", this.memoryAccessUnit.getSimCodeModel().getRenamedCodeLine());
-    
-    this.cpu.step();
-    Assert.assertEquals(2, this.reorderBufferBlock.getReorderQueueSize());
-    Assert.assertEquals(1, this.loadBufferBlock.getQueueSize());
-    Assert.assertEquals(1, this.storeBufferBlock.getQueueSize());
     Assert.assertTrue(this.reorderBufferBlock.getRobItem(1).reorderFlags.isReadyToBeCommitted());
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(18).reorderFlags.isReadyToBeCommitted());
     
     this.cpu.step();
-    Assert.assertEquals(0, this.reorderBufferBlock.getReorderQueueSize());
-    Assert.assertEquals(0, this.loadBufferBlock.getQueueSize());
+    // Store got committed, load got flushed
+    Assert.assertEquals("lw", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
+    
+    this.cpu.step();
+    Assert.assertEquals("lw tg2,0(x2)", this.decodeAndDispatchBlock.getCodeBuffer().get(0).getRenamedCodeLine());
+    
+    this.cpu.step();
+    Assert.assertEquals(1, this.reorderBufferBlock.getReorderQueueSize());
+    Assert.assertEquals(1, this.loadBufferBlock.getQueueSize());
     Assert.assertEquals(0, this.storeBufferBlock.getQueueSize());
-    Assert.assertEquals(1, (int) this.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt), 0.01);
+    
+    this.cpu.step();
+    Assert.assertEquals("lw tg2,0(x2)", this.loadStoreFunctionUnit.getSimCodeModel().getRenamedCodeLine());
+    
+    this.cpu.step();
+    // Now to mem access. should be in cache.
+    Assert.assertNull(this.loadStoreFunctionUnit.getSimCodeModel());
+    Assert.assertEquals("lw tg2,0(x2)", this.memoryAccessUnit.getSimCodeModel().getRenamedCodeLine());
+    
+    this.cpu.step();
+    Assert.assertEquals("lw tg2,0(x2)", this.memoryAccessUnit.getSimCodeModel().getRenamedCodeLine());
+    
+    this.cpu.step();
+    Assert.assertNull(this.memoryAccessUnit.getSimCodeModel());
+    Assert.assertEquals(1, this.reorderBufferBlock.getReorderQueueSize());
+    Assert.assertTrue(this.reorderBufferBlock.reorderQueue.getFirst().reorderFlags.isReadyToBeCommitted());
+    
+    this.cpu.step();
+    
+    
+    Assert.assertEquals(1, (int) this.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt));
+    
   }
 }

@@ -218,4 +218,9 @@ public class RegisterDataContainer
   {
     this.bits = other.bits;
   }
+  
+  public DataTypeEnum getCurrentType()
+  {
+    return currentType;
+  }
 }

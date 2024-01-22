@@ -205,7 +205,7 @@ public class RegisterModel implements Identifiable
   
   /**
    * @return Value inside register
-   * @brief Get register value
+   * @brief Get register value TODO remove
    */
   public double getValue()
   {

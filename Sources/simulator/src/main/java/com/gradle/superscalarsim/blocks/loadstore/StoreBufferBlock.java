@@ -186,6 +186,7 @@ public class StoreBufferBlock implements AbstractBlock
   
   /**
    * @brief Checks if store source registers are ready and if yes then marks them
+   * TODO move to method on the StoreBufferItem
    */
   private void updateMapValues()
   {
@@ -198,7 +199,10 @@ public class StoreBufferBlock implements AbstractBlock
   //----------------------------------------------------------------------
   
   /**
-   * @brief Selects store instructions for MA block. The selected store is a non-speculative store with address.
+   * @brief Selects store instructions for MA block.
+   * The selected store is a non-speculative store with address.
+   * In case of multiple non-speculative stores to the same address, the older is written, the newer is written later.
+   * TODO: Could the old store be simply removed?
    */
   private void selectStoreForDataAccess(int cycle)
   {
@@ -214,8 +218,7 @@ public class StoreBufferBlock implements AbstractBlock
       SimCodeModel simCodeModel = item.getSimCodeModel();
       assert !simCodeModel.hasFailed();
       
-      boolean isSpeculative    = reorderBufferBlock.getRobItem(
-              simCodeModel.getIntegerId()).reorderFlags.isSpeculative();
+      boolean isSpeculative = reorderBufferBlock.getRobItem(simCodeModel.getIntegerId()).reorderFlags.isSpeculative();
       boolean isAvailableForMA = !isSpeculative && item.getAddress() != -1 && !item.isAccessingMemory() && item.getAccessingMemoryId() == -1 && item.isSourceReady();
       if (!isAvailableForMA)
       {

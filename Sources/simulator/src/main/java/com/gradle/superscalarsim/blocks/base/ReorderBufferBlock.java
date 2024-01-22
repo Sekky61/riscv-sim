@@ -318,7 +318,10 @@ public class ReorderBufferBlock implements AbstractBlock
         if (badLoad != null)
         {
           // Bad load found, invalidate it
-          invalidateInstructions(badLoad.getSimCodeModel());
+          SimCodeModel model = badLoad.getSimCodeModel();
+          invalidateInstructions(model);
+          // Repeat the bad load
+          this.instructionFetchBlock.setPc(model.getSavedPc());
         }
         // Release store buffer entry
         storeBufferBlock.releaseStoreFirst();

@@ -277,7 +277,9 @@ public class LoadBufferBlock implements AbstractBlock
     
     // Write to the load dest. register
     RegisterModel destinationReg = registerFileBlock.getRegister(loadItem.getDestinationRegister());
-    destinationReg.setValue(sourceReg.getValue());
+    // TODO: polish this, better API
+    destinationReg.setBits(sourceReg.getValueContainer().getBits());
+    destinationReg.setValue(sourceReg.getValueContainer().getBits(), sourceReg.getValueContainer().getCurrentType());
     destinationReg.setReadiness(RegisterReadinessEnum.kAssigned);
     loadItem.setDestinationReady(true);
     loadItem.setHasBypassed(true);
@@ -301,8 +303,10 @@ public class LoadBufferBlock implements AbstractBlock
     {
       boolean addressesMatch = bufferItem.getAddress() == address;
       boolean isAfterStore   = bufferItem.getSimCodeModel().getIntegerId() > cycle;
+      // Do not mark bypassed loads as conflicting
+      boolean bypassed = bufferItem.hasBypassed();
       // TODO: what if the load is not yet in MA/executed?
-      if (addressesMatch && isAfterStore)
+      if (addressesMatch && isAfterStore && !bypassed)
       {
         return bufferItem;
       }
