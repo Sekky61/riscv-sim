@@ -43,10 +43,32 @@ public class NoCacheTests
   }
   
   @Test
-  public void testStore()
+  public void testTwoLoads()
   {
     // Setup + exercise
     // the x0 has to be a register
+    cfg.code = """
+            addi x3, x0, ptr
+            subi x3, x3, 2
+            lw x1, 0(x3)
+            lw x2, ptr(x0)""";
+    Cpu cpu = new Cpu(cfg);
+    cpu.execute();
+    
+    // Assert
+    Assert.assertEquals((42 << 16),
+                        cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt));
+    Assert.assertEquals(42, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").getValue(DataTypeEnum.kInt));
+    Assert.assertEquals(0, cpu.cpuState.statistics.cache.getBytesRead());
+    // 4 bytes loaded from main memory. Not 32 for a cache line.
+    Assert.assertEquals(8, cpu.cpuState.statistics.mainMemoryLoadedBytes);
+    Assert.assertEquals(0, cpu.cpuState.statistics.mainMemoryStoredBytes);
+  }
+  
+  @Test
+  public void testStore()
+  {
+    // Setup + exercise
     cfg.code = """
             addi x1, x0, 84
             sw x1, ptr(x0)""";

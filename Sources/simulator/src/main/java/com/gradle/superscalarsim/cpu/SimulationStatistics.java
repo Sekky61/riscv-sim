@@ -453,6 +453,30 @@ public class SimulationStatistics
     {
     }
     
+    public int getHits()
+    {
+      return hits;
+    }
+    
+    public int getMisses()
+    {
+      return misses;
+    }
+    
+    /**
+     * @return Cache hit rate
+     */
+    @JsonProperty("hitRate")
+    public double getHitRate()
+    {
+      int all = hits + misses;
+      if (all == 0)
+      {
+        return 0;
+      }
+      return (double) hits / all;
+    }
+    
     public int getReadAccesses()
     {
       return readAccesses;
