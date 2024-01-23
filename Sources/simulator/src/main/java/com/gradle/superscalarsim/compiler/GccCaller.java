@@ -37,12 +37,6 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * <ul>
- *   <li>`-mno-explicit-relocs` - disable symbolic address splitting (%hi/%lo) for RISC-V</li>
- *   <li>`-ffunction-sections`  - put each function in its own section</li>
- *   <li>`-mstrict-align`       - Generate aligned memory accesses</li>
- * </ul>
- *
  * @brief Class to call GCC
  */
 public class GccCaller
@@ -56,6 +50,22 @@ public class GccCaller
                                                            "-funroll-all-loops", "peel", "-fpeel-loops", "inline",
                                                            "-finline-functions", "omit-frame-pointer",
                                                            "-fomit-frame-pointer");
+  
+  /**
+   * <a href="https://gcc.gnu.org/onlinedocs/gcc/Code-Gen-Options.html">GCC options</a>
+   * <ul>
+   *   <li>`-mno-explicit-relocs` - disable symbolic address splitting (%hi/%lo) for RISC-V</li>
+   *   <li>`-ffunction-sections`  - put each function in its own section</li>
+   *   <li>`-mstrict-align`       - Generate aligned memory accesses</li>
+   *   <li>`-fPIE`                - Generate position independent code (gets rid of PLT)</li>
+   *  </ul>
+   */
+  public static List<String> gccFlags = List.of("-xc", "-march=rv32imfd", "-mabi=ilp32d", "-o", "/dev/stdout", "-S",
+                                                "-g", "-fverbose-asm", "-fcf-protection=none", "-fno-stack-protector",
+                                                "-fno-asynchronous-unwind-tables", "-mno-explicit-relocs",
+                                                "-ffunction-sections", "-fdata-sections", "-fno-dwarf2-cfi-asm",
+                                                "-mstrict-align", "-nostdlib", "-fdiagnostics-format=json", "-fPIE",
+                                                "-fno-plt", "-fvisibility=default", "-xc", "-");
   
   public static CompileResult compile(String code, List<String> optimizeFlags)
   {
@@ -145,10 +155,7 @@ public class GccCaller
     List<String> command = new ArrayList<>();
     command.add(compilerPath);
     command.addAll(extraFlags);
-    command.addAll(List.of("-xc", "-march=rv32imfd", "-mabi=ilp32d", "-o", "/dev/stdout", "-S", "-g", "-fverbose-asm",
-                           "-fcf-protection=none", "-fno-stack-protector", "-fno-asynchronous-unwind-tables",
-                           "-mno-explicit-relocs", "-ffunction-sections", "-fdata-sections", "-fno-dwarf2-cfi-asm",
-                           "-mstrict-align", "-nostdlib", "-fdiagnostics-format=json", "-fpic", "-xc", "-"));
+    command.addAll(gccFlags);
     return command;
   }
   

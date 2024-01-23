@@ -160,7 +160,7 @@ public class CpuState implements Serializable
     this.statistics      = new SimulationStatistics(-1, config.cpuConfig.coreClockFrequency, config.cpuConfig.fUnits);
     this.simulatedMemory = new SimulatedMemory(config.cpuConfig.storeLatency, config.cpuConfig.loadLatency, statistics);
     // Fill memory with data
-    MemoryInitializer memoryInitializer = new MemoryInitializer(128, 512);
+    MemoryInitializer memoryInitializer = new MemoryInitializer(128, config.cpuConfig.callStackSize);
     // init these first, so that the values are set and written to argument list
     memoryInitializer.initializeMemory(simulatedMemory, config.memoryLocations, dataLabels);
     
@@ -241,15 +241,12 @@ public class CpuState implements Serializable
       this.cache = null;
     }
     
-    this.memoryModel = new MemoryModel(cache, simulatedMemory, statistics);
-    
-    
+    this.memoryModel          = new MemoryModel(cache, simulatedMemory, statistics);
     this.loadStoreInterpreter = new CodeLoadStoreInterpreter();
     
-    this.instructionFetchBlock = new InstructionFetchBlock(config.cpuConfig.fetchWidth,
-                                                           config.cpuConfig.branchFollowLimit, simCodeModelFactory,
-                                                           instructionMemoryBlock, gShareUnit, branchTargetBuffer);
-    
+    this.instructionFetchBlock  = new InstructionFetchBlock(config.cpuConfig.fetchWidth,
+                                                            config.cpuConfig.branchFollowLimit, simCodeModelFactory,
+                                                            instructionMemoryBlock, gShareUnit, branchTargetBuffer);
     this.decodeAndDispatchBlock = new DecodeAndDispatchBlock(instructionFetchBlock, renameMapTableBlock,
                                                              globalHistoryRegister, branchTargetBuffer,
                                                              instructionMemoryBlock, config.cpuConfig.fetchWidth,

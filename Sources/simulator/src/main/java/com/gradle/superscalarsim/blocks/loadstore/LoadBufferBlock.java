@@ -200,7 +200,7 @@ public class LoadBufferBlock implements AbstractBlock
         {
           this.memoryAccessUnitList.forEach(ma -> ma.tryRemoveCodeModel(codeModel));
         }
-        this.loadQueue.removeLast();
+        it.remove();
       }
     }
   }// end of removeInvalidInstructions

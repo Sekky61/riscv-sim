@@ -75,7 +75,8 @@
       },
       {
         "name": "rs1",
-        "type": "kInt"
+        "type": "kInt",
+        "defaultValue": "x0"
       }
     ],
     "interpretableAs": "load:16:\\rs1 \\imm +"
@@ -357,7 +358,8 @@
       },
       {
         "name": "rs1",
-        "type": "kLong"
+        "type": "kLong",
+        "defaultValue": "x0"
       }
     ],
     "interpretableAs": "load:64:\\rs1 \\imm +"
@@ -457,7 +459,8 @@
       },
       {
         "name": "rs1",
-        "type": "kInt"
+        "type": "kInt",
+        "defaultValue": "x0"
       }
     ],
     "interpretableAs": "load:8:\\rs1 \\imm +"
@@ -513,7 +516,8 @@
       },
       {
         "name": "rs1",
-        "type": "kInt"
+        "type": "kInt",
+        "defaultValue": "x0"
       }
     ],
     "interpretableAs": "load:32:\\rs1 \\imm +"

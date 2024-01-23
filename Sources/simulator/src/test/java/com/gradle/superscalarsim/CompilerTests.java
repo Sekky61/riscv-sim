@@ -196,25 +196,11 @@ public class CompilerTests
     parser.parseCode(asm);
     
     // Verify
-    try
-    {
-      Assert.assertTrue(compileResult.success);
-      Assert.assertTrue(parser.success());
-      Assert.assertFalse(parser.getInstructions().isEmpty());
-      // There is a sum label
-      Assert.assertNotNull(parser.getLabels().get("sum"));
-    }
-    catch (AssertionError e)
-    {
-      System.out.println(e.getMessage());
-      System.out.println("Unfiltered program:");
-      System.out.println(compileResult.code);
-      System.out.println("Program:");
-      System.out.println(asm);
-      System.out.println("Error messages:");
-      System.out.println(parser.getErrorMessages());
-      Assert.fail();
-    }
+    Assert.assertTrue(compileResult.success);
+    Assert.assertTrue(parser.success());
+    Assert.assertFalse(parser.getInstructions().isEmpty());
+    // There is a sum label
+    Assert.assertNotNull(parser.getLabels().get("sum"));
   }
   
   @Test
@@ -238,30 +224,17 @@ public class CompilerTests
     parser.parseCode(asm);
     
     // Verify
-    try
-    {
-      Assert.assertTrue(compileResult.success);
-      Assert.assertTrue(parser.success());
-      Assert.assertFalse(parser.getInstructions().isEmpty());
-      // There is a add label
-      Assert.assertNotNull(parser.getLabels().get("add"));
-      
-      // There is a string label
-      Label str = parser.getLabels().get("str");
-      Assert.assertNotNull(str);
-      Assert.assertNotEquals(0, str.address);
-    }
-    catch (AssertionError e)
-    {
-      System.out.println(e.getMessage());
-      System.out.println("Unfiltered program:");
-      System.out.println(compileResult.code);
-      System.out.println("Program:");
-      System.out.println(asm);
-      System.out.println("Error messages:");
-      System.out.println(parser.getErrorMessages());
-      Assert.fail();
-    }
+    Assert.assertTrue(compileResult.success);
+    Assert.assertTrue(parser.success());
+    Assert.assertFalse(parser.getInstructions().isEmpty());
+    // There is a add label
+    Assert.assertNotNull(parser.getLabels().get("add"));
+    
+    // There is a string label
+    Label str = parser.getLabels().get("str");
+    Assert.assertNotNull(str);
+    Assert.assertNotEquals(0, str.address);
+    
     
     // The program is loadable
     SimulationConfig cpuConfig = SimulationConfig.getDefaultConfiguration();

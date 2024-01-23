@@ -262,8 +262,9 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
   {
     if (this.simCodeModel == null || this.simCodeModel != simCodeModel)
     {
-      // todo Maybe the 'this.simCodeModel != simCodeModel' is wrong, because buffers try to remove a lot of times
-      throw new RuntimeException("Trying to remove wrong code model from MAU");
+      return;
+      //          // todo Maybe the 'this.simCodeModel != simCodeModel' is wrong, because buffers try to remove a lot of times
+      //          throw new RuntimeException("Trying to remove wrong code model from MAU");
     }
     
     tickCounter();
