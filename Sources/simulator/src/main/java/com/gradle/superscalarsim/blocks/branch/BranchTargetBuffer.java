@@ -35,8 +35,8 @@ package com.gradle.superscalarsim.blocks.branch;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.models.BranchTargetEntryModel;
-import com.gradle.superscalarsim.models.IInputCodeModel;
-import com.gradle.superscalarsim.models.InstructionFunctionModel;
+import com.gradle.superscalarsim.models.instruction.IInputCodeModel;
+import com.gradle.superscalarsim.models.instruction.InstructionFunctionModel;
 
 import java.util.Map;
 import java.util.TreeMap;

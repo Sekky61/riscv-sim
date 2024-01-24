@@ -27,7 +27,7 @@
 
 package com.gradle.superscalarsim.cpu;
 
-import com.gradle.superscalarsim.models.InputCodeModel;
+import com.gradle.superscalarsim.models.instruction.InputCodeModel;
 import org.junit.Assert;
 import org.junit.Test;
 

@@ -8,7 +8,7 @@ import com.gradle.superscalarsim.blocks.branch.GlobalHistoryRegister;
 import com.gradle.superscalarsim.blocks.branch.PatternHistoryTable;
 import com.gradle.superscalarsim.builders.InputCodeModelBuilder;
 import com.gradle.superscalarsim.factories.SimCodeModelFactory;
-import com.gradle.superscalarsim.models.InputCodeModel;
+import com.gradle.superscalarsim.models.instruction.InputCodeModel;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

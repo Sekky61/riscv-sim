@@ -32,9 +32,9 @@ import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.RegisterTypeEnum;
 import com.gradle.superscalarsim.factories.InputCodeModelFactory;
 import com.gradle.superscalarsim.loader.InitLoader;
-import com.gradle.superscalarsim.models.InputCodeArgument;
-import com.gradle.superscalarsim.models.InputCodeModel;
-import com.gradle.superscalarsim.models.InstructionFunctionModel;
+import com.gradle.superscalarsim.models.instruction.InputCodeArgument;
+import com.gradle.superscalarsim.models.instruction.InputCodeModel;
+import com.gradle.superscalarsim.models.instruction.InstructionFunctionModel;
 import com.gradle.superscalarsim.models.register.IRegisterFile;
 import com.gradle.superscalarsim.models.register.RegisterDataContainer;
 import com.gradle.superscalarsim.models.register.RegisterModel;
@@ -227,7 +227,8 @@ public class CodeParser
         {
           continue;
         }
-        boolean isOffset = instruction.getInstructionFunctionModel().getArgumentByName(argument.getName()).isOffset();
+        boolean               isOffset      = instruction.getInstructionFunctionModel()
+                .getArgumentByName(argument.getName()).isOffset();
         int                   pc            = instruction.getPc();
         RegisterDataContainer constantValue = new RegisterDataContainer();
         int                   labelValue    = labels.get(argument.getValue()).address;

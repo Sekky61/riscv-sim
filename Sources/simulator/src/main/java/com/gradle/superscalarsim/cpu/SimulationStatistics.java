@@ -30,7 +30,7 @@ package com.gradle.superscalarsim.cpu;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.models.FunctionalUnitDescription;
-import com.gradle.superscalarsim.models.SimCodeModel;
+import com.gradle.superscalarsim.models.instruction.SimCodeModel;
 
 import java.util.ArrayList;
 import java.util.HashMap;

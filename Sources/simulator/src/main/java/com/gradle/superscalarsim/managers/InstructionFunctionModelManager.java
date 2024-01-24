@@ -28,7 +28,7 @@
 
 package com.gradle.superscalarsim.managers;
 
-import com.gradle.superscalarsim.models.InstructionFunctionModel;
+import com.gradle.superscalarsim.models.instruction.InstructionFunctionModel;
 
 import java.util.WeakHashMap;
 

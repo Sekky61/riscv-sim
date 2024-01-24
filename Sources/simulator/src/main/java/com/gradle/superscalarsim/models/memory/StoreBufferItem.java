@@ -33,7 +33,7 @@
 package com.gradle.superscalarsim.models.memory;
 
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
-import com.gradle.superscalarsim.models.SimCodeModel;
+import com.gradle.superscalarsim.models.instruction.SimCodeModel;
 
 /**
  * @class StoreBufferItem

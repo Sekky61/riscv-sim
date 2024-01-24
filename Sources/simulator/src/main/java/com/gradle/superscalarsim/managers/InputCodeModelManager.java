@@ -28,7 +28,7 @@
 
 package com.gradle.superscalarsim.managers;
 
-import com.gradle.superscalarsim.models.InputCodeModel;
+import com.gradle.superscalarsim.models.instruction.InputCodeModel;
 
 import java.util.WeakHashMap;
 
