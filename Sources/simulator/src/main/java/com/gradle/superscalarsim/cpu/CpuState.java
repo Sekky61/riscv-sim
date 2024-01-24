@@ -467,17 +467,13 @@ public class CpuState implements Serializable
     this.tick++;
   }// end of run
   
+  /**
+   * The order of checks sets their priority.
+   *
+   * @return Reason for stopping the simulation, or kNotStopped if the simulation is still running.
+   */
   public StopReason simStatus()
   {
-    boolean robEmpty      = reorderBufferBlock.getReorderQueueSize() == 0;
-    boolean pcEnd         = instructionFetchBlock.getPc() >= instructionMemoryBlock.getCode().size() * 4;
-    boolean renameEmpty   = decodeAndDispatchBlock.getCodeBuffer().isEmpty();
-    boolean fetchNotEmpty = !instructionFetchBlock.getFetchedCode().isEmpty();
-    boolean nop = fetchNotEmpty && instructionFetchBlock.getFetchedCode().get(0).getInstructionName().equals("nop");
-    if (robEmpty && pcEnd && renameEmpty && nop)
-    {
-      return StopReason.kEndOfCode;
-    }
     boolean halt = reorderBufferBlock.stopReason == StopReason.kCallStackHalt;
     if (halt)
     {
@@ -491,6 +487,15 @@ public class CpuState implements Serializable
     if (exceptionRaised)
     {
       return StopReason.kException;
+    }
+    boolean robEmpty      = reorderBufferBlock.getReorderQueueSize() == 0;
+    boolean pcEnd         = instructionFetchBlock.getPc() >= instructionMemoryBlock.getCode().size() * 4;
+    boolean renameEmpty   = decodeAndDispatchBlock.getCodeBuffer().isEmpty();
+    boolean fetchNotEmpty = !instructionFetchBlock.getFetchedCode().isEmpty();
+    boolean nop = fetchNotEmpty && instructionFetchBlock.getFetchedCode().get(0).getInstructionName().equals("nop");
+    if (robEmpty && pcEnd && renameEmpty && nop)
+    {
+      return StopReason.kEndOfCode;
     }
     return StopReason.kNotStopped;
   }

@@ -45,6 +45,7 @@ import com.gradle.superscalarsim.models.instruction.InputCodeArgument;
 import com.gradle.superscalarsim.models.instruction.InstructionFunctionModel;
 import com.gradle.superscalarsim.models.instruction.SimCodeModel;
 import com.gradle.superscalarsim.models.register.RegisterModel;
+import com.gradle.superscalarsim.models.util.Result;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -185,12 +186,21 @@ public class ArithmeticFunctionUnitBlock extends AbstractFunctionUnitBlock
     
     // Instruction computed
     // Write result to the destination register
-    InputCodeArgument   destinationArgument = simCodeModel.getArgumentByName("rd");
-    Expression.Variable result              = arithmeticInterpreter.interpretInstruction(this.simCodeModel);
-    RegisterModel       reg                 = destinationArgument.getRegisterValue();
-    // TODO redundant?
-    reg.setValueContainer(result.value);
-    reg.setReadiness(RegisterReadinessEnum.kExecuted);
+    InputCodeArgument           destinationArgument = simCodeModel.getArgumentByName("rd");
+    Result<Expression.Variable> result              = arithmeticInterpreter.interpretInstruction(this.simCodeModel);
+    
+    if (result.isException())
+    {
+      // Mark exception
+      this.simCodeModel.setException(result.exception());
+    }
+    else
+    {
+      RegisterModel reg = destinationArgument.getRegisterValue();
+      // TODO redundant?
+      reg.setValueContainer(result.value().value);
+      reg.setReadiness(RegisterReadinessEnum.kExecuted);
+    }
     
     this.simCodeModel.setBusy(false);
     this.simCodeModel = null;

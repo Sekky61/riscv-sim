@@ -131,5 +131,6 @@ public class HaltTests
     Assert.assertSame(StopReason.kCallStackHalt, cpu.cpuState.reorderBufferBlock.stopReason);
     // a0 should have 8 as a result (f is a function that multiplies by 2)
     Assert.assertEquals(8, cpu.cpuState.unifiedRegisterFileBlock.getRegister("a0").getValue(DataTypeEnum.kInt));
+    Assert.assertEquals(2, cpu.cpuState.statistics.committedInstructions);
   }
 }

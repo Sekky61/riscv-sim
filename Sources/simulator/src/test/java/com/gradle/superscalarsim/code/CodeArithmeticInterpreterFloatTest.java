@@ -63,7 +63,7 @@ public class CodeArithmeticInterpreterFloatTest
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0);
     
-    Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel);
+    Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel).value();
     Assert.assertEquals(8.625, (float) v.value.getValue(DataTypeEnum.kFloat), 0.01);
   }
   
@@ -77,7 +77,7 @@ public class CodeArithmeticInterpreterFloatTest
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0);
     
-    Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel);
+    Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel).value();
     Assert.assertEquals(-2.375, (float) v.value.getValue(DataTypeEnum.kFloat), 0.01);
   }
   
@@ -91,7 +91,7 @@ public class CodeArithmeticInterpreterFloatTest
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0);
     
-    Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel);
+    Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel).value();
     Assert.assertEquals(17.1875, (float) v.value.getValue(DataTypeEnum.kFloat), 0.01);
   }
   
@@ -105,7 +105,7 @@ public class CodeArithmeticInterpreterFloatTest
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0);
     
-    Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel);
+    Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel).value();
     Assert.assertEquals(1.76, (float) v.value.getValue(DataTypeEnum.kFloat), 0.01);
   }
 }
