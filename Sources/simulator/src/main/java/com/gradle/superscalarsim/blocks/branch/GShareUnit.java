@@ -61,8 +61,9 @@ public class GShareUnit
   private int size;
   
   /**
-   * @param [in] size                  - Size of the pattern table
-   * @param [in] globalHistoryRegister - Bit array of branching history
+   * @param size                  Size of the pattern table
+   * @param globalHistoryRegister Bit array of branching history
+   * @param patternHistoryTable   Table with all bit predictors
    *
    * @brief Constructor
    */
@@ -85,7 +86,7 @@ public class GShareUnit
   //----------------------------------------------------------------------
   
   /**
-   * @param [in] programCounter - Position of the branch instruction
+   * @param programCounter Position of the branch instruction
    *
    * @return Predictor on the specified index
    * @brief Get predictor from PHT

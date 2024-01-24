@@ -287,24 +287,39 @@ public class ReorderBufferBlock implements AbstractBlock
       boolean branchActuallyTaken = codeModel.isBranchLogicResult();
       int     pc                  = codeModel.getSavedPc();
       
+      // Feedback to predictor
+      // TODO look into gshareunit
+      if (branchActuallyTaken)
+      {
+        this.gShareUnit.getPredictorFromOld(pc, codeModel.getIntegerId()).upTheProbability();
+      }
+      else
+      {
+        this.gShareUnit.getPredictorFromOld(pc, codeModel.getIntegerId()).downTheProbability();
+      }
+      
       if (codeModel.isBranchPredicted() == branchActuallyTaken)
       {
-        // Correct prediction
-        this.gShareUnit.getPredictorFromOld(pc, codeModel.getIntegerId()).upTheProbability();
-        this.gShareUnit.getGlobalHistoryRegister().removeHistoryValue(codeModel.getIntegerId());
+        // Correctly predicted jump
         // Update committable status of subsequent instructions
         validateInstructions();
       }
       else
       {
         // Wrong prediction - feedback to predictor
-        int resultPc = codeModel.getBranchTarget();
-        // TODO: Why down? Shouldn't the feedback be in the opposite direction of the wrong prediction?
-        this.gShareUnit.getPredictorFromOld(pc, codeModel.getIntegerId()).downTheProbability();
-        this.branchTargetBuffer.setEntry(pc, codeModel, resultPc, -1, cycle);
+        int resultPc;
+        if (branchActuallyTaken)
+        {
+          resultPc = codeModel.getBranchTarget();
+          // Update branch target
+          this.branchTargetBuffer.setEntry(pc, codeModel, resultPc, -1, cycle);
+        }
+        else
+        {
+          resultPc = pc + 4;
+        }
         
-        // Get the second instruction in the queue and invalidate it
-        
+        // Get the second instruction in the queue and invalidate it (flush everything after it)
         Optional<SimCodeModel> robItem = this.reorderQueue.stream().skip(1).findFirst();
         if (robItem.isPresent())
         {
