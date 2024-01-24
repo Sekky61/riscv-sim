@@ -131,22 +131,21 @@ public class BranchFunctionUnitBlock extends AbstractFunctionUnitBlock
     }
     
     // Execute
-    int         instructionPosition = this.simCodeModel.getSavedPc();
-    OptionalInt jumpOffset          = branchInterpreter.interpretInstruction(this.simCodeModel, instructionPosition);
-    boolean     jumpTaken           = jumpOffset.isPresent();
+    OptionalInt jumpTarget = branchInterpreter.interpretInstruction(this.simCodeModel);
+    boolean     jumpTaken  = jumpTarget.isPresent();
     // If the branch was taken or not
     this.simCodeModel.setBranchLogicResult(jumpTaken);
     // Used to fix BTB and PC in misprediction
     if (jumpTaken)
     {
-      this.simCodeModel.setBranchTargetOffset(jumpOffset.getAsInt());
+      this.simCodeModel.setBranchTarget(jumpTarget.getAsInt());
     }
     InputCodeArgument destinationArgument = simCodeModel.getArgumentByName("rd");
     if (destinationArgument != null)
     {
       // Write the result to the register
       RegisterModel reg                     = destinationArgument.getRegisterValue();
-      int           nextInstructionPosition = instructionPosition + 4;
+      int           nextInstructionPosition = this.simCodeModel.getSavedPc() + 4;
       reg.setValue(nextInstructionPosition);
       reg.setReadiness(RegisterReadinessEnum.kExecuted);
     }

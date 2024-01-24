@@ -140,6 +140,7 @@ public class CodeLoadStoreInterpreter
     
     if (address < 0)
     {
+      // TODO is this a case that can happen during a bad speculation, therefore should be ignored until commit?
       throw new IllegalStateException("Address is negative: " + address);
     }
     

@@ -38,6 +38,7 @@ import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.blocks.AbstractBlock;
 import com.gradle.superscalarsim.blocks.branch.BranchTargetBuffer;
 import com.gradle.superscalarsim.blocks.branch.GlobalHistoryRegister;
+import com.gradle.superscalarsim.code.CodeBranchInterpreter;
 import com.gradle.superscalarsim.cpu.SimulationStatistics;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.models.InputCodeArgument;
@@ -92,6 +93,10 @@ public class DecodeAndDispatchBlock implements AbstractBlock
   @JsonIdentityReference(alwaysAsId = true)
   private final SimulationStatistics statistics;
   /**
+   * Interpreter for interpreting branch instructions
+   */
+  private CodeBranchInterpreter codeBranchInterpreter;
+  /**
    * Boolean flag indicating if the decode block should be flushed
    */
   private boolean flush;
@@ -128,7 +133,8 @@ public class DecodeAndDispatchBlock implements AbstractBlock
                                 BranchTargetBuffer branchTargetBuffer,
                                 InstructionMemoryBlock codeParser,
                                 int decodeBufferSize,
-                                SimulationStatistics statistics)
+                                SimulationStatistics statistics,
+                                CodeBranchInterpreter codeBranchInterpreter)
   {
     this.instructionFetchBlock = instructionFetchBlock;
     this.renameMapTableBlock   = renameMapTableBlock;
@@ -142,6 +148,7 @@ public class DecodeAndDispatchBlock implements AbstractBlock
     this.branchTargetBuffer     = branchTargetBuffer;
     this.instructionMemoryBlock = codeParser;
     this.decodeBufferSize       = decodeBufferSize;
+    this.codeBranchInterpreter  = codeBranchInterpreter;
   }// end of Constructor
   //----------------------------------------------------------------------
   
@@ -366,6 +373,7 @@ public class DecodeAndDispatchBlock implements AbstractBlock
         assert mappedReg != null;
         // Get reference
         destinationArgument.setRegisterValue(mappedReg);
+        // todo is this always true?
         if (mappedReg.isSpeculative())
         {
           // Rename the string only if the register is speculative. This is because of register aliases
@@ -393,18 +401,21 @@ public class DecodeAndDispatchBlock implements AbstractBlock
     // TODO: this line is sus
     int         predTarget    = this.branchTargetBuffer.getEntryTarget(instructionPosition);
     OptionalInt realTargetOpt = calculateRealBranchAddress(codeModel);
-    int         realTarget    = realTargetOpt.orElse(-1);
     
     boolean globalHistoryBit = prediction && predTarget != 0;
-    boolean shouldJump       = unconditional || prediction;
-    boolean jumpBad          = shouldJump && realTarget != predTarget && realTargetOpt.isPresent();
+    boolean conditionKnown   = unconditional;
+    boolean targetKnown      = realTargetOpt.isPresent();
+    boolean badCondition     = !prediction && unconditional;
+    boolean badTarget        = targetKnown && predTarget != realTargetOpt.getAsInt();
+    boolean jumpBad          = targetKnown && conditionKnown && (badCondition || badTarget);
     if (jumpBad)
     {
-      // Branch badly predicted
+      // Branch badly predicted, and we know the right target and condition
       // Fix entry in BTB, set correct PC
       codeModel.setBranchPredicted(true);
-      this.branchTargetBuffer.setEntry(instructionPosition, codeModel, realTarget, codeModel.getIntegerId(), -1);
-      this.instructionFetchBlock.setPc(realTarget);
+      this.branchTargetBuffer.setEntry(instructionPosition, codeModel, realTargetOpt.getAsInt(),
+                                       codeModel.getIntegerId(), -1);
+      this.instructionFetchBlock.setPc(realTargetOpt.getAsInt());
       // Drop instructions after branch
       removeInstructionsFromIndex(position + 1);
       globalHistoryBit = true;
@@ -421,26 +432,26 @@ public class DecodeAndDispatchBlock implements AbstractBlock
    */
   private OptionalInt calculateRealBranchAddress(final SimCodeModel codeModel)
   {
-    // TODO: jalr instruction bases offset on register value, can we handle that?
-    // TODO: also jr, ret instruction
-    // Or, should it fall through and be caught later as bad prediction?
-    InputCodeArgument immediateArgument = codeModel.getArgumentByName("imm");
-    if (immediateArgument == null)
+    boolean                  canCalculateAddress = true;
+    InstructionFunctionModel instruction         = codeModel.getInstructionFunctionModel();
+    for (InstructionFunctionModel.Argument argument : instruction.getArguments())
     {
-      // Cannot predict, continue on next instruction
+      if (argument.isRegister() && !argument.writeBack())
+      {
+        canCalculateAddress = false;
+        break;
+      }
+    }
+    if (!canCalculateAddress)
+    {
       return OptionalInt.empty();
-      //      throw new RuntimeException("Branch instruction does not have immediate argument");
     }
-    // If there is label, get its position
-    int labelOffset = instructionMemoryBlock.getLabelPosition(immediateArgument.getValue());
-    if (labelOffset == -1)
-    {
-      // No label found -- this must be a relative jump (imm is relative to current pc)
-      int x = codeModel.getSavedPc() + Integer.parseInt(immediateArgument.getValue());
-      return OptionalInt.of(x);
-    }
-    // Jump after label
-    return OptionalInt.of(labelOffset);
+    
+    // Arguments are not registers, we can calculate the address
+    // TODO - maybe more relaxed check?
+    
+    OptionalInt maybeTarget = codeBranchInterpreter.interpretInstruction(codeModel);
+    return maybeTarget;
   }// end of calculateRealBranchAddress
   //----------------------------------------------------------------------
   

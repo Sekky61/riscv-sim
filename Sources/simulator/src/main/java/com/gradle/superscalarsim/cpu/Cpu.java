@@ -136,13 +136,14 @@ public class Cpu implements Serializable
   
   public boolean simEnded()
   {
+    boolean halt     = cpuState.reorderBufferBlock.haltFlag;
     boolean robEmpty = cpuState.reorderBufferBlock.getReorderQueueSize() == 0;
     boolean pcEnd = cpuState.instructionFetchBlock.getPc() >= cpuState.instructionMemoryBlock.getCode().size() * 4;
     boolean renameEmpty   = cpuState.decodeAndDispatchBlock.getCodeBuffer().isEmpty();
     boolean fetchNotEmpty = !cpuState.instructionFetchBlock.getFetchedCode().isEmpty();
     boolean nop = fetchNotEmpty && cpuState.instructionFetchBlock.getFetchedCode().get(0).getInstructionName()
             .equals("nop");
-    return robEmpty && pcEnd && renameEmpty && nop;
+    return (robEmpty && pcEnd && renameEmpty && nop) || halt;
   }
   
   /**

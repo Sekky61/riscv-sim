@@ -217,6 +217,7 @@ public class CodeParser
     }
     
     // Add constantValues to labels in instructions
+    // Labels should result in a relative value, not absolute
     // TODO: memory initializer would ideally have references to labels and change them directly
     for (InputCodeModel instruction : instructions)
     {
@@ -226,8 +227,15 @@ public class CodeParser
         {
           continue;
         }
+        boolean isOffset = instruction.getInstructionFunctionModel().getArgumentByName(argument.getName()).isOffset();
+        int                   pc            = instruction.getPc();
         RegisterDataContainer constantValue = new RegisterDataContainer();
-        constantValue.setValue(labels.get(argument.getValue()).address);
+        int                   labelValue    = labels.get(argument.getValue()).address;
+        if (isOffset)
+        {
+          labelValue -= pc;
+        }
+        constantValue.setValue(labelValue);
         argument.setConstantValue(constantValue);
       }
     }

@@ -122,6 +122,7 @@ public class ForwardSimulationTest
     cpuCfg.loadLatency          = 1;
     cpuCfg.laneReplacementDelay = 0;
     cpuCfg.speculativeRegisters = 320;
+    cpuCfg.callStackSize        = 512;
     // 3 FX: +, +, - (delay 2)
     // 3 FP: +, +, - (delay 2)
     // 1 L/S: (delay 1)
@@ -1024,7 +1025,7 @@ public class ForwardSimulationTest
     Assert.assertEquals(16, this.branchTargetBuffer.getEntryTarget(4));
     Assert.assertTrue(this.branchTargetBuffer.isEntryUnconditional(8));
     Assert.assertEquals(-1, this.globalHistoryRegister.getHistoryValueAsInt(9));
-    Assert.assertEquals(0, (int) this.unifiedRegisterFileBlock.getRegister("x0").getValue(DataTypeEnum.kInt), 0.01);
+    Assert.assertEquals(0, (int) this.unifiedRegisterFileBlock.getRegister("x0").getValue(DataTypeEnum.kInt));
   }
   
   @Test
@@ -1388,7 +1389,7 @@ public class ForwardSimulationTest
     instructionMemoryBlock.setLabels(codeParser.getLabels());
     
     this.cpu.step();
-    // 3 fetches
+    // 3 fetches, but it stops before second branch (fetch limitation)
     Assert.assertEquals("beq", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
     Assert.assertEquals("subi", this.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
     Assert.assertEquals("nop", this.instructionFetchBlock.getFetchedCode().get(2).getInstructionName());
@@ -1396,6 +1397,7 @@ public class ForwardSimulationTest
     
     this.cpu.step();
     // another 3 fetches, 2 from last one moved to decode
+    // The jal jump cannot be followed, it is seen for the first time
     Assert.assertEquals("jal", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
     Assert.assertEquals("addi", this.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
     Assert.assertEquals("nop", this.instructionFetchBlock.getFetchedCode().get(2).getInstructionName());
@@ -1411,11 +1413,14 @@ public class ForwardSimulationTest
     Assert.assertEquals("subi tg0,x1,10", this.aluIssueWindowBlock.getIssuedInstructions().get(0).getRenamedCodeLine());
     
     this.cpu.step();
+    // The addi does not get out of the decode buffer, because the jal is computed and followed
+    Assert.assertEquals(0, this.aluIssueWindowBlock.getIssuedInstructions().size());
     Assert.assertEquals(0, this.decodeAndDispatchBlock.getCodeBuffer().size());
     Assert.assertEquals("jal tg1,labelFin",
                         this.branchIssueWindowBlock.getIssuedInstructions().get(0).getRenamedCodeLine());
     Assert.assertEquals("beq x3,x0,labelIf", this.branchFunctionUnitBlock1.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("subi tg0,x1,10", this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
+    Assert.assertNull(this.branchFunctionUnitBlock2.getSimCodeModel());
     
     this.cpu.step();
     Assert.assertEquals("jal tg1,labelFin", this.branchFunctionUnitBlock2.getSimCodeModel().getRenamedCodeLine());
@@ -1435,7 +1440,7 @@ public class ForwardSimulationTest
     
     this.cpu.step();
     Assert.assertTrue(this.reorderBufferBlock.getRobItem(3).reorderFlags.isReadyToBeCommitted());
-    Assert.assertEquals(-10, (int) this.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt), 0.01);
+    Assert.assertEquals(-10, (int) this.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt));
     
     this.cpu.step();
     Assert.assertEquals(1, this.globalHistoryRegister.getRegisterValueAsInt());
@@ -1913,6 +1918,5 @@ public class ForwardSimulationTest
     
     
     Assert.assertEquals(1, (int) this.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt));
-    
   }
 }

@@ -275,6 +275,13 @@ public class Expression
     }
     // Assign value, with some special handling for boolean
     // Alternatively add the cast operator
+    
+    if (to.isConstant)
+    {
+      // Assigning to a constant does not change the value
+      return;
+    }
+    
     if (from.type == DataTypeEnum.kBool && to.type != DataTypeEnum.kBool)
     {
       boolean value = (boolean) from.value.getValue(DataTypeEnum.kBool);
@@ -408,7 +415,7 @@ public class Expression
     {
       // It is a boolean
       boolean boolValue = Boolean.parseBoolean(constant);
-      variable = new Variable("", DataTypeEnum.kBool, RegisterDataContainer.fromValue(boolValue));
+      variable = new Variable("", DataTypeEnum.kBool, RegisterDataContainer.fromValue(boolValue), true);
     }
     else if (intPattern.matcher(constant).matches())
     {
@@ -416,13 +423,13 @@ public class Expression
       {
         // It is a long
         long longValue = Long.parseUnsignedLong(constant.substring(0, constant.length() - 1));
-        variable = new Variable("", DataTypeEnum.kLong, RegisterDataContainer.fromValue(longValue));
+        variable = new Variable("", DataTypeEnum.kLong, RegisterDataContainer.fromValue(longValue), true);
       }
       else
       {
         // It is an int
         int intValue = Integer.parseInt(constant);
-        variable = new Variable("", DataTypeEnum.kInt, RegisterDataContainer.fromValue(intValue));
+        variable = new Variable("", DataTypeEnum.kInt, RegisterDataContainer.fromValue(intValue), true);
       }
     }
     else if (decimalPattern.matcher(constant).matches())
@@ -433,21 +440,21 @@ public class Expression
         // Float
         constant = constant.substring(0, constant.length() - 1);
         float floatValue = Float.parseFloat(constant);
-        variable = new Variable("", DataTypeEnum.kFloat, RegisterDataContainer.fromValue(floatValue));
+        variable = new Variable("", DataTypeEnum.kFloat, RegisterDataContainer.fromValue(floatValue), true);
       }
       else
       {
         // double
         constant = constant.substring(0, constant.length() - 1);
         double doubleValue = Double.parseDouble(constant);
-        variable = new Variable("", DataTypeEnum.kDouble, RegisterDataContainer.fromValue(doubleValue));
+        variable = new Variable("", DataTypeEnum.kDouble, RegisterDataContainer.fromValue(doubleValue), true);
       }
     }
     else if (hexadecimalPattern.matcher(constant).matches())
     {
       // It is a hex int
       int intValue = Integer.parseUnsignedInt(constant.substring(2), 16);
-      variable = new Variable("", DataTypeEnum.kInt, RegisterDataContainer.fromValue(intValue));
+      variable = new Variable("", DataTypeEnum.kInt, RegisterDataContainer.fromValue(intValue), true);
     }
     return variable;
   }
@@ -456,8 +463,8 @@ public class Expression
   {
     return switch (operator)
     {
-      case "!" -> new Variable("", DataTypeEnum.kInt, RegisterDataContainer.fromValue(~value));
-      case "float" -> new Variable("", DataTypeEnum.kFloat, RegisterDataContainer.fromValue(value));
+      case "!" -> new Variable("", DataTypeEnum.kInt, RegisterDataContainer.fromValue(~value), true);
+      case "float" -> new Variable("", DataTypeEnum.kFloat, RegisterDataContainer.fromValue(value), true);
       default ->
               throw new IllegalArgumentException("Unknown operator: " + operator + " for type: " + DataTypeEnum.kInt);
     };
@@ -467,8 +474,8 @@ public class Expression
   {
     return switch (operator)
     {
-      case "!" -> new Variable("", DataTypeEnum.kInt, RegisterDataContainer.fromValue(~value));
-      case "float" -> new Variable("", DataTypeEnum.kDouble, RegisterDataContainer.fromValue(value));
+      case "!" -> new Variable("", DataTypeEnum.kInt, RegisterDataContainer.fromValue(~value), true);
+      case "float" -> new Variable("", DataTypeEnum.kDouble, RegisterDataContainer.fromValue(value), true);
       default ->
               throw new IllegalArgumentException("Unknown operator: " + operator + " for type: " + DataTypeEnum.kLong);
     };
@@ -478,10 +485,13 @@ public class Expression
   {
     return switch (operator)
     {
-      case "sqrt" -> new Variable("", DataTypeEnum.kFloat, RegisterDataContainer.fromValue((float) Math.sqrt(value)));
-      case "bits" -> new Variable("", DataTypeEnum.kInt, RegisterDataContainer.fromValue(Float.floatToIntBits(value)));
-      case "float" -> new Variable("", DataTypeEnum.kFloat, RegisterDataContainer.fromValue(value));
-      case "fclass" -> new Variable("", DataTypeEnum.kInt, RegisterDataContainer.fromValue(Fclass.classify(value)));
+      case "sqrt" -> new Variable("", DataTypeEnum.kFloat, RegisterDataContainer.fromValue((float) Math.sqrt(value)),
+                                  true);
+      case "bits" -> new Variable("", DataTypeEnum.kInt, RegisterDataContainer.fromValue(Float.floatToIntBits(value)),
+                                  true);
+      case "float" -> new Variable("", DataTypeEnum.kFloat, RegisterDataContainer.fromValue(value), true);
+      case "fclass" -> new Variable("", DataTypeEnum.kInt, RegisterDataContainer.fromValue(Fclass.classify(value)),
+                                    true);
       default ->
               throw new IllegalArgumentException("Unknown operator: " + operator + " for type: " + DataTypeEnum.kFloat);
     };
@@ -491,9 +501,9 @@ public class Expression
   {
     return switch (operator)
     {
-      case "sqrt" -> new Variable("", DataTypeEnum.kDouble, RegisterDataContainer.fromValue(Math.sqrt(value)));
+      case "sqrt" -> new Variable("", DataTypeEnum.kDouble, RegisterDataContainer.fromValue(Math.sqrt(value)), true);
       case "bits" -> new Variable("", DataTypeEnum.kLong,
-                                  RegisterDataContainer.fromValue(Double.doubleToLongBits(value)));
+                                  RegisterDataContainer.fromValue(Double.doubleToLongBits(value)), true);
       default -> throw new IllegalArgumentException(
               "Unknown operator: " + operator + " for type: " + DataTypeEnum.kDouble);
     };
@@ -503,7 +513,7 @@ public class Expression
   {
     return switch (operator)
     {
-      case "!" -> new Variable("", DataTypeEnum.kBool, RegisterDataContainer.fromValue(!value));
+      case "!" -> new Variable("", DataTypeEnum.kBool, RegisterDataContainer.fromValue(!value), true);
       default ->
               throw new IllegalArgumentException("Unknown operator: " + operator + " for type: " + DataTypeEnum.kBool);
     };
@@ -723,15 +733,17 @@ public class Expression
     public String tag;
     public DataTypeEnum type;
     public RegisterDataContainer value;
+    public boolean isConstant;
     
     /**
      * @brief Constructor
      */
-    public Variable(String tag, DataTypeEnum type, RegisterDataContainer value)
+    public Variable(String tag, DataTypeEnum type, RegisterDataContainer value, boolean isConstant)
     {
-      this.tag   = tag;
-      this.type  = type;
-      this.value = value;
+      this.tag        = tag;
+      this.type       = type;
+      this.value      = value;
+      this.isConstant = isConstant;
     }
     
     public static Variable fromValue(Object value)
@@ -741,7 +753,7 @@ public class Expression
       {
         throw new IllegalArgumentException("Unsupported type: " + value.getClass());
       }
-      return new Variable("", type, RegisterDataContainer.fromValue(value));
+      return new Variable("", type, RegisterDataContainer.fromValue(value), true);
     }
     
     public boolean isVariable()

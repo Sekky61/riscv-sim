@@ -5,7 +5,7 @@
  * Brno University of Technology
  * xmajer21@stud.fit.vutbr.cz
  * @brief Tests for the CpuConfiguration class
- * @date 26 Sep      2023 10:00 (created)
+ * @date 20 Jan      2024 10:00 (created)
  * @section Licence
  * This file is part of the Superscalar simulator app
  * <p>

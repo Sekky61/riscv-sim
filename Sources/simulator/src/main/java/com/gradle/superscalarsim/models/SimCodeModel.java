@@ -114,11 +114,12 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
    */
   private boolean branchLogicResult;
   /**
-   * Target of the branch instruction (offset from the savedPc).
+   * Target of the branch instruction.
+   * NOT an offset. If you need offset, describe it in the interpretableAs field (see JAL instruction).
    * Result of the branch actual computation, not the prediction.
    * Used to fix BTB and PC in misprediction.
    */
-  private int branchTargetOffset;
+  private int branchTarget;
   
   /**
    * @param inputCodeModel Original code model
@@ -259,14 +260,14 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
     this.branchLogicResult = branchLogicResult;
   }
   
-  public int getBranchTargetOffset()
+  public int getBranchTarget()
   {
-    return branchTargetOffset;
+    return branchTarget;
   }
   
-  public void setBranchTargetOffset(int branchTargetOffset)
+  public void setBranchTarget(int branchTarget)
   {
-    this.branchTargetOffset = branchTargetOffset;
+    this.branchTarget = branchTarget;
   }
   
   /**
@@ -391,12 +392,14 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
     List<Expression.Variable> variables                = new ArrayList<>();
     InstructionFunctionModel  instructionFunctionModel = getInstructionFunctionModel();
     
-    variables.add(new Expression.Variable("pc", DataTypeEnum.kInt, RegisterDataContainer.fromValue(getSavedPc())));
+    variables.add(
+            new Expression.Variable("pc", DataTypeEnum.kInt, RegisterDataContainer.fromValue(getSavedPc()), true));
     
     for (InputCodeArgument var : getArguments())
     {
-      InstructionFunctionModel.Argument argument = instructionFunctionModel.getArgumentByName(var.getName());
-      RegisterDataContainer             val      = var.getConstantValue();
+      InstructionFunctionModel.Argument argument   = instructionFunctionModel.getArgumentByName(var.getName());
+      RegisterDataContainer             val        = var.getConstantValue();
+      boolean                           isConstant = false;
       if (val == null)
       {
         // Try register
@@ -405,9 +408,10 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
         {
           throw new IllegalStateException("Could not parse " + var.getValue() + " as constant or label");
         }
-        val = reg.getValueContainer();
+        val        = reg.getValueContainer();
+        isConstant = reg.isConstant();
       }
-      variables.add(new Expression.Variable(var.getName(), argument.type(), val));
+      variables.add(new Expression.Variable(var.getName(), argument.type(), val, isConstant));
     }
     return variables;
   }

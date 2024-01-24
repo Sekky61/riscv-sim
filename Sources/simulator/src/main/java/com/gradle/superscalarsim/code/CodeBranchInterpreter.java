@@ -60,16 +60,16 @@ public class CodeBranchInterpreter
    * The interpreted branch code has the following format: "target:condition".
    * The target is the PC that should be set.
    * The target expression can reference registers, immediate (also label) and also fixed registers (x1).
+   * If you need relative jumps, use \pc in the expression.
    * <p>
    * The expression is in the reverse polish notation. See {@link Expression}.
    *
-   * @param codeModel           Instruction to be interpreted
-   * @param instructionPosition Position of interpreted instruction in source file (byte, so PC value, not instruction count)
+   * @param codeModel Instruction to be interpreted
    *
    * @return OptionalInt with position of next instruction to be loaded, empty if no jump is performed
    * @brief Interprets branch or jump instruction
    */
-  public OptionalInt interpretInstruction(final SimCodeModel codeModel, int instructionPosition)
+  public OptionalInt interpretInstruction(final SimCodeModel codeModel)
   {
     final InstructionFunctionModel instruction = codeModel.getInstructionFunctionModel();
     assert instruction != null;
@@ -96,7 +96,7 @@ public class CodeBranchInterpreter
     int target = (int) targetVar.value.getValue(DataTypeEnum.kInt);
     
     // Return relative position of the instruction to jump to
-    return OptionalInt.of(target - instructionPosition);
+    return OptionalInt.of(target);
   }// end of interpretInstruction
   //-------------------------------------------------------------------------------------------
 }

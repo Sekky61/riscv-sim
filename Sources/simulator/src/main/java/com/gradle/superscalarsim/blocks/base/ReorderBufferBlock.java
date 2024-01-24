@@ -83,6 +83,16 @@ public class ReorderBufferBlock implements AbstractBlock
   public int bufferSize;
   
   /**
+   * @brief the jump target address triggering the halt
+   */
+  public long haltTarget;
+  
+  /**
+   * @brief Flag to be set if the simulation should halt
+   */
+  public boolean haltFlag;
+  
+  /**
    * Class holding mappings from architectural registers to speculative
    */
   @JsonIdentityReference(alwaysAsId = true)
@@ -149,7 +159,8 @@ public class ReorderBufferBlock implements AbstractBlock
                             GShareUnit gShareUnit,
                             BranchTargetBuffer branchTargetBuffer,
                             InstructionFetchBlock instructionFetchBlock,
-                            SimulationStatistics statisticsCounter)
+                            SimulationStatistics statisticsCounter,
+                            long haltTarget)
   {
     this.renameMapTableBlock    = renameMapTableBlock;
     this.decodeAndDispatchBlock = decodeAndDispatchBlock;
@@ -166,6 +177,8 @@ public class ReorderBufferBlock implements AbstractBlock
     
     this.commitLimit = 4;
     this.bufferSize  = 256;
+    this.haltFlag    = false;
+    this.haltTarget  = haltTarget;
   }// end of Constructor
   //----------------------------------------------------------------------
   
@@ -205,7 +218,7 @@ public class ReorderBufferBlock implements AbstractBlock
     // Go through queue and commit all instructions you can
     // until you reach un-committable instruction, or you reach limit
     int commitCount = 0;
-    while (commitCount < this.commitLimit && !this.reorderQueue.isEmpty())
+    while (commitCount < this.commitLimit && !this.reorderQueue.isEmpty() && !haltFlag)
     {
       ReorderBufferItem robItem = this.reorderQueue.peek();
       
@@ -215,8 +228,15 @@ public class ReorderBufferBlock implements AbstractBlock
       }
       
       commitCount++;
-      processCommittableInstruction(robItem.simCodeModel, cycle);
+      SimCodeModel codeModel = robItem.simCodeModel;
+      processCommittableInstruction(codeModel, cycle);
       removeInstruction(robItem);
+      
+      if (codeModel.getBranchTarget() == haltTarget)
+      {
+        haltFlag = true;
+      }
+      
       // Remove item from the front of the queue
       this.reorderQueue.remove();
     }
@@ -275,7 +295,7 @@ public class ReorderBufferBlock implements AbstractBlock
       else
       {
         // Wrong prediction - feedback to predictor
-        int resultPc = pc + codeModel.getBranchTargetOffset();
+        int resultPc = codeModel.getBranchTarget();
         // TODO: Why down? Shouldn't the feedback be in the opposite direction of the wrong prediction?
         this.gShareUnit.getPredictorFromOld(pc, codeModel.getIntegerId()).downTheProbability();
         this.branchTargetBuffer.setEntry(pc, codeModel, resultPc, -1, cycle);

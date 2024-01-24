@@ -49,9 +49,9 @@ public class NoCacheTests
     // the x0 has to be a register
     cfg.code = """
             addi x3, x0, ptr
-            subi x3, x3, 2
-            lw x1, 0(x3)
-            lw x2, ptr(x0)""";
+            subi x4, x3, 2
+            lw x1, 0(x4)
+            lw x2, 0(x3)""";
     Cpu cpu = new Cpu(cfg);
     cpu.execute();
     

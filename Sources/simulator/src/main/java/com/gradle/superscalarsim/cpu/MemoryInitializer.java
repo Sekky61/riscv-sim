@@ -151,4 +151,12 @@ public class MemoryInitializer
   {
     return freeMemoryStart + stackSize;
   }
+  
+  /**
+   * @return a pointer. After jumping on this pointer, the program will halt.
+   */
+  public long getExitPointer()
+  {
+    return stackSize;
+  }
 }

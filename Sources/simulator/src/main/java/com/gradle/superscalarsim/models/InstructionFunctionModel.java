@@ -264,6 +264,12 @@ public class InstructionFunctionModel implements Identifiable
      */
     @JsonProperty
     private boolean silent;
+    /**
+     * @brief True if the argument is an offset.
+     * By default false. Used by offset instructions.
+     */
+    @JsonProperty
+    private boolean isOffset;
     
     /**
      * @brief Default Constructor for deserialization
@@ -288,6 +294,11 @@ public class InstructionFunctionModel implements Identifiable
       this.defaultValue = defaultValue;
       this.writeBack    = writeBack;
       this.silent       = false;
+    }
+    
+    public boolean isOffset()
+    {
+      return isOffset;
     }
     
     public String name()

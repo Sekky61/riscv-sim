@@ -34,6 +34,7 @@ import com.gradle.superscalarsim.blocks.base.*;
 import com.gradle.superscalarsim.blocks.branch.*;
 import com.gradle.superscalarsim.blocks.loadstore.*;
 import com.gradle.superscalarsim.code.*;
+import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.enums.cache.ReplacementPoliciesEnum;
 import com.gradle.superscalarsim.factories.InputCodeModelFactory;
@@ -193,7 +194,18 @@ public class CpuState implements Serializable
     }
     else
     {
-      System.err.println("Warning: sp register not found, not setting stack pointer");
+      System.err.println("Warning: sp register not found. Not setting stack pointer.");
+    }
+    
+    // Set the ra to the exit address
+    RegisterModel ra = this.unifiedRegisterFileBlock.getRegister("ra");
+    if (ra != null && (long) ra.getValue(DataTypeEnum.kLong) == 0)
+    {
+      ra.setValue(memoryInitializer.getExitPointer());
+    }
+    else
+    {
+      System.err.println("Warning: ra register not found or explicitly overwritten. Not setting exit address.");
     }
     
     this.renameMapTableBlock = new RenameMapTableBlock(unifiedRegisterFileBlock);
@@ -247,20 +259,21 @@ public class CpuState implements Serializable
     this.instructionFetchBlock  = new InstructionFetchBlock(config.cpuConfig.fetchWidth,
                                                             config.cpuConfig.branchFollowLimit, simCodeModelFactory,
                                                             instructionMemoryBlock, gShareUnit, branchTargetBuffer);
+    this.branchInterpreter      = new CodeBranchInterpreter();
     this.decodeAndDispatchBlock = new DecodeAndDispatchBlock(instructionFetchBlock, renameMapTableBlock,
                                                              globalHistoryRegister, branchTargetBuffer,
                                                              instructionMemoryBlock, config.cpuConfig.fetchWidth,
-                                                             statistics);
+                                                             statistics, branchInterpreter);
     
     // ROB
     this.reorderBufferBlock        = new ReorderBufferBlock(renameMapTableBlock, decodeAndDispatchBlock, gShareUnit,
-                                                            branchTargetBuffer, instructionFetchBlock, statistics);
+                                                            branchTargetBuffer, instructionFetchBlock, statistics,
+                                                            memoryInitializer.getExitPointer());
     reorderBufferBlock.bufferSize  = config.cpuConfig.robSize;
     reorderBufferBlock.commitLimit = config.cpuConfig.commitWidth;
     
     // Issue
     this.arithmeticInterpreter = new CodeArithmeticInterpreter();
-    this.branchInterpreter     = new CodeBranchInterpreter();
     
     // Memory blocks
     this.storeBufferBlock = new StoreBufferBlock(config.cpuConfig.sbSize, loadStoreInterpreter,

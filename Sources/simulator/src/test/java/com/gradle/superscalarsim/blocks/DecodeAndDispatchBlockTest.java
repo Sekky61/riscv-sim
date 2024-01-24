@@ -6,6 +6,7 @@ import com.gradle.superscalarsim.blocks.branch.GlobalHistoryRegister;
 import com.gradle.superscalarsim.builders.InputCodeArgumentBuilder;
 import com.gradle.superscalarsim.builders.InputCodeModelBuilder;
 import com.gradle.superscalarsim.builders.RegisterFileModelBuilder;
+import com.gradle.superscalarsim.code.CodeBranchInterpreter;
 import com.gradle.superscalarsim.cpu.SimulationStatistics;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.enums.RegisterTypeEnum;
@@ -77,7 +78,8 @@ public class DecodeAndDispatchBlockTest
     decodeAndDispatchBlock = new DecodeAndDispatchBlock(instructionFetchBlock, renameMapTableBlock,
                                                         globalHistoryRegister, branchTargetBuffer,
                                                         instructionMemoryBlock, instructionFetchBlock.getNumberOfWays(),
-                                                        new SimulationStatistics(maximumInstructions, 1));
+                                                        new SimulationStatistics(maximumInstructions, 1),
+                                                        new CodeBranchInterpreter());
   }
   
   @Test

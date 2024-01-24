@@ -50,13 +50,13 @@ public class InstructionTests
   public void testADDI()
   {
     // Setup + exercise
-    cpuConfig.code = "addi x1, x1, 5";
+    cpuConfig.code = "addi x8, x8, 5";
     Cpu cpu = new Cpu(cpuConfig);
     cpu.execute();
     
     // Assert
     Assert.assertEquals(1, cpu.cpuState.statistics.getCommittedInstructions());
-    Assert.assertEquals(5, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt));
+    Assert.assertEquals(5, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x8").getValue(DataTypeEnum.kInt));
   }
   
   @Test
@@ -108,35 +108,56 @@ public class InstructionTests
   public void testJAL()
   {
     // Setup + exercise
-    cpuConfig.code = "jal x1, 12";
+    cpuConfig.code = "jal x6, 12";
     Cpu cpu = new Cpu(cpuConfig);
     cpu.execute();
     
     // Assert
     Assert.assertEquals(7, cpu.cpuState.tick);
     // PC+4=4 is saved in x1
-    Assert.assertEquals(4, (int) cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt));
+    Assert.assertEquals(4, (int) cpu.cpuState.unifiedRegisterFileBlock.getRegister("x6").getValue(DataTypeEnum.kInt));
+    // Jumped to 12
+    Assert.assertEquals(12, cpu.cpuState.branchTargetBuffer.getEntryTarget(0));
+    
+    
+    // Setup + exercise
+    cpuConfig.code = """
+            addi x8, x0, 64
+            jal x8, 12
+            """;
+    cpu            = new Cpu(cpuConfig);
+    cpu.execute();
+    
+    // Assert
+    // PC 8 is saved in x8, jumped to 4+12=16
+    Assert.assertEquals(8, (int) cpu.cpuState.unifiedRegisterFileBlock.getRegister("x8").getValue(DataTypeEnum.kInt));
+    Assert.assertEquals(16, cpu.cpuState.branchTargetBuffer.getEntryTarget(4));
   }
   
   /**
-   * JALR jumps to the address in the register rs1, and saves the address of the next instruction in the register rd
+   * JALR jumps to the address in the register rs1 + offset, and saves the address of the next instruction in the register rd.
+   * TODO test when both the registers are the same (rd=rs1)
    */
   @Test
   public void testJALR()
   {
     // Setup + exercise
-    cpuConfig.code = "jalr x2, x8, 56";
+    cpuConfig.code = """
+            addi x10, x0, 64
+            jalr x2, x8, 56
+            """;
     Cpu cpu = new Cpu(cpuConfig);
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x8").setValue(10);
+    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x8").setValue(32);
     cpu.execute();
     
     // Assert
-    // TODO: How to assert that it jumped to 10+56=66?
-    Assert.assertEquals(1, cpu.cpuState.statistics.getCommittedInstructions());
-    Assert.assertEquals(4, (int) cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").getValue(DataTypeEnum.kInt),
-                        0.5);
+    // next PC (8) stored in x2
+    Assert.assertEquals(8, (int) cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").getValue(DataTypeEnum.kInt));
     Assert.assertEquals(0, cpu.cpuState.statistics.getConditionalBranches());
     Assert.assertEquals(1, cpu.cpuState.statistics.getUnconditionalBranches());
+    
+    // Jumped to 32+56=88
+    Assert.assertEquals(88, cpu.cpuState.branchTargetBuffer.getEntryTarget(4));
   }
   
   /**
@@ -921,20 +942,30 @@ public class InstructionTests
   }
   
   /**
-   * JR jumps to the address in the register
+   * JR jumps to the address in the register.
    */
   @Test
   public void testJR()
   {
     // Setup + exercise
-    cpuConfig.code = "jr x1";
+    // The padding is to make sure that JR does not jump to offset, but actually the address in the register
+    cpuConfig.code = """
+            addi x5, x0, 12
+            jr x5
+            addi x6, x0, 1
+            addi x7, x0, 2
+            """;
     Cpu cpu = new Cpu(cpuConfig);
-    cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(200);
     cpu.execute();
     
     // Assert
-    Assert.assertTrue(cpu.cpuState.instructionFetchBlock.getPc() > 200);
+    // Check jump target
+    Assert.assertEquals(12, cpu.cpuState.branchTargetBuffer.getEntryTarget(4));
     Assert.assertEquals(1, cpu.cpuState.statistics.getTakenBranches());
+    // Check indirectly, that the jump was taken
+    Assert.assertEquals(12, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x5").getValue(DataTypeEnum.kInt));
+    Assert.assertEquals(0, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x6").getValue(DataTypeEnum.kInt));
+    Assert.assertEquals(2, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x7").getValue(DataTypeEnum.kInt));
   }
   
   /**

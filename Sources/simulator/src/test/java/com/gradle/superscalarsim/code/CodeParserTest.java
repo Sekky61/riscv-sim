@@ -867,7 +867,8 @@ public class CodeParserTest
     Assert.assertEquals(0, codeParser.getLabels().get("add").address);
     Assert.assertEquals(12, codeParser.getLabels().get(".L2").address);
     
-    Assert.assertEquals(12, (int) codeParser.getInstructions().get(6).getArgumentByName("imm").getConstantValue()
+    // 'j' is a relative offset jump, so should have -1
+    Assert.assertEquals(-12, (int) codeParser.getInstructions().get(6).getArgumentByName("imm").getConstantValue()
             .getValue(DataTypeEnum.kUInt));
   }
 }

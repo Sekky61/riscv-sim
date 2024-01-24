@@ -225,4 +225,12 @@ public class InputCodeModel implements IInputCodeModel, Identifiable
     // ! Depends on naming convention !
     return instructionTypeEnum == InstructionTypeEnum.kJumpbranch && instructionName.startsWith("b");
   }
+  
+  /**
+   * @return the PC of the instruction
+   */
+  public int getPc()
+  {
+    return codeId * 4;
+  }
 }
