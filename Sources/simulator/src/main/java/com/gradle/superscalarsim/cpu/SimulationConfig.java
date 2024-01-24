@@ -38,7 +38,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Configuration for the simulation - code, memory, buffers, etc.
+ * Configuration for the simulation - code, memory, buffers, entry point etc.
  */
 public class SimulationConfig
 {
@@ -60,12 +60,20 @@ public class SimulationConfig
   public CpuConfig cpuConfig;
   
   /**
-   * @brief Default constructor for deserialization
+   * The address of the entry point of the code.
+   * Can be a label (string) or a number (int).
+   * Address 0 is the default entry point.
+   */
+  public Object entryPoint;
+  
+  /**
+   * @brief Default constructor
    */
   public SimulationConfig()
   {
     memoryLocations = new ArrayList<>();
     code            = "";
+    entryPoint      = 0;
   }
   
   /**
@@ -76,6 +84,7 @@ public class SimulationConfig
     this.code            = code;
     this.memoryLocations = memoryLocations;
     this.cpuConfig       = cpuConfig;
+    entryPoint           = 0;
   }
   
   /**
@@ -139,6 +148,39 @@ public class SimulationConfig
                   new CpuConfigValidator.Error("Memory location name must not be null or empty", "memoryLocations"));
         }
       }
+    }
+    
+    // Check entry point
+    if (entryPoint instanceof String)
+    {
+      // Check if label exists
+      if (!codeParser.getLabels().containsKey(entryPoint))
+      {
+        errorMessages.add(new CpuConfigValidator.Error("Entry point label does not exist", "entryPoint"));
+      }
+    }
+    else if (entryPoint instanceof Integer)
+    {
+      int entry = (Integer) entryPoint;
+      // Check if address is valid
+      if (entry < 0)
+      {
+        errorMessages.add(new CpuConfigValidator.Error("Entry point address must be greater than 0", "entryPoint"));
+      }
+      int maxAddress = 4 * codeParser.getInstructions().size();
+      if (entry > maxAddress)
+      {
+        errorMessages.add(new CpuConfigValidator.Error("Entry point address must be pointing to a code", "entryPoint"));
+      }
+      if (maxAddress % 4 != 0)
+      {
+        errorMessages.add(new CpuConfigValidator.Error("Entry point address must be aligned to 4 bytes", "entryPoint"));
+      }
+    }
+    else
+    {
+      errorMessages.add(
+              new CpuConfigValidator.Error("Entry point must be a label string or an address integer", "entryPoint"));
     }
     
     if (errorMessages.isEmpty() && configValidator.isValid())

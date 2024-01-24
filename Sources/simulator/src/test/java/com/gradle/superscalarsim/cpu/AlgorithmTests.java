@@ -302,7 +302,7 @@ public class AlgorithmTests
   /**
    * Setup cpu instance with the C code
    */
-  private Cpu setupCpu(String cCode, List<MemoryLocation> memoryLocations)
+  private Cpu setupCpu(String cCode, String entryPoint, List<MemoryLocation> memoryLocations)
   {
     GccCaller.CompileResult res = GccCaller.compile(cCode, List.of("O2"));
     Assert.assertTrue(res.success);
@@ -312,6 +312,7 @@ public class AlgorithmTests
     SimulationConfig cfg = SimulationConfig.getDefaultConfiguration();
     cfg.memoryLocations = memoryLocations;
     cfg.code            = concatenatedProgram;
+    cfg.entryPoint      = entryPoint;
     return new Cpu(cfg);
   }
   
@@ -346,7 +347,7 @@ public class AlgorithmTests
   public void test_recursiveFactorial()
   {
     // Alignment 2^4
-    Cpu cpu = setupCpu(recursiveFactorialCode, List.of());
+    Cpu cpu = setupCpu(recursiveFactorialCode, "main", List.of());
     cpu.execute();
     
     // Assert

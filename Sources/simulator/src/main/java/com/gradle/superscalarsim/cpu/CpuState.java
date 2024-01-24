@@ -53,11 +53,12 @@ import java.util.*;
 
 /**
  * @class CpuState
- * @brief The state of the CPU.
+ * @brief The state of the CPU. Assumes the config is valid.
  * @details The order of the fields is important for serialization.
  * This class sets up the RISC-V execution environment interface (EEI), which is responsible for the ISA (supported instructions).
  * This is a user-level, bare-metal interface simulator.
  * The simulation will stop when the program returns from the entry function, or once the PC runs past the code and all instructions are retired.
+ * There is also timeout for cycles.
  */
 public class CpuState implements Serializable
 {
@@ -256,9 +257,30 @@ public class CpuState implements Serializable
     this.memoryModel          = new MemoryModel(cache, simulatedMemory, statistics);
     this.loadStoreInterpreter = new CodeLoadStoreInterpreter();
     
-    this.instructionFetchBlock  = new InstructionFetchBlock(config.cpuConfig.fetchWidth,
-                                                            config.cpuConfig.branchFollowLimit, simCodeModelFactory,
-                                                            instructionMemoryBlock, gShareUnit, branchTargetBuffer);
+    this.instructionFetchBlock = new InstructionFetchBlock(config.cpuConfig.fetchWidth,
+                                                           config.cpuConfig.branchFollowLimit, simCodeModelFactory,
+                                                           instructionMemoryBlock, gShareUnit, branchTargetBuffer);
+    int entryPoint;
+    if (config.entryPoint instanceof String)
+    {
+      Label label = instructionMemoryBlock.getLabels().get((String) config.entryPoint);
+      if (label == null)
+      {
+        throw new IllegalArgumentException("Label " + config.entryPoint + " not found");
+      }
+      entryPoint = label.address;
+    }
+    else if (config.entryPoint instanceof Integer)
+    {
+      // should be validated by now
+      entryPoint = (int) config.entryPoint;
+    }
+    else
+    {
+      throw new IllegalArgumentException("Unexpected value for entry point: " + config.entryPoint);
+    }
+    this.instructionFetchBlock.setPc(entryPoint);
+    
     this.branchInterpreter      = new CodeBranchInterpreter();
     this.decodeAndDispatchBlock = new DecodeAndDispatchBlock(instructionFetchBlock, renameMapTableBlock,
                                                              globalHistoryRegister, branchTargetBuffer,
@@ -492,7 +514,8 @@ public class CpuState implements Serializable
     boolean pcEnd         = instructionFetchBlock.getPc() >= instructionMemoryBlock.getCode().size() * 4;
     boolean renameEmpty   = decodeAndDispatchBlock.getCodeBuffer().isEmpty();
     boolean fetchNotEmpty = !instructionFetchBlock.getFetchedCode().isEmpty();
-    boolean nop = fetchNotEmpty && instructionFetchBlock.getFetchedCode().get(0).getInstructionName().equals("nop");
+    boolean nop           = fetchNotEmpty && instructionFetchBlock.getFetchedCode().get(0).getInstructionName()
+            .equals("nop");
     if (robEmpty && pcEnd && renameEmpty && nop)
     {
       return StopReason.kEndOfCode;
