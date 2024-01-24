@@ -45,6 +45,7 @@ import com.gradle.superscalarsim.models.instruction.InputCodeArgument;
 import com.gradle.superscalarsim.models.instruction.InstructionFunctionModel;
 import com.gradle.superscalarsim.models.instruction.SimCodeModel;
 import com.gradle.superscalarsim.models.register.RegisterModel;
+import com.gradle.superscalarsim.models.util.Result;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -450,8 +451,13 @@ public class DecodeAndDispatchBlock implements AbstractBlock
     // Arguments are not registers, we can calculate the address
     // TODO - maybe more relaxed check?
     
-    OptionalInt maybeTarget = codeBranchInterpreter.interpretInstruction(codeModel);
-    return maybeTarget;
+    Result<OptionalInt> maybeTargetRes = codeBranchInterpreter.interpretInstruction(codeModel);
+    if (maybeTargetRes.isException())
+    {
+      // Couldn't calculate target
+      return OptionalInt.empty();
+    }
+    return maybeTargetRes.value();
   }// end of calculateRealBranchAddress
   //----------------------------------------------------------------------
   

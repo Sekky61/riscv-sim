@@ -37,10 +37,10 @@ import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.blocks.AbstractBlock;
 import com.gradle.superscalarsim.cpu.SimulationStatistics;
 import com.gradle.superscalarsim.enums.cache.ReplacementPoliciesEnum;
-import com.gradle.superscalarsim.models.Triplet;
 import com.gradle.superscalarsim.models.cache.CacheLineModel;
 import com.gradle.superscalarsim.models.cache.ReplacementPolicyModel;
 import com.gradle.superscalarsim.models.memory.MemoryTransaction;
+import com.gradle.superscalarsim.models.util.Triplet;
 
 import java.util.ArrayList;
 import java.util.List;

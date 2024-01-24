@@ -46,6 +46,7 @@ import com.gradle.superscalarsim.models.instruction.SimCodeModel;
 import com.gradle.superscalarsim.models.memory.MemoryAccess;
 import com.gradle.superscalarsim.models.memory.MemoryTransaction;
 import com.gradle.superscalarsim.models.register.RegisterModel;
+import com.gradle.superscalarsim.models.util.Result;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -211,7 +212,9 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
   private int startExecution(int cycle)
   {
     // This contacts memoryModel, pulls data and delay
-    MemoryAccess access        = loadStoreInterpreter.interpretInstruction(this.simCodeModel);
+    Result<MemoryAccess> accessRes = loadStoreInterpreter.interpretInstruction(this.simCodeModel);
+    assert !accessRes.isException();
+    MemoryAccess access        = accessRes.value();
     long         address       = access.getAddress();
     int          numberOfBytes = access.getSize();
     

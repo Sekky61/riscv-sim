@@ -27,7 +27,9 @@
 package com.gradle.superscalarsim.code;
 
 import com.gradle.superscalarsim.enums.DataTypeEnum;
+import com.gradle.superscalarsim.models.instruction.InstructionException;
 import com.gradle.superscalarsim.models.register.RegisterDataContainer;
+import com.gradle.superscalarsim.models.util.Result;
 
 import java.util.Arrays;
 import java.util.List;
@@ -147,9 +149,9 @@ public class Expression
    * @param expression expression to interpret
    * @param variables  variables and their values to use in the expression
    *
-   * @return The top of the stack after interpreting the expression
+   * @return The top of the stack after interpreting the expression. Null if the stack is empty.
    */
-  public static Variable interpret(String expression, List<Variable> variables)
+  public static Result<Variable> interpret(String expression, List<Variable> variables)
   {
     Stack<Variable> valueStack      = new Stack<>();
     String[]        expressionArray = expression.split(" ");
@@ -175,8 +177,12 @@ public class Expression
         else
         {
           // Apply operator and Push back
-          Variable result = applyBinaryOperator(token, lVariable, rVariable);
-          valueStack.push(result);
+          Result<Variable> result = applyBinaryOperator(token, lVariable, rVariable);
+          if (result.exception() != null)
+          {
+            return result;
+          }
+          valueStack.push(result.value());
         }
       }
       else if (isTernaryOperator(token))
@@ -218,10 +224,11 @@ public class Expression
     // One can also use the top of the stack as the result
     if (valueStack.isEmpty())
     {
-      return null;
+      // Positive result but no value
+      return new Result<>(null);
     }
     
-    return valueStack.pop();
+    return new Result<>(valueStack.pop());
   }
   
   private static boolean isUnaryOperator(String operator)
@@ -314,7 +321,7 @@ public class Expression
    *
    * @return result of the operation.
    */
-  private static Variable applyBinaryOperator(String operator, Variable lVariable, Variable rVariable)
+  private static Result<Variable> applyBinaryOperator(String operator, Variable lVariable, Variable rVariable)
   {
     // Special handling for cases with different types of operands
     if (lVariable.type != rVariable.type)
@@ -327,7 +334,7 @@ public class Expression
         long lValue    = (long) lValueInt;
         int  rValueInt = (int) rVariable.value.getValue(DataTypeEnum.kUInt);
         long rValue    = unsignedIntToLong(rValueInt);
-        return Variable.fromValue(lValue * rValue);
+        return new Result<>(Variable.fromValue(lValue * rValue));
       }
       throw new IllegalArgumentException(
               "Incompatible types: " + lVariable.type + " and " + rVariable.type + " for operator: " + operator);
@@ -337,7 +344,14 @@ public class Expression
     DataTypeEnum type   = lVariable.type;
     Object       value  = lVariable.value.getValue(type);
     Object       value2 = rVariable.value.getValue(type);
-    return switch (type)
+    
+    // Exception handling
+    if (value2.equals(0) && (operator.equals("/") || operator.equals("%")))
+    {
+      return new Result<>(new InstructionException(InstructionException.Kind.kArithmetic, "Division by zero", 0));
+    }
+    
+    Variable x = switch (type)
     {
       case kInt -> applyBinaryOperatorInt(operator, (int) value, (int) value2);
       case kUInt -> applyBinaryOperatorUnsignedInt(operator, (int) value, (int) value2);
@@ -348,6 +362,7 @@ public class Expression
       case kBool -> applyBinaryOperatorBool(operator, (boolean) value, (boolean) value2);
       default -> throw new IllegalArgumentException("Unknown type: " + type);
     };
+    return new Result<>(x);
   }
   
   private static boolean isTernaryOperator(String operator)

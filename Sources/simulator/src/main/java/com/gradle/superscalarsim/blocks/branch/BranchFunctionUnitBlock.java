@@ -45,6 +45,7 @@ import com.gradle.superscalarsim.models.FunctionalUnitDescription;
 import com.gradle.superscalarsim.models.instruction.InputCodeArgument;
 import com.gradle.superscalarsim.models.instruction.SimCodeModel;
 import com.gradle.superscalarsim.models.register.RegisterModel;
+import com.gradle.superscalarsim.models.util.Result;
 
 import java.util.OptionalInt;
 
@@ -129,7 +130,10 @@ public class BranchFunctionUnitBlock extends AbstractFunctionUnitBlock
     }
     
     // Execute
-    OptionalInt jumpTarget = branchInterpreter.interpretInstruction(this.simCodeModel);
+    Result<OptionalInt> jumpTargetRes = branchInterpreter.interpretInstruction(this.simCodeModel);
+    // I don't think jump target uses division
+    assert !jumpTargetRes.isException();
+    OptionalInt jumpTarget = jumpTargetRes.value();
     boolean     jumpTaken  = jumpTarget.isPresent();
     // If the branch was taken or not
     this.simCodeModel.setBranchLogicResult(jumpTaken);

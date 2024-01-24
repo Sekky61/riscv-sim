@@ -40,6 +40,7 @@ import com.gradle.superscalarsim.cpu.SimulationStatistics;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.models.FunctionalUnitDescription;
 import com.gradle.superscalarsim.models.instruction.SimCodeModel;
+import com.gradle.superscalarsim.models.util.Result;
 
 /**
  * @class LoadStoreFunctionUnit
@@ -74,17 +75,6 @@ public class LoadStoreFunctionUnit extends AbstractFunctionUnitBlock
   }
   
   /**
-   * @param simCodeModel Instruction to be executed
-   *
-   * @return True if the function unit can execute the instruction, false otherwise.
-   */
-  @Override
-  public boolean canExecuteInstruction(SimCodeModel simCodeModel)
-  {
-    return simCodeModel.getInstructionFunctionModel().getInstructionType() == InstructionTypeEnum.kLoadstore;
-  }
-  
-  /**
    * @param description          Description of the function unit
    * @param issueWindowBlock     Issue window block for comparing instruction and data types
    * @param loadBufferBlock      Load buffer with all load instruction entries
@@ -106,6 +96,17 @@ public class LoadStoreFunctionUnit extends AbstractFunctionUnitBlock
     this.storeBufferBlock     = storeBufferBlock;
     this.loadStoreInterpreter = loadStoreInterpreter;
   }// end of Constructor
+  
+  /**
+   * @param simCodeModel Instruction to be executed
+   *
+   * @return True if the function unit can execute the instruction, false otherwise.
+   */
+  @Override
+  public boolean canExecuteInstruction(SimCodeModel simCodeModel)
+  {
+    return simCodeModel.getInstructionFunctionModel().getInstructionType() == InstructionTypeEnum.kLoadstore;
+  }
   //----------------------------------------------------------------------
   
   /**
@@ -153,15 +154,27 @@ public class LoadStoreFunctionUnit extends AbstractFunctionUnitBlock
     }
     
     // Execute
-    long address = loadStoreInterpreter.interpretAddress(simCodeModel);
-    if (simCodeModel.isStore())
+    Result<Long> addressRes = loadStoreInterpreter.interpretAddress(simCodeModel);
+    
+    if (addressRes.isException())
     {
-      storeBufferBlock.setAddress(simCodeModel.getIntegerId(), address);
+      // Handle exception, make sure the ROB will clear it, and that MAU will not execute
+      this.simCodeModel.setException(addressRes.exception());
+      this.simCodeModel.setBusy(false);
+      // Do not set the address
     }
     else
     {
-      // A load
-      loadBufferBlock.setAddress(simCodeModel.getIntegerId(), address);
+      long address = addressRes.value();
+      if (simCodeModel.isStore())
+      {
+        storeBufferBlock.setAddress(simCodeModel.getIntegerId(), address);
+      }
+      else
+      {
+        // A load
+        loadBufferBlock.setAddress(simCodeModel.getIntegerId(), address);
+      }
     }
     this.simCodeModel = null;
   }

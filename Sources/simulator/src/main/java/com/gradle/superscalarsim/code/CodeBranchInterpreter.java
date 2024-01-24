@@ -35,6 +35,7 @@ package com.gradle.superscalarsim.code;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.models.instruction.InstructionFunctionModel;
 import com.gradle.superscalarsim.models.instruction.SimCodeModel;
+import com.gradle.superscalarsim.models.util.Result;
 
 import java.util.List;
 import java.util.OptionalInt;
@@ -69,7 +70,7 @@ public class CodeBranchInterpreter
    * @return OptionalInt with position of next instruction to be loaded, empty if no jump is performed
    * @brief Interprets branch or jump instruction
    */
-  public OptionalInt interpretInstruction(final SimCodeModel codeModel)
+  public Result<OptionalInt> interpretInstruction(final SimCodeModel codeModel)
   {
     final InstructionFunctionModel instruction = codeModel.getInstructionFunctionModel();
     assert instruction != null;
@@ -81,22 +82,30 @@ public class CodeBranchInterpreter
     List<Expression.Variable> variables     = codeModel.getVariables();
     
     // Check if condition is met
-    Expression.Variable exprResult = Expression.interpret(conditionExpr, variables);
-    assert exprResult != null;
-    boolean jumpCondition = (boolean) exprResult.value.getValue(DataTypeEnum.kBool);
+    Result<Expression.Variable> exprResult = Expression.interpret(conditionExpr, variables);
+    
+    if (exprResult.isException())
+    {
+      return new Result<>(OptionalInt.empty(), exprResult.exception());
+    }
+    
+    Expression.Variable variable = exprResult.value();
+    assert variable != null;
+    boolean jumpCondition = (boolean) variable.value.getValue(DataTypeEnum.kBool);
     if (!jumpCondition)
     {
       // Do not jump.
-      return OptionalInt.empty();
+      return new Result<>(OptionalInt.empty());
     }
     
     // We know that we have to jump, calculate jump target
-    Expression.Variable targetVar = Expression.interpret(targetExpr, variables);
-    assert targetVar != null;
-    int target = (int) targetVar.value.getValue(DataTypeEnum.kInt);
+    Result<Expression.Variable> targetVar = Expression.interpret(targetExpr, variables);
+    Expression.Variable         var       = targetVar.value();
+    assert var != null;
+    int target = (int) var.value.getValue(DataTypeEnum.kInt);
     
     // Return relative position of the instruction to jump to
-    return OptionalInt.of(target);
+    return new Result<>(OptionalInt.of(target));
   }// end of interpretInstruction
   //-------------------------------------------------------------------------------------------
 }

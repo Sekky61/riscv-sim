@@ -35,10 +35,12 @@ package com.gradle.superscalarsim.code;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
+import com.gradle.superscalarsim.models.instruction.InstructionException;
 import com.gradle.superscalarsim.models.instruction.InstructionFunctionModel;
 import com.gradle.superscalarsim.models.instruction.SimCodeModel;
 import com.gradle.superscalarsim.models.memory.MemoryAccess;
 import com.gradle.superscalarsim.models.register.RegisterModel;
+import com.gradle.superscalarsim.models.util.Result;
 
 import java.util.List;
 
@@ -65,9 +67,10 @@ public class CodeLoadStoreInterpreter
    * @param codeModel code to be interpreted
    *
    * @return Returns a description of a memory operation to be performed
-   * @brief Interprets load/store instruction from codeModel, does not perform the actual load/store
+   * @brief Interprets load/store instruction from codeModel, does not perform the actual load/store.
+   * Can cause exceptions if the address is invalid.
    */
-  public MemoryAccess interpretInstruction(final SimCodeModel codeModel)
+  public Result<MemoryAccess> interpretInstruction(final SimCodeModel codeModel)
   {
     final InstructionFunctionModel instruction = codeModel.getInstructionFunctionModel();
     if (instruction == null)
@@ -89,8 +92,14 @@ public class CodeLoadStoreInterpreter
     int    sizeBits    = Integer.parseInt(sizeBitsStr);
     int    sizeBytes   = sizeBits / 8;
     
-    long address = interpretAddress(codeModel);
+    Result<Long> address = interpretAddress(codeModel);
     
+    if (address.isException())
+    {
+      return address.convertException();
+    }
+    
+    MemoryAccess res;
     if (isStore)
     {
       String        storeRegisterName = interpretableAsParams[3];
@@ -100,13 +109,14 @@ public class CodeLoadStoreInterpreter
         throw new IllegalStateException("Register " + storeRegisterName + " not found");
       }
       long valueBits = (long) reg.getValue(DataTypeEnum.kLong);
-      return MemoryAccess.store(address, sizeBytes, valueBits, false);
+      res = MemoryAccess.store(address.value(), sizeBytes, valueBits, false);
     }
     else
     {
       boolean isSigned = instruction.getArgumentByName("rd").type().isSigned();
-      return MemoryAccess.load(address, sizeBytes, isSigned);
+      res = MemoryAccess.load(address.value(), sizeBytes, isSigned);
     }
+    return new Result<>(res);
   }// end of interpretInstruction
   //-------------------------------------------------------------------------------------------
   
@@ -115,7 +125,7 @@ public class CodeLoadStoreInterpreter
    *
    * @return Address to be loaded/stored based on the instruction
    */
-  public long interpretAddress(final SimCodeModel codeModel)
+  public Result<Long> interpretAddress(final SimCodeModel codeModel)
   {
     final InstructionFunctionModel instruction = codeModel.getInstructionFunctionModel();
     if (instruction == null)
@@ -131,20 +141,25 @@ public class CodeLoadStoreInterpreter
     String                    addressExpr = interpretableAsParams[2];
     List<Expression.Variable> variables   = codeModel.getVariables();
     
-    Expression.Variable addressResult = Expression.interpret(addressExpr, variables);
-    if (addressResult == null)
+    Result<Expression.Variable> addressResult = Expression.interpret(addressExpr, variables);
+    if (addressResult.isException())
+    {
+      return addressResult.convertException();
+    }
+    
+    if (addressResult.value() == null)
     {
       throw new IllegalStateException("Address result is null");
     }
-    int address = (int) addressResult.value.getValue(DataTypeEnum.kInt);
+    
+    int address = (int) addressResult.value().value.getValue(DataTypeEnum.kInt);
     
     if (address < 0)
     {
-      // TODO is this a case that can happen during a bad speculation, therefore should be ignored until commit?
-      throw new IllegalStateException("Address is negative: " + address);
+      return new Result<>(new InstructionException(InstructionException.Kind.kMemory, "Negative address", 0));
     }
     
-    return address;
+    return new Result<>((long) address);
   }// end of interpretAddress
   //-------------------------------------------------------------------------------------------
 }
