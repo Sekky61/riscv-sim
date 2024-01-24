@@ -143,6 +143,12 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
       // Instruction has failed, remove it from MAU
       this.simCodeModel.setFunctionUnitId(this.functionUnitId);
       this.simCodeModel = null;
+      // In case this clock tick is the last one of the instruction, take result from mem/cache
+      if (hasDelayPassed())
+      {
+        memoryModel.finishTransaction(transaction.id());
+      }
+      
       zeroTheCounter();
       setDelay(baseDelay);
       return;

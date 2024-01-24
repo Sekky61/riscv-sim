@@ -149,8 +149,7 @@ public class UnifiedRegisterFileBlock
     RegisterModel fromRegisterModel = getRegister(fromRegister);
     RegisterModel toRegisterModel   = getRegister(toRegister);
     
-    double value = fromRegisterModel.getValue();
-    toRegisterModel.setValue(value);
+    toRegisterModel.copyFrom(fromRegisterModel);
     fromRegisterModel.setReadiness(RegisterReadinessEnum.kFree);
   }// end of copyAndFree
   

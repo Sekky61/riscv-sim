@@ -30,7 +30,7 @@ public class RegisterSubloaderTest
     
     Assert.assertEquals("x0", model.getRegisterList().get(0).getName());
     Assert.assertTrue(model.getRegisterList().get(0).isConstant());
-    Assert.assertEquals(0, model.getRegisterList().get(0).getValue(), 0.01);
+    Assert.assertEquals(0, (int) model.getRegisterList().get(0).getValue(DataTypeEnum.kInt));
     
     Assert.assertEquals("x1", model.getRegisterList().get(1).getName());
     Assert.assertFalse(model.getRegisterList().get(1).isConstant());

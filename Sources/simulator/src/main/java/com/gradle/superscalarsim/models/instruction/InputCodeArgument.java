@@ -180,9 +180,9 @@ public class InputCodeArgument
   /**
    * @param stringValue New value of argument
    *
-   * @brief Sets new value of the argument
+   * @brief Sets new value of the argument (string). Reference to register or constant value is not changed.
    */
-  public void setValue(final String stringValue)
+  public void setStringValue(final String stringValue)
   {
     this.stringValue = stringValue;
   }// end of setValue

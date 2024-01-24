@@ -204,16 +204,6 @@ public class RegisterModel implements Identifiable
   //------------------------------------------------------
   
   /**
-   * @return Value inside register
-   * @brief Get register value TODO remove
-   */
-  public double getValue()
-  {
-    return (double) value.getValue(DataTypeEnum.kDouble);
-  }// end of getValue
-  //------------------------------------------------------
-  
-  /**
    * @param newValue New value to be set. The type of the value must be one of the following: Integer, Long, Float, Double.
    *
    * @brief Set register value. In case of constant register, value is not changed.
@@ -290,14 +280,27 @@ public class RegisterModel implements Identifiable
     this.readiness = readiness;
   }
   
+  /**
+   * @return Reference to the value container. Changing this object changes the value of the register.
+   */
   public RegisterDataContainer getValueContainer()
   {
     return value;
   }
   
-  public void setValueContainer(RegisterDataContainer container)
+  /**
+   * @param register Register to copy from
+   *
+   * @brief Copy value from another register (this one is being assigned). Does not change the identity of data container.
+   * Does not change constant register.
+   */
+  public void copyFrom(RegisterModel register)
   {
-    this.value = container;
+    if (isConstant)
+    {
+      return;
+    }
+    this.value.copyFrom(register.value);
   }
   
   /**

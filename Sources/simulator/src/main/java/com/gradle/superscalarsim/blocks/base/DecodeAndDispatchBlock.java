@@ -48,6 +48,7 @@ import com.gradle.superscalarsim.models.register.RegisterModel;
 import com.gradle.superscalarsim.models.util.Result;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.OptionalInt;
 
@@ -284,13 +285,21 @@ public class DecodeAndDispatchBlock implements AbstractBlock
       }
     }
     
-    checkForBranchInstructions();
-    for (SimCodeModel simCodeModel : this.codeBuffer)
+    // Normal for, because processBranchInstruction can remove instructions
+    for (int i = 0; i < this.codeBuffer.size(); i++)
     {
+      SimCodeModel simCodeModel = this.codeBuffer.get(i);
       renameSourceRegisters(simCodeModel);
       // Not sure if this does anything
       renameDestinationRegister(simCodeModel);
       statistics.reportDecodedInstruction(simCodeModel);
+      
+      // Calculate branch after rename, the computation may change registers (CALL instruction)
+      // TODO: maybe, a condition should disallow this in Decode
+      if (simCodeModel.getInstructionTypeEnum() == InstructionTypeEnum.kJumpbranch)
+      {
+        processBranchInstruction(simCodeModel);
+      }
     }
     
     // Rename ended, report map table to statistics
@@ -324,7 +333,7 @@ public class DecodeAndDispatchBlock implements AbstractBlock
       SimCodeModel codeModel = this.codeBuffer.get(i);
       if (codeModel.getInstructionTypeEnum() == InstructionTypeEnum.kJumpbranch)
       {
-        processBranchInstruction(codeModel, i);
+        processBranchInstruction(codeModel);
       }
     }
   }// end of checkForBranchInstructions
@@ -337,18 +346,20 @@ public class DecodeAndDispatchBlock implements AbstractBlock
    */
   private void renameSourceRegisters(SimCodeModel simCodeModel)
   {
-    for (InputCodeArgument argument : simCodeModel.getArguments())
+    InstructionFunctionModel functionModel = simCodeModel.getInstructionFunctionModel();
+    for (InstructionFunctionModel.Argument argDesc : functionModel.getArguments())
     {
-      String  oldArgumentValue = argument.getValue();
-      boolean shouldRename     = !argument.getName().equals("rd") && !argument.getName().equals("imm");
+      boolean shouldRename = !argDesc.writeBack() && argDesc.name().startsWith("r");
       if (shouldRename)
       {
-        RegisterModel rename = renameMapTableBlock.getMappingForRegister(oldArgumentValue);
+        InputCodeArgument argument         = simCodeModel.getArgumentByName(argDesc.name());
+        String            oldArgumentValue = argument.getValue();
+        RegisterModel     rename           = renameMapTableBlock.getMappingForRegister(oldArgumentValue);
         argument.setRegisterValue(rename);
         if (rename.isSpeculative())
         {
           // Rename the string only if the register is speculative. This is because of register aliases
-          argument.setValue(rename.getName());
+          argument.setStringValue(rename.getName());
         }
         renameMapTableBlock.increaseReference(rename.getName());
       }
@@ -372,14 +383,9 @@ public class DecodeAndDispatchBlock implements AbstractBlock
         RegisterModel mappedReg = renameMapTableBlock.mapRegister(destinationArgument.getValue(),
                                                                   simCodeModel.getIntegerId());
         assert mappedReg != null;
-        // Get reference
+        // Set reference
         destinationArgument.setRegisterValue(mappedReg);
-        // todo is this always true?
-        if (mappedReg.isSpeculative())
-        {
-          // Rename the string only if the register is speculative. This is because of register aliases
-          destinationArgument.setValue(mappedReg.getName());
-        }
+        destinationArgument.setStringValue(mappedReg.getName());
       }
     }
   }// end of renameDestinationRegister
@@ -387,11 +393,10 @@ public class DecodeAndDispatchBlock implements AbstractBlock
   
   /**
    * @param codeModel Branch code model with arguments
-   * @param position  Position of instruction in a fetched block
    *
-   * @brief Processes branch instructions in decode block
+   * @brief Processes branch instructions in decode block. Can delete from the buffer.
    */
-  private void processBranchInstruction(final SimCodeModel codeModel, int position)
+  private void processBranchInstruction(final SimCodeModel codeModel)
   {
     InstructionFunctionModel instruction = codeModel.getInstructionFunctionModel();
     
@@ -418,7 +423,7 @@ public class DecodeAndDispatchBlock implements AbstractBlock
                                        codeModel.getIntegerId(), -1);
       this.instructionFetchBlock.setPc(realTargetOpt.getAsInt());
       // Drop instructions after branch
-      removeInstructionsFromIndex(position + 1);
+      removeAfter(codeModel);
       globalHistoryBit = true;
     }
     this.globalHistoryRegister.shiftSpeculativeValue(codeModel.getIntegerId(), globalHistoryBit);
@@ -466,11 +471,22 @@ public class DecodeAndDispatchBlock implements AbstractBlock
    *
    * @brief Remove all instructions from beforeRenameCodeList from specified index until the end
    */
-  private void removeInstructionsFromIndex(int index)
+  private void removeAfter(SimCodeModel codeModel)
   {
-    while (index < this.codeBuffer.size())
+    boolean                found    = false;
+    Iterator<SimCodeModel> iterator = this.codeBuffer.iterator();
+    while (iterator.hasNext())
     {
-      this.codeBuffer.remove(index);
+      SimCodeModel next = iterator.next();
+      if (next.equals(codeModel))
+      {
+        found = true;
+        continue;
+      }
+      if (found)
+      {
+        iterator.remove();
+      }
     }
   }// end of removeInstructionsFromIndex
   //----------------------------------------------------------------------

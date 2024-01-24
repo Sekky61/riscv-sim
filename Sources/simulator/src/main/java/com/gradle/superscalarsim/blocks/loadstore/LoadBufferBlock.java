@@ -255,8 +255,7 @@ public class LoadBufferBlock implements AbstractBlock
     // Write to the load dest. register
     RegisterModel destinationReg = registerFileBlock.getRegister(loadItem.getDestinationRegister());
     // TODO: polish this, better API
-    destinationReg.setBits(sourceReg.getValueContainer().getBits());
-    destinationReg.setValue(sourceReg.getValueContainer().getBits(), sourceReg.getValueContainer().getCurrentType());
+    destinationReg.copyFrom(sourceReg);
     destinationReg.setReadiness(RegisterReadinessEnum.kAssigned);
     loadItem.setDestinationReady(true);
     loadItem.setHasBypassed(true);

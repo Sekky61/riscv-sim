@@ -216,7 +216,8 @@ public class RegisterDataContainer
    */
   public void copyFrom(RegisterDataContainer other)
   {
-    this.bits = other.bits;
+    this.bits        = other.bits;
+    this.currentType = other.currentType;
   }
   
   public DataTypeEnum getCurrentType()

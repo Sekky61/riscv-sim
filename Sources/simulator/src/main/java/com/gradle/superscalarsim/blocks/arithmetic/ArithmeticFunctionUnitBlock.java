@@ -197,8 +197,7 @@ public class ArithmeticFunctionUnitBlock extends AbstractFunctionUnitBlock
     else
     {
       RegisterModel reg = destinationArgument.getRegisterValue();
-      // TODO redundant?
-      reg.setValueContainer(result.value().value);
+      reg.setValue(result.value().value.getBits(), result.value().value.getCurrentType());
       reg.setReadiness(RegisterReadinessEnum.kExecuted);
     }
     
