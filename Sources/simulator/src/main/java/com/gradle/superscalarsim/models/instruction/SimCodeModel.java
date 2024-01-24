@@ -131,6 +131,11 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
    * Is instruction speculative?
    */
   private boolean isSpeculative;
+  /**
+   * Exception caused by this instruction.
+   * If committed, the exception takes effect and halts the simulation.
+   */
+  private InstructionException exception;
   
   /**
    * @param inputCodeModel Original code model
@@ -151,6 +156,8 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
     isBusy        = true;
     isSpeculative = false;
     
+    exception = null;
+    
     // Copy arguments
     this.renamedArguments = new ArrayList<>();
     for (InputCodeArgument argument : inputCodeModel.getArguments())
@@ -158,6 +165,11 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
       this.renamedArguments.add(new InputCodeArgument(argument));
     }
   }// end of Constructor
+  
+  public void setException(InstructionException exception)
+  {
+    this.exception = exception;
+  }
   
   /**
    * @return True if instruction is ready, false otherwise
