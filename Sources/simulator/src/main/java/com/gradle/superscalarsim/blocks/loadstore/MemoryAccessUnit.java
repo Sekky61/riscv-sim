@@ -35,7 +35,6 @@ package com.gradle.superscalarsim.blocks.loadstore;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.gradle.superscalarsim.blocks.base.AbstractFunctionUnitBlock;
 import com.gradle.superscalarsim.blocks.base.IssueWindowBlock;
-import com.gradle.superscalarsim.blocks.base.ReorderBufferBlock;
 import com.gradle.superscalarsim.code.CodeLoadStoreInterpreter;
 import com.gradle.superscalarsim.code.MemoryModel;
 import com.gradle.superscalarsim.cpu.SimulationStatistics;
@@ -91,17 +90,16 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
   
   /**
    * @param description          Description of the function unit
-   * @param reorderBufferBlock   Class containing simulated Reorder Buffer
    * @param issueWindowBlock     Issue window block for comparing instruction and data types
    * @param loadBufferBlock      Buffer keeping all in-flight load instructions
    * @param storeBufferBlock     Buffer keeping all in-flight store instructions
+   * @param memoryModel          Memory. Used for load/store operations
    * @param loadStoreInterpreter Interpreter processing load/store instructions
    * @param statistics           Statistics for reporting FU usage
    *
    * @brief Constructor
    */
   public MemoryAccessUnit(FunctionalUnitDescription description,
-                          ReorderBufferBlock reorderBufferBlock,
                           IssueWindowBlock issueWindowBlock,
                           LoadBufferBlock loadBufferBlock,
                           StoreBufferBlock storeBufferBlock,
@@ -109,7 +107,7 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
                           CodeLoadStoreInterpreter loadStoreInterpreter,
                           SimulationStatistics statistics)
   {
-    super(description, issueWindowBlock, reorderBufferBlock, statistics);
+    super(description, issueWindowBlock, statistics);
     this.loadBufferBlock      = loadBufferBlock;
     this.storeBufferBlock     = storeBufferBlock;
     this.loadStoreInterpreter = loadStoreInterpreter;
@@ -179,7 +177,7 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
       // Wait for memory is over, instruction is finished
       this.setDelay(baseDelay);
       int simCodeId = simCodeModel.getIntegerId();
-      this.reorderBufferBlock.getRobItem(simCodeId).reorderFlags.setBusy(false);
+      simCodeModel.setBusy(false);
       // Take result
       memoryModel.finishTransaction(transaction.id());
       if (this.simCodeModel.isLoad())

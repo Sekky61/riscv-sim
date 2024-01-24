@@ -36,9 +36,7 @@ import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.blocks.AbstractBlock;
-import com.gradle.superscalarsim.blocks.base.ReorderBufferBlock;
 import com.gradle.superscalarsim.blocks.base.UnifiedRegisterFileBlock;
-import com.gradle.superscalarsim.code.CodeLoadStoreInterpreter;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.models.InputCodeArgument;
 import com.gradle.superscalarsim.models.SimCodeModel;
@@ -68,22 +66,10 @@ public class StoreBufferBlock implements AbstractBlock
   private final List<MemoryAccessUnit> memoryAccessUnitList;
   
   /**
-   * Interpreter for processing load store instructions
-   */
-  @JsonIdentityReference(alwaysAsId = true)
-  private final CodeLoadStoreInterpreter loadStoreInterpreter;
-  
-  /**
    * Class containing all registers, that simulator uses
    */
   @JsonIdentityReference(alwaysAsId = true)
   private final UnifiedRegisterFileBlock registerFileBlock;
-  
-  /**
-   * Class contains simulated implementation of Reorder buffer
-   */
-  @JsonIdentityReference(alwaysAsId = true)
-  private final ReorderBufferBlock reorderBufferBlock;
   
   /**
    * Store Buffer size
@@ -91,27 +77,18 @@ public class StoreBufferBlock implements AbstractBlock
   private int bufferSize;
   
   /**
-   * @param loadStoreInterpreter   Interpreter for processing load store instructions
-   * @param decodeAndDispatchBlock Class, which simulates instruction decode and renames registers
-   * @param registerFileBlock      Class containing all registers, that simulator uses
-   * @param reorderBufferBlock     Class contains simulated implementation of Reorder buffer
+   * @param bufferSize        Interpreter for processing load store instructions
+   * @param registerFileBlock Class containing all registers, that simulator uses
    *
    * @brief Constructor
    */
-  public StoreBufferBlock(int bufferSize,
-                          CodeLoadStoreInterpreter loadStoreInterpreter,
-                          UnifiedRegisterFileBlock registerFileBlock,
-                          ReorderBufferBlock reorderBufferBlock)
+  public StoreBufferBlock(int bufferSize, UnifiedRegisterFileBlock registerFileBlock)
   {
-    this.loadStoreInterpreter = loadStoreInterpreter;
-    this.registerFileBlock    = registerFileBlock;
-    this.reorderBufferBlock   = reorderBufferBlock;
-    this.bufferSize           = bufferSize;
+    this.registerFileBlock = registerFileBlock;
+    this.bufferSize        = bufferSize;
     
     this.storeQueue           = new ArrayDeque<>();
     this.memoryAccessUnitList = new ArrayList<>();
-    
-    this.reorderBufferBlock.setStoreBufferBlock(this);
   }// end of Constructor
   //-------------------------------------------------------------------------------------------
   
@@ -218,7 +195,7 @@ public class StoreBufferBlock implements AbstractBlock
       SimCodeModel simCodeModel = item.getSimCodeModel();
       assert !simCodeModel.hasFailed();
       
-      boolean isSpeculative = reorderBufferBlock.getRobItem(simCodeModel.getIntegerId()).reorderFlags.isSpeculative();
+      boolean isSpeculative    = simCodeModel.isSpeculative();
       boolean isAvailableForMA = !isSpeculative && item.getAddress() != -1 && !item.isAccessingMemory() && item.getAccessingMemoryId() == -1 && item.isSourceReady();
       if (!isAvailableForMA)
       {

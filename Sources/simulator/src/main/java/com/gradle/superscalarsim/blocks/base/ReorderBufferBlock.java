@@ -43,7 +43,9 @@ import com.gradle.superscalarsim.blocks.loadstore.LoadBufferBlock;
 import com.gradle.superscalarsim.blocks.loadstore.StoreBufferBlock;
 import com.gradle.superscalarsim.cpu.SimulationStatistics;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
-import com.gradle.superscalarsim.models.*;
+import com.gradle.superscalarsim.models.InputCodeArgument;
+import com.gradle.superscalarsim.models.InstructionFunctionModel;
+import com.gradle.superscalarsim.models.SimCodeModel;
 import com.gradle.superscalarsim.models.memory.LoadBufferItem;
 import com.gradle.superscalarsim.models.memory.StoreBufferItem;
 
@@ -64,7 +66,7 @@ public class ReorderBufferBlock implements AbstractBlock
   /**
    * Queue of scheduled instruction in backend
    */
-  public ArrayDeque<ReorderBufferItem> reorderQueue;
+  public ArrayDeque<SimCodeModel> reorderQueue;
   
   /**
    * Numerical limit, how many instruction can be committed in a single tick
@@ -80,12 +82,12 @@ public class ReorderBufferBlock implements AbstractBlock
   /**
    * Reorder buffer size limit.
    */
-  public int bufferSize;
+  private int bufferSize;
   
   /**
    * @brief the jump target address triggering the halt
    */
-  public long haltTarget;
+  private long haltTarget;
   
   /**
    * @brief Flag to be set if the simulation should halt
@@ -145,8 +147,12 @@ public class ReorderBufferBlock implements AbstractBlock
   }
   
   /**
+   * @param bufferSize             Reorder buffer size limit
+   * @param commitLimit            Numerical limit, how many instruction can be committed in a single tick
    * @param renameMapTableBlock    Class holding mappings from architectural registers to speculative
    * @param decodeAndDispatchBlock Class, which simulates instruction decode and renames registers
+   * @param storeBufferBlock       Class that tracks all in-flight store instructions
+   * @param loadBufferBlock        Class that tracks all in-flight load instructions
    * @param gShareUnit             GShare unit for getting correct prediction counters
    * @param branchTargetBuffer     Buffer holding information about branch instructions targets
    * @param instructionFetchBlock  Class that fetches code from CodeParser
@@ -154,8 +160,12 @@ public class ReorderBufferBlock implements AbstractBlock
    *
    * @brief Constructor
    */
-  public ReorderBufferBlock(RenameMapTableBlock renameMapTableBlock,
+  public ReorderBufferBlock(int bufferSize,
+                            int commitLimit,
+                            RenameMapTableBlock renameMapTableBlock,
                             DecodeAndDispatchBlock decodeAndDispatchBlock,
+                            StoreBufferBlock storeBufferBlock,
+                            LoadBufferBlock loadBufferBlock,
                             GShareUnit gShareUnit,
                             BranchTargetBuffer branchTargetBuffer,
                             InstructionFetchBlock instructionFetchBlock,
@@ -164,6 +174,8 @@ public class ReorderBufferBlock implements AbstractBlock
   {
     this.renameMapTableBlock    = renameMapTableBlock;
     this.decodeAndDispatchBlock = decodeAndDispatchBlock;
+    this.storeBufferBlock       = storeBufferBlock;
+    this.loadBufferBlock        = loadBufferBlock;
     
     this.gShareUnit            = gShareUnit;
     this.branchTargetBuffer    = branchTargetBuffer;
@@ -175,22 +187,11 @@ public class ReorderBufferBlock implements AbstractBlock
     
     this.speculativePulls = false;
     
-    this.commitLimit = 4;
-    this.bufferSize  = 256;
+    this.commitLimit = commitLimit;
+    this.bufferSize  = bufferSize;
     this.haltFlag    = false;
     this.haltTarget  = haltTarget;
   }// end of Constructor
-  //----------------------------------------------------------------------
-  
-  /**
-   * @param storeBufferBlock A Load Buffer block object
-   *
-   * @brief Sets Load Buffer block object
-   */
-  public void setLoadBufferBlock(LoadBufferBlock loadBufferBlock)
-  {
-    this.loadBufferBlock = loadBufferBlock;
-  }// end of setLoadBufferBlock
   //----------------------------------------------------------------------
   
   /**
@@ -220,19 +221,18 @@ public class ReorderBufferBlock implements AbstractBlock
     int commitCount = 0;
     while (commitCount < this.commitLimit && !this.reorderQueue.isEmpty() && !haltFlag)
     {
-      ReorderBufferItem robItem = this.reorderQueue.peek();
+      SimCodeModel robItem = this.reorderQueue.peek();
       
-      if (!robItem.reorderFlags.isReadyToBeCommitted())
+      if (!robItem.isReadyToBeCommitted())
       {
         break;
       }
       
       commitCount++;
-      SimCodeModel codeModel = robItem.simCodeModel;
-      processCommittableInstruction(codeModel, cycle);
+      processCommittableInstruction(robItem, cycle);
       removeInstruction(robItem);
       
-      if (codeModel.getBranchTarget() == haltTarget)
+      if (robItem.getBranchTarget() == haltTarget)
       {
         haltFlag = true;
       }
@@ -302,10 +302,10 @@ public class ReorderBufferBlock implements AbstractBlock
         
         // Get the second instruction in the queue and invalidate it
         
-        Optional<ReorderBufferItem> robItem = this.reorderQueue.stream().skip(1).findFirst();
+        Optional<SimCodeModel> robItem = this.reorderQueue.stream().skip(1).findFirst();
         if (robItem.isPresent())
         {
-          invalidateInstructions(robItem.get().simCodeModel);
+          invalidateInstructions(robItem.get());
         }
         
         GlobalHistoryRegister activeRegister = gShareUnit.getGlobalHistoryRegister();
@@ -321,7 +321,7 @@ public class ReorderBufferBlock implements AbstractBlock
       
       // If we go to the end of the queue, we did not find a branch instruction.
       // This means that we are not speculating at this point.
-      if (!reorderQueue.getLast().reorderFlags.isSpeculative())
+      if (!reorderQueue.getLast().isSpeculative())
       {
         this.speculativePulls = false;
       }
@@ -380,10 +380,8 @@ public class ReorderBufferBlock implements AbstractBlock
    *
    * @brief Handles removal of instruction from the system
    */
-  private void removeInstruction(ReorderBufferItem queueItem)
+  private void removeInstruction(SimCodeModel simCodeModel)
   {
-    SimCodeModel simCodeModel = queueItem.simCodeModel;
-    
     // Reduce references to speculative registers
     for (InputCodeArgument argument : simCodeModel.getArguments())
     {
@@ -410,22 +408,21 @@ public class ReorderBufferBlock implements AbstractBlock
   public void flushInvalidInstructions(int cycle)
   {
     // Iterate the queue from the end, remove until first valid instruction
-    Iterator<ReorderBufferItem> it = this.reorderQueue.descendingIterator();
+    Iterator<SimCodeModel> it = this.reorderQueue.descendingIterator();
     while (it.hasNext())
     {
-      ReorderBufferItem robItem = it.next();
-      if (!robItem.reorderFlags.isReadyToBeRemoved())
+      SimCodeModel robItem = it.next();
+      if (!robItem.isReadyToBeRemoved())
       {
         break;
       }
       
       // Notify all that instruction is invalid
       simulationStatistics.incrementFailedInstructions();
-      SimCodeModel currentInstruction = robItem.simCodeModel;
-      currentInstruction.setCommitId(cycle); // todo: is this correct?
-      if (currentInstruction.getInstructionTypeEnum() == InstructionTypeEnum.kJumpbranch)
+      robItem.setCommitId(cycle); // todo: is this correct?
+      if (robItem.getInstructionTypeEnum() == InstructionTypeEnum.kJumpbranch)
       {
-        this.gShareUnit.getGlobalHistoryRegister().removeHistoryValue(currentInstruction.getIntegerId());
+        this.gShareUnit.getGlobalHistoryRegister().removeHistoryValue(robItem.getIntegerId());
       }
       removeInstruction(robItem);
       this.reorderQueue.removeLast();
@@ -454,8 +451,8 @@ public class ReorderBufferBlock implements AbstractBlock
         return;
       }
       
-      ReorderBufferItem reorderBufferItem = new ReorderBufferItem(codeModel, new ReorderFlags(this.speculativePulls));
-      this.reorderQueue.add(reorderBufferItem);
+      codeModel.setSpeculative(this.speculativePulls);
+      this.reorderQueue.add(codeModel);
       this.speculativePulls = this.speculativePulls || codeModel.getInstructionTypeEnum() == InstructionTypeEnum.kJumpbranch;
       if (codeModel.isLoad())
       {
@@ -476,7 +473,7 @@ public class ReorderBufferBlock implements AbstractBlock
   private void validateInstructions()
   {
     boolean skipFirst = true;
-    for (ReorderBufferItem item : this.reorderQueue)
+    for (SimCodeModel item : this.reorderQueue)
     {
       if (skipFirst)
       {
@@ -484,9 +481,9 @@ public class ReorderBufferBlock implements AbstractBlock
         skipFirst = false;
         continue;
       }
-      item.reorderFlags.setSpeculative(false);
+      item.setSpeculative(false);
       
-      if (item.simCodeModel.getInstructionTypeEnum() == InstructionTypeEnum.kJumpbranch)
+      if (item.getInstructionTypeEnum() == InstructionTypeEnum.kJumpbranch)
       {
         return;
       }
@@ -504,14 +501,14 @@ public class ReorderBufferBlock implements AbstractBlock
   public void invalidateInstructions(SimCodeModel firstInvalidInstruction)
   {
     boolean flush = false;
-    for (ReorderBufferItem robItem : this.reorderQueue)
+    for (SimCodeModel robItem : this.reorderQueue)
     {
-      flush = flush || robItem.simCodeModel == firstInvalidInstruction;
+      flush = flush || robItem == firstInvalidInstruction;
       if (flush)
       {
-        robItem.reorderFlags.setSpeculative(false);
-        robItem.reorderFlags.setValid(false);
-        robItem.simCodeModel.setHasFailed(true);
+        robItem.setSpeculative(false);
+        robItem.setValid(false);
+        robItem.setHasFailed(true);
       }
     }
     
@@ -531,15 +528,14 @@ public class ReorderBufferBlock implements AbstractBlock
     this.instructionFetchBlock.clearFetchedCode();
     
     boolean keptAnyInstruction  = !this.reorderQueue.isEmpty();
-    boolean lastKeptSpeculative = keptAnyInstruction && this.reorderQueue.getLast().reorderFlags.isSpeculative();
+    boolean lastKeptSpeculative = keptAnyInstruction && this.reorderQueue.getLast().isSpeculative();
     this.speculativePulls = keptAnyInstruction && lastKeptSpeculative;
   }// end of invalidateInstructions
   //----------------------------------------------------------------------
   
-  public ReorderBufferItem getRobItem(int simCodeId)
+  public SimCodeModel getRobItem(int simCodeId)
   {
-    return this.reorderQueue.stream().filter(robItem -> robItem.simCodeModel.getIntegerId() == simCodeId).findFirst()
-            .orElse(null);
+    return this.reorderQueue.stream().filter(robItem -> robItem.getIntegerId() == simCodeId).findFirst().orElse(null);
   }// end of getFlagsMap
   //----------------------------------------------------------------------
   
@@ -557,7 +553,7 @@ public class ReorderBufferBlock implements AbstractBlock
    * @return Current reorder queue
    * @brief Get current Reorder queue
    */
-  public Stream<ReorderBufferItem> getReorderQueue()
+  public Stream<SimCodeModel> getReorderQueue()
   {
     return this.reorderQueue.stream();
   }// end of getReorderQueue

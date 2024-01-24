@@ -120,6 +120,22 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
    * Used to fix BTB and PC in misprediction.
    */
   private int branchTarget;
+  /**
+   * Invalid instructions are scheduled to be removed from the system.
+   * Instruction starts as valid and becomes invalid when it is flushed.
+   */
+  private boolean isValid;
+  
+  /**
+   * Instruction starts as busy and becomes not busy when the execution is finished.
+   * Non-busy, non-speculative instructions are ready to be committed.
+   */
+  private boolean isBusy;
+  
+  /**
+   * Is instruction speculative?
+   */
+  private boolean isSpeculative;
   
   /**
    * @param inputCodeModel Original code model
@@ -135,6 +151,11 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
     this.commitId       = -1;
     this.isFinished     = false;
     this.hasFailed      = false;
+    
+    isValid       = true;
+    isBusy        = true;
+    isSpeculative = false;
+    
     // Copy arguments
     this.renamedArguments = new ArrayList<>();
     for (InputCodeArgument argument : inputCodeModel.getArguments())
@@ -142,6 +163,82 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
       this.renamedArguments.add(new InputCodeArgument(argument));
     }
   }// end of Constructor
+  
+  /**
+   * @brief Sets busy bit
+   */
+  public void setBusy(boolean busy)
+  {
+    this.isBusy = busy;
+  }// end of setBusy
+  //------------------------------------------------------
+  
+  /**
+   * @brief Sets valid bit
+   */
+  public void setValid(boolean valid)
+  {
+    this.isValid = valid;
+  }// end of setValid
+  //------------------------------------------------------
+  
+  /**
+   * @param speculative New value of the speculative bit
+   *
+   * @brief Sets speculative bit
+   */
+  public void setSpeculative(boolean speculative)
+  {
+    this.isSpeculative = speculative;
+  }// end of setSpeculative
+  //------------------------------------------------------
+  
+  /**
+   * @return True if instruction is ready, false otherwise
+   * @brief Checks if the instruction is ready for commit based on flags
+   */
+  public boolean isReadyToBeCommitted()
+  {
+    return !this.isBusy && !this.isSpeculative && this.isValid;
+  }// end of isReadyToBeCommitted
+  //------------------------------------------------------
+  
+  /**
+   * @return True if instruction can be removed, false otherwise
+   * @brief Checks if instruction has failed and can be removed
+   */
+  public boolean isReadyToBeRemoved()
+  {
+    return !this.isSpeculative && !this.isValid;
+  }// end of isReadyToBeRemoved
+  //------------------------------------------------------
+  
+  /**
+   * @return Boolean value of speculative bit
+   * @brief Gets speculative bit
+   */
+  public boolean isSpeculative()
+  {
+    return this.isSpeculative;
+  }// end of isSpeculative
+  //------------------------------------------------------
+  
+  /**
+   * @return Boolean value of busy bit
+   * @brief Gets busy bit
+   */
+  public boolean isBusy()
+  {
+    return this.isBusy;
+  }// end of isBusy
+  
+  /**
+   * @return True if instruction is valid, false otherwise
+   */
+  public boolean isValid()
+  {
+    return isValid;
+  }
   
   /**
    * @param windowId ID, when was instruction accepted to issue window

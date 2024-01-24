@@ -35,7 +35,6 @@ package com.gradle.superscalarsim.blocks.loadstore;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.gradle.superscalarsim.blocks.base.AbstractFunctionUnitBlock;
 import com.gradle.superscalarsim.blocks.base.IssueWindowBlock;
-import com.gradle.superscalarsim.blocks.base.ReorderBufferBlock;
 import com.gradle.superscalarsim.code.CodeLoadStoreInterpreter;
 import com.gradle.superscalarsim.cpu.SimulationStatistics;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
@@ -87,7 +86,6 @@ public class LoadStoreFunctionUnit extends AbstractFunctionUnitBlock
   
   /**
    * @param description          Description of the function unit
-   * @param reorderBufferBlock   Class containing simulated Reorder Buffer
    * @param issueWindowBlock     Issue window block for comparing instruction and data types
    * @param loadBufferBlock      Load buffer with all load instruction entries
    * @param storeBufferBlock     Store buffer with all store instruction entries
@@ -97,14 +95,13 @@ public class LoadStoreFunctionUnit extends AbstractFunctionUnitBlock
    * @brief Constructor
    */
   public LoadStoreFunctionUnit(FunctionalUnitDescription description,
-                               ReorderBufferBlock reorderBufferBlock,
                                IssueWindowBlock issueWindowBlock,
                                LoadBufferBlock loadBufferBlock,
                                StoreBufferBlock storeBufferBlock,
                                CodeLoadStoreInterpreter loadStoreInterpreter,
                                SimulationStatistics statistics)
   {
-    super(description, issueWindowBlock, reorderBufferBlock, statistics);
+    super(description, issueWindowBlock, statistics);
     this.loadBufferBlock      = loadBufferBlock;
     this.storeBufferBlock     = storeBufferBlock;
     this.loadStoreInterpreter = loadStoreInterpreter;

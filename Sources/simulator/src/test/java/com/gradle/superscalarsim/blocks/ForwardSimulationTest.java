@@ -243,28 +243,27 @@ public class ForwardSimulationTest
     Assert.assertTrue(this.decodeAndDispatchBlock.getCodeBuffer().isEmpty());
     Assert.assertEquals("add", this.aluIssueWindowBlock.getIssuedInstructions().get(0).getInstructionName());
     Assert.assertNotEquals(0, this.reorderBufferBlock.getReorderQueueSize());
-    Assert.assertEquals("add",
-                        this.reorderBufferBlock.getReorderQueue().findFirst().get().simCodeModel.getInstructionName());
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(0).reorderFlags.isBusy());
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(0).reorderFlags.isValid());
-    Assert.assertFalse(this.reorderBufferBlock.getRobItem(0).reorderFlags.isSpeculative());
+    Assert.assertEquals("add", this.reorderBufferBlock.getReorderQueue().findFirst().get().getInstructionName());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(0).isBusy());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(0).isValid());
+    Assert.assertFalse(this.reorderBufferBlock.getRobItem(0).isSpeculative());
     Assert.assertTrue(this.addFunctionBlock.isFunctionUnitEmpty());
     
     this.cpu.step();
     Assert.assertTrue(this.aluIssueWindowBlock.getIssuedInstructions().isEmpty());
     Assert.assertFalse(this.addFunctionBlock.isFunctionUnitEmpty());
     Assert.assertEquals("add", this.addFunctionBlock.getSimCodeModel().getInstructionName());
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(0).reorderFlags.isBusy());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(0).isBusy());
     
     this.cpu.step();
     Assert.assertTrue(this.aluIssueWindowBlock.getIssuedInstructions().isEmpty());
     Assert.assertFalse(this.addFunctionBlock.isFunctionUnitEmpty());
     Assert.assertEquals("add", this.addFunctionBlock.getSimCodeModel().getInstructionName());
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(0).reorderFlags.isBusy());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(0).isBusy());
     
     this.cpu.step();
     Assert.assertTrue(this.addFunctionBlock.isFunctionUnitEmpty());
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(0).reorderFlags.isReadyToBeCommitted());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(0).isReadyToBeCommitted());
     Assert.assertEquals(RegisterReadinessEnum.kExecuted,
                         this.unifiedRegisterFileBlock.getRegister("tg0").getReadiness());
     
@@ -324,11 +323,10 @@ public class ForwardSimulationTest
                         this.aluIssueWindowBlock.getIssuedInstructions().get(2).getRenamedCodeLine());
     Assert.assertNotEquals(0, this.reorderBufferBlock.getReorderQueueSize());
     Assert.assertEquals(3, this.reorderBufferBlock.getReorderQueueSize());
-    Assert.assertEquals("add",
-                        this.reorderBufferBlock.getReorderQueue().findFirst().get().simCodeModel.getInstructionName());
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(0).reorderFlags.isBusy());
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(1).reorderFlags.isBusy());
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(2).reorderFlags.isBusy());
+    Assert.assertEquals("add", this.reorderBufferBlock.getReorderQueue().findFirst().get().getInstructionName());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(0).isBusy());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(1).isBusy());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(2).isBusy());
     Assert.assertTrue(this.addFunctionBlock.isFunctionUnitEmpty());
     Assert.assertTrue(this.addSecondFunctionBlock.isFunctionUnitEmpty());
     
@@ -340,9 +338,9 @@ public class ForwardSimulationTest
     Assert.assertFalse(this.addFunctionBlock.isFunctionUnitEmpty());
     Assert.assertTrue(this.addSecondFunctionBlock.isFunctionUnitEmpty());
     Assert.assertEquals("add", this.addFunctionBlock.getSimCodeModel().getInstructionName());
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(0).reorderFlags.isBusy());
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(1).reorderFlags.isBusy());
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(2).reorderFlags.isBusy());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(0).isBusy());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(1).isBusy());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(2).isBusy());
     
     this.cpu.step();
     Assert.assertEquals(2, this.aluIssueWindowBlock.getIssuedInstructions().size());
@@ -352,9 +350,9 @@ public class ForwardSimulationTest
     Assert.assertFalse(this.addFunctionBlock.isFunctionUnitEmpty());
     Assert.assertTrue(this.addSecondFunctionBlock.isFunctionUnitEmpty());
     Assert.assertEquals("add", this.addFunctionBlock.getSimCodeModel().getInstructionName());
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(0).reorderFlags.isBusy());
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(1).reorderFlags.isBusy());
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(2).reorderFlags.isBusy());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(0).isBusy());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(1).isBusy());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(2).isBusy());
     
     this.cpu.step();
     Assert.assertEquals(1, this.aluIssueWindowBlock.getIssuedInstructions().size());
@@ -363,11 +361,11 @@ public class ForwardSimulationTest
     Assert.assertFalse(this.addFunctionBlock.isFunctionUnitEmpty());
     Assert.assertTrue(this.addSecondFunctionBlock.isFunctionUnitEmpty());
     Assert.assertEquals("add", this.addFunctionBlock.getSimCodeModel().getInstructionName());
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(0).reorderFlags.isReadyToBeCommitted());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(0).isReadyToBeCommitted());
     Assert.assertEquals(RegisterReadinessEnum.kExecuted,
                         this.unifiedRegisterFileBlock.getRegister("tg0").getReadiness());
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(1).reorderFlags.isBusy());
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(2).reorderFlags.isBusy());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(1).isBusy());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(2).isBusy());
     
     this.cpu.step();
     Assert.assertEquals(1, this.aluIssueWindowBlock.getIssuedInstructions().size());
@@ -379,18 +377,18 @@ public class ForwardSimulationTest
     Assert.assertEquals(2, this.reorderBufferBlock.getReorderQueueSize());
     Assert.assertEquals(RegisterReadinessEnum.kExecuted,
                         this.unifiedRegisterFileBlock.getRegister("tg0").getReadiness());
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(1).reorderFlags.isBusy());
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(2).reorderFlags.isBusy());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(1).isBusy());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(2).isBusy());
     
     this.cpu.step();
     Assert.assertTrue(this.aluIssueWindowBlock.getIssuedInstructions().isEmpty());
     Assert.assertFalse(this.addFunctionBlock.isFunctionUnitEmpty());
     Assert.assertTrue(this.addSecondFunctionBlock.isFunctionUnitEmpty());
     Assert.assertEquals("add", this.addFunctionBlock.getSimCodeModel().getInstructionName());
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(1).reorderFlags.isReadyToBeCommitted());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(1).isReadyToBeCommitted());
     Assert.assertEquals(RegisterReadinessEnum.kExecuted,
                         this.unifiedRegisterFileBlock.getRegister("tg1").getReadiness());
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(2).reorderFlags.isBusy());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(2).isBusy());
     
     this.cpu.step();
     Assert.assertTrue(this.aluIssueWindowBlock.getIssuedInstructions().isEmpty());
@@ -400,7 +398,7 @@ public class ForwardSimulationTest
     Assert.assertEquals("add", this.addFunctionBlock.getSimCodeModel().getInstructionName());
     Assert.assertEquals(RegisterReadinessEnum.kExecuted,
                         this.unifiedRegisterFileBlock.getRegister("tg1").getReadiness());
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(2).reorderFlags.isBusy());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(2).isBusy());
     
     this.cpu.step();
     Assert.assertTrue(this.aluIssueWindowBlock.getIssuedInstructions().isEmpty());
@@ -499,8 +497,8 @@ public class ForwardSimulationTest
     
     this.cpu.step();
     Assert.assertEquals(4, this.reorderBufferBlock.getReorderQueueSize());
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(0).reorderFlags.isReadyToBeCommitted());
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(1).reorderFlags.isReadyToBeCommitted());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(0).isReadyToBeCommitted());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(1).isReadyToBeCommitted());
     Assert.assertEquals("add tg3,x4,x3", this.addSecondFunctionBlock.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("add tg2,tg1,x3", this.addFunctionBlock.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals(4, (int) this.unifiedRegisterFileBlock.getRegister("tg1").getValue(DataTypeEnum.kInt), 0.01);
@@ -515,7 +513,7 @@ public class ForwardSimulationTest
     
     this.cpu.step();
     Assert.assertEquals(2, this.reorderBufferBlock.getReorderQueueSize());
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(3).reorderFlags.isReadyToBeCommitted());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(3).isReadyToBeCommitted());
     Assert.assertEquals("add tg2,tg1,x3", this.addFunctionBlock.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals(-2, (int) this.unifiedRegisterFileBlock.getRegister("x5").getValue(DataTypeEnum.kInt), 0.01);
     Assert.assertEquals(4, (int) this.unifiedRegisterFileBlock.getRegister("x2").getValue(DataTypeEnum.kInt), 0.01);
@@ -528,8 +526,8 @@ public class ForwardSimulationTest
     Assert.assertEquals(RegisterReadinessEnum.kFree, this.unifiedRegisterFileBlock.getRegister("tg0").getReadiness());
     
     this.cpu.step();
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(3).reorderFlags.isReadyToBeCommitted());
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(2).reorderFlags.isReadyToBeCommitted());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(3).isReadyToBeCommitted());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(2).isReadyToBeCommitted());
     Assert.assertEquals(RegisterReadinessEnum.kExecuted,
                         this.unifiedRegisterFileBlock.getRegister("tg3").getReadiness());
     Assert.assertEquals(RegisterReadinessEnum.kExecuted,
@@ -577,11 +575,10 @@ public class ForwardSimulationTest
     Assert.assertTrue(this.decodeAndDispatchBlock.getCodeBuffer().isEmpty());
     Assert.assertEquals("fadd.s", this.fpIssueWindowBlock.getIssuedInstructions().get(0).getInstructionName());
     Assert.assertNotEquals(0, this.reorderBufferBlock.getReorderQueueSize());
-    Assert.assertEquals("fadd.s",
-                        this.reorderBufferBlock.getReorderQueue().findFirst().get().simCodeModel.getInstructionName());
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(0).reorderFlags.isBusy());
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(0).reorderFlags.isValid());
-    Assert.assertFalse(this.reorderBufferBlock.getRobItem(0).reorderFlags.isSpeculative());
+    Assert.assertEquals("fadd.s", this.reorderBufferBlock.getReorderQueue().findFirst().get().getInstructionName());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(0).isBusy());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(0).isValid());
+    Assert.assertFalse(this.reorderBufferBlock.getRobItem(0).isSpeculative());
     Assert.assertTrue(this.faddFunctionBlock.isFunctionUnitEmpty());
     
     this.cpu.step();
@@ -589,17 +586,17 @@ public class ForwardSimulationTest
     Assert.assertTrue(this.fpIssueWindowBlock.getIssuedInstructions().isEmpty());
     Assert.assertFalse(this.faddFunctionBlock.isFunctionUnitEmpty());
     Assert.assertEquals("fadd.s", this.faddFunctionBlock.getSimCodeModel().getInstructionName());
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(0).reorderFlags.isBusy());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(0).isBusy());
     
     this.cpu.step();
     Assert.assertTrue(this.fpIssueWindowBlock.getIssuedInstructions().isEmpty());
     Assert.assertFalse(this.faddFunctionBlock.isFunctionUnitEmpty());
     Assert.assertEquals("fadd.s", this.faddFunctionBlock.getSimCodeModel().getInstructionName());
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(0).reorderFlags.isBusy());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(0).isBusy());
     
     this.cpu.step();
     Assert.assertTrue(this.faddFunctionBlock.isFunctionUnitEmpty());
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(0).reorderFlags.isReadyToBeCommitted());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(0).isReadyToBeCommitted());
     Assert.assertEquals(RegisterReadinessEnum.kExecuted,
                         this.unifiedRegisterFileBlock.getRegister("tg0").getReadiness());
     
@@ -662,11 +659,10 @@ public class ForwardSimulationTest
                         this.fpIssueWindowBlock.getIssuedInstructions().get(2).getRenamedCodeLine());
     Assert.assertNotEquals(0, this.reorderBufferBlock.getReorderQueueSize());
     Assert.assertEquals(3, this.reorderBufferBlock.getReorderQueueSize());
-    Assert.assertEquals("fadd.s",
-                        this.reorderBufferBlock.getReorderQueue().findFirst().get().simCodeModel.getInstructionName());
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(0).reorderFlags.isBusy());
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(1).reorderFlags.isBusy());
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(2).reorderFlags.isBusy());
+    Assert.assertEquals("fadd.s", this.reorderBufferBlock.getReorderQueue().findFirst().get().getInstructionName());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(0).isBusy());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(1).isBusy());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(2).isBusy());
     Assert.assertTrue(this.faddFunctionBlock.isFunctionUnitEmpty());
     Assert.assertTrue(this.faddSecondFunctionBlock.isFunctionUnitEmpty());
     
@@ -679,9 +675,9 @@ public class ForwardSimulationTest
     Assert.assertFalse(this.faddFunctionBlock.isFunctionUnitEmpty());
     Assert.assertTrue(this.faddSecondFunctionBlock.isFunctionUnitEmpty());
     Assert.assertEquals("fadd.s", this.faddFunctionBlock.getSimCodeModel().getInstructionName());
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(0).reorderFlags.isBusy());
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(1).reorderFlags.isBusy());
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(2).reorderFlags.isBusy());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(0).isBusy());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(1).isBusy());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(2).isBusy());
     
     this.cpu.step();
     Assert.assertEquals(2, this.fpIssueWindowBlock.getIssuedInstructions().size());
@@ -692,9 +688,9 @@ public class ForwardSimulationTest
     Assert.assertFalse(this.faddFunctionBlock.isFunctionUnitEmpty());
     Assert.assertTrue(this.faddSecondFunctionBlock.isFunctionUnitEmpty());
     Assert.assertEquals("fadd.s", this.faddFunctionBlock.getSimCodeModel().getInstructionName());
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(0).reorderFlags.isBusy());
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(1).reorderFlags.isBusy());
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(2).reorderFlags.isBusy());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(0).isBusy());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(1).isBusy());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(2).isBusy());
     
     this.cpu.step();
     Assert.assertEquals(1, this.fpIssueWindowBlock.getIssuedInstructions().size());
@@ -703,11 +699,11 @@ public class ForwardSimulationTest
     Assert.assertFalse(this.faddFunctionBlock.isFunctionUnitEmpty());
     Assert.assertTrue(this.faddSecondFunctionBlock.isFunctionUnitEmpty());
     Assert.assertEquals("fadd.s", this.faddFunctionBlock.getSimCodeModel().getInstructionName());
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(0).reorderFlags.isReadyToBeCommitted());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(0).isReadyToBeCommitted());
     Assert.assertEquals(RegisterReadinessEnum.kExecuted,
                         this.unifiedRegisterFileBlock.getRegister("tg0").getReadiness());
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(1).reorderFlags.isBusy());
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(2).reorderFlags.isBusy());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(1).isBusy());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(2).isBusy());
     
     this.cpu.step();
     Assert.assertEquals(1, this.fpIssueWindowBlock.getIssuedInstructions().size());
@@ -719,18 +715,18 @@ public class ForwardSimulationTest
     Assert.assertEquals(2, this.reorderBufferBlock.getReorderQueueSize());
     Assert.assertEquals(RegisterReadinessEnum.kExecuted,
                         this.unifiedRegisterFileBlock.getRegister("tg0").getReadiness());
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(1).reorderFlags.isBusy());
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(2).reorderFlags.isBusy());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(1).isBusy());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(2).isBusy());
     
     this.cpu.step();
     Assert.assertTrue(this.fpIssueWindowBlock.getIssuedInstructions().isEmpty());
     Assert.assertFalse(this.faddFunctionBlock.isFunctionUnitEmpty());
     Assert.assertTrue(this.faddSecondFunctionBlock.isFunctionUnitEmpty());
     Assert.assertEquals("fadd.s", this.faddFunctionBlock.getSimCodeModel().getInstructionName());
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(1).reorderFlags.isReadyToBeCommitted());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(1).isReadyToBeCommitted());
     Assert.assertEquals(RegisterReadinessEnum.kExecuted,
                         this.unifiedRegisterFileBlock.getRegister("tg1").getReadiness());
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(2).reorderFlags.isBusy());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(2).isBusy());
     
     this.cpu.step();
     Assert.assertTrue(this.fpIssueWindowBlock.getIssuedInstructions().isEmpty());
@@ -740,7 +736,7 @@ public class ForwardSimulationTest
     Assert.assertEquals("fadd.s", this.faddFunctionBlock.getSimCodeModel().getInstructionName());
     Assert.assertEquals(RegisterReadinessEnum.kExecuted,
                         this.unifiedRegisterFileBlock.getRegister("tg1").getReadiness());
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(2).reorderFlags.isBusy());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(2).isBusy());
     
     this.cpu.step();
     Assert.assertTrue(this.fpIssueWindowBlock.getIssuedInstructions().isEmpty());
@@ -852,8 +848,8 @@ public class ForwardSimulationTest
     
     this.cpu.step();
     Assert.assertEquals(4, this.reorderBufferBlock.getReorderQueueSize());
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(0).reorderFlags.isReadyToBeCommitted());
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(1).reorderFlags.isReadyToBeCommitted());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(0).isReadyToBeCommitted());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(1).isReadyToBeCommitted());
     Assert.assertEquals("fadd.s tg3,f4,f3", this.faddSecondFunctionBlock.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("fadd.s tg2,tg1,f3", this.faddFunctionBlock.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals(15.375f, (float) this.unifiedRegisterFileBlock.getRegister("tg1").getValue(DataTypeEnum.kFloat),
@@ -869,7 +865,7 @@ public class ForwardSimulationTest
     
     this.cpu.step();
     Assert.assertEquals(2, this.reorderBufferBlock.getReorderQueueSize());
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(3).reorderFlags.isReadyToBeCommitted());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(3).isReadyToBeCommitted());
     Assert.assertEquals("fadd.s tg2,tg1,f3", this.faddFunctionBlock.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals(12.24, (float) this.unifiedRegisterFileBlock.getRegister("f5").getValue(DataTypeEnum.kFloat),
                         0.001);
@@ -884,8 +880,8 @@ public class ForwardSimulationTest
     Assert.assertEquals(RegisterReadinessEnum.kFree, this.unifiedRegisterFileBlock.getRegister("tg0").getReadiness());
     
     this.cpu.step();
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(3).reorderFlags.isReadyToBeCommitted());
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(2).reorderFlags.isReadyToBeCommitted());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(3).isReadyToBeCommitted());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(2).isReadyToBeCommitted());
     Assert.assertEquals(RegisterReadinessEnum.kExecuted,
                         this.unifiedRegisterFileBlock.getRegister("tg3").getReadiness());
     Assert.assertEquals(RegisterReadinessEnum.kExecuted,
@@ -985,14 +981,14 @@ public class ForwardSimulationTest
                         this.branchIssueWindowBlock.getIssuedInstructions().get(0).getRenamedCodeLine());
     Assert.assertEquals("jal tg2,lab1", this.branchFunctionUnitBlock1.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("jal tg1,lab2", this.branchFunctionUnitBlock2.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(0).reorderFlags.isReadyToBeCommitted());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(0).isReadyToBeCommitted());
     
     this.cpu.step();
     Assert.assertEquals(3, this.reorderBufferBlock.getReorderQueueSize());
     Assert.assertEquals(0, this.branchIssueWindowBlock.getIssuedInstructions().size());
     Assert.assertEquals("jal tg2,lab1", this.branchFunctionUnitBlock1.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("jal tg3,labFinal", this.branchFunctionUnitBlock2.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(3).reorderFlags.isReadyToBeCommitted());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(3).isReadyToBeCommitted());
     Assert.assertEquals(12, this.branchTargetBuffer.getEntryTarget(0));
     Assert.assertTrue(this.branchTargetBuffer.isEntryUnconditional(0));
     Assert.assertEquals(-1, this.globalHistoryRegister.getHistoryValueAsInt(0));
@@ -1009,13 +1005,13 @@ public class ForwardSimulationTest
     Assert.assertEquals(2, this.reorderBufferBlock.getReorderQueueSize());
     Assert.assertNull(this.branchFunctionUnitBlock1.getSimCodeModel());
     Assert.assertEquals("jal tg3,labFinal", this.branchFunctionUnitBlock2.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(6).reorderFlags.isReadyToBeCommitted());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(6).isReadyToBeCommitted());
     
     this.cpu.step();
     Assert.assertEquals(1, this.reorderBufferBlock.getReorderQueueSize());
     Assert.assertNull(this.branchFunctionUnitBlock1.getSimCodeModel());
     Assert.assertNull(this.branchFunctionUnitBlock2.getSimCodeModel());
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(9).reorderFlags.isReadyToBeCommitted());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(9).isReadyToBeCommitted());
     Assert.assertEquals(4, this.branchTargetBuffer.getEntryTarget(8));
     Assert.assertTrue(this.branchTargetBuffer.isEntryUnconditional(8));
     Assert.assertEquals(-1, this.globalHistoryRegister.getHistoryValueAsInt(6));
@@ -1076,8 +1072,8 @@ public class ForwardSimulationTest
     Assert.assertEquals(0, (int) this.unifiedRegisterFileBlock.getRegister("x0").getValue(DataTypeEnum.kInt), 0.01);
     // ROB - first two instructions are in the ROB, not ready
     Assert.assertEquals(2, this.reorderBufferBlock.getReorderQueueSize());
-    Assert.assertFalse(this.reorderBufferBlock.getRobItem(0).reorderFlags.isReadyToBeCommitted());
-    Assert.assertFalse(this.reorderBufferBlock.getRobItem(1).reorderFlags.isReadyToBeCommitted());
+    Assert.assertFalse(this.reorderBufferBlock.getRobItem(0).isReadyToBeCommitted());
+    Assert.assertFalse(this.reorderBufferBlock.getRobItem(1).isReadyToBeCommitted());
     
     this.cpu.step();
     Assert.assertEquals("jal", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
@@ -1118,7 +1114,7 @@ public class ForwardSimulationTest
     Assert.assertEquals("beq x3,x0,loopEnd", this.branchFunctionUnitBlock1.getSimCodeModel().getRenamedCodeLine());
     // There is a new instruction in the function block
     Assert.assertEquals("subi tg2,tg0,1", this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertFalse(this.reorderBufferBlock.getRobItem(1).reorderFlags.isReadyToBeCommitted());
+    Assert.assertFalse(this.reorderBufferBlock.getRobItem(1).isReadyToBeCommitted());
     Assert.assertEquals(0, (int) this.unifiedRegisterFileBlock.getRegister("x0").getValue(DataTypeEnum.kInt), 0.01);
     
     this.cpu.step();
@@ -1129,9 +1125,9 @@ public class ForwardSimulationTest
     Assert.assertEquals("beq tg0,x0,loopEnd", this.branchFunctionUnitBlock1.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("subi tg2,tg0,1", this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
     // beq (id 1), subi (id 2) and jal (id 3) are ready
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(0).reorderFlags.isReadyToBeCommitted());
-    Assert.assertFalse(this.reorderBufferBlock.getRobItem(1).reorderFlags.isReadyToBeCommitted());
-    Assert.assertFalse(this.reorderBufferBlock.getRobItem(3).reorderFlags.isReadyToBeCommitted()); // jal
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(0).isReadyToBeCommitted());
+    Assert.assertFalse(this.reorderBufferBlock.getRobItem(1).isReadyToBeCommitted());
+    Assert.assertFalse(this.reorderBufferBlock.getRobItem(3).isReadyToBeCommitted()); // jal
     Assert.assertEquals(0, (int) this.unifiedRegisterFileBlock.getRegister("x0").getValue(DataTypeEnum.kInt), 0.01);
     
     this.cpu.step();
@@ -1142,7 +1138,7 @@ public class ForwardSimulationTest
     Assert.assertEquals("beq tg0,x0,loopEnd", this.branchFunctionUnitBlock1.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("subi tg4,tg2,1", this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals(0, (int) this.unifiedRegisterFileBlock.getRegister("x0").getValue(DataTypeEnum.kInt), 0.01);
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(3).reorderFlags.isReadyToBeCommitted());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(3).isReadyToBeCommitted());
     
     this.cpu.step();
     Assert.assertEquals("beq", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
@@ -1158,16 +1154,16 @@ public class ForwardSimulationTest
     Assert.assertEquals("jal tg3,loop", this.branchFunctionUnitBlock2.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("beq tg2,x0,loopEnd", this.branchFunctionUnitBlock1.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("subi tg6,tg4,1", this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(6).reorderFlags.isReadyToBeCommitted());
-    Assert.assertFalse(this.reorderBufferBlock.getRobItem(7).reorderFlags.isReadyToBeCommitted());
-    Assert.assertFalse(this.reorderBufferBlock.getRobItem(9).reorderFlags.isReadyToBeCommitted());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(6).isReadyToBeCommitted());
+    Assert.assertFalse(this.reorderBufferBlock.getRobItem(7).isReadyToBeCommitted());
+    Assert.assertFalse(this.reorderBufferBlock.getRobItem(9).isReadyToBeCommitted());
     
     this.cpu.step();
     Assert.assertEquals("jal tg5,loop", this.branchFunctionUnitBlock2.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("beq tg2,x0,loopEnd", this.branchFunctionUnitBlock1.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("subi tg6,tg4,1", this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals(0, (int) this.unifiedRegisterFileBlock.getRegister("x0").getValue(DataTypeEnum.kInt), 0.01);
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(9).reorderFlags.isReadyToBeCommitted());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(9).isReadyToBeCommitted());
     
     this.cpu.step();
     Assert.assertEquals("jal tg5,loop", this.branchFunctionUnitBlock2.getSimCodeModel().getRenamedCodeLine());
@@ -1179,15 +1175,15 @@ public class ForwardSimulationTest
     Assert.assertEquals("jal tg5,loop", this.branchFunctionUnitBlock2.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("beq tg4,x0,loopEnd", this.branchFunctionUnitBlock1.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("subi tg8,tg6,1", this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(12).reorderFlags.isReadyToBeCommitted());
-    Assert.assertFalse(this.reorderBufferBlock.getRobItem(13).reorderFlags.isReadyToBeCommitted());
-    Assert.assertFalse(this.reorderBufferBlock.getRobItem(15).reorderFlags.isReadyToBeCommitted());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(12).isReadyToBeCommitted());
+    Assert.assertFalse(this.reorderBufferBlock.getRobItem(13).isReadyToBeCommitted());
+    Assert.assertFalse(this.reorderBufferBlock.getRobItem(15).isReadyToBeCommitted());
     
     this.cpu.step();
     Assert.assertEquals("jal tg7,loop", this.branchFunctionUnitBlock2.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("beq tg4,x0,loopEnd", this.branchFunctionUnitBlock1.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("subi tg10,tg8,1", this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(15).reorderFlags.isReadyToBeCommitted());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(15).isReadyToBeCommitted());
     
     this.cpu.step();
     Assert.assertEquals("jal tg7,loop", this.branchFunctionUnitBlock2.getSimCodeModel().getRenamedCodeLine());
@@ -1198,15 +1194,15 @@ public class ForwardSimulationTest
     Assert.assertEquals("jal tg7,loop", this.branchFunctionUnitBlock2.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("beq tg6,x0,loopEnd", this.branchFunctionUnitBlock1.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("subi tg12,tg10,1", this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(18).reorderFlags.isReadyToBeCommitted());
-    Assert.assertFalse(this.reorderBufferBlock.getRobItem(19).reorderFlags.isReadyToBeCommitted());
-    Assert.assertFalse(this.reorderBufferBlock.getRobItem(21).reorderFlags.isReadyToBeCommitted());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(18).isReadyToBeCommitted());
+    Assert.assertFalse(this.reorderBufferBlock.getRobItem(19).isReadyToBeCommitted());
+    Assert.assertFalse(this.reorderBufferBlock.getRobItem(21).isReadyToBeCommitted());
     
     this.cpu.step();
     Assert.assertEquals("jal tg9,loop", this.branchFunctionUnitBlock2.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("beq tg6,x0,loopEnd", this.branchFunctionUnitBlock1.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("subi tg12,tg10,1", this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(21).reorderFlags.isReadyToBeCommitted());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(21).isReadyToBeCommitted());
     
     this.cpu.step();
     Assert.assertEquals("jal tg9,loop", this.branchFunctionUnitBlock2.getSimCodeModel().getRenamedCodeLine());
@@ -1217,15 +1213,15 @@ public class ForwardSimulationTest
     Assert.assertEquals("jal tg9,loop", this.branchFunctionUnitBlock2.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("beq tg8,x0,loopEnd", this.branchFunctionUnitBlock1.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("subi tg14,tg12,1", this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(24).reorderFlags.isReadyToBeCommitted());
-    Assert.assertFalse(this.reorderBufferBlock.getRobItem(25).reorderFlags.isReadyToBeCommitted());
-    Assert.assertFalse(this.reorderBufferBlock.getRobItem(27).reorderFlags.isReadyToBeCommitted());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(24).isReadyToBeCommitted());
+    Assert.assertFalse(this.reorderBufferBlock.getRobItem(25).isReadyToBeCommitted());
+    Assert.assertFalse(this.reorderBufferBlock.getRobItem(27).isReadyToBeCommitted());
     
     this.cpu.step();
     Assert.assertEquals("jal tg11,loop", this.branchFunctionUnitBlock2.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("beq tg8,x0,loopEnd", this.branchFunctionUnitBlock1.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("subi tg16,tg14,1", this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(27).reorderFlags.isReadyToBeCommitted());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(27).isReadyToBeCommitted());
     
     this.cpu.step();
     Assert.assertEquals("jal tg11,loop", this.branchFunctionUnitBlock2.getSimCodeModel().getRenamedCodeLine());
@@ -1236,15 +1232,15 @@ public class ForwardSimulationTest
     Assert.assertEquals("jal tg11,loop", this.branchFunctionUnitBlock2.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("beq tg10,x0,loopEnd", this.branchFunctionUnitBlock1.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("subi tg18,tg16,1", this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(30).reorderFlags.isReadyToBeCommitted());
-    Assert.assertFalse(this.reorderBufferBlock.getRobItem(31).reorderFlags.isReadyToBeCommitted());
-    Assert.assertFalse(this.reorderBufferBlock.getRobItem(33).reorderFlags.isReadyToBeCommitted());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(30).isReadyToBeCommitted());
+    Assert.assertFalse(this.reorderBufferBlock.getRobItem(31).isReadyToBeCommitted());
+    Assert.assertFalse(this.reorderBufferBlock.getRobItem(33).isReadyToBeCommitted());
     
     this.cpu.step();
     Assert.assertEquals("jal tg13,loop", this.branchFunctionUnitBlock2.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("beq tg10,x0,loopEnd", this.branchFunctionUnitBlock1.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("subi tg18,tg16,1", this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(33).reorderFlags.isReadyToBeCommitted());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(33).isReadyToBeCommitted());
     
     this.cpu.step();
     Assert.assertEquals("jal tg13,loop", this.branchFunctionUnitBlock2.getSimCodeModel().getRenamedCodeLine());
@@ -1255,9 +1251,9 @@ public class ForwardSimulationTest
     Assert.assertEquals("jal tg13,loop", this.branchFunctionUnitBlock2.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("beq tg12,x0,loopEnd", this.branchFunctionUnitBlock1.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("subi tg20,tg18,1", this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(36).reorderFlags.isReadyToBeCommitted());
-    Assert.assertFalse(this.reorderBufferBlock.getRobItem(37).reorderFlags.isReadyToBeCommitted());
-    Assert.assertFalse(this.reorderBufferBlock.getRobItem(39).reorderFlags.isReadyToBeCommitted());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(36).isReadyToBeCommitted());
+    Assert.assertFalse(this.reorderBufferBlock.getRobItem(37).isReadyToBeCommitted());
+    Assert.assertFalse(this.reorderBufferBlock.getRobItem(39).isReadyToBeCommitted());
     
     this.cpu.step();
     Assert.assertNull(this.branchFunctionUnitBlock2.getSimCodeModel());
@@ -1336,7 +1332,7 @@ public class ForwardSimulationTest
     Assert.assertNull(this.branchFunctionUnitBlock1.getSimCodeModel());
     Assert.assertNull(this.subFunctionBlock.getSimCodeModel());
     // First instruction ready to be committed
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(0).reorderFlags.isReadyToBeCommitted());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(0).isReadyToBeCommitted());
     
     this.cpu.step();
     Assert.assertNull(this.subFunctionBlock.getSimCodeModel());
@@ -1361,7 +1357,7 @@ public class ForwardSimulationTest
     Assert.assertEquals("addi tg2,x1,10", this.addFunctionBlock.getSimCodeModel().getRenamedCodeLine());
     
     this.cpu.step();
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(21).reorderFlags.isReadyToBeCommitted());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(21).isReadyToBeCommitted());
     
     this.cpu.step();
     Assert.assertEquals(10, (int) this.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt), 0.01);
@@ -1436,10 +1432,10 @@ public class ForwardSimulationTest
     Assert.assertNull(this.subFunctionBlock.getSimCodeModel());
     Assert.assertNull(this.branchFunctionUnitBlock1.getSimCodeModel());
     Assert.assertEquals("jal tg1,labelFin", this.branchFunctionUnitBlock2.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(0).reorderFlags.isReadyToBeCommitted());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(0).isReadyToBeCommitted());
     
     this.cpu.step();
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(3).reorderFlags.isReadyToBeCommitted());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(3).isReadyToBeCommitted());
     Assert.assertEquals(-10, (int) this.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt));
     
     this.cpu.step();
@@ -1490,13 +1486,13 @@ public class ForwardSimulationTest
     Assert.assertNull(this.loadStoreFunctionUnit.getSimCodeModel());
     Assert.assertEquals(25, this.storeBufferBlock.getStoreBufferItem(0).getAddress());
     Assert.assertTrue(this.storeBufferBlock.getStoreBufferItem(0).isSourceReady());
-    Assert.assertFalse(this.reorderBufferBlock.getRobItem(0).reorderFlags.isReadyToBeCommitted());
+    Assert.assertFalse(this.reorderBufferBlock.getRobItem(0).isReadyToBeCommitted());
     this.cpu.step();
     // The store delay is 1, MAU delay is 1, so after two clocks...
     this.cpu.step();
     this.cpu.step();
     // ... it should be executed and ready to be committed
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(0).reorderFlags.isReadyToBeCommitted());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(0).isReadyToBeCommitted());
     this.cpu.step();
     Assert.assertEquals(0, this.reorderBufferBlock.getReorderQueueSize());
     
@@ -1559,7 +1555,7 @@ public class ForwardSimulationTest
     Assert.assertNull(this.memoryAccessUnit.getSimCodeModel());
     Assert.assertEquals(25, this.loadBufferBlock.getLoadBufferItem(0).getAddress());
     Assert.assertTrue(this.loadBufferBlock.getLoadBufferItem(0).isDestinationReady());
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(0).reorderFlags.isReadyToBeCommitted());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(0).isReadyToBeCommitted());
     
     this.cpu.step();
     Assert.assertEquals(0, (int) this.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt), 0.0);
@@ -1621,10 +1617,10 @@ public class ForwardSimulationTest
     Assert.assertEquals(1, this.storeBufferBlock.getQueueSize());
     Assert.assertEquals("lw tg1,0(x2)", this.loadStoreFunctionUnit.getSimCodeModel().getRenamedCodeLine());
     Assert.assertFalse(this.loadBufferBlock.getLoadBufferItem(2).isDestinationReady());
-    Assert.assertFalse(this.reorderBufferBlock.getRobItem(2).reorderFlags.isReadyToBeCommitted());
+    Assert.assertFalse(this.reorderBufferBlock.getRobItem(2).isReadyToBeCommitted());
     Assert.assertTrue(this.storeBufferBlock.getStoreBufferItem(1).isSourceReady());
     Assert.assertEquals(25, this.storeBufferBlock.getStoreBufferItem(1).getAddress());
-    Assert.assertFalse(this.reorderBufferBlock.getRobItem(1).reorderFlags.isReadyToBeCommitted());
+    Assert.assertFalse(this.reorderBufferBlock.getRobItem(1).isReadyToBeCommitted());
     Assert.assertEquals("subi tg0,x4,5", this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
     // Store moved to MAU (as it is about to commit)
     Assert.assertEquals("sw x3,0(x2)", this.memoryAccessUnit.getSimCodeModel().getRenamedCodeLine());
@@ -1637,14 +1633,14 @@ public class ForwardSimulationTest
     Assert.assertNull(this.loadStoreFunctionUnit.getSimCodeModel());
     Assert.assertEquals(25, this.loadBufferBlock.getLoadBufferItem(2).getAddress());
     Assert.assertTrue(this.loadBufferBlock.getLoadBufferItem(2).isDestinationReady());
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(2).reorderFlags.isReadyToBeCommitted());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(2).isReadyToBeCommitted());
     
     this.cpu.step();
     Assert.assertEquals("sw x3,0(x2)", this.memoryAccessUnit.getSimCodeModel().getRenamedCodeLine());
     this.cpu.step();
     // store and load in rob
     Assert.assertNull(this.memoryAccessUnit.getSimCodeModel());
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(1).reorderFlags.isReadyToBeCommitted());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(1).isReadyToBeCommitted());
     Assert.assertTrue(this.loadBufferBlock.getLoadBufferItem(2).hasBypassed());
     this.cpu.step();
     // Nothing in ROB
@@ -1722,14 +1718,14 @@ public class ForwardSimulationTest
     
     this.cpu.step();
     // subi is done (leaves ROB), store can be computed
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(0).reorderFlags.isReadyToBeCommitted());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(0).isReadyToBeCommitted());
     Assert.assertEquals("sw tg0,0(x2)", this.loadStoreFunctionUnit.getSimCodeModel().getRenamedCodeLine());
     this.cpu.step();
     // Store address done, can be written to cache
     Assert.assertNull(this.loadStoreFunctionUnit.getSimCodeModel());
     this.cpu.step();
     // Mem load should be done, load should be ready to be committed
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(2).reorderFlags.isReadyToBeCommitted());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(2).isReadyToBeCommitted());
     Assert.assertEquals("sw tg0,0(x2)", this.memoryAccessUnit.getSimCodeModel().getRenamedCodeLine());
     // Load is in load buffer
     Assert.assertEquals("lw tg1,0(x2)", this.loadBufferBlock.getLoadQueueFirst().getRenamedCodeLine());
@@ -1739,7 +1735,7 @@ public class ForwardSimulationTest
     Assert.assertEquals("sw tg0,0(x2)", this.memoryAccessUnit.getSimCodeModel().getRenamedCodeLine());
     this.cpu.step();
     // store ready
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(1).reorderFlags.isReadyToBeCommitted());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(1).isReadyToBeCommitted());
     Assert.assertNull(this.memoryAccessUnit.getSimCodeModel());
     Assert.assertEquals(2, this.reorderBufferBlock.getReorderQueueSize());
     Assert.assertEquals(1, this.loadBufferBlock.getQueueSize());
@@ -1776,7 +1772,7 @@ public class ForwardSimulationTest
     Assert.assertEquals("lw tg2,0(x2)", this.memoryAccessUnit.getSimCodeModel().getRenamedCodeLine());
     this.cpu.step();
     Assert.assertNull(this.memoryAccessUnit.getSimCodeModel());
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(30).reorderFlags.isReadyToBeCommitted());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(30).isReadyToBeCommitted());
     Assert.assertEquals("lw tg2,0(x2)", this.loadBufferBlock.getLoadQueueFirst().getRenamedCodeLine());
     Assert.assertNull(this.memoryAccessUnit.getSimCodeModel());
     
@@ -1861,7 +1857,7 @@ public class ForwardSimulationTest
     this.cpu.step();
     // Sub is ready
     Assert.assertNull(this.subFunctionBlock.getSimCodeModel());
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(0).reorderFlags.isReadyToBeCommitted());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(0).isReadyToBeCommitted());
     // Store can start computing address
     Assert.assertEquals("lw tg1,0(x2)", this.memoryAccessUnit.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("sw tg0,0(x2)", this.loadStoreFunctionUnit.getSimCodeModel().getRenamedCodeLine());
@@ -1878,13 +1874,13 @@ public class ForwardSimulationTest
     
     this.cpu.step();
     // Load memory access done, now for the store. It should be in cache so 1+1 clocks
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(2).reorderFlags.isReadyToBeCommitted());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(2).isReadyToBeCommitted());
     Assert.assertEquals("sw tg0,0(x2)", this.memoryAccessUnit.getSimCodeModel().getRenamedCodeLine());
     
     this.cpu.step();
-    Assert.assertFalse(this.reorderBufferBlock.getRobItem(1).reorderFlags.isReadyToBeCommitted());
+    Assert.assertFalse(this.reorderBufferBlock.getRobItem(1).isReadyToBeCommitted());
     this.cpu.step();
-    Assert.assertTrue(this.reorderBufferBlock.getRobItem(1).reorderFlags.isReadyToBeCommitted());
+    Assert.assertTrue(this.reorderBufferBlock.getRobItem(1).isReadyToBeCommitted());
     
     this.cpu.step();
     // Store got committed, load got flushed
@@ -1912,7 +1908,7 @@ public class ForwardSimulationTest
     this.cpu.step();
     Assert.assertNull(this.memoryAccessUnit.getSimCodeModel());
     Assert.assertEquals(1, this.reorderBufferBlock.getReorderQueueSize());
-    Assert.assertTrue(this.reorderBufferBlock.reorderQueue.getFirst().reorderFlags.isReadyToBeCommitted());
+    Assert.assertTrue(this.reorderBufferBlock.reorderQueue.getFirst().isReadyToBeCommitted());
     
     this.cpu.step();
     

@@ -35,7 +35,6 @@ package com.gradle.superscalarsim.blocks.arithmetic;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.gradle.superscalarsim.blocks.base.AbstractFunctionUnitBlock;
 import com.gradle.superscalarsim.blocks.base.IssueWindowBlock;
-import com.gradle.superscalarsim.blocks.base.ReorderBufferBlock;
 import com.gradle.superscalarsim.code.CodeArithmeticInterpreter;
 import com.gradle.superscalarsim.code.Expression;
 import com.gradle.superscalarsim.cpu.SimulationStatistics;
@@ -75,21 +74,19 @@ public class ArithmeticFunctionUnitBlock extends AbstractFunctionUnitBlock
   }
   
   /**
-   * @param description        Description of the function unit
-   * @param issueWindowBlock   Issue window block for comparing instruction and data types
-   * @param allowedOperators   Array of all supported operators by this FU
-   * @param reorderBufferBlock Class containing simulated Reorder Buffer
-   * @param statistics         Statistics for reporting FU usage
+   * @param description      Description of the function unit
+   * @param issueWindowBlock Issue window block for comparing instruction and data types
+   * @param allowedOperators Array of all supported operators by this FU
+   * @param statistics       Statistics for reporting FU usage
    *
    * @brief Constructor
    */
   public ArithmeticFunctionUnitBlock(FunctionalUnitDescription description,
                                      IssueWindowBlock issueWindowBlock,
                                      List<String> allowedOperators,
-                                     ReorderBufferBlock reorderBufferBlock,
                                      SimulationStatistics statistics)
   {
-    super(description, issueWindowBlock, reorderBufferBlock, statistics);
+    super(description, issueWindowBlock, statistics);
     this.allowedOperators = allowedOperators;
   }// end of Constructor
   
@@ -195,7 +192,7 @@ public class ArithmeticFunctionUnitBlock extends AbstractFunctionUnitBlock
     reg.setValueContainer(result.value);
     reg.setReadiness(RegisterReadinessEnum.kExecuted);
     
-    this.reorderBufferBlock.getRobItem(this.simCodeModel.getIntegerId()).reorderFlags.setBusy(false);
+    this.simCodeModel.setBusy(false);
     this.simCodeModel = null;
   }
   //----------------------------------------------------------------------

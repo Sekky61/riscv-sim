@@ -265,21 +265,20 @@ public class CpuState implements Serializable
                                                              instructionMemoryBlock, config.cpuConfig.fetchWidth,
                                                              statistics, branchInterpreter);
     
-    // ROB
-    this.reorderBufferBlock        = new ReorderBufferBlock(renameMapTableBlock, decodeAndDispatchBlock, gShareUnit,
-                                                            branchTargetBuffer, instructionFetchBlock, statistics,
-                                                            memoryInitializer.getExitPointer());
-    reorderBufferBlock.bufferSize  = config.cpuConfig.robSize;
-    reorderBufferBlock.commitLimit = config.cpuConfig.commitWidth;
     
     // Issue
     this.arithmeticInterpreter = new CodeArithmeticInterpreter();
     
     // Memory blocks
-    this.storeBufferBlock = new StoreBufferBlock(config.cpuConfig.sbSize, loadStoreInterpreter,
-                                                 unifiedRegisterFileBlock, reorderBufferBlock);
-    this.loadBufferBlock  = new LoadBufferBlock(config.cpuConfig.lbSize, storeBufferBlock, unifiedRegisterFileBlock,
-                                                reorderBufferBlock, instructionFetchBlock);
+    this.storeBufferBlock = new StoreBufferBlock(config.cpuConfig.sbSize, unifiedRegisterFileBlock);
+    this.loadBufferBlock  = new LoadBufferBlock(config.cpuConfig.lbSize, storeBufferBlock, unifiedRegisterFileBlock);
+    
+    // ROB
+    this.reorderBufferBlock = new ReorderBufferBlock(config.cpuConfig.robSize, config.cpuConfig.commitWidth,
+                                                     renameMapTableBlock, decodeAndDispatchBlock, storeBufferBlock,
+                                                     loadBufferBlock, gShareUnit, branchTargetBuffer,
+                                                     instructionFetchBlock, statistics,
+                                                     memoryInitializer.getExitPointer());
     
     // FUs
     this.aluIssueWindowBlock       = new IssueWindowBlock(InstructionTypeEnum.kIntArithmetic);
@@ -304,8 +303,7 @@ public class CpuState implements Serializable
         {
           List<String> allowedOperators = fu.getAllowedOperations();
           ArithmeticFunctionUnitBlock functionBlock = new ArithmeticFunctionUnitBlock(fu, fpIssueWindowBlock,
-                                                                                      allowedOperators,
-                                                                                      reorderBufferBlock, statistics);
+                                                                                      allowedOperators, statistics);
           functionBlock.addArithmeticInterpreter(arithmeticInterpreter);
           this.aluIssueWindowBlock.addFunctionUnit(functionBlock);
           this.arithmeticFunctionUnitBlocks.add(functionBlock);
@@ -314,16 +312,14 @@ public class CpuState implements Serializable
         {
           List<String> allowedOperators = fu.getAllowedOperations();
           ArithmeticFunctionUnitBlock functionBlock = new ArithmeticFunctionUnitBlock(fu, fpIssueWindowBlock,
-                                                                                      allowedOperators,
-                                                                                      reorderBufferBlock, statistics);
+                                                                                      allowedOperators, statistics);
           functionBlock.addArithmeticInterpreter(arithmeticInterpreter);
           this.fpIssueWindowBlock.addFunctionUnit(functionBlock);
           this.fpFunctionUnitBlocks.add(functionBlock);
         }
         case L_S ->
         {
-          LoadStoreFunctionUnit loadStoreFunctionUnit = new LoadStoreFunctionUnit(fu, reorderBufferBlock,
-                                                                                  loadStoreIssueWindowBlock,
+          LoadStoreFunctionUnit loadStoreFunctionUnit = new LoadStoreFunctionUnit(fu, loadStoreIssueWindowBlock,
                                                                                   loadBufferBlock, storeBufferBlock,
                                                                                   loadStoreInterpreter, statistics);
           this.loadStoreIssueWindowBlock.addFunctionUnit(loadStoreFunctionUnit);
@@ -332,16 +328,15 @@ public class CpuState implements Serializable
         case Branch ->
         {
           BranchFunctionUnitBlock branchFunctionUnitBlock = new BranchFunctionUnitBlock(fu, branchIssueWindowBlock,
-                                                                                        reorderBufferBlock,
                                                                                         branchInterpreter, statistics);
           this.branchIssueWindowBlock.addFunctionUnit(branchFunctionUnitBlock);
           this.branchFunctionUnitBlocks.add(branchFunctionUnitBlock);
         }
         case Memory ->
         {
-          MemoryAccessUnit memoryAccessUnit = new MemoryAccessUnit(fu, reorderBufferBlock, loadStoreIssueWindowBlock,
-                                                                   loadBufferBlock, storeBufferBlock, memoryModel,
-                                                                   loadStoreInterpreter, statistics);
+          MemoryAccessUnit memoryAccessUnit = new MemoryAccessUnit(fu, loadStoreIssueWindowBlock, loadBufferBlock,
+                                                                   storeBufferBlock, memoryModel, loadStoreInterpreter,
+                                                                   statistics);
           this.loadBufferBlock.addMemoryAccessUnit(memoryAccessUnit);
           this.storeBufferBlock.addMemoryAccessUnit(memoryAccessUnit);
           this.memoryAccessUnits.add(memoryAccessUnit);

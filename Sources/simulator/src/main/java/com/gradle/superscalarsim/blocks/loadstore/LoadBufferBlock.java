@@ -36,8 +36,6 @@ import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.blocks.AbstractBlock;
-import com.gradle.superscalarsim.blocks.base.InstructionFetchBlock;
-import com.gradle.superscalarsim.blocks.base.ReorderBufferBlock;
 import com.gradle.superscalarsim.blocks.base.UnifiedRegisterFileBlock;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.models.InputCodeArgument;
@@ -84,18 +82,6 @@ public class LoadBufferBlock implements AbstractBlock
   private UnifiedRegisterFileBlock registerFileBlock;
   
   /**
-   * Class contains simulated implementation of Reorder buffer
-   */
-  @JsonIdentityReference(alwaysAsId = true)
-  private ReorderBufferBlock reorderBufferBlock;
-  
-  /**
-   * Class that fetches code from CodeParser
-   */
-  @JsonIdentityReference(alwaysAsId = true)
-  private InstructionFetchBlock instructionFetchBlock;
-  
-  /**
    * Load Buffer size
    */
   private int bufferSize;
@@ -109,27 +95,17 @@ public class LoadBufferBlock implements AbstractBlock
    * @param storeBufferBlock       Block keeping all in-flight store instructions
    * @param decodeAndDispatchBlock Class, which simulates instruction decode and renames registers
    * @param registerFileBlock      Class containing all registers, that simulator uses
-   * @param reorderBufferBlock     Class contains simulated implementation of Reorder buffer
-   * @param instructionFetchBlock  Class that fetches code from CodeParser
    *
    * @brief Constructor
    */
-  public LoadBufferBlock(int bufferSize,
-                         StoreBufferBlock storeBufferBlock,
-                         UnifiedRegisterFileBlock registerFileBlock,
-                         ReorderBufferBlock reorderBufferBlock,
-                         InstructionFetchBlock instructionFetchBlock)
+  public LoadBufferBlock(int bufferSize, StoreBufferBlock storeBufferBlock, UnifiedRegisterFileBlock registerFileBlock)
   {
-    this.storeBufferBlock      = storeBufferBlock;
-    this.registerFileBlock     = registerFileBlock;
-    this.reorderBufferBlock    = reorderBufferBlock;
-    this.instructionFetchBlock = instructionFetchBlock;
-    this.bufferSize            = bufferSize;
+    this.storeBufferBlock  = storeBufferBlock;
+    this.registerFileBlock = registerFileBlock;
+    this.bufferSize        = bufferSize;
     
     this.loadQueue            = new ArrayDeque<>();
     this.memoryAccessUnitList = new ArrayList<>();
-    
-    this.reorderBufferBlock.setLoadBufferBlock(this);
   }// end of Constructor
   //-------------------------------------------------------------------------------------------
   
@@ -270,6 +246,7 @@ public class LoadBufferBlock implements AbstractBlock
     assert loadItem != null;
     assert storeItem != null;
     
+    // TODO: storeItem direct reference to a register
     RegisterModel         sourceReg        = registerFileBlock.getRegister(storeItem.getSourceRegister());
     RegisterReadinessEnum resultState      = sourceReg.getReadiness();
     boolean               storeSourceReady = resultState == RegisterReadinessEnum.kExecuted || resultState == RegisterReadinessEnum.kAssigned;
@@ -285,7 +262,7 @@ public class LoadBufferBlock implements AbstractBlock
     loadItem.setHasBypassed(true);
     loadItem.setMemoryAccessId(cycle);
     // The load is done, ready for commit
-    reorderBufferBlock.getRobItem(loadItem.getSimCodeModel().getIntegerId()).reorderFlags.setBusy(false);
+    loadItem.getSimCodeModel().setBusy(false);
   }// end of processLoadInstruction
   //-------------------------------------------------------------------------------------------
   

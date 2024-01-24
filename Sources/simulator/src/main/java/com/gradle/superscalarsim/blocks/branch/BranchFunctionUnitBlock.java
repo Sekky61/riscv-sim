@@ -37,7 +37,6 @@ import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.blocks.base.AbstractFunctionUnitBlock;
 import com.gradle.superscalarsim.blocks.base.IssueWindowBlock;
-import com.gradle.superscalarsim.blocks.base.ReorderBufferBlock;
 import com.gradle.superscalarsim.code.CodeBranchInterpreter;
 import com.gradle.superscalarsim.cpu.SimulationStatistics;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
@@ -59,20 +58,19 @@ public class BranchFunctionUnitBlock extends AbstractFunctionUnitBlock
   private final CodeBranchInterpreter branchInterpreter;
   
   /**
-   * @param name               Name of the function unit
-   * @param issueWindowBlock   Issue window block for comparing instruction and data types
-   * @param delay              Delay for function unit
-   * @param reorderBufferBlock Class containing simulated Reorder Buffer
+   * @param description       Description of the function unit
+   * @param issueWindowBlock  Issue window block for comparing instruction and data types
+   * @param branchInterpreter Interpreter for interpreting executing instructions
+   * @param statistics        Simulation statistics
    *
    * @brief Constructor
    */
   public BranchFunctionUnitBlock(FunctionalUnitDescription description,
                                  IssueWindowBlock issueWindowBlock,
-                                 ReorderBufferBlock reorderBufferBlock,
                                  CodeBranchInterpreter branchInterpreter,
                                  SimulationStatistics statistics)
   {
-    super(description, issueWindowBlock, reorderBufferBlock, statistics);
+    super(description, issueWindowBlock, statistics);
     this.branchInterpreter = branchInterpreter;
   }// end of Constructor
   
@@ -150,7 +148,7 @@ public class BranchFunctionUnitBlock extends AbstractFunctionUnitBlock
       reg.setReadiness(RegisterReadinessEnum.kExecuted);
     }
     
-    this.reorderBufferBlock.getRobItem(this.simCodeModel.getIntegerId()).reorderFlags.setBusy(false);
+    this.simCodeModel.setBusy(false);
     this.simCodeModel = null;
   }
   
