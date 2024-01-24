@@ -4,7 +4,7 @@
  * Faculty of Information Technology
  * Brno University of Technology
  * xmajer21@stud.fit.vutbr.cz
- * @brief xxx
+ * @brief Main API for the CPU simulation
  * @date 26 Sep      2023 10:00 (created)
  * @section Licence
  * This file is part of the Superscalar simulator app
@@ -49,9 +49,14 @@ public class Cpu implements Serializable
   public CpuState cpuState;
   
   /**
-   * @brief Loader for initial values - registers, instruction descriptions
+   * Loader for initial values - registers, instruction descriptions
    */
   public InitLoader initLoader;
+  
+  /**
+   * Status of the simulation (running or not) and reason why it stopped.
+   */
+  public StopReason stopReason;
   
   /**
    * Assumes the cpuConfiguration is correct
@@ -66,6 +71,7 @@ public class Cpu implements Serializable
     this.initLoader    = Objects.requireNonNullElseGet(initLoader, InitLoader::new);
     this.cpuState      = Objects.requireNonNullElseGet(cpuState,
                                                        () -> new CpuState(this.configuration, this.initLoader));
+    this.stopReason    = StopReason.kNotStopped;
   }
   
   /**
@@ -78,6 +84,7 @@ public class Cpu implements Serializable
     this.configuration = simConfig;
     this.initLoader    = new InitLoader();
     this.cpuState      = new CpuState(this.configuration, this.initLoader);
+    this.stopReason    = StopReason.kNotStopped;
   }
   
   /**
@@ -88,6 +95,7 @@ public class Cpu implements Serializable
     this.configuration = SimulationConfig.getDefaultConfiguration();
     this.initLoader    = new InitLoader();
     this.cpuState      = new CpuState(this.configuration, this.initLoader);
+    this.stopReason    = StopReason.kNotStopped;
   }
   
   /**
@@ -134,16 +142,14 @@ public class Cpu implements Serializable
   }
   //-------------------------------------------------------------------------------------------
   
+  /**
+   * @return True if the simulation ended, false otherwise
+   * @brief Gets the simulation status. Mutates stopReason.
+   */
   public boolean simEnded()
   {
-    boolean halt     = cpuState.reorderBufferBlock.haltFlag;
-    boolean robEmpty = cpuState.reorderBufferBlock.getReorderQueueSize() == 0;
-    boolean pcEnd = cpuState.instructionFetchBlock.getPc() >= cpuState.instructionMemoryBlock.getCode().size() * 4;
-    boolean renameEmpty   = cpuState.decodeAndDispatchBlock.getCodeBuffer().isEmpty();
-    boolean fetchNotEmpty = !cpuState.instructionFetchBlock.getFetchedCode().isEmpty();
-    boolean nop = fetchNotEmpty && cpuState.instructionFetchBlock.getFetchedCode().get(0).getInstructionName()
-            .equals("nop");
-    return (robEmpty && pcEnd && renameEmpty && nop) || halt;
+    this.stopReason = cpuState.simStatus();
+    return stopReason != StopReason.kNotStopped;
   }
   
   /**

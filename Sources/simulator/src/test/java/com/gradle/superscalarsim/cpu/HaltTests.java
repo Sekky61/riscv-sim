@@ -65,7 +65,7 @@ public class HaltTests
     
     // Assert
     Assert.assertEquals(14, cpu.cpuState.statistics.committedInstructions);
-    Assert.assertTrue(cpu.cpuState.reorderBufferBlock.haltFlag);
+    Assert.assertSame(StopReason.kCallStackHalt, cpu.cpuState.reorderBufferBlock.stopReason);
   }
   
   @Test
@@ -105,7 +105,7 @@ public class HaltTests
     cpu.execute();
     
     // Assert
-    Assert.assertTrue(cpu.cpuState.reorderBufferBlock.haltFlag);
+    Assert.assertSame(StopReason.kCallStackHalt, cpu.cpuState.reorderBufferBlock.stopReason);
     // a0 should have 8 as a result (f is a function that multiplies by 2)
     Assert.assertEquals(8, cpu.cpuState.unifiedRegisterFileBlock.getRegister("a0").getValue(DataTypeEnum.kInt));
   }
@@ -128,7 +128,7 @@ public class HaltTests
     cpu.execute();
     
     // Assert
-    Assert.assertTrue(cpu.cpuState.reorderBufferBlock.haltFlag);
+    Assert.assertSame(StopReason.kCallStackHalt, cpu.cpuState.reorderBufferBlock.stopReason);
     // a0 should have 8 as a result (f is a function that multiplies by 2)
     Assert.assertEquals(8, cpu.cpuState.unifiedRegisterFileBlock.getRegister("a0").getValue(DataTypeEnum.kInt));
   }

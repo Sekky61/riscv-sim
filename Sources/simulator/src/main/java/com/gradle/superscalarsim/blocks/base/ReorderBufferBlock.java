@@ -42,6 +42,7 @@ import com.gradle.superscalarsim.blocks.branch.GlobalHistoryRegister;
 import com.gradle.superscalarsim.blocks.loadstore.LoadBufferBlock;
 import com.gradle.superscalarsim.blocks.loadstore.StoreBufferBlock;
 import com.gradle.superscalarsim.cpu.SimulationStatistics;
+import com.gradle.superscalarsim.cpu.StopReason;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.models.instruction.InputCodeArgument;
 import com.gradle.superscalarsim.models.instruction.InstructionFunctionModel;
@@ -78,22 +79,18 @@ public class ReorderBufferBlock implements AbstractBlock
    * This flag is set after encountering branch instruction.
    */
   public boolean speculativePulls;
-  
+  /**
+   * @brief Flag to be set if the simulation should halt
+   */
+  public StopReason stopReason;
   /**
    * Reorder buffer size limit.
    */
   private int bufferSize;
-  
   /**
    * @brief the jump target address triggering the halt
    */
   private long haltTarget;
-  
-  /**
-   * @brief Flag to be set if the simulation should halt
-   */
-  public boolean haltFlag;
-  
   /**
    * Class holding mappings from architectural registers to speculative
    */
@@ -189,7 +186,7 @@ public class ReorderBufferBlock implements AbstractBlock
     
     this.commitLimit = commitLimit;
     this.bufferSize  = bufferSize;
-    this.haltFlag    = false;
+    this.stopReason  = StopReason.kNotStopped;
     this.haltTarget  = haltTarget;
   }// end of Constructor
   //----------------------------------------------------------------------
@@ -219,7 +216,7 @@ public class ReorderBufferBlock implements AbstractBlock
     // Go through queue and commit all instructions you can
     // until you reach un-committable instruction, or you reach limit
     int commitCount = 0;
-    while (commitCount < this.commitLimit && !this.reorderQueue.isEmpty() && !haltFlag)
+    while (commitCount < this.commitLimit && !this.reorderQueue.isEmpty() && this.stopReason == StopReason.kNotStopped)
     {
       SimCodeModel robItem = this.reorderQueue.peek();
       
@@ -228,13 +225,19 @@ public class ReorderBufferBlock implements AbstractBlock
         break;
       }
       
+      if (robItem.getException() != null)
+      {
+        // TODO do we want to commit this? probably not
+        stopReason = StopReason.kException;
+      }
+      
       commitCount++;
       processCommittableInstruction(robItem, cycle);
       removeInstruction(robItem);
       
       if (robItem.getBranchTarget() == haltTarget)
       {
-        haltFlag = true;
+        stopReason = StopReason.kCallStackHalt;
       }
       
       // Remove item from the front of the queue

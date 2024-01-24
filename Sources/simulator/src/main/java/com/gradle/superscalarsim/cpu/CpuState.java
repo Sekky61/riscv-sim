@@ -466,4 +466,32 @@ public class CpuState implements Serializable
     
     this.tick++;
   }// end of run
+  
+  public StopReason simStatus()
+  {
+    boolean robEmpty      = reorderBufferBlock.getReorderQueueSize() == 0;
+    boolean pcEnd         = instructionFetchBlock.getPc() >= instructionMemoryBlock.getCode().size() * 4;
+    boolean renameEmpty   = decodeAndDispatchBlock.getCodeBuffer().isEmpty();
+    boolean fetchNotEmpty = !instructionFetchBlock.getFetchedCode().isEmpty();
+    boolean nop = fetchNotEmpty && instructionFetchBlock.getFetchedCode().get(0).getInstructionName().equals("nop");
+    if (robEmpty && pcEnd && renameEmpty && nop)
+    {
+      return StopReason.kEndOfCode;
+    }
+    boolean halt = reorderBufferBlock.stopReason == StopReason.kCallStackHalt;
+    if (halt)
+    {
+      return StopReason.kCallStackHalt;
+    }
+    if (tick > 1000000)
+    {
+      return StopReason.kMaxCycles;
+    }
+    boolean exceptionRaised = reorderBufferBlock.stopReason == StopReason.kException;
+    if (exceptionRaised)
+    {
+      return StopReason.kException;
+    }
+    return StopReason.kNotStopped;
+  }
 }

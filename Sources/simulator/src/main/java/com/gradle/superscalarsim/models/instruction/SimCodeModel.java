@@ -166,6 +166,11 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
     }
   }// end of Constructor
   
+  public InstructionException getException()
+  {
+    return exception;
+  }
+  
   public void setException(InstructionException exception)
   {
     this.exception = exception;
