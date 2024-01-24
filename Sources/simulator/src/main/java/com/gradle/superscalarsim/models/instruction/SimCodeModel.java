@@ -50,8 +50,8 @@ import java.util.List;
 
 /**
  * @class SimCodeModel
- * @brief Instruction execution data (renaming)
- * Ids are zero if not yet processed
+ * @brief Instruction execution data such as renaming registers, exceptions, flags, timestamps.
+ * Timestamps are zero if not valid.
  */
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, Identifiable
@@ -94,15 +94,9 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
    */
   private boolean isFinished;
   /**
-   * Bit value marking failure due to wrong branch prediction
+   * A bit value marking failure due to wrong branch prediction
    */
   private boolean hasFailed;
-  /**
-   * Saved value of the PC, when instruction was fetched
-   * Used for load/store and branch instructions
-   * TODO: Optional
-   */
-  private int savedPc;
   /**
    * Prediction made by branch predictor at the time of fetching.
    * Used for branch instructions.
@@ -166,35 +160,6 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
   }// end of Constructor
   
   /**
-   * @brief Sets busy bit
-   */
-  public void setBusy(boolean busy)
-  {
-    this.isBusy = busy;
-  }// end of setBusy
-  //------------------------------------------------------
-  
-  /**
-   * @brief Sets valid bit
-   */
-  public void setValid(boolean valid)
-  {
-    this.isValid = valid;
-  }// end of setValid
-  //------------------------------------------------------
-  
-  /**
-   * @param speculative New value of the speculative bit
-   *
-   * @brief Sets speculative bit
-   */
-  public void setSpeculative(boolean speculative)
-  {
-    this.isSpeculative = speculative;
-  }// end of setSpeculative
-  //------------------------------------------------------
-  
-  /**
    * @return True if instruction is ready, false otherwise
    * @brief Checks if the instruction is ready for commit based on flags
    */
@@ -206,9 +171,9 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
   
   /**
    * @return True if instruction can be removed, false otherwise
-   * @brief Checks if instruction has failed and can be removed
+   * @brief Checks if instruction has failed and can be removed.
    */
-  public boolean isReadyToBeRemoved()
+  public boolean shouldBeRemoved()
   {
     return !this.isSpeculative && !this.isValid;
   }// end of isReadyToBeRemoved
@@ -225,6 +190,17 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
   //------------------------------------------------------
   
   /**
+   * @param speculative New value of the speculative bit
+   *
+   * @brief Sets speculative bit
+   */
+  public void setSpeculative(boolean speculative)
+  {
+    this.isSpeculative = speculative;
+  }// end of setSpeculative
+  //------------------------------------------------------
+  
+  /**
    * @return Boolean value of busy bit
    * @brief Gets busy bit
    */
@@ -232,6 +208,16 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
   {
     return this.isBusy;
   }// end of isBusy
+  //------------------------------------------------------
+  
+  /**
+   * @brief Sets busy bit
+   */
+  public void setBusy(boolean busy)
+  {
+    this.isBusy = busy;
+  }// end of setBusy
+  //------------------------------------------------------
   
   /**
    * @return True if instruction is valid, false otherwise
@@ -240,6 +226,14 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
   {
     return isValid;
   }
+  
+  /**
+   * @brief Sets valid bit
+   */
+  public void setValid(boolean valid)
+  {
+    this.isValid = valid;
+  }// end of setValid
   
   /**
    * @param windowId ID, when was instruction accepted to issue window
@@ -319,7 +313,7 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
   
   /**
    * @return Boolean value marking failure to finish
-   * @brief Get bit value corresponding to failure due to wrong prediction
+   * @brief Get the bit value corresponding to failure due to wrong prediction
    */
   public boolean hasFailed()
   {
@@ -330,7 +324,7 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
   /**
    * @param hasFailed - Has instruction failed to finish due to miss-prediction?
    *
-   * @brief Set bit marking to failure due to wrong prediction
+   * @brief Set the bit marking to failure due to wrong prediction
    */
   public void setHasFailed(boolean hasFailed)
   {
@@ -519,14 +513,9 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
    */
   public int getSavedPc()
   {
-    return savedPc;
+    return inputCodeModel.getPc();
   }
   //-------------------------------------------------------------------------------------------
-  
-  public void setSavedPc(int savedPc)
-  {
-    this.savedPc = savedPc;
-  }
   
   /**
    * @return True if the model is load instruction, false otherwise

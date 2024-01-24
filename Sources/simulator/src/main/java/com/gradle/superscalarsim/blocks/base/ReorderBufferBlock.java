@@ -412,7 +412,7 @@ public class ReorderBufferBlock implements AbstractBlock
     while (it.hasNext())
     {
       SimCodeModel robItem = it.next();
-      if (!robItem.isReadyToBeRemoved())
+      if (!robItem.shouldBeRemoved())
       {
         break;
       }

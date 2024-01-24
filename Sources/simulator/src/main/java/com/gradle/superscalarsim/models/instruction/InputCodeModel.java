@@ -51,7 +51,8 @@ import java.util.List;
 public class InputCodeModel implements IInputCodeModel, Identifiable
 {
   /**
-   * ID - the index of the instruction in the code
+   * ID - the index of the instruction in the code.
+   * codeId*4 = PC of the instruction.
    */
   private final int codeId;
   
