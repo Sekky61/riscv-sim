@@ -28,6 +28,7 @@
 package com.gradle.superscalarsim.server.simulate;
 
 import com.gradle.superscalarsim.cpu.CpuState;
+import com.gradle.superscalarsim.cpu.StopReason;
 
 public class SimulateResponse
 {
@@ -40,9 +41,15 @@ public class SimulateResponse
    */
   public CpuState state;
   
-  SimulateResponse(CpuState state, int executed_steps)
+  /**
+   * Reason for stopping the simulation. Either not stopped yet, or the simulation ended.
+   */
+  public StopReason stopReason;
+  
+  SimulateResponse(CpuState state, int executed_steps, StopReason stopReason)
   {
     this.executedSteps = executed_steps;
     this.state         = state;
+    this.stopReason    = stopReason;
   }
 }

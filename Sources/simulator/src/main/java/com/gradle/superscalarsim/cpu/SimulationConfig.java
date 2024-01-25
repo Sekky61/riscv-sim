@@ -62,7 +62,7 @@ public class SimulationConfig
   /**
    * The address of the entry point of the code.
    * Can be a label (string) or a number (int).
-   * Address 0 is the default entry point.
+   * Address 0 is the default entry point (does not need to be specified in JSON).
    */
   public Object entryPoint;
   

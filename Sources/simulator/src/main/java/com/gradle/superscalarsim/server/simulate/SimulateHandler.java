@@ -71,7 +71,7 @@ public class SimulateHandler implements IRequestResolver<SimulateRequest, Simula
         // TODO: Add proper error handling
         for (CpuConfigValidator.Error error : errors.messages)
         {
-          System.err.println(error);
+          System.err.println(error.message);
         }
         throw new IllegalArgumentException("Invalid request values");
       }
@@ -101,7 +101,7 @@ public class SimulateHandler implements IRequestResolver<SimulateRequest, Simula
       cpu.execute();
     }
     int actualSteps = cpu.cpuState.tick - tickBefore;
-    return new SimulateResponse(cpu.cpuState, actualSteps);
+    return new SimulateResponse(cpu.cpuState, actualSteps, cpu.stopReason);
   }
   
   @Override
