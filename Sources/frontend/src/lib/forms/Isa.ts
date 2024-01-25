@@ -195,6 +195,8 @@ export const isaFormSchema = z
     useCache: z.boolean(),
     cacheLines: z.number().min(1).max(65536),
     cacheLineSize: z.number().min(1).max(512),
+    cacheLoadLatency: z.number().min(1).max(1000),
+    cacheStoreLatency: z.number().min(1).max(1000),
     cacheAssoc: z.number().min(1),
     cacheReplacement: z.enum(cacheReplacementTypes),
     storeBehavior: z.enum(storeBehaviorTypes),
@@ -203,8 +205,8 @@ export const isaFormSchema = z
     // Memory
     lbSize: z.number().min(1).max(1024),
     sbSize: z.number().min(1).max(1024),
-    storeLatency: z.number().min(0),
-    loadLatency: z.number().min(0),
+    storeLatency: z.number().min(1),
+    loadLatency: z.number().min(1),
     callStackSize: z.number().min(0).max(65536),
     speculativeRegisters: z.number().min(1).max(1024),
     coreClockFrequency: z.number().min(1),
@@ -248,6 +250,10 @@ export const simulationConfig = z.object({
    * Memory locations to be allocated.
    */
   memoryLocations: z.array(memoryLocationIsa),
+  /**
+   * Entry point of the program. A label or address.
+   */
+  entryPoint: z.union([z.string(), z.number()]),
 });
 export type SimulationConfig = z.infer<typeof simulationConfig>;
 
@@ -364,4 +370,5 @@ export const defaultSimulationConfig: SimulationConfig = {
   cpuConfig: defaultCpuConfig,
   code: '',
   memoryLocations: [],
+  entryPoint: 0,
 };

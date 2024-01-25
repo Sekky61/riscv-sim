@@ -33,6 +33,7 @@
 package com.gradle.superscalarsim.models.register;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
@@ -197,6 +198,7 @@ public class RegisterModel implements Identifiable
    * @return Bool value
    * @brief Get bool value, if value of the register can be edited or not
    */
+  @JsonIgnore
   public boolean isConstant()
   {
     return isConstant;

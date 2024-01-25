@@ -31,7 +31,7 @@
 
 import type { SimulationConfig } from '@/lib/forms/Isa';
 import type { OptimizeOption } from '@/lib/redux/compilerSlice';
-import type { CpuState } from '@/lib/types/cpuApi';
+import type { CpuState, StopReason } from '@/lib/types/cpuApi';
 
 export type EndpointName =
   | 'compile'
@@ -187,4 +187,5 @@ export interface SimulateRequest {
 export interface SimulateResponse {
   executedSteps: number;
   state: CpuState;
+  stopReason: StopReason;
 }

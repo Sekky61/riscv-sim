@@ -33,6 +33,7 @@
 package com.gradle.superscalarsim.models.instruction;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
@@ -205,6 +206,7 @@ public class InstructionFunctionModel implements Identifiable
    * @param writeBack    True if the argument should be written back to register file on commit
    *
    * @brief Could be a record, but is not because of serialization issues
+   * TODO: is serialized redundantly.
    */
   public static class Argument
   {
@@ -224,7 +226,7 @@ public class InstructionFunctionModel implements Identifiable
     private boolean silent;
     /**
      * @brief True if the argument is an offset.
-     * By default false. Used by offset instructions.
+     * By default, false. Used by offset instructions.
      */
     @JsonProperty
     private boolean isOffset;
@@ -254,6 +256,7 @@ public class InstructionFunctionModel implements Identifiable
       this.silent       = false;
     }
     
+    @JsonIgnore
     public boolean isOffset()
     {
       return isOffset;

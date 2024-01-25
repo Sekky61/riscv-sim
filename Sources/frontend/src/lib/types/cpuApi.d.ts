@@ -37,6 +37,9 @@ import type { Capability } from '@/lib/forms/Isa';
  * See backend endpoint `POST /schema`.
  */
 
+export type Reference = number;
+export type StringReference = string;
+
 export interface CpuState {
   managerRegistry: ManagerRegistry;
   tick: number;
@@ -78,7 +81,6 @@ export interface SimulationStatistics {
   fuStats: {
     [fuName: string]: FUStats;
   };
-  predictionAccuracy: number;
   instructionStats: InstructionStats[];
   committedInstructions: number;
   clockCycles: number;
@@ -88,14 +90,25 @@ export interface SimulationStatistics {
   correctlyPredictedBranches: number;
   conditionalBranches: number;
   takenBranches: number;
-  memoryTraffic: number;
+  mainMemoryLoadedBytes: number;
+  mainMemoryStoredBytes: number;
   maxAllocatedRegisters: number;
   arithmeticIntensity: number;
+  predictionAccuracy: number;
   flops: number;
   ipc: number;
   wallTime: number;
   memoryThroughput: number;
 }
+
+export type StopReason =
+  | 'kNotStopped'
+  | 'kException'
+  | 'kEndOfCode'
+  | 'kCallStackHalt'
+  | 'kMaxCycles'
+  | 'kTimeOut'
+  | 'kBadConfig';
 
 export interface InstructionMix {
   intArithmetic: number;
@@ -113,6 +126,7 @@ export interface CacheStatistics {
   totalDelay: number;
   bytesWritten: number;
   bytesRead: number;
+  hitRate: number;
 }
 
 export interface FUStats {
@@ -131,16 +145,16 @@ export interface Cache {
   lineSize: number;
   cache: CacheLineModel[][];
   writeBack: boolean;
-  lastAccess?: CacheAccess[]; // todo ?
   storeDelay: number;
   loadDelay: number;
   lineReplacementDelay: number;
   addRemainingDelayToStore: boolean;
+  cacheAccessId: number;
   cycleEndOfReplacement: number;
   replacementPolicyType: 'FIFO' | 'LRU' | 'RANDOM';
   replacementPolicy: ReplacementPolicyModel;
   memory?: SimulatedMemory;
-  statistics: SimulationStatistics;
+  statistics: Reference;
 }
 export interface CacheLineModel {
   line: string; // base64 encoded
@@ -152,58 +166,59 @@ export interface CacheLineModel {
   baseAddress: number;
 }
 export type ReplacementPolicyModel = object;
-export interface CacheAccess {
-  id: number;
-  clockCycle: number;
-  isHit?: boolean[];
-  isStore: boolean;
-  tag: number;
-  index: number;
-  offset: number;
-  data: number;
-  cacheIndex?: number[];
-  lineOffset?: number[];
-  delay: number;
-  endOfReplacement: number;
-  store: boolean;
-}
 
 export interface SimulatedMemory {
-  /**
-   * Memory encoded as a base64 string
-   */
-  memoryBase64: string | null;
-  /**
-   * Size of the memory in bytes
-   */
+  memoryBase64: number[];
   size: number;
+  storeLatency: number;
+  loadLatency: number;
+  transactionId: number;
+  operations: MemoryTransaction[];
+  statistics: Reference;
+}
+
+export interface MemoryTransaction {
+  data?: number[];
+  mmuId: number;
+  timestamp: number;
+  address: number;
+  size: number;
+  isStore: boolean;
+  isSigned: boolean;
+  id: number;
+  isFinished: boolean;
+  latency: number;
+  finished: boolean;
+  signed: boolean;
+  store: boolean;
 }
 
 export interface MemoryModel {
   cache: Cache;
   memory: SimulatedMemory;
-  statistics: SimulationStatistics;
-  lastAccess: MemoryAccess;
+  statistics: Reference;
 }
 
 export interface ReorderBufferBlock {
-  reorderQueue: ReorderBufferItem[];
+  /**
+   * Reference to a SimCodeModel
+   */
+  reorderQueue: Reference[];
+  stopReason: StopReason;
+  haltTarget: number;
   commitLimit: number;
   commitId: number;
   speculativePulls: boolean;
   bufferSize: number;
   renameMapTableBlock?: RenameMapTableBlock;
   decodeAndDispatchBlock?: DecodeAndDispatchBlock;
-  simulationStatistics?: SimulationStatistics;
+  simulationstatistics: Reference;
   gShareUnit?: GShareUnit;
   branchTargetBuffer?: BranchTargetBuffer;
   instructionFetchBlock?: InstructionFetchBlock;
   loadBufferBlock?: LoadBufferBlock;
   storeBufferBlock?: StoreBufferBlock;
 }
-
-export type Reference = number;
-export type StringReference = string;
 
 export interface ManagerRegistry {
   instructionFunctionManager: Record<string, InstructionFunctionModel>;
@@ -254,6 +269,7 @@ export type RegisterTypeEnum = 'kInt' | 'kFloat';
 export interface InputCodeModel {
   codeId: number;
   instructionName: string;
+  conditionalBranch: boolean;
   arguments: InputCodeArgument[];
   instructionTypeEnum: InstructionTypeEnum;
   instructionFunctionModel: Reference;
@@ -271,7 +287,6 @@ export interface InstructionFunctionModel {
   instructionType: InstructionTypeEnum;
   arguments: Argument[];
   interpretableAs: string;
-  // dataType: never; // TODO
   unconditionalJump: boolean;
 }
 
@@ -279,65 +294,73 @@ export interface Argument {
   name: string;
   type: DataTypeEnum;
   defaultValue?: string;
-  writeBack?: boolean;
-  silent?: boolean;
+  writeBack: boolean;
+  silent: boolean;
+  isOffset: boolean;
+  register: boolean;
+  immediate: boolean;
 }
 
-export interface ReorderBufferItem {
-  simCodeModel: Reference;
-  reorderFlags: ReorderFlags;
-}
 export interface SimCodeModel {
   id: number;
   inputCodeModel: Reference;
   renamedArguments: InputCodeArgument[];
-  renamedCodeLine: string;
-  instructionBulkNumber: number;
   issueWindowId: number;
   functionUnitId: number;
   readyId: number;
   commitId: number;
   isFinished: boolean;
   hasFailed: boolean;
-  savedPc: number;
   branchPredicted: boolean;
   branchLogicResult: boolean;
-  branchTargetOffset: number;
-  finished: boolean;
-}
-export interface ReorderFlags {
+  branchTarget: number;
   isValid: boolean;
   isBusy: boolean;
   isSpeculative: boolean;
-  valid: boolean;
-  speculative: boolean;
-  readyToBeCommitted: boolean;
-  readyToBeRemoved: boolean;
+  exception: InstructionException | null;
   busy: boolean;
+  valid: boolean;
+  load: boolean;
+  readyToBeCommitted: boolean;
+  readyToExecute: boolean;
+  renamedCodeLine: string;
+  speculative: boolean;
+  conditionalBranch: boolean;
+  store: boolean;
 }
+
+export interface InstructionException {
+  exceptionKind: 'kNone' | 'kArithmetic' | 'kMemory';
+  exceptionMessage: string;
+  cycle: number;
+}
+
 export interface GShareUnit {
   patternHistoryTable?: PatternHistoryTable;
   globalHistoryRegister?: GlobalHistoryRegister;
   size: number;
 }
+
 export interface UnifiedRegisterFileBlock {
   registerMap: {
     [k: string]: Reference;
   };
   speculativeRegisterFile?: SpeculativeRegisterFile;
 }
+
 export interface RegisterModel {
   name: string;
   isConstant: boolean;
   type: RegisterTypeEnum;
   value: RegisterDataContainer;
   readiness: RegisterReadinessEnum;
-  constant: boolean;
+  speculative: boolean;
 }
+
 export interface RegisterDataContainer {
   bits: number;
   currentType: DataTypeEnum;
-  stringRepresentation?: string;
+  stringRepresentation: string;
 }
 
 export interface RenameMapTableBlock {
@@ -355,16 +378,15 @@ export interface RenameMapModel {
   order: number;
 }
 export interface InstructionFetchBlock {
-  simCodeModelFactory?: SimCodeModelFactory;
-  gShareUnit?: GShareUnit;
-  branchTargetBuffer?: BranchTargetBuffer;
-  branchFollowLimit: number;
-  instructionMemoryBlock?: InstructionMemoryBlock;
   fetchedCode: Reference[];
+  branchFollowLimit: number;
   numberOfWays: number;
   pc: number;
   stallFlag: boolean;
-  cycleId: number;
+  instructionMemoryBlock?: InstructionMemoryBlock;
+  branchTargetBuffer?: BranchTargetBuffer;
+  gShareUnit?: GShareUnit;
+  simCodeModelFactory?: SimCodeModelFactory;
 }
 export interface SimCodeModelFactory {
   id: number;
@@ -372,18 +394,17 @@ export interface SimCodeModelFactory {
 }
 
 export interface DecodeAndDispatchBlock {
-  idCounter: number;
+  codeBuffer: Reference[];
   flush: boolean;
   stallFlag: boolean;
   stalledPullCount: number;
   decodeBufferSize: number;
-  codeBuffer: Reference[];
   instructionFetchBlock?: InstructionFetchBlock;
   renameMapTableBlock?: RenameMapTableBlock;
   globalHistoryRegister?: GlobalHistoryRegister;
   branchTargetBuffer?: BranchTargetBuffer;
   instructionMemoryBlock?: InstructionMemoryBlock;
-  statistics?: SimulationStatistics;
+  statistics: Reference;
 }
 
 // Issue window blocks
@@ -393,36 +414,20 @@ export interface IssueWindowBlock {
   instructionType: InstructionTypeEnum;
   windowId: number;
   functionUnitBlockList?: Reference[];
-  registerFileBlock?: UnifiedRegisterFileBlock;
 }
 
 // Function unit blocks
 
-export interface FunctionUnitBlock {
-  reorderBufferBlock?: Reference;
-  simCodeModel?: Reference; // todo it is actually a Reference | null
-  functionUnitId: number;
-  functionUnitCount: number;
-  issueWindowBlock?: Reference;
-  delay: number;
-  counter: number;
-  name?: string;
-  allowedOperators: string[];
-  arithmeticInterpreter?: Reference;
-  registerFileBlock?: Reference;
-  functionUnitEmpty: boolean;
-}
-
 export interface AbstractFunctionUnitBlock {
   functionUnitId: number;
   description: FunctionalUnitDescription;
+  simCodeModel: Reference | null;
   delay: number;
   counter: number;
-  simCodeModel: Reference;
   functionUnitEmpty: boolean;
   functionUnitCount: number;
-  reorderBufferBlock?: ReorderBufferBlock;
   issueWindowBlock?: IssueWindowBlock;
+  statistics: Reference;
 }
 
 export interface FunctionalUnitDescription {
@@ -442,12 +447,9 @@ export type MemoryAccessUnit = AbstractFunctionUnitBlock;
 export interface LoadBufferBlock {
   loadQueue: LoadBufferItem[];
   bufferSize: number;
-  commitId: number;
   memoryAccessUnitList?: MemoryAccessUnit[];
   storeBufferBlock?: StoreBufferBlock;
   registerFileBlock?: UnifiedRegisterFileBlock;
-  reorderBufferBlock?: ReorderBufferBlock;
-  instructionFetchBlock?: InstructionFetchBlock;
 }
 export interface LoadBufferItem {
   simCodeModel: Reference;
@@ -465,11 +467,8 @@ export interface LoadBufferItem {
 export interface StoreBufferBlock {
   storeQueue: StoreBufferItem[];
   bufferSize: number;
-  commitId: number;
   memoryAccessUnitList?: MemoryAccessUnit[];
-  loadStoreInterpreter?: CodeLoadStoreInterpreter;
   registerFileBlock?: UnifiedRegisterFileBlock;
-  reorderBufferBlock?: ReorderBufferBlock;
 }
 
 export interface StoreBufferItem {
