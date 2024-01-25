@@ -26,23 +26,28 @@
  */
 package com.gradle.superscalarsim.models.cache;
 
+import java.util.Random;
+
 /**
  * @class RandomReplacementPolicyModel
- * @brief RANDOM replacement policy
+ * @brief RANDOM replacement policy. Deterministic if the sequence of calls is the same.
  */
 public class RandomReplacementPolicyModel extends ReplacementPolicyModel
 {
+  private final Random randomSource;
   
   private final int associativity;
   
   public RandomReplacementPolicyModel(final int numberOfLines, final int associativity)
   {
     this.associativity = associativity;
+    this.randomSource  = new Random(1337);
   }
   
   public int getLineToReplace(int index)
   {
-    return (int) (Math.random() * associativity);
+    // Generate number <0; associativity - 1>
+    return randomSource.nextInt(associativity);
   }
   
   public void updatePolicy(int index, int line)

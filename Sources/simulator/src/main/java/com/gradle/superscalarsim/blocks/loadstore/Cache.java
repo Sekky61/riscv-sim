@@ -245,8 +245,8 @@ public class Cache implements AbstractBlock, MemoryBlock
    * @param address starting byte of the access (can be misaligned)
    * @param size    Size of the access in bytes (1-8)
    *
-   * @return The data from cache.
-   * @brief Gets data from cache. For viewing cache during debugging. The value must be present.
+   * @return The data from cache. Throws if the address is not in cache.
+   * @brief Gets data from cache. For viewing cache during debugging.
    */
   public long getData(long address, int size)
   {

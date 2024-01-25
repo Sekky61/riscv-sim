@@ -140,6 +140,64 @@ public class CacheTest
   }
   
   @Test
+  public void cache_RandomPolicyDeterministic()
+  {
+    int nOfTimesStore1IsKept = 0;
+    int tries                = 10;
+    
+    for (int i = 0; i < tries; i++)
+    {
+      Cache c1 = new Cache(memory, 16, 2, 16, 1, 1, ReplacementPoliciesEnum.RANDOM, true, statistics);
+      fillCacheGroupThreeTimes(c1);
+      // The cache should contain either lines from store1 and store3, or store2 and store3
+      boolean store1IsKept = true;
+      try
+      {
+        long data = c1.getData(0, 1);
+        assert data == 0x02;
+      }
+      catch (IllegalArgumentException e)
+      {
+        store1IsKept = false;
+      }
+      if (store1IsKept)
+      {
+        nOfTimesStore1IsKept++;
+      }
+    }
+    
+    // Either the line of the first store is always kept, or never
+    // In my case it was zero (never kept), but that could change in the future
+    Assert.assertTrue(nOfTimesStore1IsKept == 0 || nOfTimesStore1IsKept == tries);
+  }
+  
+  /**
+   * For a test
+   *
+   * @param c cache to mutate
+   */
+  public void fillCacheGroupThreeTimes(Cache c)
+  {
+    cache = c;
+    int groupSpace = 8 * 16; // 8 groups of 16 bytes
+    // line of 16B, 2 ways
+    MemoryTransaction store1 = MemoryTransaction.store(0, new byte[]{(byte) 0x01});
+    MemoryTransaction store2 = MemoryTransaction.store(groupSpace, new byte[]{(byte) 0x02});
+    c.scheduleTransaction(store1);
+    c.scheduleTransaction(store2);
+    simulateCycles(1, 2);
+    c.finishTransaction(store1.id());
+    c.finishTransaction(store2.id());
+    
+    // The cache should be full now
+    // The next store should replace one of the lines
+    MemoryTransaction store3 = MemoryTransaction.store(2 * groupSpace, new byte[]{(byte) 0x03}, 2);
+    c.scheduleTransaction(store3);
+    simulateCycles(3, 2);
+    c.finishTransaction(store3.id());
+  }
+  
+  @Test
   public void cache_MixedAccesses()
   {
     MemoryTransaction store1 = MemoryTransaction.store(130, new byte[]{(byte) 0x89, 0x67, 0x45, 0x23});
