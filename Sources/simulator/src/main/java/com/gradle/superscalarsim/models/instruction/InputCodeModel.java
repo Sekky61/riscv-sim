@@ -35,7 +35,6 @@ package com.gradle.superscalarsim.models.instruction;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
-import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.models.Identifiable;
 
@@ -182,17 +181,6 @@ public class InputCodeModel implements IInputCodeModel, Identifiable
   {
     return instructionTypeEnum;
   }// end of getInstructionTypeEnum
-  
-  /**
-   * @return Enum value of output data type
-   * @brief Get output data type
-   */
-  @Override
-  public DataTypeEnum getDataType()
-  {
-    return instructionFunctionModel.getDataType();
-  }// end of getResultDataType
-  //------------------------------------------------------
   
   /**
    * @return ID of the instruction (index in the code)

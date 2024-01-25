@@ -463,12 +463,6 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
     return inputCodeModel.getInstructionTypeEnum();
   }
   
-  @Override
-  public DataTypeEnum getDataType()
-  {
-    return inputCodeModel.getDataType();
-  }
-  
   /**
    * @return ID of the instruction (index in the code)
    */

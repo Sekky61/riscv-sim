@@ -27,7 +27,6 @@
 
 package com.gradle.superscalarsim.models.instruction;
 
-import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 
 import java.util.List;
@@ -55,11 +54,6 @@ public interface IInputCodeModel
    * @return Type of the instruction (e.g. kArithmetic)
    */
   InstructionTypeEnum getInstructionTypeEnum();
-  
-  /**
-   * @return Data type of the instruction (e.g. kInt)
-   */
-  DataTypeEnum getDataType();
   
   /**
    * TODO: explain indexing (PC+4?)

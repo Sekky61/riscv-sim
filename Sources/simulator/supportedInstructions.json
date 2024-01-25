@@ -1958,7 +1958,6 @@
   "fclass.s": {
     "name": "fclass.s",
     "instructionType": "kFloatArithmetic",
-    "dataType": "kFloat",
     "arguments": [
       {
         "name": "rd",

@@ -37,7 +37,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
-import com.gradle.superscalarsim.managers.InstructionFunctionModelManager;
 import com.gradle.superscalarsim.models.Identifiable;
 
 import java.util.ArrayList;
@@ -74,28 +73,19 @@ public class InstructionFunctionModel implements Identifiable
    */
   private final String interpretableAs;
   
-  /**
-   * @brief Explicitly stated instruction data type. Most likely null and should be inferred from arguments.
-   */
-  private DataTypeEnum dataType;
-  
   public InstructionFunctionModel()
   {
     this.name            = "";
     this.instructionType = InstructionTypeEnum.kIntArithmetic;
     this.arguments       = new ArrayList<>();
     this.interpretableAs = "";
-    this.dataType        = null;
   }
   
   /**
-   * @param [in] name              - Instruction name (has to unique)
-   * @param [in] instructionType   - Type of the instruction
-   * @param [in] inputDataType     - Data type, which is used in instruction
-   * @param [in] outputDataType    - Data type of output register/memory
-   * @param [in] instructionSyntax - Instruction syntax for verification of input assembly code
-   * @param [in] interpretableAs   - String of java code, which tells how to interpret instruction
-   * @param [in] rawItemModelList  - List of objects, containing instruction format from 32 down to 0
+   * @param name            Instruction name (has to unique)
+   * @param instructionType Type of the instruction
+   * @param arguments       List of arguments of the instruction
+   * @param interpretableAs String of code, which tells how to interpret instruction
    *
    * @brief Constructor
    */
@@ -110,21 +100,9 @@ public class InstructionFunctionModel implements Identifiable
     this.interpretableAs = interpretableAs;
   }// end of Constructor
   
-  public static InstructionFunctionModel createInstance(InstructionFunctionModelManager manager,
-                                                        String name,
-                                                        InstructionTypeEnum instructionType,
-                                                        List<Argument> arguments,
-                                                        String interpretableAs)
-  {
-    InstructionFunctionModel instance = new InstructionFunctionModel(name, instructionType, arguments, interpretableAs);
-    manager.addInstance(instance);
-    return instance;
-  }
-  //------------------------------------------------------
-  
   /**
    * @return String representation of the object
-   * @brief Overrides toString method with custom formating
+   * @brief Overrides toString method with custom formatting
    */
   @Override
   public String toString()
@@ -152,27 +130,6 @@ public class InstructionFunctionModel implements Identifiable
     return instructionType;
   }// end of getInstructionType
   //------------------------------------------------------
-  
-  /**
-   * Instruction data type is either explicitly stated or inferred from arguments
-   *
-   * @return Data type of the instruction
-   */
-  public DataTypeEnum getDataType()
-  {
-    if (this.dataType != null)
-    {
-      return this.dataType;
-    }
-    if (arguments.isEmpty())
-    {
-      return null;
-    }
-    else
-    {
-      return arguments.get(0).type;
-    }
-  }
   
   /**
    * @return Instruction arguments
