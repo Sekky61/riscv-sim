@@ -355,7 +355,7 @@ export const defaultCpuConfig: CpuConfig = {
   cacheReplacement: 'LRU',
   storeBehavior: 'write-back',
   cacheAccessDelay: 1,
-  storeLatency: 0,
+  storeLatency: 1,
   loadLatency: 1,
   laneReplacementDelay: 10,
   lbSize: 64,
@@ -364,6 +364,8 @@ export const defaultCpuConfig: CpuConfig = {
   speculativeRegisters: 320,
   coreClockFrequency: 100000000,
   cacheClockFrequency: 100000000,
+  cacheLoadLatency: 1,
+  cacheStoreLatency: 1,
 };
 
 export const defaultSimulationConfig: SimulationConfig = {

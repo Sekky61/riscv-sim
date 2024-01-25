@@ -98,6 +98,7 @@ export const isaSlice = createSlice({
         cpuConfig: action.payload,
         code: defaultSimulationConfig.code,
         memoryLocations: defaultSimulationConfig.memoryLocations,
+        entryPoint: 0,
       };
       state.isas.push(newIsa);
       state.activeIsaName = action.payload.name;

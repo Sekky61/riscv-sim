@@ -67,6 +67,7 @@ public class ReorderBufferBlock implements AbstractBlock
   /**
    * Queue of scheduled instruction in backend
    */
+  @JsonIdentityReference(alwaysAsId = true)
   public ArrayDeque<SimCodeModel> reorderQueue;
   
   /**

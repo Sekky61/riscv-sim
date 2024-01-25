@@ -45,8 +45,6 @@ export const RobDetailsModal = () => {
 
   if (!rob) throw new Error('ROB not found');
 
-  const instructionIds = rob.reorderQueue.map((i) => i.simCodeModel);
-
   return (
     <>
       <CardHeader>
@@ -58,7 +56,7 @@ export const RobDetailsModal = () => {
         <div>
           Capacity: {rob.reorderQueue.length}/{rob.bufferSize}
         </div>
-        <InstructionTable instructions={instructionIds} />
+        <InstructionTable instructions={rob.reorderQueue} />
       </CardContent>
     </>
   );

@@ -299,22 +299,15 @@ public class AlgorithmTests
               ret
               """;
   
-  /**
-   * Setup cpu instance with the C code
-   */
-  private Cpu setupCpu(String cCode, String entryPoint, List<MemoryLocation> memoryLocations)
-  {
-    GccCaller.CompileResult res = GccCaller.compile(cCode, List.of("O2"));
-    Assert.assertTrue(res.success);
-    CompiledProgram program             = AsmParser.parse(res.code, cCode.split("\n").length);
-    String          concatenatedProgram = StringUtils.join(program.program, "\n");
-    
-    SimulationConfig cfg = SimulationConfig.getDefaultConfiguration();
-    cfg.memoryLocations = memoryLocations;
-    cfg.code            = concatenatedProgram;
-    cfg.entryPoint      = entryPoint;
-    return new Cpu(cfg);
-  }
+  static String writeLoopCode = """
+          int ptr[32];
+          
+          int writeMem() {
+            for(int i = 0; i < 32; i++) {
+              ptr[i] = i;
+            }
+          }
+          """;
   
   @Test
   public void test_quicksort()
@@ -352,6 +345,23 @@ public class AlgorithmTests
     
     // Assert
     Assert.assertSame(StopReason.kCallStackHalt, cpu.stopReason);
+  }
+  
+  /**
+   * Setup cpu instance with the C code
+   */
+  private Cpu setupCpu(String cCode, String entryPoint, List<MemoryLocation> memoryLocations)
+  {
+    GccCaller.CompileResult res = GccCaller.compile(cCode, List.of("O2"));
+    Assert.assertTrue(res.success);
+    CompiledProgram program             = AsmParser.parse(res.code, cCode.split("\n").length);
+    String          concatenatedProgram = StringUtils.join(program.program, "\n");
+    
+    SimulationConfig cfg = SimulationConfig.getDefaultConfiguration();
+    cfg.memoryLocations = memoryLocations;
+    cfg.code            = concatenatedProgram;
+    cfg.entryPoint      = entryPoint;
+    return new Cpu(cfg);
   }
   
   @Test

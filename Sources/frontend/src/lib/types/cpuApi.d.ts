@@ -74,7 +74,7 @@ export interface CpuState {
   reorderBufferBlock: ReorderBufferBlock;
 }
 
-export interface SimulationStatistics {
+export type SimulationStatistics = {
   staticInstructionMix: InstructionMix;
   dynamicInstructionMix: InstructionMix;
   cache: CacheStatistics;
@@ -99,7 +99,7 @@ export interface SimulationStatistics {
   ipc: number;
   wallTime: number;
   memoryThroughput: number;
-}
+};
 
 export type StopReason =
   | 'kNotStopped'
@@ -168,7 +168,7 @@ export interface CacheLineModel {
 export type ReplacementPolicyModel = object;
 
 export interface SimulatedMemory {
-  memoryBase64: number[];
+  memoryBase64: string; // base64 encoded
   size: number;
   storeLatency: number;
   loadLatency: number;

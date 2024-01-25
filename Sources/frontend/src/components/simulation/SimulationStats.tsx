@@ -265,7 +265,9 @@ interface DetailedStatsProps {
   stats: SimulationStatistics;
 }
 
-type DetailedStatName = keyof typeof detailedStatNames;
+/**
+ * Just the string/number keys of statistics
+ */
 const detailedStatNames = {
   predictionAccuracy: 'Prediction Accuracy',
   committedInstructions: 'Committed Instructions',
@@ -275,14 +277,17 @@ const detailedStatNames = {
   correctlyPredictedBranches: 'Correctly Predicted Branches',
   conditionalBranches: 'Conditional Branches',
   takenBranches: 'Taken Branches',
-  memoryTraffic: 'Memory Traffic',
   maxAllocatedRegisters: 'Max Allocated Registers',
   arithmeticIntensity: 'Arithmetic Intensity',
   flops: 'FLOPS',
   ipc: 'IPC',
   wallTime: 'Wall Time',
   memoryThroughput: 'Memory Throughput',
+  clock: 'Clock',
+  mainMemoryLoadedBytes: 'Main Memory Loaded Bytes',
+  mainMemoryStoredBytes: 'Main Memory Stored Bytes',
 } as const;
+type DetailedStatName = keyof typeof detailedStatNames;
 
 function DetailedSimulationStats({ stats }: DetailedStatsProps) {
   return (

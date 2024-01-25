@@ -54,6 +54,7 @@ export const SimCodeDetailModal = ({ simCodeId }: SimCodeDetailModalProps) => {
   if (!q) throw new Error(`InstructionId ${simCodeId} not found`);
   const { simCodeModel, inputCodeModel, functionModel, args } = q;
   const isBranch = functionModel.instructionType === 'kJumpbranch';
+  const pc = inputCodeModel.codeId * 4;
 
   return (
     <>
@@ -108,11 +109,11 @@ export const SimCodeDetailModal = ({ simCodeId }: SimCodeDetailModalProps) => {
                   : `Yes (at ${simCodeModel.commitId})`}
               </li>
               <li>Function unit: {simCodeModel.functionUnitId}</li>
-              <li>PC: {simCodeModel.savedPc}</li>
+              <li>PC: {pc}</li>
             </ul>
             <h2 className='text-xl mt-2'>Flags</h2>
             <ul>
-              <li>Finished: {simCodeModel.finished ? 'Yes' : 'No'}</li>
+              <li>Finished: {simCodeModel.isFinished ? 'Yes' : 'No'}</li>
               <li>Failed: {simCodeModel.hasFailed ? 'Yes' : 'No'}</li>
             </ul>
             {isBranch && (
@@ -127,9 +128,7 @@ export const SimCodeDetailModal = ({ simCodeId }: SimCodeDetailModalProps) => {
                   <li>
                     Predicted: {simCodeModel.branchPredicted ? 'Yes' : 'No'}
                   </li>
-                  <li>
-                    Prediction target offset: {simCodeModel.branchTargetOffset}
-                  </li>
+                  <li>Prediction target: {simCodeModel.branchTarget}</li>
                 </ul>
               </>
             )}
