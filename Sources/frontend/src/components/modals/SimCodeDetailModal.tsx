@@ -29,7 +29,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { getValue, selectSimCodeModel } from '@/lib/redux/cpustateSlice';
+import {
+  getValue,
+  selectSimCodeModel,
+  selectStatistics,
+} from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
 
 import {
@@ -51,10 +55,21 @@ type SimCodeDetailModalProps = {
 
 export const SimCodeDetailModal = ({ simCodeId }: SimCodeDetailModalProps) => {
   const q = useAppSelector((state) => selectSimCodeModel(state, simCodeId));
+  const statistics = useAppSelector(selectStatistics);
   if (!q) throw new Error(`InstructionId ${simCodeId} not found`);
+  if (!statistics) throw new Error('Statistics not found');
   const { simCodeModel, inputCodeModel, functionModel, args } = q;
   const isBranch = functionModel.instructionType === 'kJumpbranch';
   const pc = inputCodeModel.codeId * 4;
+
+  const instructionStats = statistics.instructionStats[simCodeId];
+  if (!instructionStats) throw new Error('Instruction stats not found');
+
+  const predictionAccuracy =
+    instructionStats.correctlyPredicted /
+    (instructionStats.committedCount === 0
+      ? 1
+      : instructionStats.committedCount);
 
   return (
     <>
@@ -101,6 +116,7 @@ export const SimCodeDetailModal = ({ simCodeId }: SimCodeDetailModalProps) => {
               <li>
                 Address: {hexPadEven(pc)} ({pc})
               </li>
+              <li>Committed: {instructionStats.committedCount} times</li>
             </ul>
             <h2 className='text-xl mt-2'>Timestamps</h2>
             <table>
@@ -178,6 +194,9 @@ export const SimCodeDetailModal = ({ simCodeId }: SimCodeDetailModalProps) => {
                     {simCodeModel.branchPredicted ? 'Branch' : 'Do not branch'}
                   </li>
                   <li>Prediction target: {simCodeModel.branchTarget}</li>
+                  <li>
+                    Prediction Accuracy: {instructionStats.committedCount}
+                  </li>
                 </ul>
               </>
             )}
