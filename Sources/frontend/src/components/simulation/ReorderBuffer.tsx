@@ -80,7 +80,7 @@ export default function ReorderBuffer() {
           }
           return (
             <div className='relative' key={`item_${i}`}>
-              <InstructionField instructionId={simCodeModel} />
+              <InstructionField instructionId={simCodeModel} showSpeculative />
             </div>
           );
         }}

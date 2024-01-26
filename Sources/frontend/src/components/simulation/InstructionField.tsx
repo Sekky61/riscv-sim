@@ -52,6 +52,7 @@ import ValueInformation from '@/components/simulation/ValueTooltip';
 
 export type InstructionFieldProps = {
   instructionId: Reference | null;
+  showSpeculative?: boolean;
 };
 
 /**
@@ -61,6 +62,7 @@ export type InstructionFieldProps = {
  */
 export default function InstructionField({
   instructionId: simCodeId,
+  showSpeculative = false,
 }: InstructionFieldProps) {
   const dispatch = useAppDispatch();
   const q = useAppSelector((state) => selectSimCodeModel(state, simCodeId));
@@ -133,6 +135,11 @@ export default function InstructionField({
       tabIndex={0}
     >
       {renderInstructionSyntax()}
+      {showSpeculative && (
+        <span className='absolute top-0 right-0 p-1 text-xs'>
+          {simCodeModel.speculative ? 'S' : ''}
+        </span>
+      )}
     </button>
   );
 }
