@@ -52,6 +52,7 @@ import {
   TabsList,
   TabsTrigger,
 } from '@/components/base/ui/tabs';
+import { RadioInput } from '@/components/form/RadioInput';
 import { ProgramInstruction } from '@/components/simulation/Program';
 import {
   selectProgramWithLabels,
@@ -65,6 +66,7 @@ import {
   SimulationStatistics,
 } from '@/lib/types/cpuApi';
 import Link from 'next/link';
+import { useState } from 'react';
 import { PieChart } from 'react-minimal-pie-chart';
 
 /**
@@ -167,24 +169,24 @@ function getHeatMapColor(value: number) {
   return `${r}, ${g}, ${b}`;
 }
 
+/**
+ * Shows either the cache hits or heatmap of the number of times an instruction was committed.
+ */
 function InstructionStatsCard({
   instructionStats,
   commitCount,
 }: InstructionStatsProps) {
   const codeOrder = useAppSelector(selectProgramWithLabels);
+  const [stat, setStat] = useState<'cacheMisses' | 'committedCount'>(
+    'cacheMisses',
+  );
 
   if (!codeOrder) {
     return null;
   }
 
-  const allDecoded = instructionStats.reduce(
-    (acc, { decoded }) => acc + decoded,
-    0,
-  );
-
-  // Calculate normalized instruction counts
-  const norms = Array.from({ length: codeOrder.length }, () => 0);
-  let maxVal = 0;
+  // Find the maximum number of cache misses (to normalize the heatmap)
+  let maxMissCount = 0;
   for (const instruction of codeOrder) {
     if (typeof instruction === 'string') {
       continue;
@@ -193,18 +195,17 @@ function InstructionStatsCard({
     if (!st) {
       continue;
     }
-    const c = st.committedCount / commitCount;
-    norms[instruction] = c;
-    if (c > maxVal) {
-      maxVal = c;
-    }
+    const missCount = st.cacheMisses;
+    maxMissCount = Math.max(maxMissCount, missCount);
   }
-  // Normalize
-  if (maxVal === 0) {
-    maxVal = 1;
+  let max = 0;
+  if (stat === 'cacheMisses') {
+    max = maxMissCount;
+  } else {
+    max = commitCount;
   }
-  for (let i = 0; i < norms.length; i++) {
-    norms[i] /= maxVal;
+  if (max === 0) {
+    max = 1;
   }
 
   return (
@@ -214,7 +215,13 @@ function InstructionStatsCard({
         <CardDescription>Heat Map of execution counts</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className='pt-4'>
+        <RadioInput
+          choices={['cacheMisses', 'committedCount'] as const}
+          texts={['Cache Hits', 'Committed']}
+          value={stat}
+          onNewValue={(v) => setStat(v)}
+        />
+        <div className='pt-4 heatmap-transition'>
           {codeOrder.map((instructionOrLabel) => {
             if (typeof instructionOrLabel === 'string') {
               return (
@@ -230,9 +237,13 @@ function InstructionStatsCard({
             if (!st) {
               return null;
             }
-            const { committedCount, decoded, correctlyPredicted } = st;
-            const heatCoef = norms[instructionOrLabel] ?? 0;
-            const percentage = formatRatio(committedCount, commitCount);
+            let instructionStat = st[stat];
+            if (stat === 'cacheMisses') {
+              instructionStat = st.committedCount - instructionStat;
+              // TODO hide stat for non-memory instructions
+            }
+            const heatCoef = instructionStat / max;
+            const percentage = formatRatio(instructionStat, max);
             return (
               <div
                 className='flex'

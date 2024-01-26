@@ -137,6 +137,7 @@ export interface InstructionStats {
   committedCount: number;
   decoded: number;
   correctlyPredicted: number;
+  cacheMisses: number;
 }
 
 export interface Cache {

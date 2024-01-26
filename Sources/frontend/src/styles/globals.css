@@ -508,4 +508,9 @@
   .instruction-bubble {
     @apply rounded-sm border h-8;
   }
+
+  /* Heatmap statistic transition */
+  .heatmap-transition  * {
+    @apply transition-colors ease-in duration-200;
+  }
 }
