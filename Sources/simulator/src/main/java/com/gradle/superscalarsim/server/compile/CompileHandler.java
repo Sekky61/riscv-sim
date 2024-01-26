@@ -68,7 +68,7 @@ public class CompileHandler implements IRequestResolver<CompileRequest, CompileR
       else
       {
         int             cCodeLen            = request.code.split("\n").length;
-        CompiledProgram program             = AsmParser.parse(res.code, cCodeLen);
+        CompiledProgram program             = AsmParser.parse(res.code);
         String          concatenatedProgram = StringUtils.join(program.program, "\n");
         response = new CompileResponse(true, concatenatedProgram, program.asmToC, null, null);
       }

@@ -45,12 +45,15 @@ import {
   cFieldTyping,
   selectCCodeMappings,
   selectCCodeMirrorErrors,
+  selectCDirty,
+  selectCErrors,
   selectDirty,
   selectEditorMode,
 } from '@/lib/redux/compilerSlice';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 
 import EditorBar from '@/components/codeEditor/EditorBar';
+import { StatusIcon } from '@/components/codeEditor/StatusIcon';
 
 const baseTheme = EditorView.baseTheme({
   '.cm-activeLine': {
@@ -139,7 +142,7 @@ export default function CCodeInput() {
   // The ref is on an inner div so that the gray background is always after the editor
   return (
     <div className='flex flex-col flex-grow overflow-y-scroll rounded border relative'>
-      <EditorBar mode='c' />
+      <EditorBar mode='c' checkSlot={<CErrorsDisplay />} />
       <div className='relative flex-grow'>
         <div className='h-full w-full relative' ref={editor} />
         {!isEnabled && (
@@ -149,3 +152,27 @@ export default function CCodeInput() {
     </div>
   );
 }
+
+/**
+ * A fixed width element
+ */
+const CErrorsDisplay = () => {
+  const errors = useAppSelector(selectCErrors);
+  const dirty = useAppSelector(selectCDirty);
+  const hasErrors = errors.length > 0;
+
+  let iconType: 'circle' | 'tick' | 'x';
+  if (dirty) {
+    iconType = 'circle';
+  } else if (hasErrors) {
+    iconType = 'x';
+  } else {
+    iconType = 'tick';
+  }
+
+  return (
+    <div className='mr-2'>
+      <StatusIcon type={iconType} />
+    </div>
+  );
+};

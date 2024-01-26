@@ -42,7 +42,7 @@ import {
 import { toByteArray } from 'base64-js';
 import { notify } from 'reapop';
 
-import { selectAsmCode } from '@/lib/redux/compilerSlice';
+import { selectAsmCode, selectEntryPoint } from '@/lib/redux/compilerSlice';
 import { selectActiveConfig } from '@/lib/redux/isaSlice';
 import type { RootState } from '@/lib/redux/store';
 import { callSimulationImpl } from '@/lib/serverCalls';
@@ -183,10 +183,15 @@ export const callSimulation = createAsyncThunk<SimulationParsedResult, number>(
     // @ts-ignore
     const state: RootState = getState();
     const config = selectActiveConfig(state);
+    const entryPoint = selectEntryPoint(state);
     const code = state.cpu.code;
     const tick = arg;
     try {
-      const response = await callSimulationImpl(tick, { ...config, code });
+      const response = await callSimulationImpl(tick, {
+        ...config,
+        code,
+        entryPoint,
+      });
       return { state: response.state };
     } catch (err) {
       // Log error and show simple error message to the user
@@ -322,6 +327,9 @@ export const selectHighlightedInputCode = (state: RootState) =>
 
 export const selectHighlightedRegister = (state: RootState) =>
   state.cpu.highlightedRegister;
+
+export const selectLabels = (state: RootState) =>
+  state.cpu.state?.instructionMemoryBlock?.labels;
 
 /**
  * Returns program code with labels inserted before the instruction they point to.

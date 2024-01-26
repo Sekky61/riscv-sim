@@ -39,7 +39,8 @@ import java.util.regex.Pattern;
  *   <li>Filter directives not pointed to by remaining labels</li>
  * </ul>
  *
- * @brief Parser for RISC-V assembly code. Filter assembly and produce mapping to C code
+ * @brief Parser for RISC-V assembly code. Filter assembly and produce mapping to C code.
+ * Intended to parse the output of GCC, not handwritten assembly.
  */
 public class AsmParser
 {
@@ -49,14 +50,13 @@ public class AsmParser
   static String labelRegex = "^[a-zA-Z0-9_.]+:";
   
   /**
-   * @param program       - The output of GCC
-   * @param lengthOfCCode - The length of the C code, in lines
+   * @param program The output of GCC
    *
    * @return The filtered assembly, and a mapping from ASM lines to C lines
    * @brief The parser
    * Takes in the output of GCC, and returns a clean version of the assembly with mapping to C code
    */
-  public static CompiledProgram parse(String program, int lengthOfCCode)
+  public static CompiledProgram parse(String program)
   {
     // Split into lines, remove comments, replace \t with spaces, trim
     List<String> stringLines = splitLines(program);
@@ -111,7 +111,7 @@ public class AsmParser
       asmToC.add(line.cLine);
     }
     
-    return new CompiledProgram(finalLines, asmToC);
+    return new CompiledProgram(finalLines, asmToC, usedLabels);
   }
   
   /**

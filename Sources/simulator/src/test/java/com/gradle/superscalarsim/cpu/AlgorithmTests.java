@@ -354,7 +354,7 @@ public class AlgorithmTests
   {
     GccCaller.CompileResult res = GccCaller.compile(cCode, List.of("O2"));
     Assert.assertTrue(res.success);
-    CompiledProgram program             = AsmParser.parse(res.code, cCode.split("\n").length);
+    CompiledProgram program             = AsmParser.parse(res.code);
     String          concatenatedProgram = StringUtils.join(program.program, "\n");
     
     SimulationConfig cfg = SimulationConfig.getDefaultConfiguration();

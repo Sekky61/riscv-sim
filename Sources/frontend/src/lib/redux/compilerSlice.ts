@@ -29,7 +29,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 import {
   PayloadAction,
   createAsyncThunk,
@@ -39,7 +38,6 @@ import {
 import { notify } from 'reapop';
 
 import { transformErrors } from '@/lib/editor/transformErrors';
-import { CpuConfig } from '@/lib/forms/Isa';
 import { selectActiveConfig } from '@/lib/redux/isaSlice';
 import type { RootState } from '@/lib/redux/store';
 import { callCompilerImpl, callParseAsmImpl } from '@/lib/serverCalls';
@@ -62,10 +60,14 @@ export interface CompilerOptions {
   optimizeFlags: OptimizeOption[];
 }
 
+/**
+ * Example code. Describes the JSON structure in @/constant/codeExamples.json
+ */
 export interface Example {
   name: string;
   type: 'c' | 'asm';
   code: string;
+  entryPoint?: number | string;
 }
 
 // Define a type for the slice state
@@ -77,6 +79,7 @@ interface CompilerState extends CompilerOptions {
   compileStatus: 'idle' | 'loading' | 'success' | 'failed';
   // Editor options
   editorMode: 'c' | 'asm';
+  entryPoint: string | number;
   // True if the c_code or asm code has been changed since the last call to the compiler
   cDirty: boolean;
   asmDirty: boolean;
@@ -100,6 +103,7 @@ const initialState: CompilerState = {
   compileStatus: 'idle',
   optimizeFlags: [],
   editorMode: 'c',
+  entryPoint: 0,
   asmManuallyEdited: false,
   cErrors: [],
   asmErrors: [],
@@ -174,7 +178,7 @@ export const callParseAsm = createAsyncThunk<ParseAsmResponse>(
         if (res.success) {
           dispatch(
             notify({
-              message: 'Check successful',
+              title: 'The assembly code is valid',
               status: 'success',
             }),
           );
@@ -276,6 +280,10 @@ export const compilerSlice = createSlice({
     },
     setAsmCode: (state, action: PayloadAction<string>) => {
       state.asmCode = action.payload;
+      state.entryPoint = 0;
+    },
+    setEntryPoint: (state, action: PayloadAction<number | string>) => {
+      state.entryPoint = action.payload;
     },
     toggleOptimizeFlag: (state, action: PayloadAction<OptimizeOption>) => {
       // Special case for -O2
@@ -300,6 +308,7 @@ export const compilerSlice = createSlice({
       state.editorMode = action.payload.type;
       state.cDirty = false;
       state.asmDirty = false;
+      state.entryPoint = action.payload.entryPoint || 0;
     },
     openFile: (
       state,
@@ -316,6 +325,7 @@ export const compilerSlice = createSlice({
       state.editorMode = action.payload.type;
       state.cDirty = false;
       state.asmDirty = false;
+      state.entryPoint = 0;
     },
   },
   extraReducers: (builder) => {
@@ -337,6 +347,7 @@ export const compilerSlice = createSlice({
         state.cErrors = [];
         state.asmManuallyEdited = false;
         state.asmToC = action.payload.asmToC;
+        state.entryPoint = 0;
       })
       .addCase(callCompiler.rejected, (state, _action) => {
         state.compileStatus = 'failed';
@@ -344,6 +355,7 @@ export const compilerSlice = createSlice({
         state.asmDirty = false;
         state.asmManuallyEdited = false;
         state.asmToC = [];
+        state.entryPoint = 0;
       })
       .addCase(callCompiler.pending, (state, _action) => {
         state.compileStatus = 'loading';
@@ -372,6 +384,7 @@ export const {
   asmFieldTyping,
   openExample,
   openFile,
+  setEntryPoint,
 } = compilerSlice.actions;
 
 export const selectCCode = (state: RootState) => state.compiler.cCode;
@@ -388,6 +401,7 @@ export const selectCDirty = (state: RootState) => state.compiler.cDirty;
 export const selectAsmDirty = (state: RootState) => state.compiler.asmDirty;
 export const selectAsmManuallyEdited = (state: RootState) =>
   state.compiler.asmManuallyEdited;
+export const selectEntryPoint = (state: RootState) => state.compiler.entryPoint;
 
 export const selectCCodeMappings = createSelector(
   [selectAsmMappings, selectCCode],

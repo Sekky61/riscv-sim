@@ -46,6 +46,7 @@ import { ReactClassName } from '@/lib/types/reactTypes';
 import { inputCodeAddress } from '@/lib/utils';
 
 import Block from '@/components/simulation/Block';
+import { selectEntryPoint } from '@/lib/redux/compilerSlice';
 
 /**
  * A block displaying the program instructions.
@@ -58,6 +59,7 @@ export default function Program() {
   const fetch = useAppSelector(selectFetch);
   const codeOrder = useAppSelector(selectProgramWithLabels);
   const highlightedInputCodeId = useAppSelector(selectHighlightedInputCode);
+  const entryPoint = useAppSelector(selectEntryPoint);
 
   // Scroll to PC on every render using scrollTop, because scrollIntoView makes the whole page jump
   useEffect(() => {
@@ -91,6 +93,7 @@ export default function Program() {
     <Block
       title='Program'
       className='program justify-self-stretch self-stretch'
+      stats={<div>Entry Point: {entryPoint}</div>}
     >
       <div
         className='max-h-96 grid gap-1 overflow-y-auto pt-4'

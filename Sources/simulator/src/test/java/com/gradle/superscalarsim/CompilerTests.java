@@ -48,33 +48,7 @@ public class CompilerTests
             """;
     
     // Exercise
-    CompiledProgram program = AsmParser.parse(asmCode, 0);
-    
-    // Verify
-    System.out.println(program.program);
-    
-    for (String line : program.program)
-    {
-      Assert.assertFalse(line.contains("A:"));
-    }
-  }
-  
-  @Test
-  public void test_asmParserRemovesDirectives()
-  {
-    String asmCode = """
-            .file   "test.c"
-            N:
-            .word 25
-            M:
-            .word 32
-            A:
-            subi  sp, sp, 16
-            lw    a0, 0(N)
-            """;
-    
-    // Exercise
-    CompiledProgram program = AsmParser.parse(asmCode, 0);
+    CompiledProgram program = AsmParser.parse(asmCode);
     
     // Verify
     System.out.println(program.program);
@@ -112,7 +86,7 @@ public class CompilerTests
     
     // Exercise
     GccCaller.CompileResult compileResult = GccCaller.compile(cCode, List.of());
-    CompiledProgram         program       = AsmParser.parse(compileResult.code, cCode.split("\n").length);
+    CompiledProgram         program       = AsmParser.parse(compileResult.code);
     String                  asm           = String.join("\n", program.program);
     parser.parseCode(asm);
     
@@ -120,6 +94,8 @@ public class CompilerTests
     Assert.assertTrue(compileResult.success);
     Assert.assertTrue(parser.success());
     Assert.assertFalse(parser.getInstructions().isEmpty());
+    
+    Assert.assertTrue(program.labels.contains("f"));
   }
   
   @Test
@@ -147,7 +123,7 @@ public class CompilerTests
     
     // Exercise
     GccCaller.CompileResult compileResult = GccCaller.compile(cCode, List.of("O2"));
-    CompiledProgram         program       = AsmParser.parse(compileResult.code, cCode.split("\n").length);
+    CompiledProgram         program       = AsmParser.parse(compileResult.code);
     String                  asm           = String.join("\n", program.program);
     parser.parseCode(asm);
     
@@ -191,7 +167,7 @@ public class CompilerTests
     
     // Exercise
     GccCaller.CompileResult compileResult = GccCaller.compile(cCode, List.of("O2"));
-    CompiledProgram         program       = AsmParser.parse(compileResult.code, cCode.split("\n").length);
+    CompiledProgram         program       = AsmParser.parse(compileResult.code);
     String                  asm           = String.join("\n", program.program);
     parser.parseCode(asm);
     
@@ -219,7 +195,7 @@ public class CompilerTests
     
     // Exercise
     GccCaller.CompileResult compileResult = GccCaller.compile(cCode, List.of("O2"));
-    CompiledProgram         program       = AsmParser.parse(compileResult.code, cCode.split("\n").length);
+    CompiledProgram         program       = AsmParser.parse(compileResult.code);
     String                  asm           = String.join("\n", program.program);
     parser.parseCode(asm);
     
