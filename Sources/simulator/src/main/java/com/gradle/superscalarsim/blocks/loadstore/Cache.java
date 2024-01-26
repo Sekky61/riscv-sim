@@ -339,13 +339,19 @@ public class Cache implements AbstractBlock, MemoryBlock
       {
         // Main memory transaction finished
         memory.finishTransaction(transaction.id());
+        int simCodeId = transaction.getInstructionId();
+        if (simCodeId >= 0)
+        {
+          // Do not touch statistic in case the cache transaction is not related to any instruction (tests)
+          statistics.instructionStats.get(simCodeId).incrementCacheMisses();
+        }
         toRemove.add(transaction);
         if (!transaction.isStore())
         {
           // Load new line into cache
           Triplet<Long, Integer, Integer> split = splitAddress(transaction.address());
           long                            tag   = split.getFirst();
-          CacheLineModel                  line  = pickLineToUse(transaction.address(), cycle);
+          CacheLineModel line = pickLineToUse(transaction.address(), cycle, transaction.getInstructionId());
           // The replacement policy was updated when the line was picked
           line.setLineData(transaction.data());
           line.setValid(true);
@@ -442,11 +448,13 @@ public class Cache implements AbstractBlock, MemoryBlock
    * Finds a suitable cache line to store.
    * Updates replacement policy.
    *
-   * @param address starting byte of the access (can be misaligned)
+   * @param address     starting byte of the access (can be misaligned)
+   * @param timestamp   Timestamp of the transaction
+   * @param codeModelId ID of the code model that requested the load (for statistics)
    *
    * @return Cache line to use for the new data. Either an empty line is found or a line is replaced.
    */
-  public CacheLineModel pickLineToUse(long address, int timestamp)
+  public CacheLineModel pickLineToUse(long address, int timestamp, int codeModelId)
   {
     Triplet<Long, Integer, Integer> addressSplit = splitAddress(address);
     int                             index        = addressSplit.getSecond();
@@ -468,7 +476,7 @@ public class Cache implements AbstractBlock, MemoryBlock
     {
       CacheLineModel victimLine = cache[index][victimIndex];
       // The request will be confirmed by cache later
-      requestCacheLineStore(victimLine, timestamp);
+      requestCacheLineStore(victimLine, timestamp, codeModelId);
       replacementPolicy.updatePolicy(index, victimIndex);
     }
     
@@ -550,7 +558,8 @@ public class Cache implements AbstractBlock, MemoryBlock
     {
       // cache delay and start loading from memory
       // Create a memory transaction for the whole cache line
-      latency = cacheDelay + requestCacheLineLoad(transaction.address(), transaction.timestamp());
+      latency = cacheDelay + requestCacheLineLoad(transaction.address(), transaction.timestamp(),
+                                                  transaction.getInstructionId());
     }
     
     boolean spansTwoLines = (transaction.address() & (lineSize - 1)) + transaction.size() > lineSize;
@@ -563,7 +572,8 @@ public class Cache implements AbstractBlock, MemoryBlock
       {
         isHit = false;
         // Create a memory transaction for the second cache line
-        latency = cacheDelay + requestCacheLineLoad(nextAddress, transaction.timestamp());
+        latency = cacheDelay + requestCacheLineLoad(nextAddress, transaction.timestamp(),
+                                                    transaction.getInstructionId());
       }
     }
     
@@ -589,12 +599,19 @@ public class Cache implements AbstractBlock, MemoryBlock
     return latency;
   }
   
-  private int requestCacheLineLoad(long address, int timestamp)
+  /**
+   * @param address     Address of the cache line to load (not aligned)
+   * @param timestamp   Timestamp of the transaction
+   * @param codeModelId ID of the code model that requested the load (for statistics)
+   *
+   * @return Number of cycles until the transaction is finished (adds transaction to the list)
+   */
+  private int requestCacheLineLoad(long address, int timestamp, int codeModelId)
   {
     // Create a memory transaction for the whole cache line
     long baseAddress = address & -(1L << getOffsetBits());
-    MemoryTransaction lineTransaction = new MemoryTransaction(-1, CACHE_ID, timestamp, baseAddress, null, lineSize,
-                                                              false, false);
+    MemoryTransaction lineTransaction = new MemoryTransaction(-1, CACHE_ID, codeModelId, timestamp, baseAddress, null,
+                                                              lineSize, false, false);
     MemoryTransaction existingTransaction = findTransactionByBaseAddress(baseAddress);
     if (existingTransaction != null)
     {
@@ -677,11 +694,12 @@ public class Cache implements AbstractBlock, MemoryBlock
    * @brief starts the transaction to store data from cache to memory
    * After this call, cache line will be free to use
    */
-  private int requestCacheLineStore(CacheLineModel line, int timestamp)
+  private int requestCacheLineStore(CacheLineModel line, int timestamp, int codeModelId)
   {
     // Create a memory transaction for the whole cache line
-    MemoryTransaction lineTransaction = new MemoryTransaction(-1, CACHE_ID, timestamp, line.getBaseAddress(),
-                                                              line.getLineData(), lineSize, true, false);
+    MemoryTransaction lineTransaction = new MemoryTransaction(-1, CACHE_ID, codeModelId, timestamp,
+                                                              line.getBaseAddress(), line.getLineData(), lineSize, true,
+                                                              false);
     MemoryTransaction existingTransaction = findTransactionByBaseAddress(line.getBaseAddress());
     if (existingTransaction != null)
     {

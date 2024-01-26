@@ -152,4 +152,25 @@ public class StatisticsTests
     // There is a "FX" functional unit
     Assert.assertEquals(2, cpu.cpuState.statistics.fuStats.get("FX").busyCycles);
   }
+  
+  @Test
+  public void testCacheMissRate()
+  {
+    // Setup + exercise
+    cpuConfig.code = """
+            addi x6, x6, 64
+            addi x7, x7, 128
+            lw x8, 0(x6)
+             lw x9, 0(x7)
+             lw x10, 4(x6)""";
+    Cpu cpu = new Cpu(cpuConfig);
+    cpu.execute();
+    
+    // Assert
+    Assert.assertEquals(0, cpu.cpuState.statistics.instructionStats.get(0).cacheMisses);
+    Assert.assertEquals(0, cpu.cpuState.statistics.instructionStats.get(1).cacheMisses);
+    Assert.assertEquals(1, cpu.cpuState.statistics.instructionStats.get(2).cacheMisses);
+    Assert.assertEquals(1, cpu.cpuState.statistics.instructionStats.get(3).cacheMisses);
+    Assert.assertEquals(0, cpu.cpuState.statistics.instructionStats.get(4).cacheMisses);
+  }
 }

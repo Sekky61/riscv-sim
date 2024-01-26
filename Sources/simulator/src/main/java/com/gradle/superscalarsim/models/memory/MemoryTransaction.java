@@ -38,6 +38,10 @@ import java.util.Objects;
 public final class MemoryTransaction
 {
   private final int mmuId;
+  /**
+   * ID (index) of the instruction in code. aka. getCodeId() aka. ID of InputCodeModel
+   */
+  private final int instructionId;
   private final int timestamp;
   private final long address;
   private final int size;
@@ -52,11 +56,26 @@ public final class MemoryTransaction
   private boolean isFinished = false;
   private int latency;
   
+  public boolean isHit()
+  {
+    return isHit;
+  }
+  
+  public void setHit(boolean hit)
+  {
+    isHit = hit;
+  }
+  
+  private boolean isHit;
+  
   /**
    * Constructor
+   *
+   * @param instructionId index of instruction in code
    */
   public MemoryTransaction(int id,
                            int mmuId,
+                           int instructionId,
                            int timestamp,
                            long address,
                            byte[] data,
@@ -66,21 +85,23 @@ public final class MemoryTransaction
   {
     if (size < 1 || size > 64)
     {
-      throw new IllegalArgumentException("Size must be between 1 and 8");
+      throw new IllegalArgumentException("Size of a memory transaction must be between 1 and 64 bytes.");
     }
-    this.id        = id;
-    this.mmuId     = mmuId;
-    this.timestamp = timestamp;
-    this.address   = address;
-    this.data      = data;
-    this.size      = size;
-    this.isStore   = isStore;
-    this.isSigned  = isSigned;
-    latency        = 0;
+    this.id            = id;
+    this.mmuId         = mmuId;
+    this.instructionId = instructionId;
+    this.timestamp     = timestamp;
+    this.address       = address;
+    this.data          = data;
+    this.size          = size;
+    this.isStore       = isStore;
+    this.isSigned      = isSigned;
+    latency            = 0;
+    isHit              = false;
   }
   
   /**
-   * Constructor for store access
+   * Constructor for store access. Testing method with invalid ids.
    *
    * @param address Address of the memory access
    * @param data    Data to be stored
@@ -91,7 +112,7 @@ public final class MemoryTransaction
   }
   
   /**
-   * Constructor for store access
+   * Constructor for store access. Testing method with invalid ids.
    *
    * @param address   Address of the memory access
    * @param data      Data to be stored
@@ -99,11 +120,11 @@ public final class MemoryTransaction
    */
   public static MemoryTransaction store(long address, byte[] data, int timestamp)
   {
-    return new MemoryTransaction(-1, -1, timestamp, address, data, data.length, true, false);
+    return new MemoryTransaction(-1, -1, -1, timestamp, address, data, data.length, true, false);
   }
   
   /**
-   * Constructor for load access
+   * Constructor for load access. Testing method with invalid ids.
    *
    * @param address Address of the memory access
    * @param size    Size of the data in bytes (1-8)
@@ -114,7 +135,7 @@ public final class MemoryTransaction
   }
   
   /**
-   * Constructor for load access
+   * Constructor for load access. Testing method with invalid ids.
    *
    * @param address  Address of the memory access
    * @param size     Size of the data in bytes (1-8)
@@ -122,7 +143,12 @@ public final class MemoryTransaction
    */
   public static MemoryTransaction load(long address, int size, int timestamp)
   {
-    return new MemoryTransaction(-1, -1, timestamp, address, null, size, false, false);
+    return new MemoryTransaction(-1, -1, -1, timestamp, address, null, size, false, false);
+  }
+  
+  public int getInstructionId()
+  {
+    return instructionId;
   }
   
   public int latency()

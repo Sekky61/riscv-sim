@@ -583,9 +583,14 @@ public class SimulationStatistics
     /**
      * The number of times that the (jump) instruction was correctly predicted.
      * Zero for all other instructions.
-     * The number of times that the (jump) instruction was incorrectly predicted can be calculated as (fetched - correctlyPredicted).
+     * The number of times that the (jump) instruction was incorrectly predicted can be calculated as (committedCount - correctlyPredicted).
      */
     public int correctlyPredicted;
+    /**
+     * Cache misses of this instruction. Zero for all non-memory instructions.
+     * Cache hits of this instruction can be calculated as (committedCount - cacheMisses).
+     */
+    public int cacheMisses;
     
     /**
      * Constructor
@@ -616,6 +621,14 @@ public class SimulationStatistics
     public void incrementCorrectlyPredicted()
     {
       this.correctlyPredicted++;
+    }
+    
+    /**
+     * @brief Increments number of cache misses
+     */
+    public void incrementCacheMisses()
+    {
+      this.cacheMisses++;
     }
   }
 }

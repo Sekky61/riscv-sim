@@ -236,8 +236,9 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
       System.arraycopy(byteBuffer.array(), 0, data, 0, numberOfBytes);
     }
     
-    transaction = new MemoryTransaction(-1, functionUnitId, cycle, address, data, numberOfBytes, access.isStore(),
-                                        access.isSigned());
+    
+    transaction = new MemoryTransaction(-1, functionUnitId, simCodeModel.getCodeId(), cycle, address, data,
+                                        numberOfBytes, access.isStore(), access.isSigned());
     // return memory delay
     return memoryModel.execute(transaction);
   }
