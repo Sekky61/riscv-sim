@@ -53,9 +53,9 @@ public class SimCodeModelFactory
     this.manager = manager;
   }
   
-  public SimCodeModel createInstance(InputCodeModel inputCodeModel, int id)
+  public SimCodeModel createInstance(InputCodeModel inputCodeModel, int id, int fetchId)
   {
-    SimCodeModel instance = new SimCodeModel(inputCodeModel, id);
+    SimCodeModel instance = new SimCodeModel(inputCodeModel, id, fetchId);
     if (manager != null)
     {
       manager.addInstance(instance);

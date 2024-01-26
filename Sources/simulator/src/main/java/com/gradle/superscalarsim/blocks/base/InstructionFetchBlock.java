@@ -209,7 +209,7 @@ public class InstructionFetchBlock implements AbstractBlock
       // Unique ID of the instruction
       int simCodeId = cycle * numberOfWays + i;
       SimCodeModel codeModel = this.simCodeModelFactory.createInstance(instructionMemoryBlock.getInstructionAt(pc),
-                                                                       simCodeId);
+                                                                       simCodeId, cycle);
       
       // This if emulates the in my opinion wrong logic. Removing it will cause the program to fetch
       // instructions until a number of jumps are _followed_
@@ -223,7 +223,7 @@ public class InstructionFetchBlock implements AbstractBlock
           for (int j = i; j < numberOfWays; j++)
           {
             SimCodeModel nopCodeModel = this.simCodeModelFactory.createInstance(instructionMemoryBlock.getNop(),
-                                                                                simCodeId);
+                                                                                simCodeId, cycle);
             fetchedCode.add(nopCodeModel);
           }
           break;

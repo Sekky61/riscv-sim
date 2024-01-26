@@ -304,6 +304,7 @@ export interface Argument {
 
 export interface SimCodeModel {
   id: number;
+  fetchId: number;
   inputCodeModel: Reference;
   renamedArguments: InputCodeArgument[];
   issueWindowId: number;

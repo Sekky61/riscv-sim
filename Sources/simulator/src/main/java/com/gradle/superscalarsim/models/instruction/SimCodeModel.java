@@ -73,6 +73,10 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
    */
   private final List<InputCodeArgument> renamedArguments;
   /**
+   * ID when the instruction was fetched
+   */
+  private int fetchId;
+  /**
    * ID, when was instructions accepted by the issue window
    */
   private int issueWindowId;
@@ -144,13 +148,17 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
    * @brief Constructor which copies original InputCodeModel
    * This constructor can be used only through the SimCodeModelAllocator
    */
-  public SimCodeModel(InputCodeModel inputCodeModel, int id)
+  public SimCodeModel(InputCodeModel inputCodeModel, int id, int fetchId)
   {
     this.inputCodeModel = inputCodeModel;
     this.id             = id;
-    this.commitId       = -1;
+    this.fetchId        = fetchId;
     this.isFinished     = false;
     this.hasFailed      = false;
+    this.commitId       = -1;
+    this.readyId        = -1;
+    this.issueWindowId  = -1;
+    this.functionUnitId = -1;
     
     isValid       = true;
     isBusy        = true;
