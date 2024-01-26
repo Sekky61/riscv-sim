@@ -173,4 +173,23 @@ public class StatisticsTests
     Assert.assertEquals(1, cpu.cpuState.statistics.instructionStats.get(3).cacheMisses);
     Assert.assertEquals(0, cpu.cpuState.statistics.instructionStats.get(4).cacheMisses);
   }
+  
+  @Test
+  public void testCacheMissRateMisaligned()
+  {
+    // Setup + exercise
+    cpuConfig.code = """
+            addi x6, x6, 64
+            addi x6, x6, 16
+            subi x6, x6, 2
+            lw x8, 0(x6)""";
+    Cpu cpu = new Cpu(cpuConfig);
+    cpu.execute();
+    
+    // Assert
+    // 2 lines are loaded
+    Assert.assertEquals(2 * 16, cpu.cpuState.statistics.mainMemoryLoadedBytes);
+    // 1 cache miss
+    Assert.assertEquals(1, cpu.cpuState.statistics.instructionStats.get(3).cacheMisses);
+  }
 }

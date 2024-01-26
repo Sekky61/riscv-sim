@@ -430,6 +430,7 @@ public class SimulationStatistics
     private int hits;
     /**
      * Counter for the number of cache misses.
+     * Misaligned access that causes to load 2 cache lines counts as a single miss.
      */
     private int misses;
     /**
@@ -589,6 +590,7 @@ public class SimulationStatistics
     /**
      * Cache misses of this instruction. Zero for all non-memory instructions.
      * Cache hits of this instruction can be calculated as (committedCount - cacheMisses).
+     * Misaligned access that causes to load 2 cache lines counts as a single miss.
      */
     public int cacheMisses;
     

@@ -198,6 +198,19 @@ public class CacheTest
   }
   
   @Test
+  public void cache_MisalignedReadStats()
+  {
+    MemoryTransaction load1 = MemoryTransaction.load(128 + 16 - 2, 4);
+    cache.scheduleTransaction(load1);
+    simulateCycles(1, 2);
+    cache.finishTransaction(load1.id());
+    
+    // Should be 1 miss. That's simply the way it is counted
+    Assert.assertEquals(1, statistics.cache.getMisses());
+    Assert.assertEquals(2 * 16, statistics.mainMemoryLoadedBytes);
+  }
+  
+  @Test
   public void cache_MixedAccesses()
   {
     MemoryTransaction store1 = MemoryTransaction.store(130, new byte[]{(byte) 0x89, 0x67, 0x45, 0x23});
