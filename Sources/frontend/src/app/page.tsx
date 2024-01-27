@@ -36,7 +36,7 @@ import { useEffect, useState } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 
 import {
-  pullCodeFromCompiler,
+  pullSimConfig,
   reloadSimulation,
   selectCpu,
 } from '@/lib/redux/cpustateSlice';
@@ -65,7 +65,6 @@ export default function HomePage() {
   useEffect(() => {
     if (!state) {
       // TODO: calls multiple times unnecessarily
-      dispatch(pullCodeFromCompiler());
       dispatch(reloadSimulation());
     }
   }, [state, dispatch]);

@@ -200,7 +200,7 @@ export const selectActiveIsaName = (state: RootState) =>
 export const selectIsas = (state: RootState) => state.isa.isas;
 
 /**
- * Adds "code" field to the ISA config
+ * Select the active cpu config
  */
 export const selectActiveConfig = createSelector(
   [selectIsas, selectActiveIsaName],

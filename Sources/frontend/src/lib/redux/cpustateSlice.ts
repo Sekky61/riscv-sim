@@ -58,8 +58,11 @@ import type {
   RegisterDataContainer,
   RegisterModel,
   SimCodeModel,
+  StopReason,
 } from '@/lib/types/cpuApi';
 import { isValidReference, isValidRegisterValue } from '@/lib/utils';
+import { SimulateResponse } from '@/lib/types/simulatorApi';
+import { SimulationConfig, defaultSimulationConfig } from '@/lib/forms/Isa';
 
 /**
  * Redux state for CPU
@@ -70,9 +73,9 @@ interface CpuSlice {
    */
   state: CpuState | null;
   /**
-   * Code that is currently being simulated. Pulled from the compiler state.
+   * Simulation config that is currently being simulated. Pulled from the ISA state and the compiler state on request.
    */
-  code: string;
+  config: SimulationConfig;
   /**
    * Reference to the currently highlighted line in the input code.
    * Used to highlight the corresponding objects in visualizations.
@@ -87,6 +90,10 @@ interface CpuSlice {
    * Reference to the currently highlighted register.
    */
   highlightedRegister: string | null;
+  /**
+   * Reason for stopping the simulation. Enumeration of possible reasons, like exception, end of program, etc.
+   */
+  stopReason: StopReason;
 }
 
 /**
@@ -94,23 +101,18 @@ interface CpuSlice {
  */
 const initialState: CpuSlice = {
   state: null,
-  code: '',
+  config: defaultSimulationConfig,
   highlightedInputCode: null,
   highlightedSimCode: null,
   highlightedRegister: null,
+  stopReason: 'kNotStopped',
 };
 
 /**
- * The result of a simulation API call
+ * Copy the code, config and entry point from code editor and config to the simulation.
+ * This decouples the settings and what is being simulated at the moment.
  */
-type SimulationParsedResult = {
-  state: CpuState;
-};
-
-/**
- * Copy the code from code editor to the simulation
- */
-export const pullCodeFromCompiler = (): ThunkAction<
+export const pullSimConfig = (): ThunkAction<
   void,
   RootState,
   unknown,
@@ -119,7 +121,16 @@ export const pullCodeFromCompiler = (): ThunkAction<
   return async (dispatch, getState) => {
     const state: RootState = getState();
     const code = selectAsmCode(state);
-    dispatch(setSimulationCode(code));
+    const config = selectActiveConfig(state);
+    const entryPoint = selectEntryPoint(state);
+    dispatch(
+      setSimConfig({
+        code,
+        entryPoint,
+        cpuConfig: config.cpuConfig,
+        memoryLocations: config.memoryLocations,
+      }),
+    );
   };
 };
 
@@ -133,7 +144,7 @@ export const reloadSimulation = (): ThunkAction<
   Action<string>
 > => {
   return async (dispatch) => {
-    dispatch(pullCodeFromCompiler());
+    dispatch(pullSimConfig());
     dispatch(callSimulation(0));
   };
 };
@@ -177,22 +188,16 @@ export const simStepBackward = (): ThunkAction<
  *
  * @param tick The tick to simulate to
  */
-export const callSimulation = createAsyncThunk<SimulationParsedResult, number>(
+export const callSimulation = createAsyncThunk<SimulateResponse, number>(
   'cpu/callSimulation',
   async (arg, { getState, dispatch }) => {
     // @ts-ignore
     const state: RootState = getState();
-    const config = selectActiveConfig(state);
-    const entryPoint = selectEntryPoint(state);
-    const code = state.cpu.code;
+    const config = selectRunningConfig(state);
     const tick = arg;
     try {
-      const response = await callSimulationImpl(tick, {
-        ...config,
-        code,
-        entryPoint,
-      });
-      return { state: response.state };
+      const response = await callSimulationImpl(tick, config);
+      return response;
     } catch (err) {
       // Log error and show simple error message to the user
       console.error(err);
@@ -225,8 +230,8 @@ export const cpuSlice = createSlice({
   // `createSlice` will infer the state type from the `initialState` argument
   initialState,
   reducers: {
-    setSimulationCode: (state, action: PayloadAction<string>) => {
-      state.code = action.payload;
+    setSimConfig: (state, action: PayloadAction<SimulationConfig>) => {
+      state.config = action.payload;
     },
     highlightSimCode: (state, action: PayloadAction<Reference | null>) => {
       if (action.payload === null) {
@@ -260,9 +265,11 @@ export const cpuSlice = createSlice({
     builder
       .addCase(callSimulation.fulfilled, (state, action) => {
         state.state = action.payload.state;
+        state.stopReason = action.payload.stopReason;
       })
       .addCase(callSimulation.rejected, (state, _action) => {
         state.state = null;
+        state.stopReason = 'kNotStopped';
       })
       .addCase(callSimulation.pending, (_state, _action) => {
         // nothing
@@ -271,7 +278,7 @@ export const cpuSlice = createSlice({
 });
 
 export const {
-  setSimulationCode,
+  setSimConfig,
   highlightSimCode,
   unhighlightSimCode,
   highlightRegister,
@@ -284,6 +291,9 @@ export const {
 
 export const selectCpu = (state: RootState) => state.cpu.state;
 export const selectTick = (state: RootState) => state.cpu.state?.tick ?? 0;
+export const selectStopReason = (state: RootState) => state.cpu.stopReason;
+export const selectRunningConfig = (state: RootState) => state.cpu.config;
+export const selectSimulatedCode = (state: RootState) => state.cpu.config.code;
 
 export const selectAllInstructionFunctionModels = (state: RootState) =>
   state.cpu.state?.managerRegistry.instructionFunctionManager;

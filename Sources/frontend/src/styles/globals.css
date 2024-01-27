@@ -366,6 +366,77 @@
 
   /* Timeline button + press animation */
 
+  /* 4:1 space, 4 cells */
+  .timeline-grid {
+    @apply relative;
+    --cell-size: 2.5rem;
+    --cell-gap: 0.5rem;
+    height: var(--cell-size);
+  }
+
+  /* apply transitions to margin on all children */
+  .timeline-grid * {
+    @apply transition-all duration-500;
+  }
+
+  .timeline-grid .left-arrow {
+    @apply transition-all duration-500;
+  }
+
+  .controls {
+    @apply absolute top-0 left-0 z-10;
+    transform: translateX(-100%) rotate(180deg);
+  }
+
+  .timeline-grid[data-state='0'] .controls {
+    width: calc(var(--cell-size) * 2);
+  }
+
+  .timeline-grid[data-state='1'] .controls {
+    width: calc(var(--cell-size) * 3);
+  }
+
+  .timeline-grid[data-state='2'] .controls {
+    width: calc(var(--cell-size) * 3);
+  }
+
+  .left-arrow {
+    @apply absolute top-0 right-0 opacity-100;
+  }
+
+  .timeline-grid[data-state='0'] .left-arrow {
+    @apply opacity-0;
+  }
+
+  .reset {
+    @apply absolute;
+    height: var(--cell-size);
+    width: var(--cell-size);
+    transform: translateX(-100%) scale(0.5);
+    /* z-index changes after animation */
+    transition: z-index 0s 5s, all 500ms cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 0;
+  }
+
+  .reset div {
+    transition: opacity 500ms 500ms;
+  }
+
+  /* must be 0px ! */
+  .timeline-grid[data-state='0'] .reset {
+  }
+
+  .timeline-grid[data-state='1'] .reset {
+    transform: translateX(var(--cell-gap));
+    z-index: 12;
+  }
+
+  .timeline-grid[data-state='2'] .reset {
+    transform: translateX(calc(0px - var(--cell-size)*2));
+    width: calc(var(--cell-size) * 3 + var(--cell-gap));
+    z-index: 12;
+  }
+
   .iconHighlight {
     @apply duration-100 hover:bg-gray-200 active:bg-gray-300;
   }
