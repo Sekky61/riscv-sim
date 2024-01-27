@@ -48,6 +48,7 @@ import { RobDetailsModal } from '@/components/modals/RobDetailsModal';
 import { SaveIsaChangesModal } from '@/components/modals/SaveIsaChangesModal';
 import { SimCodeDetailModal } from '@/components/modals/SimCodeDetailModal';
 import { MainMemoryDetailsModal } from '@/components/modals/MainMemoryDetailsModal';
+import { SimConfigNotUpToDateModal } from '@/components/modals/SimConfigNotUpToDateModal';
 
 /**
  * Modals to be rendered. They should define their size, padding from the edge of the modal and the content.
@@ -59,6 +60,7 @@ const MODAL_COMPONENTS = {
   FETCH_DETAILS_MODAL: FetchDetailsModal,
   SIMCODE_DETAILS_MODAL: SimCodeDetailModal,
   MAIN_MEMORY_DETAILS_MODAL: MainMemoryDetailsModal,
+  SIM_CONFIG_NOT_UP_TO_DATE_MODAL: SimConfigNotUpToDateModal,
 };
 
 export type ModalType = keyof typeof MODAL_COMPONENTS;

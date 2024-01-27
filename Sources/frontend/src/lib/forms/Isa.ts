@@ -29,6 +29,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { defaultAsmCode } from '@/constant/defaults';
 import { z } from 'zod';
 
 export const predictorDefaults = {
@@ -370,7 +371,7 @@ export const defaultCpuConfig: CpuConfig = {
 
 export const defaultSimulationConfig: SimulationConfig = {
   cpuConfig: defaultCpuConfig,
-  code: '',
+  code: defaultAsmCode,
   memoryLocations: [],
   entryPoint: 0,
 };

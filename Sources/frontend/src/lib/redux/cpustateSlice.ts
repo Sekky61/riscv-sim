@@ -62,7 +62,7 @@ import type {
 } from '@/lib/types/cpuApi';
 import { isValidReference, isValidRegisterValue } from '@/lib/utils';
 import { SimulateResponse } from '@/lib/types/simulatorApi';
-import { SimulationConfig, defaultSimulationConfig } from '@/lib/forms/Isa';
+import { pullSimConfig, selectRunningConfig } from '@/lib/redux/simConfigSlice';
 
 /**
  * Redux state for CPU
@@ -72,10 +72,6 @@ interface CpuSlice {
    * CPU state, loaded from the server
    */
   state: CpuState | null;
-  /**
-   * Simulation config that is currently being simulated. Pulled from the ISA state and the compiler state on request.
-   */
-  config: SimulationConfig;
   /**
    * Reference to the currently highlighted line in the input code.
    * Used to highlight the corresponding objects in visualizations.
@@ -101,37 +97,10 @@ interface CpuSlice {
  */
 const initialState: CpuSlice = {
   state: null,
-  config: defaultSimulationConfig,
   highlightedInputCode: null,
   highlightedSimCode: null,
   highlightedRegister: null,
   stopReason: 'kNotStopped',
-};
-
-/**
- * Copy the code, config and entry point from code editor and config to the simulation.
- * This decouples the settings and what is being simulated at the moment.
- */
-export const pullSimConfig = (): ThunkAction<
-  void,
-  RootState,
-  unknown,
-  Action<string>
-> => {
-  return async (dispatch, getState) => {
-    const state: RootState = getState();
-    const code = selectAsmCode(state);
-    const config = selectActiveConfig(state);
-    const entryPoint = selectEntryPoint(state);
-    dispatch(
-      setSimConfig({
-        code,
-        entryPoint,
-        cpuConfig: config.cpuConfig,
-        memoryLocations: config.memoryLocations,
-      }),
-    );
-  };
 };
 
 /**
@@ -144,7 +113,6 @@ export const reloadSimulation = (): ThunkAction<
   Action<string>
 > => {
   return async (dispatch) => {
-    dispatch(pullSimConfig());
     dispatch(callSimulation(0));
   };
 };
@@ -230,9 +198,6 @@ export const cpuSlice = createSlice({
   // `createSlice` will infer the state type from the `initialState` argument
   initialState,
   reducers: {
-    setSimConfig: (state, action: PayloadAction<SimulationConfig>) => {
-      state.config = action.payload;
-    },
     highlightSimCode: (state, action: PayloadAction<Reference | null>) => {
       if (action.payload === null) {
         throw new Error('highlightSimCode: action.payload === null');
@@ -278,7 +243,6 @@ export const cpuSlice = createSlice({
 });
 
 export const {
-  setSimConfig,
   highlightSimCode,
   unhighlightSimCode,
   highlightRegister,
@@ -292,8 +256,6 @@ export const {
 export const selectCpu = (state: RootState) => state.cpu.state;
 export const selectTick = (state: RootState) => state.cpu.state?.tick ?? 0;
 export const selectStopReason = (state: RootState) => state.cpu.stopReason;
-export const selectRunningConfig = (state: RootState) => state.cpu.config;
-export const selectSimulatedCode = (state: RootState) => state.cpu.config.code;
 
 export const selectAllInstructionFunctionModels = (state: RootState) =>
   state.cpu.state?.managerRegistry.instructionFunctionManager;
@@ -656,6 +618,30 @@ export const selectCache = createSelector(
       }
     }
     return copy;
+  },
+);
+
+/**
+ * Return true if what is simulated matches the code in the editor and the config.
+ * TODO: quick and dirty, refactor.
+ */
+export const selectIsSimUpToDate = createSelector(
+  [selectAsmCode, selectActiveConfig, selectEntryPoint, selectRunningConfig],
+  (code, config, entryPoint, runningConfig) => {
+    const memoryEqual =
+      JSON.stringify(config.memoryLocations) ===
+      JSON.stringify(runningConfig.memoryLocations);
+
+    const cpuConfigEqual =
+      JSON.stringify(config.cpuConfig) ===
+      JSON.stringify(runningConfig.cpuConfig);
+
+    return (
+      code === runningConfig.code &&
+      entryPoint === runningConfig.entryPoint &&
+      memoryEqual &&
+      cpuConfigEqual
+    );
   },
 );
 
