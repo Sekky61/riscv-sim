@@ -186,7 +186,7 @@ function ExamplesButton() {
               onClick={() => {
                 dispatch(openExampleAndCompile(example));
               }}
-              className='flex'
+              className='flex gap-1'
             >
               <div className='flex-grow'>{example.name}</div>
               <div className='flex justify-center w-8 rounded px-0.5 mr-1 bg-amber-300 text-[#694848] text-xs'>

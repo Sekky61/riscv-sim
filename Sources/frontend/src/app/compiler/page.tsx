@@ -49,7 +49,7 @@ export default function HomePage() {
       </Head>
       <div className='flex h-full flex-col'>
         <h1 className='m-2 mb-6 text-2xl'>Code Editor</h1>
-        <div className=' grid min-h-0 flex-grow grid-cols-[160px_2fr_minmax(350px,1fr)] gap-4'>
+        <div className=' editor-container grid min-h-0 flex-grow grid-cols-[160px_2fr_minmax(350px,1fr)] gap-4'>
           <CompileOptions />
           <CCodeInput />
           <AsmDisplay />

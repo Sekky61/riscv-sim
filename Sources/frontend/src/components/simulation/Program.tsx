@@ -43,7 +43,7 @@ import {
 import { useAppSelector } from '@/lib/redux/hooks';
 import { Reference } from '@/lib/types/cpuApi';
 import { ReactClassName } from '@/lib/types/reactTypes';
-import { inputCodeAddress } from '@/lib/utils';
+import { hexPad, hexPadEven, inputCodeAddress } from '@/lib/utils';
 
 import Block from '@/components/simulation/Block';
 import { selectEntryPoint } from '@/lib/redux/compilerSlice';
@@ -89,11 +89,16 @@ export default function Program() {
     </div>
   );
 
+  let entryPointPretty = entryPoint;
+  if (typeof entryPoint === 'number') {
+    entryPointPretty = hexPadEven(entryPoint);
+  }
+
   return (
     <Block
       title='Program'
       className='program justify-self-stretch self-stretch'
-      stats={<div>Entry Point: {entryPoint}</div>}
+      stats={<div>Entry Point: {entryPointPretty}</div>}
     >
       <div
         className='max-h-96 grid gap-1 overflow-y-auto pt-4'

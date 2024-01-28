@@ -283,6 +283,11 @@
     @apply underline decoration-2 decoration-gray-300 hover:decoration-gray-400;
   }
 
+  /* Scrollbar for code editor */
+  .editor-container *::-webkit-scrollbar-track {
+    background-color: #f5f5f5;
+  }
+
   /* Tooltip - behavior only */
 
   .tooltip {

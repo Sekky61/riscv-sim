@@ -118,6 +118,7 @@ export default function Timeline({ className = '' }: TimelineProps) {
       <div className='reset h-full box-content border flex items-center justify-between bg-[#ff7171] rounded-full'>
         <AnimatedButton
           clickCallback={() => dispatch(reloadSimulation())}
+          shortCut='r'
           description='Reload simulation'
           className='m-1 rotate-180'
         >
@@ -126,7 +127,7 @@ export default function Timeline({ className = '' }: TimelineProps) {
         <div
           className={`${
             state === 2 ? 'opacity-100' : 'opacity-0'
-          } flex-grow text-center rotate-180`}
+          } flex-grow text-center rotate-180 mr-4`}
         >
           {message}
         </div>
