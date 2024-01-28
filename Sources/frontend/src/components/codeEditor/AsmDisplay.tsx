@@ -55,10 +55,10 @@ import {
 } from '@/lib/redux/compilerSlice';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 
-import EditorBar from '@/components/codeEditor/EditorBar';
-import clsx from 'clsx';
 import { Button } from '@/components/base/ui/button';
+import EditorBar from '@/components/codeEditor/EditorBar';
 import { StatusIcon } from '@/components/codeEditor/StatusIcon';
+import clsx from 'clsx';
 
 const baseTheme = EditorView.baseTheme({
   '.cm-activeLine': {

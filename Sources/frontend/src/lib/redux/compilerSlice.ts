@@ -37,6 +37,7 @@ import {
 } from '@reduxjs/toolkit';
 import { notify } from 'reapop';
 
+import { defaultAsmCode } from '@/constant/defaults';
 import { transformErrors } from '@/lib/editor/transformErrors';
 import { selectActiveConfig } from '@/lib/redux/isaSlice';
 import type { RootState } from '@/lib/redux/store';
@@ -47,7 +48,6 @@ import {
   ParseAsmResponse,
   SimpleParseError,
 } from '@/lib/types/simulatorApi';
-import { defaultAsmCode } from '@/constant/defaults';
 
 export type OptimizeOption =
   | 'O2'

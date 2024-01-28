@@ -33,9 +33,9 @@ import { selectMemoryBytes, selectProgram } from '@/lib/redux/cpustateSlice';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 
 import Block from '@/components/simulation/Block';
-import React, { memo, useDeferredValue, useEffect } from 'react';
 import { openModal } from '@/lib/redux/modalSlice';
 import { Label } from '@/lib/types/cpuApi';
+import React, { memo, useDeferredValue, useEffect } from 'react';
 
 /**
  * Get the indexes of the memory that are different

@@ -83,8 +83,6 @@ export default function Timeline({ className = '' }: TimelineProps) {
     message = stopReasonToShortString(stopReason);
   }
 
-  console.log(`Timeline: ${tick} ${state}`);
-
   // The .controls is rotated, see the css file.
   // todo make buttons unselectable in certain states
   return (

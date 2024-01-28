@@ -44,10 +44,10 @@ import {
 import { Button } from '@/components/base/ui/button';
 import { Card, CardFooter } from '@/components/base/ui/card';
 import { FetchDetailsModal } from '@/components/modals/FetchDetailsModal';
+import { MainMemoryDetailsModal } from '@/components/modals/MainMemoryDetailsModal';
 import { RobDetailsModal } from '@/components/modals/RobDetailsModal';
 import { SaveIsaChangesModal } from '@/components/modals/SaveIsaChangesModal';
 import { SimCodeDetailModal } from '@/components/modals/SimCodeDetailModal';
-import { MainMemoryDetailsModal } from '@/components/modals/MainMemoryDetailsModal';
 import { SimConfigNotUpToDateModal } from '@/components/modals/SimConfigNotUpToDateModal';
 
 /**

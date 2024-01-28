@@ -59,8 +59,8 @@ import {
 
 import { CodeExample } from '@/constant/codeExamples';
 
-import { RadioInput } from '../form/RadioInput';
 import clsx from 'clsx';
+import { RadioInput } from '../form/RadioInput';
 
 const examples = _examples as unknown as Array<CodeExample>;
 

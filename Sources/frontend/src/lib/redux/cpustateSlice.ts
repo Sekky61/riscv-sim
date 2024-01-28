@@ -44,6 +44,7 @@ import { notify } from 'reapop';
 
 import { selectAsmCode, selectEntryPoint } from '@/lib/redux/compilerSlice';
 import { selectActiveConfig } from '@/lib/redux/isaSlice';
+import { selectRunningConfig } from '@/lib/redux/simConfigSlice';
 import type { RootState } from '@/lib/redux/store';
 import { callSimulationImpl } from '@/lib/serverCalls';
 import type {
@@ -60,9 +61,8 @@ import type {
   SimCodeModel,
   StopReason,
 } from '@/lib/types/cpuApi';
-import { isValidReference, isValidRegisterValue } from '@/lib/utils';
 import { SimulateResponse } from '@/lib/types/simulatorApi';
-import { pullSimConfig, selectRunningConfig } from '@/lib/redux/simConfigSlice';
+import { isValidReference, isValidRegisterValue } from '@/lib/utils';
 
 /**
  * Redux state for CPU
