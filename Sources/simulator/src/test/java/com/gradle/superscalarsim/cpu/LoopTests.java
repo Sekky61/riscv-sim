@@ -117,7 +117,7 @@ public class LoopTests
                 addi sp,sp,32
                 """;
     Cpu cpu = new Cpu(cfg);
-    cpu.execute();
+    cpu.execute(false);
     
     // Assert that bytes 0 to 19 are written to memory
     for (int i = 0; i < 20; i++)

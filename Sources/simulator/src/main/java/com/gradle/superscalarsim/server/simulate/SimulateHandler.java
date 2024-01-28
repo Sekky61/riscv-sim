@@ -98,7 +98,7 @@ public class SimulateHandler implements IRequestResolver<SimulateRequest, Simula
     else
     {
       // Finish the simulation
-      cpu.execute();
+      cpu.execute(false);
     }
     int actualSteps = cpu.cpuState.tick - tickBefore;
     return new SimulateResponse(cpu.cpuState, actualSteps, cpu.stopReason);

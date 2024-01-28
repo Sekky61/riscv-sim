@@ -92,7 +92,7 @@ public class ConfigurationTests
     Cpu cpu = new Cpu(config);
     Assert.assertNotNull(cpu.cpuState);
     
-    cpu.execute();
+    cpu.execute(false);
     Assert.assertEquals(2, cpu.cpuState.statistics.committedInstructions);
   }
   

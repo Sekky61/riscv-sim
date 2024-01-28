@@ -61,7 +61,7 @@ public class HaltTests
                     """;
     Cpu cpu = new Cpu(cfg);
     
-    cpu.execute();
+    cpu.execute(false);
     
     // Assert
     Assert.assertEquals(14, cpu.cpuState.statistics.committedInstructions);
@@ -102,7 +102,7 @@ public class HaltTests
                     """;
     Cpu cpu = new Cpu(cfg);
     
-    cpu.execute();
+    cpu.execute(false);
     
     // Assert
     Assert.assertSame(StopReason.kCallStackHalt, cpu.cpuState.reorderBufferBlock.stopReason);
@@ -125,7 +125,7 @@ public class HaltTests
             """;
     Cpu cpu = new Cpu(cfg);
     
-    cpu.execute();
+    cpu.execute(false);
     
     // Assert
     Assert.assertSame(StopReason.kCallStackHalt, cpu.cpuState.reorderBufferBlock.stopReason);

@@ -164,13 +164,13 @@ public class Cpu implements Serializable
   /**
    * @brief Runs simulation from current state to the end. Flushes cache at the end!
    */
-  public void execute()
+  public void execute(boolean flush)
   {
     while (!simEnded())
     {
       step();
     }
-    if (this.cpuState.cache != null)
+    if (this.cpuState.cache != null && flush)
     {
       // Flush cache
       this.cpuState.cache.flush();

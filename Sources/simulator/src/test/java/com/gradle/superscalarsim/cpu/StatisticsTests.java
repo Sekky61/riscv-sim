@@ -23,7 +23,7 @@ public class StatisticsTests
     // Setup + exercise
     cpuConfig.code = "addi x1, x1, 5";
     Cpu cpu = new Cpu(cpuConfig);
-    cpu.execute();
+    cpu.execute(false);
     
     // Assert
     Assert.assertEquals(1, cpu.cpuState.statistics.staticInstructionMix.intArithmetic);
@@ -41,7 +41,7 @@ public class StatisticsTests
     // Setup + exercise
     cpuConfig.code = "addi x1, x1, 5";
     Cpu cpu = new Cpu(cpuConfig);
-    cpu.execute();
+    cpu.execute(false);
     
     // Assert
     Assert.assertEquals(1, cpu.cpuState.statistics.dynamicInstructionMix.intArithmetic);
@@ -65,7 +65,7 @@ public class StatisticsTests
                 bne t0,a1,.L2""";
     
     Cpu cpu = new Cpu(cpuConfig);
-    cpu.execute();
+    cpu.execute(false);
     
     // Assert
     // mv is a intArithmetic instruction
@@ -91,7 +91,7 @@ public class StatisticsTests
             addi x1, x1, 5""";
     
     Cpu cpu = new Cpu(cpuConfig);
-    cpu.execute();
+    cpu.execute(false);
     
     // Assert
     // At most 4 spec. registers are needed
@@ -110,7 +110,7 @@ public class StatisticsTests
             sb x1, 0(x0)""";
     
     Cpu cpu = new Cpu(cpuConfig);
-    cpu.execute();
+    cpu.execute(false);
     
     // Assert
     // No flush can occur
@@ -131,7 +131,7 @@ public class StatisticsTests
                 bne t0,a1,.L2""";
     
     Cpu cpu = new Cpu(cpuConfig);
-    cpu.execute();
+    cpu.execute(false);
     
     // Assert
     // 10 loops, 9 bad predictions (last one is correct), 9 flushes
@@ -146,7 +146,7 @@ public class StatisticsTests
             addi t0,t0,1""";
     
     Cpu cpu = new Cpu(cpuConfig);
-    cpu.execute();
+    cpu.execute(false);
     
     // Assert
     // There is a "FX" functional unit
@@ -164,7 +164,7 @@ public class StatisticsTests
              lw x9, 0(x7)
              lw x10, 4(x6)""";
     Cpu cpu = new Cpu(cpuConfig);
-    cpu.execute();
+    cpu.execute(false);
     
     // Assert
     Assert.assertEquals(0, cpu.cpuState.statistics.instructionStats.get(0).cacheMisses);
@@ -184,7 +184,7 @@ public class StatisticsTests
             subi x6, x6, 2
             lw x8, 0(x6)""";
     Cpu cpu = new Cpu(cpuConfig);
-    cpu.execute();
+    cpu.execute(false);
     
     // Assert
     // 2 lines are loaded

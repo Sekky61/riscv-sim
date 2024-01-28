@@ -51,7 +51,7 @@ public class ExceptionTests
                     """;
     Cpu cpu = new Cpu(cfg);
     
-    cpu.execute();
+    cpu.execute(false);
     
     // We have stopped
     Assert.assertSame(StopReason.kException, cpu.stopReason);
@@ -76,7 +76,7 @@ public class ExceptionTests
                     """;
     Cpu cpu = new Cpu(cfg);
     
-    cpu.execute();
+    cpu.execute(false);
     
     // We have stopped (ask the cpu why stopped, not ROB!)
     Assert.assertEquals(4, cpu.cpuState.statistics.committedInstructions);
@@ -95,7 +95,7 @@ public class ExceptionTests
                 """;
     Cpu cpu = new Cpu(cfg);
     
-    cpu.execute();
+    cpu.execute(false);
     
     // We have stopped
     Assert.assertSame(StopReason.kException, cpu.stopReason);

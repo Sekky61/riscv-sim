@@ -25,7 +25,7 @@ public class MemoryTests
             arr:
             .word 1""";
     Cpu cpu = new Cpu(cpuConfig);
-    cpu.execute();
+    cpu.execute(false);
     
     // Assert
     long offset = cpu.cpuState.instructionMemoryBlock.getLabelPosition("arr");
@@ -41,7 +41,7 @@ public class MemoryTests
             b:
             .word 1""";
     Cpu cpu = new Cpu(cpuConfig);
-    cpu.execute();
+    cpu.execute(false);
     
     // Assert
     long aOffset = cpu.cpuState.instructionMemoryBlock.getLabelPosition("a");
@@ -58,7 +58,7 @@ public class MemoryTests
             arr:
             .word 1,2,4""";
     Cpu cpu = new Cpu(cpuConfig);
-    cpu.execute();
+    cpu.execute(false);
     
     // Assert
     long offset = cpu.cpuState.instructionMemoryBlock.getLabelPosition("arr");
@@ -77,7 +77,7 @@ public class MemoryTests
             .word 2
             .word 4""";
     Cpu cpu = new Cpu(cpuConfig);
-    cpu.execute();
+    cpu.execute(false);
     
     // Assert
     long offset = cpu.cpuState.instructionMemoryBlock.getLabelPosition("arr");
@@ -97,7 +97,7 @@ public class MemoryTests
             .word   42""";
     
     Cpu cpu = new Cpu(cpuConfig);
-    cpu.execute();
+    cpu.execute(false);
     
     // Assert
     long   offset   = cpu.cpuState.instructionMemoryBlock.getLabelPosition("g");
@@ -115,7 +115,7 @@ public class MemoryTests
             .byte 1, 2""";
     cpuConfig.memoryLocations.add(new MemoryLocation("arr2", 4, DataTypeEnum.kInt, List.of("3")));
     Cpu cpu = new Cpu(cpuConfig);
-    cpu.execute();
+    cpu.execute(false);
     
     // Assert
     long offset1 = cpu.cpuState.instructionMemoryBlock.getLabelPosition("arr");

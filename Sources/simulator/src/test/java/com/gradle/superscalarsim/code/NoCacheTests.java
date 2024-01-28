@@ -32,7 +32,7 @@ public class NoCacheTests
     // the x0 has to be a register
     cfg.code = "lw x1, ptr(x0)";
     Cpu cpu = new Cpu(cfg);
-    cpu.execute();
+    cpu.execute(false);
     
     // Assert
     Assert.assertEquals(42, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt));
@@ -53,7 +53,7 @@ public class NoCacheTests
             lw x1, 0(x4)
             lw x2, 0(x3)""";
     Cpu cpu = new Cpu(cfg);
-    cpu.execute();
+    cpu.execute(false);
     
     // Assert
     Assert.assertEquals((42 << 16),
@@ -73,7 +73,7 @@ public class NoCacheTests
             addi x1, x0, 84
             sw x1, ptr(x0)""";
     Cpu cpu = new Cpu(cfg);
-    cpu.execute();
+    cpu.execute(false);
     
     // Assert
     Assert.assertEquals(84, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt));

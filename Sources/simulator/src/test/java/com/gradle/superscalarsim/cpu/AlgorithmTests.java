@@ -324,7 +324,7 @@ public class AlgorithmTests
     cfg.code            = quicksortAssembly;
     Cpu cpu = new Cpu(cfg);
     
-    cpu.execute();
+    cpu.execute(true);
     
     // Assert
     Assert.assertSame(StopReason.kCallStackHalt, cpu.stopReason);
@@ -341,7 +341,7 @@ public class AlgorithmTests
   {
     // Alignment 2^4
     Cpu cpu = setupCpu(recursiveFactorialCode, "main", List.of());
-    cpu.execute();
+    cpu.execute(false);
     
     // Assert
     Assert.assertSame(StopReason.kCallStackHalt, cpu.stopReason);
@@ -379,7 +379,7 @@ public class AlgorithmTests
     // It should not crash the simulation
     
     Cpu cpu = new Cpu(cfg);
-    cpu.execute();
+    cpu.execute(false);
     
     Assert.assertEquals(-5, (int) cpu.cpuState.unifiedRegisterFileBlock.getRegister("x12").getValue(DataTypeEnum.kInt));
   }
