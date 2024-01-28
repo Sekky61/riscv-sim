@@ -51,6 +51,7 @@ import {
   selectStopReason,
   selectTick,
   simStepBackward,
+  simStepEnd,
   simStepForward,
 } from '@/lib/redux/cpustateSlice';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
@@ -106,6 +107,7 @@ export default function Timeline({ className = '' }: TimelineProps) {
           <ChevronRight strokeWidth={1.5} />
         </AnimatedButton>
         <AnimatedButton
+          clickCallback={() => dispatch(simStepEnd())}
           shortCut='ctrl+enter'
           description='Skip to the end of simulation'
           className='m-1 rotate-180'
@@ -113,17 +115,18 @@ export default function Timeline({ className = '' }: TimelineProps) {
           <ChevronLast strokeWidth={1.5} />
         </AnimatedButton>
       </div>
-      <div className='reset flex items-center justify-between bg-[#ff7171] px-1 rounded-full'>
+      <div className='reset h-full box-content border flex items-center justify-between bg-[#ff7171] rounded-full'>
         <AnimatedButton
           clickCallback={() => dispatch(reloadSimulation())}
           description='Reload simulation'
+          className='m-1 rotate-180'
         >
           <ChevronFirst strokeWidth={1.5} />
         </AnimatedButton>
         <div
           className={`${
             state === 2 ? 'opacity-100' : 'opacity-0'
-          } flex-grow text-center`}
+          } flex-grow text-center rotate-180`}
         >
           {message}
         </div>

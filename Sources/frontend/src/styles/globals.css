@@ -376,11 +376,11 @@
 
   /* apply transitions to margin on all children */
   .timeline-grid * {
-    @apply transition-all duration-500;
+    @apply transition-all duration-200;
   }
 
   .timeline-grid .left-arrow {
-    @apply transition-all duration-500;
+    @apply transition-all duration-200;
   }
 
   .controls {
@@ -412,27 +412,28 @@
     @apply absolute;
     height: var(--cell-size);
     width: var(--cell-size);
-    transform: translateX(-100%) scale(0.5);
     /* z-index changes after animation */
-    transition: z-index 0s 5s, all 500ms cubic-bezier(0.4, 0, 0.2, 1);
+    transform-origin: left;
+    transition: z-index 0s 5s, all 200ms cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 0;
   }
 
-  .reset div {
-    transition: opacity 500ms 500ms;
+  .reset > div {
+    transition: opacity 200ms 200ms;
   }
-
-  /* must be 0px ! */
+  
+  /* In calc() to express 0, you must use 0px ! */
   .timeline-grid[data-state='0'] .reset {
+    transform: rotate(180deg) scale(0.6);
   }
 
   .timeline-grid[data-state='1'] .reset {
-    transform: translateX(var(--cell-gap));
+    transform: rotate(180deg) translateX(calc(0px - var(--cell-gap) - var(--cell-size)));
     z-index: 12;
   }
 
   .timeline-grid[data-state='2'] .reset {
-    transform: translateX(calc(0px - var(--cell-size)*2));
+    transform: rotate(180deg) translateX(calc(0px - var(--cell-gap) - var(--cell-size)));
     width: calc(var(--cell-size) * 3 + var(--cell-gap));
     z-index: 12;
   }

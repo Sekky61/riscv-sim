@@ -39,7 +39,8 @@ public class SimulateRequest
 {
   /**
    * The requested tick to get the state of.
-   * If not specified, the state of the last tick is returned.
+   * Tick 0 is the initial state of the simulation.
+   * If not specified, the state of the last tick is returned (the end of the simulation).
    */
   Optional<Integer> tick;
   /**

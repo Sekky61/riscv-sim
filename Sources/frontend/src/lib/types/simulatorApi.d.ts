@@ -179,9 +179,12 @@ export interface SimulateEndpoint {
   response: SimulateResponse;
 }
 
+/**
+ * Specify tick to get the simulation state at this time (tick 0 is the initial state). Tick is optional. If not provided, the simulation will run until the end.
+ */
 export interface SimulateRequest {
-  tick: number;
-  config: SimulationConfig; // todo: make this required
+  tick: number | null;
+  config: SimulationConfig;
 }
 
 export interface SimulateResponse {

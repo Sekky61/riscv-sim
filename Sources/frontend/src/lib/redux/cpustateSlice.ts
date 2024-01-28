@@ -151,12 +151,28 @@ export const simStepBackward = (): ThunkAction<
 };
 
 /**
+ * Get the final state of the simulation
+ */
+export const simStepEnd = (): ThunkAction<
+  void,
+  RootState,
+  unknown,
+  Action<string>
+> => {
+  return async (dispatch, getState) => {
+    const state: RootState = getState();
+    const config = selectRunningConfig(state);
+    dispatch(callSimulation(null));
+  };
+};
+
+/**
  * Call the simulation API
  * Call example: dispatch(callSimulation(5));
  *
  * @param tick The tick to simulate to
  */
-export const callSimulation = createAsyncThunk<SimulateResponse, number>(
+export const callSimulation = createAsyncThunk<SimulateResponse, number | null>(
   'cpu/callSimulation',
   async (arg, { getState, dispatch }) => {
     // @ts-ignore

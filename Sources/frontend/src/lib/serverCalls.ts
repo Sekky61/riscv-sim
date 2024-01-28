@@ -66,7 +66,7 @@ export async function callParseAsmImpl(
 }
 
 export async function callSimulationImpl(
-  tick: number,
+  tick: number | null,
   cfg: SimulationConfig,
 ): Promise<SimulateResponse> {
   const body: SimulateRequest = {
