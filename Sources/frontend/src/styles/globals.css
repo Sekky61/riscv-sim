@@ -405,7 +405,7 @@
   }
 
   .timeline-grid[data-state='0'] .left-arrow {
-    @apply opacity-0;
+    @apply opacity-0 pointer-events-none;
   }
 
   .reset {

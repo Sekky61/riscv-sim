@@ -70,7 +70,7 @@ export default function Timeline({ className = '' }: TimelineProps) {
   const tick = useAppSelector(selectTick);
   const stopReason = useAppSelector(selectStopReason);
 
-  const cls = clsx('timeline-grid', className);
+  const cls = clsx('timeline-grid drop-shadow', className);
 
   let state = 0;
   let message = '';
@@ -88,13 +88,14 @@ export default function Timeline({ className = '' }: TimelineProps) {
   // todo make buttons unselectable in certain states
   return (
     <div className={cls} data-state={state} data-reset={false}>
-      <div className='controls rounded-full h-full border bg-gray-100 drop-shadow flex justify-start items-center'>
+      <div className='controls rounded-full h-full box-content border bg-gray-100 flex flex-row-reverse justify-end items-center'>
         <AnimatedButton
-          shortCut='ctrl+enter'
-          description='Skip to the end of simulation'
-          className='m-1 rotate-180'
+          shortCut='left'
+          clickCallback={() => dispatch(simStepBackward())}
+          description='Step backward'
+          className='left-arrow m-1 rotate-180'
         >
-          <ChevronLast strokeWidth={1.5} />
+          <ChevronLeft strokeWidth={1.5} />
         </AnimatedButton>
         <AnimatedButton
           shortCut='right'
@@ -105,15 +106,14 @@ export default function Timeline({ className = '' }: TimelineProps) {
           <ChevronRight strokeWidth={1.5} />
         </AnimatedButton>
         <AnimatedButton
-          shortCut='left'
-          clickCallback={() => dispatch(simStepBackward())}
-          description='Step backward'
-          className='left-arrow m-1 rotate-180'
+          shortCut='ctrl+enter'
+          description='Skip to the end of simulation'
+          className='m-1 rotate-180'
         >
-          <ChevronLeft strokeWidth={1.5} />
+          <ChevronLast strokeWidth={1.5} />
         </AnimatedButton>
       </div>
-      <div className='reset flex items-center justify-between bg-[#ff7171] px-1 rounded-full drop-shadow'>
+      <div className='reset flex items-center justify-between bg-[#ff7171] px-1 rounded-full'>
         <AnimatedButton
           clickCallback={() => dispatch(reloadSimulation())}
           description='Reload simulation'
