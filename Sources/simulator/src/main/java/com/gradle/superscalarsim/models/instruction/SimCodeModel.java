@@ -593,4 +593,12 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
   {
     return inputCodeModel.isConditionalBranch();
   }
+  
+  /**
+   * @return debug message info (format string) or null if not present.
+   */
+  public DebugInfo getDebugInfo()
+  {
+    return inputCodeModel.getDebugInfo();
+  }
 }

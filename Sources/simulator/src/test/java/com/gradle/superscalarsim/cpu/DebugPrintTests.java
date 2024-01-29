@@ -27,6 +27,10 @@
 
 package com.gradle.superscalarsim.cpu;
 
+import com.gradle.superscalarsim.blocks.base.UnifiedRegisterFileBlock;
+import com.gradle.superscalarsim.factories.RegisterModelFactory;
+import com.gradle.superscalarsim.loader.InitLoader;
+import com.gradle.superscalarsim.models.instruction.DebugInfo;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -48,7 +52,7 @@ public class DebugPrintTests
     cpuConfig.code = """
             addi x6, x6, 64
             addi x6, x6, 16 #DEBUG"Hello World"
-            subi x6, x6, 2 #haha
+            subi x6, x6, 2 #haha ${
             """;
     Cpu cpu = new Cpu(cpuConfig);
     cpu.execute(false);
@@ -59,5 +63,53 @@ public class DebugPrintTests
                         cpu.cpuState.instructionMemoryBlock.getInstructionAt(4).getDebugInfo().formatString());
     // Other comments are ignored
     Assert.assertNull(cpu.cpuState.instructionMemoryBlock.getInstructionAt(8).getDebugInfo());
+  }
+  
+  @Test
+  public void testFormatter()
+  {
+    // Setup + exercise
+    UnifiedRegisterFileBlock registerFile = new UnifiedRegisterFileBlock(new InitLoader(), 1,
+                                                                         new RegisterModelFactory());
+    DebugLog debugLog = new DebugLog(registerFile);
+    
+    debugLog.add(new DebugInfo("Hello World"), 0);
+    debugLog.add(new DebugInfo("x5 = ${x5}, x6 = ${x6}"), 5);
+    
+    // Assert
+    Assert.assertEquals("Hello World", debugLog.getEntries().get(0).getMessage());
+    Assert.assertEquals("x5 = 0, x6 = 0", debugLog.getEntries().get(1).getMessage());
+  }
+  
+  @Test
+  public void testBadFormatString()
+  {
+    // Setup + exercise
+    UnifiedRegisterFileBlock registerFile = new UnifiedRegisterFileBlock(new InitLoader(), 1,
+                                                                         new RegisterModelFactory());
+    DebugLog debugLog = new DebugLog(registerFile);
+    
+    debugLog.add(new DebugInfo("Hello ${abcd}"), 0);
+    
+    // Assert
+    Assert.assertEquals("Hello [UNKNOWN]", debugLog.getEntries().get(0).getMessage());
+  }
+  
+  @Test
+  public void testDebugPrintFloat()
+  {
+    // Setup + exercise
+    cpuConfig.code = """
+              lla a5,X
+              flw fa5,0(a5) #DEBUG"floats ${f0} and ${fa5}"
+            X:
+              .word   1067030938
+            """;
+    Cpu cpu = new Cpu(cpuConfig);
+    cpu.execute(false);
+    
+    // Assert
+    Assert.assertEquals("floats 0 and 1.2", cpu.cpuState.debugLog.getEntries().get(0).getMessage());
+    Assert.assertTrue(0 < cpu.cpuState.debugLog.getEntries().get(0).getCycle());
   }
 }

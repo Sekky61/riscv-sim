@@ -28,6 +28,9 @@
 
 package com.gradle.superscalarsim.code;
 
+import com.gradle.superscalarsim.enums.DataTypeEnum;
+import com.gradle.superscalarsim.models.register.RegisterDataContainer;
+
 /**
  * @brief Represents a label in the code.
  * Used for jumps, data pointers.
@@ -40,13 +43,25 @@ public class Label
   public String name;
   
   /**
-   * Position of the label in the code (in bytes)
+   * Position of the label in the code (in bytes).
+   * This same object is also referenced by {@link com.gradle.superscalarsim.models.instruction.InputCodeArgument} in the instruction.
+   * So changing this value will change the value in the instruction.
    */
-  public int address;
+  private RegisterDataContainer address;
   
   public Label(String name, int address)
   {
     this.name    = name;
-    this.address = address;
+    this.address = RegisterDataContainer.fromValue(address);
+  }
+  
+  public RegisterDataContainer getAddressContainer()
+  {
+    return address;
+  }
+  
+  public long getAddress()
+  {
+    return (long) address.getValue(DataTypeEnum.kLong);
   }
 }

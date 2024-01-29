@@ -41,9 +41,11 @@ import com.gradle.superscalarsim.blocks.branch.GShareUnit;
 import com.gradle.superscalarsim.blocks.branch.GlobalHistoryRegister;
 import com.gradle.superscalarsim.blocks.loadstore.LoadBufferBlock;
 import com.gradle.superscalarsim.blocks.loadstore.StoreBufferBlock;
+import com.gradle.superscalarsim.cpu.DebugLog;
 import com.gradle.superscalarsim.cpu.SimulationStatistics;
 import com.gradle.superscalarsim.cpu.StopReason;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
+import com.gradle.superscalarsim.models.instruction.DebugInfo;
 import com.gradle.superscalarsim.models.instruction.InputCodeArgument;
 import com.gradle.superscalarsim.models.instruction.InstructionFunctionModel;
 import com.gradle.superscalarsim.models.instruction.SimCodeModel;
@@ -140,6 +142,12 @@ public class ReorderBufferBlock implements AbstractBlock
   @JsonIdentityReference(alwaysAsId = true)
   private StoreBufferBlock storeBufferBlock;
   
+  /**
+   * Debug log
+   */
+  @JsonIdentityReference(alwaysAsId = true)
+  DebugLog debugLog;
+  
   public ReorderBufferBlock()
   {
   }
@@ -168,7 +176,8 @@ public class ReorderBufferBlock implements AbstractBlock
                             BranchTargetBuffer branchTargetBuffer,
                             InstructionFetchBlock instructionFetchBlock,
                             SimulationStatistics statisticsCounter,
-                            long haltTarget)
+                            long haltTarget,
+                            DebugLog debugLog)
   {
     this.renameMapTableBlock    = renameMapTableBlock;
     this.decodeAndDispatchBlock = decodeAndDispatchBlock;
@@ -189,18 +198,8 @@ public class ReorderBufferBlock implements AbstractBlock
     this.bufferSize  = bufferSize;
     this.stopReason  = StopReason.kNotStopped;
     this.haltTarget  = haltTarget;
+    this.debugLog    = debugLog;
   }// end of Constructor
-  //----------------------------------------------------------------------
-  
-  /**
-   * @param storeBufferBlock A Store Buffer block object
-   *
-   * @brief Sets Store Buffer block object
-   */
-  public void setStoreBufferBlock(StoreBufferBlock storeBufferBlock)
-  {
-    this.storeBufferBlock = storeBufferBlock;
-  }// end of setStoreBufferBlock
   //----------------------------------------------------------------------
   
   /**
@@ -233,7 +232,7 @@ public class ReorderBufferBlock implements AbstractBlock
       }
       
       commitCount++;
-      processCommittableInstruction(robItem, cycle);
+      commitInstruction(robItem, cycle);
       removeInstruction(robItem);
       
       if (robItem.getBranchTarget() == haltTarget)
@@ -279,7 +278,7 @@ public class ReorderBufferBlock implements AbstractBlock
    *
    * @brief Process instruction that is ready to be committed
    */
-  private void processCommittableInstruction(SimCodeModel codeModel, int cycle)
+  private void commitInstruction(SimCodeModel codeModel, int cycle)
   {
     codeModel.setCommitId(cycle);
     simulationStatistics.reportCommittedInstruction(codeModel);
@@ -391,6 +390,13 @@ public class ReorderBufferBlock implements AbstractBlock
         throw new IllegalArgumentException("Argument " + argument.name() + " not found in code model");
       }
       renameMapTableBlock.directCopyMapping(tempRegName);
+    }
+    
+    // Arch registers are now updated, print debug info
+    DebugInfo debugInfo = codeModel.getDebugInfo();
+    if (debugInfo != null)
+    {
+      debugLog.add(debugInfo, cycle);
     }
   }// end of processCommittableInstruction
   

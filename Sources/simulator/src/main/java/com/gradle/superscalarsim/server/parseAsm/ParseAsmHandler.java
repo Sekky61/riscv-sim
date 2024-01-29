@@ -29,7 +29,6 @@ package com.gradle.superscalarsim.server.parseAsm;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gradle.superscalarsim.code.CodeParser;
-import com.gradle.superscalarsim.code.Label;
 import com.gradle.superscalarsim.code.ParseError;
 import com.gradle.superscalarsim.loader.InitLoader;
 import com.gradle.superscalarsim.serialization.Serialization;
@@ -39,8 +38,6 @@ import com.gradle.superscalarsim.server.IRequestResolver;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * @class CompileHandler
@@ -64,15 +61,9 @@ public class ParseAsmHandler implements IRequestResolver<ParseAsmRequest, ParseA
     {
       // Parse the code
       InitLoader loader = new InitLoader();
-      CodeParser parser = new CodeParser(loader);
+      CodeParser parser = new CodeParser(loader, request.config.memoryLocations);
       
-      Map<String, Label> knownLabels = new HashMap<>();
-      if (request.config != null)
-      {
-        knownLabels = request.config.getMemoryLocationLabels();
-      }
-      
-      parser.parseCode(request.code, knownLabels);
+      parser.parseCode(request.code);
       
       if (parser.success())
       {

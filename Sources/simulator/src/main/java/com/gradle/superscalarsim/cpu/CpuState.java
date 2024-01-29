@@ -49,7 +49,9 @@ import com.gradle.superscalarsim.models.register.RegisterModel;
 import com.gradle.superscalarsim.serialization.Serialization;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * @class CpuState
@@ -121,6 +123,11 @@ public class CpuState implements Serializable
   // ROB "without the state"
   public ReorderBufferBlock reorderBufferBlock;
   
+  /**
+   * @brief Debug log for debugging/presentation purposes
+   */
+  DebugLog debugLog;
+  
   public CpuState()
   {
     // Empty constructor for serialization
@@ -150,32 +157,31 @@ public class CpuState implements Serializable
     initLoader.getRegisterFile().getRegisterMap(false)
             .forEach((name, model) -> managerRegistry.registerModelManager.addInstance(model));
     
-    // Parse code
-    CodeParser codeParser = new CodeParser(initLoader, inputCodeModelFactory);
-    // Add data labels from config
-    Map<String, Label> dataLabels = new HashMap<>();
-    for (MemoryLocation memoryLocation : config.memoryLocations)
-    {
-      dataLabels.put(memoryLocation.name, new Label(memoryLocation.name, 0)); // Address will be set later
-    }
-    
     this.statistics      = new SimulationStatistics(-1, config.cpuConfig.coreClockFrequency, config.cpuConfig.fUnits);
     this.simulatedMemory = new SimulatedMemory(config.cpuConfig.storeLatency, config.cpuConfig.loadLatency, statistics);
-    // Fill memory with data
-    MemoryInitializer memoryInitializer = new MemoryInitializer(128, config.cpuConfig.callStackSize);
-    // init these first, so that the values are set and written to argument list
-    memoryInitializer.initializeMemory(simulatedMemory, config.memoryLocations, dataLabels);
     
-    codeParser.parseCode(config.code, dataLabels);
+    //
+    // Parse code and allocate memory locations
+    //
+    
+    CodeParser        codeParser        = new CodeParser(initLoader, inputCodeModelFactory, config.memoryLocations);
+    MemoryInitializer memoryInitializer = new MemoryInitializer(128, config.cpuConfig.callStackSize);
+    
+    codeParser.parseCode(config.code);
+    // Parser now holds all memory locations, all labels, all errors
     
     if (!codeParser.success())
     {
       throw new IllegalStateException("Code parsing failed: " + codeParser.getErrorMessages());
     }
-    memoryInitializer.initializeMemory(simulatedMemory, codeParser.getMemoryLocations(), codeParser.getLabels());
-    this.statistics.allocateInstructionStats(codeParser.getInstructions().size());
+    
+    // Initialize memory. This is linked to the values of labels in code, so relocating the labels changes the values in code
+    memoryInitializer.setLabels(codeParser.getLabels());
+    memoryInitializer.addLocations(codeParser.getMemoryLocations());
+    memoryInitializer.initializeMemory(simulatedMemory);
     
     // Count static instruction mix
+    this.statistics.allocateInstructionStats(codeParser.getInstructions().size());
     codeParser.getInstructions()
             .forEach(ins -> statistics.staticInstructionMix.increment(ins.getInstructionTypeEnum()));
     
@@ -187,6 +193,7 @@ public class CpuState implements Serializable
     // Create memory
     this.unifiedRegisterFileBlock = new UnifiedRegisterFileBlock(initLoader, config.cpuConfig.speculativeRegisters,
                                                                  registerModelFactory);
+    this.debugLog                 = new DebugLog(unifiedRegisterFileBlock);
     // Set the sp to the end of the stack
     RegisterModel sp = this.unifiedRegisterFileBlock.getRegister("sp");
     if (sp != null)
@@ -268,7 +275,7 @@ public class CpuState implements Serializable
       {
         throw new IllegalArgumentException("Label " + config.entryPoint + " not found");
       }
-      entryPoint = label.address;
+      entryPoint = (int) label.getAddress();
     }
     else if (config.entryPoint instanceof Integer)
     {
@@ -300,7 +307,7 @@ public class CpuState implements Serializable
                                                      renameMapTableBlock, decodeAndDispatchBlock, storeBufferBlock,
                                                      loadBufferBlock, gShareUnit, branchTargetBuffer,
                                                      instructionFetchBlock, statistics,
-                                                     memoryInitializer.getExitPointer());
+                                                     memoryInitializer.getExitPointer(), debugLog);
     
     // FUs
     this.aluIssueWindowBlock       = new IssueWindowBlock(InstructionTypeEnum.kIntArithmetic);
