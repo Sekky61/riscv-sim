@@ -35,7 +35,6 @@ package com.gradle.superscalarsim.blocks.base;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
-import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.models.RenameMapModel;
 import com.gradle.superscalarsim.models.register.RegisterModel;
@@ -259,8 +258,7 @@ public class RenameMapTableBlock
     {
       String        architecturalRegister = this.registerMap.get(speculativeRegister).getArchitecturalRegister();
       RegisterModel register              = this.registerFileBlock.getRegister(speculativeRegister);
-      long          value                 = (long) register.getValue(DataTypeEnum.kLong);
-      this.registerFileBlock.getRegister(architecturalRegister).setValue(value);
+      this.registerFileBlock.getRegister(architecturalRegister).copyFrom(register);
     }
   }// end of directCopyMapping
   //----------------------------------------------------------------------
