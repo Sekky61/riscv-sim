@@ -49,49 +49,48 @@ import java.util.regex.Pattern;
 import static com.gradle.superscalarsim.compiler.AsmParser.splitLines;
 
 /**
- * @brief Transforms tokens from the lexer into instructions and labels
+ * @brief Transforms tokens from the lexer into instructions and labels. Also collects defined data.
  * @details Class which provides parsing logic for code written in assembly. Code shall contain instructions loaded
  * by InitLoader. Class also verifies parsed code and in case of failure, error message will be provided with
  * line number and cause. Conforms to GCC RISC-V syntax.
+ * <p>
+ * If the code uses memory defined outside the code, it must be supplied in the constructor.
+ * After parsing, the memoryLocations can be passed to {@link com.gradle.superscalarsim.cpu.MemoryInitializer} to initialize the main memory.
  */
 public class CodeParser
 {
+  static Pattern decimalPattern = Pattern.compile("-?\\d+(\\.\\d+)?");
+  static Pattern hexadecimalPattern = Pattern.compile("0x\\p{XDigit}+");
+  static Pattern labelPattern = Pattern.compile("^[a-zA-Z0-9_\\.]+$");
   /**
    * Descriptions of all instructions
    */
   Map<String, InstructionFunctionModel> instructionModels;
-  
   /**
    * Descriptions of all memory locations defined in code
    */
   List<MemoryLocation> memoryLocations;
-  
   /**
-   * Descriptions of all register files
+   * Descriptions of all register files. Links arguments to registers.
    */
   IRegisterFile registerFileModelList;
-  
   /**
    * Factory for creating instances of InputCodeModel
    */
   InputCodeModelFactory inputCodeModelFactory;
-  
   /**
    * Lexer for parsing the code
    */
   Lexer lexer;
-  
   /**
    * Result of the parsing - list of instructions.
    */
   List<InputCodeModel> instructions;
-  
   /**
    * Result of the parsing - list of labels.
    * Some keys may point to the same label object.
    */
   Map<String, Label> labels;
-  
   /**
    * Error messages from parsing ASM code.
    *
@@ -99,19 +98,13 @@ public class CodeParser
    */
   List<ParseError> errorMessages;
   
-  Pattern decimalPattern;
-  Pattern hexadecimalPattern;
-  Pattern registerPattern;
-  Pattern immediatePattern;
-  
   /**
    * For cases when instance manager is not needed
    */
   public CodeParser(InitLoader initLoader)
   {
-    this(initLoader.getInstructionFunctionModels(), initLoader.getRegisterFile(), null, new ArrayList<>());
-    // todo: maybe a dummyManager?
-    this.inputCodeModelFactory = new InputCodeModelFactory();
+    this(initLoader.getInstructionFunctionModels(), initLoader.getRegisterFile(), new InputCodeModelFactory(),
+         new ArrayList<>());
   }
   
   /**
@@ -130,34 +123,18 @@ public class CodeParser
     this.errorMessages         = new ArrayList<>();
     
     // Copy list, but not the objects
+    this.labels          = new HashMap<>();
     this.memoryLocations = new ArrayList<>();
     this.memoryLocations.addAll(memoryLocations);
-    
-    this.decimalPattern     = Pattern.compile("-?\\d+(\\.\\d+)?");
-    this.hexadecimalPattern = Pattern.compile("0x\\p{XDigit}+");
-    this.registerPattern    = Pattern.compile("r[d,s]\\d*");
-    this.immediatePattern   = Pattern.compile("imm\\d*");
-    
   }
   
   /**
-   * For cases when instance manager is not needed, but memory locations are
+   * For cases when instance manager is not needed, but memory locations are needed.
    */
   public CodeParser(InitLoader initLoader, List<MemoryLocation> memoryLocations)
   {
-    this(initLoader.getInstructionFunctionModels(), initLoader.getRegisterFile(), null, memoryLocations);
-    // todo: maybe a dummyManager?
-    this.inputCodeModelFactory = new InputCodeModelFactory();
-  }
-  
-  /**
-   * More convenient constructor
-   *
-   * @brief Constructor when initloader is available
-   */
-  public CodeParser(InitLoader initLoader, InputCodeModelFactory manager, List<MemoryLocation> memoryLocations)
-  {
-    this(initLoader.getInstructionFunctionModels(), initLoader.getRegisterFile(), manager, memoryLocations);
+    this(initLoader.getInstructionFunctionModels(), initLoader.getRegisterFile(), new InputCodeModelFactory(),
+         memoryLocations);
   }
   
   /**
@@ -169,7 +146,7 @@ public class CodeParser
   }
   
   /**
-   * After calling this method, the results can be collected from the instance.
+   * After calling this method, the results (labels, code, data) can be collected from the instance.
    *
    * @param code ASM Code to parse
    *
@@ -180,24 +157,27 @@ public class CodeParser
     // First, scan the code for directives like .asciiz, .word, etc. and note their locations and values
     // Then filter them out so lexer only sees instructions and labels
     this.errorMessages = new ArrayList<>();
-    List<MemoryLocation> codeMemLocs = collectMemoryLocations(code);
-    memoryLocations.addAll(codeMemLocs);
+    collectMemoryLocations(code);
     String filteredCode = filterDirectives(code);
     // memoryLocations now has ALL memory locations, including those defined in the code and config
     
     this.lexer = new Lexer(filteredCode);
     // Collect labels before parsing instructions
-    this.labels = collectCodeLabels();
+    collectCodeLabels();
     // Memory location names must also be known as labels
     for (MemoryLocation mem : memoryLocations)
     {
       // Address not yet known
-      this.labels.put(mem.name, new Label(mem.name, -1));
+      Label label = new Label(mem.name, -1);
+      this.labels.put(mem.name, label);
+      for (String alias : mem.aliases)
+      {
+        this.labels.put(alias, label);
+      }
     }
     
     this.instructions = new ArrayList<>();
     
-    // todo: Labels do not alias (two labels pointing to the same object)
     parse();
     
     // Now that we know the addresses of labels, we can fill in the immediate values
@@ -217,12 +197,11 @@ public class CodeParser
    *
    * @param code ASM code
    */
-  private List<MemoryLocation> collectMemoryLocations(String code)
+  private void collectMemoryLocations(String code)
   {
-    List<MemoryLocation> memoryLocations = new ArrayList<>();
-    List<String>         lines           = splitLines(code);
-    MemoryLocation       mem             = new MemoryLocation(null, 1);
-    boolean              isDataLabel     = false;
+    List<String>   lines       = splitLines(code);
+    MemoryLocation mem         = new MemoryLocation(null, 1);
+    boolean        isDataLabel = false;
     
     // Go through the program
     // Take note of .byte, .hword, .word, .align, .ascii, .asciiz, .string, .skip, .zero
@@ -366,9 +345,11 @@ public class CodeParser
     {
       memoryLocations.add(mem);
     }
-    return memoryLocations;
   }
   
+  /**
+   * @return The code, without directives (data) and without labels pointing to data
+   */
   private String filterDirectives(String code)
   {
     String[]      lines   = code.split("\n");
@@ -387,10 +368,9 @@ public class CodeParser
     return builder.toString();
   }
   
-  private Map<String, Label> collectCodeLabels()
+  private void collectCodeLabels()
   {
-    List<CodeToken>    tokens = lexer.getTokens();
-    Map<String, Label> labels = new HashMap<>();
+    List<CodeToken> tokens = lexer.getTokens();
     for (CodeToken token : tokens)
     {
       if (token.type().equals(CodeToken.Type.LABEL))
@@ -401,12 +381,12 @@ public class CodeParser
           addError(token, "Label '" + labelName + "' already defined");
           continue;
         }
+        // todo multiple labels pointing to the same address/instruction - alias in the map
         // Add label, this is in "bytes"
-        Label lab = new Label(labelName, -1); // todo count instructions or fill later
+        Label lab = new Label(labelName, -1);
         labels.put(labelName, lab);
       }
     }
-    return labels;
   }
   
   /**
@@ -592,7 +572,7 @@ public class CodeParser
     String labelName = lexer.currentToken().text();
     
     // Check label syntax
-    if (!labelName.matches("^[a-zA-Z0-9_\\.]+$"))
+    if (!labelPattern.matcher(labelName).matches())
     {
       // todo test
       addError(lexer.currentToken(), "Invalid label name '" + labelName + "'");
@@ -616,11 +596,7 @@ public class CodeParser
     String symbolName = lexer.currentToken().text();
     
     // Check if symbol is a directive
-    if (symbolName.startsWith("."))
-    {
-      parseDirective();
-    }
-    else
+    if (!symbolName.startsWith("."))
     {
       parseInstruction();
       
@@ -631,6 +607,7 @@ public class CodeParser
         nextToken();
       }
     }
+    // todo maybe filtering would not be necessary if directives were parsed here
   }
   
   /**
@@ -665,11 +642,6 @@ public class CodeParser
     
     return true;
   }// end of checkImmediateArgument
-  
-  private void parseDirective()
-  {
-    // TODO: Implement
-  }
   
   /**
    * @brief Parse instruction. Current token is a symbol with the name of the instruction.
@@ -756,7 +728,7 @@ public class CodeParser
       {
         RegisterModel register = registerFileModelList.getRegister(argumentToken.text());
         inputCodeArgument = new InputCodeArgument(argumentName, argumentToken.text(), register);
-        isValid &= checkRegisterArgument(inputCodeArgument, instructionDataType, argumentToken);
+        isValid           = checkRegisterArgument(inputCodeArgument, instructionDataType, argumentToken);
       }
       else if (argument.isImmediate())
       {
@@ -795,7 +767,7 @@ public class CodeParser
   
   private boolean isNumeralLiteral(String argValue)
   {
-    return this.hexadecimalPattern.matcher(argValue).matches() || this.decimalPattern.matcher(argValue).matches();
+    return hexadecimalPattern.matcher(argValue).matches() || decimalPattern.matcher(argValue).matches();
   }
   
   private InstructionFunctionModel getInstructionFunctionModel(String instructionName)

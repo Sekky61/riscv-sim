@@ -164,18 +164,17 @@ public class CpuState implements Serializable
     // Parse code and allocate memory locations
     //
     
-    CodeParser        codeParser        = new CodeParser(initLoader, inputCodeModelFactory, config.memoryLocations);
-    MemoryInitializer memoryInitializer = new MemoryInitializer(128, config.cpuConfig.callStackSize);
-    
+    CodeParser codeParser = new CodeParser(initLoader.getInstructionFunctionModels(), initLoader.getRegisterFile(),
+                                           inputCodeModelFactory, config.memoryLocations);
     codeParser.parseCode(config.code);
-    // Parser now holds all memory locations, all labels, all errors
-    
     if (!codeParser.success())
     {
       throw new IllegalStateException("Code parsing failed: " + codeParser.getErrorMessages());
     }
+    // Parser now holds all memory locations, all labels, all errors
     
     // Initialize memory. This is linked to the values of labels in code, so relocating the labels changes the values in code
+    MemoryInitializer memoryInitializer = new MemoryInitializer(128, config.cpuConfig.callStackSize);
     memoryInitializer.setLabels(codeParser.getLabels());
     memoryInitializer.addLocations(codeParser.getMemoryLocations());
     memoryInitializer.initializeMemory(simulatedMemory);
@@ -521,8 +520,7 @@ public class CpuState implements Serializable
     boolean pcEnd         = instructionFetchBlock.getPc() >= instructionMemoryBlock.getCode().size() * 4;
     boolean renameEmpty   = decodeAndDispatchBlock.getCodeBuffer().isEmpty();
     boolean fetchNotEmpty = !instructionFetchBlock.getFetchedCode().isEmpty();
-    boolean nop           = fetchNotEmpty && instructionFetchBlock.getFetchedCode().get(0).getInstructionName()
-            .equals("nop");
+    boolean nop = fetchNotEmpty && instructionFetchBlock.getFetchedCode().get(0).getInstructionName().equals("nop");
     if (robEmpty && pcEnd && renameEmpty && nop)
     {
       return StopReason.kEndOfCode;
