@@ -55,7 +55,8 @@ import static com.gradle.superscalarsim.compiler.AsmParser.splitLines;
  * line number and cause. Conforms to GCC RISC-V syntax.
  * <p>
  * If the code uses memory defined outside the code, it must be supplied in the constructor.
- * After parsing, the memoryLocations can be passed to {@link com.gradle.superscalarsim.cpu.MemoryInitializer} to initialize the main memory.
+ * Furthermore, after the initial parse, memory must be allocated (memoryLocations must be passed to {@link com.gradle.superscalarsim.cpu.MemoryInitializer}) to initialize the main memory.
+ * Only then can the immediate values be filled using {@link #fillImmediateValues()}.
  */
 public class CodeParser
 {
@@ -146,13 +147,24 @@ public class CodeParser
   }
   
   /**
+   * Convenient shortcut for code that does not use external memory locations
+   *
+   * @param code ASM code
+   */
+  public void parseCode(String code)
+  {
+    parseCode(code, true);
+  }
+  
+  /**
    * After calling this method, the results (labels, code, data) can be collected from the instance.
    *
-   * @param code ASM Code to parse
+   * @param code           ASM Code to parse
+   * @param fillImmediates If true, the immediate values will be filled. If false, they must be filled manually
    *
    * @brief Parses the code
    */
-  public void parseCode(String code)
+  public void parseCode(String code, boolean fillImmediates)
   {
     // First, scan the code for directives like .asciiz, .word, etc. and note their locations and values
     // Then filter them out so lexer only sees instructions and labels
@@ -181,7 +193,11 @@ public class CodeParser
     parse();
     
     // Now that we know the addresses of labels, we can fill in the immediate values
-    fillImmediateValues();
+    // It must be called !after! allocating memory, because expressions may contain labels
+    if (fillImmediates)
+    {
+      fillImmediateValues();
+    }
     
     // Delete code if errors
     if (!this.errorMessages.isEmpty())
@@ -446,10 +462,16 @@ public class CodeParser
     }
   }
   
-  private void fillImmediateValues()
+  /**
+   * @brief Fills the constantValue field of immediate arguments based on the string representation of the value.
+   * It is an expression of labels and constants.
+   * Examples: "6", "0x6", "label1", "label1+4".
+   */
+  public void fillImmediateValues()
   {
     for (InputCodeModel instruction : instructions)
     {
+      argloop:
       for (InputCodeArgument argument : instruction.getArguments())
       {
         InstructionFunctionModel.Argument argModel = instruction.getInstructionFunctionModel()
@@ -457,29 +479,32 @@ public class CodeParser
         String argumentToken = argument.getValue();
         if (argModel.isImmediate())
         {
-          // May be a label or a constant
-          RegisterDataContainer constantValue = RegisterDataContainer.parseAs(argumentToken, argModel.type());
-          if (constantValue != null)
+          String[] tokens = ExpressionEvaluator.tokenize(argumentToken);
+          // Replace labels with numbers
+          for (int i = 0; i < tokens.length; i++)
           {
-            // Constant
-            argument.setConstantValue(constantValue);
-          }
-          else
-          {
-            // Label, save both string and constant value
-            Label label = labels.get(argumentToken);
+            String  token     = tokens[i];
+            boolean isNumeral = isNumeralLiteral(token);
+            if (isNumeral || ExpressionEvaluator.isOperator(token))
+            {
+              continue;
+            }
+            Label label = labels.get(token);
             if (label == null)
             {
               addError(new CodeToken(0, 0, argumentToken, CodeToken.Type.EOF),
                        "Label '" + argumentToken + "' is not defined");
-              continue;
+              continue argloop;
             }
+            // Replace label with its address
             assert label.getAddress() != -1; // code addresses must be known
+            long address;
             if (argModel.isOffset())
             {
               // Offset must compute the difference between the label and the current instruction
               // and so cannot be linked to the label
               long offset = label.getAddress() - instruction.getPc();
+              address = offset;
               argument.setConstantValue(RegisterDataContainer.fromValue(offset));
             }
             else
@@ -487,8 +512,22 @@ public class CodeParser
               // If label is not defined, it will be caught later
               // This links the constant and the label through the shared reference
               argument.setConstantValue(label.getAddressContainer());
+              address = label.getAddress();
             }
-            
+            tokens[i] = String.valueOf(address);
+          }
+          long evaluated = ExpressionEvaluator.evaluate(tokens);
+          // May be a label or a constant
+          RegisterDataContainer constantValue = RegisterDataContainer.parseAs(String.valueOf(evaluated),
+                                                                              argModel.type());
+          if (constantValue != null)
+          {
+            // Constant
+            argument.setConstantValue(constantValue);
+          }
+          else
+          {
+            throw new RuntimeException("Unknown constant value");
           }
           boolean isLValue = argument.getName().equals("rd");
           checkImmediateArgument(argument, isLValue, new CodeToken(0, 0, argumentToken, CodeToken.Type.EOF));
@@ -633,13 +672,6 @@ public class CodeParser
       this.addError(token, "LValue cannot be immediate value.");
       return false;
     }
-    
-    boolean isDirectValue = isNumeralLiteral(token.text());
-    if (!isDirectValue && !this.labels.containsKey(argument.getValue()))
-    {
-      addError(token, "Argument \"" + argument.getValue() + "\" is not a label or a constant.");
-    }
-    
     return true;
   }// end of checkImmediateArgument
   

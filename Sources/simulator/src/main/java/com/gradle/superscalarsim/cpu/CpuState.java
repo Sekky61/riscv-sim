@@ -166,7 +166,7 @@ public class CpuState implements Serializable
     
     CodeParser codeParser = new CodeParser(initLoader.getInstructionFunctionModels(), initLoader.getRegisterFile(),
                                            inputCodeModelFactory, config.memoryLocations);
-    codeParser.parseCode(config.code);
+    codeParser.parseCode(config.code, false); // false to avoid duplicate work
     if (!codeParser.success())
     {
       throw new IllegalStateException("Code parsing failed: " + codeParser.getErrorMessages());
@@ -178,6 +178,12 @@ public class CpuState implements Serializable
     memoryInitializer.setLabels(codeParser.getLabels());
     memoryInitializer.addLocations(codeParser.getMemoryLocations());
     memoryInitializer.initializeMemory(simulatedMemory);
+    
+    codeParser.fillImmediateValues();
+    if (!codeParser.success())
+    {
+      throw new IllegalStateException("Code parsing failed: " + codeParser.getErrorMessages());
+    }
     
     // Count static instruction mix
     this.statistics.allocateInstructionStats(codeParser.getInstructions().size());
