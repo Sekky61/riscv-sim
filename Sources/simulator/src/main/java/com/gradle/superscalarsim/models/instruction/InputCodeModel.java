@@ -79,6 +79,10 @@ public class InputCodeModel implements IInputCodeModel, Identifiable
    */
   @JsonIdentityReference(alwaysAsId = true)
   private final InstructionFunctionModel instructionFunctionModel;
+  /**
+   * Debug info attached to the instruction
+   */
+  private DebugInfo debugInfo;
   
   /**
    * @param instructionFunctionModel Instruction function model
@@ -98,7 +102,6 @@ public class InputCodeModel implements IInputCodeModel, Identifiable
     this.arguments                = arguments == null ? new ArrayList<>() : arguments;
     this.instructionTypeEnum      = instructionFunctionModel.getInstructionType();
   }// end of Constructor
-  //------------------------------------------------------
   
   /**
    * @param instructionName     Name of the parsed instruction
@@ -122,6 +125,20 @@ public class InputCodeModel implements IInputCodeModel, Identifiable
     this.arguments                = arguments == null ? new ArrayList<>() : arguments;
     this.instructionTypeEnum      = instructionTypeEnum;
   }// end of Constructor
+  
+  /**
+   * @return The debug info attached to the instruction. Null if none present.
+   */
+  public DebugInfo getDebugInfo()
+  {
+    return debugInfo;
+  }
+  //------------------------------------------------------
+  
+  public void setDebugInfo(DebugInfo debugInfo)
+  {
+    this.debugInfo = debugInfo;
+  }
   //------------------------------------------------------
   
   /**

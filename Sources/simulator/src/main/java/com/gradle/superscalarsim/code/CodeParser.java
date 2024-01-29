@@ -32,6 +32,7 @@ import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.RegisterTypeEnum;
 import com.gradle.superscalarsim.factories.InputCodeModelFactory;
 import com.gradle.superscalarsim.loader.InitLoader;
+import com.gradle.superscalarsim.models.instruction.DebugInfo;
 import com.gradle.superscalarsim.models.instruction.InputCodeArgument;
 import com.gradle.superscalarsim.models.instruction.InputCodeModel;
 import com.gradle.superscalarsim.models.instruction.InstructionFunctionModel;
@@ -227,8 +228,7 @@ public class CodeParser
         {
           continue;
         }
-        boolean               isOffset      = instruction.getInstructionFunctionModel()
-                .getArgumentByName(argument.getName()).isOffset();
+        boolean isOffset = instruction.getInstructionFunctionModel().getArgumentByName(argument.getName()).isOffset();
         int                   pc            = instruction.getPc();
         RegisterDataContainer constantValue = new RegisterDataContainer();
         int                   labelValue    = labels.get(argument.getValue()).address;
@@ -400,12 +400,13 @@ public class CodeParser
   
   private String filterDirectives(String code)
   {
-    List<String>  lines   = splitLines(code);
+    String[]      lines   = code.split("\n");
     StringBuilder builder = new StringBuilder();
     for (String line : lines)
     {
+      String trimmedLine = line.trim();
       // do not filter out labels
-      if (line.startsWith(".") && !line.endsWith(":"))
+      if (trimmedLine.startsWith(".") && !trimmedLine.endsWith(":"))
       {
         // Directive
         continue;
@@ -614,6 +615,7 @@ public class CodeParser
   
   /**
    * @brief Parse instruction. Current token is a symbol with the name of the instruction.
+   * If there is a comment with debug info, it is attached to the instruction.
    */
   private void parseInstruction()
   {
@@ -726,6 +728,20 @@ public class CodeParser
     
     InputCodeModel inputCodeModel = inputCodeModelFactory.createInstance(instructionModel, codeArguments,
                                                                          instructions.size());
+    
+    // Optional debug info
+    if (currentToken.type().equals(CodeToken.Type.COMMENT))
+    {
+      boolean isDebugInfo = currentToken.text().startsWith("DEBUG\"") && currentToken.text().endsWith("\"");
+      if (isDebugInfo)
+      {
+        // Filter out the meat
+        String debugInfo = currentToken.text().substring(6, currentToken.text().length() - 1);
+        inputCodeModel.setDebugInfo(new DebugInfo(debugInfo));
+      }
+      nextToken();
+    }
+    
     instructions.add(inputCodeModel);
   }
   
