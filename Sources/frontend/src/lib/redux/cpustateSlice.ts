@@ -333,14 +333,14 @@ export const selectProgramWithLabels = createSelector(
     const labels: Array<Label & { labelName: string }> = [];
     for (const [labelName, label] of Object.entries(program.labels)) {
       // Do not insert labels that are well after the end of the program
-      if (label.address >= (program.code.length + 1) * 4) {
+      if (label.address.bits >= (program.code.length + 1) * 4) {
         continue;
       }
       labels.push({ ...label, labelName });
     }
 
     // Sort labels by address, ascending
-    labels.sort((a, b) => a.address - b.address);
+    labels.sort((a, b) => a.address.bits - b.address.bits);
 
     // Upsert labels into the code
     let offset = 0;
@@ -349,7 +349,7 @@ export const selectProgramWithLabels = createSelector(
       const address = i * 4;
       // Insert labels before the instruction they point to
       let lab = labels[offset];
-      while (lab !== undefined && lab.address === address) {
+      while (lab !== undefined && lab.address.bits === address) {
         codeOrder.push(lab.labelName);
         offset++;
         lab = labels[offset];

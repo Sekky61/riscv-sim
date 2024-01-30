@@ -31,14 +31,15 @@
 
 'use client';
 
+import AnimatedButton from '@/components/AnimatedButton';
 import { ReactChildren } from '@/lib/types/reactTypes';
 import clsx from 'clsx';
+import { ZoomIn, ZoomOut } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 
 type CanvasWindowProps = {
   children: ReactChildren;
-  scale: number;
 };
 
 /**
@@ -48,9 +49,18 @@ type CanvasWindowProps = {
  *
  * TODO: when zoomed, the corners are not visible
  */
-export default function CanvasWindow({ children, scale }: CanvasWindowProps) {
+export default function CanvasWindow({ children }: CanvasWindowProps) {
   const elRef = useRef<HTMLDivElement>(null);
   const [ctrlHeld, setCtrlHeld] = useState(false);
+  const [scale, setScale] = useState(1);
+
+  const scaleUp = () => {
+    setScale(scale + 0.2);
+  };
+
+  const scaleDown = () => {
+    setScale(scale - 0.2);
+  };
 
   // Add cursor change on ctrl
   useHotkeys(
@@ -103,8 +113,62 @@ export default function CanvasWindow({ children, scale }: CanvasWindowProps) {
   );
 
   return (
-    <div onMouseDown={onDragStart} className={cls} ref={elRef}>
-      <div style={{ transform: `scale(${scale})` }}>{children}</div>
-    </div>
+    <>
+      <div onMouseDown={onDragStart} className={cls} ref={elRef}>
+        <div style={{ transform: `scale(${scale})` }}>{children}</div>
+      </div>
+      <ScaleButtons scaleUp={scaleUp} scaleDown={scaleDown} />
+    </>
   );
 }
+
+export type ScaleButtonsProps = {
+  scaleUp: () => void;
+  scaleDown: () => void;
+};
+
+/**
+ * also provides shortcuts
+ */
+const ScaleButtons = ({ scaleUp, scaleDown }: ScaleButtonsProps) => {
+  useHotkeys(
+    'ctrl-+',
+    () => {
+      scaleUp();
+    },
+    { combinationKey: '-', preventDefault: true },
+    [scaleUp],
+  );
+
+  useHotkeys(
+    'ctrl+-',
+    () => {
+      scaleDown();
+    },
+    { preventDefault: true },
+    [scaleDown],
+  );
+
+  return (
+    <div className='absolute bottom-0 right-0 flex flex-col gap-4 p-6'>
+      <AnimatedButton
+        shortCut='ctrl-+'
+        shortCutOptions={{ combinationKey: '-', preventDefault: true }}
+        clickCallback={scaleUp}
+        className='bg-gray-100 rounded-full drop-shadow'
+        description='Zoom in'
+      >
+        <ZoomIn strokeWidth={1.5} />
+      </AnimatedButton>
+      <AnimatedButton
+        shortCut='ctrl+-'
+        shortCutOptions={{ preventDefault: true }}
+        clickCallback={scaleDown}
+        className='bg-gray-100 rounded-full drop-shadow'
+        description='Zoom out'
+      >
+        <ZoomOut strokeWidth={1.5} />
+      </AnimatedButton>
+    </div>
+  );
+};

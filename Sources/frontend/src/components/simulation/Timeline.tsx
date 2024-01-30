@@ -29,21 +29,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+'use client';
+
 import clsx from 'clsx';
 import {
-  ArrowBigLeft,
-  ArrowBigRight,
-  ArrowLeft,
-  ArrowRight,
   ChevronFirst,
   ChevronLast,
   ChevronLeft,
   ChevronRight,
-  FastForward,
-  RefreshCcw,
-  Rewind,
-  SkipBack,
-  SkipForward,
 } from 'lucide-react';
 
 import {

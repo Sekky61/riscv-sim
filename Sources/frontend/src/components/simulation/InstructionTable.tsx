@@ -29,6 +29,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+'use client';
+
 import { useState } from 'react';
 
 import { selectSimCodeModel } from '@/lib/redux/cpustateSlice';
@@ -36,9 +38,9 @@ import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import { Reference } from '@/lib/types/cpuApi';
 
 import { Button } from '@/components/base/ui/button';
-import { instructionTypeName } from '@/lib/utils';
 import { Dialog, DialogTrigger } from '@/components/base/ui/dialog';
 import { InstructionDetailPopup } from '@/components/simulation/InstructionField';
+import { instructionTypeName } from '@/lib/utils';
 
 type InstructionTableProps = {
   instructions: Reference[];

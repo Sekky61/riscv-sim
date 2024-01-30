@@ -29,8 +29,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+'use client';
+
 import { selectMemoryBytes, selectProgram } from '@/lib/redux/cpustateSlice';
-import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
+import { useAppSelector } from '@/lib/redux/hooks';
 
 import {
   DialogContent,
