@@ -66,6 +66,23 @@ public class DebugPrintTests
   }
   
   @Test
+  public void testDebugCommentMalformed()
+  {
+    // Setup
+    DebugLog debugLog = new DebugLog(new UnifiedRegisterFileBlock(new InitLoader(), 1, new RegisterModelFactory()));
+    // Exercise
+    debugLog.add(new DebugInfo(" ${}  $"), 0);
+    debugLog.add(new DebugInfo("  $}  ${}{ "), 0);
+    debugLog.add(new DebugInfo("${{}}"), 0);
+    
+    // Assert
+    // #DEBUG is parsed
+    Assert.assertEquals(" [UNKNOWN]  $", debugLog.getEntries().get(0).getMessage());
+    Assert.assertEquals("  $}  [UNKNOWN]{ ", debugLog.getEntries().get(1).getMessage());
+    Assert.assertEquals("[UNKNOWN]}", debugLog.getEntries().get(2).getMessage());
+  }
+  
+  @Test
   public void testFormatter()
   {
     // Setup + exercise

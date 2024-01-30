@@ -28,6 +28,7 @@
 package com.gradle.superscalarsim.cpu;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.blocks.base.UnifiedRegisterFileBlock;
 import com.gradle.superscalarsim.models.instruction.DebugInfo;
@@ -45,8 +46,10 @@ import java.util.regex.Pattern;
 public class DebugLog
 {
   static String unknownRegister = "[UNKNOWN]";
-  
-  static Pattern formatPattern = Pattern.compile("[$][{](.+?)[}]");
+  /**
+   * The `${registerName}` pattern. It must be non-greedy, otherwise it would match wrong with multiple registers.
+   */
+  static Pattern formatPattern = Pattern.compile("[$][{](.*?)[}]");
   /**
    * List of messages
    */
@@ -54,6 +57,7 @@ public class DebugLog
   /**
    * Registers to format the messages
    */
+  @JsonIdentityReference(alwaysAsId = true)
   private UnifiedRegisterFileBlock registerFile;
   
   /**
