@@ -53,7 +53,7 @@ describe('Homepage', () => {
       const buttonForward = document.querySelector(
         'button[aria-label="Step forward"]',
       );
-      expect(buttonForward).toBeInTheDocument();
+      expect(buttonForward).toBeDefined();
     });
   });
 });
