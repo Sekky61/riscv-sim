@@ -29,10 +29,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-'use client';
-
 import { Inter as FontSans } from 'next/font/google';
-import { type ReactNode, useRef } from 'react';
+import { type ReactNode } from 'react';
 
 import '@/styles/globals.css';
 
@@ -41,7 +39,6 @@ import { cn } from '@/lib/utils';
 import Notifications from '@/components/Notifications';
 import SideBar from '@/components/SideBar';
 import { TooltipProvider } from '@/components/base/ui/tooltip';
-import ModalRoot from '@/components/modals/ModalRoot';
 import PersistedStoreProvider from '@/lib/redux/PersistedStoreProvider';
 
 const fontSans = FontSans({
@@ -50,8 +47,6 @@ const fontSans = FontSans({
 });
 
 export default function RootLayout({ children }: { children: ReactNode }) {
-  const appRef = useRef<HTMLDivElement>(null);
-
   return (
     <html lang='en'>
       <head>
@@ -71,8 +66,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <SideBar />
           <PersistedStoreProvider>
             <TooltipProvider delayDuration={0}>
-              <ModalRoot appRef={appRef} />
-              <div className='relative flex-grow overflow-y-auto' ref={appRef}>
+              <div className='relative flex-grow overflow-y-auto'>
                 {children}
               </div>
             </TooltipProvider>

@@ -31,29 +31,25 @@
 
 import { selectFetch } from '@/lib/redux/cpustateSlice';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
-import { openModal } from '@/lib/redux/modalSlice';
 
+import {
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/base/ui/dialog';
 import Block from '@/components/simulation/Block';
 import InstructionField from '@/components/simulation/InstructionField';
 import { InstructionListDisplay } from '@/components/simulation/InstructionListDisplay';
+import InstructionTable from '@/components/simulation/InstructionTable';
 
 /**
  * A component for displaying the Fetch block.
  */
 export default function FetchBlock() {
-  const dispatch = useAppDispatch();
   const fetchObject = useAppSelector(selectFetch);
 
   if (!fetchObject) return null;
-
-  const handleMore = () => {
-    dispatch(
-      openModal({
-        modalType: 'FETCH_DETAILS_MODAL',
-        modalProps: null,
-      }),
-    );
-  };
 
   const fetchStats = (
     <>
@@ -66,8 +62,37 @@ export default function FetchBlock() {
     <Block
       title='Fetch Block'
       stats={fetchStats}
-      handleMore={handleMore}
       className='fetch-position'
+      detailDialog={
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Fetch Block</DialogTitle>
+            <DialogDescription>
+              Detailed view of the Fetch block
+            </DialogDescription>
+          </DialogHeader>
+          <table>
+            <thead>
+              <tr>
+                <th>PC</th>
+                <th>Number of ways</th>
+                <th>Stall</th>
+                <th>Branch follow limit</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>{fetchObject.pc}</td>
+                <td>{fetchObject.numberOfWays}</td>
+                <td>{fetchObject.stallFlag ? 'Stalled' : 'Not stalled'}</td>
+                <td>{fetchObject.branchFollowLimit}</td>
+              </tr>
+            </tbody>
+          </table>
+          <h2 className='text-xl mt-4 mb-2'>Buffer</h2>
+          <InstructionTable instructions={fetchObject.fetchedCode} />
+        </DialogContent>
+      }
     >
       <InstructionListDisplay
         instructions={fetchObject.fetchedCode}

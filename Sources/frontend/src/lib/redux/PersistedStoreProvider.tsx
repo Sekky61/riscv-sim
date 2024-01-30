@@ -30,9 +30,9 @@
  */
 
 'use client';
+import { AppPersistedStore, makeStore } from '@/lib/redux/store';
 import { useRef } from 'react';
 import { Provider } from 'react-redux';
-import { makeStore, AppPersistedStore } from '@/lib/redux/store';
 import { PersistGate } from 'redux-persist/integration/react';
 
 /**

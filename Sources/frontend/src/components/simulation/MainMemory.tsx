@@ -32,10 +32,15 @@
 import { selectMemoryBytes, selectProgram } from '@/lib/redux/cpustateSlice';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 
+import {
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/base/ui/dialog';
 import Block from '@/components/simulation/Block';
-import { openModal } from '@/lib/redux/modalSlice';
 import { Label } from '@/lib/types/cpuApi';
-import React, { memo, useDeferredValue, useEffect } from 'react';
+import React, { memo, useDeferredValue } from 'react';
 
 /**
  * Get the indexes of the memory that are different
@@ -64,7 +69,6 @@ function getChangedIndexes(
  * Displays the whole memory, up to the highes touched address.
  */
 export default function MainMemory() {
-  const dispatch = useAppDispatch();
   const program = useAppSelector(selectProgram);
   const memory = useAppSelector(selectMemoryBytes) ?? new Uint8Array(0);
   const oldMemory = useDeferredValue(memory);
@@ -73,17 +77,52 @@ export default function MainMemory() {
     return null;
   }
 
-  const handleMore = () => {
-    dispatch(
-      openModal({
-        modalType: 'MAIN_MEMORY_DETAILS_MODAL',
-        modalProps: null,
-      }),
+  const labelTable = [];
+  for (const label of Object.values(program.labels)) {
+    labelTable.push(
+      <tr key={label.name}>
+        <td>{label.name}</td>
+        <td>{label.address.stringRepresentation}</td>
+      </tr>,
     );
-  };
+  }
 
   return (
-    <Block title='Main Memory' className='' handleMore={handleMore}>
+    <Block
+      title='Main Memory'
+      className=''
+      detailDialog={
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Main Memory</DialogTitle>
+            <DialogDescription>
+              Detailed view of the Main Memory
+            </DialogDescription>
+          </DialogHeader>
+          <table className='mb-4'>
+            <thead>
+              <tr>
+                <th>Label</th>
+                <th>Address</th>
+              </tr>
+            </thead>
+            <tbody>{labelTable}</tbody>
+          </table>
+          <div className='py-1'>
+            Memory Inspector - shows the memory up to the highest touched
+            address
+          </div>
+          <div className='max-h-64 flex'>
+            <HexDump
+              memory={memory}
+              labels={program.labels}
+              bytesInRow={16}
+              showAscii
+            />
+          </div>
+        </DialogContent>
+      }
+    >
       <div className='max-h-80 flex text-sm gap-2 font-mono'>
         {memory.length === 0 ? (
           <div className='text-center text-gray-500'>Empty</div>
@@ -142,10 +181,10 @@ export const HexDump = ({
   // Add labels
   // TODO: separate the data labels and code labels using an extra field in the label object
   for (const label of Object.values(labels)) {
-    const el = bytes[label.address];
-    bytes[label.address] = (
+    const el = bytes[Number(label.address.stringRepresentation)];
+    bytes[Number(label.address.stringRepresentation)] = (
       <div
-        key={label.address}
+        key={label.address.bits}
         className='relative bg-gray-200 -m-1 p-1 rounded hover:bg-red-500 hover:rounded-l-none duration-150 group'
       >
         <div className='absolute top-0 right-full h-full p-1 rounded-l bg-red-500 invisible opacity-0 group-hover:visible group-hover:opacity-100 duration-150 translate-x-6 group-hover:translate-x-0'>

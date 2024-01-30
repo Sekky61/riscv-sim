@@ -29,6 +29,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+'use client';
+
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { ReactNode } from 'react';

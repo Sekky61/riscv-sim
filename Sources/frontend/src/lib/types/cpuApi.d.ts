@@ -250,7 +250,7 @@ export interface InstructionMemoryBlock {
 
 export interface Label {
   name: string;
-  address: number;
+  address: RegisterDataContainer;
 }
 
 export type InstructionTypeEnum =

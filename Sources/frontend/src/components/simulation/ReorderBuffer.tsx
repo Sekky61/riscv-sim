@@ -30,15 +30,20 @@
  */
 
 import { selectROB } from '@/lib/redux/cpustateSlice';
-import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
-import { openModal } from '@/lib/redux/modalSlice';
+import { useAppSelector } from '@/lib/redux/hooks';
 
+import {
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/base/ui/dialog';
 import Block from '@/components/simulation/Block';
 import InstructionField from '@/components/simulation/InstructionField';
 import { InstructionListDisplay } from '@/components/simulation/InstructionListDisplay';
+import InstructionTable from '@/components/simulation/InstructionTable';
 
 export default function ReorderBuffer() {
-  const dispatch = useAppDispatch();
   const rob = useAppSelector(selectROB);
 
   if (!rob) return null;
@@ -55,21 +60,26 @@ export default function ReorderBuffer() {
     </>
   );
 
-  const handleMore = () => {
-    dispatch(
-      openModal({
-        modalType: 'ROB_DETAILS_MODAL',
-        modalProps: null,
-      }),
-    );
-  };
-
   return (
     <Block
       title='Reorder Buffer'
       stats={robStats}
-      handleMore={handleMore}
       className='rob'
+      detailDialog={
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Reorder Buffer</DialogTitle>
+            <DialogDescription>
+              Detailed view of the Reorder Buffer
+            </DialogDescription>
+          </DialogHeader>
+          <h2>Buffer</h2>
+          <div>
+            Capacity: {rob.reorderQueue.length}/{rob.bufferSize}
+          </div>
+          <InstructionTable instructions={rob.reorderQueue} />
+        </DialogContent>
+      }
     >
       <InstructionListDisplay
         instructions={rob.reorderQueue}

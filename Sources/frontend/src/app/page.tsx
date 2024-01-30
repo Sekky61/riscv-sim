@@ -40,6 +40,14 @@ import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 
 import AnimatedButton from '@/components/AnimatedButton';
 import CanvasWindow from '@/components/CanvasWindow';
+import { Button } from '@/components/base/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/base/ui/dialog';
 import BranchBlock from '@/components/simulation/BranchBlock';
 import CacheBlock from '@/components/simulation/CacheBlock';
 import DecodeBlock from '@/components/simulation/DecodeBlock';
@@ -52,26 +60,37 @@ import Program from '@/components/simulation/Program';
 import ReorderBuffer from '@/components/simulation/ReorderBuffer';
 import StoreBuffer from '@/components/simulation/StoreBuffer';
 import Timeline from '@/components/simulation/Timeline';
-import { checkAskSimReload } from '@/lib/redux/simConfigSlice';
+import { selectAsmCode, selectEntryPoint } from '@/lib/redux/compilerSlice';
+import { selectActiveConfig } from '@/lib/redux/isaSlice';
+import { pullSimConfig, selectRunningConfig } from '@/lib/redux/simConfigSlice';
+import { notify } from 'reapop';
 
 export default function HomePage() {
   const [scale, setScale] = useState(1);
   const dispatch = useAppDispatch();
   const cpu = useAppSelector(selectCpu);
 
-  const [modalShown, setModalShown] = useState(false);
+  const same = useAreSame();
+  const [openModal, setOpenModal] = useState(!same);
 
   // On page load, check if the simulation config is up to date, show modal to warn and offer to reload
   // biome-ignore lint: supposed to run only once after page load
   useEffect(() => {
-    if (!modalShown) {
-      setModalShown(true);
-      dispatch(checkAskSimReload());
-      if (cpu === null) {
-        dispatch(reloadSimulation());
-      }
+    if (cpu === null) {
+      reload();
     }
-  });
+  }, []);
+
+  const reload = () => {
+    dispatch(pullSimConfig());
+    dispatch(reloadSimulation());
+    dispatch(
+      notify({
+        title: 'Simulation reloaded',
+        status: 'success',
+      }),
+    );
+  };
 
   const scaleUp = () => {
     setScale(scale + 0.2);
@@ -125,6 +144,35 @@ export default function HomePage() {
       <div className='absolute bottom-0 right-0 flex flex-col gap-4 p-4'>
         <ScaleButtons scaleUp={scaleUp} scaleDown={scaleDown} />
       </div>
+      <Dialog open={openModal} onOpenChange={setOpenModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Config not up to date</DialogTitle>
+            <DialogDescription>
+              The code or the configuration of the simulation has changed. Do
+              you want to reload the simulation with the new configuration and
+              code?
+            </DialogDescription>
+          </DialogHeader>
+          <div className='flex gap-4'>
+            <Button
+              onClick={() => {
+                reload();
+                setOpenModal(false);
+              }}
+            >
+              Yes, reload simulation
+            </Button>
+            <Button
+              onClick={() => {
+                setOpenModal(false);
+              }}
+            >
+              No, keep current simulation
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
@@ -178,4 +226,31 @@ const ScaleButtons = ({ scaleUp, scaleDown }: ScaleButtonsProps) => {
       </AnimatedButton>
     </>
   );
+};
+
+/**
+ * Compare differences between the current simulation config and the code editor and config page.
+ * If there are any, ask the user if they want to reload the simulation.
+ */
+const useAreSame = () => {
+  const config = useAppSelector(selectActiveConfig);
+  const runningConfig = useAppSelector(selectRunningConfig);
+  const code = useAppSelector(selectAsmCode);
+  const entryPoint = useAppSelector(selectEntryPoint);
+
+  const memoryEqual =
+    JSON.stringify(config.memoryLocations) ===
+    JSON.stringify(runningConfig.memoryLocations);
+
+  const cpuConfigEqual =
+    JSON.stringify(config.cpuConfig) ===
+    JSON.stringify(runningConfig.cpuConfig);
+
+  const same =
+    code === runningConfig.code &&
+    entryPoint === runningConfig.entryPoint &&
+    memoryEqual &&
+    cpuConfigEqual;
+
+  return same;
 };

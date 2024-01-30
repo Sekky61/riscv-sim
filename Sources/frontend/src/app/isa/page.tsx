@@ -35,7 +35,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Check, ChevronsUpDown } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import React from 'react';
-import { useForm } from 'react-hook-form';
+import { set, useForm } from 'react-hook-form';
 import { notify } from 'reapop';
 
 import { CpuConfig, defaultCpuConfig, isaFormSchema } from '@/lib/forms/Isa';
@@ -47,7 +47,6 @@ import {
   selectIsas,
   updateIsa,
 } from '@/lib/redux/isaSlice';
-import { openModal } from '@/lib/redux/modalSlice';
 import { cn } from '@/lib/utils';
 
 import { Button } from '@/components/base/ui/button';
@@ -60,20 +59,29 @@ import {
   CommandSeparator,
 } from '@/components/base/ui/command';
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/base/ui/dialog';
+import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/base/ui/popover';
 import IsaSettingsForm from '@/components/form/IsaSettingsForm';
-import { SaveIsaChangesModalProps } from '@/components/modals/SaveIsaChangesModal';
 import Link from 'next/link';
 
 // TODO: delete configuration
+// TODO: prevent from leaving the page with unsaved changes
 export default function Page() {
   // Redux
   const dispatch = useAppDispatch();
   const activeIsa = useAppSelector(selectActiveConfig);
   const isas = useAppSelector(selectIsas);
+  const [saveModalOpen, setSaveModalOpen] = useState(false);
+  const [switchingName, setSwitchingName] = useState('');
 
   // If the active ISA is the default, we cannot edit it
   const blockEditing = activeIsa.cpuConfig.name === 'Default';
@@ -141,29 +149,25 @@ export default function Page() {
     );
   };
 
-  const promptForSave = () => {
-    const modalProps: SaveIsaChangesModalProps = {
-      isa: form.getValues(),
-      oldName: activeIsa.cpuConfig.name,
-    };
+  // todo switching without saving does not switch
+  const saveChanges = () => {
+    const oldName = activeIsa.cpuConfig.name;
     dispatch(
-      openModal({
-        modalType: 'CONFIRM_ISA_CHANGES_MODAL',
-        modalProps,
+      updateIsa({
+        isa: form.getValues(),
+        oldName,
       }),
     );
-    // if (confirm('You have unsaved changes. Do you want to save them?')) {
-    //   persistIsaChanges();
-    // }
+    dispatch(
+      notify({
+        title: 'Updates have been saved.',
+        message: 'To use this configuration, reload the simulation.',
+        status: 'success',
+      }),
+    );
   };
 
-  // Set the form values, dispatch the new active ISA
-  const onChangeSelected = (theName: string) => {
-    // If there are unsaved changes, prompt the user to save them
-    // If they do not want to save them, discard them
-    if (hasUnsavedChanges) {
-      promptForSave();
-    }
+  const switchIsa = (theName: string) => {
     dispatch(newActiveIsa(theName));
     // Close the dropdown
     setSavesOpen(false);
@@ -174,6 +178,20 @@ export default function Page() {
         status: 'success',
       }),
     );
+  };
+
+  // Set the form values, dispatch the new active ISA
+  const onChangeSelected = (theName: string) => {
+    // If there are unsaved changes, prompt the user to save them
+    // If they do not want to save them, discard them
+    if (hasUnsavedChanges) {
+      // prompt for saving
+      setSaveModalOpen(true);
+      setSwitchingName(theName);
+    } else {
+      // no unsaved changes, just switch
+      switchIsa(theName);
+    }
   };
 
   return (
@@ -238,6 +256,35 @@ export default function Page() {
       <div className='flex justify-center pb-8'>
         <IsaSettingsForm form={form} disabled={blockEditing} />
       </div>
+      <Dialog open={saveModalOpen} onOpenChange={setSaveModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Save Changes?</DialogTitle>
+            <DialogDescription>
+              You have unsaved changes. Do you want to save them?
+            </DialogDescription>
+          </DialogHeader>
+          <div className='flex gap-4'>
+            <Button
+              onClick={() => {
+                saveChanges();
+                setSaveModalOpen(false);
+              }}
+            >
+              Save changes
+            </Button>
+            <Button
+              onClick={() => {
+                setSaveModalOpen(false);
+                switchIsa(switchingName);
+                setSwitchingName('');
+              }}
+            >
+              Discard changes
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

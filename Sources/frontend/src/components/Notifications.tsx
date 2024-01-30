@@ -29,6 +29,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+'use client';
+
 import { useEffect } from 'react';
 import NotificationsSystem, {
   atalhoTheme,

@@ -37,18 +37,31 @@ import {
   highlightSimCode,
   selectHighlightedSimCode,
   selectSimCodeModel,
+  selectStatistics,
   unhighlightSimCode,
 } from '@/lib/redux/cpustateSlice';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
-import { openModal } from '@/lib/redux/modalSlice';
 import { Reference } from '@/lib/types/cpuApi';
 
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/base/ui/dialog';
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@/components/base/ui/tooltip';
 import ValueInformation from '@/components/simulation/ValueTooltip';
+import {
+  hexPadEven,
+  instructionTypeName,
+  isValidRegisterValue,
+} from '@/lib/utils';
 
 export type InstructionFieldProps = {
   instructionId: Reference | null;
@@ -66,10 +79,11 @@ export default function InstructionField({
 }: InstructionFieldProps) {
   const dispatch = useAppDispatch();
   const q = useAppSelector((state) => selectSimCodeModel(state, simCodeId));
+  const statistics = useAppSelector(selectStatistics);
   const highlightedId = useAppSelector((state) =>
     selectHighlightedSimCode(state),
   );
-  if (!q || simCodeId === undefined) {
+  if (!q || simCodeId === null || statistics === undefined) {
     // Empty field
     return (
       <div className='instruction-bubble flex justify-center items-center px-2 font-mono'>
@@ -78,8 +92,16 @@ export default function InstructionField({
     );
   }
 
-  const { simCodeModel, args } = q;
+  const { simCodeModel, args, inputCodeModel, functionModel } = q;
   const highlighted = highlightedId === simCodeId;
+  const isBranch = functionModel.instructionType === 'kJumpbranch';
+  const pc = inputCodeModel.codeId * 4;
+
+  // This can be null because of NOP
+  const instructionStats = statistics.instructionStats[simCodeId] ?? {
+    committedCount: 0,
+    correctlyPredicted: 0,
+  };
 
   const handleMouseEnter = () => {
     dispatch(highlightSimCode(simCodeId));
@@ -87,15 +109,6 @@ export default function InstructionField({
 
   const handleMouseLeave = () => {
     dispatch(unhighlightSimCode(simCodeId));
-  };
-
-  const showDetail = () => {
-    dispatch(
-      openModal({
-        modalType: 'SIMCODE_DETAILS_MODAL',
-        modalProps: { simCodeId },
-      }),
-    );
   };
 
   function renderInstructionSyntax() {
@@ -126,21 +139,185 @@ export default function InstructionField({
 
   // Tabindex and button for accessibility
   return (
-    <button
-      type='button'
-      className={cls}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-      onClick={showDetail}
-      tabIndex={0}
-    >
-      {renderInstructionSyntax()}
-      {showSpeculative && (
-        <span className='absolute top-0 right-0 p-1 text-xs'>
-          {simCodeModel.speculative ? 'S' : ''}
-        </span>
-      )}
-    </button>
+    <Dialog>
+      <DialogTrigger asChild>
+        <button
+          type='button'
+          className={cls}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+        >
+          {renderInstructionSyntax()}
+          {showSpeculative && (
+            <span className='absolute top-0 right-0 p-1 text-xs'>
+              {simCodeModel.speculative ? 'S' : ''}
+            </span>
+          )}
+        </button>
+      </DialogTrigger>
+      <InstructionDetailPopup simCodeId={simCodeId} />
+    </Dialog>
+  );
+}
+
+export function InstructionDetailPopup({
+  simCodeId,
+}: { simCodeId: Reference | null }) {
+  const q = useAppSelector((state) => selectSimCodeModel(state, simCodeId));
+  const statistics = useAppSelector(selectStatistics);
+  if (!q || simCodeId === null || statistics === undefined) {
+    // Empty field
+    return (
+      <div className='instruction-bubble flex justify-center items-center px-2 font-mono'>
+        <span className='text-gray-400'>empty</span>
+      </div>
+    );
+  }
+
+  const { simCodeModel, args, inputCodeModel, functionModel } = q;
+  const isBranch = functionModel.instructionType === 'kJumpbranch';
+  const pc = inputCodeModel.codeId * 4;
+
+  // This can be null because of NOP
+  const instructionStats = statistics.instructionStats[simCodeId] ?? {
+    committedCount: 0,
+    correctlyPredicted: 0,
+  };
+
+  return (
+    <DialogContent className='max-w-4xl'>
+      <DialogHeader>
+        <DialogTitle>{simCodeModel.renamedCodeLine}</DialogTitle>
+        <DialogDescription>
+          Detailed view of instruction #{simCodeModel.id}
+        </DialogDescription>
+      </DialogHeader>
+      <div className='grid grid-cols-2 gap-4'>
+        <div>
+          <h1 className='text-2xl'>
+            {inputCodeModel.instructionName.toUpperCase()}
+          </h1>
+          <ul>
+            <li>Type: {instructionTypeName(inputCodeModel)}</li>
+          </ul>
+          <h2 className='text-xl mt-2'>Operands</h2>
+          <ul className='flex flex-col gap-4'>
+            {args.map((operand) => {
+              const value = getValue(operand);
+              const valid = operand.register
+                ? isValidRegisterValue(operand.register)
+                : true;
+              return (
+                <li
+                  key={operand.origArg.name}
+                  className='text-sm border rounded-md p-4'
+                >
+                  <span className='text-lg'>
+                    {operand.origArg.name}: {value.stringRepresentation}
+                  </span>
+                  {value && <ValueInformation value={value} valid={valid} />}
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+        <div>
+          <h1 className='text-2xl'>Runtime</h1>
+          <ul>
+            <li>ID: {simCodeModel.id}</li>
+            <li>
+              Address: {hexPadEven(pc)} ({pc})
+            </li>
+            <li>Committed: {instructionStats.committedCount} times</li>
+          </ul>
+          <h2 className='text-xl mt-2'>Timestamps</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Stage</th>
+                <th>Timestamp</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Fetch</td>
+                <td>{renderTimestamp(simCodeModel.fetchId)}</td>
+              </tr>
+              <tr>
+                <td>Issue</td>
+                <td>{renderTimestamp(simCodeModel.issueWindowId)}</td>
+              </tr>
+              <tr>
+                <td>Result Ready</td>
+                <td>{renderTimestamp(simCodeModel.readyId)}</td>
+              </tr>
+              <tr>
+                <td>Commit</td>
+                <td>{renderTimestamp(simCodeModel.commitId)}</td>
+              </tr>
+            </tbody>
+          </table>
+          <h2 className='text-xl mt-2'>Flags</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Flag</th>
+                <th>Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Speculative</td>
+                <td>{renderFlag(simCodeModel.isSpeculative)}</td>
+              </tr>
+              <tr>
+                <td>Busy</td>
+                <td>{renderFlag(simCodeModel.isBusy)}</td>
+              </tr>
+              <tr>
+                <td>Ready To Execute</td>
+                <td>{renderFlag(simCodeModel.readyToExecute)}</td>
+              </tr>
+              <tr>
+                <td>Ready To Commit</td>
+                <td>{renderFlag(simCodeModel.readyToBeCommitted)}</td>
+              </tr>
+              <tr>
+                <td>Finished</td>
+                <td>{renderFlag(simCodeModel.isFinished)}</td>
+              </tr>
+              <tr>
+                <td>Failed</td>
+                <td>{renderFlag(simCodeModel.hasFailed)}</td>
+              </tr>
+            </tbody>
+          </table>
+          {isBranch && (
+            <>
+              <h2 className='text-xl mt-2'>Branch</h2>
+              <ul>
+                <li>
+                  {functionModel.unconditionalJump
+                    ? 'Unconditional'
+                    : 'Conditional'}
+                </li>
+                <li>
+                  Branch Result:{' '}
+                  {simCodeModel.branchPredicted ? 'Branch' : 'Do not branch'}
+                </li>
+                <li>Prediction target: {simCodeModel.branchTarget}</li>
+                <li>Prediction Accuracy: {instructionStats.committedCount}</li>
+              </ul>
+            </>
+          )}
+          <h2 className='text-xl mt-2'>Exception Raised</h2>
+          <p>
+            {simCodeModel.exception ? 'Yes' : 'No'}
+            {simCodeModel.exception?.exceptionMessage}
+          </p>
+        </div>
+      </div>
+    </DialogContent>
   );
 }
 
@@ -170,3 +347,14 @@ function InstructionArgument({ arg }: InstructionArgumentProps) {
     </Tooltip>
   );
 }
+
+/**
+ * Render timestamp. If the timestamp is negative, render a 'N/A' string.
+ */
+const renderTimestamp = (timestamp: number) =>
+  timestamp >= 0 ? timestamp : 'N/A';
+
+/**
+ * Render a flag.
+ */
+const renderFlag = (flag: boolean) => (flag ? 'Yes' : 'No');

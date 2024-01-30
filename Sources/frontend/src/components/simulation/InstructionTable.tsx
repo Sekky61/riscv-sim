@@ -33,11 +33,12 @@ import { useState } from 'react';
 
 import { selectSimCodeModel } from '@/lib/redux/cpustateSlice';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
-import { openModal } from '@/lib/redux/modalSlice';
 import { Reference } from '@/lib/types/cpuApi';
 
 import { Button } from '@/components/base/ui/button';
 import { instructionTypeName } from '@/lib/utils';
+import { Dialog, DialogTrigger } from '@/components/base/ui/dialog';
+import { InstructionDetailPopup } from '@/components/simulation/InstructionField';
 
 type InstructionTableProps = {
   instructions: Reference[];
@@ -114,31 +115,22 @@ type InstructionRowProps = {
  */
 function InstructionRow({ instructionId }: InstructionRowProps) {
   const q = useAppSelector((state) => selectSimCodeModel(state, instructionId));
-  const dispatch = useAppDispatch();
   if (!q) throw new Error('Instruction not found');
   const { simCodeModel, inputCodeModel } = q;
 
   const instructionType = instructionTypeName(inputCodeModel);
 
-  const showDetail = () => {
-    dispatch(
-      openModal({
-        modalType: 'SIMCODE_DETAILS_MODAL',
-        modalProps: { simCodeId: instructionId },
-      }),
-    );
-  };
-
   return (
-    <tr
-      onClick={showDetail}
-      onKeyUp={showDetail}
-      className='hover:bg-gray-100 hover:cursor-pointer'
-    >
-      <td>{simCodeModel.id}</td>
-      <td>{inputCodeModel.instructionName}</td>
-      <td>{instructionType}</td>
-      <td>{inputCodeModel.codeId * 4}</td>
-    </tr>
+    <Dialog>
+      <DialogTrigger asChild>
+        <tr className='hover:bg-gray-100 hover:cursor-pointer'>
+          <td>{simCodeModel.id}</td>
+          <td>{inputCodeModel.instructionName}</td>
+          <td>{instructionType}</td>
+          <td>{inputCodeModel.codeId * 4}</td>
+        </tr>
+      </DialogTrigger>
+      <InstructionDetailPopup simCodeId={instructionId} />
+    </Dialog>
   );
 }

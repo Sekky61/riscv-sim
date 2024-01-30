@@ -49,7 +49,6 @@ import storage from 'redux-persist/lib/storage';
 import compilerReducer, { CompilerReducer } from '@/lib/redux/compilerSlice';
 import cpuReducer from '@/lib/redux/cpustateSlice';
 import isaReducer, { IsaReducer } from '@/lib/redux/isaSlice';
-import modalsReducer from '@/lib/redux/modalSlice';
 import shortcutsReducer from '@/lib/redux/shortcutsSlice';
 import simConfigReducer, { SimConfigReducer } from '@/lib/redux/simConfigSlice';
 
@@ -126,7 +125,6 @@ const reducers = combineReducers({
   ),
   notifications: notificationsReducer(),
   shortcuts: shortcutsReducer,
-  modals: modalsReducer,
   cpu: cpuReducer,
 });
 
