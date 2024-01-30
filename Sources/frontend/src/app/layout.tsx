@@ -33,18 +33,16 @@
 
 import { Inter as FontSans } from 'next/font/google';
 import { type ReactNode, useRef } from 'react';
-import { Provider } from 'react-redux';
-import { PersistGate } from 'redux-persist/integration/react';
 
 import '@/styles/globals.css';
 
-import { persistor, store } from '@/lib/redux/store';
 import { cn } from '@/lib/utils';
 
 import Notifications from '@/components/Notifications';
 import SideBar from '@/components/SideBar';
 import { TooltipProvider } from '@/components/base/ui/tooltip';
 import ModalRoot from '@/components/modals/ModalRoot';
+import PersistedStoreProvider from '@/lib/redux/PersistedStoreProvider';
 
 const fontSans = FontSans({
   subsets: ['latin'],
@@ -69,23 +67,18 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           fontSans.variable,
         )}
       >
-        <Provider store={store}>
-          <PersistGate loading={null} persistor={persistor}>
-            <ModalRoot appRef={appRef} />
+        <div className='flex h-screen max-h-screen w-full'>
+          <SideBar />
+          <PersistedStoreProvider>
             <TooltipProvider delayDuration={0}>
-              <div className='flex h-screen max-h-screen w-full'>
-                <SideBar />
-                <div
-                  className='relative flex-grow overflow-y-auto'
-                  ref={appRef}
-                >
-                  {children}
-                </div>
+              <ModalRoot appRef={appRef} />
+              <div className='relative flex-grow overflow-y-auto' ref={appRef}>
+                {children}
               </div>
             </TooltipProvider>
             <Notifications />
-          </PersistGate>
-        </Provider>
+          </PersistedStoreProvider>
+        </div>
       </body>
     </html>
   );
