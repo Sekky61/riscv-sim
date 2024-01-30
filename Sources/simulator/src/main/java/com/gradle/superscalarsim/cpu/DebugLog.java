@@ -44,17 +44,17 @@ import java.util.regex.Pattern;
 @JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
 public class DebugLog
 {
+  static String unknownRegister = "[UNKNOWN]";
+  
+  static Pattern formatPattern = Pattern.compile("[$][{](.+?)[}]");
   /**
    * List of messages
    */
   private List<Entry> entries;
-  
   /**
    * Registers to format the messages
    */
   private UnifiedRegisterFileBlock registerFile;
-  
-  static String unknownRegister = "[UNKNOWN]";
   
   /**
    * Constructor
@@ -90,23 +90,18 @@ public class DebugLog
     {
       return null;
     }
-    String s = Pattern.compile("[$][{](.+?)[}]").matcher(message).replaceAll(m ->
-                                                                             {
-                                                                               String registerName = m.group(1);
-                                                                               RegisterModel register = registerFile.getRegister(
-                                                                                       registerName);
-                                                                               
-                                                                               if (register == null)
-                                                                               {
-                                                                                 return unknownRegister;
-                                                                               }
-                                                                               
-                                                                               return String.valueOf(
-                                                                                       register.getValueContainer()
-                                                                                               .getString(null));
-                                                                             });
     
-    return s;
+    return formatPattern.matcher(message) // comment to force formatter break line
+            .replaceAll(m ->
+                        {
+                          String        registerName = m.group(1);
+                          RegisterModel register     = registerFile.getRegister(registerName);
+                          if (register == null)
+                          {
+                            return unknownRegister;
+                          }
+                          return String.valueOf(register.getValueContainer().getStringRepresentation());
+                        });
   }
   
   /**

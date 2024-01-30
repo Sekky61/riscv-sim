@@ -214,13 +214,14 @@ public class InstructionTests
   }
   
   /**
-   * SLLI shifts the register left by the immediate
+   * SLLI shifts the register left by the immediate.
    */
   @Test
   public void testSLLI()
   {
     // Setup + exercise
-    cpuConfig.code = "slli x2, x1, 2";
+    cpuConfig.code = """
+            slli x2, x1, 2""";
     Cpu cpu = new Cpu(cpuConfig);
     cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(1);
     cpu.execute(false);

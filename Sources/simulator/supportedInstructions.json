@@ -260,7 +260,7 @@
     "arguments": [
       {
         "name": "rd",
-        "type": "kInt",
+        "type": "kUInt",
         "writeBack": true
       },
       {
@@ -692,7 +692,7 @@
     "arguments": [
       {
         "name": "rd",
-        "type": "kInt",
+        "type": "kUInt",
         "writeBack": true
       },
       {

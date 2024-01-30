@@ -32,6 +32,7 @@
  */
 package com.gradle.superscalarsim.code;
 
+import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.models.instruction.InstructionFunctionModel;
 import com.gradle.superscalarsim.models.instruction.SimCodeModel;
 import com.gradle.superscalarsim.models.util.Result;
@@ -82,6 +83,12 @@ public class CodeArithmeticInterpreter
     
     // return "rd"
     Expression.Variable rd = variables.stream().filter(variable -> variable.tag.equals("rd")).findFirst().orElse(null);
+    
+    if (rd != null)
+    {
+      DataTypeEnum resultType = instruction.getArgumentByName("rd").type();
+      rd.value.setCurrentType(resultType);
+    }
     return new Result<>(rd);
   }// end of interpretInstruction
   //-------------------------------------------------------------------------------------------

@@ -112,4 +112,39 @@ public class DebugPrintTests
     Assert.assertEquals("floats 0 and 1.2", cpu.cpuState.debugLog.getEntries().get(0).getMessage());
     Assert.assertTrue(0 < cpu.cpuState.debugLog.getEntries().get(0).getCycle());
   }
+  
+  @Test
+  public void testDebugPrintNegative()
+  {
+    // Setup + exercise
+    cpuConfig.code = """
+              subi a5,x0,4 #DEBUG"negative ${a5}"
+            """;
+    Cpu cpu = new Cpu(cpuConfig);
+    cpu.execute(false);
+    
+    // Assert
+    String message = cpu.cpuState.debugLog.getEntries().get(0).getMessage();
+    Assert.assertTrue(message.equals("negative -4") || message.equals("negative 4294967292"));
+    Assert.assertTrue(0 < cpu.cpuState.debugLog.getEntries().get(0).getCycle());
+  }
+  
+  @Test
+  public void testDebugPrintUnsigned()
+  {
+    // Setup + exercise
+    cpuConfig.code = """
+              addi x1, x0, 0x40000000
+              subi x7, x0, 1
+              srli x7, x7, 0
+              slli x2, x1, 1 #DEBUG"unsigned ${x2} and ${x7}"
+            """;
+    Cpu cpu = new Cpu(cpuConfig);
+    cpu.execute(false);
+    
+    // Assert
+    // should be 0b1000000... and 0b11111... so 2147483648 and 4294967295
+    Assert.assertEquals(1, cpu.cpuState.debugLog.getEntries().size());
+    Assert.assertEquals("unsigned 2147483648 and 4294967295", cpu.cpuState.debugLog.getEntries().get(0).getMessage());
+  }
 }

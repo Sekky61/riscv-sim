@@ -166,8 +166,17 @@ public class RegisterDataContainer
     {
       type = currentType;
     }
-    Object v = getValue(type);
-    return v.toString();
+    return switch (type)
+    {
+      case kByte, kShort, kInt, kLong -> Long.toString(bits);
+      case kUInt, kULong -> Long.toUnsignedString(bits);
+      case kFloat -> Float.intBitsToFloat((int) bits) + "";
+      case kDouble -> Double.longBitsToDouble(bits) + "";
+      case kChar -> Character.toString((char) bits);
+      case kBool -> bits != 0 ? "true" : "false";
+    };
+    //    Object v = getValue(type);
+    //    return v.toString();
   }
   
   /**

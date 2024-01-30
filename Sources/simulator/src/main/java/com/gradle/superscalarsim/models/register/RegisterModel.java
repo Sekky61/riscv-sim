@@ -180,7 +180,7 @@ public class RegisterModel implements Identifiable
   @Override
   public String toString()
   {
-    return "register " + name + (isConstant ? ", const" : "") + " = " + value.getString(null);
+    return "register " + name + (isConstant ? ", const" : "") + " = " + value.getStringRepresentation();
   }// end of toString
   //------------------------------------------------------
   
