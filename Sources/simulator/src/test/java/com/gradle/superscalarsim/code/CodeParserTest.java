@@ -38,6 +38,28 @@ public class CodeParserTest
   }
   
   @Test
+  public void parseCode_parenSyntax()
+  {
+    String code = """
+            sw x3, 0,x2)
+            sw x3( 0(x2
+            sw x3( 0,x2)
+            sw x3) 0,x2
+            sw x3, 0(x2
+            sw x3, 0,x2,
+            sw x3, 0,x2(
+            sw x3, 0,x2 # legit
+            sw x3, 0(x2) # legit
+            """;
+    codeParser.parseCode(code);
+    
+    Assert.assertFalse(codeParser.success());
+    Assert.assertEquals(7, codeParser.getErrorMessages().size());
+    // last one is valid, but code is not emitted if there are errors
+    Assert.assertEquals(0, codeParser.getInstructions().size());
+  }
+  
+  @Test
   public void parseCode_codeValid_returnTrueAndParsedCodeHasThreeInstr()
   {
     String code = """
@@ -134,6 +156,23 @@ public class CodeParserTest
   }
   
   @Test
+  public void parseCode_fewArguments_comment()
+  {
+    String code = """
+            one:
+            add x1, x2 # a comment here
+            nop
+            nop
+            """;
+    codeParser.parseCode(code);
+    
+    Assert.assertFalse(codeParser.success());
+    
+    Assert.assertEquals(1, this.codeParser.getErrorMessages().size());
+    Assert.assertEquals(2, this.codeParser.getErrorMessages().get(0).line);
+  }
+  
+  @Test
   public void parseCode_codeWithMissingLabel_returnFalseAndErrorMessageIsSet()
   {
     String code = """
@@ -198,7 +237,7 @@ public class CodeParserTest
     Assert.assertFalse(codeParser.success());
     Assert.assertEquals(0, codeParser.getInstructions().size());
     
-    Assert.assertEquals(1, codeParser.getErrorMessages().size());
+    Assert.assertEquals(3, codeParser.getErrorMessages().size());
     Assert.assertEquals(2, codeParser.getErrorMessages().get(0).line);
   }
   
@@ -282,6 +321,23 @@ public class CodeParserTest
     Assert.assertEquals(0, codeParser.getInstructions().size());
     
     Assert.assertEquals(1, codeParser.getErrorMessages().size());
+  }
+  
+  @Test
+  public void parseCode_twoLabelsOnOneLine()
+  {
+    String code = """
+            one: two:
+            addi x1, x2, 5
+            """;
+    codeParser.parseCode(code);
+    
+    Assert.assertTrue(codeParser.success());
+    Assert.assertEquals(1, codeParser.getInstructions().size());
+    
+    Assert.assertEquals(2, codeParser.labels.size());
+    Assert.assertEquals(0, codeParser.labels.get("one").getAddress());
+    Assert.assertEquals(0, codeParser.labels.get("two").getAddress());
   }
   
   @Test
@@ -499,6 +555,18 @@ public class CodeParserTest
   {
     String code = """
             hello:
+            .ascii 5
+            """;
+    codeParser.parseCode(code);
+    
+    Assert.assertFalse(codeParser.success());
+  }
+  
+  @Test
+  public void parseCode_wrong_label()
+  {
+    String code = """
+            hel%lo:
             .ascii 5
             """;
     codeParser.parseCode(code);
@@ -773,7 +841,7 @@ public class CodeParserTest
     
     long address = codeParser.labels.get("N").getAddress();
     
-    Assert.assertTrue(address % 8 == 0);
+    Assert.assertEquals(0, address % 8);
     
     Assert.assertEquals((byte) 0x34, memory.getFromMemory(address));
     Assert.assertEquals((byte) 0x12, memory.getFromMemory(address + 1));

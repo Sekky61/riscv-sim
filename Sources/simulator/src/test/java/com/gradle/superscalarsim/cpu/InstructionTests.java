@@ -1690,22 +1690,29 @@ public class InstructionTests
   }
   
   /**
-   * LB loads a byte from memory
+   * LB loads a byte from memory.
+   * This test uses both syntaxes
    */
   @Test
   public void testLB()
   {
     // Setup + exercise
-    cpuConfig.code = "lb x1, 0(x2)\n" + "lb x3, 2(x4)";
+    cpuConfig.code = """
+            lb x1, 0(x2)
+            lb x3, 2(x4)
+            lb x5, 1(x2)""";
     Cpu cpu = new Cpu(cpuConfig);
     cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(0x100);
     cpu.cpuState.unifiedRegisterFileBlock.getRegister("x4").setValue(0xfe);
-    cpu.cpuState.simulatedMemory.insertIntoMemory(0x100, new byte[]{(byte) 0b11});
+    cpu.cpuState.simulatedMemory.insertIntoMemory(0x100, new byte[]{(byte) 0b11, (byte) 0x88});
     cpu.execute(false);
     
     // Assert
     Assert.assertEquals(0b11, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt));
     Assert.assertEquals(0b11, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x3").getValue(DataTypeEnum.kInt));
+    // Sign extends
+    Assert.assertEquals(0xffffff88,
+                        cpu.cpuState.unifiedRegisterFileBlock.getRegister("x5").getValue(DataTypeEnum.kInt));
   }
   
   /**

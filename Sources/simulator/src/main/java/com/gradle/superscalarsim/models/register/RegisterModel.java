@@ -331,4 +331,19 @@ public class RegisterModel implements Identifiable
     // todo: a small hack
     return this.name.startsWith("tg");
   }
+  
+  /**
+   * @param argumentDataType The datatype of an argument
+   *
+   * @return True if value type is compatible with register, otherwise false
+   * @brief Check argument and register data types if they fit within each other
+   */
+  public boolean canHold(final DataTypeEnum argumentDataType)
+  {
+    return switch (argumentDataType)
+    {
+      case kInt, kUInt, kLong, kULong, kBool, kByte, kShort, kChar -> type == RegisterTypeEnum.kInt;
+      case kFloat, kDouble -> type == RegisterTypeEnum.kFloat;
+    };
+  }// end of checkDatatype
 }

@@ -56,6 +56,11 @@ public class ExpressionEvaluator
   static String number = hexNumbers + "|" + binaryNumbers + "|" + decNumbers;
   static Pattern pattern = Pattern.compile(number + "|" + operators + "|[\\w\\.]+");
   
+  public static boolean isLiteral(String token)
+  {
+    return token.matches(number);
+  }
+  
   public static boolean isOperator(String token)
   {
     return token.matches(operators);

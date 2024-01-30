@@ -29,7 +29,6 @@ package com.gradle.superscalarsim.code;
 
 import com.gradle.superscalarsim.cpu.MemoryLocation;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
-import com.gradle.superscalarsim.enums.RegisterTypeEnum;
 import com.gradle.superscalarsim.factories.InputCodeModelFactory;
 import com.gradle.superscalarsim.loader.InitLoader;
 import com.gradle.superscalarsim.models.instruction.DebugInfo;
@@ -60,9 +59,10 @@ import static com.gradle.superscalarsim.compiler.AsmParser.splitLines;
  */
 public class CodeParser
 {
-  static Pattern decimalPattern = Pattern.compile("-?\\d+(\\.\\d+)?");
-  static Pattern hexadecimalPattern = Pattern.compile("0x\\p{XDigit}+");
-  static Pattern labelPattern = Pattern.compile("^[a-zA-Z0-9_\\.]+$");
+  /**
+   * Label consists of alphanumeric characters, underscores and dots. The ':' (colon) is not part of the label.
+   */
+  static Pattern labelPattern = Pattern.compile("^[a-zA-Z0-9_.]+$");
   /**
    * Descriptions of all instructions
    */
@@ -430,7 +430,7 @@ public class CodeParser
         parseDirectiveOrInstruction();
       }
       
-      // Skip comment
+      // Skip comment. Comment is also parsed in instruction parsing, where it can be a debug info.
       if (lexer.currentToken().type().equals(CodeToken.Type.COMMENT))
       {
         nextToken();
@@ -450,16 +450,7 @@ public class CodeParser
       }
       nextToken();
     }
-    
-    // Check if all labels are defined
-    for (Label unconfirmedLabel : labels.values())
-    {
-      if (unconfirmedLabel.getAddress() == -1)
-      {
-        addError(new CodeToken(0, 0, unconfirmedLabel.name, CodeToken.Type.EOF),
-                 "Label '" + unconfirmedLabel.name + "' is not defined");
-      }
-    }
+    // End of code
   }
   
   /**
@@ -483,9 +474,8 @@ public class CodeParser
           // Replace labels with numbers
           for (int i = 0; i < tokens.length; i++)
           {
-            String  token     = tokens[i];
-            boolean isNumeral = isNumeralLiteral(token);
-            if (isNumeral || ExpressionEvaluator.isOperator(token))
+            String token = tokens[i];
+            if (ExpressionEvaluator.isLiteral(token) || ExpressionEvaluator.isOperator(token))
             {
               continue;
             }
@@ -602,7 +592,8 @@ public class CodeParser
   }
   
   /**
-   * @brief Parse label. Current token is the label name, peek token is colon.
+   * @brief Parse label. Current token is the label name, colon is removed by lexer.
+   * The label must already be defined in the labels map, here it is only assigned an address.
    */
   private void parseLabel()
   {
@@ -613,7 +604,6 @@ public class CodeParser
     // Check label syntax
     if (!labelPattern.matcher(labelName).matches())
     {
-      // todo test
       addError(lexer.currentToken(), "Invalid label name '" + labelName + "'");
     }
     
@@ -639,9 +629,9 @@ public class CodeParser
     {
       parseInstruction();
       
-      // Skip to the next line
+      // Maybe the instruction parsing failed. Skip until newline, comment, EOF
       while (!lexer.currentToken().type().equals(CodeToken.Type.NEWLINE) && !lexer.currentToken().type()
-              .equals(CodeToken.Type.EOF))
+              .equals(CodeToken.Type.EOF) && !lexer.currentToken().type().equals(CodeToken.Type.COMMENT))
       {
         nextToken();
       }
@@ -678,6 +668,8 @@ public class CodeParser
   /**
    * @brief Parse instruction. Current token is a symbol with the name of the instruction.
    * If there is a comment with debug info, it is attached to the instruction.
+   * @details Collects arguments of an instruction from the token stream.
+   * If the instruction is invalid, the token stream can be only partially consumed.
    */
   private void parseInstruction()
   {
@@ -685,7 +677,7 @@ public class CodeParser
     
     CodeToken                instructionNameToken = lexer.currentToken();
     String                   instructionName      = instructionNameToken.text();
-    InstructionFunctionModel instructionModel     = getInstructionFunctionModel(instructionName);
+    InstructionFunctionModel instructionModel     = instructionModels.get(instructionName);
     
     // Check if instruction is valid
     if (instructionModel == null)
@@ -704,30 +696,28 @@ public class CodeParser
       return;
     }
     
+    // Validate register arguments
+    List<InputCodeArgument> codeArguments = new ArrayList<>();
+    
     // Collect args, fill with defaults if needed
-    Map<String, CodeToken> args               = new HashMap<>();
-    int                    numArguments       = collectedArgs.size();
-    int                    collectedArgsIndex = 0;
+    // todo: are two kinds of syntax allowed for l/s instructions?: l/s rd,imm(rs1) and l/s rd,rs1,imm ??
+    int numArguments       = collectedArgs.size();
+    int collectedArgsIndex = 0;
     boolean useDefaultArgs = numArguments < instructionModel.getAsmArguments()
             .size() && instructionModel.hasDefaultArguments();
     for (InstructionFunctionModel.Argument argument : instructionModel.getArguments())
     {
-      String  key        = argument.name();
-      boolean hasDefault = argument.defaultValue() != null;
-      if (argument.silent())
+      boolean   hasDefault = argument.defaultValue() != null;
+      CodeToken argumentToken;
+      if ((argument.silent() || useDefaultArgs) && hasDefault)
       {
-        // Add to the args, assumes all silent arguments have default values
-        args.put(key, new CodeToken(0, 0, argument.defaultValue(), CodeToken.Type.EOF));
-      }
-      else if (useDefaultArgs && hasDefault)
-      {
-        // Use default argument
-        args.put(key, new CodeToken(0, 0, argument.defaultValue(), CodeToken.Type.EOF));
+        // Add default value to the args
+        argumentToken = new CodeToken(0, 0, argument.defaultValue(), CodeToken.Type.EOF);
       }
       else if (collectedArgsIndex < collectedArgs.size())
       {
         // Use collected argument
-        args.put(key, collectedArgs.get(collectedArgsIndex));
+        argumentToken = collectedArgs.get(collectedArgsIndex);
         collectedArgsIndex++;
       }
       else
@@ -736,6 +726,28 @@ public class CodeParser
         addError(instructionNameToken, "Missing argument " + argument.name());
         return;
       }
+      
+      // Now check the argument
+      
+      String            argumentName      = argument.name();
+      boolean           isValid           = true;
+      InputCodeArgument inputCodeArgument = new InputCodeArgument(argumentName, argumentToken.text());
+      if (argument.isRegister())
+      {
+        // Try to find the register. Its existence ic checked in the next step
+        RegisterModel register = registerFileModelList.getRegister(argumentToken.text());
+        inputCodeArgument.setRegisterValue(register);
+        isValid = checkRegisterArgument(inputCodeArgument, argument.type(), argumentToken);
+      }
+      else if (!argument.isImmediate())
+      {
+        // Immediate values are checked later
+        throw new RuntimeException("Unknown argument type");
+      }
+      if (isValid)
+      {
+        codeArguments.add(inputCodeArgument);
+      }
     }
     
     if (collectedArgsIndex < collectedArgs.size())
@@ -743,38 +755,6 @@ public class CodeParser
       // Not all arguments were used
       addError(instructionNameToken, "Too many arguments");
       return;
-    }
-    
-    // Validate arguments
-    List<InputCodeArgument> codeArguments = new ArrayList<>();
-    for (InstructionFunctionModel.Argument argument : instructionModel.getArguments())
-    {
-      CodeToken argumentToken = args.get(argument.name());
-      String    argumentName  = argument.name();
-      // Try to find the register
-      boolean           isValid             = true;
-      boolean           isLValue            = argumentName.equals("rd");
-      InputCodeArgument inputCodeArgument   = null;
-      DataTypeEnum      instructionDataType = instructionModel.getArgumentByName(argumentName).type();
-      if (argument.isRegister())
-      {
-        RegisterModel register = registerFileModelList.getRegister(argumentToken.text());
-        inputCodeArgument = new InputCodeArgument(argumentName, argumentToken.text(), register);
-        isValid           = checkRegisterArgument(inputCodeArgument, instructionDataType, argumentToken);
-      }
-      else if (argument.isImmediate())
-      {
-        // check later
-        inputCodeArgument = new InputCodeArgument(argumentName, argumentToken.text());
-      }
-      else
-      {
-        throw new RuntimeException("Unknown argument type");
-      }
-      if (isValid)
-      {
-        codeArguments.add(inputCodeArgument);
-      }
     }
     
     InputCodeModel inputCodeModel = inputCodeModelFactory.createInstance(instructionModel, codeArguments,
@@ -797,59 +777,52 @@ public class CodeParser
     instructions.add(inputCodeModel);
   }
   
-  private boolean isNumeralLiteral(String argValue)
-  {
-    return hexadecimalPattern.matcher(argValue).matches() || decimalPattern.matcher(argValue).matches();
-  }
-  
-  private InstructionFunctionModel getInstructionFunctionModel(String instructionName)
-  {
-    return instructionModels.get(instructionName);
-  }
-  
   /**
-   * @return List of tokens representing arguments, null in case of error
-   * @brief Collects arguments of an instruction from the token stream
+   * @return List of tokens representing arguments, null in case of error.
+   * @brief Collects arguments of an instruction from the token stream.
+   * @details Instructions with parentheses can also be written with commas (example: flw rd,imm(rs1) and also flw rd,imm,rs1).
    */
   private List<CodeToken> collectInstructionArgs()
   {
-    // TODO: bugs like: addi x1(x2(x3
-    boolean         openParen         = false;
-    boolean         expectingArgState = true;
-    boolean         followsSeparator  = false;
-    List<CodeToken> collectedArgs     = new ArrayList<>();
+    // Parse NOTHING | (SYMBOL (SEPARATOR SYMBOL)*)  -- (also case with zero arguments)
+    // TODO: find out if to allow parens only on load/store instructions
+    List<CodeToken> collectedArgs = new ArrayList<>();
+    
+    // No arguments case
+    if (!lexer.currentToken().type().equals(CodeToken.Type.SYMBOL))
+    {
+      return collectedArgs;
+    }
+    
+    // 1+ arguments case
+    boolean openParen         = false;
+    boolean expectingArgState = true;
+    boolean afterClosedParen  = false;
     while (true)
     {
-      // instructions with parentheses can also be written with commas
-      // example: flw rd,imm(rs1) also flw rd,imm,rs1
-      
       if (expectingArgState)
       {
         if (!lexer.currentToken().type().equals(CodeToken.Type.SYMBOL))
         {
-          if (followsSeparator)
+          if (afterClosedParen)
           {
-            addError(lexer.currentToken(), "Expected argument, got " + lexer.currentToken().type());
-            return null;
+            // Closed paren can appear as the last argument
+            break;
           }
-          else
-          {
-            // Not an error (zero arguments?)
-            return collectedArgs;
-          }
+          addError(lexer.currentToken(), "Expected argument, got " + lexer.currentToken().type());
+          return null;
         }
         collectedArgs.add(lexer.currentToken());
         nextToken();
-        expectingArgState = false; // Now a comma
-        followsSeparator  = false;
+        expectingArgState = false; // Next a comma or parenthesis
         continue;
       }
       
       // Not expecting argument
       
-      boolean isComma      = lexer.currentToken().type().equals(CodeToken.Type.COMMA);
-      boolean isParen      = lexer.currentToken().type().equals(CodeToken.Type.L_PAREN);
-      boolean isCloseParen = lexer.currentToken().type().equals(CodeToken.Type.R_PAREN);
+      boolean isComma  = lexer.currentToken().type().equals(CodeToken.Type.COMMA);
+      boolean isLParen = lexer.currentToken().type().equals(CodeToken.Type.L_PAREN);
+      boolean isRParen = lexer.currentToken().type().equals(CodeToken.Type.R_PAREN);
       boolean isEnd = lexer.currentToken().type().equals(CodeToken.Type.NEWLINE) || lexer.currentToken().type()
               .equals(CodeToken.Type.EOF) || lexer.currentToken().type().equals(CodeToken.Type.COMMENT);
       
@@ -858,15 +831,29 @@ public class CodeParser
         break;
       }
       
-      if (openParen && isCloseParen)
+      if (openParen)
       {
-        openParen = false;
+        if (isLParen)
+        {
+          addError(lexer.currentToken(), "Unexpected open parenthesis");
+          return null;
+        }
+        else if (isRParen)
+        {
+          expectingArgState = true;
+          openParen         = false;
+          afterClosedParen  = true;
+        }
+        else
+        {
+          addError(lexer.currentToken(), "Expected close parenthesis, got " + lexer.currentToken().type());
+          return null;
+        }
       }
-      else if (isComma || isParen)
+      else if (isComma || isLParen)
       {
         expectingArgState = true;
-        followsSeparator  = true;
-        if (isParen)
+        if (isLParen)
         {
           openParen = true;
         }
@@ -879,6 +866,14 @@ public class CodeParser
       }
       nextToken();
     }
+    
+    if (openParen)
+    {
+      // Left unclosed
+      addError(lexer.currentToken(), "Expected close parenthesis, got " + lexer.currentToken().type());
+      return null;
+    }
+    
     return collectedArgs;
   }
   
@@ -901,30 +896,14 @@ public class CodeParser
       this.addError(token, "Argument \"" + argumentValue + "\" is not a register.");
       return false;
     }
-    if (!checkDatatype(argumentDataType, register.getType()))
+    if (!register.canHold(argumentDataType))
     {
-      this.addError(token, "Argument \"" + argumentValue + "\" is a register of wrong type.");
+      this.addError(token,
+                    "Argument \"" + argumentValue + "\" is a register of wrong type (incompatible with " + argumentDataType + ").");
       return false;
     }
     return true;
   }// end of checkRegisterArgument
-  
-  /**
-   * @param argumentDataType The datatype of an argument
-   * @param registerDataType The datatype of a register file
-   *
-   * @return True if argument is compatible with register, otherwise false
-   * @brief Check argument and register data types if they fit within each other
-   */
-  private boolean checkDatatype(final DataTypeEnum argumentDataType, final RegisterTypeEnum registerDataType)
-  {
-    // TODO: move this
-    return switch (argumentDataType)
-    {
-      case kInt, kUInt, kLong, kULong, kBool, kByte, kShort, kChar -> registerDataType == RegisterTypeEnum.kInt;
-      case kFloat, kDouble -> registerDataType == RegisterTypeEnum.kFloat;
-    };
-  }// end of checkDatatype
   
   /**
    * @return True if the parsing was successful, false otherwise
