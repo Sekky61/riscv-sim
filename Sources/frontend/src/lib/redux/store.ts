@@ -30,7 +30,6 @@
  */
 
 import { combineReducers, configureStore } from '@reduxjs/toolkit';
-import { reducer as notificationsReducer } from 'reapop';
 import {
   FLUSH,
   PAUSE,
@@ -123,7 +122,6 @@ const reducers = combineReducers({
     persistCompileConfig,
     compilerReducer,
   ),
-  notifications: notificationsReducer(),
   shortcuts: shortcutsReducer,
   cpu: cpuReducer,
 });

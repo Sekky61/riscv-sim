@@ -53,7 +53,7 @@ import { ErrorMessage } from '@hookform/error-message';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect } from 'react';
 import { FieldErrors, Resolver, useForm } from 'react-hook-form';
-import { notify } from 'reapop';
+import { toast } from 'sonner';
 import { z } from 'zod';
 
 /**
@@ -351,22 +351,10 @@ export default function MemoryForm({
           memoryLocation: filtered,
         }),
       );
-      dispatch(
-        notify({
-          title: `Memory location ${memoryLocationName} updated.`,
-          message: 'Reload the simulation to see the changes.',
-          status: 'success',
-        }),
-      );
+      toast.success(`Memory location ${memoryLocationName} updated.`);
     } else {
       dispatch(addMemoryLocation(filtered));
-      dispatch(
-        notify({
-          title: `Memory location ${data.name} created.`,
-          message: 'Reload the simulation to see the changes.',
-          status: 'success',
-        }),
-      );
+      toast.success(`Memory location ${data.name} created.`);
     }
   };
 

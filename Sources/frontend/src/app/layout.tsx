@@ -36,10 +36,10 @@ import '@/styles/globals.css';
 
 import { cn } from '@/lib/utils';
 
-import Notifications from '@/components/Notifications';
 import SideBar from '@/components/SideBar';
 import { TooltipProvider } from '@/components/base/ui/tooltip';
 import PersistedStoreProvider from '@/lib/redux/PersistedStoreProvider';
+import { Toaster } from '@/components/base/ui/sonner';
 
 const fontSans = FontSans({
   subsets: ['latin'],
@@ -70,7 +70,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
                 {children}
               </div>
             </TooltipProvider>
-            <Notifications />
+            <Toaster position='top-right' />
           </PersistedStoreProvider>
         </div>
       </body>

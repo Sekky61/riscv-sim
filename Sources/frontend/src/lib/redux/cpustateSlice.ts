@@ -40,7 +40,6 @@ import {
   createSlice,
 } from '@reduxjs/toolkit';
 import { toByteArray } from 'base64-js';
-import { notify } from 'reapop';
 
 import { selectAsmCode, selectEntryPoint } from '@/lib/redux/compilerSlice';
 import { selectActiveConfig } from '@/lib/redux/isaSlice';
@@ -63,6 +62,7 @@ import type {
 } from '@/lib/types/cpuApi';
 import { SimulateResponse } from '@/lib/types/simulatorApi';
 import { isValidReference, isValidRegisterValue } from '@/lib/utils';
+import { toast } from 'sonner';
 
 /**
  * Redux state for CPU
@@ -197,13 +197,7 @@ export const callSimulation = createAsyncThunk<SimulateResponse, number | null>(
       } else if (err instanceof Error) {
         message = err.message;
       }
-      dispatch(
-        notify({
-          title: 'API call failed',
-          message: `Simulation failed: ${message}`,
-          status: 'error',
-        }),
-      );
+      toast.error(`Simulation failed: ${message}`);
       throw err;
     }
   },

@@ -35,8 +35,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Check, ChevronsUpDown } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import React from 'react';
-import { set, useForm } from 'react-hook-form';
-import { notify } from 'reapop';
+import { useForm } from 'react-hook-form';
 
 import { CpuConfig, defaultCpuConfig, isaFormSchema } from '@/lib/forms/Isa';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
@@ -72,6 +71,7 @@ import {
 } from '@/components/base/ui/popover';
 import IsaSettingsForm from '@/components/form/IsaSettingsForm';
 import Link from 'next/link';
+import { toast } from 'sonner';
 
 // TODO: delete configuration
 // TODO: prevent from leaving the page with unsaved changes
@@ -127,12 +127,7 @@ export default function Page() {
     const nam = generateIsaName();
     dispatch(createIsa({ ...defaultCpuConfig, name: nam }));
     setSavesOpen(false);
-    dispatch(
-      notify({
-        title: `Created new ISA ${nam}.`,
-        status: 'success',
-      }),
-    );
+    toast.success(`Created new ISA ${nam}.`);
   };
 
   // Save name and form values to the active ISA
@@ -141,12 +136,7 @@ export default function Page() {
     // Merge the form values with the name
     const mergedIsa: CpuConfig = { ...activeIsa, ...isa };
     dispatch(updateIsa({ isa: mergedIsa, oldName: activeIsa.cpuConfig.name }));
-    dispatch(
-      notify({
-        title: 'Updates have been saved.',
-        status: 'success',
-      }),
-    );
+    toast('Updates have been saved.');
   };
 
   // todo switching without saving does not switch
@@ -158,26 +148,14 @@ export default function Page() {
         oldName,
       }),
     );
-    dispatch(
-      notify({
-        title: 'Updates have been saved.',
-        message: 'To use this configuration, reload the simulation.',
-        status: 'success',
-      }),
-    );
+    toast('Updates have been saved.');
   };
 
   const switchIsa = (theName: string) => {
     dispatch(newActiveIsa(theName));
     // Close the dropdown
     setSavesOpen(false);
-    dispatch(
-      notify({
-        title: `${theName} is now the active ISA.`,
-        message: 'To use this configuration, reload the simulation.',
-        status: 'success',
-      }),
-    );
+    toast(`ISA configuration has been switched to ${theName}.`);
   };
 
   // Set the form values, dispatch the new active ISA

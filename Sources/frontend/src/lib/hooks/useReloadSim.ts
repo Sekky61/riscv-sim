@@ -29,25 +29,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 
 import { reloadSimulation, selectCpu } from '@/lib/redux/cpustateSlice';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 
-import CanvasWindow from '@/components/CanvasWindow';
-import { Button } from '@/components/base/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/base/ui/dialog';
-
 import { selectAsmCode, selectEntryPoint } from '@/lib/redux/compilerSlice';
 import { selectActiveConfig } from '@/lib/redux/isaSlice';
 import { pullSimConfig, selectRunningConfig } from '@/lib/redux/simConfigSlice';
-import { notify } from 'reapop';
+import { toast } from 'sonner';
 
 export const useReloadSim = () => {
   const dispatch = useAppDispatch();
@@ -66,12 +56,7 @@ export const useReloadSim = () => {
   const reload = () => {
     dispatch(pullSimConfig());
     dispatch(reloadSimulation());
-    dispatch(
-      notify({
-        title: 'Simulation reloaded',
-        status: 'success',
-      }),
-    );
+    toast.success('Simulation reloaded');
   };
 
   return { same, reload };
