@@ -57,7 +57,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/base/ui/dropdown-menu';
 
-import { type CodeExample } from '@/constant/codeExamples';
+import { type CodeExample } from '@/lib/types/codeExamples';
 
 import clsx from 'clsx';
 import { RadioInput } from '../form/RadioInput';

@@ -48,7 +48,7 @@ import {
   SimpleParseError,
 } from '@/lib/types/simulatorApi';
 import { toast } from 'sonner';
-import { CodeExample } from '@/constant/codeExamples';
+import { CodeExample } from '@/lib/types/codeExamples';
 
 export type OptimizeOption =
   | 'O2'
