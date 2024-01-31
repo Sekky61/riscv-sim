@@ -33,13 +33,14 @@
 package com.gradle.superscalarsim.code;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
-import com.gradle.superscalarsim.models.InstructionFunctionModel;
-import com.gradle.superscalarsim.models.Pair;
-import com.gradle.superscalarsim.models.SimCodeModel;
+import com.gradle.superscalarsim.models.instruction.InstructionException;
+import com.gradle.superscalarsim.models.instruction.InstructionFunctionModel;
+import com.gradle.superscalarsim.models.instruction.SimCodeModel;
+import com.gradle.superscalarsim.models.memory.MemoryAccess;
 import com.gradle.superscalarsim.models.register.RegisterModel;
+import com.gradle.superscalarsim.models.util.Result;
 
 import java.util.List;
 
@@ -49,47 +50,27 @@ import java.util.List;
  * For explanation of the syntax, see {@link Expression}
  *
  * @class CodeLoadStoreInterpreter
- * @brief Interprets load/store instruction provided in InputCodeModel class
+ * @brief Interprets load/store instruction provided in InputCodeModel class. Does _not_ perform the actual load/store.
  */
 @JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
 public class CodeLoadStoreInterpreter
 {
   /**
-   * Memory. Used for load/store operations
-   */
-  @JsonIdentityReference(alwaysAsId = true)
-  private final MemoryModel memoryModel;
-  
-  /**
-   * @param memoryModel       Memory model
-   * @param registerFileBlock Register file block
-   * @param labelMap          Label map
-   *
    * @brief Constructor
    */
-  public CodeLoadStoreInterpreter(final MemoryModel memoryModel)
+  public CodeLoadStoreInterpreter()
   {
-    this.memoryModel = memoryModel;
   }// end of Constructor
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @brief Resets the memory
-   */
-  public void resetMemory()
-  {
-    this.memoryModel.reset();
-  }// end of Constructor
-  //-------------------------------------------------------------------------------------------
-  
-  /**
-   * @param codeModel    code to be interpreted
-   * @param currentCycle current cycle
+   * @param codeModel code to be interpreted
    *
-   * @return Returns pair - delay of this access and data
-   * @brief Interprets load/store instruction from codeModel, returns loaded/stored data.
+   * @return Returns a description of a memory operation to be performed
+   * @brief Interprets load/store instruction from codeModel, does not perform the actual load/store.
+   * Can cause exceptions if the address is invalid.
    */
-  public Pair<Integer, Long> interpretInstruction(final SimCodeModel codeModel, int currentCycle)
+  public Result<MemoryAccess> interpretInstruction(final SimCodeModel codeModel)
   {
     final InstructionFunctionModel instruction = codeModel.getInstructionFunctionModel();
     if (instruction == null)
@@ -104,33 +85,38 @@ public class CodeLoadStoreInterpreter
       throw new IllegalStateException("Unexpected number of parameters: " + interpretableAsParams.length);
     }
     
-    String loadStore   = interpretableAsParams[0];
+    String  loadStore = interpretableAsParams[0];
+    boolean isStore   = loadStore.equals("store");
+    
     String sizeBitsStr = interpretableAsParams[1];
     int    sizeBits    = Integer.parseInt(sizeBitsStr);
+    int    sizeBytes   = sizeBits / 8;
     
-    long address = interpretAddress(codeModel);
+    Result<Long> address = interpretAddress(codeModel);
     
-    switch (loadStore)
+    if (address.isException())
     {
-      case "load" ->
-      {
-        boolean isSigned = instruction.getArgumentByName("rd").type().isSigned();
-        return processLoadOperation(sizeBits, address, isSigned, codeModel.getIntegerId(), currentCycle);
-      }
-      case "store" ->
-      {
-        String        storeRegisterName = interpretableAsParams[3];
-        RegisterModel reg               = codeModel.getArgumentByName(storeRegisterName).getRegisterValue();
-        if (reg == null)
-        {
-          throw new IllegalStateException("Register " + storeRegisterName + " not found");
-        }
-        long valueBits = (long) reg.getValue(DataTypeEnum.kLong);
-        int  delay     = processStoreOperation(sizeBits, address, valueBits, codeModel.getIntegerId(), currentCycle);
-        return new Pair<>(delay, valueBits);
-      }
-      default -> throw new IllegalStateException("Unexpected value: " + interpretableAsParams[0]);
+      return address.convertException();
     }
+    
+    MemoryAccess res;
+    if (isStore)
+    {
+      String        storeRegisterName = interpretableAsParams[3];
+      RegisterModel reg               = codeModel.getArgumentByName(storeRegisterName).getRegisterValue();
+      if (reg == null)
+      {
+        throw new IllegalStateException("Register " + storeRegisterName + " not found");
+      }
+      long valueBits = (long) reg.getValue(DataTypeEnum.kLong);
+      res = MemoryAccess.store(address.value(), sizeBytes, valueBits, false);
+    }
+    else
+    {
+      boolean isSigned = instruction.getArgumentByName("rd").type().isSigned();
+      res = MemoryAccess.load(address.value(), sizeBytes, isSigned);
+    }
+    return new Result<>(res);
   }// end of interpretInstruction
   //-------------------------------------------------------------------------------------------
   
@@ -139,7 +125,7 @@ public class CodeLoadStoreInterpreter
    *
    * @return Address to be loaded/stored based on the instruction
    */
-  public long interpretAddress(final SimCodeModel codeModel)
+  public Result<Long> interpretAddress(final SimCodeModel codeModel)
   {
     final InstructionFunctionModel instruction = codeModel.getInstructionFunctionModel();
     if (instruction == null)
@@ -155,73 +141,25 @@ public class CodeLoadStoreInterpreter
     String                    addressExpr = interpretableAsParams[2];
     List<Expression.Variable> variables   = codeModel.getVariables();
     
-    Expression.Variable addressResult = Expression.interpret(addressExpr, variables);
-    if (addressResult == null)
+    Result<Expression.Variable> addressResult = Expression.interpret(addressExpr, variables);
+    if (addressResult.isException())
+    {
+      return addressResult.convertException();
+    }
+    
+    if (addressResult.value() == null)
     {
       throw new IllegalStateException("Address result is null");
     }
-    int address = (int) addressResult.value.getValue(DataTypeEnum.kInt);
+    
+    int address = (int) addressResult.value().value.getValue(DataTypeEnum.kInt);
     
     if (address < 0)
     {
-      throw new IllegalStateException("Address is negative: " + address);
+      return new Result<>(new InstructionException(InstructionException.Kind.kMemory, "Negative address", 0));
     }
     
-    return address;
+    return new Result<>((long) address);
   }// end of interpretAddress
-  //-------------------------------------------------------------------------------------------
-  
-  /**
-   * @param sizeBits     Size of the loaded value (8, 16, 32)
-   * @param address      Address to read from
-   * @param isSigned     True in case of signed value, false otherwise
-   * @param id           ID of a load instruction, that is being executed
-   * @param currentCycle Current cycle
-   *
-   * @return Pair of delay of this access and data (64 bits, suitable for assignment to register)
-   */
-  private Pair<Integer, Long> processLoadOperation(int sizeBits,
-                                                   long address,
-                                                   boolean isSigned,
-                                                   int id,
-                                                   int currentCycle)
-  {
-    int                 numberOfBytes = sizeBits / 8;
-    Pair<Integer, Long> loadedData    = memoryModel.load(address, numberOfBytes, id, currentCycle);
-    
-    // Apply mask to zero out or sign extend the value
-    long bits      = loadedData.getSecond();
-    long validMask = (1L << sizeBits) - 1;
-    if (sizeBits >= 64)
-    {
-      validMask = -1;
-    }
-    bits = bits & validMask;
-    if (isSigned && ((1L << (sizeBits - 1)) & bits) != 0)
-    {
-      // Fill with sign bit
-      long signMask = ~validMask;
-      bits = bits | signMask;
-    }
-    
-    return new Pair<>(loadedData.getFirst(), bits);
-  }// end of processLoadOperation
-  //-------------------------------------------------------------------------------------------
-  
-  /**
-   * @param sizeBits     How many bits to store
-   * @param address      Address to store to
-   * @param valueBits    Value to store (lower sizeBits bits are used)
-   * @param id           ID of a store instruction, that is being executed
-   * @param currentCycle Current cycle
-   *
-   * @return Delay of this access
-   */
-  private int processStoreOperation(int sizeBits, long address, long valueBits, int id, int currentCycle)
-  {
-    assert sizeBits <= 64 && sizeBits % 8 == 0;
-    int numberOfBytes = sizeBits / 8;
-    return memoryModel.store(address, valueBits, numberOfBytes, id, currentCycle);
-  }// end of processStoreOperation
   //-------------------------------------------------------------------------------------------
 }

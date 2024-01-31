@@ -43,7 +43,7 @@ public interface AbstractBlock extends Serializable
   /**
    * @brief Simulates in right direction from InstructionFetch to ROB
    */
-  void simulate();
+  void simulate(int cycle);
   
   /**
    * @brief Resets the lists/stacks/variables inside the block

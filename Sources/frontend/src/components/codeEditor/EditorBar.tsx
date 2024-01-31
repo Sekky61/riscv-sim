@@ -29,25 +29,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import clsx from 'clsx';
-import { CheckCircle, Circle, XCircle } from 'lucide-react';
-
-import {
-  callParseAsm,
-  openFile,
-  saveToFile,
-  selectAsmDirty,
-  selectAsmErrors,
-  selectCDirty,
-  selectCErrors,
-} from '@/lib/redux/compilerSlice';
-import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
+import { openFile, saveToFile } from '@/lib/redux/compilerSlice';
+import { useAppDispatch } from '@/lib/redux/hooks';
 
 import { Button } from '@/components/base/ui/button';
-
-type EditorBarProps = {
-  mode: 'c' | 'asm';
-};
+import React from 'react';
 
 /**
  * Show dialog and calls callback with file contents
@@ -78,7 +64,17 @@ function loadFile(callback: (contents: string) => void) {
   input.click();
 }
 
-export default function EditorBar({ mode }: EditorBarProps) {
+type EditorBarProps = {
+  mode: 'c' | 'asm';
+  checkSlot: React.ReactNode;
+  entryPointSlot?: React.ReactNode;
+};
+
+export default function EditorBar({
+  mode,
+  checkSlot,
+  entryPointSlot,
+}: EditorBarProps) {
   const dispatch = useAppDispatch();
   const editorName = mode === 'c' ? 'C Code' : 'ASM Code';
 
@@ -93,12 +89,10 @@ export default function EditorBar({ mode }: EditorBarProps) {
     dispatch(saveToFile());
   };
 
-  const errorDisplay = mode === 'c' ? <CErrorsDisplay /> : <AsmErrorsDisplay />;
-
   return (
-    <div className='pl-3 text-sm flex items-center gap-1 bg-[#f5f5f5] sticky top-0 z-10'>
+    <div className='p-0.5 pl-3 text-sm flex flex-wrap items-center gap-1 bg-[#f5f5f5] sticky top-0 z-10'>
       <div className='py-1 px-0.5 font-bold'>{editorName}</div>
-      {errorDisplay}
+      {checkSlot}
       <label>
         <Button
           variant='ghost'
@@ -115,81 +109,7 @@ export default function EditorBar({ mode }: EditorBarProps) {
       >
         Save
       </Button>
+      {entryPointSlot}
     </div>
   );
 }
-
-const AsmErrorsDisplay = () => {
-  const dispatch = useAppDispatch();
-  const errors = useAppSelector(selectAsmErrors);
-  const dirty = useAppSelector(selectAsmDirty);
-  const hasErrors = errors.length > 0;
-
-  const checkAsm = () => {
-    dispatch(callParseAsm());
-  };
-
-  const boxStyle = clsx(
-    'flex items-center px-2 rounded py-0.5 my-0.5 h-6 text-black bg-gray-200 hover:bg-gray-300',
-    dirty && 'button-interactions',
-    hasErrors &&
-      !dirty &&
-      'bg-red-500/20 hover:bg-red-500/30 active:bg-red-500/40',
-    !hasErrors &&
-      !dirty &&
-      'bg-green-500/20 hover:bg-green-500/30 active:bg-green-500/40',
-  );
-
-  let iconType: 'circle' | 'tick' | 'x';
-  if (dirty) {
-    iconType = 'circle';
-  } else if (hasErrors) {
-    iconType = 'x';
-  } else {
-    iconType = 'tick';
-  }
-
-  return (
-    <Button className={boxStyle} onClick={checkAsm}>
-      <div className='mr-2'>
-        <StatusIcon type={iconType} />
-      </div>
-      Check
-    </Button>
-  );
-};
-
-const StatusIcon = ({ type }: { type: 'circle' | 'tick' | 'x' }) => {
-  switch (type) {
-    case 'circle':
-      return <Circle size={16} />;
-    case 'tick':
-      return <CheckCircle size={16} className='text-green-500' />;
-    case 'x':
-      return <XCircle size={16} className='text-red-500' />;
-  }
-};
-
-/**
- * A fixed width element
- */
-const CErrorsDisplay = () => {
-  const errors = useAppSelector(selectCErrors);
-  const dirty = useAppSelector(selectCDirty);
-  const hasErrors = errors.length > 0;
-
-  let iconType: 'circle' | 'tick' | 'x';
-  if (dirty) {
-    iconType = 'circle';
-  } else if (hasErrors) {
-    iconType = 'x';
-  } else {
-    iconType = 'tick';
-  }
-
-  return (
-    <div className='mr-2'>
-      <StatusIcon type={iconType} />
-    </div>
-  );
-};

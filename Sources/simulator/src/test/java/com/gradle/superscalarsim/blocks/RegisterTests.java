@@ -40,7 +40,7 @@ public class RegisterTests
   public void testZeroAlias()
   {
     // Assert
-    Assert.assertEquals(0, unifiedRegisterFileBlock.getRegister("zero").getValue(), 0.01);
+    Assert.assertEquals(0, unifiedRegisterFileBlock.getRegister("zero").getValue(DataTypeEnum.kInt));
   }
   
   /**

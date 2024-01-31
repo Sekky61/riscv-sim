@@ -42,8 +42,9 @@ import {
 import { toByteArray } from 'base64-js';
 import { notify } from 'reapop';
 
-import { selectAsmCode } from '@/lib/redux/compilerSlice';
+import { selectAsmCode, selectEntryPoint } from '@/lib/redux/compilerSlice';
 import { selectActiveConfig } from '@/lib/redux/isaSlice';
+import { selectRunningConfig } from '@/lib/redux/simConfigSlice';
 import type { RootState } from '@/lib/redux/store';
 import { callSimulationImpl } from '@/lib/serverCalls';
 import type {
@@ -58,7 +59,9 @@ import type {
   RegisterDataContainer,
   RegisterModel,
   SimCodeModel,
+  StopReason,
 } from '@/lib/types/cpuApi';
+import { SimulateResponse } from '@/lib/types/simulatorApi';
 import { isValidReference, isValidRegisterValue } from '@/lib/utils';
 
 /**
@@ -69,10 +72,6 @@ interface CpuSlice {
    * CPU state, loaded from the server
    */
   state: CpuState | null;
-  /**
-   * Code that is currently being simulated. Pulled from the compiler state.
-   */
-  code: string;
   /**
    * Reference to the currently highlighted line in the input code.
    * Used to highlight the corresponding objects in visualizations.
@@ -87,6 +86,10 @@ interface CpuSlice {
    * Reference to the currently highlighted register.
    */
   highlightedRegister: string | null;
+  /**
+   * Reason for stopping the simulation. Enumeration of possible reasons, like exception, end of program, etc.
+   */
+  stopReason: StopReason;
 }
 
 /**
@@ -94,33 +97,10 @@ interface CpuSlice {
  */
 const initialState: CpuSlice = {
   state: null,
-  code: '',
   highlightedInputCode: null,
   highlightedSimCode: null,
   highlightedRegister: null,
-};
-
-/**
- * The result of a simulation API call
- */
-type SimulationParsedResult = {
-  state: CpuState;
-};
-
-/**
- * Copy the code from code editor to the simulation
- */
-export const pullCodeFromCompiler = (): ThunkAction<
-  void,
-  RootState,
-  unknown,
-  Action<string>
-> => {
-  return async (dispatch, getState) => {
-    const state: RootState = getState();
-    const code = selectAsmCode(state);
-    dispatch(setSimulationCode(code));
-  };
+  stopReason: 'kNotStopped',
 };
 
 /**
@@ -133,7 +113,6 @@ export const reloadSimulation = (): ThunkAction<
   Action<string>
 > => {
   return async (dispatch) => {
-    dispatch(pullCodeFromCompiler());
     dispatch(callSimulation(0));
   };
 };
@@ -172,32 +151,56 @@ export const simStepBackward = (): ThunkAction<
 };
 
 /**
+ * Get the final state of the simulation
+ */
+export const simStepEnd = (): ThunkAction<
+  void,
+  RootState,
+  unknown,
+  Action<string>
+> => {
+  return async (dispatch, getState) => {
+    const state: RootState = getState();
+    const config = selectRunningConfig(state);
+    dispatch(callSimulation(null));
+  };
+};
+
+/**
  * Call the simulation API
  * Call example: dispatch(callSimulation(5));
  *
  * @param tick The tick to simulate to
  */
-export const callSimulation = createAsyncThunk<SimulationParsedResult, number>(
+export const callSimulation = createAsyncThunk<SimulateResponse, number | null>(
   'cpu/callSimulation',
   async (arg, { getState, dispatch }) => {
     // @ts-ignore
     const state: RootState = getState();
-    const config = selectActiveConfig(state);
-    const code = state.cpu.code;
+    const config = selectRunningConfig(state);
     const tick = arg;
     try {
-      const response = await callSimulationImpl(tick, { ...config, code });
-      return { state: response.state };
+      const response = await callSimulationImpl(tick, config);
+      return response;
     } catch (err) {
       // Log error and show simple error message to the user
       console.error(err);
       console.warn(
         'Try clearing the local storage (application tab) and reloading the page',
       );
+      let message = 'See the console for more details';
+      if (err instanceof SyntaxError) {
+        // Unexpected token < in JSON
+        message = 'Invalid response from the server';
+      } else if (err instanceof TypeError) {
+        message = 'Server not reachable';
+      } else if (err instanceof Error) {
+        message = err.message;
+      }
       dispatch(
         notify({
           title: 'API call failed',
-          message: 'See the console for more details',
+          message: `Simulation failed: ${message}`,
           status: 'error',
         }),
       );
@@ -211,9 +214,6 @@ export const cpuSlice = createSlice({
   // `createSlice` will infer the state type from the `initialState` argument
   initialState,
   reducers: {
-    setSimulationCode: (state, action: PayloadAction<string>) => {
-      state.code = action.payload;
-    },
     highlightSimCode: (state, action: PayloadAction<Reference | null>) => {
       if (action.payload === null) {
         throw new Error('highlightSimCode: action.payload === null');
@@ -246,9 +246,11 @@ export const cpuSlice = createSlice({
     builder
       .addCase(callSimulation.fulfilled, (state, action) => {
         state.state = action.payload.state;
+        state.stopReason = action.payload.stopReason;
       })
       .addCase(callSimulation.rejected, (state, _action) => {
         state.state = null;
+        state.stopReason = 'kNotStopped';
       })
       .addCase(callSimulation.pending, (_state, _action) => {
         // nothing
@@ -257,7 +259,6 @@ export const cpuSlice = createSlice({
 });
 
 export const {
-  setSimulationCode,
   highlightSimCode,
   unhighlightSimCode,
   highlightRegister,
@@ -270,6 +271,7 @@ export const {
 
 export const selectCpu = (state: RootState) => state.cpu.state;
 export const selectTick = (state: RootState) => state.cpu.state?.tick ?? 0;
+export const selectStopReason = (state: RootState) => state.cpu.stopReason;
 
 export const selectAllInstructionFunctionModels = (state: RootState) =>
   state.cpu.state?.managerRegistry.instructionFunctionManager;
@@ -313,6 +315,9 @@ export const selectHighlightedInputCode = (state: RootState) =>
 
 export const selectHighlightedRegister = (state: RootState) =>
   state.cpu.highlightedRegister;
+
+export const selectLabels = (state: RootState) =>
+  state.cpu.state?.instructionMemoryBlock?.labels;
 
 /**
  * Returns program code with labels inserted before the instruction they point to.
@@ -598,6 +603,11 @@ export const selectLoadBuffer = (state: RootState) =>
 
 const selectCacheInternal = (state: RootState) => state.cpu.state?.cache;
 
+// Statistics
+
+export const selectStatistics = (state: RootState) =>
+  state.cpu.state?.statistics;
+
 export interface DecodedCacheLine extends CacheLineModel {
   decodedLine: number[];
 }
@@ -624,6 +634,30 @@ export const selectCache = createSelector(
       }
     }
     return copy;
+  },
+);
+
+/**
+ * Return true if what is simulated matches the code in the editor and the config.
+ * TODO: quick and dirty, refactor.
+ */
+export const selectIsSimUpToDate = createSelector(
+  [selectAsmCode, selectActiveConfig, selectEntryPoint, selectRunningConfig],
+  (code, config, entryPoint, runningConfig) => {
+    const memoryEqual =
+      JSON.stringify(config.memoryLocations) ===
+      JSON.stringify(runningConfig.memoryLocations);
+
+    const cpuConfigEqual =
+      JSON.stringify(config.cpuConfig) ===
+      JSON.stringify(runningConfig.cpuConfig);
+
+    return (
+      code === runningConfig.code &&
+      entryPoint === runningConfig.entryPoint &&
+      memoryEqual &&
+      cpuConfigEqual
+    );
   },
 );
 

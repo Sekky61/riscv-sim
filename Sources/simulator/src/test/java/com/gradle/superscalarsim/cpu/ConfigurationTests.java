@@ -5,7 +5,7 @@
  * Brno University of Technology
  * xmajer21@stud.fit.vutbr.cz
  * @brief Tests for the CpuConfiguration class
- * @date 26 Sep      2023 10:00 (created)
+ * @date 20 Jan      2024 10:00 (created)
  * @section Licence
  * This file is part of the Superscalar simulator app
  * <p>
@@ -75,5 +75,54 @@ public class ConfigurationTests
     SimulationConfig config = SimulationConfig.getDefaultConfiguration();
     Cpu              cpu    = new Cpu(config);
     Assert.assertNotNull(cpu.cpuState);
+  }
+  
+  @Test
+  public void testFunctionEntryPoint_Passes()
+  {
+    SimulationConfig config = SimulationConfig.getDefaultConfiguration();
+    config.entryPoint = "main";
+    config.code       = """
+            a:
+              add a6,a0,a2
+            main:
+              addi sp,sp,-16
+              li a2,15
+            """;
+    Cpu cpu = new Cpu(config);
+    Assert.assertNotNull(cpu.cpuState);
+    
+    cpu.execute(false);
+    Assert.assertEquals(2, cpu.cpuState.statistics.committedInstructions);
+  }
+  
+  @Test
+  public void testNonExistingFunctionEntryPoint_FailsValidation()
+  {
+    SimulationConfig config = SimulationConfig.getDefaultConfiguration();
+    config.entryPoint = "b";
+    config.code       = """
+            a:
+              add a6,a0,a2
+            main:
+              addi sp,sp,-16
+              li a2,15
+            """;
+    Assert.assertFalse(config.validate().valid);
+  }
+  
+  @Test
+  public void testNonExistingFunctionEntryPoint_Fails()
+  {
+    SimulationConfig config = SimulationConfig.getDefaultConfiguration();
+    config.entryPoint = "b";
+    config.code       = """
+            a:
+              add a6,a0,a2
+            main:
+              addi sp,sp,-16
+              li a2,15
+            """;
+    Assert.assertThrows(IllegalArgumentException.class, () -> new Cpu(config));
   }
 }

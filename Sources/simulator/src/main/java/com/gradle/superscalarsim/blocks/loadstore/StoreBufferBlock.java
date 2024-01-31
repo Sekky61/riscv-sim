@@ -36,13 +36,12 @@ import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.blocks.AbstractBlock;
-import com.gradle.superscalarsim.blocks.base.ReorderBufferBlock;
 import com.gradle.superscalarsim.blocks.base.UnifiedRegisterFileBlock;
-import com.gradle.superscalarsim.code.CodeLoadStoreInterpreter;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
-import com.gradle.superscalarsim.models.InputCodeArgument;
-import com.gradle.superscalarsim.models.SimCodeModel;
-import com.gradle.superscalarsim.models.StoreBufferItem;
+import com.gradle.superscalarsim.models.instruction.InputCodeArgument;
+import com.gradle.superscalarsim.models.instruction.SimCodeModel;
+import com.gradle.superscalarsim.models.memory.LoadBufferItem;
+import com.gradle.superscalarsim.models.memory.StoreBufferItem;
 
 import java.util.*;
 
@@ -67,22 +66,10 @@ public class StoreBufferBlock implements AbstractBlock
   private final List<MemoryAccessUnit> memoryAccessUnitList;
   
   /**
-   * Interpreter for processing load store instructions
-   */
-  @JsonIdentityReference(alwaysAsId = true)
-  private final CodeLoadStoreInterpreter loadStoreInterpreter;
-  
-  /**
    * Class containing all registers, that simulator uses
    */
   @JsonIdentityReference(alwaysAsId = true)
   private final UnifiedRegisterFileBlock registerFileBlock;
-  
-  /**
-   * Class contains simulated implementation of Reorder buffer
-   */
-  @JsonIdentityReference(alwaysAsId = true)
-  private final ReorderBufferBlock reorderBufferBlock;
   
   /**
    * Store Buffer size
@@ -90,32 +77,18 @@ public class StoreBufferBlock implements AbstractBlock
   private int bufferSize;
   
   /**
-   * ID counter matching the one in ROB
-   */
-  private int commitId;
-  
-  /**
-   * @param loadStoreInterpreter   Interpreter for processing load store instructions
-   * @param decodeAndDispatchBlock Class, which simulates instruction decode and renames registers
-   * @param registerFileBlock      Class containing all registers, that simulator uses
-   * @param reorderBufferBlock     Class contains simulated implementation of Reorder buffer
+   * @param bufferSize        Interpreter for processing load store instructions
+   * @param registerFileBlock Class containing all registers, that simulator uses
    *
    * @brief Constructor
    */
-  public StoreBufferBlock(CodeLoadStoreInterpreter loadStoreInterpreter,
-                          UnifiedRegisterFileBlock registerFileBlock,
-                          ReorderBufferBlock reorderBufferBlock)
+  public StoreBufferBlock(int bufferSize, UnifiedRegisterFileBlock registerFileBlock)
   {
-    this.loadStoreInterpreter = loadStoreInterpreter;
-    this.registerFileBlock    = registerFileBlock;
-    this.reorderBufferBlock   = reorderBufferBlock;
-    this.bufferSize           = 64;
-    this.commitId             = 0;
+    this.registerFileBlock = registerFileBlock;
+    this.bufferSize        = bufferSize;
     
     this.storeQueue           = new ArrayDeque<>();
     this.memoryAccessUnitList = new ArrayList<>();
-    
-    this.reorderBufferBlock.setStoreBufferBlock(this);
   }// end of Constructor
   //-------------------------------------------------------------------------------------------
   
@@ -148,12 +121,11 @@ public class StoreBufferBlock implements AbstractBlock
    * @brief Simulates store buffer
    */
   @Override
-  public void simulate()
+  public void simulate(int cycle)
   {
     removeInvalidInstructions();
     updateMapValues();
-    selectStoreForDataAccess();
-    this.commitId++;
+    selectStoreForDataAccess(cycle);
   }// end of simulate
   //-------------------------------------------------------------------------------------------
   
@@ -163,9 +135,7 @@ public class StoreBufferBlock implements AbstractBlock
   @Override
   public void reset()
   {
-    this.commitId = 0;
     this.storeQueue.clear();
-    this.loadStoreInterpreter.resetMemory();
   }// end of reset
   //-------------------------------------------------------------------------------------------
   
@@ -193,6 +163,7 @@ public class StoreBufferBlock implements AbstractBlock
   
   /**
    * @brief Checks if store source registers are ready and if yes then marks them
+   * TODO move to method on the StoreBufferItem
    */
   private void updateMapValues()
   {
@@ -205,9 +176,12 @@ public class StoreBufferBlock implements AbstractBlock
   //----------------------------------------------------------------------
   
   /**
-   * @brief Selects store instructions for MA block
+   * @brief Selects store instructions for MA block.
+   * The selected store is a non-speculative store with address.
+   * In case of multiple non-speculative stores to the same address, the older is written, the newer is written later.
+   * TODO: Could the old store be simply removed?
    */
-  private void selectStoreForDataAccess()
+  private void selectStoreForDataAccess(int cycle)
   {
     StoreBufferItem storeItem = null;
     for (StoreBufferItem item : this.storeQueue)
@@ -221,8 +195,7 @@ public class StoreBufferBlock implements AbstractBlock
       SimCodeModel simCodeModel = item.getSimCodeModel();
       assert !simCodeModel.hasFailed();
       
-      boolean isSpeculative    = reorderBufferBlock.getRobItem(
-              simCodeModel.getIntegerId()).reorderFlags.isSpeculative();
+      boolean isSpeculative    = simCodeModel.isSpeculative();
       boolean isAvailableForMA = !isSpeculative && item.getAddress() != -1 && !item.isAccessingMemory() && item.getAccessingMemoryId() == -1 && item.isSourceReady();
       if (!isAvailableForMA)
       {
@@ -265,7 +238,7 @@ public class StoreBufferBlock implements AbstractBlock
         memoryAccessUnit.resetCounter();
         memoryAccessUnit.setSimCodeModel(storeItem.getSimCodeModel());
         storeItem.setAccessingMemory(true);
-        storeItem.setAccessingMemoryId(this.commitId);
+        storeItem.setAccessingMemoryId(cycle);
         // todo: return here??
         return;
       }
@@ -274,14 +247,11 @@ public class StoreBufferBlock implements AbstractBlock
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @param possibleAddition Number of instructions to be possibly added
-   *
-   * @return True if buffer would be full, false otherwise
-   * @brief Checks if buffer would be full if specified number of instructions were to be added
+   * @return True if buffer has space for a single item, false otherwise
    */
-  public boolean isBufferFull(int possibleAddition)
+  public boolean hasSpace()
   {
-    return this.bufferSize < (this.storeQueue.size() + possibleAddition);
+    return this.bufferSize > this.storeQueue.size();
   }// end of isBufferFull
   //-------------------------------------------------------------------------------------------
   
@@ -311,14 +281,32 @@ public class StoreBufferBlock implements AbstractBlock
   //-------------------------------------------------------------------------------------------
   
   /**
-   * @param bufferSize New store buffer size
-   *
-   * @brief Set store buffer limit size
+   * @brief Finds a matching store instruction in store buffer for given load instruction.
+   * The store must be preceding the load instruction in program order.
+   * It also has to be the most recent one if multiple stores to the same address exist.
+   * It also has to have the value computed.
    */
-  public void setBufferSize(int bufferSize)
+  public StoreBufferItem findMatchingStore(LoadBufferItem loadItem)
   {
-    this.bufferSize = bufferSize;
-  }// end of setBufferSize
+    // TODO: can be more optimal - the stores are sorted by program order
+    assert loadItem != null;
+    long            loadAddress     = loadItem.getAddress();
+    SimCodeModel    simCodeModel    = loadItem.getSimCodeModel();
+    StoreBufferItem bestCandidate   = null;
+    int             bestCandidateId = -1;
+    for (StoreBufferItem storeItem : this.storeQueue)
+    {
+      int     candidateId             = storeItem.getSourceResultId();
+      boolean moreRecentButStillOlder = bestCandidateId < candidateId && simCodeModel.getIntegerId() > candidateId;
+      boolean isSourceReady           = storeItem.isSourceReady();
+      if (loadAddress == storeItem.getAddress() && moreRecentButStillOlder && isSourceReady)
+      {
+        bestCandidateId = candidateId;
+        bestCandidate   = storeItem;
+      }
+    }
+    return bestCandidate;
+  }// end of findMatchingStore
   //-------------------------------------------------------------------------------------------
   
   /**
@@ -341,7 +329,6 @@ public class StoreBufferBlock implements AbstractBlock
     assert !this.storeQueue.isEmpty();
     return storeQueue.peek().getSimCodeModel();
   }// end of getStoreQueueFirst
-  //-------------------------------------------------------------------------------------------
   
   /**
    * @brief Release store instruction on top of the queue (instruction has been committed)
@@ -354,6 +341,7 @@ public class StoreBufferBlock implements AbstractBlock
     }
     storeQueue.poll();
   }// end of releaseStoreFirst
+  //-------------------------------------------------------------------------------------------
   
   /**
    * @return Queue size
@@ -363,16 +351,6 @@ public class StoreBufferBlock implements AbstractBlock
   {
     return this.storeQueue.size();
   }// end of getQueueSize
-  //-------------------------------------------------------------------------------------------
-  
-  /**
-   * @return List of store map values
-   * @brief Get all store map values as list
-   */
-  List<StoreBufferItem> getStoreMapAsList()
-  {
-    return storeQueue.stream().toList();
-  }// end of updateMapValues
   
   /**
    * @param codeModel The store instruction to be added to the buffer

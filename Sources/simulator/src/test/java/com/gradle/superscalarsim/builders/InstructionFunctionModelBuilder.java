@@ -2,7 +2,7 @@ package com.gradle.superscalarsim.builders;
 
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
-import com.gradle.superscalarsim.models.InstructionFunctionModel;
+import com.gradle.superscalarsim.models.instruction.InstructionFunctionModel;
 
 import java.util.List;
 

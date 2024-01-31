@@ -29,9 +29,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { expectAssignable, expectNotType, expectType } from 'tsd';
-import type { InstructionTypeEnum, DataTypeEnum } from '@/lib/types/cpuApi';
 import { dataTypes } from '@/lib/forms/Isa';
+import type { DataTypeEnum, InstructionTypeEnum } from '@/lib/types/cpuApi';
+import { expectAssignable, expectNotType, expectType } from 'tsd';
 
 function f(): DataTypeEnum {
   // @ts-expect-error just a dumb function to test the type

@@ -40,7 +40,9 @@ import org.jetbrains.annotations.NotNull;
  */
 public class RenameMapModel implements Comparable<RenameMapModel>
 {
-  /// Name of the architectural register
+  /**
+   * Name of the architectural register
+   */
   private final String architecturalRegister;
   
   /**
@@ -50,8 +52,8 @@ public class RenameMapModel implements Comparable<RenameMapModel>
   private final int order;
   
   /**
-   * @param [in] registerName - Name of the architectural register
-   * @param [in] order        - Order id, specifying order between multiple same mapping
+   * @param registerName Name of the architectural register
+   * @param order        Order id, specifying order between multiple same mapping
    *
    * @brief Constructor
    */
@@ -63,7 +65,7 @@ public class RenameMapModel implements Comparable<RenameMapModel>
   //------------------------------------------------------
   
   /**
-   * @param [in] codeModel - Model to be compared to
+   * @param codeModel Model to be compared to
    *
    * @return -1 if >, 0 if ==, < if 1
    * @brief Comparator function for comparing mappings with same architectural register

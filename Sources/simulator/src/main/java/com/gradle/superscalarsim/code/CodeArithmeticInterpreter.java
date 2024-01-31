@@ -32,8 +32,9 @@
  */
 package com.gradle.superscalarsim.code;
 
-import com.gradle.superscalarsim.models.InstructionFunctionModel;
-import com.gradle.superscalarsim.models.SimCodeModel;
+import com.gradle.superscalarsim.models.instruction.InstructionFunctionModel;
+import com.gradle.superscalarsim.models.instruction.SimCodeModel;
+import com.gradle.superscalarsim.models.util.Result;
 
 import java.util.List;
 
@@ -61,7 +62,7 @@ public class CodeArithmeticInterpreter
    * @return Double value based on interpreted instruction
    * @brief Evaluates expression
    */
-  public Expression.Variable interpretInstruction(final SimCodeModel simCodeModel)
+  public Result<Expression.Variable> interpretInstruction(final SimCodeModel simCodeModel)
   {
     final InstructionFunctionModel instruction = simCodeModel.getInstructionFunctionModel();
     if (instruction == null)
@@ -70,12 +71,18 @@ public class CodeArithmeticInterpreter
     }
     
     // Evaluate expression
-    String                    expression = instruction.getInterpretableAs();
-    List<Expression.Variable> variables  = simCodeModel.getVariables();
-    Expression.interpret(expression, variables);
+    String                      expression = instruction.getInterpretableAs();
+    List<Expression.Variable>   variables  = simCodeModel.getVariables();
+    Result<Expression.Variable> result     = Expression.interpret(expression, variables);
+    
+    if (result.isException())
+    {
+      return result.convertException();
+    }
     
     // return "rd"
-    return variables.stream().filter(variable -> variable.tag.equals("rd")).findFirst().orElse(null);
+    Expression.Variable rd = variables.stream().filter(variable -> variable.tag.equals("rd")).findFirst().orElse(null);
+    return new Result<>(rd);
   }// end of interpretInstruction
   //-------------------------------------------------------------------------------------------
 }

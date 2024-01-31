@@ -35,15 +35,19 @@ package com.gradle.superscalarsim.blocks.loadstore;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.gradle.superscalarsim.blocks.base.AbstractFunctionUnitBlock;
 import com.gradle.superscalarsim.blocks.base.IssueWindowBlock;
-import com.gradle.superscalarsim.blocks.base.ReorderBufferBlock;
 import com.gradle.superscalarsim.code.CodeLoadStoreInterpreter;
+import com.gradle.superscalarsim.cpu.SimulationStatistics;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.models.FunctionalUnitDescription;
-import com.gradle.superscalarsim.models.SimCodeModel;
+import com.gradle.superscalarsim.models.instruction.SimCodeModel;
+import com.gradle.superscalarsim.models.util.Result;
 
 /**
- * @class ArithmeticFunctionUnitBlock
- * @brief Specific function unit class for executing load/store instructions (computing address)
+ * @class LoadStoreFunctionUnit
+ * @brief Function unit class for executing load/store instructions (computing address).
+ * @details When an instruction gets to this stage, the data to load/store must already be in the register (otherwise issue wouldn't have happened).
+ * So this function unit only computes the address and puts the address into the load/store buffer.
+ * The store in store buffer also needs to know the value to store, but it is read from the register field.
  */
 public class LoadStoreFunctionUnit extends AbstractFunctionUnitBlock
 {
@@ -71,6 +75,29 @@ public class LoadStoreFunctionUnit extends AbstractFunctionUnitBlock
   }
   
   /**
+   * @param description          Description of the function unit
+   * @param issueWindowBlock     Issue window block for comparing instruction and data types
+   * @param loadBufferBlock      Load buffer with all load instruction entries
+   * @param storeBufferBlock     Store buffer with all store instruction entries
+   * @param loadStoreInterpreter Interpreter for processing load store instructions
+   * @param statistics           Statistics for reporting FU usage
+   *
+   * @brief Constructor
+   */
+  public LoadStoreFunctionUnit(FunctionalUnitDescription description,
+                               IssueWindowBlock issueWindowBlock,
+                               LoadBufferBlock loadBufferBlock,
+                               StoreBufferBlock storeBufferBlock,
+                               CodeLoadStoreInterpreter loadStoreInterpreter,
+                               SimulationStatistics statistics)
+  {
+    super(description, issueWindowBlock, statistics);
+    this.loadBufferBlock      = loadBufferBlock;
+    this.storeBufferBlock     = storeBufferBlock;
+    this.loadStoreInterpreter = loadStoreInterpreter;
+  }// end of Constructor
+  
+  /**
    * @param simCodeModel Instruction to be executed
    *
    * @return True if the function unit can execute the instruction, false otherwise.
@@ -80,37 +107,13 @@ public class LoadStoreFunctionUnit extends AbstractFunctionUnitBlock
   {
     return simCodeModel.getInstructionFunctionModel().getInstructionType() == InstructionTypeEnum.kLoadstore;
   }
-  
-  /**
-   * @param name                 Name of function unit
-   * @param reorderBufferBlock   Class containing simulated Reorder Buffer
-   * @param delay                Delay for function unit
-   * @param issueWindowBlock     Issue window block for comparing instruction and data types
-   * @param loadBufferBlock      Load buffer with all load instruction entries
-   * @param storeBufferBlock     Store buffer with all store instruction entries
-   * @param loadStoreInterpreter Interpreter for processing load store instructions
-   *
-   * @brief Constructor
-   */
-  public LoadStoreFunctionUnit(FunctionalUnitDescription description,
-                               ReorderBufferBlock reorderBufferBlock,
-                               IssueWindowBlock issueWindowBlock,
-                               LoadBufferBlock loadBufferBlock,
-                               StoreBufferBlock storeBufferBlock,
-                               CodeLoadStoreInterpreter loadStoreInterpreter)
-  {
-    super(description, issueWindowBlock, reorderBufferBlock);
-    this.loadBufferBlock      = loadBufferBlock;
-    this.storeBufferBlock     = storeBufferBlock;
-    this.loadStoreInterpreter = loadStoreInterpreter;
-  }// end of Constructor
   //----------------------------------------------------------------------
   
   /**
    * @brief Simulates execution of an instruction
    */
   @Override
-  public void simulate()
+  public void simulate(int cycle)
   {
     if (!isFunctionUnitEmpty())
     {
@@ -130,6 +133,7 @@ public class LoadStoreFunctionUnit extends AbstractFunctionUnitBlock
    */
   private void handleInstruction()
   {
+    incrementBusyCycles();
     if (this.simCodeModel.hasFailed())
     {
       this.simCodeModel.setFunctionUnitId(this.functionUnitId);
@@ -150,15 +154,27 @@ public class LoadStoreFunctionUnit extends AbstractFunctionUnitBlock
     }
     
     // Execute
-    long address = loadStoreInterpreter.interpretAddress(simCodeModel);
-    if (simCodeModel.isStore())
+    Result<Long> addressRes = loadStoreInterpreter.interpretAddress(simCodeModel);
+    
+    if (addressRes.isException())
     {
-      storeBufferBlock.setAddress(simCodeModel.getIntegerId(), address);
+      // Handle exception, make sure the ROB will clear it, and that MAU will not execute
+      this.simCodeModel.setException(addressRes.exception());
+      this.simCodeModel.setBusy(false);
+      // Do not set the address
     }
     else
     {
-      // A load
-      loadBufferBlock.setAddress(simCodeModel.getIntegerId(), address);
+      long address = addressRes.value();
+      if (simCodeModel.isStore())
+      {
+        storeBufferBlock.setAddress(simCodeModel.getIntegerId(), address);
+      }
+      else
+      {
+        // A load
+        loadBufferBlock.setAddress(simCodeModel.getIntegerId(), address);
+      }
     }
     this.simCodeModel = null;
   }

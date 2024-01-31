@@ -50,8 +50,8 @@ public abstract class ReplacementPolicyModel
     };
   }
   
-  public abstract int getLineToReplace(int id, int index);
+  public abstract int getLineToReplace(int index);
   
-  public abstract void updatePolicy(int id, int index, int line);
+  public abstract void updatePolicy(int index, int line);
 }
 

@@ -35,34 +35,43 @@ package com.gradle.superscalarsim.blocks.loadstore;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.gradle.superscalarsim.blocks.base.AbstractFunctionUnitBlock;
 import com.gradle.superscalarsim.blocks.base.IssueWindowBlock;
-import com.gradle.superscalarsim.blocks.base.ReorderBufferBlock;
 import com.gradle.superscalarsim.code.CodeLoadStoreInterpreter;
+import com.gradle.superscalarsim.code.MemoryModel;
+import com.gradle.superscalarsim.cpu.SimulationStatistics;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.models.FunctionalUnitDescription;
-import com.gradle.superscalarsim.models.InputCodeArgument;
-import com.gradle.superscalarsim.models.Pair;
-import com.gradle.superscalarsim.models.SimCodeModel;
+import com.gradle.superscalarsim.models.instruction.InputCodeArgument;
+import com.gradle.superscalarsim.models.instruction.SimCodeModel;
+import com.gradle.superscalarsim.models.memory.MemoryAccess;
+import com.gradle.superscalarsim.models.memory.MemoryTransaction;
 import com.gradle.superscalarsim.models.register.RegisterModel;
+import com.gradle.superscalarsim.models.util.Result;
+
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 /**
  * @class MemoryAccessUnit
- * @brief Specific function unit class for memory access required by load instructions
+ * @brief Function unit class for memory access required by load instructions
  */
 public class MemoryAccessUnit extends AbstractFunctionUnitBlock
 {
+  /**
+   * Memory. Used for load/store operations
+   */
+  @JsonIdentityReference(alwaysAsId = true)
+  private final MemoryModel memoryModel;
   /**
    * Load buffer with all load instruction entries
    */
   @JsonIdentityReference(alwaysAsId = true)
   private LoadBufferBlock loadBufferBlock;
-  
   /**
    * Store buffer with all Store instruction entries
    */
   @JsonIdentityReference(alwaysAsId = true)
   private StoreBufferBlock storeBufferBlock;
-  
   /**
    * Interpreter for processing load store instructions
    */
@@ -70,50 +79,42 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
   private CodeLoadStoreInterpreter loadStoreInterpreter;
   
   /**
-   * Clock cycle counter
-   */
-  private int cycleCount;
-  
-  
-  /**
-   * The binary state of the MA unit.
-   * First delay is for MAU, second delay is for reply from memory.
-   */
-  private boolean firstDelayPassed = false;
-  
-  /**
-   * Data of the load operation to be able to store it later
-   */
-  private long savedResult;
-  
-  /**
-   * settings for first delay
+   * Delay added to the memory access by this unit.
    */
   private int baseDelay;
   
   /**
-   * @param name                 Name of function unit
-   * @param reorderBufferBlock   Class containing simulated Reorder Buffer
-   * @param delay                Delay for function unit
+   * Current memory transaction, or null if no transaction is in progress.
+   * TODO do not serialize (or maybe it does not matter here)
+   */
+  private MemoryTransaction transaction;
+  
+  /**
+   * @param description          Description of the function unit
    * @param issueWindowBlock     Issue window block for comparing instruction and data types
    * @param loadBufferBlock      Buffer keeping all in-flight load instructions
    * @param storeBufferBlock     Buffer keeping all in-flight store instructions
+   * @param memoryModel          Memory. Used for load/store operations
    * @param loadStoreInterpreter Interpreter processing load/store instructions
+   * @param statistics           Statistics for reporting FU usage
    *
    * @brief Constructor
    */
   public MemoryAccessUnit(FunctionalUnitDescription description,
-                          ReorderBufferBlock reorderBufferBlock,
                           IssueWindowBlock issueWindowBlock,
                           LoadBufferBlock loadBufferBlock,
                           StoreBufferBlock storeBufferBlock,
-                          CodeLoadStoreInterpreter loadStoreInterpreter)
+                          MemoryModel memoryModel,
+                          CodeLoadStoreInterpreter loadStoreInterpreter,
+                          SimulationStatistics statistics)
   {
-    super(description, issueWindowBlock, reorderBufferBlock);
+    super(description, issueWindowBlock, statistics);
     this.loadBufferBlock      = loadBufferBlock;
     this.storeBufferBlock     = storeBufferBlock;
     this.loadStoreInterpreter = loadStoreInterpreter;
     this.baseDelay            = description.latency;
+    this.memoryModel          = memoryModel;
+    transaction               = null;
   }// end of Constructor
   //----------------------------------------------------------------------
   
@@ -121,32 +122,35 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
    * @brief Simulates memory access
    */
   @Override
-  public void simulate()
+  public void simulate(int cycle)
   {
-    cycleCount++;
-    
-    if (!isFunctionUnitEmpty())
-    {
-      handleInstruction();
-    }
-    
     if (isFunctionUnitEmpty())
     {
+      // todo why
       this.functionUnitId += this.functionUnitCount;
+    }
+    else
+    {
+      handleInstruction(cycle);
     }
   }// end of simulate
   
-  private void handleInstruction()
+  private void handleInstruction(int cycle)
   {
+    incrementBusyCycles();
     if (this.simCodeModel.hasFailed())
     {
       // Instruction has failed, remove it from MAU
       this.simCodeModel.setFunctionUnitId(this.functionUnitId);
       this.simCodeModel = null;
-      this.zeroTheCounter();
+      // In case this clock tick is the last one of the instruction, take result from mem/cache
+      if (hasDelayPassed())
+      {
+        memoryModel.finishTransaction(transaction.id());
+      }
       
-      this.setDelay(baseDelay);
-      this.firstDelayPassed = false;
+      zeroTheCounter();
+      setDelay(baseDelay);
       return;
     }
     
@@ -165,48 +169,29 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
       {
         throw new RuntimeException("Instruction is not load or store");
       }
+      
+      // Start execution
+      int delay = startExecution(cycle);
+      this.setDelay(delay);
+      // todo +baseDelay ? But careful to take the transaction result in time
     }
     
     // hasDelayPassed increments counter, checks if work (waiting) is done
-    tickCounter();
-    if (!hasDelayPassed())
+    if (hasDelayPassed())
     {
-      return;
-    }
-    
-    // Execute
-    boolean allowAccessFinish = true;
-    if (!firstDelayPassed)
-    {
-      // First delay is over, start memory access
-      firstDelayPassed = true;
-      
-      // This contacts memoryModel, pulls data and delay
-      Pair<Integer, Long> result = loadStoreInterpreter.interpretInstruction(this.simCodeModel, cycleCount);
-      int                 delay  = result.getFirst();
-      savedResult = result.getSecond();
-      
-      // Set delay for memory response
-      this.setDelay(delay);
-      this.resetCounter();
-      if (delay != 0)
-      {
-        // Memory returned with delay for access, do not allow to finish in the same execution
-        allowAccessFinish = false;
-      }
-    }
-    
-    if (firstDelayPassed && allowAccessFinish)
-    {
+      assert simCodeModel != null;
+      assert transaction != null;
       // Wait for memory is over, instruction is finished
-      firstDelayPassed = false;
       this.setDelay(baseDelay);
-      int simCodeId = this.simCodeModel.getIntegerId();
-      this.reorderBufferBlock.getRobItem(simCodeId).reorderFlags.setBusy(false);
+      int simCodeId = simCodeModel.getIntegerId();
+      simCodeModel.setBusy(false);
+      // Take result
+      memoryModel.finishTransaction(transaction.id());
       if (this.simCodeModel.isLoad())
       {
         InputCodeArgument destinationArgument = simCodeModel.getArgumentByName("rd");
         RegisterModel     destRegister        = destinationArgument.getRegisterValue();
+        long              savedResult         = transaction.dataAsLong();
         destRegister.setValue(savedResult, simCodeModel.getInstructionFunctionModel().getArgumentByName("rd").type());
         destRegister.setReadiness(RegisterReadinessEnum.kExecuted);
         this.loadBufferBlock.setDestinationAvailable(simCodeId);
@@ -218,16 +203,50 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
       }
       
       this.simCodeModel = null;
+      this.transaction  = null;
+      zeroTheCounter();
     }
+    
+    tickCounter();
   }
   //----------------------------------------------------------------------
+  
+  /**
+   * @return Delay of this access and id of the transaction
+   * @brief starts execution of instruction
+   */
+  private int startExecution(int cycle)
+  {
+    // This contacts memoryModel, pulls data and delay
+    Result<MemoryAccess> accessRes = loadStoreInterpreter.interpretInstruction(this.simCodeModel);
+    assert !accessRes.isException();
+    MemoryAccess access        = accessRes.value();
+    long         address       = access.getAddress();
+    int          numberOfBytes = access.getSize();
+    
+    // Convert to a MemoryTransaction
+    byte[] data = null;
+    if (access.isStore())
+    {
+      ByteBuffer byteBuffer = ByteBuffer.allocate(8);
+      byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
+      byteBuffer.putLong(access.getData());
+      // Take only first size bytes
+      data = new byte[numberOfBytes];
+      System.arraycopy(byteBuffer.array(), 0, data, 0, numberOfBytes);
+    }
+    
+    
+    transaction = new MemoryTransaction(-1, functionUnitId, simCodeModel.getCodeId(), cycle, address, data,
+                                        numberOfBytes, access.isStore(), access.isSigned());
+    // return memory delay
+    return memoryModel.execute(transaction);
+  }
   
   @Override
   public void reset()
   {
     super.reset();
-    firstDelayPassed = false;
-    cycleCount       = 0;
     this.setDelay(baseDelay);
   }
   
@@ -251,8 +270,9 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
   {
     if (this.simCodeModel == null || this.simCodeModel != simCodeModel)
     {
-      // todo Maybe the 'this.simCodeModel != simCodeModel' is wrong, because buffers try to remove a lot of times
-      throw new RuntimeException("Trying to remove wrong code model from MAU");
+      return;
+      //          // todo Maybe the 'this.simCodeModel != simCodeModel' is wrong, because buffers try to remove a lot of times
+      //          throw new RuntimeException("Trying to remove wrong code model from MAU");
     }
     
     tickCounter();
@@ -261,8 +281,7 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
     this.zeroTheCounter();
     
     this.setDelay(baseDelay);
-    this.firstDelayPassed = false;
-    
+    // todo cancel transaction?
   }// end of tryRemoveCodeModel
   //----------------------------------------------------------------------
   

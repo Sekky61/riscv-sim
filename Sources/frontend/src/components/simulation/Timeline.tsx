@@ -33,18 +33,31 @@ import clsx from 'clsx';
 import {
   ArrowBigLeft,
   ArrowBigRight,
+  ArrowLeft,
+  ArrowRight,
+  ChevronFirst,
+  ChevronLast,
+  ChevronLeft,
+  ChevronRight,
+  FastForward,
   RefreshCcw,
+  Rewind,
+  SkipBack,
   SkipForward,
 } from 'lucide-react';
 
 import {
   reloadSimulation,
+  selectStopReason,
+  selectTick,
   simStepBackward,
+  simStepEnd,
   simStepForward,
 } from '@/lib/redux/cpustateSlice';
-import { useAppDispatch } from '@/lib/redux/hooks';
+import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 
 import AnimatedButton from '@/components/AnimatedButton';
+import { stopReasonToShortString } from '@/lib/utils';
 
 export type TimelineProps = Pick<
   React.HTMLAttributes<HTMLDivElement>,
@@ -55,40 +68,67 @@ export type TimelineProps = Pick<
 // Go forward, back, finish
 export default function Timeline({ className = '' }: TimelineProps) {
   const dispatch = useAppDispatch();
+  const tick = useAppSelector(selectTick);
+  const stopReason = useAppSelector(selectStopReason);
 
-  const cls = clsx('flex bg-red-300 rounded-full h-10', className);
+  const cls = clsx('timeline-grid drop-shadow', className);
 
+  let state = 0;
+  let message = '';
+  if (tick > 0) {
+    state = 1;
+  }
+  if (stopReason !== 'kNotStopped') {
+    state = 2;
+    message = stopReasonToShortString(stopReason);
+  }
+
+  // The .controls is rotated, see the css file.
+  // todo make buttons unselectable in certain states
   return (
-    <div className={cls}>
-      <div className='flex gap-2 rounded-full border bg-gray-100 p-1 drop-shadow'>
+    <div className={cls} data-state={state} data-reset={false}>
+      <div className='controls rounded-full h-full box-content border bg-gray-100 flex flex-row-reverse justify-end items-center'>
         <AnimatedButton
           shortCut='left'
           clickCallback={() => dispatch(simStepBackward())}
           description='Step backward'
+          className='left-arrow m-1 rotate-180'
         >
-          <ArrowBigLeft strokeWidth={1.5} />
+          <ChevronLeft strokeWidth={1.5} />
         </AnimatedButton>
         <AnimatedButton
           shortCut='right'
           clickCallback={() => dispatch(simStepForward())}
           description='Step forward'
+          className='right-arrow m-1 rotate-180'
         >
-          <ArrowBigRight strokeWidth={1.5} />
+          <ChevronRight strokeWidth={1.5} />
         </AnimatedButton>
         <AnimatedButton
+          clickCallback={() => dispatch(simStepEnd())}
           shortCut='ctrl+enter'
           description='Skip to the end of simulation'
+          className='m-1 rotate-180'
         >
-          <SkipForward strokeWidth={1.5} />
+          <ChevronLast strokeWidth={1.5} />
         </AnimatedButton>
       </div>
-      <div className='p-1 border border-transparent'>
+      <div className='reset h-full box-content border flex items-center justify-between bg-[#ff7171] rounded-full'>
         <AnimatedButton
           clickCallback={() => dispatch(reloadSimulation())}
+          shortCut='r'
           description='Reload simulation'
+          className='m-1 rotate-180'
         >
-          <RefreshCcw strokeWidth={1.5} />
+          <ChevronFirst strokeWidth={1.5} />
         </AnimatedButton>
+        <div
+          className={`${
+            state === 2 ? 'opacity-100' : 'opacity-0'
+          } flex-grow text-center rotate-180 mr-4`}
+        >
+          {message}
+        </div>
       </div>
     </div>
   );

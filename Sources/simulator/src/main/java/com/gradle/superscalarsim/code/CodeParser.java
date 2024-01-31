@@ -32,9 +32,9 @@ import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.RegisterTypeEnum;
 import com.gradle.superscalarsim.factories.InputCodeModelFactory;
 import com.gradle.superscalarsim.loader.InitLoader;
-import com.gradle.superscalarsim.models.InputCodeArgument;
-import com.gradle.superscalarsim.models.InputCodeModel;
-import com.gradle.superscalarsim.models.InstructionFunctionModel;
+import com.gradle.superscalarsim.models.instruction.InputCodeArgument;
+import com.gradle.superscalarsim.models.instruction.InputCodeModel;
+import com.gradle.superscalarsim.models.instruction.InstructionFunctionModel;
 import com.gradle.superscalarsim.models.register.IRegisterFile;
 import com.gradle.superscalarsim.models.register.RegisterDataContainer;
 import com.gradle.superscalarsim.models.register.RegisterModel;
@@ -217,6 +217,7 @@ public class CodeParser
     }
     
     // Add constantValues to labels in instructions
+    // Labels should result in a relative value, not absolute
     // TODO: memory initializer would ideally have references to labels and change them directly
     for (InputCodeModel instruction : instructions)
     {
@@ -226,8 +227,16 @@ public class CodeParser
         {
           continue;
         }
+        boolean               isOffset      = instruction.getInstructionFunctionModel()
+                .getArgumentByName(argument.getName()).isOffset();
+        int                   pc            = instruction.getPc();
         RegisterDataContainer constantValue = new RegisterDataContainer();
-        constantValue.setValue(labels.get(argument.getValue()).address);
+        int                   labelValue    = labels.get(argument.getValue()).address;
+        if (isOffset)
+        {
+          labelValue -= pc;
+        }
+        constantValue.setValue(labelValue);
         argument.setConstantValue(constantValue);
       }
     }
@@ -816,7 +825,7 @@ public class CodeParser
     RegisterModel register      = argument.getRegisterValue();
     if (register == null)
     {
-      this.addError(token, "Argument \"" + argumentValue + "\" is not a register nor a value.");
+      this.addError(token, "Argument \"" + argumentValue + "\" is not a register.");
       return false;
     }
     if (!checkDatatype(argumentDataType, register.getType()))

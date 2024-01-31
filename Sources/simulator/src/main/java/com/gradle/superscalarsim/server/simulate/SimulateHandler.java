@@ -51,7 +51,7 @@ public class SimulateHandler implements IRequestResolver<SimulateRequest, Simula
   public SimulateResponse resolve(SimulateRequest request)
   {
     SimulateResponse response;
-    if (request == null || request.config == null || request.tick < 0)
+    if (request == null || request.config == null || (request.tick.isPresent() && request.tick.get() < 0))
     {
       // Send error
       // TODO: Add proper error handling
@@ -71,7 +71,7 @@ public class SimulateHandler implements IRequestResolver<SimulateRequest, Simula
         // TODO: Add proper error handling
         for (CpuConfigValidator.Error error : errors.messages)
         {
-          System.err.println(error);
+          System.err.println(error.message);
         }
         throw new IllegalArgumentException("Invalid request values");
       }
@@ -90,9 +90,18 @@ public class SimulateHandler implements IRequestResolver<SimulateRequest, Simula
     // If state is not provided, simulate from the beginning
     Cpu cpu        = new Cpu(request.config);
     int tickBefore = cpu.cpuState.tick;
-    cpu.simulateState(request.tick);
+    if (request.tick.isPresent())
+    {
+      int goalTick = request.tick.get();
+      cpu.simulateState(goalTick);
+    }
+    else
+    {
+      // Finish the simulation
+      cpu.execute(false);
+    }
     int actualSteps = cpu.cpuState.tick - tickBefore;
-    return new SimulateResponse(cpu.cpuState, actualSteps);
+    return new SimulateResponse(cpu.cpuState, actualSteps, cpu.stopReason);
   }
   
   @Override

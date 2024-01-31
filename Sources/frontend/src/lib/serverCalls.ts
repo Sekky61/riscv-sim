@@ -66,7 +66,7 @@ export async function callParseAsmImpl(
 }
 
 export async function callSimulationImpl(
-  tick: number,
+  tick: number | null,
   cfg: SimulationConfig,
 ): Promise<SimulateResponse> {
   const body: SimulateRequest = {
@@ -76,6 +76,9 @@ export async function callSimulationImpl(
   return await callApi('simulate' as const, body);
 }
 
+/**
+ * Call the simulator server API. Parse the response as JSON.
+ */
 async function callApi<T extends EndpointName>(
   ...args: Parameters<AsyncEndpointFunction<T>>
 ): Promise<ReturnType<AsyncEndpointFunction<T>>> {

@@ -101,6 +101,14 @@ export default function Page() {
             <kbd>←</kbd>
           </div>
           <div>
+            <div className='mb-2'>Skip to the end of simulation</div>
+            <kbd>Ctrl</kbd> + <kbd>Enter</kbd>
+          </div>
+          <div>
+            <div className='mb-2'>Reload simulation</div>
+            <kbd>R</kbd>
+          </div>
+          <div>
             <div className='mb-2'>Zoom in</div>
             <kbd>Ctrl</kbd> + <kbd>+</kbd>
           </div>

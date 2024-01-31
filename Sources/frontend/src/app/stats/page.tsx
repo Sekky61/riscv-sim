@@ -29,20 +29,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-} from '@/components/base/ui/card';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/base/ui/table';
+import { SimulationStats } from '@/components/simulation/SimulationStats';
 
 export default function Component() {
   return (
@@ -51,70 +38,10 @@ export default function Component() {
         <main className='flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-6'>
           <div className='flex items-center gap-4'>
             <h1 className='font-semibold text-lg md:text-xl'>
-              Simulation Dashboard
+              Simulation Statistics
             </h1>
           </div>
-          <div className='grid gap-6'>
-            <div className='grid md:grid-cols-3 gap-6'>
-              <Card>
-                <CardHeader>
-                  <CardDescription>Stalls</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <span className='text-8xl'>0</span>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader>
-                  <CardDescription>Clocks</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <span className='text-8xl'>95</span>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader>
-                  <CardDescription>Branch Prediction</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <span className='text-8xl'>94%</span>
-                </CardContent>
-              </Card>
-            </div>
-            <h2 className='font-semibold text-lg md:text-xl'>
-              Detailed Statistics
-            </h2>
-            <div className='border shadow-sm rounded-lg'>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className='w-[100px]'>Category</TableHead>
-                    <TableHead>Value</TableHead>
-                    <TableHead>Percentage</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  <TableRow>
-                    <TableCell className='font-medium'>Stalls</TableCell>
-                    <TableCell>350</TableCell>
-                    <TableCell className='text-right'>35%</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className='font-medium'>Clocks</TableCell>
-                    <TableCell>450</TableCell>
-                    <TableCell className='text-right'>45%</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className='font-medium'>
-                      Branch Prediction
-                    </TableCell>
-                    <TableCell>200</TableCell>
-                    <TableCell className='text-right'>20%</TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
-            </div>
-          </div>
+          <SimulationStats />
         </main>
       </div>
     </div>

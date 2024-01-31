@@ -35,11 +35,7 @@ import { ZoomIn, ZoomOut } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 
-import {
-  pullCodeFromCompiler,
-  reloadSimulation,
-  selectCpu,
-} from '@/lib/redux/cpustateSlice';
+import { reloadSimulation, selectCpu } from '@/lib/redux/cpustateSlice';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 
 import AnimatedButton from '@/components/AnimatedButton';
@@ -56,19 +52,26 @@ import Program from '@/components/simulation/Program';
 import ReorderBuffer from '@/components/simulation/ReorderBuffer';
 import StoreBuffer from '@/components/simulation/StoreBuffer';
 import Timeline from '@/components/simulation/Timeline';
+import { checkAskSimReload } from '@/lib/redux/simConfigSlice';
 
 export default function HomePage() {
   const [scale, setScale] = useState(1);
   const dispatch = useAppDispatch();
-  const state = useAppSelector(selectCpu);
+  const cpu = useAppSelector(selectCpu);
 
+  const [modalShown, setModalShown] = useState(false);
+
+  // On page load, check if the simulation config is up to date, show modal to warn and offer to reload
+  // biome-ignore lint: supposed to run only once after page load
   useEffect(() => {
-    if (!state) {
-      // TODO: calls multiple times unnecessarily
-      dispatch(pullCodeFromCompiler());
-      dispatch(reloadSimulation());
+    if (!modalShown) {
+      setModalShown(true);
+      dispatch(checkAskSimReload());
+      if (cpu === null) {
+        dispatch(reloadSimulation());
+      }
     }
-  }, [state, dispatch]);
+  });
 
   const scaleUp = () => {
     setScale(scale + 0.2);

@@ -67,7 +67,7 @@ public class FifoReplacementPolicyModel extends ReplacementPolicyModel
   /**
    * @brief gets index of line to replace
    */
-  public int getLineToReplace(int id, int index)
+  public int getLineToReplace(int index)
   {
     int indexToReplace = fifo[index].get(0);
     fifo[index].add(indexToReplace);
@@ -78,7 +78,7 @@ public class FifoReplacementPolicyModel extends ReplacementPolicyModel
   /**
    * @brief Update policy with latest access
    */
-  public void updatePolicy(int id, int index, int line)
+  public void updatePolicy(int index, int line)
   {
   }
 }

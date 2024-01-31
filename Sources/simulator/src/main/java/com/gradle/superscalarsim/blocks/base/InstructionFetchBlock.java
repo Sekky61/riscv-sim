@@ -40,7 +40,7 @@ import com.gradle.superscalarsim.blocks.branch.BranchTargetBuffer;
 import com.gradle.superscalarsim.blocks.branch.GShareUnit;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.factories.SimCodeModelFactory;
-import com.gradle.superscalarsim.models.SimCodeModel;
+import com.gradle.superscalarsim.models.instruction.SimCodeModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -103,11 +103,6 @@ public class InstructionFetchBlock implements AbstractBlock
   private boolean stallFlag;
   
   /**
-   * ID of the cycle, starting from 0
-   */
-  private int cycleId;
-  
-  /**
    * @param parser             Class containing parsed code
    * @param blockScheduleTask  Task class, where blocks are periodically triggered by the GlobalTimer
    * @param gShareUnit         GShare unit for getting correct prediction counters
@@ -131,7 +126,6 @@ public class InstructionFetchBlock implements AbstractBlock
     this.pc                = 0;
     this.fetchedCode       = new ArrayList<>();
     this.stallFlag         = false;
-    this.cycleId           = -1;
     this.branchFollowLimit = branchFollowLimit;
   }// end of Constructor
   //----------------------------------------------------------------------
@@ -168,20 +162,18 @@ public class InstructionFetchBlock implements AbstractBlock
   }// end of setStallFlag
   
   /**
-   * @brief Simulates fetching instructions
+   * @brief Simulates fetching instructions. The only point of creating SimCodeModel(s).
    */
   @Override
-  public void simulate()
+  public void simulate(int cycle)
   {
-    // The only point of creating SimCodeModel(s).
-    this.cycleId++;
     if (stallFlag)
     {
       // Fetch is stalled. Do nothing, resume next cycle
       this.stallFlag = false;
       return;
     }
-    this.fetchedCode = fetchInstructions();
+    this.fetchedCode = fetchInstructions(cycle);
   }// end of simulate
   //----------------------------------------------------------------------
   
@@ -206,7 +198,7 @@ public class InstructionFetchBlock implements AbstractBlock
    * @return Fetched instructions
    * @brief Fetching logic
    */
-  private List<SimCodeModel> fetchInstructions()
+  private List<SimCodeModel> fetchInstructions(int cycle)
   {
     List<SimCodeModel> fetchedCode      = new ArrayList<>();
     int                followedBranches = 0;
@@ -215,10 +207,9 @@ public class InstructionFetchBlock implements AbstractBlock
     for (int i = 0; i < numberOfWays; i++)
     {
       // Unique ID of the instruction
-      int simCodeId = this.cycleId * numberOfWays + i;
+      int simCodeId = cycle * numberOfWays + i;
       SimCodeModel codeModel = this.simCodeModelFactory.createInstance(instructionMemoryBlock.getInstructionAt(pc),
-                                                                       simCodeId);
-      codeModel.setSavedPc(pc);
+                                                                       simCodeId, cycle);
       
       // This if emulates the in my opinion wrong logic. Removing it will cause the program to fetch
       // instructions until a number of jumps are _followed_
@@ -232,8 +223,7 @@ public class InstructionFetchBlock implements AbstractBlock
           for (int j = i; j < numberOfWays; j++)
           {
             SimCodeModel nopCodeModel = this.simCodeModelFactory.createInstance(instructionMemoryBlock.getNop(),
-                                                                                simCodeId);
-            nopCodeModel.setSavedPc(pc);
+                                                                                simCodeId, cycle);
             fetchedCode.add(nopCodeModel);
           }
           break;

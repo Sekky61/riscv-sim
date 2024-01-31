@@ -102,6 +102,11 @@ public class CacheLineModel
     }
   }
   
+  public void setData(int index, byte[] data)
+  {
+    System.arraycopy(data, 0, line, index, data.length);
+  }
+  
   /**
    * @param index Index inside the line
    * @param size  Size of requested data - 1,2,4

@@ -34,7 +34,10 @@ import type { ReactElement } from 'react';
 export type InstructionListDisplayProps<T> = {
   instructions: Array<T>;
   limit: number;
-  instructionRenderer: (item: T | null, id: number) => ReactElement<{ key: string }>;
+  instructionRenderer: (
+    item: T | null,
+    id: number,
+  ) => ReactElement<{ key: string }>;
   legend?: ReactElement;
   columns?: number;
 };

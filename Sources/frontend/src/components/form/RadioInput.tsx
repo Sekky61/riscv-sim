@@ -54,25 +54,25 @@ import * as RadioGroup from '@radix-ui/react-radio-group';
  * Uses radix ui for accessibility
  */
 
-interface RadioInputBaseProps extends ReactClassName {
-  choices: readonly string[];
+interface RadioInputBaseProps<T extends string> extends ReactClassName {
+  choices: readonly T[];
   texts?: readonly string[];
 }
 
-type RadioInputProps = RadioInputBaseProps & {
-  value: string;
-  onNewValue: (newValue: string) => void;
+type RadioInputProps<T extends string> = RadioInputBaseProps<T> & {
+  value: T;
+  onNewValue: (newValue: RadioInputBaseProps<T>['choices'][number]) => void;
 };
 
 /**
  * Uncontrolled radio input
  */
-export function RadioInput({
+export function RadioInput<T extends string>({
   choices,
   texts,
   value,
   onNewValue,
-}: RadioInputProps) {
+}: RadioInputProps<T>) {
   return (
     <RadioGroup.Root
       className={cn(
@@ -107,7 +107,7 @@ export function RadioInput({
 type ControlledRadioInputProps<T extends FieldValues> = {
   name: Path<T>;
   control: Control<T>;
-} & RadioInputBaseProps;
+} & RadioInputBaseProps<T[string]>;
 
 /**
  * Controlled version of RadioInput.

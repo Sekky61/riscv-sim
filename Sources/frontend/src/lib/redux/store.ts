@@ -46,11 +46,12 @@ import {
 import hardSet from 'redux-persist/lib/stateReconciler/hardSet';
 import storage from 'redux-persist/lib/storage';
 
-import compilerReducer from '@/lib/redux/compilerSlice';
+import compilerReducer, { CompilerReducer } from '@/lib/redux/compilerSlice';
 import cpuReducer from '@/lib/redux/cpustateSlice';
 import isaReducer, { IsaReducer } from '@/lib/redux/isaSlice';
 import modalsReducer from '@/lib/redux/modalSlice';
 import shortcutsReducer from '@/lib/redux/shortcutsSlice';
+import simConfigReducer, { SimConfigReducer } from '@/lib/redux/simConfigSlice';
 
 /**
  * This is the root of the global state.
@@ -77,6 +78,9 @@ const migrations = {
   10: (state: PersistedState) => {
     return state;
   },
+  11: (state: PersistedState) => {
+    return undefined;
+  },
 };
 
 // Persistance config
@@ -86,17 +90,40 @@ const persistIsaConfig = {
   // The key in localStorage
   key: 'root',
   // Change the version when changing the schema
-  version: 10,
+  version: 11,
   storage,
   stateReconciler: hardSet,
   // This migration is used when the version number is increased
   migrate: createMigrate(migrations),
 };
 
+const persistSimConfig = {
+  key: 'simConfig',
+  version: 1,
+  storage,
+  stateReconciler: hardSet,
+  migrate: createMigrate(migrations),
+};
+
+const persistCompileConfig = {
+  key: 'compiler',
+  version: 1,
+  storage,
+  stateReconciler: hardSet,
+  migrate: createMigrate(migrations),
+};
+
 // https://stackoverflow.com/questions/69978434/persist-reducer-function-giving-type-error-to-my-reducer-in-typescript
 const reducers = combineReducers({
   isa: persistReducer<IsaReducer>(persistIsaConfig, isaReducer),
-  compiler: compilerReducer,
+  simConfig: persistReducer<SimConfigReducer>(
+    persistSimConfig,
+    simConfigReducer,
+  ),
+  compiler: persistReducer<CompilerReducer>(
+    persistCompileConfig,
+    compilerReducer,
+  ),
   notifications: notificationsReducer(),
   shortcuts: shortcutsReducer,
   modals: modalsReducer,

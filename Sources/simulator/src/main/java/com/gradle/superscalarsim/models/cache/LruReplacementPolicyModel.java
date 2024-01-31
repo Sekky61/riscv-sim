@@ -31,7 +31,7 @@ import java.util.List;
 
 /**
  * @class LruReplacementPolicyModel
- * @brief Least recently used replacement policy
+ * @brief Least recently used replacement policy. Starts with the history filled, item 0 as the oldest.
  */
 public class LruReplacementPolicyModel extends ReplacementPolicyModel
 {
@@ -47,9 +47,10 @@ public class LruReplacementPolicyModel extends ReplacementPolicyModel
   
   public LruReplacementPolicyModel(final int numberOfLines, final int associativity)
   {
+    int groupCount = numberOfLines / associativity;
     this.associativity = associativity;
-    lru                = new List[numberOfLines / associativity];
-    for (int i = 0; i < numberOfLines / associativity; i++)
+    lru                = new List[groupCount];
+    for (int i = 0; i < groupCount; i++)
     {
       lru[i] = new ArrayList<>();
       for (int j = 0; j < associativity; j++)
@@ -59,26 +60,32 @@ public class LruReplacementPolicyModel extends ReplacementPolicyModel
     }
   }
   
-  public int getLineToReplace(int id, int index)
+  public int getLineToReplace(int index)
   {
     return lru[index].get(0);
   }
   
   /**
+   * @param index Index of cache-line (addresses a group)
+   * @param line  Line to update (address inside group)
+   *
    * @brief Update policy with latest access
    */
-  public void updatePolicy(int id, int index, int line)
+  public void updatePolicy(int index, int line)
   {
-    if (!lru[index].contains(line))
+    if (lru[index].contains(line))
     {
+      // Bubble the line to the end (most recently used)
+      lru[index].remove((Integer) line);
+    }
+    else
+    {
+      // TODO not ever used?
+      // Not present. Insert, remove oldest if needed
       if (lru[index].size() == associativity)
       {
         lru[index].remove(0);
       }
-    }
-    else
-    {
-      lru[index].remove((Integer) line);
     }
     lru[index].add(line);
   }

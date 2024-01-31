@@ -48,33 +48,7 @@ public class CompilerTests
             """;
     
     // Exercise
-    CompiledProgram program = AsmParser.parse(asmCode, 0);
-    
-    // Verify
-    System.out.println(program.program);
-    
-    for (String line : program.program)
-    {
-      Assert.assertFalse(line.contains("A:"));
-    }
-  }
-  
-  @Test
-  public void test_asmParserRemovesDirectives()
-  {
-    String asmCode = """
-            .file   "test.c"
-            N:
-            .word 25
-            M:
-            .word 32
-            A:
-            subi  sp, sp, 16
-            lw    a0, 0(N)
-            """;
-    
-    // Exercise
-    CompiledProgram program = AsmParser.parse(asmCode, 0);
+    CompiledProgram program = AsmParser.parse(asmCode);
     
     // Verify
     System.out.println(program.program);
@@ -112,7 +86,7 @@ public class CompilerTests
     
     // Exercise
     GccCaller.CompileResult compileResult = GccCaller.compile(cCode, List.of());
-    CompiledProgram         program       = AsmParser.parse(compileResult.code, cCode.split("\n").length);
+    CompiledProgram         program       = AsmParser.parse(compileResult.code);
     String                  asm           = String.join("\n", program.program);
     parser.parseCode(asm);
     
@@ -120,6 +94,8 @@ public class CompilerTests
     Assert.assertTrue(compileResult.success);
     Assert.assertTrue(parser.success());
     Assert.assertFalse(parser.getInstructions().isEmpty());
+    
+    Assert.assertTrue(program.labels.contains("f"));
   }
   
   @Test
@@ -147,7 +123,7 @@ public class CompilerTests
     
     // Exercise
     GccCaller.CompileResult compileResult = GccCaller.compile(cCode, List.of("O2"));
-    CompiledProgram         program       = AsmParser.parse(compileResult.code, cCode.split("\n").length);
+    CompiledProgram         program       = AsmParser.parse(compileResult.code);
     String                  asm           = String.join("\n", program.program);
     parser.parseCode(asm);
     
@@ -191,30 +167,16 @@ public class CompilerTests
     
     // Exercise
     GccCaller.CompileResult compileResult = GccCaller.compile(cCode, List.of("O2"));
-    CompiledProgram         program       = AsmParser.parse(compileResult.code, cCode.split("\n").length);
+    CompiledProgram         program       = AsmParser.parse(compileResult.code);
     String                  asm           = String.join("\n", program.program);
     parser.parseCode(asm);
     
     // Verify
-    try
-    {
-      Assert.assertTrue(compileResult.success);
-      Assert.assertTrue(parser.success());
-      Assert.assertFalse(parser.getInstructions().isEmpty());
-      // There is a sum label
-      Assert.assertNotNull(parser.getLabels().get("sum"));
-    }
-    catch (AssertionError e)
-    {
-      System.out.println(e.getMessage());
-      System.out.println("Unfiltered program:");
-      System.out.println(compileResult.code);
-      System.out.println("Program:");
-      System.out.println(asm);
-      System.out.println("Error messages:");
-      System.out.println(parser.getErrorMessages());
-      Assert.fail();
-    }
+    Assert.assertTrue(compileResult.success);
+    Assert.assertTrue(parser.success());
+    Assert.assertFalse(parser.getInstructions().isEmpty());
+    // There is a sum label
+    Assert.assertNotNull(parser.getLabels().get("sum"));
   }
   
   @Test
@@ -233,35 +195,22 @@ public class CompilerTests
     
     // Exercise
     GccCaller.CompileResult compileResult = GccCaller.compile(cCode, List.of("O2"));
-    CompiledProgram         program       = AsmParser.parse(compileResult.code, cCode.split("\n").length);
+    CompiledProgram         program       = AsmParser.parse(compileResult.code);
     String                  asm           = String.join("\n", program.program);
     parser.parseCode(asm);
     
     // Verify
-    try
-    {
-      Assert.assertTrue(compileResult.success);
-      Assert.assertTrue(parser.success());
-      Assert.assertFalse(parser.getInstructions().isEmpty());
-      // There is a add label
-      Assert.assertNotNull(parser.getLabels().get("add"));
-      
-      // There is a string label
-      Label str = parser.getLabels().get("str");
-      Assert.assertNotNull(str);
-      Assert.assertNotEquals(0, str.address);
-    }
-    catch (AssertionError e)
-    {
-      System.out.println(e.getMessage());
-      System.out.println("Unfiltered program:");
-      System.out.println(compileResult.code);
-      System.out.println("Program:");
-      System.out.println(asm);
-      System.out.println("Error messages:");
-      System.out.println(parser.getErrorMessages());
-      Assert.fail();
-    }
+    Assert.assertTrue(compileResult.success);
+    Assert.assertTrue(parser.success());
+    Assert.assertFalse(parser.getInstructions().isEmpty());
+    // There is a add label
+    Assert.assertNotNull(parser.getLabels().get("add"));
+    
+    // There is a string label
+    Label str = parser.getLabels().get("str");
+    Assert.assertNotNull(str);
+    Assert.assertNotEquals(0, str.address);
+    
     
     // The program is loadable
     SimulationConfig cpuConfig = SimulationConfig.getDefaultConfiguration();

@@ -98,6 +98,7 @@ export const isaSlice = createSlice({
         cpuConfig: action.payload,
         code: defaultSimulationConfig.code,
         memoryLocations: defaultSimulationConfig.memoryLocations,
+        entryPoint: 0,
       };
       state.isas.push(newIsa);
       state.activeIsaName = action.payload.name;
@@ -199,7 +200,7 @@ export const selectActiveIsaName = (state: RootState) =>
 export const selectIsas = (state: RootState) => state.isa.isas;
 
 /**
- * Adds "code" field to the ISA config
+ * Select the active cpu config
  */
 export const selectActiveConfig = createSelector(
   [selectIsas, selectActiveIsaName],

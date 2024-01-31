@@ -30,13 +30,13 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.gradle.superscalarsim.models;
+package com.gradle.superscalarsim.models.instruction;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
-import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
+import com.gradle.superscalarsim.models.Identifiable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,7 +50,8 @@ import java.util.List;
 public class InputCodeModel implements IInputCodeModel, Identifiable
 {
   /**
-   * ID - the index of the instruction in the code
+   * ID - the index of the instruction in the code.
+   * codeId*4 = PC of the instruction.
    */
   private final int codeId;
   
@@ -182,17 +183,6 @@ public class InputCodeModel implements IInputCodeModel, Identifiable
   }// end of getInstructionTypeEnum
   
   /**
-   * @return Enum value of output data type
-   * @brief Get output data type
-   */
-  @Override
-  public DataTypeEnum getDataType()
-  {
-    return instructionFunctionModel.getDataType();
-  }// end of getResultDataType
-  //------------------------------------------------------
-  
-  /**
    * @return ID of the instruction (index in the code)
    */
   @Override
@@ -215,5 +205,22 @@ public class InputCodeModel implements IInputCodeModel, Identifiable
   public String getId()
   {
     return String.valueOf(codeId);
+  }
+  
+  /**
+   * @return True if the instruction is a conditional branch
+   */
+  public boolean isConditionalBranch()
+  {
+    // ! Depends on naming convention !
+    return instructionTypeEnum == InstructionTypeEnum.kJumpbranch && instructionName.startsWith("b");
+  }
+  
+  /**
+   * @return the PC of the instruction
+   */
+  public int getPc()
+  {
+    return codeId * 4;
   }
 }

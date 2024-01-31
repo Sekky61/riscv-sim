@@ -30,7 +30,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.gradle.superscalarsim.models;
+package com.gradle.superscalarsim.models.instruction;
 
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.gradle.superscalarsim.models.register.RegisterDataContainer;
@@ -180,9 +180,9 @@ public class InputCodeArgument
   /**
    * @param stringValue New value of argument
    *
-   * @brief Sets new value of the argument
+   * @brief Sets new value of the argument (string). Reference to register or constant value is not changed.
    */
-  public void setValue(final String stringValue)
+  public void setStringValue(final String stringValue)
   {
     this.stringValue = stringValue;
   }// end of setValue

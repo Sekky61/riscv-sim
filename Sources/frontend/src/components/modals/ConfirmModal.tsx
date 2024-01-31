@@ -53,10 +53,10 @@ const ConfirmModal = ({
       <h1 className='text-xl'>{title}</h1>
       <p className='mb-4'>{message}</p>
       <div>
-        <Button onClick={onYes} className='button mr-4'>
+        <Button onClick={onYes} className='mr-4'>
           {yesText || 'Confirm'}
         </Button>
-        <Button onClick={onNo} className='button'>
+        <Button onClick={onNo} className=''>
           {noText || 'Cancel'}
         </Button>
       </div>

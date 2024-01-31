@@ -1,7 +1,9 @@
 package com.gradle.superscalarsim.code;
 
+import com.gradle.superscalarsim.blocks.loadstore.SimulatedMemory;
 import com.gradle.superscalarsim.cpu.MemoryInitializer;
 import com.gradle.superscalarsim.cpu.MemoryLocation;
+import com.gradle.superscalarsim.cpu.SimulationStatistics;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.loader.InitLoader;
 import org.junit.Assert;
@@ -717,7 +719,7 @@ public class CodeParserTest
     Assert.assertEquals(1, codeParser.getMemoryLocations().size());
     
     MemoryInitializer memoryInitializer = new MemoryInitializer(0, 0);
-    SimulatedMemory   memory            = new SimulatedMemory();
+    SimulatedMemory   memory            = new SimulatedMemory(0, 0, new SimulationStatistics(1, 1));
     memoryInitializer.initializeMemory(memory, codeParser.getMemoryLocations(), codeParser.getLabels());
     
     Assert.assertEquals((byte) 25, memory.getFromMemory(0L));
@@ -736,7 +738,7 @@ public class CodeParserTest
     Assert.assertEquals(1, codeParser.getMemoryLocations().size());
     
     MemoryInitializer memoryInitializer = new MemoryInitializer(0, 0);
-    SimulatedMemory   memory            = new SimulatedMemory();
+    SimulatedMemory   memory            = new SimulatedMemory(0, 0, new SimulationStatistics(1, 1));
     memoryInitializer.initializeMemory(memory, codeParser.getMemoryLocations(), codeParser.getLabels());
     
     Assert.assertEquals((byte) 0x34, memory.getFromMemory(0L));
@@ -760,7 +762,7 @@ public class CodeParserTest
     Assert.assertEquals(1, codeParser.getMemoryLocations().size());
     
     MemoryInitializer memoryInitializer = new MemoryInitializer(1, 0);
-    SimulatedMemory   memory            = new SimulatedMemory();
+    SimulatedMemory   memory            = new SimulatedMemory(0, 0, new SimulationStatistics(1, 1));
     memoryInitializer.initializeMemory(memory, codeParser.getMemoryLocations(), codeParser.getLabels());
     
     Assert.assertEquals((byte) 0x34, memory.getFromMemory(8L));
@@ -865,7 +867,8 @@ public class CodeParserTest
     Assert.assertEquals(0, codeParser.getLabels().get("add").address);
     Assert.assertEquals(12, codeParser.getLabels().get(".L2").address);
     
-    Assert.assertEquals(12, (int) codeParser.getInstructions().get(6).getArgumentByName("imm").getConstantValue()
+    // 'j' is a relative offset jump, so should have -1
+    Assert.assertEquals(-12, (int) codeParser.getInstructions().get(6).getArgumentByName("imm").getConstantValue()
             .getValue(DataTypeEnum.kUInt));
   }
 }

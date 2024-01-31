@@ -36,8 +36,8 @@ import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.blocks.AbstractBlock;
-import com.gradle.superscalarsim.models.InstructionFunctionModel;
-import com.gradle.superscalarsim.models.SimCodeModel;
+import com.gradle.superscalarsim.models.instruction.InstructionFunctionModel;
+import com.gradle.superscalarsim.models.instruction.SimCodeModel;
 
 import java.util.List;
 
@@ -82,26 +82,24 @@ public class IssueWindowSuperBlock implements AbstractBlock
    * @brief Simulates dispatching instructions to Issue windows
    */
   @Override
-  public void simulate()
+  public void simulate(int cycle)
   {
     // TODO: move to decode block
     // TODO: places like this, where simcodemodels are deleted, leave behind history of GlobalHistoryRegister
     if (decodeAndDispatchBlock.shouldFlush())
     {
-      this.decodeAndDispatchBlock.getAfterRenameCodeList().forEach(codeModel -> codeModel.setFinished(true));
-      this.decodeAndDispatchBlock.getAfterRenameCodeList().clear();
-      this.decodeAndDispatchBlock.getBeforeRenameCodeList().forEach(codeModel -> codeModel.setFinished(true));
-      this.decodeAndDispatchBlock.getBeforeRenameCodeList().clear();
+      this.decodeAndDispatchBlock.getCodeBuffer().forEach(codeModel -> codeModel.setFinished(true));
+      this.decodeAndDispatchBlock.getCodeBuffer().clear();
       this.decodeAndDispatchBlock.setFlush(false);
     }
     else
     {
-      int pullCount = !decodeAndDispatchBlock.shouldStall() ? this.decodeAndDispatchBlock.getAfterRenameCodeList()
+      int pullCount = !decodeAndDispatchBlock.shouldStall() ? this.decodeAndDispatchBlock.getCodeBuffer()
               .size() : this.decodeAndDispatchBlock.getStalledPullCount();
       
       for (int i = 0; i < pullCount; i++)
       {
-        SimCodeModel             codeModel = this.decodeAndDispatchBlock.getAfterRenameCodeList().get(i);
+        SimCodeModel             codeModel = this.decodeAndDispatchBlock.getCodeBuffer().get(i);
         InstructionFunctionModel model     = codeModel.getInstructionFunctionModel();
         selectCorrectIssueWindow(model, codeModel);
       }

@@ -33,6 +33,7 @@
 package com.gradle.superscalarsim.models;
 
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.gradle.superscalarsim.models.instruction.SimCodeModel;
 
 /**
  * @class IssueItemModel

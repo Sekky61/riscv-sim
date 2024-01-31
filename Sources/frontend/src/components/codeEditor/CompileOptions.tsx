@@ -59,6 +59,7 @@ import {
 
 import { CodeExample } from '@/constant/codeExamples';
 
+import clsx from 'clsx';
 import { RadioInput } from '../form/RadioInput';
 
 const examples = _examples as unknown as Array<CodeExample>;
@@ -129,32 +130,37 @@ export default function CompileOptions() {
     dispatch(enterEditorMode(newVal));
   };
 
-  // TODO: bug: The first render does not show the mode selected
   return (
     <div className='flex flex-col items-stretch gap-4'>
-      <RadioInput
-        choices={['c', 'asm']}
-        texts={['C', 'ASM']}
-        value={mode}
-        onNewValue={editorModeChanged}
-      />
+      <div>
+        <h3 className='mb-2'>Editor Mode</h3>
+        <RadioInput
+          choices={['c', 'asm']}
+          texts={['C', 'ASM']}
+          value={mode}
+          onNewValue={editorModeChanged}
+        />
+      </div>
       <ExamplesButton />
-      <div className='rounded border flex flex-col gap-2 p-2'>
-        {optimizeOptions.map((option) => (
-          <div key={option.value} className='flex items-center space-x-2'>
-            <Checkbox
-              id={option.value}
-              checked={option.checked}
-              onCheckedChange={option.clickCallback}
-            />
-            <label
-              htmlFor={option.value}
-              className='text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70'
-            >
-              {option.label}
-            </label>
-          </div>
-        ))}
+      <div>
+        <h3 className='mb-2'>Optimizations</h3>
+        <div className='rounded border flex flex-col gap-2 p-2'>
+          {optimizeOptions.map((option) => (
+            <div key={option.value} className='flex items-center space-x-2'>
+              <Checkbox
+                id={option.value}
+                checked={option.checked}
+                onCheckedChange={option.clickCallback}
+              />
+              <label
+                htmlFor={option.value}
+                className='text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70'
+              >
+                {option.label}
+              </label>
+            </div>
+          ))}
+        </div>
       </div>
       <CompileButton handleCompile={handleCompile} />
     </div>
@@ -167,7 +173,7 @@ function ExamplesButton() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant='outline'>Examples</Button>
+        <Button variant='outline'>Load Example</Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent side='right'>
         <DropdownMenuLabel>Examples</DropdownMenuLabel>
@@ -180,7 +186,7 @@ function ExamplesButton() {
               onClick={() => {
                 dispatch(openExampleAndCompile(example));
               }}
-              className='flex'
+              className='flex gap-1'
             >
               <div className='flex-grow'>{example.name}</div>
               <div className='flex justify-center w-8 rounded px-0.5 mr-1 bg-amber-300 text-[#694848] text-xs'>
@@ -212,7 +218,7 @@ function CompileButton({ handleCompile }: { handleCompile: () => void }) {
   );
 
   return (
-    <Button className={statusStyle} onClick={handleCompile}>
+    <Button className={clsx(statusStyle, 'tooltip')} onClick={handleCompile}>
       Compile
       <Tooltip text='Compile' shortcut={COMPILE_SHORTCUT} />
     </Button>

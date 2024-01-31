@@ -86,6 +86,8 @@ public class MyRequestHandler<T, U> implements HttpHandler
       return;
     }
     
+    // TODO: If the request times out, it continues to run in the background.
+    // this means it will eat resources, until it finishes (which may be never).
     exchange.startBlocking();
     
     ObjectMapper mapper = Serialization.getSerializer();

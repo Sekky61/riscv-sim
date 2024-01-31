@@ -138,7 +138,7 @@ function InstructionRow({ instructionId }: InstructionRowProps) {
       <td>{simCodeModel.id}</td>
       <td>{inputCodeModel.instructionName}</td>
       <td>{instructionType}</td>
-      <td>{simCodeModel.savedPc}</td>
+      <td>{inputCodeModel.codeId * 4}</td>
     </tr>
   );
 }

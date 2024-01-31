@@ -30,15 +30,19 @@ package com.gradle.superscalarsim.server.simulate;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gradle.superscalarsim.cpu.SimulationConfig;
 
+import java.util.Optional;
+
 /**
  * Parameters for the /simulate endpoint request
  */
 public class SimulateRequest
 {
   /**
-   * The requested tick to get the state of
+   * The requested tick to get the state of.
+   * Tick 0 is the initial state of the simulation.
+   * If not specified, the state of the last tick is returned (the end of the simulation).
    */
-  int tick;
+  Optional<Integer> tick;
   /**
    * The configuration to use for the simulation
    * Used for getting the initial state in case of a backwards simulation

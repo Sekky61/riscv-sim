@@ -33,6 +33,7 @@
 package com.gradle.superscalarsim.models.register;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
@@ -197,20 +198,11 @@ public class RegisterModel implements Identifiable
    * @return Bool value
    * @brief Get bool value, if value of the register can be edited or not
    */
+  @JsonIgnore
   public boolean isConstant()
   {
     return isConstant;
   }// end of isConstant
-  //------------------------------------------------------
-  
-  /**
-   * @return Value inside register
-   * @brief Get register value
-   */
-  public double getValue()
-  {
-    return (double) value.getValue(DataTypeEnum.kDouble);
-  }// end of getValue
   //------------------------------------------------------
   
   /**
@@ -290,14 +282,27 @@ public class RegisterModel implements Identifiable
     this.readiness = readiness;
   }
   
+  /**
+   * @return Reference to the value container. Changing this object changes the value of the register.
+   */
   public RegisterDataContainer getValueContainer()
   {
     return value;
   }
   
-  public void setValueContainer(RegisterDataContainer container)
+  /**
+   * @param register Register to copy from
+   *
+   * @brief Copy value from another register (this one is being assigned). Does not change the identity of data container.
+   * Does not change constant register.
+   */
+  public void copyFrom(RegisterModel register)
   {
-    this.value = container;
+    if (isConstant)
+    {
+      return;
+    }
+    this.value.copyFrom(register.value);
   }
   
   /**

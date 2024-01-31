@@ -74,9 +74,9 @@ import {
   TabsTrigger,
 } from '@/components/base/ui/tabs';
 
+import { formatNumberWithUnit } from '@/lib/utils';
 import { FormInput } from './FormInput';
 import { ControlRadioInput, RadioInputWithTitle } from './RadioInput';
-import { formatNumberWithUnit } from '@/lib/utils';
 
 type IsaArrayFields = 'fUnits' | 'memoryLocations';
 type IsaSimpleFields = keyof Omit<CpuConfig, IsaArrayFields>;
@@ -202,6 +202,12 @@ const isaFormMetadata: IsaFormMetadata = {
   cacheClockFrequency: {
     title: 'Cache clock frequency (Hz)',
     hint: 'Cache clock frequency in Hz.',
+  },
+  cacheLoadLatency: {
+    title: 'Cache load latency (cycles)',
+  },
+  cacheStoreLatency: {
+    title: 'Cache store latency (cycles)',
   },
 };
 

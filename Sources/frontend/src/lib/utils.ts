@@ -32,7 +32,12 @@
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
-import { InputCodeModel, Reference, RegisterModel } from '@/lib/types/cpuApi';
+import {
+  InputCodeModel,
+  Reference,
+  RegisterModel,
+  StopReason,
+} from '@/lib/types/cpuApi';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -135,4 +140,32 @@ export function formatNumberWithUnit(
   // Otherwise show no decimal places
   const valInt = Math.round(val);
   return `${valInt} ${units[unitFinalIndex]}`;
+}
+
+/**
+ * Convert stopReason to a short human-readable string.
+ */
+export function stopReasonToShortString(stopReason: StopReason): string {
+  switch (stopReason) {
+    case 'kBadConfig':
+      return 'Bad Config';
+    case 'kCallStackHalt':
+      return 'Finished';
+    case 'kEndOfCode':
+      return 'Finished';
+    case 'kException':
+      return 'Exception';
+    case 'kMaxCycles':
+      return 'Timeout';
+    case 'kTimeOut':
+      return 'Timeout';
+    case 'kNotStopped':
+      return 'Running';
+    default:
+      return unreachable();
+  }
+}
+
+function unreachable(): never {
+  throw new Error('Unreachable');
 }

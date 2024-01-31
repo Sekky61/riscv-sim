@@ -45,8 +45,6 @@ public class BackwardSimulationEqualityTest
     // Let's just probe a few fields
     Assert.assertEquals(cpu.cpuState.tick, cpu2.cpuState.tick);
     Assert.assertEquals(cpu.cpuState.instructionFetchBlock.getPc(), cpu2.cpuState.instructionFetchBlock.getPc());
-    Assert.assertEquals(cpu.cpuState.decodeAndDispatchBlock.getCurrentStepId(),
-                        cpu2.cpuState.decodeAndDispatchBlock.getCurrentStepId());
     Assert.assertEquals(cpu.cpuState.reorderBufferBlock.reorderQueue.size(),
                         cpu2.cpuState.reorderBufferBlock.reorderQueue.size());
   }

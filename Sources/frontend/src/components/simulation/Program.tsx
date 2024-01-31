@@ -43,9 +43,10 @@ import {
 import { useAppSelector } from '@/lib/redux/hooks';
 import { Reference } from '@/lib/types/cpuApi';
 import { ReactClassName } from '@/lib/types/reactTypes';
-import { inputCodeAddress } from '@/lib/utils';
+import { hexPad, hexPadEven, inputCodeAddress } from '@/lib/utils';
 
 import Block from '@/components/simulation/Block';
+import { selectEntryPoint } from '@/lib/redux/compilerSlice';
 
 /**
  * A block displaying the program instructions.
@@ -58,18 +59,18 @@ export default function Program() {
   const fetch = useAppSelector(selectFetch);
   const codeOrder = useAppSelector(selectProgramWithLabels);
   const highlightedInputCodeId = useAppSelector(selectHighlightedInputCode);
+  const entryPoint = useAppSelector(selectEntryPoint);
 
   // Scroll to PC on every render using scrollTop, because scrollIntoView makes the whole page jump
   useEffect(() => {
     if (!pcRef.current || !containerRef.current) {
       return;
     }
-    const _ = fetch?.cycleId; // stop biome from complaining
     const pcTop = pcRef.current.offsetTop;
     const containerTop = containerRef.current.offsetTop;
     const containerHeight = containerRef.current.offsetHeight;
     containerRef.current.scrollTop = pcTop - containerTop - containerHeight / 2;
-  }, [pcRef, containerRef, fetch]);
+  }, [pcRef, containerRef]);
 
   if (!program || !fetch || !codeOrder) return null;
 
@@ -88,10 +89,16 @@ export default function Program() {
     </div>
   );
 
+  let entryPointPretty = entryPoint;
+  if (typeof entryPoint === 'number') {
+    entryPointPretty = hexPadEven(entryPoint);
+  }
+
   return (
     <Block
       title='Program'
       className='program justify-self-stretch self-stretch'
+      stats={<div>Entry Point: {entryPointPretty}</div>}
     >
       <div
         className='max-h-96 grid gap-1 overflow-y-auto pt-4'
@@ -128,13 +135,15 @@ export default function Program() {
   );
 }
 
-function ProgramInstruction({
+export function ProgramInstruction({
   instructionId,
   className,
   children,
+  showAddress = true,
 }: {
   instructionId: Reference;
   children?: React.ReactNode;
+  showAddress?: boolean;
 } & ReactClassName) {
   const instruction = useAppSelector((state) =>
     selectInputCodeModelById(state, instructionId),
@@ -177,9 +186,11 @@ function ProgramInstruction({
   const cls = clsx(className, 'font-mono text-sm');
   return (
     <>
-      <div className='text-xs text-gray-600 font-mono flex justify-center items-center'>
-        {address}
-      </div>
+      {showAddress && (
+        <div className='text-xs text-gray-600 font-mono flex justify-center items-center'>
+          {address}
+        </div>
+      )}
       <span className={cls}>
         {children}
         <span title={model.interpretableAs}>{model.name}</span>

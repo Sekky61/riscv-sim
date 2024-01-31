@@ -35,16 +35,17 @@ package com.gradle.superscalarsim.blocks.arithmetic;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.gradle.superscalarsim.blocks.base.AbstractFunctionUnitBlock;
 import com.gradle.superscalarsim.blocks.base.IssueWindowBlock;
-import com.gradle.superscalarsim.blocks.base.ReorderBufferBlock;
 import com.gradle.superscalarsim.code.CodeArithmeticInterpreter;
 import com.gradle.superscalarsim.code.Expression;
+import com.gradle.superscalarsim.cpu.SimulationStatistics;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.models.FunctionalUnitDescription;
-import com.gradle.superscalarsim.models.InputCodeArgument;
-import com.gradle.superscalarsim.models.InstructionFunctionModel;
-import com.gradle.superscalarsim.models.SimCodeModel;
+import com.gradle.superscalarsim.models.instruction.InputCodeArgument;
+import com.gradle.superscalarsim.models.instruction.InstructionFunctionModel;
+import com.gradle.superscalarsim.models.instruction.SimCodeModel;
 import com.gradle.superscalarsim.models.register.RegisterModel;
+import com.gradle.superscalarsim.models.util.Result;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -74,20 +75,19 @@ public class ArithmeticFunctionUnitBlock extends AbstractFunctionUnitBlock
   }
   
   /**
-   * @param name               Name of the function unit
-   * @param delay              Delay for function unit
-   * @param issueWindowBlock   Issue window block for comparing instruction and data types
-   * @param allowedOperators   Array of all supported operators by this FU
-   * @param reorderBufferBlock Class containing simulated Reorder Buffer
+   * @param description      Description of the function unit
+   * @param issueWindowBlock Issue window block for comparing instruction and data types
+   * @param allowedOperators Array of all supported operators by this FU
+   * @param statistics       Statistics for reporting FU usage
    *
    * @brief Constructor
    */
   public ArithmeticFunctionUnitBlock(FunctionalUnitDescription description,
                                      IssueWindowBlock issueWindowBlock,
                                      List<String> allowedOperators,
-                                     ReorderBufferBlock reorderBufferBlock)
+                                     SimulationStatistics statistics)
   {
-    super(description, issueWindowBlock, reorderBufferBlock);
+    super(description, issueWindowBlock, statistics);
     this.allowedOperators = allowedOperators;
   }// end of Constructor
   
@@ -144,7 +144,7 @@ public class ArithmeticFunctionUnitBlock extends AbstractFunctionUnitBlock
    * @brief Simulates execution of an instruction
    */
   @Override
-  public void simulate()
+  public void simulate(int cycle)
   {
     if (!isFunctionUnitEmpty())
     {
@@ -165,6 +165,7 @@ public class ArithmeticFunctionUnitBlock extends AbstractFunctionUnitBlock
    */
   private void handleInstruction()
   {
+    incrementBusyCycles();
     if (this.simCodeModel.hasFailed())
     {
       this.simCodeModel.setFunctionUnitId(this.functionUnitId);
@@ -185,14 +186,22 @@ public class ArithmeticFunctionUnitBlock extends AbstractFunctionUnitBlock
     
     // Instruction computed
     // Write result to the destination register
-    InputCodeArgument   destinationArgument = simCodeModel.getArgumentByName("rd");
-    Expression.Variable result              = arithmeticInterpreter.interpretInstruction(this.simCodeModel);
-    RegisterModel       reg                 = destinationArgument.getRegisterValue();
-    // TODO redundant?
-    reg.setValueContainer(result.value);
-    reg.setReadiness(RegisterReadinessEnum.kExecuted);
+    InputCodeArgument           destinationArgument = simCodeModel.getArgumentByName("rd");
+    Result<Expression.Variable> result              = arithmeticInterpreter.interpretInstruction(this.simCodeModel);
     
-    this.reorderBufferBlock.getRobItem(this.simCodeModel.getIntegerId()).reorderFlags.setBusy(false);
+    if (result.isException())
+    {
+      // Mark exception
+      this.simCodeModel.setException(result.exception());
+    }
+    else
+    {
+      RegisterModel reg = destinationArgument.getRegisterValue();
+      reg.setValue(result.value().value.getBits(), result.value().value.getCurrentType());
+      reg.setReadiness(RegisterReadinessEnum.kExecuted);
+    }
+    
+    this.simCodeModel.setBusy(false);
     this.simCodeModel = null;
   }
   //----------------------------------------------------------------------

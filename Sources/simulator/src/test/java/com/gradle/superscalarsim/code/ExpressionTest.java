@@ -19,7 +19,7 @@ public class ExpressionTest
   public void testWriteVariable()
   {
     List<Expression.Variable> vars = List.of(
-            new Expression.Variable("x", DataTypeEnum.kInt, RegisterDataContainer.fromValue(0)));
+            new Expression.Variable("x", DataTypeEnum.kInt, RegisterDataContainer.fromValue(0), false));
     Expression.interpret("1 \\x =", vars);
     
     // Assert
@@ -32,8 +32,8 @@ public class ExpressionTest
   public void testReadVariable()
   {
     List<Expression.Variable> vars = List.of(
-            new Expression.Variable("x", DataTypeEnum.kInt, RegisterDataContainer.fromValue(1)),
-            new Expression.Variable("y", DataTypeEnum.kInt, RegisterDataContainer.fromValue(0)));
+            new Expression.Variable("x", DataTypeEnum.kInt, RegisterDataContainer.fromValue(1), false),
+            new Expression.Variable("y", DataTypeEnum.kInt, RegisterDataContainer.fromValue(0), false));
     Expression.interpret("\\x 5 + \\y =", vars);
     
     // Assert
@@ -50,9 +50,9 @@ public class ExpressionTest
   public void testSignedCompare()
   {
     List<Expression.Variable> vars = List.of(
-            new Expression.Variable("x", DataTypeEnum.kInt, RegisterDataContainer.fromValue(1)),
-            new Expression.Variable("y", DataTypeEnum.kInt, RegisterDataContainer.fromValue(-1)),
-            new Expression.Variable("b", DataTypeEnum.kBool, RegisterDataContainer.fromValue(false)));
+            new Expression.Variable("x", DataTypeEnum.kInt, RegisterDataContainer.fromValue(1), false),
+            new Expression.Variable("y", DataTypeEnum.kInt, RegisterDataContainer.fromValue(-1), false),
+            new Expression.Variable("b", DataTypeEnum.kBool, RegisterDataContainer.fromValue(false), false));
     Expression.interpret("\\x \\y > \\b =", vars);
     
     // Assert
@@ -64,9 +64,9 @@ public class ExpressionTest
   public void testUnsignedCompare()
   {
     List<Expression.Variable> vars = List.of(
-            new Expression.Variable("x", DataTypeEnum.kUInt, RegisterDataContainer.fromValue(1)),
-            new Expression.Variable("y", DataTypeEnum.kUInt, RegisterDataContainer.fromValue(-1)),
-            new Expression.Variable("b", DataTypeEnum.kBool, RegisterDataContainer.fromValue(true)));
+            new Expression.Variable("x", DataTypeEnum.kUInt, RegisterDataContainer.fromValue(1), false),
+            new Expression.Variable("y", DataTypeEnum.kUInt, RegisterDataContainer.fromValue(-1), false),
+            new Expression.Variable("b", DataTypeEnum.kBool, RegisterDataContainer.fromValue(true), false));
     Expression.interpret("\\x \\y > \\b =", vars);
     
     // Assert
@@ -78,8 +78,8 @@ public class ExpressionTest
   public void testAssignSignedToUnsigned()
   {
     List<Expression.Variable> vars = List.of(
-            new Expression.Variable("x", DataTypeEnum.kUInt, RegisterDataContainer.fromValue(0)),
-            new Expression.Variable("y", DataTypeEnum.kInt, RegisterDataContainer.fromValue(-1)));
+            new Expression.Variable("x", DataTypeEnum.kUInt, RegisterDataContainer.fromValue(0), false),
+            new Expression.Variable("y", DataTypeEnum.kInt, RegisterDataContainer.fromValue(-1), false));
     Expression.interpret("\\y \\x =", vars);
     
     // Assert
@@ -92,7 +92,7 @@ public class ExpressionTest
   public void testAssignConstant()
   {
     List<Expression.Variable> vars = List.of(
-            new Expression.Variable("x", DataTypeEnum.kInt, RegisterDataContainer.fromValue(0)));
+            new Expression.Variable("x", DataTypeEnum.kInt, RegisterDataContainer.fromValue(0), false));
     Expression.interpret("5 0x3 + \\x =", vars);
     
     // Assert
@@ -104,7 +104,7 @@ public class ExpressionTest
   public void testIncompatibleTypesOperation()
   {
     List<Expression.Variable> vars = List.of(
-            new Expression.Variable("x", DataTypeEnum.kFloat, RegisterDataContainer.fromValue(0.0f)));
+            new Expression.Variable("x", DataTypeEnum.kFloat, RegisterDataContainer.fromValue(0.0f), false));
     
     Assert.assertThrows(IllegalArgumentException.class, () -> Expression.interpret("5 \\x +", vars));
   }

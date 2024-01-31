@@ -36,8 +36,9 @@ import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.blocks.AbstractBlock;
+import com.gradle.superscalarsim.cpu.SimulationStatistics;
 import com.gradle.superscalarsim.models.FunctionalUnitDescription;
-import com.gradle.superscalarsim.models.SimCodeModel;
+import com.gradle.superscalarsim.models.instruction.SimCodeModel;
 
 /**
  * @class AbstractFunctionUnitBlock
@@ -50,12 +51,6 @@ public abstract class AbstractFunctionUnitBlock implements AbstractBlock
    * ID specifying when instruction passed specified FU
    */
   protected int functionUnitId;
-  
-  /**
-   * Class containing simulated Reorder Buffer
-   */
-  @JsonIdentityReference(alwaysAsId = true)
-  protected ReorderBufferBlock reorderBufferBlock;
   
   /**
    * Class containing logic of Instruction decode stage
@@ -75,43 +70,45 @@ public abstract class AbstractFunctionUnitBlock implements AbstractBlock
   protected IssueWindowBlock issueWindowBlock;
   
   /**
+   * Statistics for reporting FU usage
+   */
+  @JsonIdentityReference(alwaysAsId = true)
+  protected SimulationStatistics statistics;
+  /**
+   * Delay for function unit. Can change based on the instruction.
+   */
+  protected int delay;
+  /**
+   * Counter variable. Used for counting delay of the function unit.
+   */
+  protected int counter;
+  /**
    * Configuration of the function unit.
    * Latency, capabilities, etc.
    */
   private FunctionalUnitDescription description;
-  
-  /**
-   * Delay for function unit. Can change based on the instruction.
-   */
-  private int delay;
-  
-  /**
-   * Counter variable. Used for counting delay of the function unit.
-   */
-  private int counter;
   
   public AbstractFunctionUnitBlock()
   {
   }
   
   /**
-   * @param name               Name of the function unit
-   * @param description        Delay for function unit
-   * @param issueWindowBlock   Issue window block for comparing instruction and data types
-   * @param reorderBufferBlock Class containing simulated Reorder Buffer
+   * @param description      Delay for function unit
+   * @param issueWindowBlock Issue window block for comparing instruction and data types
+   * @param statistics       Statistics for reporting FU usage
    *
    * @brief Constructor
    */
   public AbstractFunctionUnitBlock(FunctionalUnitDescription description,
                                    IssueWindowBlock issueWindowBlock,
-                                   ReorderBufferBlock reorderBufferBlock)
+                                   SimulationStatistics statistics)
   {
-    this.functionUnitId     = description.id;
-    this.reorderBufferBlock = reorderBufferBlock;
-    this.description        = description;
-    this.counter            = 0;
-    this.simCodeModel       = null;
-    this.issueWindowBlock   = issueWindowBlock;
+    this.functionUnitId   = description.id;
+    this.description      = description;
+    this.statistics       = statistics;
+    this.counter          = 0;
+    this.simCodeModel     = null;
+    this.issueWindowBlock = issueWindowBlock;
   }// end of Constructor
   //----------------------------------------------------------------------
   
@@ -273,7 +270,8 @@ public abstract class AbstractFunctionUnitBlock implements AbstractBlock
    */
   private int getDelayBasedOnCapability()
   {
-    String expr = this.simCodeModel.getInstructionFunctionModel().getInterpretableAs();
+    String                                   expr           = this.simCodeModel.getInstructionFunctionModel()
+            .getInterpretableAs();
     FunctionalUnitDescription.CapabilityName capabilityName = FunctionalUnitDescription.classifyOperation(expr);
     if (capabilityName == null)
     {
@@ -288,6 +286,14 @@ public abstract class AbstractFunctionUnitBlock implements AbstractBlock
       }
     }
     throw new RuntimeException("Unknown operation: " + expr);
+  }
+  
+  /**
+   * @brief Increments number of busy cycles
+   */
+  public void incrementBusyCycles()
+  {
+    this.statistics.incrementBusyCycles(this.description.name);
   }
   
   /**

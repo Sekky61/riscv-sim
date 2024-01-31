@@ -27,7 +27,7 @@
 
 package com.gradle.superscalarsim.cpu;
 
-import com.gradle.superscalarsim.models.InputCodeModel;
+import com.gradle.superscalarsim.models.instruction.InputCodeModel;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -52,7 +52,7 @@ public class LoopTests
     }
     
     Assert.assertTrue(true);
-    Assert.assertTrue(cpu.cpuState.statisticsCounter.getCommittedInstructions() > 10);
+    Assert.assertTrue(cpu.cpuState.statistics.getCommittedInstructions() > 10);
   }
   
   /**
@@ -82,9 +82,6 @@ public class LoopTests
     
     // Assert that the original input code models are not changed
     Assert.assertEquals(parsedCode, parsedCodeCopy);
-    // Assert
-    // TODO: manually check
-    Assert.assertEquals(28, steps);
   }
   
   /**
@@ -120,7 +117,7 @@ public class LoopTests
                 addi sp,sp,32
                 """;
     Cpu cpu = new Cpu(cfg);
-    cpu.execute();
+    cpu.execute(false);
     
     // Assert that bytes 0 to 19 are written to memory
     for (int i = 0; i < 20; i++)

@@ -54,7 +54,7 @@
     --muted: 60 4.8% 95.9%;
     --muted-foreground: 25 5.3% 44.7%;
  
-    --accent: 60 4.8% 95.9%;
+    --accent: 60 4.8% 85.9%;
     --accent-foreground: 24 9.8% 10%;
  
     --destructive: 0 84.2% 60.2%;
@@ -255,33 +255,37 @@
 
 @layer utilities {
 
-  /* ===== Scrollbar CSS ===== */
-  /* Source: https://codepen.io/stephenpaton-tech/full/JjRvGmY */
-  /* Firefox */
-  * {
-    scrollbar-width: auto;
-    scrollbar-color: #a1a1a1 #f5f5f5;
+  /* custom scrollbar
+     source: https://codepen.io/xtrp/pen/QWjREeo
+  */
+  ::-webkit-scrollbar {
+    width: 14px;
+    height: 14px;
   }
 
-  /* Chrome, Edge, and Safari */
-  *::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
+  ::-webkit-scrollbar-track {
+    background-color: transparent;
   }
 
-  *::-webkit-scrollbar-track {
-    background: #ffffff;
-  }
-
-  *::-webkit-scrollbar-thumb {
-    background-color: #a1a1a1;
+  ::-webkit-scrollbar-thumb {
+    background-color: #d6dee1;
     border-radius: 10px;
-    border: 3px solid #ffffff;
+    border: 4px solid transparent;
+    background-clip: content-box;
   }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: #a8bbbf;
+  } 
 
   /* Link underline */
   .link {
     @apply underline decoration-2 decoration-gray-300 hover:decoration-gray-400;
+  }
+
+  /* Scrollbar for code editor */
+  .editor-container *::-webkit-scrollbar-track {
+    background-color: #f5f5f5;
   }
 
   /* Tooltip - behavior only */
@@ -366,6 +370,78 @@
   }
 
   /* Timeline button + press animation */
+
+  /* 4:1 space, 4 cells */
+  .timeline-grid {
+    @apply relative;
+    --cell-size: 2.5rem;
+    --cell-gap: 0.5rem;
+    height: var(--cell-size);
+  }
+
+  /* apply transitions to margin on all children */
+  .timeline-grid * {
+    @apply transition-all duration-200;
+  }
+
+  .timeline-grid .left-arrow {
+    @apply transition-all duration-200;
+  }
+
+  .controls {
+    @apply absolute top-0 left-0 z-10;
+    transform: translateX(-100%) rotate(180deg);
+  }
+
+  .timeline-grid[data-state='0'] .controls {
+    width: calc(var(--cell-size) * 2);
+  }
+
+  .timeline-grid[data-state='1'] .controls {
+    width: calc(var(--cell-size) * 3);
+  }
+
+  .timeline-grid[data-state='2'] .controls {
+    width: calc(var(--cell-size) * 3);
+  }
+
+  .left-arrow {
+    @apply absolute top-0 right-0 opacity-100;
+  }
+
+  .timeline-grid[data-state='0'] .left-arrow {
+    @apply opacity-0 pointer-events-none;
+  }
+
+  .reset {
+    @apply absolute;
+    height: var(--cell-size);
+    width: var(--cell-size);
+    /* z-index changes after animation */
+    transform-origin: left;
+    transition: z-index 0s 5s, all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 0;
+  }
+
+  .reset > div {
+    transition: opacity 200ms 200ms;
+  }
+  
+  /* In calc() to express 0, you must use 0px ! */
+  .timeline-grid[data-state='0'] .reset {
+    transform: rotate(180deg) scale(0.6);
+  }
+
+  .timeline-grid[data-state='1'] .reset {
+    transform: rotate(180deg) translateX(calc(0px - var(--cell-gap) - var(--cell-size)));
+    z-index: 12;
+  }
+
+  .timeline-grid[data-state='2'] .reset {
+    transform: rotate(180deg) translateX(calc(0px - var(--cell-gap) - var(--cell-size)));
+    width: calc(var(--cell-size) * 3 + var(--cell-gap));
+    z-index: 12;
+  }
 
   .iconHighlight {
     @apply duration-100 hover:bg-gray-200 active:bg-gray-300;
@@ -507,5 +583,10 @@
   /* Style for instruction bubble */
   .instruction-bubble {
     @apply rounded-sm border h-8;
+  }
+
+  /* Heatmap statistic transition */
+  .heatmap-transition  * {
+    @apply transition-colors ease-in duration-200;
   }
 }

@@ -28,6 +28,7 @@
 package com.gradle.superscalarsim.compiler;
 
 import java.util.List;
+import java.util.Set;
 
 public class CompiledProgram
 {
@@ -42,9 +43,15 @@ public class CompiledProgram
    */
   public List<Integer> asmToC;
   
-  public CompiledProgram(List<String> program, List<Integer> asmToC)
+  /**
+   * Labels in the program.
+   */
+  public Set<String> labels;
+  
+  public CompiledProgram(List<String> program, List<Integer> asmToC, Set<String> labels)
   {
     this.program = program;
     this.asmToC  = asmToC;
+    this.labels  = labels;
   }
 }

@@ -43,13 +43,13 @@ public class ConfigLoader
   public static String registerFileDirPath;
   public static String instructionsFilePath;
   public static String registerAliasesFilePath;
+  public static Integer serverTimeoutMs;
   
   static
   {
     String profile = System.getProperty("config.profile", "dev");
     
     String configFileName = "config_" + profile + ".properties";
-    System.err.println("ConfigLoader: loading " + configFileName);
     try (InputStream input = new FileInputStream(configFileName))
     {
       Properties prop = new Properties();
@@ -61,7 +61,8 @@ public class ConfigLoader
       registerFileDirPath     = prop.getProperty("registerFileDir.path");
       instructionsFilePath    = prop.getProperty("instructionsFile.path");
       registerAliasesFilePath = prop.getProperty("registerAliasesFile.path");
-      System.err.println("ConfigLoader: gccPath = " + gccPath);
+      serverTimeoutMs         = prop.getProperty("server.timeoutMs") != null ? Integer.parseInt(
+              prop.getProperty("server.timeoutMs")) : null;
     }
     catch (IOException ex)
     {

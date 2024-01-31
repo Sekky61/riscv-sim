@@ -29,6 +29,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { defaultAsmCode } from '@/constant/defaults';
 import { z } from 'zod';
 
 export const predictorDefaults = {
@@ -148,7 +149,7 @@ export type Capability = z.infer<typeof capability>;
 
 export const lsUnitSchema = z.object({
   id: z.number(),
-  name: z.optional(z.string()),
+  name: z.string(),
   latency: z.number().min(1).max(16),
   fuType: z.enum(otherUnits),
 });
@@ -195,6 +196,8 @@ export const isaFormSchema = z
     useCache: z.boolean(),
     cacheLines: z.number().min(1).max(65536),
     cacheLineSize: z.number().min(1).max(512),
+    cacheLoadLatency: z.number().min(1).max(1000),
+    cacheStoreLatency: z.number().min(1).max(1000),
     cacheAssoc: z.number().min(1),
     cacheReplacement: z.enum(cacheReplacementTypes),
     storeBehavior: z.enum(storeBehaviorTypes),
@@ -203,8 +206,8 @@ export const isaFormSchema = z
     // Memory
     lbSize: z.number().min(1).max(1024),
     sbSize: z.number().min(1).max(1024),
-    storeLatency: z.number().min(0),
-    loadLatency: z.number().min(0),
+    storeLatency: z.number().min(1),
+    loadLatency: z.number().min(1),
     callStackSize: z.number().min(0).max(65536),
     speculativeRegisters: z.number().min(1).max(1024),
     coreClockFrequency: z.number().min(1),
@@ -248,6 +251,10 @@ export const simulationConfig = z.object({
    * Memory locations to be allocated.
    */
   memoryLocations: z.array(memoryLocationIsa),
+  /**
+   * Entry point of the program. A label or address.
+   */
+  entryPoint: z.union([z.string(), z.number()]),
 });
 export type SimulationConfig = z.infer<typeof simulationConfig>;
 
@@ -265,7 +272,7 @@ export const defaultCpuConfig: CpuConfig = {
   phtSize: 10,
   predictorType: '2bit',
   predictorDefault: 'Weakly Taken',
-  useGlobalHistory: true,
+  useGlobalHistory: false,
   fUnits: [
     {
       id: 0,
@@ -325,16 +332,19 @@ export const defaultCpuConfig: CpuConfig = {
     },
     {
       id: 2,
+      name: 'L_S',
       fuType: 'L_S',
       latency: 1,
     },
     {
       id: 3,
+      name: 'Branch',
       fuType: 'Branch',
       latency: 2,
     },
     {
       id: 4,
+      name: 'Memory',
       fuType: 'Memory',
       latency: 1,
     },
@@ -346,7 +356,7 @@ export const defaultCpuConfig: CpuConfig = {
   cacheReplacement: 'LRU',
   storeBehavior: 'write-back',
   cacheAccessDelay: 1,
-  storeLatency: 0,
+  storeLatency: 1,
   loadLatency: 1,
   laneReplacementDelay: 10,
   lbSize: 64,
@@ -355,10 +365,13 @@ export const defaultCpuConfig: CpuConfig = {
   speculativeRegisters: 320,
   coreClockFrequency: 100000000,
   cacheClockFrequency: 100000000,
+  cacheLoadLatency: 1,
+  cacheStoreLatency: 1,
 };
 
 export const defaultSimulationConfig: SimulationConfig = {
   cpuConfig: defaultCpuConfig,
-  code: '',
+  code: defaultAsmCode,
   memoryLocations: [],
+  entryPoint: 0,
 };

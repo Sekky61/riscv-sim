@@ -1,4 +1,4 @@
-package com.gradle.superscalarsim.models;
+package com.gradle.superscalarsim.models.util;
 
 /**
  * @param <T1> First object

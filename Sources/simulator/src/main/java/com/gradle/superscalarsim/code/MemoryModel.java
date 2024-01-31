@@ -33,17 +33,16 @@ package com.gradle.superscalarsim.code;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
-import com.gradle.superscalarsim.blocks.CacheStatisticsCounter;
 import com.gradle.superscalarsim.blocks.loadstore.Cache;
-import com.gradle.superscalarsim.models.MemoryAccess;
-import com.gradle.superscalarsim.models.Pair;
-
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
+import com.gradle.superscalarsim.blocks.loadstore.SimulatedMemory;
+import com.gradle.superscalarsim.cpu.SimulationStatistics;
+import com.gradle.superscalarsim.models.memory.MemoryTransaction;
 
 /**
  * @class MemoryModel
- * @brief Class implementing common functions for accessing cache or memory, holds the cache or memory
+ * @brief Class implementing common functions for accessing cache or memory, holds the cache or memory.
+ * Uses cache if it is present, otherwise uses memory.
+ * TODO move elsewhere
  */
 @JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
 public class MemoryModel
@@ -58,93 +57,65 @@ public class MemoryModel
    */
   @JsonIdentityReference(alwaysAsId = true)
   SimulatedMemory memory;
-  private CacheStatisticsCounter cacheStatisticsCounter;
   /**
-   * Last access
+   * Statistics of simulation
    */
-  private MemoryAccess lastAccess;
+  private SimulationStatistics statistics;
   
   /**
-   * @brief Constructor - Memory model holds only memory
+   * @brief Constructor
+   * Provide both memory and cache, only one will be used.
    */
-  public MemoryModel(SimulatedMemory simulatedMemory)
+  public MemoryModel(Cache cache, SimulatedMemory simulatedMemory, SimulationStatistics statistics)
   {
-    this.memory = simulatedMemory;
-    this.cache  = null;
+    this.memory     = simulatedMemory;
+    this.cache      = cache;
+    this.statistics = statistics;
   }
   
   /**
-   * @brief Constructor - Memory model holds cache
-   */
-  public MemoryModel(Cache cache, CacheStatisticsCounter cacheStatisticsCounter)
-  {
-    this.memory                 = null;
-    this.cache                  = cache;
-    this.cacheStatisticsCounter = cacheStatisticsCounter;
-  }
-  
-  /**
-   * @param address      starting byte of the access (can be misaligned)
-   * @param data         data to be stored
-   * @param size         Size of the access in bytes (1-8)
-   * @param id           ID of accessing instruction
-   * @param currentCycle Cycle in which this access is happening
+   * @param tr Memory transaction to schedule
    *
-   * @return delay caused by this access
-   * @brief Sets data to memory
+   * @return Number of cycles until the transaction is finished
+   * @brief Schedule a memory access. It will be finished after the specified number of cycles, after which the requester must take the result.
    */
-  public int store(long address, long data, int size, int id, int currentCycle)
+  public int execute(MemoryTransaction tr)
   {
-    this.lastAccess = new MemoryAccess(true, address, data, size);
-    if (cache != null)
-    {
-      int delay = cache.storeData(address, data, size, id, currentCycle);
-      cacheStatisticsCounter.incrementTotalDelay(currentCycle, delay);
-      return delay;
-    }
-    
-    // Store without cache
-    ByteBuffer byteBuffer = ByteBuffer.allocate(8);
-    byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
-    byteBuffer.putLong(data);
-    byte[] bytes = byteBuffer.array();
-    memory.insertIntoMemory(address, bytes);
-    return 0;
-  }
-  
-  /**
-   * @param address      starting byte of the access (can be misaligned)
-   * @param size         Size of the access in bytes (1-8)
-   * @param id           ID of accessing instruction
-   * @param currentCycle Cycle in which the access happened
-   *
-   * @return Pair of delay of this access and data
-   * @brief Gets data from memory
-   */
-  public Pair<Integer, Long> load(long address, int size, int id, int currentCycle)
-  {
-    byte[] bytes = new byte[8];
-    int    delay = 0;
     if (cache != null)
     {
       // Use cache
-      Pair<Integer, byte[]> returnVal = cache.getDataBytes(address, size, id, currentCycle);
-      delay = returnVal.getFirst();
-      System.arraycopy(returnVal.getSecond(), 0, bytes, 0, returnVal.getSecond().length);
-      cacheStatisticsCounter.incrementTotalDelay(currentCycle, returnVal.getFirst());
+      return cache.scheduleTransaction(tr);
     }
     else
     {
       // Use memory
-      byte[] readBytes = memory.getFromMemory(address, size);
-      System.arraycopy(readBytes, 0, bytes, 0, readBytes.length);
+      return memory.scheduleTransaction(tr);
     }
-    long returnValLong = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN).getLong();
-    this.lastAccess = new MemoryAccess(false, address, returnValLong, size);
-    return new Pair<>(delay, returnValLong);
   }
   
   /**
+   * @param id ID of the transaction to finish and take the result of
+   *
+   * @return Finished transaction
+   * @brief Call at the clock cycle when the transaction is finished, not before or after
+   */
+  public MemoryTransaction finishTransaction(int id)
+  {
+    if (cache != null)
+    {
+      // Use cache
+      return cache.finishTransaction(id);
+    }
+    else
+    {
+      // Use memory
+      return memory.finishTransaction(id);
+    }
+  }
+  
+  /**
+   * @param id ID of the transaction
+   *
    * @brief Reset the state of underlying memory
    */
   public void reset()
@@ -157,15 +128,5 @@ public class MemoryModel
     {
       memory.reset();
     }
-  }
-  
-  public Cache getCache()
-  {
-    return cache;
-  }
-  
-  public void setCache(Cache cache)
-  {
-    this.cache = cache;
   }
 }

@@ -9,9 +9,9 @@ import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.enums.RegisterTypeEnum;
 import com.gradle.superscalarsim.factories.RegisterModelFactory;
 import com.gradle.superscalarsim.loader.InitLoader;
-import com.gradle.superscalarsim.models.InputCodeArgument;
-import com.gradle.superscalarsim.models.InputCodeModel;
-import com.gradle.superscalarsim.models.SimCodeModel;
+import com.gradle.superscalarsim.models.instruction.InputCodeArgument;
+import com.gradle.superscalarsim.models.instruction.InputCodeModel;
+import com.gradle.superscalarsim.models.instruction.SimCodeModel;
 import com.gradle.superscalarsim.models.register.RegisterFileModel;
 import com.gradle.superscalarsim.models.register.RegisterModel;
 import org.junit.Assert;
@@ -61,9 +61,9 @@ public class CodeArithmeticInterpreterFloatTest
     InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("f3").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("fadd.s")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0);
+    SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
-    Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel);
+    Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel).value();
     Assert.assertEquals(8.625, (float) v.value.getValue(DataTypeEnum.kFloat), 0.01);
   }
   
@@ -75,9 +75,9 @@ public class CodeArithmeticInterpreterFloatTest
     InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("f2").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("fsub.s")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0);
+    SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
-    Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel);
+    Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel).value();
     Assert.assertEquals(-2.375, (float) v.value.getValue(DataTypeEnum.kFloat), 0.01);
   }
   
@@ -89,9 +89,9 @@ public class CodeArithmeticInterpreterFloatTest
     InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("f3").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("fmul.s")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0);
+    SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
-    Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel);
+    Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel).value();
     Assert.assertEquals(17.1875, (float) v.value.getValue(DataTypeEnum.kFloat), 0.01);
   }
   
@@ -103,9 +103,9 @@ public class CodeArithmeticInterpreterFloatTest
     InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("f3").build();
     InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("fdiv.s")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0);
+    SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
-    Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel);
+    Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel).value();
     Assert.assertEquals(1.76, (float) v.value.getValue(DataTypeEnum.kFloat), 0.01);
   }
 }

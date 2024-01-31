@@ -37,14 +37,15 @@ import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.blocks.base.AbstractFunctionUnitBlock;
 import com.gradle.superscalarsim.blocks.base.IssueWindowBlock;
-import com.gradle.superscalarsim.blocks.base.ReorderBufferBlock;
 import com.gradle.superscalarsim.code.CodeBranchInterpreter;
+import com.gradle.superscalarsim.cpu.SimulationStatistics;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.models.FunctionalUnitDescription;
-import com.gradle.superscalarsim.models.InputCodeArgument;
-import com.gradle.superscalarsim.models.SimCodeModel;
+import com.gradle.superscalarsim.models.instruction.InputCodeArgument;
+import com.gradle.superscalarsim.models.instruction.SimCodeModel;
 import com.gradle.superscalarsim.models.register.RegisterModel;
+import com.gradle.superscalarsim.models.util.Result;
 
 import java.util.OptionalInt;
 
@@ -58,19 +59,19 @@ public class BranchFunctionUnitBlock extends AbstractFunctionUnitBlock
   private final CodeBranchInterpreter branchInterpreter;
   
   /**
-   * @param name               Name of the function unit
-   * @param issueWindowBlock   Issue window block for comparing instruction and data types
-   * @param delay              Delay for function unit
-   * @param reorderBufferBlock Class containing simulated Reorder Buffer
+   * @param description       Description of the function unit
+   * @param issueWindowBlock  Issue window block for comparing instruction and data types
+   * @param branchInterpreter Interpreter for interpreting executing instructions
+   * @param statistics        Simulation statistics
    *
    * @brief Constructor
    */
   public BranchFunctionUnitBlock(FunctionalUnitDescription description,
                                  IssueWindowBlock issueWindowBlock,
-                                 ReorderBufferBlock reorderBufferBlock,
-                                 CodeBranchInterpreter branchInterpreter)
+                                 CodeBranchInterpreter branchInterpreter,
+                                 SimulationStatistics statistics)
   {
-    super(description, issueWindowBlock, reorderBufferBlock);
+    super(description, issueWindowBlock, statistics);
     this.branchInterpreter = branchInterpreter;
   }// end of Constructor
   
@@ -90,7 +91,7 @@ public class BranchFunctionUnitBlock extends AbstractFunctionUnitBlock
    * @brief Simulates execution of an instruction
    */
   @Override
-  public void simulate()
+  public void simulate(int cycle)
   {
     if (!isFunctionUnitEmpty())
     {
@@ -108,6 +109,7 @@ public class BranchFunctionUnitBlock extends AbstractFunctionUnitBlock
    */
   public void handleInstruction()
   {
+    incrementBusyCycles();
     if (this.simCodeModel.hasFailed())
     {
       this.simCodeModel.setFunctionUnitId(this.functionUnitId);
@@ -128,27 +130,29 @@ public class BranchFunctionUnitBlock extends AbstractFunctionUnitBlock
     }
     
     // Execute
-    int         instructionPosition = this.simCodeModel.getSavedPc();
-    OptionalInt jumpOffset          = branchInterpreter.interpretInstruction(this.simCodeModel, instructionPosition);
-    boolean     jumpTaken           = jumpOffset.isPresent();
+    Result<OptionalInt> jumpTargetRes = branchInterpreter.interpretInstruction(this.simCodeModel);
+    // I don't think jump target uses division
+    assert !jumpTargetRes.isException();
+    OptionalInt jumpTarget = jumpTargetRes.value();
+    boolean     jumpTaken  = jumpTarget.isPresent();
     // If the branch was taken or not
     this.simCodeModel.setBranchLogicResult(jumpTaken);
     // Used to fix BTB and PC in misprediction
     if (jumpTaken)
     {
-      this.simCodeModel.setBranchTargetOffset(jumpOffset.getAsInt());
+      this.simCodeModel.setBranchTarget(jumpTarget.getAsInt());
     }
     InputCodeArgument destinationArgument = simCodeModel.getArgumentByName("rd");
     if (destinationArgument != null)
     {
       // Write the result to the register
       RegisterModel reg                     = destinationArgument.getRegisterValue();
-      int           nextInstructionPosition = instructionPosition + 4;
+      int           nextInstructionPosition = this.simCodeModel.getSavedPc() + 4;
       reg.setValue(nextInstructionPosition);
       reg.setReadiness(RegisterReadinessEnum.kExecuted);
     }
     
-    this.reorderBufferBlock.getRobItem(this.simCodeModel.getIntegerId()).reorderFlags.setBusy(false);
+    this.simCodeModel.setBusy(false);
     this.simCodeModel = null;
   }
   

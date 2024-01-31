@@ -30,7 +30,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.gradle.superscalarsim.models;
+package com.gradle.superscalarsim.models.instruction;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
@@ -40,6 +40,7 @@ import com.gradle.superscalarsim.code.Expression;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
+import com.gradle.superscalarsim.models.Identifiable;
 import com.gradle.superscalarsim.models.register.RegisterDataContainer;
 import com.gradle.superscalarsim.models.register.RegisterModel;
 import org.jetbrains.annotations.NotNull;
@@ -49,8 +50,8 @@ import java.util.List;
 
 /**
  * @class SimCodeModel
- * @brief Instruction execution data (renaming)
- * Ids are zero if not yet processed
+ * @brief Instruction execution data such as renaming registers, exceptions, flags, timestamps.
+ * Timestamps are zero if not valid.
  */
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, Identifiable
@@ -71,6 +72,10 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
    * The order of arguments is the same as in the original code line and tests depend on this order.
    */
   private final List<InputCodeArgument> renamedArguments;
+  /**
+   * ID when the instruction was fetched
+   */
+  private int fetchId;
   /**
    * ID, when was instructions accepted by the issue window
    */
@@ -93,15 +98,9 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
    */
   private boolean isFinished;
   /**
-   * Bit value marking failure due to wrong branch prediction
+   * A bit value marking failure due to wrong branch prediction
    */
   private boolean hasFailed;
-  /**
-   * Saved value of the PC, when instruction was fetched
-   * Used for load/store and branch instructions
-   * TODO: Optional
-   */
-  private int savedPc;
   /**
    * Prediction made by branch predictor at the time of fetching.
    * Used for branch instructions.
@@ -114,11 +113,33 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
    */
   private boolean branchLogicResult;
   /**
-   * Target of the branch instruction (offset from the savedPc).
+   * Target of the branch instruction.
+   * NOT an offset. If you need offset, describe it in the interpretableAs field (see JAL instruction).
    * Result of the branch actual computation, not the prediction.
    * Used to fix BTB and PC in misprediction.
    */
-  private int branchTargetOffset;
+  private int branchTarget;
+  /**
+   * Invalid instructions are scheduled to be removed from the system.
+   * Instruction starts as valid and becomes invalid when it is flushed.
+   */
+  private boolean isValid;
+  
+  /**
+   * Instruction starts as busy and becomes not busy when the execution is finished.
+   * Non-busy, non-speculative instructions are ready to be committed.
+   */
+  private boolean isBusy;
+  
+  /**
+   * Is instruction speculative?
+   */
+  private boolean isSpeculative;
+  /**
+   * Exception caused by this instruction.
+   * If committed, the exception takes effect and halts the simulation.
+   */
+  private InstructionException exception;
   
   /**
    * @param inputCodeModel Original code model
@@ -127,13 +148,24 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
    * @brief Constructor which copies original InputCodeModel
    * This constructor can be used only through the SimCodeModelAllocator
    */
-  public SimCodeModel(InputCodeModel inputCodeModel, int id)
+  public SimCodeModel(InputCodeModel inputCodeModel, int id, int fetchId)
   {
     this.inputCodeModel = inputCodeModel;
     this.id             = id;
-    this.commitId       = -1;
+    this.fetchId        = fetchId;
     this.isFinished     = false;
     this.hasFailed      = false;
+    this.commitId       = -1;
+    this.readyId        = -1;
+    this.issueWindowId  = -1;
+    this.functionUnitId = -1;
+    
+    isValid       = true;
+    isBusy        = true;
+    isSpeculative = false;
+    
+    exception = null;
+    
     // Copy arguments
     this.renamedArguments = new ArrayList<>();
     for (InputCodeArgument argument : inputCodeModel.getArguments())
@@ -141,6 +173,92 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
       this.renamedArguments.add(new InputCodeArgument(argument));
     }
   }// end of Constructor
+  
+  public InstructionException getException()
+  {
+    return exception;
+  }
+  
+  public void setException(InstructionException exception)
+  {
+    this.exception = exception;
+  }
+  
+  /**
+   * @return True if instruction is ready, false otherwise
+   * @brief Checks if the instruction is ready for commit based on flags
+   */
+  public boolean isReadyToBeCommitted()
+  {
+    return !this.isBusy && !this.isSpeculative && this.isValid;
+  }// end of isReadyToBeCommitted
+  //------------------------------------------------------
+  
+  /**
+   * @return True if instruction can be removed, false otherwise
+   * @brief Checks if instruction has failed and can be removed.
+   */
+  public boolean shouldBeRemoved()
+  {
+    return !this.isSpeculative && !this.isValid;
+  }// end of isReadyToBeRemoved
+  //------------------------------------------------------
+  
+  /**
+   * @return Boolean value of speculative bit
+   * @brief Gets speculative bit
+   */
+  public boolean isSpeculative()
+  {
+    return this.isSpeculative;
+  }// end of isSpeculative
+  //------------------------------------------------------
+  
+  /**
+   * @param speculative New value of the speculative bit
+   *
+   * @brief Sets speculative bit
+   */
+  public void setSpeculative(boolean speculative)
+  {
+    this.isSpeculative = speculative;
+  }// end of setSpeculative
+  //------------------------------------------------------
+  
+  /**
+   * @return Boolean value of busy bit
+   * @brief Gets busy bit
+   */
+  public boolean isBusy()
+  {
+    return this.isBusy;
+  }// end of isBusy
+  //------------------------------------------------------
+  
+  /**
+   * @brief Sets busy bit
+   */
+  public void setBusy(boolean busy)
+  {
+    this.isBusy = busy;
+  }// end of setBusy
+  //------------------------------------------------------
+  
+  /**
+   * @return True if instruction is valid, false otherwise
+   */
+  public boolean isValid()
+  {
+    return isValid;
+  }
+  
+  /**
+   * @brief Sets valid bit
+   */
+  public void setValid(boolean valid)
+  {
+    this.isValid = valid;
+  }// end of setValid
   
   /**
    * @param windowId ID, when was instruction accepted to issue window
@@ -220,7 +338,7 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
   
   /**
    * @return Boolean value marking failure to finish
-   * @brief Get bit value corresponding to failure due to wrong prediction
+   * @brief Get the bit value corresponding to failure due to wrong prediction
    */
   public boolean hasFailed()
   {
@@ -231,7 +349,7 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
   /**
    * @param hasFailed - Has instruction failed to finish due to miss-prediction?
    *
-   * @brief Set bit marking to failure due to wrong prediction
+   * @brief Set the bit marking to failure due to wrong prediction
    */
   public void setHasFailed(boolean hasFailed)
   {
@@ -259,14 +377,14 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
     this.branchLogicResult = branchLogicResult;
   }
   
-  public int getBranchTargetOffset()
+  public int getBranchTarget()
   {
-    return branchTargetOffset;
+    return branchTarget;
   }
   
-  public void setBranchTargetOffset(int branchTargetOffset)
+  public void setBranchTarget(int branchTarget)
   {
-    this.branchTargetOffset = branchTargetOffset;
+    this.branchTarget = branchTarget;
   }
   
   /**
@@ -353,12 +471,9 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
     return inputCodeModel.getInstructionTypeEnum();
   }
   
-  @Override
-  public DataTypeEnum getDataType()
-  {
-    return inputCodeModel.getDataType();
-  }
-  
+  /**
+   * @return ID of the instruction (index in the code)
+   */
   @Override
   public int getCodeId()
   {
@@ -388,12 +503,14 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
     List<Expression.Variable> variables                = new ArrayList<>();
     InstructionFunctionModel  instructionFunctionModel = getInstructionFunctionModel();
     
-    variables.add(new Expression.Variable("pc", DataTypeEnum.kInt, RegisterDataContainer.fromValue(getSavedPc())));
+    variables.add(
+            new Expression.Variable("pc", DataTypeEnum.kInt, RegisterDataContainer.fromValue(getSavedPc()), true));
     
     for (InputCodeArgument var : getArguments())
     {
-      InstructionFunctionModel.Argument argument = instructionFunctionModel.getArgumentByName(var.getName());
-      RegisterDataContainer             val      = var.getConstantValue();
+      InstructionFunctionModel.Argument argument   = instructionFunctionModel.getArgumentByName(var.getName());
+      RegisterDataContainer             val        = var.getConstantValue();
+      boolean                           isConstant = false;
       if (val == null)
       {
         // Try register
@@ -402,9 +519,10 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
         {
           throw new IllegalStateException("Could not parse " + var.getValue() + " as constant or label");
         }
-        val = reg.getValueContainer();
+        val        = reg.getValueContainer();
+        isConstant = reg.isConstant();
       }
-      variables.add(new Expression.Variable(var.getName(), argument.type(), val));
+      variables.add(new Expression.Variable(var.getName(), argument.type(), val, isConstant));
     }
     return variables;
   }
@@ -414,14 +532,9 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
    */
   public int getSavedPc()
   {
-    return savedPc;
+    return inputCodeModel.getPc();
   }
   //-------------------------------------------------------------------------------------------
-  
-  public void setSavedPc(int savedPc)
-  {
-    this.savedPc = savedPc;
-  }
   
   /**
    * @return True if the model is load instruction, false otherwise
@@ -471,5 +584,13 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
       }
     }
     return true;
+  }
+  
+  /**
+   * @return True if the instruction is a conditional branch
+   */
+  public boolean isConditionalBranch()
+  {
+    return inputCodeModel.isConditionalBranch();
   }
 }

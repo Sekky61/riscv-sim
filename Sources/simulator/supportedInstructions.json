@@ -16,10 +16,11 @@
       {
         "name": "imm",
         "type": "kInt",
-        "defaultValue": "0"
+        "defaultValue": "0",
+        "isOffset": true
       }
     ],
-    "interpretableAs": "\\rs1 \\imm +:true"
+    "interpretableAs": "\\rs1 \\imm + \\pc 4 + \\rd =:true"
   },
   "bne": {
     "name": "bne",
@@ -35,10 +36,11 @@
       },
       {
         "name": "imm",
-        "type": "kInt"
+        "type": "kInt",
+        "isOffset": true
       }
     ],
-    "interpretableAs": "\\imm:\\rs1 \\rs2 !="
+    "interpretableAs": "\\imm \\pc +:\\rs1 \\rs2 !="
   },
   "add": {
     "name": "add",
@@ -75,7 +77,8 @@
       },
       {
         "name": "rs1",
-        "type": "kInt"
+        "type": "kInt",
+        "defaultValue": "x0"
       }
     ],
     "interpretableAs": "load:16:\\rs1 \\imm +"
@@ -130,7 +133,8 @@
       },
       {
         "name": "imm",
-        "type": "kInt"
+        "type": "kInt",
+        "isOffset": true
       }
     ],
     "interpretableAs": "\\imm \\pc +:\\rs1 \\rs2 =="
@@ -181,7 +185,8 @@
       },
       {
         "name": "imm",
-        "type": "kInt"
+        "type": "kInt",
+        "isOffset": true
       }
     ],
     "interpretableAs": "\\imm \\pc +:\\rs1 \\rs2 >="
@@ -243,10 +248,11 @@
       },
       {
         "name": "imm",
-        "type": "kInt"
+        "type": "kInt",
+        "isOffset": true
       }
     ],
-    "interpretableAs": "\\imm \\pc +:true"
+    "interpretableAs": "\\pc 4 + \\rd = \\imm \\pc +:true"
   },
   "srli": {
     "name": "srli",
@@ -302,7 +308,8 @@
       },
       {
         "name": "imm",
-        "type": "kInt"
+        "type": "kInt",
+        "isOffset": true
       }
     ],
     "interpretableAs": "\\imm \\pc +:\\rs1 \\rs2 <"
@@ -321,10 +328,11 @@
       },
       {
         "name": "imm",
-        "type": "kInt"
+        "type": "kInt",
+        "isOffset": true
       }
     ],
-    "interpretableAs": "\\imm:\\rs1 \\rs2 <"
+    "interpretableAs": "\\imm \\pc +:\\rs1 \\rs2 <"
   },
   "fcvt.s.l": {
     "name": "fcvt.s.l",
@@ -357,7 +365,8 @@
       },
       {
         "name": "rs1",
-        "type": "kLong"
+        "type": "kLong",
+        "defaultValue": "x0"
       }
     ],
     "interpretableAs": "load:64:\\rs1 \\imm +"
@@ -457,7 +466,8 @@
       },
       {
         "name": "rs1",
-        "type": "kInt"
+        "type": "kInt",
+        "defaultValue": "x0"
       }
     ],
     "interpretableAs": "load:8:\\rs1 \\imm +"
@@ -513,7 +523,8 @@
       },
       {
         "name": "rs1",
-        "type": "kInt"
+        "type": "kInt",
+        "defaultValue": "x0"
       }
     ],
     "interpretableAs": "load:32:\\rs1 \\imm +"
@@ -876,7 +887,8 @@
       },
       {
         "name": "imm",
-        "type": "kInt"
+        "type": "kInt",
+        "isOffset": true
       }
     ],
     "interpretableAs": "\\imm \\pc +:\\rs1 \\rs2 >="
@@ -1314,10 +1326,11 @@
       },
       {
         "name": "imm",
-        "type": "kInt"
+        "type": "kInt",
+        "isOffset": true
       }
     ],
-    "interpretableAs": "\\imm:\\rs1 0 =="
+    "interpretableAs": "\\imm \\pc +:\\rs1 0 =="
   },
   "bnez": {
     "name": "bnez",
@@ -1329,10 +1342,11 @@
       },
       {
         "name": "imm",
-        "type": "kInt"
+        "type": "kInt",
+        "isOffset": true
       }
     ],
-    "interpretableAs": "\\imm:\\rs1 0 !="
+    "interpretableAs": "\\imm \\pc +:\\rs1 0 !="
   },
   "blez": {
     "name": "blez",
@@ -1344,7 +1358,8 @@
       },
       {
         "name": "imm",
-        "type": "kInt"
+        "type": "kInt",
+        "isOffset": true
       }
     ],
     "interpretableAs": "\\imm \\pc +:\\rs1 0 <="
@@ -1359,7 +1374,8 @@
       },
       {
         "name": "imm",
-        "type": "kInt"
+        "type": "kInt",
+        "isOffset": true
       }
     ],
     "interpretableAs": "\\imm \\pc +:\\rs1 0 >="
@@ -1374,7 +1390,8 @@
       },
       {
         "name": "imm",
-        "type": "kInt"
+        "type": "kInt",
+        "isOffset": true
       }
     ],
     "interpretableAs": "\\imm \\pc +:\\rs1 0 <"
@@ -1389,7 +1406,8 @@
       },
       {
         "name": "imm",
-        "type": "kInt"
+        "type": "kInt",
+        "isOffset": true
       }
     ],
     "interpretableAs": "\\imm \\pc +:\\rs1 0 >"
@@ -1408,7 +1426,8 @@
       },
       {
         "name": "imm",
-        "type": "kInt"
+        "type": "kInt",
+        "isOffset": true
       }
     ],
     "interpretableAs": "\\imm \\pc +:\\rs1 \\rs2 >"
@@ -1427,7 +1446,8 @@
       },
       {
         "name": "imm",
-        "type": "kInt"
+        "type": "kInt",
+        "isOffset": true
       }
     ],
     "interpretableAs": "\\imm \\pc +:\\rs1 \\rs2 <="
@@ -1446,7 +1466,8 @@
       },
       {
         "name": "imm",
-        "type": "kInt"
+        "type": "kInt",
+        "isOffset": true
       }
     ],
     "interpretableAs": "\\imm \\pc +:\\rs1 \\rs2 >"
@@ -1465,7 +1486,8 @@
       },
       {
         "name": "imm",
-        "type": "kInt"
+        "type": "kInt",
+        "isOffset": true
       }
     ],
     "interpretableAs": "\\imm \\pc +:\\rs1 \\rs2 <="
@@ -1476,7 +1498,8 @@
     "arguments": [
       {
         "name": "imm",
-        "type": "kInt"
+        "type": "kInt",
+        "isOffset": true
       }
     ],
     "interpretableAs": "\\imm \\pc +:true"
@@ -1490,7 +1513,7 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "\\rs1 \\pc +:true"
+    "interpretableAs": "\\rs1:true"
   },
   "ret": {
     "name": "ret",
@@ -1518,10 +1541,11 @@
       },
       {
         "name": "imm",
-        "type": "kInt"
+        "type": "kInt",
+        "isOffset": true
       }
     ],
-    "interpretableAs": "\\pc 4 + \\rd1 = \\imm:true"
+    "interpretableAs": "\\imm \\pc + \\pc 4 + \\rd1 =:true"
   },
   "tail": {
     "name": "tail",
@@ -1529,10 +1553,11 @@
     "arguments": [
       {
         "name": "imm",
-        "type": "kInt"
+        "type": "kInt",
+        "isOffset": true
       }
     ],
-    "interpretableAs": "\\imm:true"
+    "interpretableAs": "\\imm \\pc +:true"
   },
   "mulh": {
     "name": "mulh",
@@ -1933,7 +1958,6 @@
   "fclass.s": {
     "name": "fclass.s",
     "instructionType": "kFloatArithmetic",
-    "dataType": "kFloat",
     "arguments": [
       {
         "name": "rd",

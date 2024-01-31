@@ -44,8 +44,8 @@ public class FunctionalUnitDescription
   public int id;
   
   /**
-   * Optional name of the FUnit.
-   * Shows up in simulation visualisation, also used for debugging.
+   * Name of the FUnit.
+   * Shows up in simulation visualisation, also used for debugging and statistics.
    */
   public String name;
   

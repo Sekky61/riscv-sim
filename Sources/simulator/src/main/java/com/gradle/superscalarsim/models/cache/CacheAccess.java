@@ -27,7 +27,7 @@
 
 package com.gradle.superscalarsim.models.cache;
 
-import com.gradle.superscalarsim.models.Triplet;
+import com.gradle.superscalarsim.models.util.Triplet;
 
 import java.util.ArrayList;
 import java.util.Arrays;

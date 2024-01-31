@@ -6,13 +6,15 @@ import com.gradle.superscalarsim.blocks.branch.GlobalHistoryRegister;
 import com.gradle.superscalarsim.builders.InputCodeArgumentBuilder;
 import com.gradle.superscalarsim.builders.InputCodeModelBuilder;
 import com.gradle.superscalarsim.builders.RegisterFileModelBuilder;
+import com.gradle.superscalarsim.code.CodeBranchInterpreter;
+import com.gradle.superscalarsim.cpu.SimulationStatistics;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.enums.RegisterTypeEnum;
 import com.gradle.superscalarsim.factories.RegisterModelFactory;
 import com.gradle.superscalarsim.loader.InitLoader;
-import com.gradle.superscalarsim.models.InputCodeArgument;
-import com.gradle.superscalarsim.models.InputCodeModel;
-import com.gradle.superscalarsim.models.SimCodeModel;
+import com.gradle.superscalarsim.models.instruction.InputCodeArgument;
+import com.gradle.superscalarsim.models.instruction.InputCodeModel;
+import com.gradle.superscalarsim.models.instruction.SimCodeModel;
 import com.gradle.superscalarsim.models.register.RegisterFileModel;
 import com.gradle.superscalarsim.models.register.RegisterModel;
 import org.junit.Assert;
@@ -69,13 +71,15 @@ public class DecodeAndDispatchBlockTest
     
     loader = new InitLoader(Arrays.asList(integerFile, floatFile), null);
     
-    loader                 = new InitLoader(Arrays.asList(integerFile, floatFile), null);
-    urf                    = new UnifiedRegisterFileBlock(loader, 320, new RegisterModelFactory());
-    renameMapTableBlock    = new RenameMapTableBlock(urf);
+    loader              = new InitLoader(Arrays.asList(integerFile, floatFile), null);
+    urf                 = new UnifiedRegisterFileBlock(loader, 320, new RegisterModelFactory());
+    renameMapTableBlock = new RenameMapTableBlock(urf);
+    int maximumInstructions = 20;
     decodeAndDispatchBlock = new DecodeAndDispatchBlock(instructionFetchBlock, renameMapTableBlock,
                                                         globalHistoryRegister, branchTargetBuffer,
-                                                        instructionMemoryBlock,
-                                                        instructionFetchBlock.getNumberOfWays());
+                                                        instructionMemoryBlock, instructionFetchBlock.getNumberOfWays(),
+                                                        new SimulationStatistics(maximumInstructions, 1),
+                                                        new CodeBranchInterpreter());
   }
   
   @Test
@@ -87,22 +91,22 @@ public class DecodeAndDispatchBlockTest
     
     InputCodeModel ins1 = new InputCodeModelBuilder().hasLoader(loader).hasInstructionName("add")
             .hasCodeLine("add x1,x2,x3").hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    SimCodeModel sim1 = new SimCodeModel(ins1, 0);
+    SimCodeModel sim1 = new SimCodeModel(ins1, 0, 0);
     InputCodeModel ins2 = new InputCodeModelBuilder().hasLoader(loader).hasInstructionName("sub")
             .hasCodeLine("sub x1,x2,x3").hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    SimCodeModel sim2 = new SimCodeModel(ins2, 0);
+    SimCodeModel sim2 = new SimCodeModel(ins2, 0, 0);
     InputCodeModel ins3 = new InputCodeModelBuilder().hasLoader(loader).hasInstructionName("mul")
             .hasCodeLine("mul x1,x2,x3").hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
-    SimCodeModel       sim3         = new SimCodeModel(ins3, 0);
+    SimCodeModel       sim3         = new SimCodeModel(ins3, 0, 0);
     List<SimCodeModel> instructions = Arrays.asList(sim1, sim2, sim3);
     Mockito.when(instructionFetchBlock.getFetchedCode()).thenReturn(instructions);
     
-    decodeAndDispatchBlock.simulate();
+    decodeAndDispatchBlock.simulate(0);
     
-    Assert.assertEquals(3, decodeAndDispatchBlock.getAfterRenameCodeList().size());
-    Assert.assertEquals("add tg0,x2,x3", decodeAndDispatchBlock.getAfterRenameCodeList().get(0).getRenamedCodeLine());
-    Assert.assertEquals("sub tg1,x2,x3", decodeAndDispatchBlock.getAfterRenameCodeList().get(1).getRenamedCodeLine());
-    Assert.assertEquals("mul tg2,x2,x3", decodeAndDispatchBlock.getAfterRenameCodeList().get(2).getRenamedCodeLine());
+    Assert.assertEquals(3, decodeAndDispatchBlock.getCodeBuffer().size());
+    Assert.assertEquals("add tg0,x2,x3", decodeAndDispatchBlock.getCodeBuffer().get(0).getRenamedCodeLine());
+    Assert.assertEquals("sub tg1,x2,x3", decodeAndDispatchBlock.getCodeBuffer().get(1).getRenamedCodeLine());
+    Assert.assertEquals("mul tg2,x2,x3", decodeAndDispatchBlock.getCodeBuffer().get(2).getRenamedCodeLine());
   }
   
   @Test
@@ -123,22 +127,22 @@ public class DecodeAndDispatchBlockTest
     
     InputCodeModel ins1 = new InputCodeModelBuilder().hasLoader(loader).hasInstructionName("add")
             .hasCodeLine("add x1,x2,x3").hasArguments(Arrays.asList(argumentAdd1, argumentAdd2, argumentAdd3)).build();
-    SimCodeModel sim1 = new SimCodeModel(ins1, 0);
+    SimCodeModel sim1 = new SimCodeModel(ins1, 0, 0);
     InputCodeModel ins2 = new InputCodeModelBuilder().hasLoader(loader).hasInstructionName("sub")
             .hasCodeLine("sub x2,x3,x4").hasArguments(Arrays.asList(argumentSub1, argumentSub2, argumentSub3)).build();
-    SimCodeModel sim2 = new SimCodeModel(ins2, 0);
+    SimCodeModel sim2 = new SimCodeModel(ins2, 0, 0);
     InputCodeModel ins3 = new InputCodeModelBuilder().hasLoader(loader).hasInstructionName("mul")
             .hasCodeLine("mul x3,x4,x5").hasArguments(Arrays.asList(argumentMul1, argumentMul2, argumentMul3)).build();
-    SimCodeModel       sim3         = new SimCodeModel(ins3, 0);
+    SimCodeModel       sim3         = new SimCodeModel(ins3, 0, 0);
     List<SimCodeModel> instructions = Arrays.asList(sim1, sim2, sim3);
     Mockito.when(instructionFetchBlock.getFetchedCode()).thenReturn(instructions);
     
-    decodeAndDispatchBlock.simulate();
+    decodeAndDispatchBlock.simulate(0);
     
-    Assert.assertEquals(3, decodeAndDispatchBlock.getAfterRenameCodeList().size());
-    Assert.assertEquals("add tg0,x2,x3", decodeAndDispatchBlock.getAfterRenameCodeList().get(0).getRenamedCodeLine());
-    Assert.assertEquals("sub tg1,x3,x4", decodeAndDispatchBlock.getAfterRenameCodeList().get(1).getRenamedCodeLine());
-    Assert.assertEquals("mul tg2,x4,x5", decodeAndDispatchBlock.getAfterRenameCodeList().get(2).getRenamedCodeLine());
+    Assert.assertEquals(3, decodeAndDispatchBlock.getCodeBuffer().size());
+    Assert.assertEquals("add tg0,x2,x3", decodeAndDispatchBlock.getCodeBuffer().get(0).getRenamedCodeLine());
+    Assert.assertEquals("sub tg1,x3,x4", decodeAndDispatchBlock.getCodeBuffer().get(1).getRenamedCodeLine());
+    Assert.assertEquals("mul tg2,x4,x5", decodeAndDispatchBlock.getCodeBuffer().get(2).getRenamedCodeLine());
   }
   
   @Test
@@ -159,21 +163,21 @@ public class DecodeAndDispatchBlockTest
     
     InputCodeModel ins1 = new InputCodeModelBuilder().hasLoader(loader).hasInstructionName("add")
             .hasCodeLine("add x3,x4,x5").hasArguments(Arrays.asList(argumentAdd1, argumentAdd2, argumentAdd3)).build();
-    SimCodeModel sim1 = new SimCodeModel(ins1, 0);
+    SimCodeModel sim1 = new SimCodeModel(ins1, 0, 0);
     InputCodeModel ins2 = new InputCodeModelBuilder().hasLoader(loader).hasInstructionName("sub")
             .hasCodeLine("sub x2,x3,x4").hasArguments(Arrays.asList(argumentSub1, argumentSub2, argumentSub3)).build();
-    SimCodeModel sim2 = new SimCodeModel(ins2, 0);
+    SimCodeModel sim2 = new SimCodeModel(ins2, 0, 0);
     InputCodeModel ins3 = new InputCodeModelBuilder().hasLoader(loader).hasInstructionName("mul")
             .hasCodeLine("mul x1,x2,x3").hasArguments(Arrays.asList(argumentMul1, argumentMul2, argumentMul3)).build();
-    SimCodeModel       sim3         = new SimCodeModel(ins3, 0);
+    SimCodeModel       sim3         = new SimCodeModel(ins3, 0, 0);
     List<SimCodeModel> instructions = Arrays.asList(sim1, sim2, sim3);
     Mockito.when(instructionFetchBlock.getFetchedCode()).thenReturn(instructions);
     
-    decodeAndDispatchBlock.simulate();
+    decodeAndDispatchBlock.simulate(0);
     
-    Assert.assertEquals(3, decodeAndDispatchBlock.getAfterRenameCodeList().size());
-    Assert.assertEquals("add tg0,x4,x5", decodeAndDispatchBlock.getAfterRenameCodeList().get(0).getRenamedCodeLine());
-    Assert.assertEquals("sub tg1,tg0,x4", decodeAndDispatchBlock.getAfterRenameCodeList().get(1).getRenamedCodeLine());
-    Assert.assertEquals("mul tg2,tg1,tg0", decodeAndDispatchBlock.getAfterRenameCodeList().get(2).getRenamedCodeLine());
+    Assert.assertEquals(3, decodeAndDispatchBlock.getCodeBuffer().size());
+    Assert.assertEquals("add tg0,x4,x5", decodeAndDispatchBlock.getCodeBuffer().get(0).getRenamedCodeLine());
+    Assert.assertEquals("sub tg1,tg0,x4", decodeAndDispatchBlock.getCodeBuffer().get(1).getRenamedCodeLine());
+    Assert.assertEquals("mul tg2,tg1,tg0", decodeAndDispatchBlock.getCodeBuffer().get(2).getRenamedCodeLine());
   }
 }

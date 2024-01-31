@@ -74,16 +74,13 @@ export default function ReorderBuffer() {
       <InstructionListDisplay
         instructions={rob.reorderQueue}
         limit={showLimit}
-        instructionRenderer={(item, i) => {
-          if (item === null) {
+        instructionRenderer={(simCodeModel, i) => {
+          if (simCodeModel === null) {
             return <InstructionField instructionId={null} key={`item_${i}`} />;
           }
           return (
             <div className='relative' key={`item_${i}`}>
-              <InstructionField instructionId={item.simCodeModel} />
-              {!item.reorderFlags.isSpeculative && (
-                <span className='absolute right-0 top-0 w-1 h-full bg-green-300' />
-              )}
+              <InstructionField instructionId={simCodeModel} showSpeculative />
             </div>
           );
         }}

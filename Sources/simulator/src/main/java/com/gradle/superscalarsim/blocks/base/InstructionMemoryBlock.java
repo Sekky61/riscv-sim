@@ -36,7 +36,7 @@ import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.code.Label;
-import com.gradle.superscalarsim.models.InputCodeModel;
+import com.gradle.superscalarsim.models.instruction.InputCodeModel;
 
 import java.util.List;
 import java.util.Map;
