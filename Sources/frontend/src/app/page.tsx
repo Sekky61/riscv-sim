@@ -31,6 +31,7 @@
 
 import CanvasWindow from '@/components/CanvasWindow';
 import { ReloadSimModal } from '@/components/ReloadSimModal';
+import { SidePanel } from '@/components/simulation/SidePanel';
 import { SimGrid } from '@/components/simulation/SimGrid';
 import Timeline from '@/components/simulation/Timeline';
 
@@ -38,7 +39,7 @@ export default function HomePage() {
   return (
     <div className='flex'>
       <div className='py-2 flex-grow h-screen'>
-        <div className='relative rounded-lg border w-full h-full'>
+        <div className='relative rounded-lg border w-full h-full shadow-inner'>
           <CanvasWindow>
             <SimGrid />
           </CanvasWindow>
@@ -47,7 +48,7 @@ export default function HomePage() {
           </div>
         </div>
       </div>
-      <div>SidePanel</div>
+      <SidePanel />
       <ReloadSimModal />
     </div>
   );

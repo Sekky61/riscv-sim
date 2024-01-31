@@ -168,7 +168,10 @@ public class RegisterDataContainer
     }
     return switch (type)
     {
-      case kByte, kShort, kInt, kLong -> Long.toString(bits);
+      case kLong -> Long.toString(bits);
+      case kInt -> Integer.toString((int) bits);
+      case kByte -> Integer.toString((byte) bits);
+      case kShort -> Integer.toString((short) bits);
       case kUInt, kULong -> Long.toUnsignedString(bits);
       case kFloat -> Float.intBitsToFloat((int) bits) + "";
       case kDouble -> Double.longBitsToDouble(bits) + "";

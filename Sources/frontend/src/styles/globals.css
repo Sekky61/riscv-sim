@@ -590,4 +590,38 @@
   .heatmap-transition  * {
     @apply transition-colors ease-in duration-200;
   }
+
+  /* Expand side panel */
+
+  .expand-area {
+    transform: translateY(-50%);
+  }
+
+  .expand-area * {
+    @apply transition-all duration-200;
+  }
+
+  .expand-arrow-up {
+    transform: translateY(10%);
+  }
+
+  .expand-arrow-down {
+    transform: translateY(-10%);
+  }
+
+  .expand-area[data-expanded='true']:hover .expand-arrow-up {
+    transform: translateY(10%) rotateZ(-20deg);
+  }
+
+  .expand-area:hover .expand-arrow-up {
+    transform: translateY(10%) rotateZ(20deg);
+  }
+
+  .expand-area[data-expanded='true']:hover .expand-arrow-down {
+    transform: translateY(-10%) rotateZ(20deg);
+  }
+
+  .expand-area:hover .expand-arrow-down {
+    transform: translateY(-10%) rotateZ(-20deg);
+  }
 }
