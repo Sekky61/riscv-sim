@@ -62,7 +62,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           fontSans.variable,
         )}
       >
-        <div className='flex h-screen max-h-screen w-full'>
+        <div className='flex h-screen max-h-screen'>
           <SideBar />
           <PersistedStoreProvider>
             <TooltipProvider delayDuration={0}>

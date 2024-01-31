@@ -36,14 +36,19 @@ import Timeline from '@/components/simulation/Timeline';
 
 export default function HomePage() {
   return (
-    <>
-      <CanvasWindow>
-        <SimGrid />
-      </CanvasWindow>
-      <div className='pointer-events-none absolute top-0 flex w-full justify-center pt-2'>
-        <Timeline className='pointer-events-auto' />
+    <div className='flex'>
+      <div className='py-2 flex-grow h-screen'>
+        <div className='relative rounded-lg border w-full h-full'>
+          <CanvasWindow>
+            <SimGrid />
+          </CanvasWindow>
+          <div className='fixed top-4 left-1/2'>
+            <Timeline />
+          </div>
+        </div>
       </div>
+      <div>SidePanel</div>
       <ReloadSimModal />
-    </>
+    </div>
   );
 }

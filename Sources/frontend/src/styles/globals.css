@@ -117,8 +117,9 @@
     @apply bg-neutral-99 text-neutral-10;
   }
 
+  /* 5px is the offset */
   .dotted-bg {
-    background-image: radial-gradient(circle at 1px 1px, #cca 1px, transparent 0);
+    background-image: radial-gradient(circle at 5px 5px, #cca 1px, transparent 0);
     background-size: 20px 20px;
   }
 

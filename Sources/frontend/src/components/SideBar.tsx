@@ -44,7 +44,7 @@ import SideMenuButton from '@/components/SideMenuButton';
 
 export default function SideBar() {
   return (
-    <div className='flex flex-col justify-between border-r border-r-black p-1.5'>
+    <div className='flex flex-col justify-between p-1.5'>
       <div className='flex flex-col gap-3'>
         <SideMenuButton
           Icon={<BrainCircuit strokeWidth={1.5} />}

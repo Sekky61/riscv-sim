@@ -108,17 +108,18 @@ export default function CanvasWindow({ children }: CanvasWindowProps) {
   };
 
   const cls = clsx(
-    'relative overflow-auto w-full h-full dotted-bg',
+    'overflow-auto dotted-bg min-h-full min-w-full',
     ctrlHeld && 'hover:cursor-grab',
   );
 
+  // The w-6 h-6 trick to make the overflow not affect initial size of the component
   return (
-    <>
-      <div onMouseDown={onDragStart} className={cls} ref={elRef}>
-        <div style={{ transform: `scale(${scale})` }}>{children}</div>
+    <div onMouseDown={onDragStart} className={cls} ref={elRef}>
+      <div style={{ transform: `scale(${scale})` }} className='h-6 w-6'>
+        {children}
       </div>
       <ScaleButtons scaleUp={scaleUp} scaleDown={scaleDown} />
-    </>
+    </div>
   );
 }
 
