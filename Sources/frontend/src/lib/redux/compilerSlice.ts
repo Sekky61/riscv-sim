@@ -48,6 +48,7 @@ import {
   SimpleParseError,
 } from '@/lib/types/simulatorApi';
 import { toast } from 'sonner';
+import { CodeExample } from '@/constant/codeExamples';
 
 export type OptimizeOption =
   | 'O2'
@@ -59,16 +60,6 @@ export type OptimizeOption =
 
 export interface CompilerOptions {
   optimizeFlags: OptimizeOption[];
-}
-
-/**
- * Example code. Describes the JSON structure in @/constant/codeExamples.json
- */
-export interface Example {
-  name: string;
-  type: 'c' | 'asm';
-  code: string;
-  entryPoint?: number | string;
 }
 
 // Define a type for the slice state
@@ -179,7 +170,7 @@ export const callParseAsm = createAsyncThunk<ParseAsmResponse>(
  *
  * Example: dispatch(openExampleAndCompile("example1"));
  */
-export const openExampleAndCompile = createAsyncThunk<void, Example>(
+export const openExampleAndCompile = createAsyncThunk<void, CodeExample>(
   'compiler/openExampleAndCompile',
   async (example, { dispatch }) => {
     dispatch(openExample(example));
@@ -263,7 +254,7 @@ export const compilerSlice = createSlice({
     enterEditorMode: (state, action: PayloadAction<'c' | 'asm'>) => {
       state.editorMode = action.payload;
     },
-    openExample: (state, action: PayloadAction<Example>) => {
+    openExample: (state, action: PayloadAction<CodeExample>) => {
       state.cCode = action.payload.type === 'c' ? action.payload.code : '';
       state.asmCode = action.payload.type === 'asm' ? action.payload.code : '';
       state.asmToC = [];

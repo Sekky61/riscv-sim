@@ -29,19 +29,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import _supportedInstructions from 'src/constant/supportedInstructions.json';
+import { type InstructionDescription } from '@/lib/types/instructionsDatabase';
 
-import { InstructionDescription } from '@/lib/types/instructionsDatabase';
+let supportedInstructions = {} as Record<string, InstructionDescription>;
 
-export type SupportedInstructionsKeys = keyof typeof _supportedInstructions;
+async function loadSupportedInstructions() {
+  fetch('supportedInstructions.json')
+    .then((response) => response.json())
+    .then((data) => {
+      supportedInstructions = data;
+    });
+}
 
-export const supportedInstructions = _supportedInstructions as Record<
-  SupportedInstructionsKeys,
-  InstructionDescription
->;
+loadSupportedInstructions();
 
-export function isSupportedInstructionKey(
+export function getInstructionDescription(
   key: string,
-): key is SupportedInstructionsKeys {
-  return key in supportedInstructions;
+): InstructionDescription | undefined {
+  return supportedInstructions[key];
 }

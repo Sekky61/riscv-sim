@@ -33,11 +33,6 @@
 
 import { hoverTooltip } from '@codemirror/view';
 
-import {
-  isSupportedInstructionKey,
-  supportedInstructions,
-} from '@/constant/supportedInstructions';
-
 import { InstructionDescription } from '../types/instructionsDatabase';
 
 /**
@@ -65,6 +60,19 @@ function instructionTooltip(instruction: InstructionDescription) {
 
   return dom;
 }
+
+let supportedInstructions: Record<string, InstructionDescription> = {};
+
+/**
+ * Load supported instructions from the API immediately after the page loads
+ */
+async function fetchSupportedInstructions() {
+  const data = await fetch('/api/supportedInstructions');
+  const instructions = await data.json();
+
+  supportedInstructions = instructions;
+}
+fetchSupportedInstructions();
 
 /**
  * Setup the word hover tooltip
@@ -97,12 +105,14 @@ export const wordHover = hoverTooltip((view, pos, side) => {
 
   // Check if the word is an instruction
   const word = text.slice(start - from, end - from);
-  if (!isSupportedInstructionKey(word)) {
-    return null;
-  }
 
   // Get info and create tooltip
   const instructionInfo = supportedInstructions[word];
+
+  if (!instructionInfo) {
+    return null;
+  }
+
   return {
     pos: start,
     end,

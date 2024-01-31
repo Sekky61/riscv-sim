@@ -50,6 +50,7 @@
     "react-redux": "^9.1.0",
     "redux-persist": "^6.0.0",
     "sonner": "^1.4.0",
+    "swr": "^2.2.4",
     "tailwind-merge": "^2.2.1",
     "tailwindcss-animate": "^1.0.7",
     "zod": "^3.22.4"

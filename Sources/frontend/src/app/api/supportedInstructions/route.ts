@@ -1,14 +1,14 @@
 /**
- * @file    codeExamples.d.ts
+ * @file    supportedInstructions.ts
  *
  * @author  Michal Majer
  *          Faculty of Information Technology
  *          Brno University of Technology
  *          xmajer21@stud.fit.vutbr.cz
  *
- * @brief   Typescript types for code examples
+ * @brief   Static data for the app (JSON files)
  *
- * @date    19 September 2023, 22:00 (created)
+ * @date    31 January 2024, 10:00 (created)
  *
  * @section Licence
  * This file is part of the Superscalar simulator app
@@ -29,12 +29,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- * Example code. Describes the JSON structure in @/constant/codeExamples.json
- */
-export type CodeExample = {
-  name: string;
-  type: 'c' | 'asm';
-  code: string;
-  entryPoint?: number | string;
-};
+import path from 'path';
+import { promises as fs } from 'fs';
+
+export async function GET() {
+  // Find the absolute path of the "json" directory
+  const jsonDirectory = path.join(process.cwd(), 'public/json');
+  // Read the "data.json" file
+  const fileContents = await fs.readFile(
+    `${jsonDirectory}/supportedInstructions.json`,
+    'utf8',
+  );
+  const json = JSON.parse(fileContents);
+
+  return Response.json(json);
+}
