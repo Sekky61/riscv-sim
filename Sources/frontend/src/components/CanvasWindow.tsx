@@ -35,7 +35,7 @@ import AnimatedButton from '@/components/AnimatedButton';
 import { ReactChildren } from '@/lib/types/reactTypes';
 import clsx from 'clsx';
 import { ZoomIn, ZoomOut } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 
 type CanvasWindowProps = {
@@ -44,14 +44,12 @@ type CanvasWindowProps = {
 
 /**
  * Canvas window component.
- * Scrollable, draggable with control and mouse.
+ * Scrollable, draggable with middle click.
  * Zoomable with scale prop.
- *
- * TODO: when zoomed, the corners are not visible
  */
 export default function CanvasWindow({ children }: CanvasWindowProps) {
   const elRef = useRef<HTMLDivElement>(null);
-  const [ctrlHeld, setCtrlHeld] = useState(false);
+  const [middleHeld, setMiddleHeld] = useState(false);
   const [scale, setScale] = useState(1);
 
   const scaleUp = () => {
@@ -62,59 +60,54 @@ export default function CanvasWindow({ children }: CanvasWindowProps) {
     setScale(scale - 0.2);
   };
 
-  // Add cursor change on ctrl
-  useHotkeys(
-    'ctrl',
-    (e) => {
-      setCtrlHeld(e.type === 'keydown');
-    },
-    { keyup: true, keydown: true },
-  );
+  // Middle click hold and drag
 
-  // Dragging event listeners
-  const onDragStart = () => {
-    if (!ctrlHeld) {
-      return;
-    }
-
-    const body = document.getElementsByTagName('body')[0];
-    if (!body) {
-      throw new Error('Body not found');
-    }
-    body.style.userSelect = 'none';
-    // todo cursor grab not working
-    body.classList.add('cursor-grabbing');
-
-    function onDrag(this: Window, ee: MouseEvent) {
-      // get the change in x and y
-      const dx = ee.movementX;
-      const dy = ee.movementY;
-      // set the new offset
-      if (elRef.current) {
-        elRef.current.scrollLeft = elRef.current.scrollLeft - dx;
-        elRef.current.scrollTop = elRef.current.scrollTop - dy;
+  function onPointerUpDown(e: PointerEvent) {
+    const isDown = e.type === 'pointerdown';
+    const isMiddle = e.button === 1;
+    if (isMiddle) {
+      setMiddleHeld(isDown);
+      if (isDown) {
+        // Pointer capture solves the problem of pointer leaving the element
+        elRef.current?.setPointerCapture(e.pointerId);
+        elRef.current?.addEventListener('pointermove', onPointerMove);
+      } else {
+        elRef.current?.releasePointerCapture(e.pointerId);
+        elRef.current?.removeEventListener('pointermove', onPointerMove);
       }
     }
+  }
 
-    const onDragEnd = () => {
-      window.removeEventListener('mousemove', onDrag);
-      window.removeEventListener('mouseup', onDragEnd);
-      body.style.userSelect = 'auto';
-      body.classList.remove('cursor-grabbing');
+  function onPointerMove(ee: PointerEvent) {
+    // get the change in x and y
+    const dx = ee.movementX;
+    const dy = ee.movementY;
+    // set the new offset
+    if (elRef.current) {
+      elRef.current.scrollLeft = elRef.current.scrollLeft - dx;
+      elRef.current.scrollTop = elRef.current.scrollTop - dy;
+    }
+  }
+
+  // Register on component mount
+  useEffect(() => {
+    elRef.current?.addEventListener('pointerdown', onPointerUpDown);
+    elRef.current?.addEventListener('pointerup', onPointerUpDown);
+    return () => {
+      elRef.current?.removeEventListener('pointerdown', onPointerUpDown);
+      elRef.current?.removeEventListener('pointerup', onPointerUpDown);
     };
-
-    window.addEventListener('mousemove', onDrag);
-    window.addEventListener('mouseup', onDragEnd);
-  };
+  }, []);
 
   const cls = clsx(
     'overflow-auto dotted-bg min-h-full min-w-full',
-    ctrlHeld && 'hover:cursor-grab',
+    middleHeld && 'cursor-grabbing',
+    !middleHeld && 'cursor-grab',
   );
 
   // The w-6 h-6 trick to make the overflow not affect initial size of the component
   return (
-    <div onMouseDown={onDragStart} className={cls} ref={elRef}>
+    <div className={cls} ref={elRef}>
       <div style={{ transform: `scale(${scale})` }} className='h-6 w-6'>
         {children}
       </div>
@@ -129,7 +122,8 @@ export type ScaleButtonsProps = {
 };
 
 /**
- * also provides shortcuts
+ * Scale buttons (in the corner).
+ * also provides shortcuts.
  */
 const ScaleButtons = ({ scaleUp, scaleDown }: ScaleButtonsProps) => {
   useHotkeys(

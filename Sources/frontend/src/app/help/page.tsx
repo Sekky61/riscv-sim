@@ -117,8 +117,8 @@ export default function Page() {
             <kbd>Ctrl</kbd> + <kbd>-</kbd>
           </div>
           <div>
-            <div className='mb-2'>Move around</div>
-            <kbd>Ctrl</kbd> + Click and drag
+            <div className='mb-2'>Drag around</div>
+            Hold middle mouse button (wheel) and drag
           </div>
         </div>
       </section>
