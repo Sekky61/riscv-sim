@@ -337,7 +337,7 @@ function InstructionArgument({ arg }: InstructionArgumentProps) {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <span className='relative rounded hover:bg-gray-300 -m-1 p-1'>
+        <span className='rounded hover:bg-gray-300 -m-1 p-1'>
           {arg.origArg.stringValue}
         </span>
       </TooltipTrigger>

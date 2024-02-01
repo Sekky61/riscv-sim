@@ -476,83 +476,35 @@
   }
 
   /* Simulation view grid */
-  .sim-grid {
-    @apply inline-grid gap-4 justify-center;
-    grid-auto-columns: 1fr;
-    grid-auto-rows: auto;
-  }
-
-  .col-grid {
-    @apply flex gap-4 justify-center m-4;
-  }
 
   .global-grid {
-    @apply grid justify-items-start items-start gap-4  mt-16;
-    grid-template-columns: repeat(2, max-content);
+    @apply grid items-start mt-16 m-4;
+    --gap: 2rem;
+    gap: var(--gap);
   }
 
-  .program {
-    @apply w-full h-full;
-    grid-column: 1 / span 1;
-    grid-row: 1 / span 3;
+  .global-grid > div {
+    gap: var(--gap);
   }
 
-  .fetch-position {
-    grid-column: 2 / span 1;
-    grid-row: 1 / span 2;
+  .issue {
+    @apply flex flex-col;
+    gap: var(--gap);
   }
 
-  .decode {
-    grid-column: 2 / span 1;
-    grid-row: 3 / span 2;
+  .block-stack {
+    @apply flex flex-col;
+    gap: var(--gap);
   }
 
-  .rob {
-    grid-column: 3 / span 1;
-    grid-row: 1 / span 5;
+  .top-grid {
+    @apply grid gap-4 pr-8;
+    grid-template-columns: repeat(3, max-content) repeat(3, max-content);
   }
 
-  .aluIssue {
-    grid-column: 1 / span 1;
-    grid-row: 1 / span 1;
-  }
-
-  /* FUs also define tailwind class for positioning in a row */
-  .aluFu {
-    grid-column: 1 / span 1;
-    grid-row-end: span 1;
-  }
-
-  .fpIssue {
-    grid-column: 2 / span 1;
-    grid-row: 1 / span 1;
-  }
-
-  .fpFu {
-    grid-column: 2 / span 1;
-    grid-row-end: span 1;
-  }
-
-  .branchIssue {
-    grid-column: 3 / span 1;
-    grid-row: 1 / span 1;
-  }
-
-  .branchFu {
-    grid-column: 3 / span 1;
-    grid-row-end: span 1;
-  }
-
-
-
-  .storeBuffer {
-    grid-column: 1 / span 2;
-    grid-row: 1 / span 2;
-  }
-
-  .loadBuffer {
-    grid-column: 3 / span 2;
-    grid-row: 1 / span 2;
+  .bottom-grid {
+    @apply grid gap-4 pr-8;
+    grid-template-columns: repeat(2, 1fr) max-content max-content;
   }
 
   /* make space every 4 bytes */

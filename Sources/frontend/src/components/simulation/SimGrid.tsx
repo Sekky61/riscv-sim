@@ -46,37 +46,35 @@ import StoreBuffer from '@/components/simulation/StoreBuffer';
 export function SimGrid() {
   return (
     <div className='global-grid'>
-      <div className='col-grid'>
+      <div className='top-grid'>
         <Program />
-        <div className='flex flex-col gap-4'>
+        <div className='block-stack'>
           <BranchBlock />
           <FetchBlock />
           <DecodeBlock />
         </div>
         <ReorderBuffer />
+        <div className='issue'>
+          <IssueWindow type='alu' />
+          <FunctionUnitGroup type='alu' />
+        </div>
+        <div className='issue'>
+          <IssueWindow type='fp' />
+          <FunctionUnitGroup type='fp' />
+        </div>
+        <div className='issue'>
+          <IssueWindow type='branch' />
+          <FunctionUnitGroup type='branch' />
+        </div>
       </div>
-      <div className='sim-grid justify-items-center'>
-        <IssueWindow type='alu' />
-        <FunctionUnitGroup type='alu' />
-        <IssueWindow type='fp' />
-        <FunctionUnitGroup type='fp' />
-        <IssueWindow type='branch' />
-        <FunctionUnitGroup type='branch' />
-      </div>
-      <div className='sim-grid'>
-        <div className='flex justify-center'>
+      <div className='bottom-grid pb-8'>
+        <StoreBuffer />
+        <LoadBuffer />
+        <div className='block-stack'>
           <FunctionUnitGroup type='memory' />
-        </div>
-        <div className='flex gap-4'>
-          <StoreBuffer />
-          <LoadBuffer />
-        </div>
-      </div>
-      <div>
-        <div className='flex gap-4 mb-4 items-start'>
           <MainMemory />
-          <CacheBlock />
         </div>
+        <CacheBlock />
       </div>
     </div>
   );
