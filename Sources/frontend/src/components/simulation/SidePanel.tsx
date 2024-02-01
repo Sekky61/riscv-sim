@@ -31,7 +31,7 @@
 
 'use client';
 
-import { selectStatistics } from '@/lib/redux/cpustateSlice';
+import { selectDebugLog, selectStatistics } from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
 import clsx from 'clsx';
 import React, { useState } from 'react';
@@ -50,11 +50,11 @@ export function SidePanel() {
 
   const branchAccuracy = `${(statistics.predictionAccuracy * 100).toFixed(2)}%`;
 
-  const cls = clsx('h-screen p-2 relative', isExpanded && 'w-80');
+  const cls = clsx('h-screen p-2 relative flex flex-col gap-2');
 
   const gridCls = clsx(
     'grid gap-2',
-    isExpanded && 'grid-cols-2',
+    isExpanded && 'grid-cols-3',
     !isExpanded && 'grid-cols-1',
   );
 
@@ -94,20 +94,54 @@ export function SidePanel() {
           value={branchAccuracy}
         />
       </div>
+      {isExpanded && <h3 className='my-2'>Debug log</h3>}
+      <div className='flex-grow w-full'>
+        <DebugLog />
+      </div>
     </div>
   );
 }
 
 interface StatProps {
-  label: React.ReactNode;
+  label: string | JSX.Element;
   value: string;
 }
 
 function SmallBubble({ label, value }: StatProps) {
   return (
-    <div className='text-wrap font-bold aspect-square p-1 rounded-md text-sm flex flex-col justify-center gap-1 items-center border-2 border-primary'>
+    <div className='w-20 text-wrap font-bold aspect-square p-1 rounded-md text-sm flex flex-col justify-center gap-1 items-center border-2 border-primary'>
       {label}
       <span className='font-normal'>{value}</span>
+    </div>
+  );
+}
+
+/**
+ * Render the debug log.
+ */
+function DebugLog() {
+  const debugLog = useAppSelector(selectDebugLog);
+
+  // w-0 to make the div shrink to fit the parent
+  // the key can be the cycle, because at most one entry is added per cycle
+  return (
+    <div
+      className='w-0 min-w-full overflow-clip rounded-md border p-2 text-nowrap font-mono text-sm grid'
+      style={{
+        gridTemplateColumns: 'max-content 1fr',
+      }}
+    >
+      {debugLog?.entries.map((entry, index) => {
+        return (
+          <div
+            key={entry.cycle}
+            className='grid grid-rows-subgrid grid-cols-subgrid col-span-2'
+          >
+            <div className='font-bold text-end'>{entry.cycle}:</div>
+            <div className=''>{entry.message}</div>
+          </div>
+        );
+      })}
     </div>
   );
 }

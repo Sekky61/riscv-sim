@@ -602,6 +602,10 @@ const selectCacheInternal = (state: RootState) => state.cpu.state?.cache;
 export const selectStatistics = (state: RootState) =>
   state.cpu.state?.statistics;
 
+// Debug log
+
+export const selectDebugLog = (state: RootState) => state.cpu.state?.debugLog;
+
 export interface DecodedCacheLine extends CacheLineModel {
   decodedLine: number[];
 }
