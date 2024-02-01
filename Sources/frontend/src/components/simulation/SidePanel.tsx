@@ -31,8 +31,12 @@
 
 'use client';
 
-import { selectDebugLog, selectStatistics } from '@/lib/redux/cpustateSlice';
-import { useAppSelector } from '@/lib/redux/hooks';
+import {
+  callSimulation,
+  selectDebugLog,
+  selectStatistics,
+} from '@/lib/redux/cpustateSlice';
+import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import clsx from 'clsx';
 import React, { useState } from 'react';
 
@@ -84,17 +88,18 @@ export function SidePanel() {
           value={statistics.committedInstructions.toString()}
         />
         <SmallBubble label='IPC' value={statistics.ipc.toFixed(2)} />
-        <SmallBubble
-          label={
-            <>
-              <span>Branch</span>
-              <span>Accuracy</span>
-            </>
-          }
-          value={branchAccuracy}
-        />
+        <SmallBubble label='Branch accuracy' value={branchAccuracy} />
+        {isExpanded && (
+          <>
+            <SmallBubble label='FLOPS' value={statistics.flops.toFixed(2)} />
+            <SmallBubble
+              label='Cache Hit Rate'
+              value={statistics.cache.hitRate.toFixed(2)}
+            />
+          </>
+        )}
       </div>
-      {isExpanded && <h3 className='my-2'>Debug log</h3>}
+      {isExpanded && <h3 className='mt-2'>Debug log</h3>}
       <div className='flex-grow w-full'>
         <DebugLog />
       </div>
@@ -110,7 +115,7 @@ interface StatProps {
 function SmallBubble({ label, value }: StatProps) {
   return (
     <div className='w-20 text-wrap font-bold aspect-square p-1 rounded-md text-sm flex flex-col justify-center gap-1 items-center border-2 border-primary'>
-      {label}
+      <span className='text-center'>{label}</span>
       <span className='font-normal'>{value}</span>
     </div>
   );
@@ -120,13 +125,18 @@ function SmallBubble({ label, value }: StatProps) {
  * Render the debug log.
  */
 function DebugLog() {
+  const dispatch = useAppDispatch();
   const debugLog = useAppSelector(selectDebugLog);
+
+  function loadSim(cycle: number) {
+    dispatch(callSimulation(cycle));
+  }
 
   // w-0 to make the div shrink to fit the parent
   // the key can be the cycle, because at most one entry is added per cycle
   return (
     <div
-      className='w-0 min-w-full overflow-clip rounded-md border p-2 text-nowrap font-mono text-sm grid'
+      className='w-0 min-w-full h-0 min-h-full overflow-x-clip overflow-y-scroll rounded-md border p-2 text-nowrap font-mono text-sm grid content-start'
       style={{
         gridTemplateColumns: 'max-content 1fr',
       }}
@@ -137,8 +147,14 @@ function DebugLog() {
             key={entry.cycle}
             className='grid grid-rows-subgrid grid-cols-subgrid col-span-2'
           >
-            <div className='font-bold text-end'>{entry.cycle}:</div>
-            <div className=''>{entry.message}</div>
+            <button
+              type='button'
+              className='self-start font-bold text-end hover:underline'
+              onClick={() => loadSim(entry.cycle)}
+            >
+              {entry.cycle}:
+            </button>
+            <div className='text-wrap'>{entry.message}</div>
           </div>
         );
       })}
