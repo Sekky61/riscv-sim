@@ -49,8 +49,6 @@ export default function ReorderBuffer() {
   if (!rob) return null;
 
   const used = rob.reorderQueue.length;
-  const showLimit = 16;
-  const showMore = used > showLimit;
 
   const robStats = (
     <>
@@ -64,7 +62,7 @@ export default function ReorderBuffer() {
     <Block
       title='Reorder Buffer'
       stats={robStats}
-      className='rob'
+      className='rob h-96'
       detailDialog={
         <DialogContent>
           <DialogHeader>
@@ -83,7 +81,7 @@ export default function ReorderBuffer() {
     >
       <InstructionListDisplay
         instructions={rob.reorderQueue}
-        limit={showLimit}
+        totalSize={rob.bufferSize}
         instructionRenderer={(simCodeModel, i) => {
           if (simCodeModel === null) {
             return <InstructionField instructionId={null} key={`item_${i}`} />;
@@ -95,11 +93,6 @@ export default function ReorderBuffer() {
           );
         }}
       />
-      {showMore && (
-        <div className='flex justify-center'>
-          And {used - showLimit} more...
-        </div>
-      )}
     </Block>
   );
 }

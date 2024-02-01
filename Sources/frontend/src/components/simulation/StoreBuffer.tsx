@@ -44,13 +44,11 @@ export default function StoreBuffer() {
 
   if (!storeBuffer) return null;
 
-  const limit = Math.min(16, storeBuffer.bufferSize);
-
   return (
-    <Block title='Store Buffer' className='storeBuffer w-96'>
+    <Block title='Store Buffer' className='storeBuffer w-96 h-96'>
       <InstructionListDisplay
         instructions={storeBuffer.storeQueue}
-        limit={limit}
+        totalSize={storeBuffer.bufferSize}
         columns={3}
         legend={
           <>

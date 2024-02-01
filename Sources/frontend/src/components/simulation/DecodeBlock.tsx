@@ -53,7 +53,7 @@ export default function DecodeBlock() {
     <Block title='Decode Block' stats={decodeStats} className='decode'>
       <InstructionListDisplay
         instructions={after}
-        limit={decode.decodeBufferSize}
+        totalSize={decode.decodeBufferSize}
         instructionRenderer={(instruction, i) => (
           <InstructionField instructionId={instruction} key={`instr_${i}`} />
         )}

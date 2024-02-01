@@ -106,7 +106,6 @@ export default function IssueWindow({ type }: IssueWindowProps) {
   return (
     <Block title={title} stats={stats} className={cls}>
       <InstructionListDisplay
-        limit={6}
         columns={3}
         instructions={issue.issuedInstructions}
         legend={
