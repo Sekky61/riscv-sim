@@ -84,18 +84,31 @@ export default function CanvasWindow({ children }: CanvasWindowProps) {
     const dy = ee.movementY;
     // set the new offset
     if (elRef.current) {
-      elRef.current.scrollLeft = elRef.current.scrollLeft - dx;
-      elRef.current.scrollTop = elRef.current.scrollTop - dy;
+      const newOffsetLeft = elRef.current.scrollLeft - dx;
+      const newOffsetTop = elRef.current.scrollTop - dy;
+      elRef.current.scrollLeft = newOffsetLeft;
+      elRef.current.scrollTop = newOffsetTop;
     }
+  }
+
+  function onScroll(e: Event) {
+    // Roll the background with the scroll
+    const el = e.target;
+    if (!(el instanceof HTMLElement)) return;
+    el.style.backgroundPosition = `${0 - el.scrollLeft}px ${
+      0 - el.scrollTop
+    }px`;
   }
 
   // Register on component mount
   useEffect(() => {
     elRef.current?.addEventListener('pointerdown', onPointerUpDown);
     elRef.current?.addEventListener('pointerup', onPointerUpDown);
+    elRef.current?.addEventListener('scroll', onScroll);
     return () => {
       elRef.current?.removeEventListener('pointerdown', onPointerUpDown);
       elRef.current?.removeEventListener('pointerup', onPointerUpDown);
+      elRef.current?.removeEventListener('scroll', onScroll);
     };
   }, []);
 
