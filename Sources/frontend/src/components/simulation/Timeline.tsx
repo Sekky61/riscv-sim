@@ -49,8 +49,8 @@ import {
 } from '@/lib/redux/cpustateSlice';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 
-import AnimatedButton from '@/components/AnimatedButton';
 import { stopReasonToShortString } from '@/lib/utils';
+import { IconButton } from '@/components/IconButton';
 
 export type TimelineProps = Pick<
   React.HTMLAttributes<HTMLDivElement>,
@@ -81,40 +81,40 @@ export default function Timeline({ className = '' }: TimelineProps) {
   return (
     <div className={cls} data-state={state} data-reset={false}>
       <div className='controls rounded-full h-full box-content border bg-gray-100 flex flex-row-reverse justify-end items-center'>
-        <AnimatedButton
+        <IconButton
           shortCut='left'
           clickCallback={() => dispatch(simStepBackward())}
           description='Step backward'
           className='left-arrow m-1 rotate-180'
         >
           <ChevronLeft strokeWidth={1.5} />
-        </AnimatedButton>
-        <AnimatedButton
+        </IconButton>
+        <IconButton
           shortCut='right'
           clickCallback={() => dispatch(simStepForward())}
           description='Step forward'
           className='right-arrow m-1 rotate-180'
         >
           <ChevronRight strokeWidth={1.5} />
-        </AnimatedButton>
-        <AnimatedButton
+        </IconButton>
+        <IconButton
           clickCallback={() => dispatch(simStepEnd())}
           shortCut='ctrl+enter'
           description='Skip to the end of simulation'
           className='m-1 rotate-180'
         >
           <ChevronLast strokeWidth={1.5} />
-        </AnimatedButton>
+        </IconButton>
       </div>
       <div className='reset h-full box-content border flex items-center justify-between bg-[#ff7171] rounded-full'>
-        <AnimatedButton
+        <IconButton
           clickCallback={() => dispatch(reloadSimulation())}
           shortCut='r'
           description='Reload simulation'
           className='m-1 rotate-180'
         >
           <ChevronFirst strokeWidth={1.5} />
-        </AnimatedButton>
+        </IconButton>
         <div
           className={`${
             state === 2 ? 'opacity-100' : 'opacity-0'

@@ -1,5 +1,5 @@
 /**
- * @file    AnimatedButton.tsx
+ * @file    IconButton.tsx
  *
  * @author  Michal Majer
  *          Faculty of Information Technology
@@ -29,78 +29,69 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-'use client';
-
 import clsx from 'clsx';
-import { useState } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { OptionsOrDependencyArray } from 'react-hotkeys-hook/dist/types';
 
 import { ReactChildren } from '@/lib/types/reactTypes';
+import { useRef } from 'react';
 
-export type AnimatedButtonProps = {
+export type IconButtonProps = {
+  /**
+   * True if the button should be in a highlighted state
+   */
   active?: boolean;
   shortCut?: string;
   shortCutOptions?: OptionsOrDependencyArray;
   clickCallback?: () => void;
   children: ReactChildren;
-  animationLength?: number;
   className?: string;
   description: string;
 };
 
 /**
+ * A round button with an icon (children), optional shortcut
+ *
  * The click callback is called when the button is clicked or when the shortcut is pressed.
  * By default, the shortcut is prevented from bubbling up to the browser.
  */
-const AnimatedButton = ({
+export const IconButton = ({
   active = false,
   shortCut = '',
   shortCutOptions,
   clickCallback,
   children,
-  animationLength,
   className,
   description,
-}: AnimatedButtonProps) => {
-  const [isAnimating, setIsAnimating] = useState(false);
+}: IconButtonProps) => {
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   useHotkeys(
     shortCut,
     () => {
       onClick();
+      buttonRef.current?.toggleAttribute('data-clicked', true);
+      setTimeout(() => {
+        buttonRef.current?.toggleAttribute('data-clicked', false);
+      }, 200);
     },
     { preventDefault: true, ...shortCutOptions },
   );
 
   const onClick = () => {
     clickCallback?.();
-    setIsAnimating(true);
-    setTimeout(() => setIsAnimating(false), animationLength || 300);
   };
 
   return (
     <button
+      ref={buttonRef}
       type='button'
-      className={clsx(
-        'timelineHighlight h-8 w-8 rounded-full p-1',
-        className,
-        active && 'bg-gray-200',
-        isAnimating && 'tlbutton-animation-outer',
-      )}
+      className={clsx('iconHighlight h-8 w-8 rounded-full p-1', className)}
       onClick={onClick}
       aria-label={description}
+      data-active={active ? 'true' : undefined}
     >
-      <div
-        className={clsx(
-          'duration-100',
-          isAnimating && 'tlbutton-animation-inner',
-        )}
-      >
-        {children}
-      </div>
+      {children}
     </button>
   );
 };
-
-export default AnimatedButton;

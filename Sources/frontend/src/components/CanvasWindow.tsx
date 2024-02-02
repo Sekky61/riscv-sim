@@ -31,7 +31,7 @@
 
 'use client';
 
-import AnimatedButton from '@/components/AnimatedButton';
+import { IconButton } from '@/components/IconButton';
 import { ReactChildren } from '@/lib/types/reactTypes';
 import clsx from 'clsx';
 import { ZoomIn, ZoomOut } from 'lucide-react';
@@ -159,7 +159,7 @@ const ScaleButtons = ({ scaleUp, scaleDown }: ScaleButtonsProps) => {
 
   return (
     <div className='absolute bottom-0 right-0 flex flex-col gap-4 p-6'>
-      <AnimatedButton
+      <IconButton
         shortCut='ctrl-+'
         shortCutOptions={{ combinationKey: '-', preventDefault: true }}
         clickCallback={scaleUp}
@@ -167,8 +167,8 @@ const ScaleButtons = ({ scaleUp, scaleDown }: ScaleButtonsProps) => {
         description='Zoom in'
       >
         <ZoomIn strokeWidth={1.5} />
-      </AnimatedButton>
-      <AnimatedButton
+      </IconButton>
+      <IconButton
         shortCut='ctrl+-'
         shortCutOptions={{ preventDefault: true }}
         clickCallback={scaleDown}
@@ -176,7 +176,7 @@ const ScaleButtons = ({ scaleUp, scaleDown }: ScaleButtonsProps) => {
         description='Zoom out'
       >
         <ZoomOut strokeWidth={1.5} />
-      </AnimatedButton>
+      </IconButton>
     </div>
   );
 };

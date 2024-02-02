@@ -35,7 +35,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { ReactNode } from 'react';
 
-import AnimatedButton from '@/components/AnimatedButton';
+import { IconButton } from '@/components/IconButton';
 import Tooltip from '@/components/Tooltip';
 
 export type SideMenuButtonProps = {
@@ -62,14 +62,14 @@ export default function SideMenuButton({
 
   return (
     <Link href={href} className='tooltip'>
-      <AnimatedButton
+      <IconButton
         active={isActive}
         clickCallback={clickCallback}
         shortCut={shortcut}
         description={hoverText}
       >
         {Icon}
-      </AnimatedButton>
+      </IconButton>
       <Tooltip text={hoverText} shortcut={shortcut} />
     </Link>
   );

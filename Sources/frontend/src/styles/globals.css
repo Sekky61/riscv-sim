@@ -444,20 +444,29 @@
     z-index: 12;
   }
 
-  .iconHighlight {
-    @apply duration-100 hover:bg-gray-200 active:bg-gray-300;
-  }
-
   /* Icon highlight */
-  .timelineHighlight {
-    @apply duration-100 hover:bg-black/10;
+
+  .iconHighlight {
+    @apply duration-100;
+  }
+  
+  .iconHighlight:focus,
+  .iconHighlight:hover {
+    @apply bg-black/10;
   }
 
-  .tlbutton-animation-outer {
-    @apply bg-gray-300;
+  /* Active after hover, so it has bigger precedence */
+  .iconHighlight:active,
+  .iconHighlight[data-clicked] {
+    @apply bg-black/30;
   }
 
-  .tlbutton-animation-inner {
+  .iconHighlight[data-active='true'] {
+    @apply bg-black/20;
+  }
+
+  .iconHighlight:active:not([data-active='true']) > *,
+  .iconHighlight[data-clicked] > * {
     transform: translateY(2px);
   }
 
