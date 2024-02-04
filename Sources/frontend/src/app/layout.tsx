@@ -36,7 +36,7 @@ import '@/styles/globals.css';
 
 import { cn } from '@/lib/utils';
 
-import SideBar from '@/components/SideBar';
+import Navbar from '@/components/Navbar';
 import { TooltipProvider } from '@/components/base/ui/tooltip';
 import PersistedStoreProvider from '@/lib/redux/PersistedStoreProvider';
 import { Toaster } from '@/components/base/ui/sonner';
@@ -62,17 +62,12 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           fontSans.variable,
         )}
       >
-        <div className='flex h-screen max-h-screen'>
-          <SideBar />
-          <PersistedStoreProvider>
-            <TooltipProvider delayDuration={0}>
-              <div className='relative flex-grow overflow-y-auto'>
-                {children}
-              </div>
-            </TooltipProvider>
+        <PersistedStoreProvider>
+          <TooltipProvider delayDuration={0}>
+            <div className='flex h-screen max-h-screen'>{children}</div>
             <Toaster position='top-right' />
-          </PersistedStoreProvider>
-        </div>
+          </TooltipProvider>
+        </PersistedStoreProvider>
       </body>
     </html>
   );

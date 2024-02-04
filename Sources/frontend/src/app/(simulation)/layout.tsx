@@ -1,12 +1,12 @@
 /**
- * @file    CenterLayout.tsx
+ * @file    layout.tsx
  *
  * @author  Michal Majer
  *          Faculty of Information Technology
  *          Brno University of Technology
  *          xmajer21@stud.fit.vutbr.cz
  *
- * @brief   Layout for displaying content in the center of the page
+ * @brief   The main layout of the app
  *
  * @date    19 September 2023, 22:00 (created)
  *
@@ -29,19 +29,28 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Navbar from '@/components/Navbar';
+import { Inter as FontSans } from 'next/font/google';
+import { type ReactNode } from 'react';
 
-export default function CenterLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+import '@/styles/globals.css';
+
+import { cn } from '@/lib/utils';
+
+import Navbar from '@/components/Navbar';
+import { TooltipProvider } from '@/components/base/ui/tooltip';
+import PersistedStoreProvider from '@/lib/redux/PersistedStoreProvider';
+import { Toaster } from '@/components/base/ui/sonner';
+
+const fontSans = FontSans({
+  subsets: ['latin'],
+  variable: '--font-sans',
+});
+
+export default function Layout({ children }: { children: ReactNode }) {
   return (
-    <div className='flex'>
-      <Navbar expanded={true} />
-      <div className='small-container box-border h-full px-4 py-10'>
-        <div className='h-full'>{children}</div>
-      </div>
-    </div>
+    <>
+      <Navbar expanded={false} />
+      <div className='relative flex-grow overflow-y-auto'>{children}</div>
+    </>
   );
 }

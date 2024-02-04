@@ -34,7 +34,7 @@
  */
 import { act, render, waitFor } from '@testing-library/react';
 
-import HomePage from '@/app/page';
+import HomePage from '@/app/(simulation)/page';
 import PersistedStoreProvider from '@/lib/redux/PersistedStoreProvider';
 
 describe('Homepage', () => {

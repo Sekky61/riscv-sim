@@ -1,5 +1,5 @@
 /**
- * @file    SideBar.tsx
+ * @file    Navbar.tsx
  *
  * @author  Michal Majer
  *          Faculty of Information Technology
@@ -41,10 +41,20 @@ import {
 } from 'lucide-react';
 
 import SideMenuButton from '@/components/SideMenuButton';
+import clsx from 'clsx';
 
-export default function SideBar() {
+type NavbarProps = {
+  expanded: boolean;
+};
+
+export default function Navbar({ expanded }: NavbarProps) {
   return (
-    <div className='flex flex-col justify-between p-2'>
+    <nav
+      className={clsx(
+        'p-2 navbar flex flex-col justify-between',
+        expanded && 'navbar-expanded',
+      )}
+    >
       <div className='flex flex-col gap-3'>
         <SideMenuButton
           Icon={<BrainCircuit strokeWidth={1.5} />}
@@ -97,6 +107,6 @@ export default function SideBar() {
           shortcut='Digit8'
         />
       </div>
-    </div>
+    </nav>
   );
 }

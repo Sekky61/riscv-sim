@@ -289,6 +289,21 @@
     background-color: #f5f5f5;
   }
 
+  /* Navbar */
+
+  .navbar {
+    /* must be a specific width to be transitioned (transitions do not play nice with auto) */
+    @apply w-12 transition-all duration-300 overflow-hidden;
+  }
+
+  .navbar.navbar-expanded, .navbar:hover {
+    @apply max-w-max w-64;
+  }
+
+  .menuButtonText {
+    @apply text-nowrap;
+  }
+
   /* Tooltip - behavior only */
 
   .tooltip {

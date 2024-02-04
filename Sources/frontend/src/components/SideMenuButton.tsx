@@ -61,7 +61,10 @@ export default function SideMenuButton({
   };
 
   return (
-    <Link href={href} className='tooltip'>
+    <Link
+      href={href}
+      className='tooltip flex gap-4 items-center rounded-full hover:bg-gray-200 hover:underline'
+    >
       <IconButton
         active={isActive}
         clickCallback={clickCallback}
@@ -70,7 +73,7 @@ export default function SideMenuButton({
       >
         {Icon}
       </IconButton>
-      <Tooltip text={hoverText} shortcut={shortcut} />
+      <div className='menuButtonText'>{hoverText}</div>
     </Link>
   );
 }
