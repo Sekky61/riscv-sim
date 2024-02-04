@@ -34,12 +34,7 @@ import { type ReactNode } from 'react';
 
 import '@/styles/globals.css';
 
-import { cn } from '@/lib/utils';
-
 import Navbar from '@/components/Navbar';
-import { TooltipProvider } from '@/components/base/ui/tooltip';
-import PersistedStoreProvider from '@/lib/redux/PersistedStoreProvider';
-import { Toaster } from '@/components/base/ui/sonner';
 
 const fontSans = FontSans({
   subsets: ['latin'],
