@@ -330,6 +330,14 @@
     @apply block;
   }
 
+  /* Instruction table */
+
+  /* responsive columns - max content, spread the rest using gaps */
+  .instruction-table {
+    grid-template-columns: repeat(4, max-content);
+    justify-content: space-between;
+  }
+
   /* Tooltip - behavior only */
 
   .tooltip {

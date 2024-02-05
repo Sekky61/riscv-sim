@@ -51,6 +51,8 @@ type InstructionTableProps = {
  * Instruction table component.
  * One row for each instruction.
  * Pagination with configurable page size.
+ *
+ * Grid is used instead of table for better responsiveness and ability to use the row as a link.
  */
 export default function InstructionTable({
   instructions,
@@ -72,23 +74,19 @@ export default function InstructionTable({
 
   return (
     <div className='flex flex-col'>
-      <table>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Mnemonic</th>
-            <th>Type</th>
-            <th>PC (Location)</th>
-          </tr>
-        </thead>
-        <tbody>
-          {instructions
-            .slice(page * pageSize, (page + 1) * pageSize)
-            .map((id) => (
-              <InstructionRow key={id} instructionId={id} />
-            ))}
-        </tbody>
-      </table>
+      <div className='grid grid-cols-4 gap-1 border instruction-table'>
+        <div className='grid grid-cols-subgrid col-span-4 bg-slate-200'>
+          <div>ID</div>
+          <div>Mnemonic</div>
+          <div>Type</div>
+          <div>PC (Location)</div>
+        </div>
+        {instructions
+          .slice(page * pageSize, (page + 1) * pageSize)
+          .map((id) => (
+            <InstructionRow key={id} instructionId={id} />
+          ))}
+      </div>
       {showButtons && (
         <div className='flex flex-row justify-between mt-2'>
           <div className='flex flex-row'>
@@ -125,12 +123,12 @@ function InstructionRow({ instructionId }: InstructionRowProps) {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <tr className='hover:bg-gray-100 hover:cursor-pointer'>
-          <td>{simCodeModel.id}</td>
-          <td>{inputCodeModel.instructionName}</td>
-          <td>{instructionType}</td>
-          <td>{inputCodeModel.codeId * 4}</td>
-        </tr>
+        <div className='hover:bg-gray-200 hover:cursor-pointer grid grid-cols-subgrid col-span-4 odd:bg-slate-100'>
+          <div>{simCodeModel.id}</div>
+          <div>{inputCodeModel.instructionName}</div>
+          <div>{instructionType}</div>
+          <div>{inputCodeModel.codeId * 4}</div>
+        </div>
       </DialogTrigger>
       <InstructionDetailPopup simCodeId={instructionId} />
     </Dialog>
