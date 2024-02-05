@@ -36,7 +36,6 @@ import { usePathname, useRouter } from 'next/navigation';
 import { ReactNode } from 'react';
 
 import { IconButton } from '@/components/IconButton';
-import Tooltip from '@/components/Tooltip';
 
 export type SideMenuButtonProps = {
   Icon: ReactNode;
@@ -63,7 +62,7 @@ export default function SideMenuButton({
   return (
     <Link
       href={href}
-      className='tooltip flex gap-4 items-center rounded-full hover:bg-gray-200 hover:underline'
+      className='flex gap-4 items-center rounded-full hover:bg-gray-200 hover:underline'
     >
       <IconButton
         active={isActive}
@@ -73,7 +72,7 @@ export default function SideMenuButton({
       >
         {Icon}
       </IconButton>
-      <div className='menuButtonText'>{hoverText}</div>
+      <div className='nav-text text-nowrap'>{hoverText}</div>
     </Link>
   );
 }

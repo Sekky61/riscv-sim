@@ -291,17 +291,40 @@
 
   /* Navbar */
 
+  /* The navbar will shrink to 12 on smaller screens */
+  .navbar-slot {
+    @apply shrink min-w-12 w-12 2xl:w-64;
+  }
+
+  /* Parent of .navbar */
+  *:has(> .navbar) {
+    container: navbarslot / inline-size;
+  }
+
   .navbar {
-    /* must be a specific width to be transitioned (transitions do not play nice with auto) */
-    @apply w-12 transition-all duration-300 overflow-hidden;
+    @apply relative transition-all duration-300 w-12 h-full;
   }
 
-  .navbar.navbar-expanded, .navbar:hover {
-    @apply max-w-max w-64;
+  .navbar:hover .navbar-inner {
+    @apply w-64 drop-shadow;
   }
 
-  .menuButtonText {
-    @apply text-nowrap;
+  .navbar:hover .nav-text {
+    @apply block;
+  }
+
+  .navbar-inner {
+    @apply bg-white w-12 h-full p-2 absolute inset-y-0 left-0 z-50;
+  }
+
+  .nav-text {
+    @apply hidden;
+  }
+
+  @container navbarslot (min-width: 15rem) {
+    .nav-text {
+      @apply block;
+    }
   }
 
   /* Tooltip - behavior only */

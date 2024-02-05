@@ -41,71 +41,63 @@ import {
 } from 'lucide-react';
 
 import SideMenuButton from '@/components/SideMenuButton';
-import clsx from 'clsx';
 
-type NavbarProps = {
-  expanded: boolean;
-};
-
-export default function Navbar({ expanded }: NavbarProps) {
+export default function Navbar() {
   return (
-    <nav
-      className={clsx(
-        'p-2 navbar flex flex-col justify-between',
-        expanded && 'navbar-expanded',
-      )}
-    >
-      <div className='flex flex-col gap-3'>
-        <SideMenuButton
-          Icon={<BrainCircuit strokeWidth={1.5} />}
-          href='/'
-          hoverText='Simulation'
-          shortcut='Digit1'
-        />
-        <SideMenuButton
-          Icon={<Code strokeWidth={1.5} />}
-          href='/compiler'
-          hoverText='Code editor'
-          shortcut='Digit2'
-        />
-        <SideMenuButton
-          Icon={<MemoryStick strokeWidth={1.5} />}
-          href='/memory'
-          hoverText='Memory settings'
-          shortcut='Digit3'
-        />
-        <SideMenuButton
-          Icon={<Cpu strokeWidth={1.5} />}
-          href='/isa'
-          hoverText='Architecture settings'
-          shortcut='Digit4'
-        />
-        <SideMenuButton
-          Icon={<BarChart3 strokeWidth={1.5} />}
-          href='/stats'
-          hoverText='Runtime statistics'
-          shortcut='Digit5'
-        />
-      </div>
-      <div className='flex flex-col gap-3'>
-        <SideMenuButton
-          Icon={<BookOpen strokeWidth={1.5} />}
-          href='/docs'
-          hoverText='RISC-V documentation'
-          shortcut='Digit6'
-        />
-        <SideMenuButton
-          Icon={<Settings strokeWidth={1.5} />}
-          href='/settings'
-          hoverText='App settings'
-          shortcut='Digit7'
-        />
-        <SideMenuButton
-          Icon={<Info strokeWidth={1.5} />}
-          href='/help'
-          hoverText='Help'
-          shortcut='Digit8'
-        />
+    <nav className='navbar'>
+      <div className='navbar-inner flex flex-col justify-between'>
+        <div className='flex flex-col gap-3'>
+          <SideMenuButton
+            Icon={<BrainCircuit strokeWidth={1.5} />}
+            href='/'
+            hoverText='Simulation'
+            shortcut='Digit1'
+          />
+          <SideMenuButton
+            Icon={<Code strokeWidth={1.5} />}
+            href='/compiler'
+            hoverText='Code editor'
+            shortcut='Digit2'
+          />
+          <SideMenuButton
+            Icon={<MemoryStick strokeWidth={1.5} />}
+            href='/memory'
+            hoverText='Memory settings'
+            shortcut='Digit3'
+          />
+          <SideMenuButton
+            Icon={<Cpu strokeWidth={1.5} />}
+            href='/isa'
+            hoverText='Architecture settings'
+            shortcut='Digit4'
+          />
+          <SideMenuButton
+            Icon={<BarChart3 strokeWidth={1.5} />}
+            href='/stats'
+            hoverText='Runtime statistics'
+            shortcut='Digit5'
+          />
+        </div>
+        <div className='flex flex-col gap-3'>
+          <SideMenuButton
+            Icon={<BookOpen strokeWidth={1.5} />}
+            href='/docs'
+            hoverText='RISC-V documentation'
+            shortcut='Digit6'
+          />
+          <SideMenuButton
+            Icon={<Settings strokeWidth={1.5} />}
+            href='/settings'
+            hoverText='App settings'
+            shortcut='Digit7'
+          />
+          <SideMenuButton
+            Icon={<Info strokeWidth={1.5} />}
+            href='/help'
+            hoverText='Help'
+            shortcut='Digit8'
+          />
+        </div>
       </div>
     </nav>
   );

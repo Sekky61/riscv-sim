@@ -46,6 +46,12 @@ const fontSans = FontSans({
   variable: '--font-sans',
 });
 
+/**
+ * This is the root layout of the app. It provides the state (redux), toast notifications and
+ * the HTML head with viewport meta tag and title.
+ *
+ * Other layout are nested inside this layout.
+ */
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang='en'>
@@ -64,7 +70,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       >
         <PersistedStoreProvider>
           <TooltipProvider delayDuration={0}>
-            <div className='flex h-screen max-h-screen'>{children}</div>
+            <div className='flex h-screen max-h-screen flex-row-reverse'>
+              {children}
+            </div>
             <Toaster position='top-right' />
           </TooltipProvider>
         </PersistedStoreProvider>

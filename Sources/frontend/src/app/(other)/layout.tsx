@@ -29,8 +29,23 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import CenterLayout from '@/components/CenterLayout';
+import Navbar from '@/components/Navbar';
 
+/**
+ * This layout is mused inside the root layout for the pages in this directory.
+ * It contains the expanded navbar.
+ */
 export default function Layout({ children }: { children: React.ReactNode }) {
-  return <CenterLayout>{children}</CenterLayout>;
+  return (
+    <div className='flex w-screen'>
+      <div className='navbar-slot'>
+        <Navbar />
+      </div>
+      <div className='shrink-0 flex-grow small-container box-border h-full px-4 py-10'>
+        <div className='small-container h-full'>
+          <div className='h-full'>{children}</div>
+        </div>
+      </div>
+    </div>
+  );
 }

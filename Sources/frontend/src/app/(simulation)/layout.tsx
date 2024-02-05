@@ -29,23 +29,23 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Inter as FontSans } from 'next/font/google';
 import { type ReactNode } from 'react';
 
 import '@/styles/globals.css';
 
 import Navbar from '@/components/Navbar';
 
-const fontSans = FontSans({
-  subsets: ['latin'],
-  variable: '--font-sans',
-});
-
+/**
+ * TODO Hack: The order is reversed in parent layout, so the navbar is above the content.
+ * Should be fixable with the right CSS stacking context.
+ */
 export default function Layout({ children }: { children: ReactNode }) {
   return (
     <>
-      <Navbar expanded={false} />
       <div className='relative flex-grow overflow-y-auto'>{children}</div>
+      <div className='w-12'>
+        <Navbar />
+      </div>
     </>
   );
 }
