@@ -70,9 +70,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       >
         <PersistedStoreProvider>
           <TooltipProvider delayDuration={0}>
-            <div className='flex h-screen max-h-screen flex-row-reverse'>
-              {children}
-            </div>
+            <div className='flex h-screen max-h-screen'>{children}</div>
             <Toaster position='top-right' />
           </TooltipProvider>
         </PersistedStoreProvider>

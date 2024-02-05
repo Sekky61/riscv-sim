@@ -36,16 +36,17 @@ import '@/styles/globals.css';
 import Navbar from '@/components/Navbar';
 
 /**
- * TODO Hack: The order is reversed in parent layout, so the navbar is above the content.
- * Should be fixable with the right CSS stacking context.
+ * Layout of the simualtion page.
+ *
+ * The div of navbar sets new stacking context to render over the main content.
  */
 export default function Layout({ children }: { children: ReactNode }) {
   return (
     <>
-      <div className='relative flex-grow overflow-y-auto'>{children}</div>
-      <div className='w-12'>
+      <div className='w-12 relative z-30'>
         <Navbar />
       </div>
+      <div className='relative flex-grow overflow-y-auto'>{children}</div>
     </>
   );
 }
