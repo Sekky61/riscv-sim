@@ -31,6 +31,9 @@
 
 import { CheckCircle, Circle, XCircle } from 'lucide-react';
 
+/**
+ * Used to display code status in the editor.
+ */
 export const StatusIcon = ({ type }: { type: 'circle' | 'tick' | 'x' }) => {
   switch (type) {
     case 'circle':

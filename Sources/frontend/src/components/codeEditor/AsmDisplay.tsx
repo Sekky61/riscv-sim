@@ -60,6 +60,10 @@ import EditorBar from '@/components/codeEditor/EditorBar';
 import { StatusIcon } from '@/components/codeEditor/StatusIcon';
 import clsx from 'clsx';
 
+/**
+ * The base theme for the editor.
+ * Uses --line-highlight-color which is used for color mapping C lines to assembly lines.
+ */
 const baseTheme = EditorView.baseTheme({
   '.cm-activeLine': {
     backgroundColor: 'rgba(var(--line-highlight-color), 0.25)',
@@ -81,6 +85,12 @@ const baseTheme = EditorView.baseTheme({
 
 export type AsmDisplayProps = React.HTMLAttributes<HTMLDivElement>;
 
+/**
+ * Component to display the assembly code editor.
+ * Reads and updates compilerSlice state as the code is typed.
+ *
+ * TODO: debounce typing
+ */
 export default function AsmDisplay() {
   const dispatch = useAppDispatch();
   const asm = useAppSelector(selectAsmCode);
@@ -153,6 +163,10 @@ export default function AsmDisplay() {
   );
 }
 
+/**
+ * Button to check the assembly code with the backend.
+ * Green if no errors, red if errors, gray if not checked yet (dirty).
+ */
 const AsmErrorsDisplay = () => {
   const dispatch = useAppDispatch();
   const errors = useAppSelector(selectAsmErrors);

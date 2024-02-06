@@ -61,27 +61,16 @@ import { type CodeExample } from '@/lib/types/codeExamples';
 
 import clsx from 'clsx';
 import { RadioInput } from '../form/RadioInput';
-import { useEffect, useState } from 'react';
 import { COMPILE_SHORTCUT } from '@/components/shortcuts/CompilerShortcuts';
 
+/**
+ * The compile options component. On the left side to the editor.
+ * Contains the compile button, examples and optimization flags.
+ */
 export default function CompileOptions() {
   const dispatch = useAppDispatch();
   const optimize = useAppSelector(selectOptimize);
   const mode = useAppSelector(selectEditorMode);
-  const asmEdited = useAppSelector(selectAsmManuallyEdited);
-
-  function handleCompile() {
-    // Show warning if the user is about to lose data
-    if (asmEdited) {
-      const res = confirm(
-        'You have manually edited the assembly code. Are you sure you want to compile?',
-      );
-      if (!res) {
-        return;
-      }
-    }
-    dispatch(callCompiler());
-  }
 
   const optimizeOptions = [
     {
@@ -162,15 +151,21 @@ export default function CompileOptions() {
           ))}
         </div>
       </div>
-      <CompileButton handleCompile={handleCompile} />
+      <CompileButton />
     </div>
   );
 }
 
-// Write a fetcher function to wrap the native fetch function and return the result of a call to the URL in JSON format
+/**
+ * A fetcher function to wrap the native fetch function and return the result of a call to the URL in JSON format
+ */
 //@ts-ignore
 const fetcher = (...args) => fetch(...args).then((res) => res.json());
 
+/**
+ * The button to reveal available examples and load them into the editor.
+ * The examples are fetched from the Next.js backend, not Java simulator backend.
+ */
 function ExamplesButton() {
   const dispatch = useAppDispatch();
   const { data: examples, error } = useSWR<CodeExample[]>(
@@ -224,21 +219,33 @@ function ExamplesButton() {
   );
 }
 
-function CompileButton({ handleCompile }: { handleCompile: () => void }) {
+/**
+ * The compile button. It calls the compiler and mutates the state with the result.
+ * TODO: shortcut is not working when the editor is focused
+ */
+function CompileButton() {
   const compileStatus = useAppSelector((state) => state.compiler.compileStatus);
+  const asmEdited = useAppSelector(selectAsmManuallyEdited);
+  const dispatch = useAppDispatch();
+
+  function handleCompile() {
+    // Show warning if the user is about to lose data
+    if (asmEdited) {
+      const res = confirm(
+        'You have manually edited the assembly code. Are you sure you want to compile?',
+      );
+      if (!res) {
+        return;
+      }
+    }
+    dispatch(callCompiler());
+  }
+
+  useHotkeys(COMPILE_SHORTCUT, () => {
+    handleCompile();
+  });
+
   const statusStyle = statusToClass(compileStatus);
-
-  useHotkeys(
-    COMPILE_SHORTCUT,
-    () => {
-      // TODO: Show warning if the user is about to lose data
-      // https://www.reddit.com/r/reactjs/comments/5xnien/reactredux_and_displaying_a_confirmation_dialog/
-      handleCompile();
-    },
-    undefined,
-    [handleCompile],
-  );
-
   return (
     <Button className={clsx(statusStyle, 'tooltip')} onClick={handleCompile}>
       Compile

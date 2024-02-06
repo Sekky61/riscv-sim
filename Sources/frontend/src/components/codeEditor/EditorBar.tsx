@@ -35,41 +35,16 @@ import { useAppDispatch } from '@/lib/redux/hooks';
 import { Button } from '@/components/base/ui/button';
 import React from 'react';
 
-/**
- * Show dialog and calls callback with file contents
- */
-function loadFile(callback: (contents: string) => void) {
-  // Show dialog
-  const input = document.createElement('input');
-  input.type = 'file';
-  input.onchange = () => {
-    if (!input.files) {
-      console.warn('No file selected');
-      return;
-    }
-    const file = input.files[0];
-    if (file === undefined) {
-      console.warn('No file selected');
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const contents = e.target?.result;
-      if (typeof contents === 'string') {
-        callback(contents);
-      }
-    };
-    reader.readAsText(file);
-  };
-  input.click();
-}
-
 type EditorBarProps = {
   mode: 'c' | 'asm';
   checkSlot: React.ReactNode;
   entryPointSlot?: React.ReactNode;
 };
 
+/**
+ * Top bar of both code editors.
+ * Slots are used to add additional buttons.
+ */
 export default function EditorBar({
   mode,
   checkSlot,
@@ -112,4 +87,34 @@ export default function EditorBar({
       {entryPointSlot}
     </div>
   );
+}
+
+/**
+ * Show dialog to pick a file and calls the callback with file text contents once the file is picked.
+ * TODO: Use this function in other places where file is loaded (config import), move to utils, generalize?
+ */
+function loadFile(callback: (contents: string) => void) {
+  // Show dialog
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.onchange = () => {
+    if (!input.files) {
+      console.warn('No file selected');
+      return;
+    }
+    const file = input.files[0];
+    if (file === undefined) {
+      console.warn('No file selected');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const contents = e.target?.result;
+      if (typeof contents === 'string') {
+        callback(contents);
+      }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
 }
