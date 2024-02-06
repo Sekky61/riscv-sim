@@ -54,7 +54,7 @@ class CliApp implements Callable<Integer>
   @Option(names = "--pretty", description = "Pretty print the JSON output")
   boolean prettyPrint;
   
-  @Option(names = "--full-state", description = "Output the full state of the CPU. Default is only the statistics, debug prints and registers")
+  @Option(names = "--full-state", description = "Output the full state of the CPU. By default, only the statistics, debug prints and register values are output.")
   boolean fullState;
   
   @Option(names = "--cpu", required = true, paramLabel = "FILE", description = "Cpu configuration file")
