@@ -1,5 +1,5 @@
 /**
- * @file SimulationRequest.java
+ * @file SimulateRequest.java
  * @author Michal Majer
  * Faculty of Information Technology
  * Brno University of Technology

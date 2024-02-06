@@ -1,5 +1,5 @@
 /**
- * @file SimulationHandler.java
+ * @file SimulateHandler.java
  * @author Michal Majer
  * Faculty of Information Technology
  * Brno University of Technology

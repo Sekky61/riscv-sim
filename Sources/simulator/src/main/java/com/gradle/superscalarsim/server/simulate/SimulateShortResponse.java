@@ -1,10 +1,10 @@
 /**
- * @file SimulateResponse.java
+ * @file SimulateShortResponse.java
  * @author Michal Majer
  * Faculty of Information Technology
  * Brno University of Technology
  * xmajer21@stud.fit.vutbr.cz
- * @brief Response for the /simulate endpoint
+ * @brief Short response for the /simulate endpoint and CLI
  * @date 26 Sep      2023 10:00 (created)
  * @section Licence
  * This file is part of the Superscalar simulator app
@@ -27,38 +27,51 @@
 
 package com.gradle.superscalarsim.server.simulate;
 
-import com.gradle.superscalarsim.cpu.CpuState;
+import com.gradle.superscalarsim.cpu.DebugLog;
+import com.gradle.superscalarsim.cpu.SimulationStatistics;
 import com.gradle.superscalarsim.cpu.StopReason;
 
-public class SimulateResponse
+import java.util.Map;
+
+/**
+ * Short response for the /simulate endpoint and CLI.
+ * Contains only the statistics, register values and debug log.
+ */
+public class SimulateShortResponse
 {
   /**
-   * Delta of the executed steps
+   * Log messages from the simulation
    */
-  public int executedSteps;
+  public DebugLog debugLog;
+  
   /**
-   * State of the CPU at the requested tick, or at the end of the simulation, whichever comes first
+   * Statistics of the simulation
    */
-  public CpuState state;
+  
+  public SimulationStatistics statistics;
   
   /**
    * Reason for stopping the simulation. Either not stopped yet, or the simulation ended.
    */
   public StopReason stopReason;
   
-  SimulateResponse(CpuState state, int executed_steps, StopReason stopReason)
-  {
-    this.executedSteps = executed_steps;
-    this.state         = state;
-    this.stopReason    = stopReason;
-  }
+  /**
+   * Architectural register values at the end of the simulation. Keys are register names, values are register values (bit values).
+   * The aliased registers are included twice, once for each name.
+   */
+  public Map<String, Long> registerValues;
   
   /**
-   * Convert the response to a short response
+   * Constructor
    */
-  public SimulateShortResponse toShortResponse()
+  public SimulateShortResponse(DebugLog debugLog,
+                               SimulationStatistics statistics,
+                               StopReason stopReason,
+                               Map<String, Long> registers)
   {
-    return new SimulateShortResponse(state.debugLog, state.statistics, stopReason,
-                                     state.unifiedRegisterFileBlock.getArchitecturalRegisterValues());
+    this.debugLog       = debugLog;
+    this.statistics     = statistics;
+    this.stopReason     = stopReason;
+    this.registerValues = registers;
   }
 }

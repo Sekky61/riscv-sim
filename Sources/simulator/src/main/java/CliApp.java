@@ -94,11 +94,17 @@ class CliApp implements Callable<Integer>
     SimulateHandler  handler          = new SimulateHandler();
     SimulateResponse response         = handler.resolve(request);
     
+    Object resultObject = response;
+    if (!fullState)
+    {
+      resultObject = response.toShortResponse();
+    }
+    
     // Serialize the response and output it
     ObjectMapper serializer = Serialization.getSerializer(prettyPrint);
     try
     {
-      String output = serializer.writeValueAsString(response.state);
+      String output = serializer.writeValueAsString(resultObject);
       System.out.println(output);
     }
     catch (JsonProcessingException e)

@@ -43,6 +43,7 @@ import com.gradle.superscalarsim.models.register.RegisterFileModel;
 import com.gradle.superscalarsim.models.register.RegisterModel;
 import com.gradle.superscalarsim.models.register.SpeculativeRegisterFile;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -170,4 +171,13 @@ public class UnifiedRegisterFileBlock
   }// end of getRegisterValue
   //----------------------------------------------------------------------
   
+  public Map<String, Long> getArchitecturalRegisterValues()
+  {
+    Map<String, Long> registerValues = new HashMap<>();
+    for (Map.Entry<String, RegisterModel> entry : registerMap.entrySet())
+    {
+      registerValues.put(entry.getKey(), entry.getValue().getValueContainer().getBits());
+    }
+    return registerValues;
+  }
 }
