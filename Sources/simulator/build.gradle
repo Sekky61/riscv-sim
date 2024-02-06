@@ -50,7 +50,7 @@ dependencies {
 jar {
     manifest {
         attributes(
-                'Main-Class': 'RISCVsimulator',
+                'Main-Class': 'App',
                 'Class-Path': configurations.runtimeClasspath.files.collect { it.getName() }.join(' '),
                 'Application-Name': 'RISC-V simulator'
         )
@@ -62,7 +62,6 @@ application {
 }
 
 apply plugin: 'application'
-mainClassName = 'App'
 run {
     /* Can pass all the properties: */
     systemProperties System.getProperties()

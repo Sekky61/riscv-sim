@@ -1,3 +1,3 @@
 #!/bin/sh
 # Usage: ./run.sh [args]
-./gradlew run --args="$*"
+build/install/superscalar-simulator/bin/superscalar-simulator $*

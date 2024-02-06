@@ -42,7 +42,7 @@ class ServerApp implements Callable<Integer>
   String host;
   @Option(names = "--port", paramLabel = "PORT", defaultValue = "8000", description = "Port to bind to (default: ${DEFAULT-VALUE})")
   int port;
-  @Option(names = "--timeout-ms", paramLabel = "NUMBER", defaultValue = "20000", description = "Timeout for requests in milliseconds (default: ${DEFAULT-VALUE})")
+  @Option(names = "--timeout-ms", paramLabel = "NUMBER", defaultValue = "30000", description = "Timeout for requests in milliseconds (default: ${DEFAULT-VALUE})")
   int timeout_ms;
   @Option(names = "--gcc-path", paramLabel = "PATH", description = "Path to the GCC compiler")
   String gccPath;

@@ -101,10 +101,11 @@ public class Server
                       .addEncodingHandler("deflate", new DeflateEncodingProvider(), 10)).setNext(pathHandler);
     }
     
+    
     Undertow server = Undertow.builder().addHttpListener(port, host)
             .setServerOption(UndertowOptions.NO_REQUEST_TIMEOUT, 120).setHandler(baseHandler).build();
     server.start();
-    System.out.println("Server started on port " + port);
+    System.out.println("Server running on port " + port);
     
     // Handling shutdown
     // The server.start is not blocking, so we need to await the shutdown signal (e.g. SIGINT)
