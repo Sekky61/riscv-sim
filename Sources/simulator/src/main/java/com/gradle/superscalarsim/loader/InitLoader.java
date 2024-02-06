@@ -57,16 +57,16 @@ public class InitLoader
   /**
    * @brief Resource path to a file with supported instructions
    */
-  private static final String supportedInstructionsResourcePath = "/supportedInstructions.json";
+  public String supportedInstructionsResourcePath = "/supportedInstructions.json";
   /**
    * @brief Resource path to a file with register aliases
    * File structure: array of objects with keys "register" and "alias"
    */
-  private static final String registerAliasesResourcePath = "/registerAliases.json";
+  public String registerAliasesResourcePath = "/registerAliases.json";
   /**
    * Path to the directory in resources with individual register files
    */
-  private static String registerFileResourceDirPath = "/registerFiles.json";
+  public String registerFileResourceDirPath = "/registerFiles.json";
   /**
    * Holds register file with all registers and aliases.
    */

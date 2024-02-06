@@ -6,7 +6,7 @@ plugins {
 }
 
 group 'com.gradle.superscalarsim'
-version '1.0-riscv-simulator'
+version '1.0'
 
 repositories {
     mavenCentral()
@@ -59,20 +59,6 @@ jar {
 
 application {
     mainClass = 'App'
-}
-
-apply plugin: 'application'
-run {
-    /* Can pass all the properties: */
-    systemProperties System.getProperties()
-
-    /* Need to split the space-delimited value in the exec.args */
-    args System.getProperty("exec.args", "").split()
-}
-
-test {
-    /* Can pass all the properties: */
-    systemProperties System.getProperties()
 }
 
 testlogger {
