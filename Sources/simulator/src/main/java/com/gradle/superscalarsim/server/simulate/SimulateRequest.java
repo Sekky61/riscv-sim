@@ -49,4 +49,14 @@ public class SimulateRequest
    */
   @JsonProperty(required = true)
   SimulationConfig config;
+  
+  public SimulateRequest()
+  {
+  }
+  
+  public SimulateRequest(SimulationConfig config)
+  {
+    this.config = config;
+    this.tick   = Optional.empty();
+  }
 }
