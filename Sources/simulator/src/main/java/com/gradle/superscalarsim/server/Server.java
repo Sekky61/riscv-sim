@@ -43,6 +43,7 @@ import io.undertow.server.handlers.encoding.EncodingHandler;
 import io.undertow.server.handlers.encoding.GzipEncodingProvider;
 
 import java.io.IOException;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -104,6 +105,31 @@ public class Server
             .setServerOption(UndertowOptions.NO_REQUEST_TIMEOUT, 120).setHandler(baseHandler).build();
     server.start();
     System.out.println("Server started on port " + port);
+    
+    // Handling shutdown
+    // The server.start is not blocking, so we need to await the shutdown signal (e.g. SIGINT)
+    
+    // Create a latch to wait for shutdown signal
+    CountDownLatch shutdownLatch = new CountDownLatch(1);
+    // Add a shutdown hook. This will be executed when the JVM receives a shutdown signal
+    Runtime.getRuntime().addShutdownHook(new Thread(() ->
+                                                    {
+                                                      System.out.println("Shutting down server...");
+                                                      server.stop();
+                                                      System.out.println("Server stopped.");
+                                                      shutdownLatch.countDown();
+                                                    }));
+    
+    // Wait indefinitely until shutdown signal is received
+    try
+    {
+      shutdownLatch.await();
+    }
+    catch (InterruptedException e)
+    {
+      e.printStackTrace();
+    }
+    // At this point, the app returns to CLI handling and exits
   }
   
   // Handler wrapper with timeout
