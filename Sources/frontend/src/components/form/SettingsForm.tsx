@@ -32,8 +32,16 @@
 'use client';
 
 import { Button } from '@/components/base/ui/button';
+import { useAppSelector } from '@/lib/redux/hooks';
+import { selectActiveConfig } from '@/lib/redux/isaSlice';
+import { saveAsFile, saveAsJsonFile } from '@/lib/utils';
 
+/**
+ * Global settings
+ */
 export function SettingsForm() {
+  const activeConfig = useAppSelector(selectActiveConfig);
+
   const clearLocalMemory = () => {
     // confirm
     const doit = confirm('Are you sure you want to clear local memory?');
@@ -44,10 +52,42 @@ export function SettingsForm() {
     // window.location.reload();
   };
 
+  const saveCpuConfig = () => {
+    saveAsJsonFile(activeConfig.cpuConfig, 'cpu-config.json');
+  };
+
+  const saveCode = () => {
+    saveAsFile(activeConfig.code, 'code.r5');
+  };
+
+  const saveMemory = () => {
+    saveAsJsonFile(activeConfig.memoryLocations, 'memory.json');
+  };
+
   return (
-    <div>
-      <Button onClick={clearLocalMemory}>Clear local memory</Button>
-      <p>Reload the page after clearing local memory</p>
+    <div className='flex flex-col gap-4'>
+      <div>
+        <h3 className='text-xl'>Local Memory</h3>
+        <p>
+          In case of problems, as a troubleshooting step, you can clear the
+          local memory.
+        </p>
+        <p>Remember to reload the page after clearing local memory.</p>
+        <Button onClick={clearLocalMemory}>Clear local memory</Button>
+      </div>
+      <div>
+        <h3 className='text-xl'>Export Current Settings</h3>
+        <p>
+          You can export current settings to a file. This can be useful for
+          sharing settings with others, backup, or for using the CLI version of
+          the simulator.
+        </p>
+        <div className='flex gap-4'>
+          <Button onClick={saveCpuConfig}>Save CPU Configuration</Button>
+          <Button onClick={saveCode}>Save Code</Button>
+          <Button onClick={saveMemory}>Save Memory</Button>
+        </div>
+      </div>
     </div>
   );
 }

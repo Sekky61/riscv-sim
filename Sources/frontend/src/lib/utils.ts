@@ -169,3 +169,27 @@ export function stopReasonToShortString(stopReason: StopReason): string {
 function unreachable(): never {
   throw new Error('Unreachable');
 }
+
+/**
+ * Save the string as a file.
+ */
+export function saveAsFile(content: string, filename: string): void {
+  const blob = new Blob([content], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+/**
+ * Save the passed object as a JSON file.
+ */
+// biome-ignore lint: any object can be serialized to JSON
+export function saveAsJsonFile(object: any, filename: string): void {
+  const content = JSON.stringify(object, null, 2);
+  saveAsFile(content, filename);
+}

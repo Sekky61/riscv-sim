@@ -34,6 +34,10 @@
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 
+/**
+ * @brief Entry point of the application
+ * @details See documentation of the Picocli library: <a href="https://picocli.info/quick-guide.html">Docs</a>
+ */
 @Command(name = "RiscvSimulator", // name of the executable, shows in help
          subcommands = {CommandLine.HelpCommand.class, ServerApp.class, CliApp.class}, // subcommands
          version = "0.1", // version of the app
