@@ -34,17 +34,18 @@ package com.gradle.superscalarsim.loader;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.models.instruction.InstructionFunctionModel;
 import com.gradle.superscalarsim.models.register.RegisterFile;
 import com.gradle.superscalarsim.models.register.RegisterFileModel;
+import com.gradle.superscalarsim.models.register.RegisterModel;
 import com.gradle.superscalarsim.serialization.Serialization;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.Reader;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.*;
+import java.io.InputStream;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * @class InitLoader
@@ -54,6 +55,19 @@ import java.util.*;
 public class InitLoader
 {
   /**
+   * @brief Resource path to a file with supported instructions
+   */
+  private static final String supportedInstructionsResourcePath = "/supportedInstructions.json";
+  /**
+   * @brief Resource path to a file with register aliases
+   * File structure: array of objects with keys "register" and "alias"
+   */
+  private static final String registerAliasesResourcePath = "/registerAliases.json";
+  /**
+   * Path to the directory in resources with individual register files
+   */
+  private static String registerFileResourceDirPath = "/registerFiles.json";
+  /**
    * Holds register file with all registers and aliases.
    */
   private RegisterFile registerFile;
@@ -61,19 +75,6 @@ public class InitLoader
    * Holds loaded ISA for interpreting values and action by simulation code
    */
   private Map<String, InstructionFunctionModel> instructionFunctionModels;
-  /**
-   * Path to the directory with register files
-   */
-  private String registerFileDirPath = ConfigLoader.registerFileDirPath;
-  /**
-   * Path to file with instructions definitions
-   */
-  private String instructionsFilePath = ConfigLoader.instructionsFilePath;
-  /**
-   * @brief File path with register aliases
-   * File structure: array of objects with keys "register" and "alias"
-   */
-  private String registerAliasesFilePath = ConfigLoader.registerAliasesFilePath;
   
   /**
    * @brief Constructor
@@ -82,10 +83,6 @@ public class InitLoader
   {
     this.registerFile              = null;
     this.instructionFunctionModels = new TreeMap<>();
-    
-    this.registerFileDirPath     = "./registers/";
-    this.instructionsFilePath    = "./supportedInstructions.json";
-    this.registerAliasesFilePath = "./registerAliases.json";
     
     try
     {
@@ -110,30 +107,34 @@ public class InitLoader
   }// end of load
   
   /**
-   * @throws NullPointerException Thrown in case of empty directory
+   * @throws IOException Thrown in case of invalid file or file not found
    * @brief Calls subLoader for register files and saves them into list
    */
-  private List<RegisterFileModel> loadRegisters() throws NullPointerException
+  private List<RegisterFileModel> loadRegisters() throws IOException
   {
-    
-    List<RegisterFileModel> registerFileModelList = new ArrayList<>();
-    final File              registerFolder        = new File(this.registerFileDirPath);
-    final RegisterSubloader subLoader             = new RegisterSubloader();
-    
-    for (final File file : Objects.requireNonNull(registerFolder.listFiles()))
+    InputStream  s            = this.getClass().getResourceAsStream(registerFileResourceDirPath);
+    ObjectMapper deserializer = Serialization.getDeserializer();
+    List<RegisterFileModel> file = deserializer.readValue(s, new TypeReference<>()
     {
-      registerFileModelList.add(subLoader.loadRegisterFile(file.getAbsolutePath()));
+    });
+    
+    // Arch. registers are assigned by default
+    for (RegisterFileModel registerFileModel : file)
+    {
+      for (RegisterModel register : registerFileModel.getRegisterList())
+      {
+        register.setReadiness(RegisterReadinessEnum.kAssigned);
+      }
     }
-    return registerFileModelList;
-  }// end of loadRegisters
+    
+    return file;
+  }
   
   private List<RegisterMapping> loadAliases() throws IOException
   {
-    Reader reader = null;
-    reader = Files.newBufferedReader(Paths.get(registerAliasesFilePath));
-    // read
+    InputStream  s            = this.getClass().getResourceAsStream(registerAliasesResourcePath);
     ObjectMapper deserializer = Serialization.getDeserializer();
-    return deserializer.readValue(reader, new TypeReference<>()
+    return deserializer.readValue(s, new TypeReference<>()
     {
     });
   }
@@ -148,9 +149,12 @@ public class InitLoader
     // The structure is a single object with keys being the instruction names and
     // values being the InstructionFunctionModel objects.
     ObjectMapper deserializer = Serialization.getDeserializer();
-    Reader       reader       = Files.newBufferedReader(Paths.get(instructionsFilePath));
+    
+    // Read the resource /supportedInstructions.json
+    InputStream s = this.getClass().getResourceAsStream(supportedInstructionsResourcePath);
+    
     // read to a map
-    this.instructionFunctionModels = deserializer.readValue(reader,
+    this.instructionFunctionModels = deserializer.readValue(s,
                                                             new TypeReference<Map<String, InstructionFunctionModel>>()
                                                             {
                                                             });
@@ -205,15 +209,6 @@ public class InitLoader
     this.instructionFunctionModels = instructionFunctionModels;
   }
   //------------------------------------------------------
-  
-  /**
-   * @brief Set register aliases file path
-   * File format described in field declaration
-   */
-  public void setRegisterAliasesFilePath(String registerAliasesFilePath)
-  {
-    this.registerAliasesFilePath = registerAliasesFilePath;
-  }
   
   public static class RegisterMapping
   {

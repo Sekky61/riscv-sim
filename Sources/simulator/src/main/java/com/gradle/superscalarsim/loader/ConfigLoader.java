@@ -28,7 +28,6 @@
 
 package com.gradle.superscalarsim.loader;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
@@ -41,27 +40,27 @@ public class ConfigLoader
 {
   public static String gccPath;
   public static String registerFileDirPath;
-  public static String instructionsFilePath;
-  public static String registerAliasesFilePath;
   public static Integer serverTimeoutMs;
   
+  /*
+    Load configuration from file depending on dev/prod profile.
+    Runs before the CLI entry point, so it can rewrite these values.
+   */
   static
   {
-    String profile = System.getProperty("config.profile", "dev");
-    
-    String configFileName = "config_" + profile + ".properties";
-    try (InputStream input = new FileInputStream(configFileName))
+    String profile        = System.getProperty("config.profile", "dev");
+    String configFileName = "/config_" + profile + ".properties";
+    // This is a path to a resource file, not an ordinary file
+    try (InputStream input = ConfigLoader.class.getResourceAsStream(configFileName))
     {
       Properties prop = new Properties();
       
       // load a properties file
       prop.load(input);
       
-      gccPath                 = prop.getProperty("gcc.path");
-      registerFileDirPath     = prop.getProperty("registerFileDir.path");
-      instructionsFilePath    = prop.getProperty("instructionsFile.path");
-      registerAliasesFilePath = prop.getProperty("registerAliasesFile.path");
-      serverTimeoutMs         = prop.getProperty("server.timeoutMs") != null ? Integer.parseInt(
+      gccPath             = prop.getProperty("gcc.path");
+      registerFileDirPath = prop.getProperty("registerFileDir.path");
+      serverTimeoutMs     = prop.getProperty("server.timeoutMs") != null ? Integer.parseInt(
               prop.getProperty("server.timeoutMs")) : null;
     }
     catch (IOException ex)

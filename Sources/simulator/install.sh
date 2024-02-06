@@ -1,3 +1,3 @@
 #!/bin/sh
 # Usage: ./install.sh
-./gradlew installDist
+./gradlew assembleDist installDist
