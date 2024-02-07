@@ -193,3 +193,33 @@ export function saveAsJsonFile(object: any, filename: string): void {
   const content = JSON.stringify(object, null, 2);
   saveAsFile(content, filename);
 }
+
+/**
+ * Show dialog to pick a file and calls the callback with file text contents once the file is picked.
+ * TODO: Use this function in other places where file is loaded (config import), move to utils, generalize?
+ */
+export function loadFile(callback: (contents: string) => void) {
+  // Show dialog
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.onchange = () => {
+    if (!input.files) {
+      console.warn('No file selected');
+      return;
+    }
+    const file = input.files[0];
+    if (file === undefined) {
+      console.warn('No file selected');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const contents = e.target?.result;
+      if (typeof contents === 'string') {
+        callback(contents);
+      }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}

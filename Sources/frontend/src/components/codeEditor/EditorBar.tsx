@@ -29,11 +29,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { openFile, saveToFile } from '@/lib/redux/compilerSlice';
+import { openFile, saveCodeToFile } from '@/lib/redux/compilerSlice';
 import { useAppDispatch } from '@/lib/redux/hooks';
 
 import { Button } from '@/components/base/ui/button';
 import React from 'react';
+import { loadFile } from '@/lib/utils';
 
 type EditorBarProps = {
   mode: 'c' | 'asm';
@@ -43,6 +44,9 @@ type EditorBarProps = {
 
 /**
  * Top bar of both code editors.
+ * Save and Load buttons allow to save and load code from file.
+ * The assembler files can be used in the simulator CLI.
+ *
  * Slots are used to add additional buttons.
  */
 export default function EditorBar({
@@ -61,7 +65,7 @@ export default function EditorBar({
   };
 
   const handleSaveFile = () => {
-    dispatch(saveToFile());
+    dispatch(saveCodeToFile(mode));
   };
 
   return (
@@ -87,34 +91,4 @@ export default function EditorBar({
       {entryPointSlot}
     </div>
   );
-}
-
-/**
- * Show dialog to pick a file and calls the callback with file text contents once the file is picked.
- * TODO: Use this function in other places where file is loaded (config import), move to utils, generalize?
- */
-function loadFile(callback: (contents: string) => void) {
-  // Show dialog
-  const input = document.createElement('input');
-  input.type = 'file';
-  input.onchange = () => {
-    if (!input.files) {
-      console.warn('No file selected');
-      return;
-    }
-    const file = input.files[0];
-    if (file === undefined) {
-      console.warn('No file selected');
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const contents = e.target?.result;
-      if (typeof contents === 'string') {
-        callback(contents);
-      }
-    };
-    reader.readAsText(file);
-  };
-  input.click();
 }

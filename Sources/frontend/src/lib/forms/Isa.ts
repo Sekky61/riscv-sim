@@ -77,7 +77,6 @@ export const dataTypes = [
   'kBool',
   'kChar',
   'kByte',
-  'kShort',
 ] as const;
 export const dataTypesText = [
   'Byte',
@@ -91,7 +90,6 @@ export const dataTypesText = [
   'Boolean',
   'Char',
   'Byte',
-  'Short',
 ] as const;
 
 /**

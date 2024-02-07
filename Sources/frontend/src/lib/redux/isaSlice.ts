@@ -117,6 +117,11 @@ export const isaSlice = createSlice({
         }
       }
     },
+    setMemoryLocations: (state, action: PayloadAction<MemoryLocationIsa[]>) => {
+      const activeIsa = findIsaByName(state.isas, state.activeIsaName);
+      if (activeIsa === undefined) throw new Error('Active ISA not found');
+      activeIsa.memoryLocations = action.payload;
+    },
     /**
      * Enforces unique memory location names
      */
@@ -190,6 +195,7 @@ export const {
   createIsa,
   updateIsa,
   removeIsa,
+  setMemoryLocations,
   addMemoryLocation,
   removeMemoryLocation,
   updateMemoryLocation,

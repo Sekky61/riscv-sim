@@ -49,6 +49,7 @@ import {
 } from '@/lib/types/simulatorApi';
 import { toast } from 'sonner';
 import { CodeExample } from '@/lib/types/codeExamples';
+import { saveAsFile } from '@/lib/utils';
 
 export type OptimizeOption =
   | 'O2'
@@ -181,27 +182,20 @@ export const openExampleAndCompile = createAsyncThunk<void, CodeExample>(
 );
 
 /**
- * Save the active code to a file. A dialog is shown to the user, they can choose the file name.
+ * Save the code to a file. A dialog is shown to the user, they can choose the file name.
  *
- * Example: dispatch(saveToFile());
+ * Example: dispatch(saveToFile('c'));
  */
-export const saveToFile = createAsyncThunk<void>(
-  'compiler/saveToFile',
-  async (arg, { getState }) => {
-    // @ts-ignore
-    const state: RootState = getState();
-    const code = selectActiveCode(state);
-    const suggestedFileName =
-      selectEditorMode(state) === 'c' ? 'code.c' : 'code.asm';
-
-    const blob = new Blob([code], { type: 'text/plain;charset=utf-8' });
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = suggestedFileName;
-    link.click();
-  },
-);
+export const saveCodeToFile = createAsyncThunk<
+  void,
+  CompilerState['editorMode']
+>('compiler/saveToFile', async (mode, { getState }) => {
+  // @ts-ignore
+  const state: RootState = getState();
+  const suggestedFileName = mode === 'c' ? 'code.c' : 'code.asm';
+  const code = mode === 'c' ? state.compiler.cCode : state.compiler.asmCode;
+  saveAsFile(code, suggestedFileName);
+});
 
 export const compilerSlice = createSlice({
   name: 'compiler',

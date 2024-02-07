@@ -35,12 +35,17 @@
 
 import { Button } from '@/components/base/ui/button';
 import MemoryForm from '@/components/form/MemoryForm';
+import { MemoryLocationIsa } from '@/lib/forms/Isa';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
-import { removeMemoryLocation, selectActiveConfig } from '@/lib/redux/isaSlice';
+import {
+  removeMemoryLocation,
+  selectActiveConfig,
+  setMemoryLocations,
+} from '@/lib/redux/isaSlice';
+import { loadFile, saveAsJsonFile } from '@/lib/utils';
 import clsx from 'clsx';
 import Head from 'next/head';
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
 
 export default function HomePage() {
   // Load the active ISA
@@ -55,6 +60,20 @@ export default function HomePage() {
     setActiveMemoryLocation('new');
   };
 
+  const doImport = () => {
+    loadFile((json_string) => {
+      // TODO: resolve issue with extra fields on the form
+      const newMemoryLocations = JSON.parse(
+        json_string,
+      ) as Array<MemoryLocationIsa>;
+      dispatch(setMemoryLocations(newMemoryLocations));
+    });
+  };
+
+  const doExport = () => {
+    saveAsJsonFile(memoryLocations, 'memory.json');
+  };
+
   return (
     <main className='h-full'>
       <Head>
@@ -64,6 +83,7 @@ export default function HomePage() {
       <div className='flex h-full flex-col'>
         <div className='flex divide-x'>
           <div className='w-48 p-4 flex flex-col gap-4'>
+            <h2 className='text-lg'>Memory Locations</h2>
             {memoryLocations?.length === 0 && (
               <div className='text-gray-400 text-sm text-center'>
                 No memory locations
@@ -91,8 +111,13 @@ export default function HomePage() {
                 )}
                 onClick={() => setActiveMemoryLocation('new')}
               >
-                New
+                New Object
               </Button>
+              <div className='text-center p-2'>or</div>
+              <div className='flex gap-2'>
+                <Button onClick={doImport}>Import</Button>
+                <Button onClick={doExport}>Export</Button>
+              </div>
             </div>
           </div>
           <div className='p-4 flex-grow'>
