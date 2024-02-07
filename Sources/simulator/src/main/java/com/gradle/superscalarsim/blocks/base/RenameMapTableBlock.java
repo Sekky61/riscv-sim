@@ -137,6 +137,10 @@ public class RenameMapTableBlock
   public RegisterModel mapRegister(String registerName, int order)
   {
     // TODO: what if there is no free tag or free register in the field? Currently it throws exception
+    if (this.freeList.isEmpty())
+    {
+      throw new RuntimeException("No free registers available");
+    }
     String speculativeRegister = this.freeList.iterator().next();
     this.registerMap.put(speculativeRegister, new RenameMapModel(registerName, order));
     this.freeList.remove(speculativeRegister);
@@ -145,6 +149,16 @@ public class RenameMapTableBlock
     return registerFileBlock.getRegister(speculativeRegister);
   }// end of mapRegister
   //----------------------------------------------------------------------
+  
+  /**
+   * If there are no free registers, decode should stall.
+   *
+   * @return True if there are free registers, false otherwise.
+   */
+  public boolean hasFreeRegisters()
+  {
+    return !this.freeList.isEmpty();
+  }
   
   /**
    * @param speculativeRegister Speculative register to be referenced

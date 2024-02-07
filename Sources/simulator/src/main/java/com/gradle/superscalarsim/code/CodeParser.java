@@ -182,9 +182,12 @@ public class CodeParser
       // Address not yet known
       Label label = new Label(mem.name, -1);
       this.labels.put(mem.name, label);
-      for (String alias : mem.aliases)
+      if (mem.aliases != null)
       {
-        this.labels.put(alias, label);
+        for (String alias : mem.aliases)
+        {
+          this.labels.put(alias, label);
+        }
       }
     }
     

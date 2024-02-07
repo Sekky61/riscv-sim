@@ -658,7 +658,7 @@ public class InstructionTests
   public void testBEQZ()
   {
     // Setup + exercise
-    cpuConfig.code = "beqz x1, 4 \n" + "beqz x2, 8";
+    cpuConfig.code = "beqz x1, 4 \n" + "beqz x2, -4";
     Cpu cpu = new Cpu(cpuConfig);
     cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(0);
     cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(2);
@@ -666,6 +666,8 @@ public class InstructionTests
     
     // Assert
     Assert.assertEquals(1, cpu.cpuState.statistics.getTakenBranches());
+    Assert.assertEquals(1, cpu.cpuState.statistics.robFlushes);
+    Assert.assertEquals(2, cpu.cpuState.statistics.committedInstructions);
   }
   
   /**
@@ -1872,7 +1874,8 @@ public class InstructionTests
   }
   
   /**
-   * LA loads the address of the label into the register
+   * LA loads the address of the label into the register.
+   * For this simulator, identical to LLA.
    */
   @Test
   public void testLA()
@@ -1883,6 +1886,28 @@ public class InstructionTests
             la x1, l1
             l2:
             la x2, l2
+            """;
+    Cpu cpu = new Cpu(cpuConfig);
+    cpu.execute(false);
+    
+    // Assert
+    Assert.assertEquals(0x00, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt));
+    Assert.assertEquals(0x04, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").getValue(DataTypeEnum.kInt));
+  }
+  
+  /**
+   * LLA loads the address of the label into the register.
+   * For this simulator, identical to LA.
+   */
+  @Test
+  public void testLLA()
+  {
+    // Setup + exercise
+    cpuConfig.code = """
+            l1:
+            lla x1, l1
+            l2:
+            lla x2, l2
             """;
     Cpu cpu = new Cpu(cpuConfig);
     cpu.execute(false);

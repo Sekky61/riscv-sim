@@ -307,13 +307,6 @@ public class CpuState implements Serializable
     this.storeBufferBlock = new StoreBufferBlock(config.cpuConfig.sbSize, unifiedRegisterFileBlock);
     this.loadBufferBlock  = new LoadBufferBlock(config.cpuConfig.lbSize, storeBufferBlock, unifiedRegisterFileBlock);
     
-    // ROB
-    this.reorderBufferBlock = new ReorderBufferBlock(config.cpuConfig.robSize, config.cpuConfig.commitWidth,
-                                                     renameMapTableBlock, decodeAndDispatchBlock, storeBufferBlock,
-                                                     loadBufferBlock, gShareUnit, branchTargetBuffer,
-                                                     instructionFetchBlock, statistics,
-                                                     memoryInitializer.getExitPointer(), debugLog);
-    
     // FUs
     this.aluIssueWindowBlock       = new IssueWindowBlock(InstructionTypeEnum.kIntArithmetic);
     this.branchIssueWindowBlock    = new IssueWindowBlock(InstructionTypeEnum.kJumpbranch);
@@ -323,6 +316,13 @@ public class CpuState implements Serializable
     this.issueWindowSuperBlock = new IssueWindowSuperBlock(decodeAndDispatchBlock,
                                                            List.of(aluIssueWindowBlock, fpIssueWindowBlock,
                                                                    branchIssueWindowBlock, loadStoreIssueWindowBlock));
+    
+    // ROB
+    this.reorderBufferBlock = new ReorderBufferBlock(config.cpuConfig.robSize, config.cpuConfig.commitWidth,
+                                                     renameMapTableBlock, decodeAndDispatchBlock, storeBufferBlock,
+                                                     loadBufferBlock, issueWindowSuperBlock, gShareUnit,
+                                                     branchTargetBuffer, instructionFetchBlock, statistics,
+                                                     memoryInitializer.getExitPointer(), debugLog);
     
     this.arithmeticFunctionUnitBlocks = new ArrayList<>();
     this.fpFunctionUnitBlocks         = new ArrayList<>();
@@ -492,7 +492,8 @@ public class CpuState implements Serializable
     fpIssueWindowBlock.simulate(tick);
     branchIssueWindowBlock.simulate(tick);
     loadStoreIssueWindowBlock.simulate(tick);
-    issueWindowSuperBlock.simulate(tick);
+    //    issueWindowSuperBlock.simulate(tick);
+    reorderBufferBlock.simulate_issue(tick);
     decodeAndDispatchBlock.simulate(tick);
     instructionFetchBlock.simulate(tick);
     // Stats

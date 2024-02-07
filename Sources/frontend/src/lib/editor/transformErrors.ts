@@ -66,9 +66,17 @@ export function transformErrors(
     }
     // 1-based line and column
     const line = span.caret.line;
-    const lineStart = lineLengthsPrefixSum[line - 1];
+    const index = line - 1 < 0 ? 0 : line - 1;
+    const lineStart = lineLengthsPrefixSum[index];
     if (lineStart === undefined) {
-      throw new Error(`Invalid line start for line ${line}`);
+      console.warn('Invalid line start', line, lineLengthsPrefixSum);
+      return {
+        from: 0,
+        to: 0,
+        message: error.message,
+        severity: error.kind,
+      };
+      // throw new Error(`Invalid line start for line ${line}`);
     }
     const charIndex = lineStart + span.caret['display-column'] - 1;
 

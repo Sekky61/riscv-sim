@@ -79,8 +79,8 @@ public class ExceptionTests
     cpu.execute(false);
     
     // We have stopped (ask the cpu why stopped, not ROB!)
-    Assert.assertEquals(4, cpu.cpuState.statistics.committedInstructions);
     Assert.assertSame(StopReason.kEndOfCode, cpu.stopReason);
+    Assert.assertEquals(4, cpu.cpuState.statistics.committedInstructions);
     // Cpu state
     Assert.assertEquals(1, (int) cpu.cpuState.unifiedRegisterFileBlock.getRegister("x13").getValue(DataTypeEnum.kInt));
   }

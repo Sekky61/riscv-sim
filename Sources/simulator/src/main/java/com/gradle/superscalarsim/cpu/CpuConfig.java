@@ -255,7 +255,7 @@ public class CpuConfig implements Serializable
     config.sbSize               = 64;
     config.callStackSize        = 512;
     // Misc
-    config.speculativeRegisters = 320;
+    config.speculativeRegisters = 620;
     config.coreClockFrequency   = 100000000;
     config.cacheClockFrequency  = 100000000;
     return config;
