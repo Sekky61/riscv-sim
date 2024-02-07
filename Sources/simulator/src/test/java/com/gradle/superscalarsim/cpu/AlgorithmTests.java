@@ -27,12 +27,10 @@
 
 package com.gradle.superscalarsim.cpu;
 
-import com.gradle.superscalarsim.code.CodeParser;
 import com.gradle.superscalarsim.compiler.AsmParser;
 import com.gradle.superscalarsim.compiler.CompiledProgram;
 import com.gradle.superscalarsim.compiler.GccCaller;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
-import com.gradle.superscalarsim.loader.InitLoader;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.Test;
@@ -345,7 +343,7 @@ public class AlgorithmTests
   public void test_recursiveFactorial()
   {
     // Alignment 2^4
-    Cpu cpu = setupCpu(recursiveFactorialCode, "main", List.of());
+    Cpu cpu = setupCpu(recursiveFactorialCode, "main", List.of(), true);
     cpu.execute(false);
     
     // Assert
@@ -355,9 +353,10 @@ public class AlgorithmTests
   /**
    * Setup cpu instance with the C code
    */
-  private Cpu setupCpu(String cCode, String entryPoint, List<MemoryLocation> memoryLocations)
+  private Cpu setupCpu(String cCode, String entryPoint, List<MemoryLocation> memoryLocations, boolean optimize)
   {
-    GccCaller.CompileResult res = GccCaller.compile(cCode, List.of("O2"));
+    List<String>            optimizationFlags = optimize ? List.of("O2") : List.of();
+    GccCaller.CompileResult res               = GccCaller.compile(cCode, optimizationFlags);
     Assert.assertTrue(res.success);
     CompiledProgram program             = AsmParser.parse(res.code);
     String          concatenatedProgram = StringUtils.join(program.program, "\n");
@@ -389,30 +388,27 @@ public class AlgorithmTests
     Assert.assertEquals(-5, (int) cpu.cpuState.unifiedRegisterFileBlock.getRegister("x12").getValue(DataTypeEnum.kInt));
   }
   
+  /**
+   * TODO: miscompiles for arrayLen=1
+   * Used to fail at arrayLen>50 due to losing instructions between decode and rob
+   */
   @Test
   public void test_simpleArrayProgram()
   {
     // Setup
-    String cCode = """
-            extern float a[];
-            extern float b[];
-            const float c = 10;
-            
-            void main(){
-              
-              for (int i = 0; i < 100; i++)
-                 a[i] += b[i]*c;
-                 
-              return;
-            }""";
-    InitLoader loader = new InitLoader();
-    
-    // Exercise
-    GccCaller.CompileResult compileResult = GccCaller.compile(cCode, List.of());
-    CompiledProgram         program       = AsmParser.parse(compileResult.code);
-    String                  asm           = String.join("\n", program.program);
-    
-    int arrayLen = 20;
+    int arrayLen = 55;
+    String cCode = String.format("""
+                                         extern float a[];
+                                         extern float b[];
+                                         const float c = 10;
+                                         
+                                         void main(){
+                                           
+                                           for (int i = 0; i < %d; i++)
+                                              a[i] += b[i]*c;
+                                              
+                                           return;
+                                         }""", arrayLen);
     
     List<String> hundredOnes  = new ArrayList<>();
     List<String> hundredNines = new ArrayList<>();
@@ -425,11 +421,8 @@ public class AlgorithmTests
     List<MemoryLocation> memoryLocations = List.of(new MemoryLocation("a", 4, DataTypeEnum.kFloat, hundredOnes),
                                                    new MemoryLocation("b", 4, DataTypeEnum.kFloat, hundredNines));
     
-    CodeParser parser = new CodeParser(loader, memoryLocations);
-    parser.parseCode(asm);
-    
-    Cpu cpu = setupCpu(cCode, "main", memoryLocations);
-    //cpu.execute(true);
+    Cpu cpu = setupCpu(cCode, "main", memoryLocations, true);
+    cpu.execute(true);
     
     // Verify
     // Check memory at a

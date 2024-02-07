@@ -58,14 +58,13 @@ public class GccCaller
    *   <li>`-ffunction-sections`  - put each function in its own section</li>
    *   <li>`-mstrict-align`       - Generate aligned memory accesses</li>
    *   <li>`-fPIE`                - Generate position independent code (gets rid of PLT)</li>
-   *   <li>`-fmerge-constants` - </li>
    *  </ul>
    */
   public static List<String> gccFlags = List.of("-xc", "-march=rv32imfd", "-mabi=ilp32d", "-o", "/dev/stdout", "-S",
                                                 "-g", "-fverbose-asm", "-fcf-protection=none", "-fno-stack-protector",
                                                 "-fno-asynchronous-unwind-tables", "-mno-explicit-relocs",
-                                                "-fmerge-constants", "-ffunction-sections", "-fdata-sections",
-                                                "-fno-dwarf2-cfi-asm", "-mstrict-align", "-nostdlib",
+                                                "-ffunction-sections", "-fdata-sections", "-fno-dwarf2-cfi-asm",
+                                                "-finhibit-size-directive", "-mstrict-align", "-nostdlib",
                                                 "-fdiagnostics-format=json", "-fPIE", "-fno-plt",
                                                 "-fvisibility=default", "-xc", "-");
   

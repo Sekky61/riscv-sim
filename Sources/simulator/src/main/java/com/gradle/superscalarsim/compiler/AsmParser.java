@@ -65,7 +65,8 @@ public class AsmParser
     // https://ftp.gnu.org/old-gnu/Manuals/gas-2.9.1/html_chapter/as_7.html#SEC119
     List<Section> sections = splitSections(stringLines);
     // Filter the allocatable sections
-    sections.removeIf(section -> !section.flags.contains("a"));
+    // For some reason, .rodata sometimes does not have the "a" flag
+    sections.removeIf(section -> (!section.flags.contains("a") && !section.name.contains("rodata")));
     
     // Join the lines of the sections. Put the code sections first, then the data sections
     List<String> joinedLines = new ArrayList<>();

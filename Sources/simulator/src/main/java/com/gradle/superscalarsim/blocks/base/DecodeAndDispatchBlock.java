@@ -247,6 +247,14 @@ public class DecodeAndDispatchBlock implements AbstractBlock
     {
       // Decode is stalled. Stall fetch block (prevent fetching new instructions until decode can take the old ones)
       this.instructionFetchBlock.setStallFlag(true);
+      
+      // There are still already renamed instructions in the buffer
+      // We cant run
+      statistics.reportAllocatedRegisters(renameMapTableBlock.getAllocatedSpeculativeRegistersCount());
+      
+      this.stallFlag        = false;
+      this.stalledPullCount = 0;
+      return;
     }
     else
     {
