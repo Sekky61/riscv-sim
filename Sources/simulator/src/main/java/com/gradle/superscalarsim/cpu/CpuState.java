@@ -320,8 +320,8 @@ public class CpuState implements Serializable
     // ROB
     this.reorderBufferBlock = new ReorderBufferBlock(config.cpuConfig.robSize, config.cpuConfig.commitWidth,
                                                      renameMapTableBlock, decodeAndDispatchBlock, storeBufferBlock,
-                                                     loadBufferBlock, gShareUnit, branchTargetBuffer,
-                                                     instructionFetchBlock, statistics,
+                                                     loadBufferBlock, issueWindowSuperBlock, gShareUnit,
+                                                     branchTargetBuffer, instructionFetchBlock, statistics,
                                                      memoryInitializer.getExitPointer(), debugLog);
     
     this.arithmeticFunctionUnitBlocks = new ArrayList<>();
@@ -492,7 +492,8 @@ public class CpuState implements Serializable
     fpIssueWindowBlock.simulate(tick);
     branchIssueWindowBlock.simulate(tick);
     loadStoreIssueWindowBlock.simulate(tick);
-    issueWindowSuperBlock.simulate(tick);
+    //    issueWindowSuperBlock.simulate(tick);
+    reorderBufferBlock.simulate_issue(tick);
     decodeAndDispatchBlock.simulate(tick);
     instructionFetchBlock.simulate(tick);
     // Stats

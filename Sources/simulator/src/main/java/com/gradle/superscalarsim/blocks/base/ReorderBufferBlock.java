@@ -87,6 +87,11 @@ public class ReorderBufferBlock implements AbstractBlock
    */
   public StopReason stopReason;
   /**
+   * Debug log
+   */
+  @JsonIdentityReference(alwaysAsId = true)
+  DebugLog debugLog;
+  /**
    * Reorder buffer size limit.
    */
   private int bufferSize;
@@ -99,54 +104,45 @@ public class ReorderBufferBlock implements AbstractBlock
    */
   @JsonIdentityReference(alwaysAsId = true)
   private RenameMapTableBlock renameMapTableBlock;
-  
   /**
    * Class, which simulates instruction decode and renames registers
    */
   @JsonIdentityReference(alwaysAsId = true)
   private DecodeAndDispatchBlock decodeAndDispatchBlock;
-  
   /**
    * Class for statistics gathering
    */
   @JsonIdentityReference(alwaysAsId = true)
   private SimulationStatistics simulationStatistics;
-  
   /**
    * GShare unit for getting correct prediction counters
    */
   @JsonIdentityReference(alwaysAsId = true)
   private GShareUnit gShareUnit;
-  
   /**
    * Buffer holding information about branch instructions targets
    */
   @JsonIdentityReference(alwaysAsId = true)
   private BranchTargetBuffer branchTargetBuffer;
-  
   /**
    * Class that fetches code from CodeParser
    */
   @JsonIdentityReference(alwaysAsId = true)
   private InstructionFetchBlock instructionFetchBlock;
-  
   /**
    * Buffer that tracks all in-flight load instructions
    */
   @JsonIdentityReference(alwaysAsId = true)
   private LoadBufferBlock loadBufferBlock;
-  
   /**
    * Buffer that tracks all in-flight store instructions
    */
   @JsonIdentityReference(alwaysAsId = true)
   private StoreBufferBlock storeBufferBlock;
-  
   /**
-   * Debug log
+   * Issues instructions to individual issue windows
    */
-  @JsonIdentityReference(alwaysAsId = true)
-  DebugLog debugLog;
+  private IssueWindowSuperBlock issueWindowSuperBlock;
   
   public ReorderBufferBlock()
   {
@@ -172,6 +168,7 @@ public class ReorderBufferBlock implements AbstractBlock
                             DecodeAndDispatchBlock decodeAndDispatchBlock,
                             StoreBufferBlock storeBufferBlock,
                             LoadBufferBlock loadBufferBlock,
+                            IssueWindowSuperBlock issueWindowSuperBlock,
                             GShareUnit gShareUnit,
                             BranchTargetBuffer branchTargetBuffer,
                             InstructionFetchBlock instructionFetchBlock,
@@ -183,6 +180,7 @@ public class ReorderBufferBlock implements AbstractBlock
     this.decodeAndDispatchBlock = decodeAndDispatchBlock;
     this.storeBufferBlock       = storeBufferBlock;
     this.loadBufferBlock        = loadBufferBlock;
+    this.issueWindowSuperBlock  = issueWindowSuperBlock;
     
     this.gShareUnit            = gShareUnit;
     this.branchTargetBuffer    = branchTargetBuffer;
@@ -227,7 +225,7 @@ public class ReorderBufferBlock implements AbstractBlock
       
       if (robItem.getException() != null)
       {
-        // TODO do we want to commit this? probably not
+        // TODO do we want to commit this? maybe
         stopReason = StopReason.kException;
       }
       
@@ -473,7 +471,7 @@ public class ReorderBufferBlock implements AbstractBlock
         // No more space, stop
         this.decodeAndDispatchBlock.setStallFlag(true);
         this.decodeAndDispatchBlock.setStalledPullCount(pulledCount);
-        return;
+        break;
       }
       
       codeModel.setSpeculative(this.speculativePulls);
@@ -489,6 +487,9 @@ public class ReorderBufferBlock implements AbstractBlock
       }
       pulledCount++;
     }
+    
+    // Remove pulledCount instructions from decode
+    this.decodeAndDispatchBlock.removePulledInstructions(pulledCount);
   }// end of pullNewDecodedInstructions
   //----------------------------------------------------------------------
   
@@ -582,4 +583,19 @@ public class ReorderBufferBlock implements AbstractBlock
   {
     return this.reorderQueue.stream();
   }// end of getReorderQueue
+  
+  /**
+   *
+   */
+  public void simulate_issue(int tick)
+  {
+    // Issue instruction without a IssueWindowId
+    for (SimCodeModel codeModel : this.reorderQueue)
+    {
+      if (codeModel.issueWindowId == -1)
+      {
+        issueWindowSuperBlock.selectCorrectIssueWindow(codeModel.getInstructionFunctionModel(), codeModel);
+      }
+    }
+  }
 }

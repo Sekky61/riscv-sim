@@ -234,37 +234,19 @@ public class DecodeAndDispatchBlock implements AbstractBlock
   @Override
   public void simulate(int cycle)
   {
+    if (shouldFlush())
+    {
+      this.codeBuffer.clear();
+      setFlush(false);
+    }
+    // If ROB did not pull all instructions, stall decode block
+    
+    stallFlag |= !this.codeBuffer.isEmpty();
+    
     if (stallFlag)
     {
-      // Decode is stalled.
-      // Stall fetch block
+      // Decode is stalled. Stall fetch block (prevent fetching new instructions until decode can take the old ones)
       this.instructionFetchBlock.setStallFlag(true);
-      
-      // Remove instructions loaded by ROB
-      List<SimCodeModel> removeModel = new ArrayList<>();
-      for (int i = 0; i < this.codeBuffer.size(); i++)
-      {
-        SimCodeModel codeModel = this.codeBuffer.get(i);
-        if (i < stalledPullCount)
-        {
-          removeModel.add(codeModel);
-        }
-      }
-      this.codeBuffer.removeAll(removeModel);
-      
-      // Take `fetchCount` instructions from fetch block, delete them from fetch block
-      // TODO: is fetchCount correct given that it is configurable?
-      List<SimCodeModel> removeInputModel = new ArrayList<>();
-      int fetchCount = Math.min((int) this.instructionFetchBlock.getFetchedCode().stream()
-                                        .filter(code -> !code.getInstructionName().equals("nop")).count(),
-                                this.instructionFetchBlock.getNumberOfWays() - this.codeBuffer.size());
-      for (int i = 0; i < fetchCount; i++)
-      {
-        SimCodeModel codeModel = this.instructionFetchBlock.getFetchedCode().get(i);
-        this.codeBuffer.add(codeModel);
-        removeInputModel.add(codeModel);
-      }
-      this.instructionFetchBlock.getFetchedCode().removeAll(removeInputModel);
     }
     else
     {
@@ -291,7 +273,17 @@ public class DecodeAndDispatchBlock implements AbstractBlock
       SimCodeModel simCodeModel = this.codeBuffer.get(i);
       renameSourceRegisters(simCodeModel);
       // Not sure if this does anything
-      renameDestinationRegister(simCodeModel);
+      boolean renameSuccessful = renameDestinationRegister(simCodeModel);
+      
+      if (!renameSuccessful)
+      {
+        // discard, stall fetch, retry next cycle
+        this.stallFlag = true;
+        this.instructionFetchBlock.setStallFlag(true);
+        this.codeBuffer.clear();
+        return;
+      }
+      
       statistics.reportDecodedInstruction(simCodeModel);
       
       // Calculate branch after rename, the computation may change registers (CALL instruction)
@@ -370,9 +362,10 @@ public class DecodeAndDispatchBlock implements AbstractBlock
   /**
    * @param decodeCodeModel CodeModel with registers to be renamed
    *
+   * @return True if the instruction was renamed, false otherwise (no free rename registers)
    * @brief Renames registers in instruction (1st part of Tomasulo algorithm)
    */
-  private void renameDestinationRegister(SimCodeModel simCodeModel)
+  private boolean renameDestinationRegister(SimCodeModel simCodeModel)
   {
     // Rename all arguments that will be written back
     for (InstructionFunctionModel.Argument argument : simCodeModel.getInstructionFunctionModel().getArguments())
@@ -380,6 +373,12 @@ public class DecodeAndDispatchBlock implements AbstractBlock
       if (argument.writeBack())
       {
         InputCodeArgument destinationArgument = simCodeModel.getArgumentByName(argument.name());
+        
+        if (!renameMapTableBlock.hasFreeRegisters())
+        {
+          return false;
+        }
+        
         RegisterModel mappedReg = renameMapTableBlock.mapRegister(destinationArgument.getValue(),
                                                                   simCodeModel.getIntegerId());
         assert mappedReg != null;
@@ -388,6 +387,8 @@ public class DecodeAndDispatchBlock implements AbstractBlock
         destinationArgument.setStringValue(mappedReg.getName());
       }
     }
+    
+    return true;
   }// end of renameDestinationRegister
   //----------------------------------------------------------------------
   
@@ -489,5 +490,19 @@ public class DecodeAndDispatchBlock implements AbstractBlock
       }
     }
   }// end of removeInstructionsFromIndex
+  
+  /**
+   * @param pulledCount Number of instructions that were pulled by the ROB
+   *
+   * @brief Removes instructions from the head of the buffer
+   */
+  public void removePulledInstructions(int pulledCount)
+  {
+    if (pulledCount > 0)
+    {
+      this.codeBuffer.subList(0, pulledCount).clear();
+    }
+  }// end of removePulledInstructions
+  
   //----------------------------------------------------------------------
 }

@@ -658,7 +658,7 @@ public class InstructionTests
   public void testBEQZ()
   {
     // Setup + exercise
-    cpuConfig.code = "beqz x1, 4 \n" + "beqz x2, 8";
+    cpuConfig.code = "beqz x1, 4 \n" + "beqz x2, -4";
     Cpu cpu = new Cpu(cpuConfig);
     cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(0);
     cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(2);
@@ -666,6 +666,8 @@ public class InstructionTests
     
     // Assert
     Assert.assertEquals(1, cpu.cpuState.statistics.getTakenBranches());
+    Assert.assertEquals(1, cpu.cpuState.statistics.robFlushes);
+    Assert.assertEquals(2, cpu.cpuState.statistics.committedInstructions);
   }
   
   /**

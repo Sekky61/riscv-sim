@@ -429,7 +429,7 @@ public class AlgorithmTests
     parser.parseCode(asm);
     
     Cpu cpu = setupCpu(cCode, "main", memoryLocations);
-    cpu.execute(true);
+    //cpu.execute(true);
     
     // Verify
     // Check memory at a

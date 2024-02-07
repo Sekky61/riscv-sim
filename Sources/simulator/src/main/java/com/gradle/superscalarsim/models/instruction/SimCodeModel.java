@@ -79,7 +79,7 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
   /**
    * ID, when was instructions accepted by the issue window
    */
-  private int issueWindowId;
+  public int issueWindowId;
   /**
    * ID of the function block, which processed this instruction
    */
