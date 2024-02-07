@@ -37,6 +37,16 @@ export default function Page() {
         <p>This is the help page.</p>
       </section>
       <section>
+        <h2>Tips</h2>
+        <ul>
+          <li>
+            When using the external definition of arrays, use{' '}
+            <code>extern T ptr[];</code> syntax (not a pointer!). See{' '}
+            <b>AXPY</b> example code.
+          </li>
+        </ul>
+      </section>
+      <section>
         <h2 className='text-xl'>Navigation Shortcuts</h2>
         <div className='flex flex-col gap-6'>
           <div>

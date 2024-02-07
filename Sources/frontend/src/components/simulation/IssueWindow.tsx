@@ -100,7 +100,7 @@ export default function IssueWindow({ type }: IssueWindowProps) {
     </>
   );
 
-  const cls = clsx(getGridClassName(type), 'w-80');
+  const cls = clsx(getGridClassName(type), 'w-80 h-96');
 
   // TODO: Is this limit suitable?
   return (

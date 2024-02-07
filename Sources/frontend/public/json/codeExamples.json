@@ -28,5 +28,10 @@
     "name": "Divide by zero",
     "type": "c",
     "code": "int main() {\n  int a = 1;\n  int b = 0;\n  int c = a / b;\n}\n"
+  },
+  {
+    "name": "AXPY",
+    "type": "c",
+    "code": "// Remember to define the arrays in /memory page!\nextern float a[];\nextern float b[];\nconst float c = 10;\n\nvoid main(){\n  for (int i = 0; i < 100; i++) { \n     a[i] += b[i]*c;\n  }\n}\n"
   }
 ]
