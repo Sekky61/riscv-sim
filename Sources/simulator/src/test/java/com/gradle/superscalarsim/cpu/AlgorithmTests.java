@@ -27,14 +27,19 @@
 
 package com.gradle.superscalarsim.cpu;
 
+import com.gradle.superscalarsim.code.CodeParser;
 import com.gradle.superscalarsim.compiler.AsmParser;
 import com.gradle.superscalarsim.compiler.CompiledProgram;
 import com.gradle.superscalarsim.compiler.GccCaller;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
+import com.gradle.superscalarsim.loader.InitLoader;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.util.ArrayList;
 import java.util.List;
 
 public class AlgorithmTests
@@ -382,5 +387,66 @@ public class AlgorithmTests
     cpu.execute(false);
     
     Assert.assertEquals(-5, (int) cpu.cpuState.unifiedRegisterFileBlock.getRegister("x12").getValue(DataTypeEnum.kInt));
+  }
+  
+  @Test
+  public void test_simpleArrayProgram()
+  {
+    // Setup
+    String cCode = """
+            extern float a[];
+            extern float b[];
+            const float c = 10;
+            
+            void main(){
+              
+              for (int i = 0; i < 100; i++)
+                 a[i] += b[i]*c;
+                 
+              return;
+            }""";
+    InitLoader loader = new InitLoader();
+    
+    // Exercise
+    GccCaller.CompileResult compileResult = GccCaller.compile(cCode, List.of());
+    CompiledProgram         program       = AsmParser.parse(compileResult.code);
+    String                  asm           = String.join("\n", program.program);
+    
+    int arrayLen = 20;
+    
+    List<String> hundredOnes  = new ArrayList<>();
+    List<String> hundredNines = new ArrayList<>();
+    for (int i = 0; i < arrayLen; i++)
+    {
+      hundredOnes.add("1");
+      hundredNines.add("9");
+    }
+    
+    List<MemoryLocation> memoryLocations = List.of(new MemoryLocation("a", 4, DataTypeEnum.kFloat, hundredOnes),
+                                                   new MemoryLocation("b", 4, DataTypeEnum.kFloat, hundredNines));
+    
+    CodeParser parser = new CodeParser(loader, memoryLocations);
+    parser.parseCode(asm);
+    
+    Cpu cpu = setupCpu(cCode, "main", memoryLocations);
+    cpu.execute(true);
+    
+    // Verify
+    // Check memory at a
+    long aPtr    = cpu.cpuState.instructionMemoryBlock.getLabelPosition("a");
+    int  correct = 0;
+    for (int i = 0; i < arrayLen; i++)
+    {
+      byte[]  bytes     = cpu.cpuState.simulatedMemory.getFromMemory(aPtr + i * 4, 4);
+      float   converted = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN).getFloat();
+      boolean isCorrect = Math.abs(converted - 91.0f) < 0.01;
+      if (isCorrect)
+      {
+        correct++;
+      }
+      //      Assert.assertEquals(91.0f, converted, 0.01);
+    }
+    
+    Assert.assertEquals(arrayLen, correct);
   }
 }
