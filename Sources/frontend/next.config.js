@@ -21,9 +21,8 @@ const nextConfig = withBundleAnalyzer({
     return [
       {
         source: '/api/sim/:slug',
-        destination: `http://localhost:${
-          process.env.NEXT_PUBLIC_SIMSERVER_PORT ?? '8000'
-        }/:slug`,
+        destination: `http://${process.env.NEXT_PUBLIC_SIMSERVER_HOST}:${process.env.NEXT_PUBLIC_SIMSERVER_PORT ?? '8000'
+          }/:slug`,
       },
     ];
   },

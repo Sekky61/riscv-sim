@@ -42,6 +42,13 @@ import { saveAsFile, saveAsJsonFile } from '@/lib/utils';
 export function SettingsForm() {
   const activeConfig = useAppSelector(selectActiveConfig);
 
+  // Log to console the address of API server
+  console.info(
+    `API server address: http://${process.env.NEXT_PUBLIC_SIMSERVER_HOST}:${
+      process.env.NEXT_PUBLIC_SIMSERVER_PORT ?? '8000'
+    }`,
+  );
+
   const clearLocalMemory = () => {
     // confirm
     const doit = confirm('Are you sure you want to clear local memory?');

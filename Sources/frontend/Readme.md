@@ -38,6 +38,7 @@ npm install
 ### Define environment variables
 
 The variables do have default values, but you can override them.
+Dockerfile sets these variables.
 
 - `NEXT_PUBLIC_SIMSERVER_PORT`
 - `NEXT_PUBLIC_SIMSERVER_HOST`
