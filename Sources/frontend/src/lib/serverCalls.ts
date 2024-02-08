@@ -103,8 +103,15 @@ async function callApi<T extends EndpointName>(
  * @returns The URL of the simulator server
  */
 export function getSimulatorServerUrl(): string {
-  const hostName =
-    process.env.NEXT_PUBLIC_SIMSERVER_HOST ?? window.location.hostname;
+  let hostName = 'localhost';
+  if (typeof window !== 'undefined') {
+    // Client-side-only code
+    hostName =
+      process.env.NEXT_PUBLIC_SIMSERVER_HOST ?? window.location.hostname;
+  } else {
+    // Server-side-only code
+    hostName = process.env.NEXT_PUBLIC_SIMSERVER_HOST ?? 'localhost';
+  }
   const port = process.env.NEXT_PUBLIC_SIMSERVER_PORT ?? '8000';
   return `http://${hostName}:${port}`;
 }

@@ -29,18 +29,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import path from 'path';
-import { promises as fs } from 'fs';
+import { getSimulatorServerUrl } from '@/lib/serverCalls';
 
 export async function GET() {
-  // Find the absolute path of the "json" directory
-  const jsonDirectory = path.join(process.cwd(), 'public/json');
-  // Read the "data.json" file
-  const fileContents = await fs.readFile(
-    `${jsonDirectory}/supportedInstructions.json`,
-    'utf8',
-  );
-  const json = JSON.parse(fileContents);
+  // Fetch from the simulation server
+  // TODO: must be a post with empty object
+  const serverUrl = getSimulatorServerUrl();
+  const response = await fetch(`${serverUrl}/instructionDescription`, {
+    method: 'POST',
+    body: '{}',
+  });
 
-  return Response.json(json);
+  return new Response(response.body, {
+    headers: {
+      'content-type': 'application/json',
+    },
+  });
 }

@@ -48,20 +48,19 @@ function instructionTooltip(instruction: InstructionDescription) {
   instructionName.textContent = instruction.name;
   instructionName.className = 'tooltip-name';
 
-  const instructionSyntax = document.createElement('div');
-  instructionSyntax.textContent = `Syntax: ${instruction.instructionSyntax}`;
+  // TODO: add syntax example to InstructionFunctionModel
 
   const instructionInterpretable = document.createElement('div');
   instructionInterpretable.textContent = `Interpretable as: ${instruction.interpretableAs}`;
 
   dom.appendChild(instructionName);
-  dom.appendChild(instructionSyntax);
   dom.appendChild(instructionInterpretable);
 
   return dom;
 }
 
-let supportedInstructions: Record<string, InstructionDescription> = {};
+let supportedInstructions: { models: Record<string, InstructionDescription> } =
+  { models: {} };
 
 /**
  * Load supported instructions from the API immediately after the page loads
@@ -107,7 +106,7 @@ export const wordHover = hoverTooltip((view, pos, side) => {
   const word = text.slice(start - from, end - from);
 
   // Get info and create tooltip
-  const instructionInfo = supportedInstructions[word];
+  const instructionInfo = supportedInstructions.models[word];
 
   if (!instructionInfo) {
     return null;
