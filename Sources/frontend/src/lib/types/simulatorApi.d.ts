@@ -31,14 +31,11 @@
 
 import type { SimulationConfig } from '@/lib/forms/Isa';
 import type { OptimizeOption } from '@/lib/redux/compilerSlice';
-import type { CpuState, StopReason } from '@/lib/types/cpuApi';
-
-export type EndpointName =
-  | 'compile'
-  | 'parseAsm'
-  | 'checkConfig'
-  | 'simulate'
-  | 'schema';
+import type {
+  CpuState,
+  InstructionFunctionModel,
+  StopReason,
+} from '@/lib/types/cpuApi';
 
 type EndpointMap = {
   compile: CompileEndpoint;
@@ -46,7 +43,9 @@ type EndpointMap = {
   checkConfig: CheckConfigEndpoint;
   simulate: SimulateEndpoint;
   schema: SchemaEndpoint;
+  instructionDescription: InstructionDescriptionEndpoint;
 };
+export type EndpointName = keyof EndpointMap;
 
 export type AsyncEndpointFunction<T extends EndpointName> = (
   name: T,
@@ -192,3 +191,19 @@ export interface SimulateResponse {
   state: CpuState;
   stopReason: StopReason;
 }
+
+//
+// /instructionDescription
+//
+
+export interface InstructionDescriptionEndpoint {
+  name: 'instructionDescription';
+  request: InstructionDescriptionRequest;
+  response: InstructionDescriptionResponse;
+}
+
+export type InstructionDescriptionRequest = Record<string, never>;
+
+export type InstructionDescriptionResponse = {
+  models: Record<string, InstructionFunctionModel>;
+};

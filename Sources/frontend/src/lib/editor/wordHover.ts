@@ -34,6 +34,7 @@
 import { hoverTooltip } from '@codemirror/view';
 
 import { InstructionDescription } from '../types/instructionsDatabase';
+import { callInstructionDescriptionImpl } from '@/lib/serverCalls';
 
 /**
  * Create a tooltip (HTML element) for the given instruction
@@ -66,10 +67,9 @@ let supportedInstructions: { models: Record<string, InstructionDescription> } =
  * Load supported instructions from the API immediately after the page loads
  */
 async function fetchSupportedInstructions() {
-  const data = await fetch('/api/supportedInstructions');
-  const instructions = await data.json();
+  const data = await callInstructionDescriptionImpl();
 
-  supportedInstructions = instructions;
+  supportedInstructions = data;
 }
 fetchSupportedInstructions();
 

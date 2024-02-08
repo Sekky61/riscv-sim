@@ -35,6 +35,7 @@ import {
   CompileRequest,
   CompileResponse,
   EndpointName,
+  InstructionDescriptionResponse,
   ParseAsmRequest,
   ParseAsmResponse,
   SimulateRequest,
@@ -76,8 +77,15 @@ export async function callSimulationImpl(
   return await callApi('simulate' as const, body);
 }
 
+export async function callInstructionDescriptionImpl(): Promise<InstructionDescriptionResponse> {
+  return await callApi('instructionDescription' as const, {});
+}
+
 /**
  * Call the simulator server API. Parse the response as JSON.
+ *
+ * Next.js proxies the backend simulator. Set the NEXT_PUBLIC_SIMSERVER_PORT and NEXT_PUBLIC_SIMSERVER_HOST env variables (see .env.example, Dockerfile).
+ * The default is the same host as the app is running on, but on port 8000.
  */
 async function callApi<T extends EndpointName>(
   ...args: Parameters<AsyncEndpointFunction<T>>
@@ -85,9 +93,7 @@ async function callApi<T extends EndpointName>(
   const endpoint = args[0];
   const request = args[1];
 
-  const serverUrl = getSimulatorServerUrl();
-
-  const response = await fetch(`${serverUrl}/${endpoint}`, {
+  const response = await fetch(`/api/sim/${endpoint}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -95,23 +101,4 @@ async function callApi<T extends EndpointName>(
     body: JSON.stringify(request),
   });
   return response.json();
-}
-
-/**
- * The default is the same host as the app is running on, but on port 8000.
- * Can be overridden by setting the NEXT_PUBLIC_SIMSERVER_PORT and NEXT_PUBLIC_SIMSERVER_HOST env variables (see .env.example, Dockerfile).
- * @returns The URL of the simulator server
- */
-export function getSimulatorServerUrl(): string {
-  let hostName = 'localhost';
-  if (typeof window !== 'undefined') {
-    // Client-side-only code
-    hostName =
-      process.env.NEXT_PUBLIC_SIMSERVER_HOST ?? window.location.hostname;
-  } else {
-    // Server-side-only code
-    hostName = process.env.NEXT_PUBLIC_SIMSERVER_HOST ?? 'localhost';
-  }
-  const port = process.env.NEXT_PUBLIC_SIMSERVER_PORT ?? '8000';
-  return `http://${hostName}:${port}`;
 }

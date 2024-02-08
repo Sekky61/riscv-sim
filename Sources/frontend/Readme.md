@@ -53,6 +53,9 @@ npm run dev
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the app.
 Other commands, like lint and typecheck are defined in `package.json`.
 
+Notes:
+- Changing the environment variables requires a server restart.
+
 ### Inspect bundle size
 
 Inspired by [this article](https://blog.logrocket.com/how-analyze-next-js-app-bundles).

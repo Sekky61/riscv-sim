@@ -15,6 +15,19 @@ const nextConfig = withBundleAnalyzer({
   //   ],
   // },
 
+  // Proxy simulation requests to Java backend API.
+  // The destination is on the same server (localhost).
+  async rewrites() {
+    return [
+      {
+        source: '/api/sim/:slug',
+        destination: `http://localhost:${
+          process.env.NEXT_PUBLIC_SIMSERVER_PORT ?? '8000'
+        }/:slug`,
+      },
+    ];
+  },
+
   webpack(config) {
     // Grab the existing rule that handles SVG imports
     const fileLoaderRule = config.module.rules.find((rule) =>
