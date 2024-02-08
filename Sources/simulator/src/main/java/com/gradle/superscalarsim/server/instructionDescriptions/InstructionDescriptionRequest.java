@@ -1,11 +1,11 @@
 /**
- * @file EndpointName.java
+ * @file InstructionDescriptionRequest.java
  * @author Michal Majer
  * Faculty of Information Technology
  * Brno University of Technology
  * xmajer21@stud.fit.vutbr.cz
- * @brief Enumerates all endpoints
- * @date 09 Nov      2023 9:00 (created)
+ * @brief Request for the /instructionDescription endpoint
+ * @date 08 feb      2024 10:00 (created)
  * @section Licence
  * This file is part of the Superscalar simulator app
  * <p>
@@ -25,44 +25,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.gradle.superscalarsim.server;
+package com.gradle.superscalarsim.server.instructionDescriptions;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-/**
- * Enumerates all endpoints
- */
-public enum EndpointName
+public class InstructionDescriptionRequest
 {
-  compile("compile"), //
-  parseAsm("parseAsm"), //
-  checkConfig("checkConfig"), //
-  simulate("simulate"), //
-  schema("schema"), //
-  instructionDescription("instructionDescription");
-  
-  private final String pathName;
-  
-  EndpointName(String pathName)
-  {
-    this.pathName = pathName;
-  }
-  
   /**
-   * @return The path of the endpoint
+   * @brief Default constructor for deserialization
    */
-  public String getPath()
+  public InstructionDescriptionRequest()
   {
-    return "/" + pathName;
-  }
   
-  /**
-   * @return The name of the endpoint
-   */
-  @JsonProperty("endpoint")
-  public String getName()
-  {
-    return pathName;
   }
 }
-

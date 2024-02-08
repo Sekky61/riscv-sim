@@ -36,6 +36,8 @@ import com.gradle.superscalarsim.server.checkConfig.CheckConfigRequest;
 import com.gradle.superscalarsim.server.checkConfig.CheckConfigResponse;
 import com.gradle.superscalarsim.server.compile.CompileRequest;
 import com.gradle.superscalarsim.server.compile.CompileResponse;
+import com.gradle.superscalarsim.server.instructionDescriptions.InstructionDescriptionRequest;
+import com.gradle.superscalarsim.server.instructionDescriptions.InstructionDescriptionResponse;
 import com.gradle.superscalarsim.server.parseAsm.ParseAsmRequest;
 import com.gradle.superscalarsim.server.parseAsm.ParseAsmResponse;
 import com.gradle.superscalarsim.server.simulate.SimulateRequest;
@@ -76,6 +78,7 @@ public class SchemaHandler implements IRequestResolver<SchemaRequest, JsonNode>,
       case compile -> isRequest ? CompileRequest.class : CompileResponse.class;
       case schema -> isRequest ? SchemaRequest.class : JsonNode.class;
       case checkConfig -> isRequest ? CheckConfigRequest.class : CheckConfigResponse.class;
+      case instructionDescription -> isRequest ? InstructionDescriptionRequest.class : InstructionDescriptionResponse.class;
     };
     
     // Get the schema for the handler

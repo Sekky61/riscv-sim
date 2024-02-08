@@ -29,6 +29,7 @@ package com.gradle.superscalarsim.server;
 
 import com.gradle.superscalarsim.server.checkConfig.CheckConfigHandler;
 import com.gradle.superscalarsim.server.compile.CompileHandler;
+import com.gradle.superscalarsim.server.instructionDescriptions.InstructionDescriptionHandler;
 import com.gradle.superscalarsim.server.parseAsm.ParseAsmHandler;
 import com.gradle.superscalarsim.server.schema.SchemaHandler;
 import com.gradle.superscalarsim.server.simulate.SimulateHandler;
@@ -60,10 +61,20 @@ import static io.undertow.UndertowOptions.ENABLE_HTTP2;
 public class Server
 {
   /**
+   * @brief Map of endpoints and their handlers
+   */
+  // @formatter:off
+  private final Map<EndpointName, IRequestResolver> endpoints = Map.of(
+          EndpointName.compile, new CompileHandler(),
+          EndpointName.parseAsm, new ParseAsmHandler(),
+          EndpointName.checkConfig, new CheckConfigHandler(),
+          EndpointName.simulate, new SimulateHandler(),
+          EndpointName.schema, new SchemaHandler(),
+          EndpointName.instructionDescription, new InstructionDescriptionHandler());
+  /**
    * @brief Host to listen on. Can be configured via command line argument
    */
   String host;
-  
   /**
    * @brief Port to listen on. Can be configured via command line argument
    */
@@ -72,26 +83,15 @@ public class Server
    * @brief timeout for requests in milliseconds
    */
   int timeout_ms;
-  
   /**
    * Maximum concurrent requests. If exceeded, the server will queue the requests.
    */
   int maxConcurrentRequests = 100;
-  
   /**
    * @brief Use gzip encoding (or deflate) for responses
    */
   boolean useGzip = true;
-  
-  /**
-   * @brief Map of endpoints and their handlers
-   */
-  private final Map<EndpointName, IRequestResolver> endpoints = Map.of(EndpointName.compile, new CompileHandler(),
-                                                                       EndpointName.parseAsm, new ParseAsmHandler(),
-                                                                       EndpointName.checkConfig,
-                                                                       new CheckConfigHandler(), EndpointName.simulate,
-                                                                       new SimulateHandler(), EndpointName.schema,
-                                                                       new SchemaHandler());
+  // @formatter:on
   
   public Server(String host, int port, int timeout_ms)
   {

@@ -1,11 +1,11 @@
 /**
- * @file EndpointName.java
+ * @file InstructionDescriptionResponse.java
  * @author Michal Majer
  * Faculty of Information Technology
  * Brno University of Technology
  * xmajer21@stud.fit.vutbr.cz
- * @brief Enumerates all endpoints
- * @date 09 Nov      2023 9:00 (created)
+ * @brief Response for the /instructionDescription endpoint
+ * @date 08 feb      2024 10:00 (created)
  * @section Licence
  * This file is part of the Superscalar simulator app
  * <p>
@@ -25,44 +25,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.gradle.superscalarsim.server;
+package com.gradle.superscalarsim.server.instructionDescriptions;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.gradle.superscalarsim.models.instruction.InstructionFunctionModel;
+
+import java.util.Map;
 
 /**
- * Enumerates all endpoints
+ * @brief Response for the /instructionDescription endpoint
  */
-public enum EndpointName
+public class InstructionDescriptionResponse
 {
-  compile("compile"), //
-  parseAsm("parseAsm"), //
-  checkConfig("checkConfig"), //
-  simulate("simulate"), //
-  schema("schema"), //
-  instructionDescription("instructionDescription");
-  
-  private final String pathName;
-  
-  EndpointName(String pathName)
-  {
-    this.pathName = pathName;
-  }
-  
   /**
-   * @return The path of the endpoint
+   * @brief A map of instruction names to their models
    */
-  public String getPath()
-  {
-    return "/" + pathName;
-  }
+  @JsonProperty(required = true)
+  public Map<String, InstructionFunctionModel> models;
   
-  /**
-   * @return The name of the endpoint
-   */
-  @JsonProperty("endpoint")
-  public String getName()
+  public InstructionDescriptionResponse(Map<String, InstructionFunctionModel> models)
   {
-    return pathName;
+    this.models = models;
   }
 }
-
