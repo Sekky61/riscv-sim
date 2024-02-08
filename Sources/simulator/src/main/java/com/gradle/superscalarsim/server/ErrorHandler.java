@@ -47,6 +47,9 @@ public class ErrorHandler implements HttpHandler
     this.next = next;
   }
   
+  /**
+   * <a href="https://undertow.io/undertow-docs/undertow-docs-2.1.0/index.html#error-handling">Docs</a>
+   */
   @Override
   public void handleRequest(final HttpServerExchange exchange) throws Exception
   {

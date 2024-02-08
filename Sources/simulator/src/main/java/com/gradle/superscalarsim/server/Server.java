@@ -36,7 +36,6 @@ import io.undertow.Handlers;
 import io.undertow.Undertow;
 import io.undertow.UndertowOptions;
 import io.undertow.server.HttpHandler;
-import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.encoding.ContentEncodingRepository;
 import io.undertow.server.handlers.encoding.DeflateEncodingProvider;
 import io.undertow.server.handlers.encoding.EncodingHandler;
@@ -44,11 +43,6 @@ import io.undertow.server.handlers.encoding.GzipEncodingProvider;
 
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-
-import static io.undertow.UndertowOptions.ENABLE_HTTP2;
 
 /**
  * Supports gzip encoding - client must include "Accept-Encoding: gzip" header.
@@ -83,16 +77,11 @@ public class Server
   {
     // Register handlers
     HttpHandler pathHandler = Handlers.path()//
-            .addPrefixPath(EndpointName.compile.getPath(),
-                           new TimeoutHandler(timeout_ms, new MyRequestHandler<>(new CompileHandler())))//
-            .addPrefixPath(EndpointName.parseAsm.getPath(),
-                           new TimeoutHandler(timeout_ms, new MyRequestHandler<>(new ParseAsmHandler())))
-            .addPrefixPath(EndpointName.checkConfig.getPath(),
-                           new TimeoutHandler(timeout_ms, new MyRequestHandler<>(new CheckConfigHandler())))
-            .addPrefixPath(EndpointName.simulate.getPath(),
-                           new TimeoutHandler(timeout_ms, new MyRequestHandler<>(new SimulateHandler())))
-            .addPrefixPath(EndpointName.schema.getPath(),
-                           new TimeoutHandler(timeout_ms, new MyRequestHandler<>(new SchemaHandler())));
+            .addPrefixPath(EndpointName.compile.getPath(), new MyRequestHandler<>(new CompileHandler()))//
+            .addPrefixPath(EndpointName.parseAsm.getPath(), new MyRequestHandler<>(new ParseAsmHandler()))
+            .addPrefixPath(EndpointName.checkConfig.getPath(), new MyRequestHandler<>(new CheckConfigHandler()))
+            .addPrefixPath(EndpointName.simulate.getPath(), new MyRequestHandler<>(new SimulateHandler()))
+            .addPrefixPath(EndpointName.schema.getPath(), new MyRequestHandler<>(new SchemaHandler()));
     HttpHandler baseHandler = pathHandler;
     
     // Add gzip encoding
@@ -103,12 +92,15 @@ public class Server
                       .addEncodingHandler("deflate", new DeflateEncodingProvider(), 10)).setNext(pathHandler);
     }
     
+    // Add error handling and timeout
+    baseHandler = new TimeoutHandler(timeout_ms, baseHandler);
     baseHandler = new ErrorHandler(baseHandler);
     
-    
-    Undertow server = Undertow.builder().addHttpListener(port, host).setServerOption(UndertowOptions.NO_REQUEST_TIMEOUT,
-                                                                                     120 * 1000) // idle connection timeout in milliseconds (!)
-            .setServerOption(ENABLE_HTTP2, true) // enable HTTP/2
+    // Start the server
+    Undertow server = Undertow.builder().addHttpListener(port, host) // listen on port
+            .setServerOption(UndertowOptions.NO_REQUEST_TIMEOUT,
+                             120 * 1000) // idle connection timeout in milliseconds (!)
+            //.setServerOption(ENABLE_HTTP2, true) // enable HTTP/2
             .setHandler(baseHandler).build();
     server.start();
     System.out.println("Server running on port " + port);
@@ -137,40 +129,5 @@ public class Server
       e.printStackTrace();
     }
     // At this point, the app returns to CLI handling and exits
-  }
-  
-  // Handler wrapper with timeout
-  static class TimeoutHandler implements HttpHandler
-  {
-    private final HttpHandler next;
-    private final int timeout_ms;
-    
-    public TimeoutHandler(int timeout_ms, HttpHandler next)
-    {
-      this.next       = next;
-      this.timeout_ms = timeout_ms;
-    }
-    
-    @Override
-    public void handleRequest(HttpServerExchange exchange) throws Exception
-    {
-      // Get the scheduler from the exchange
-      ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-      
-      // Schedule a timeout task
-      scheduler.schedule(() ->
-                         {
-                           if (!exchange.isComplete())
-                           {
-                             // Timeout handling logic
-                             exchange.setStatusCode(500); // Internal Server Error
-                             exchange.getResponseSender().send("Request timed out");
-                             exchange.endExchange();
-                           }
-                         }, timeout_ms, TimeUnit.MILLISECONDS);
-      
-      // Delegate to the next handler
-      next.handleRequest(exchange);
-    }
   }
 }
