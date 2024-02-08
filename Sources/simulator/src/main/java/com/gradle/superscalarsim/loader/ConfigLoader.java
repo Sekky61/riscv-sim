@@ -45,6 +45,7 @@ public class ConfigLoader
   /*
     Load configuration from file depending on dev/prod profile.
     Runs before the CLI entry point, so it can rewrite these values.
+    Currently, it is here for tests, other usecases should use CLI params and not config file.
    */
   static
   {
@@ -58,10 +59,7 @@ public class ConfigLoader
       // load a properties file
       prop.load(input);
       
-      gccPath             = prop.getProperty("gcc.path");
-      registerFileDirPath = prop.getProperty("registerFileDir.path");
-      serverTimeoutMs     = prop.getProperty("server.timeoutMs") != null ? Integer.parseInt(
-              prop.getProperty("server.timeoutMs")) : null;
+      gccPath = prop.getProperty("gcc.path");
     }
     catch (IOException ex)
     {
