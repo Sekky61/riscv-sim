@@ -48,6 +48,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import static io.undertow.UndertowOptions.ENABLE_HTTP2;
+
 /**
  * Supports gzip encoding - client must include "Accept-Encoding: gzip" header.
  *
@@ -101,9 +103,13 @@ public class Server
                       .addEncodingHandler("deflate", new DeflateEncodingProvider(), 10)).setNext(pathHandler);
     }
     
+    baseHandler = new ErrorHandler(baseHandler);
     
-    Undertow server = Undertow.builder().addHttpListener(port, host)
-            .setServerOption(UndertowOptions.NO_REQUEST_TIMEOUT, 120).setHandler(baseHandler).build();
+    
+    Undertow server = Undertow.builder().addHttpListener(port, host).setServerOption(UndertowOptions.NO_REQUEST_TIMEOUT,
+                                                                                     120 * 1000) // idle connection timeout in milliseconds (!)
+            .setServerOption(ENABLE_HTTP2, true) // enable HTTP/2
+            .setHandler(baseHandler).build();
     server.start();
     System.out.println("Server running on port " + port);
     
