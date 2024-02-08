@@ -100,5 +100,10 @@ async function callApi<T extends EndpointName>(
     },
     body: JSON.stringify(request),
   });
+
+  if (!response.ok) {
+    throw new Error(`Network response was not ok: ${response.status}`);
+  }
+
   return response.json();
 }

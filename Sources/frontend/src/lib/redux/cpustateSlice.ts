@@ -184,7 +184,6 @@ export const callSimulation = createAsyncThunk<SimulateResponse, number | null>(
       return response;
     } catch (err) {
       // Log error and show simple error message to the user
-      console.error(err);
       console.warn(
         'Try clearing the local storage (application tab) and reloading the page',
       );

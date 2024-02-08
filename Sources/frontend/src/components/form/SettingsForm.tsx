@@ -32,6 +32,7 @@
 'use client';
 
 import { Button } from '@/components/base/ui/button';
+import { apiBaseUrl } from '@/constant/env';
 import { useAppSelector } from '@/lib/redux/hooks';
 import { selectActiveConfig } from '@/lib/redux/isaSlice';
 import { saveAsFile, saveAsJsonFile } from '@/lib/utils';
@@ -44,9 +45,7 @@ export function SettingsForm() {
 
   // Log to console the address of API server
   console.info(
-    `API server address: http://${process.env.NEXT_PUBLIC_SIMSERVER_HOST}:${
-      process.env.NEXT_PUBLIC_SIMSERVER_PORT ?? '8000'
-    }`,
+    `API server address (that Next.js backend proxies): ${apiBaseUrl}`,
   );
 
   const clearLocalMemory = () => {

@@ -1,3 +1,5 @@
+const { apiBaseUrl } = require('./src/constant/env');
+
 const withBundleAnalyzer = require('@next/bundle-analyzer')({
   enabled: process.env.ANALYZE === 'true',
 });
@@ -21,8 +23,7 @@ const nextConfig = withBundleAnalyzer({
     return [
       {
         source: '/api/sim/:slug',
-        destination: `http://${process.env.NEXT_PUBLIC_SIMSERVER_HOST}:${process.env.NEXT_PUBLIC_SIMSERVER_PORT ?? '8000'
-          }/:slug`,
+        destination: `${apiBaseUrl}/:slug`,
       },
     ];
   },

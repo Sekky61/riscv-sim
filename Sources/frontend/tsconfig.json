@@ -41,7 +41,7 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "next.config.js"
-  ],
+, "src/constant/env.js"  ],
   "exclude": [
     "node_modules"
   ],

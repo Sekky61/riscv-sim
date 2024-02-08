@@ -84,7 +84,7 @@ public class GccCaller
     }
     catch (Exception e)
     {
-      return CompileResult.failure("Error starting GCC", null);
+      return CompileResult.failure("Error starting GCC", List.of());
     }
     // Write the code to the process
     try
@@ -94,7 +94,7 @@ public class GccCaller
     }
     catch (Exception e)
     {
-      return CompileResult.failure("Error writing to GCC", null);
+      return CompileResult.failure("Error writing to GCC", List.of());
     }
     // Read the output
     String output = null;
@@ -104,7 +104,7 @@ public class GccCaller
     }
     catch (Exception e)
     {
-      return CompileResult.failure("Error reading from GCC", null);
+      return CompileResult.failure("Error reading from GCC", List.of());
     }
     // Wait for the process to finish
     try
@@ -113,14 +113,14 @@ public class GccCaller
     }
     catch (Exception e)
     {
-      return CompileResult.failure("Error waiting for GCC", null);
+      return CompileResult.failure("Error waiting for GCC", List.of());
     }
     // Read the exit value
     int exitValue = p.exitValue();
     if (exitValue != 0)
     {
       // Take error from stderr
-      List<Object> error = null;
+      List<Object> error = List.of();
       try
       {
         String error_string = new String(p.getErrorStream().readAllBytes());
@@ -133,7 +133,7 @@ public class GccCaller
       }
       catch (Exception e)
       {
-        return CompileResult.failure("GCC returned non-zero exit value: " + exitValue, null);
+        return CompileResult.failure("GCC returned non-zero exit value: " + exitValue, List.of());
       }
       return CompileResult.failure("GCC returned non-zero exit value: " + exitValue, error);
     }
@@ -165,6 +165,9 @@ public class GccCaller
     public boolean success;
     public String code;
     public String error;
+    /**
+     * The objects are too complex to be typed
+     */
     public List<Object> compilerErrors;
     
     private CompileResult(boolean success, String code, String error, List<Object> compilerErrors)
@@ -177,7 +180,7 @@ public class GccCaller
     
     public static CompileResult success(String code)
     {
-      return new CompileResult(true, code, null, null);
+      return new CompileResult(true, code, null, List.of());
     }
     
     public static CompileResult failure(String error, List<Object> compilerErrors)

@@ -283,7 +283,7 @@ export const compilerSlice = createSlice({
         state.asmDirty = false;
         if (!action.payload.success) {
           state.compileStatus = 'failed';
-          state.cErrors = action.payload.compilerError;
+          state.cErrors = action.payload.compilerError ?? [];
           // Delete mapping
           state.asmToC = [];
           state.asmCode = '';
@@ -311,7 +311,7 @@ export const compilerSlice = createSlice({
       .addCase(callParseAsm.fulfilled, (state, action) => {
         state.asmDirty = false;
         if (!action.payload.success) {
-          state.asmErrors = action.payload.errors;
+          state.asmErrors = action.payload.errors || [];
           return;
         }
         state.asmErrors = [];

@@ -57,6 +57,7 @@ class ServerApp implements Callable<Integer>
     {
       GccCaller.compilerPath = gccPath;
     }
+    System.err.println("GCC path: " + GccCaller.compilerPath);
     
     // Handle the server timeout parameter
     Integer timeout_ms = ConfigLoader.serverTimeoutMs;
