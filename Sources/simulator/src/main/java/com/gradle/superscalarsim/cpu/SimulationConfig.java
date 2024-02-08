@@ -30,7 +30,7 @@ package com.gradle.superscalarsim.cpu;
 import com.gradle.superscalarsim.code.CodeParser;
 import com.gradle.superscalarsim.code.Label;
 import com.gradle.superscalarsim.code.ParseError;
-import com.gradle.superscalarsim.loader.InitLoader;
+import com.gradle.superscalarsim.loader.StaticDataProvider;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -115,7 +115,7 @@ public class SimulationConfig
     }
     
     // Parse code
-    CodeParser codeParser = new CodeParser(new InitLoader(), memoryLocations);
+    CodeParser codeParser = new CodeParser(new StaticDataProvider(), memoryLocations);
     codeParser.parseCode(code);
     
     if (!codeParser.success())

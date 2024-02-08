@@ -1,11 +1,11 @@
 /**
- * @file InstructionFunctionModelManager.java
+ * @file IDataProvider.java
  * @author Michal Majer
  * Faculty of Information Technology
  * Brno University of Technology
  * xmajer21@stud.fit.vutbr.cz
- * @brief File contains interface for object managers
- * @date 07 November  2023 18:00 (created)
+ * @brief File contains interface for static data provider
+ * @date 08 February  2024 20:00 (created)
  * @section Licence
  * This file is part of the Superscalar simulator app
  * <p>
@@ -25,27 +25,33 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
-package com.gradle.superscalarsim.managers;
+package com.gradle.superscalarsim.loader;
 
 import com.gradle.superscalarsim.models.instruction.InstructionFunctionModel;
+import com.gradle.superscalarsim.models.register.RegisterFile;
 
-import java.util.WeakHashMap;
+import java.util.Map;
 
 /**
- * Manages all instruction function models in the simulation
+ * @brief Interface for static data provider is available for cpu to get instructions
+ * and register definitions of RISC-V architecture.
  */
-public class InstructionFunctionModelManager implements IInstanceManager<InstructionFunctionModel>
+public interface IDataProvider
 {
-  WeakHashMap<InstructionFunctionModel, Object> instances = new WeakHashMap<>();
+  /**
+   * @return Register file
+   */
+  RegisterFile getRegisterFile();
   
   /**
-   * @return WeakHashMap of instances
-   * @brief Get the instances
+   * @return Description of all instructions in the ISA
    */
-  @Override
-  public WeakHashMap<InstructionFunctionModel, Object> getInstances()
-  {
-    return instances;
-  }
+  Map<String, InstructionFunctionModel> getInstructionFunctionModels();
+  
+  /**
+   * @param instructionName Name of the instruction (e.g. "addi")
+   *
+   * @return Instruction function model
+   */
+  InstructionFunctionModel getInstructionFunctionModel(String instructionName);
 }

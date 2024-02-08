@@ -2,7 +2,7 @@ package com.gradle.superscalarsim.builders;
 
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
-import com.gradle.superscalarsim.loader.InitLoader;
+import com.gradle.superscalarsim.loader.IDataProvider;
 import com.gradle.superscalarsim.models.instruction.InputCodeArgument;
 import com.gradle.superscalarsim.models.instruction.InputCodeModel;
 import com.gradle.superscalarsim.models.instruction.InstructionFunctionModel;
@@ -20,7 +20,7 @@ public class InputCodeModelBuilder
   private List<InputCodeArgument> arguments;
   private DataTypeEnum dataTypeEnum;
   private InstructionFunctionModel instructionFunctionModel;
-  private InitLoader loader;
+  private IDataProvider loader;
   
   public InputCodeModelBuilder()
   {
@@ -32,7 +32,7 @@ public class InputCodeModelBuilder
     this.dataTypeEnum        = null;
   }
   
-  public InputCodeModelBuilder hasLoader(InitLoader loader)
+  public InputCodeModelBuilder hasLoader(IDataProvider loader)
   {
     this.loader = loader;
     return this;

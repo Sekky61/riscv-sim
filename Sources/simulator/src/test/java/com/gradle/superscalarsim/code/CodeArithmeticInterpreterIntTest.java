@@ -9,11 +9,13 @@ import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.enums.RegisterTypeEnum;
 import com.gradle.superscalarsim.factories.RegisterModelFactory;
-import com.gradle.superscalarsim.loader.InitLoader;
+import com.gradle.superscalarsim.loader.DynamicDataProvider;
+import com.gradle.superscalarsim.loader.IDataProvider;
 import com.gradle.superscalarsim.models.instruction.InputCodeArgument;
 import com.gradle.superscalarsim.models.instruction.InputCodeModel;
 import com.gradle.superscalarsim.models.instruction.InstructionFunctionModel;
 import com.gradle.superscalarsim.models.instruction.SimCodeModel;
+import com.gradle.superscalarsim.models.register.RegisterFile;
 import com.gradle.superscalarsim.models.register.RegisterFileModel;
 import com.gradle.superscalarsim.models.register.RegisterModel;
 import com.gradle.superscalarsim.models.util.Result;
@@ -29,7 +31,7 @@ import java.util.Map;
 public class CodeArithmeticInterpreterIntTest
 {
   UnifiedRegisterFileBlock urf;
-  private InitLoader initLoader;
+  private IDataProvider staticDataProvider;
   private CodeArithmeticInterpreter codeArithmeticInterpreter;
   
   @Before
@@ -43,9 +45,9 @@ public class CodeArithmeticInterpreterIntTest
             .hasRegisterList(Arrays.asList(integer1, integer2, integer3, integer4)).build();
     
     
-    initLoader = new InitLoader(Collections.singletonList(integerFile), null);
-    initLoader.setInstructionFunctionModels(setUpInstructions());
-    urf = new UnifiedRegisterFileBlock(initLoader, 320, new RegisterModelFactory());
+    RegisterFile registerFile = new RegisterFile(Collections.singletonList(integerFile), List.of());
+    staticDataProvider = new DynamicDataProvider(registerFile, setUpInstructions());
+    urf                = new UnifiedRegisterFileBlock(staticDataProvider, 320, new RegisterModelFactory());
     
     this.codeArithmeticInterpreter = new CodeArithmeticInterpreter();
   }
@@ -180,7 +182,7 @@ public class CodeArithmeticInterpreterIntTest
     InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rd").hasRegister("x1").build();
     InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x2").build();
     InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x3").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("add")
+    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(staticDataProvider).hasInstructionName("add")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
@@ -194,7 +196,7 @@ public class CodeArithmeticInterpreterIntTest
     InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rd").hasRegister("x1").build();
     InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x3").build();
     InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x2").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("sub")
+    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(staticDataProvider).hasInstructionName("sub")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
@@ -208,7 +210,7 @@ public class CodeArithmeticInterpreterIntTest
     InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rd").hasRegister("x1").build();
     InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x2").build();
     InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x3").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("mul")
+    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(staticDataProvider).hasInstructionName("mul")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
@@ -222,7 +224,7 @@ public class CodeArithmeticInterpreterIntTest
     InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rd").hasRegister("x1").build();
     InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x2").build();
     InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x3").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("div")
+    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(staticDataProvider).hasInstructionName("div")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
@@ -237,8 +239,8 @@ public class CodeArithmeticInterpreterIntTest
     InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x2").build();
     InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasConstant("2", DataTypeEnum.kInt)
             .build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("shiftLeft")
-            .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
+    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(staticDataProvider)
+            .hasInstructionName("shiftLeft").hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
     // TODO: Fails because rs2 is set to immediate value
@@ -253,8 +255,8 @@ public class CodeArithmeticInterpreterIntTest
     InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x2").build();
     InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasConstant("2", DataTypeEnum.kInt)
             .build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("shiftRight")
-            .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
+    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(staticDataProvider)
+            .hasInstructionName("shiftRight").hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
     Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel).value();
@@ -268,8 +270,8 @@ public class CodeArithmeticInterpreterIntTest
     InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x4").build();
     InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasConstant("1", DataTypeEnum.kInt)
             .build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("shiftRight")
-            .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
+    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(staticDataProvider)
+            .hasInstructionName("shiftRight").hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
     Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel).value();
@@ -283,7 +285,7 @@ public class CodeArithmeticInterpreterIntTest
     InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x4").build();
     InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasConstant("1", DataTypeEnum.kInt)
             .build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader)
+    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(staticDataProvider)
             .hasInstructionName("shiftRightLog").hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
@@ -297,8 +299,8 @@ public class CodeArithmeticInterpreterIntTest
     InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rd").hasRegister("x1").build();
     InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x2").build();
     InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x3").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("mulAdd")
-            .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
+    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(staticDataProvider)
+            .hasInstructionName("mulAdd").hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
     Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel).value();
@@ -311,8 +313,8 @@ public class CodeArithmeticInterpreterIntTest
     InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rd").hasRegister("x1").build();
     InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x2").build();
     InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x3").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("addMul")
-            .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
+    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(staticDataProvider)
+            .hasInstructionName("addMul").hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
     Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel).value();
@@ -325,7 +327,7 @@ public class CodeArithmeticInterpreterIntTest
     InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rd").hasRegister("x1").build();
     InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x2").build();
     InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x4").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("and")
+    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(staticDataProvider).hasInstructionName("and")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
@@ -339,7 +341,7 @@ public class CodeArithmeticInterpreterIntTest
     InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rd").hasRegister("x1").build();
     InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x2").build();
     InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x3").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("or")
+    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(staticDataProvider).hasInstructionName("or")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
@@ -353,8 +355,8 @@ public class CodeArithmeticInterpreterIntTest
     InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rd").hasRegister("x1").build();
     InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x3").build();
     InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x2").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("cmpLt")
-            .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
+    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(staticDataProvider)
+            .hasInstructionName("cmpLt").hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
     Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel).value();
@@ -367,8 +369,8 @@ public class CodeArithmeticInterpreterIntTest
     InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rd").hasRegister("x1").build();
     InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x2").build();
     InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x2").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("cmpLt")
-            .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
+    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(staticDataProvider)
+            .hasInstructionName("cmpLt").hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
     Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel).value();
@@ -381,8 +383,8 @@ public class CodeArithmeticInterpreterIntTest
     InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rd").hasRegister("x1").build();
     InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x2").build();
     InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x3").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("cmpLt")
-            .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
+    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(staticDataProvider)
+            .hasInstructionName("cmpLt").hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
     Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel).value();
@@ -395,8 +397,8 @@ public class CodeArithmeticInterpreterIntTest
     InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rd").hasRegister("x1").build();
     InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x3").build();
     InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x2").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("cmpLe")
-            .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
+    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(staticDataProvider)
+            .hasInstructionName("cmpLe").hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
     Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel).value();
@@ -409,8 +411,8 @@ public class CodeArithmeticInterpreterIntTest
     InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rd").hasRegister("x1").build();
     InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x2").build();
     InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x2").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("cmpLe")
-            .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
+    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(staticDataProvider)
+            .hasInstructionName("cmpLe").hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
     Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel).value();
@@ -423,8 +425,8 @@ public class CodeArithmeticInterpreterIntTest
     InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rd").hasRegister("x1").build();
     InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x2").build();
     InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x3").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("cmpLe")
-            .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
+    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(staticDataProvider)
+            .hasInstructionName("cmpLe").hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
     Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel).value();
@@ -437,8 +439,8 @@ public class CodeArithmeticInterpreterIntTest
     InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rd").hasRegister("x1").build();
     InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x3").build();
     InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x2").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("cmpEq")
-            .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
+    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(staticDataProvider)
+            .hasInstructionName("cmpEq").hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
     Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel).value();
@@ -451,8 +453,8 @@ public class CodeArithmeticInterpreterIntTest
     InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rd").hasRegister("x1").build();
     InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x2").build();
     InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x2").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("cmpEq")
-            .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
+    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(staticDataProvider)
+            .hasInstructionName("cmpEq").hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
     Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel).value();
@@ -465,8 +467,8 @@ public class CodeArithmeticInterpreterIntTest
     InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rd").hasRegister("x1").build();
     InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x2").build();
     InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x3").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("cmpEq")
-            .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
+    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(staticDataProvider)
+            .hasInstructionName("cmpEq").hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
     Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel).value();
@@ -479,8 +481,8 @@ public class CodeArithmeticInterpreterIntTest
     InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rd").hasRegister("x1").build();
     InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x3").build();
     InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x2").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("cmpGe")
-            .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
+    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(staticDataProvider)
+            .hasInstructionName("cmpGe").hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
     Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel).value();
@@ -493,8 +495,8 @@ public class CodeArithmeticInterpreterIntTest
     InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rd").hasRegister("x1").build();
     InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x2").build();
     InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x2").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("cmpGe")
-            .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
+    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(staticDataProvider)
+            .hasInstructionName("cmpGe").hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
     Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel).value();
@@ -507,8 +509,8 @@ public class CodeArithmeticInterpreterIntTest
     InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rd").hasRegister("x1").build();
     InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x2").build();
     InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x3").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("cmpGe")
-            .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
+    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(staticDataProvider)
+            .hasInstructionName("cmpGe").hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
     Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel).value();
@@ -521,8 +523,8 @@ public class CodeArithmeticInterpreterIntTest
     InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rd").hasRegister("x1").build();
     InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x3").build();
     InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x2").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("cmpGt")
-            .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
+    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(staticDataProvider)
+            .hasInstructionName("cmpGt").hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
     Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel).value();
@@ -535,8 +537,8 @@ public class CodeArithmeticInterpreterIntTest
     InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rd").hasRegister("x1").build();
     InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x2").build();
     InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x2").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("cmpGt")
-            .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
+    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(staticDataProvider)
+            .hasInstructionName("cmpGt").hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
     Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel).value();
@@ -549,8 +551,8 @@ public class CodeArithmeticInterpreterIntTest
     InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rd").hasRegister("x1").build();
     InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x2").build();
     InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x3").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("cmpGt")
-            .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
+    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(staticDataProvider)
+            .hasInstructionName("cmpGt").hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
     Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel).value();
@@ -563,7 +565,7 @@ public class CodeArithmeticInterpreterIntTest
     InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rd").hasRegister("x1").build();
     InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x2").build();
     InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x1").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("div")
+    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(staticDataProvider).hasInstructionName("div")
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
     

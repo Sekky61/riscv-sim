@@ -3,7 +3,7 @@ package com.gradle.superscalarsim.blocks;
 import com.gradle.superscalarsim.blocks.base.UnifiedRegisterFileBlock;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.factories.RegisterModelFactory;
-import com.gradle.superscalarsim.loader.InitLoader;
+import com.gradle.superscalarsim.loader.StaticDataProvider;
 import com.gradle.superscalarsim.models.register.RegisterModel;
 import org.junit.Assert;
 import org.junit.Before;
@@ -12,15 +12,15 @@ import org.junit.Test;
 public class RegisterTests
 {
   
-  InitLoader initLoader;
+  StaticDataProvider staticDataProvider;
   
   UnifiedRegisterFileBlock unifiedRegisterFileBlock;
   
   @Before
   public void setUp()
   {
-    initLoader               = new InitLoader();
-    unifiedRegisterFileBlock = new UnifiedRegisterFileBlock(initLoader, 320, new RegisterModelFactory());
+    staticDataProvider       = new StaticDataProvider();
+    unifiedRegisterFileBlock = new UnifiedRegisterFileBlock(staticDataProvider, 320, new RegisterModelFactory());
   }
   
   /**

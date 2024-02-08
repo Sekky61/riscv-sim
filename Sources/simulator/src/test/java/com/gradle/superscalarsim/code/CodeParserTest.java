@@ -5,7 +5,7 @@ import com.gradle.superscalarsim.cpu.MemoryInitializer;
 import com.gradle.superscalarsim.cpu.MemoryLocation;
 import com.gradle.superscalarsim.cpu.SimulationStatistics;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
-import com.gradle.superscalarsim.loader.InitLoader;
+import com.gradle.superscalarsim.loader.StaticDataProvider;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,8 +17,8 @@ public class CodeParserTest
   @Before
   public void setUp()
   {
-    InitLoader initLoader = new InitLoader();
-    this.codeParser = new CodeParser(initLoader);
+    StaticDataProvider staticDataProvider = new StaticDataProvider();
+    this.codeParser = new CodeParser(staticDataProvider);
   }
   
   @Test

@@ -37,7 +37,7 @@ import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.factories.RegisterModelFactory;
-import com.gradle.superscalarsim.loader.InitLoader;
+import com.gradle.superscalarsim.loader.IDataProvider;
 import com.gradle.superscalarsim.models.register.IRegisterFile;
 import com.gradle.superscalarsim.models.register.RegisterFileModel;
 import com.gradle.superscalarsim.models.register.RegisterModel;
@@ -76,7 +76,7 @@ public class UnifiedRegisterFileBlock
    *
    * @brief Constructor
    */
-  public UnifiedRegisterFileBlock(final InitLoader loader,
+  public UnifiedRegisterFileBlock(final IDataProvider loader,
                                   int speculativeRegisterCount,
                                   RegisterModelFactory registerModelFactory)
   {

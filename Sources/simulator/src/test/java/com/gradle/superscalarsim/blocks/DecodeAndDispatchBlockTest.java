@@ -11,10 +11,13 @@ import com.gradle.superscalarsim.cpu.SimulationStatistics;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.enums.RegisterTypeEnum;
 import com.gradle.superscalarsim.factories.RegisterModelFactory;
-import com.gradle.superscalarsim.loader.InitLoader;
+import com.gradle.superscalarsim.loader.DynamicDataProvider;
+import com.gradle.superscalarsim.loader.IDataProvider;
+import com.gradle.superscalarsim.loader.StaticDataProvider;
 import com.gradle.superscalarsim.models.instruction.InputCodeArgument;
 import com.gradle.superscalarsim.models.instruction.InputCodeModel;
 import com.gradle.superscalarsim.models.instruction.SimCodeModel;
+import com.gradle.superscalarsim.models.register.RegisterFile;
 import com.gradle.superscalarsim.models.register.RegisterFileModel;
 import com.gradle.superscalarsim.models.register.RegisterModel;
 import org.junit.Assert;
@@ -31,15 +34,15 @@ public class DecodeAndDispatchBlockTest
 {
   @Mock
   private InstructionFetchBlock instructionFetchBlock;
-  @Mock
-  private InitLoader loader;
+  
+  private IDataProvider staticDataProvider;
   @Mock
   private BranchTargetBuffer branchTargetBuffer;
   @Mock
   private GlobalHistoryRegister globalHistoryRegister;
   @Mock
   private InstructionMemoryBlock instructionMemoryBlock;
-  private InitLoader initLoader;
+  private IDataProvider initLoader;
   
   private RenameMapTableBlock renameMapTableBlock;
   private DecodeAndDispatchBlock decodeAndDispatchBlock;
@@ -69,10 +72,10 @@ public class DecodeAndDispatchBlockTest
     RegisterFileModel floatFile = new RegisterFileModelBuilder().hasName("float").hasDataType(RegisterTypeEnum.kFloat)
             .hasRegisterList(Arrays.asList(float1, float2, float3, float4)).build();
     
-    loader = new InitLoader(Arrays.asList(integerFile, floatFile), null);
+    RegisterFile registerFile = new RegisterFile(Arrays.asList(integerFile, floatFile), List.of());
+    staticDataProvider = new DynamicDataProvider(registerFile, new StaticDataProvider().getInstructionFunctionModels());
     
-    loader              = new InitLoader(Arrays.asList(integerFile, floatFile), null);
-    urf                 = new UnifiedRegisterFileBlock(loader, 320, new RegisterModelFactory());
+    urf                 = new UnifiedRegisterFileBlock(staticDataProvider, 320, new RegisterModelFactory());
     renameMapTableBlock = new RenameMapTableBlock(urf);
     
     int fetchWidth          = 3;
@@ -91,13 +94,13 @@ public class DecodeAndDispatchBlockTest
     InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("x2").build();
     InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x3").build();
     
-    InputCodeModel ins1 = new InputCodeModelBuilder().hasLoader(loader).hasInstructionName("add")
+    InputCodeModel ins1 = new InputCodeModelBuilder().hasLoader(staticDataProvider).hasInstructionName("add")
             .hasCodeLine("add x1,x2,x3").hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     SimCodeModel sim1 = new SimCodeModel(ins1, 0, 0);
-    InputCodeModel ins2 = new InputCodeModelBuilder().hasLoader(loader).hasInstructionName("sub")
+    InputCodeModel ins2 = new InputCodeModelBuilder().hasLoader(staticDataProvider).hasInstructionName("sub")
             .hasCodeLine("sub x1,x2,x3").hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     SimCodeModel sim2 = new SimCodeModel(ins2, 0, 0);
-    InputCodeModel ins3 = new InputCodeModelBuilder().hasLoader(loader).hasInstructionName("mul")
+    InputCodeModel ins3 = new InputCodeModelBuilder().hasLoader(staticDataProvider).hasInstructionName("mul")
             .hasCodeLine("mul x1,x2,x3").hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     SimCodeModel       sim3         = new SimCodeModel(ins3, 0, 0);
     List<SimCodeModel> instructions = Arrays.asList(sim1, sim2, sim3);
@@ -127,13 +130,13 @@ public class DecodeAndDispatchBlockTest
     InputCodeArgument argumentMul3 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x5").build();
     
     
-    InputCodeModel ins1 = new InputCodeModelBuilder().hasLoader(loader).hasInstructionName("add")
+    InputCodeModel ins1 = new InputCodeModelBuilder().hasLoader(staticDataProvider).hasInstructionName("add")
             .hasCodeLine("add x1,x2,x3").hasArguments(Arrays.asList(argumentAdd1, argumentAdd2, argumentAdd3)).build();
     SimCodeModel sim1 = new SimCodeModel(ins1, 0, 0);
-    InputCodeModel ins2 = new InputCodeModelBuilder().hasLoader(loader).hasInstructionName("sub")
+    InputCodeModel ins2 = new InputCodeModelBuilder().hasLoader(staticDataProvider).hasInstructionName("sub")
             .hasCodeLine("sub x2,x3,x4").hasArguments(Arrays.asList(argumentSub1, argumentSub2, argumentSub3)).build();
     SimCodeModel sim2 = new SimCodeModel(ins2, 0, 0);
-    InputCodeModel ins3 = new InputCodeModelBuilder().hasLoader(loader).hasInstructionName("mul")
+    InputCodeModel ins3 = new InputCodeModelBuilder().hasLoader(staticDataProvider).hasInstructionName("mul")
             .hasCodeLine("mul x3,x4,x5").hasArguments(Arrays.asList(argumentMul1, argumentMul2, argumentMul3)).build();
     SimCodeModel       sim3         = new SimCodeModel(ins3, 0, 0);
     List<SimCodeModel> instructions = Arrays.asList(sim1, sim2, sim3);
@@ -163,13 +166,13 @@ public class DecodeAndDispatchBlockTest
     InputCodeArgument argumentMul3 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("x3").build();
     
     
-    InputCodeModel ins1 = new InputCodeModelBuilder().hasLoader(loader).hasInstructionName("add")
+    InputCodeModel ins1 = new InputCodeModelBuilder().hasLoader(staticDataProvider).hasInstructionName("add")
             .hasCodeLine("add x3,x4,x5").hasArguments(Arrays.asList(argumentAdd1, argumentAdd2, argumentAdd3)).build();
     SimCodeModel sim1 = new SimCodeModel(ins1, 0, 0);
-    InputCodeModel ins2 = new InputCodeModelBuilder().hasLoader(loader).hasInstructionName("sub")
+    InputCodeModel ins2 = new InputCodeModelBuilder().hasLoader(staticDataProvider).hasInstructionName("sub")
             .hasCodeLine("sub x2,x3,x4").hasArguments(Arrays.asList(argumentSub1, argumentSub2, argumentSub3)).build();
     SimCodeModel sim2 = new SimCodeModel(ins2, 0, 0);
-    InputCodeModel ins3 = new InputCodeModelBuilder().hasLoader(loader).hasInstructionName("mul")
+    InputCodeModel ins3 = new InputCodeModelBuilder().hasLoader(staticDataProvider).hasInstructionName("mul")
             .hasCodeLine("mul x1,x2,x3").hasArguments(Arrays.asList(argumentMul1, argumentMul2, argumentMul3)).build();
     SimCodeModel       sim3         = new SimCodeModel(ins3, 0, 0);
     List<SimCodeModel> instructions = Arrays.asList(sim1, sim2, sim3);

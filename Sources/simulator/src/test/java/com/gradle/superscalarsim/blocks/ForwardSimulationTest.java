@@ -13,8 +13,11 @@ import com.gradle.superscalarsim.cpu.*;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.enums.RegisterTypeEnum;
-import com.gradle.superscalarsim.loader.InitLoader;
+import com.gradle.superscalarsim.loader.DynamicDataProvider;
+import com.gradle.superscalarsim.loader.IDataProvider;
+import com.gradle.superscalarsim.loader.StaticDataProvider;
 import com.gradle.superscalarsim.models.FunctionalUnitDescription;
+import com.gradle.superscalarsim.models.register.RegisterFile;
 import com.gradle.superscalarsim.models.register.RegisterFileModel;
 import com.gradle.superscalarsim.models.register.RegisterModel;
 import org.junit.Assert;
@@ -23,13 +26,14 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class ForwardSimulationTest
 {
   // Use this to step the sim
   Cpu cpu;
   
-  InitLoader initLoader;
+  IDataProvider staticDataProvider;
   
   InstructionMemoryBlock instructionMemoryBlock;
   private SimulationStatistics simulationStatistics;
@@ -153,8 +157,10 @@ public class ForwardSimulationTest
     
     SimulationConfig cfg = new SimulationConfig("", new ArrayList<>(), cpuCfg);
     
-    this.initLoader = new InitLoader(Arrays.asList(integerFile, floatFile), new ArrayList<>());
-    this.cpu        = new Cpu(cfg, null, initLoader);
+    RegisterFile registerFile = new RegisterFile(Arrays.asList(integerFile, floatFile), List.of());
+    this.staticDataProvider = new DynamicDataProvider(registerFile,
+                                                      new StaticDataProvider().getInstructionFunctionModels());
+    this.cpu                = new Cpu(cfg, null, staticDataProvider);
     CpuState cpuState = this.cpu.cpuState;
     // Fix the statistics - nothing gets allocated
     cpuState.statistics.allocateInstructionStats(50);
@@ -214,7 +220,7 @@ public class ForwardSimulationTest
   public void simulate_oneIntInstruction_finishesAfterSevenTicks()
   {
     
-    CodeParser codeParser = new CodeParser(initLoader);
+    CodeParser codeParser = new CodeParser(staticDataProvider);
     codeParser.parseCode("""
                                  add x1,x2,x3
                                  """);
@@ -277,7 +283,7 @@ public class ForwardSimulationTest
   @Test
   public void simulate_threeIntRawInstructions_finishesAfterElevenTicks()
   {
-    CodeParser codeParser = new CodeParser(initLoader);
+    CodeParser codeParser = new CodeParser(staticDataProvider);
     codeParser.parseCode("""
                                  add x3,x4,x5
                                  add x2,x3,x4
@@ -420,7 +426,7 @@ public class ForwardSimulationTest
   @Test
   public void simulate_intOneRawConflict_usesFullPotentialOfTheProcessor()
   {
-    CodeParser codeParser = new CodeParser(initLoader);
+    CodeParser codeParser = new CodeParser(staticDataProvider);
     codeParser.parseCode("""
                                  sub x5,x4,x5
                                  add x2,x3,x4
@@ -545,7 +551,7 @@ public class ForwardSimulationTest
   @Test
   public void simulate_oneFloatInstruction_finishesAfterSevenTicks()
   {
-    CodeParser codeParser = new CodeParser(initLoader);
+    CodeParser codeParser = new CodeParser(staticDataProvider);
     codeParser.parseCode("""
                                  fadd.s f1,f2,f3
                                  """);
@@ -611,7 +617,7 @@ public class ForwardSimulationTest
   @Test
   public void simulate_threeFloatRawInstructions_finishesAfterElevenTicks()
   {
-    CodeParser codeParser = new CodeParser(initLoader);
+    CodeParser codeParser = new CodeParser(staticDataProvider);
     codeParser.parseCode("""
                                  fadd.s f3,f4,f5
                                  fadd.s f2,f3,f4
@@ -765,7 +771,7 @@ public class ForwardSimulationTest
   @Test
   public void simulate_floatOneRawConflict_usesFullPotentialOfTheProcessor()
   {
-    CodeParser codeParser = new CodeParser(initLoader);
+    CodeParser codeParser = new CodeParser(staticDataProvider);
     codeParser.parseCode("""
                                  fsub.s f5,f4,f5
                                  fadd.s f2,f3,f4
@@ -901,7 +907,7 @@ public class ForwardSimulationTest
   @Test
   public void simulate_jumpFromLabelToLabel_recordToBTB()
   {
-    CodeParser codeParser = new CodeParser(initLoader);
+    CodeParser codeParser = new CodeParser(staticDataProvider);
     codeParser.parseCode("""
                                   jal x0,lab3
                                  lab1:
@@ -1028,7 +1034,7 @@ public class ForwardSimulationTest
   @Test
   public void simulate_wellDesignedLoop_oneMisfetch()
   {
-    CodeParser codeParser = new CodeParser(initLoader);
+    CodeParser codeParser = new CodeParser(staticDataProvider);
     codeParser.parseCode("""
                                   loop:
                                     beq x3,x0,loopEnd
@@ -1269,7 +1275,7 @@ public class ForwardSimulationTest
   @Test
   public void simulate_ifElse_executeFirstFragment()
   {
-    CodeParser codeParser = new CodeParser(initLoader);
+    CodeParser codeParser = new CodeParser(staticDataProvider);
     codeParser.parseCode("""
                                   beq x5,x0,labelIf
                                   subi x1,x1,10
@@ -1373,7 +1379,7 @@ public class ForwardSimulationTest
   @Test
   public void simulate_ifElse_executeElseFragment()
   {
-    CodeParser codeParser = new CodeParser(initLoader);
+    CodeParser codeParser = new CodeParser(staticDataProvider);
     codeParser.parseCode("""
                                   beq x3, x0, labelIf
                                   subi x1, x1, 10
@@ -1446,7 +1452,7 @@ public class ForwardSimulationTest
   @Test
   public void simulate_oneStore_savesIntInMemory()
   {
-    CodeParser codeParser = new CodeParser(initLoader);
+    CodeParser codeParser = new CodeParser(staticDataProvider);
     codeParser.parseCode("""
                                   sw x3,0(x2)
                                  """);
@@ -1503,7 +1509,7 @@ public class ForwardSimulationTest
   @Test
   public void simulate_oneLoad_loadsIntInMemory()
   {
-    CodeParser codeParser = new CodeParser(initLoader);
+    CodeParser codeParser = new CodeParser(staticDataProvider);
     codeParser.parseCode("""
                                  lw x1,0(x2)
                                  """);
@@ -1565,7 +1571,7 @@ public class ForwardSimulationTest
   @Test
   public void simulate_loadBypassing_successfullyLoadsFromStoreBuffer()
   {
-    CodeParser codeParser = new CodeParser(initLoader);
+    CodeParser codeParser = new CodeParser(staticDataProvider);
     codeParser.parseCode("""
                                  subi x4,x4,5
                                  sw x3,0(x2)
@@ -1658,7 +1664,7 @@ public class ForwardSimulationTest
     // subi x3 x3 5
     // sw x3 x2 0 - store 6 to address x2 (25)
     // lw x1 x2 0 - load from address x2
-    CodeParser codeParser = new CodeParser(initLoader);
+    CodeParser codeParser = new CodeParser(staticDataProvider);
     codeParser.parseCode("""
                                  subi x3, x3, 5
                                  sw x3, 0(x2)
@@ -1790,7 +1796,7 @@ public class ForwardSimulationTest
     // subi x3 x3 5 # x3: 6 -> 1
     // sw x3 x2 0   # x3 (1) is stored to memory [25+0]
     // lw x1 x2 0   # x1: 0 -> 1
-    CodeParser codeParser = new CodeParser(initLoader);
+    CodeParser codeParser = new CodeParser(staticDataProvider);
     codeParser.parseCode("""
                                   subi x3, x3, 5
                                   sw x3, 0(x2)

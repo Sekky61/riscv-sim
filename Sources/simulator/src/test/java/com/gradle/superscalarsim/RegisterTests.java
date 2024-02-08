@@ -1,7 +1,10 @@
 package com.gradle.superscalarsim;
 
 import com.gradle.superscalarsim.enums.DataTypeEnum;
+import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
+import com.gradle.superscalarsim.enums.RegisterTypeEnum;
 import com.gradle.superscalarsim.models.register.RegisterDataContainer;
+import com.gradle.superscalarsim.models.register.RegisterModel;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -16,6 +19,26 @@ public class RegisterTests
     
     int x = (int) registerDataContainer.getValue(DataTypeEnum.kInt);
     Assert.assertEquals(123, x);
+  }
+  
+  /**
+   * Are enums objects?
+   */
+  @Test
+  public void testDeepCopyDataType()
+  {
+    RegisterModel registerModel = new RegisterModel("xx", false, RegisterTypeEnum.kInt, RegisterReadinessEnum.kFree);
+    registerModel.setValue(123, DataTypeEnum.kUInt);
+    
+    // Copy changes its type and readiness
+    RegisterModel copy = new RegisterModel(registerModel);
+    copy.setValue(456, DataTypeEnum.kInt);
+    copy.setReadiness(RegisterReadinessEnum.kExecuted);
+    
+    // Original is unchanged
+    Assert.assertEquals(123, registerModel.getValue(DataTypeEnum.kUInt));
+    Assert.assertEquals(DataTypeEnum.kUInt, registerModel.getValueContainer().getCurrentType());
+    Assert.assertEquals(RegisterReadinessEnum.kFree, registerModel.getReadiness());
   }
   
   @Test

@@ -30,7 +30,8 @@ package com.gradle.superscalarsim.code;
 import com.gradle.superscalarsim.cpu.MemoryLocation;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.factories.InputCodeModelFactory;
-import com.gradle.superscalarsim.loader.InitLoader;
+import com.gradle.superscalarsim.loader.IDataProvider;
+import com.gradle.superscalarsim.loader.StaticDataProvider;
 import com.gradle.superscalarsim.models.instruction.DebugInfo;
 import com.gradle.superscalarsim.models.instruction.InputCodeArgument;
 import com.gradle.superscalarsim.models.instruction.InputCodeModel;
@@ -102,9 +103,9 @@ public class CodeParser
   /**
    * For cases when instance manager is not needed
    */
-  public CodeParser(InitLoader initLoader)
+  public CodeParser(IDataProvider dataProvider)
   {
-    this(initLoader.getInstructionFunctionModels(), initLoader.getRegisterFile(), new InputCodeModelFactory(),
+    this(dataProvider.getInstructionFunctionModels(), dataProvider.getRegisterFile(), new InputCodeModelFactory(),
          new ArrayList<>());
   }
   
@@ -132,10 +133,10 @@ public class CodeParser
   /**
    * For cases when instance manager is not needed, but memory locations are needed.
    */
-  public CodeParser(InitLoader initLoader, List<MemoryLocation> memoryLocations)
+  public CodeParser(StaticDataProvider staticDataProvider, List<MemoryLocation> memoryLocations)
   {
-    this(initLoader.getInstructionFunctionModels(), initLoader.getRegisterFile(), new InputCodeModelFactory(),
-         memoryLocations);
+    this(staticDataProvider.getInstructionFunctionModels(), staticDataProvider.getRegisterFile(),
+         new InputCodeModelFactory(), memoryLocations);
   }
   
   /**

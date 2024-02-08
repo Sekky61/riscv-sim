@@ -28,7 +28,7 @@
 package com.gradle.superscalarsim.server.instructionDescriptions;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.gradle.superscalarsim.loader.InitLoader;
+import com.gradle.superscalarsim.loader.StaticDataProvider;
 import com.gradle.superscalarsim.models.instruction.InstructionFunctionModel;
 import com.gradle.superscalarsim.serialization.Serialization;
 import com.gradle.superscalarsim.server.IRequestDeserializer;
@@ -49,7 +49,7 @@ public class InstructionDescriptionHandler implements IRequestResolver<Instructi
   public InstructionDescriptionResponse resolve(InstructionDescriptionRequest request)
   {
     // Load the instruction descriptions
-    InitLoader                            loader = new InitLoader();
+    StaticDataProvider                    loader = new StaticDataProvider();
     Map<String, InstructionFunctionModel> models = loader.getInstructionFunctionModels();
     return new InstructionDescriptionResponse(models);
   }

@@ -13,20 +13,20 @@ public class RegisterSubloaderTest
   @Test
   public void creatingModelFromFile_fileExists_returnsModel()
   {
-    InitLoader initLoader = new InitLoader();
-    initLoader.registerFileResourceDirPath = "/testRegister.json";
+    StaticDataProvider staticDataProvider = new StaticDataProvider();
+    staticDataProvider.registerFileResourceDirPath = "/testRegister.json";
     
     // Execute
     try
     {
-      initLoader.loadFromConfigFiles();
+      staticDataProvider.loadFromConfigFiles();
     }
     catch (IOException e)
     {
       throw new RuntimeException(e);
     }
     
-    RegisterFile model = initLoader.getRegisterFile();
+    RegisterFile model = staticDataProvider.getRegisterFile();
     
     // TODO: file data type is no longer a thing
     // Assert.assertEquals(RegisterTypeEnum.kInt, model.getDataType());
@@ -45,9 +45,7 @@ public class RegisterSubloaderTest
   @Test
   public void creatingModelFromFile_fileHasCorruptedRegister_returnsNull()
   {
-    InitLoader initLoader = new InitLoader();
-    initLoader.registerFileResourceDirPath = "/testRegisterCorruptedRegister.json";
-    
-    Assert.assertThrows(Exception.class, initLoader::loadFromConfigFiles);
+    StaticDataProvider.registerFileResourceDirPath = "/testRegisterCorruptedRegister.json";
+    Assert.assertThrows(Exception.class, StaticDataProvider::loadFromConfigFiles);
   }
 }

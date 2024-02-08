@@ -29,7 +29,7 @@ package com.gradle.superscalarsim.cpu;
 
 import com.gradle.superscalarsim.blocks.base.UnifiedRegisterFileBlock;
 import com.gradle.superscalarsim.factories.RegisterModelFactory;
-import com.gradle.superscalarsim.loader.InitLoader;
+import com.gradle.superscalarsim.loader.StaticDataProvider;
 import com.gradle.superscalarsim.models.instruction.DebugInfo;
 import org.junit.Assert;
 import org.junit.Before;
@@ -69,7 +69,8 @@ public class DebugPrintTests
   public void testDebugCommentMalformed()
   {
     // Setup
-    DebugLog debugLog = new DebugLog(new UnifiedRegisterFileBlock(new InitLoader(), 1, new RegisterModelFactory()));
+    DebugLog debugLog = new DebugLog(
+            new UnifiedRegisterFileBlock(new StaticDataProvider(), 1, new RegisterModelFactory()));
     // Exercise
     debugLog.add(new DebugInfo(" ${}  $"), 0);
     debugLog.add(new DebugInfo("  $}  ${}{ "), 0);
@@ -86,7 +87,7 @@ public class DebugPrintTests
   public void testFormatter()
   {
     // Setup + exercise
-    UnifiedRegisterFileBlock registerFile = new UnifiedRegisterFileBlock(new InitLoader(), 1,
+    UnifiedRegisterFileBlock registerFile = new UnifiedRegisterFileBlock(new StaticDataProvider(), 1,
                                                                          new RegisterModelFactory());
     DebugLog debugLog = new DebugLog(registerFile);
     
@@ -102,7 +103,7 @@ public class DebugPrintTests
   public void testBadFormatString()
   {
     // Setup + exercise
-    UnifiedRegisterFileBlock registerFile = new UnifiedRegisterFileBlock(new InitLoader(), 1,
+    UnifiedRegisterFileBlock registerFile = new UnifiedRegisterFileBlock(new StaticDataProvider(), 1,
                                                                          new RegisterModelFactory());
     DebugLog debugLog = new DebugLog(registerFile);
     

@@ -169,8 +169,8 @@ public class RegisterModel implements Identifiable
     this.name       = register.name;
     this.isConstant = register.isConstant;
     this.type       = register.type;
-    this.value      = register.value;
     this.readiness  = register.readiness;
+    this.value      = new RegisterDataContainer(register.value);
   }// end of Copy constructor
   
   /**
