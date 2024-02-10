@@ -75,8 +75,8 @@ export function SidePanel() {
         >
           <div className='w-full h-full flex justify-center items-center'>
             <div className='w-6 h-6 flex flex-col items-center'>
-              <div className='h-3 w-1 rounded-full bg-black expand-arrow-up' />
-              <div className='h-3 w-1 rounded-full bg-black expand-arrow-down' />
+              <div className='h-3 w-1 rounded-full bg-primary expand-arrow-up' />
+              <div className='h-3 w-1 rounded-full bg-primary expand-arrow-down' />
             </div>
           </div>
         </button>
