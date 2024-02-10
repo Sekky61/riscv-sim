@@ -46,10 +46,11 @@ import hardSet from 'redux-persist/lib/stateReconciler/hardSet';
 import storage from 'redux-persist/lib/storage';
 
 import compilerReducer, { CompilerReducer } from '@/lib/redux/compilerSlice';
-import cpuReducer from '@/lib/redux/cpustateSlice';
+import cpuReducer, { cpuInitialState } from '@/lib/redux/cpustateSlice';
 import isaReducer, { IsaReducer } from '@/lib/redux/isaSlice';
 import shortcutsReducer from '@/lib/redux/shortcutsSlice';
 import simConfigReducer, { SimConfigReducer } from '@/lib/redux/simConfigSlice';
+import { staticInstructionLoad } from '@/lib/staticInstructionLoad';
 
 /**
  * This is the root of the global state.
@@ -79,6 +80,10 @@ const migrations = {
   11: (state: PersistedState) => {
     return undefined;
   },
+  12: (state: PersistedState) => {
+    // Added instructionFunctionModels
+    return undefined;
+  },
 };
 
 // Persistance config
@@ -88,7 +93,7 @@ const persistIsaConfig = {
   // The key in localStorage
   key: 'root',
   // Change the version when changing the schema
-  version: 11,
+  version: 12,
   storage,
   stateReconciler: hardSet,
   // This migration is used when the version number is increased
@@ -136,6 +141,11 @@ const reducers = combineReducers({
     }),
 }); */
 
+/**
+ * Create the store with the preloaded state, persistor and the reducers.
+ *
+ * Note: What is defined in preloadedState stays after the state is updated.
+ */
 export const makeStore = () => {
   const store = configureStore({
     reducer: reducers,
@@ -150,8 +160,8 @@ export const makeStore = () => {
   return { store, persistor };
 };
 
-export type AppPersistedStore = ReturnType<typeof makeStore>;
-export type AppStore = ReturnType<typeof makeStore>['store'];
+export type AppPersistedStore = Awaited<ReturnType<typeof makeStore>>;
+export type AppStore = AppPersistedStore['store'];
 // Infer the `RootState` and `AppDispatch` types from the store itself
 // Infer the `RootState` and `AppDispatch` types from the store itself
 export type RootState = ReturnType<AppStore['getState']>;

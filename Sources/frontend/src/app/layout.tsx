@@ -36,14 +36,18 @@ import '@/styles/globals.css';
 
 import { cn } from '@/lib/utils';
 
-import Navbar from '@/components/Navbar';
+import { Toaster } from '@/components/base/ui/sonner';
 import { TooltipProvider } from '@/components/base/ui/tooltip';
 import PersistedStoreProvider from '@/lib/redux/PersistedStoreProvider';
-import { Toaster } from '@/components/base/ui/sonner';
 
+/**
+ * Font loading by next.js.
+ * The display: swap is important for loading, but it is badly documented. It worked for a long time without it.
+ */
 const fontSans = FontSans({
   subsets: ['latin'],
   variable: '--font-sans',
+  display: 'swap',
 });
 
 /**
@@ -52,7 +56,9 @@ const fontSans = FontSans({
  *
  * Other layout are nested inside this layout.
  */
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default async function RootLayout({
+  children,
+}: { children: ReactNode }) {
   return (
     <html lang='en'>
       <head>

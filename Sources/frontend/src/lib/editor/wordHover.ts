@@ -33,8 +33,8 @@
 
 import { hoverTooltip } from '@codemirror/view';
 
-import { InstructionDescription } from '../types/instructionsDatabase';
 import { callInstructionDescriptionImpl } from '@/lib/serverCalls';
+import { InstructionDescription } from '../types/instructionsDatabase';
 
 /**
  * Create a tooltip (HTML element) for the given instruction

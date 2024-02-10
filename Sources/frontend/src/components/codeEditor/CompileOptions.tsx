@@ -59,9 +59,9 @@ import {
 
 import { type CodeExample } from '@/lib/types/codeExamples';
 
+import { COMPILE_SHORTCUT } from '@/components/shortcuts/CompilerShortcuts';
 import clsx from 'clsx';
 import { RadioInput } from '../form/RadioInput';
-import { COMPILE_SHORTCUT } from '@/components/shortcuts/CompilerShortcuts';
 
 /**
  * The compile options component. On the left side to the editor.

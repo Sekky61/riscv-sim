@@ -1,14 +1,14 @@
 /**
- * @file    route.ts
+ * @file    staticInstructionLoad.ts
  *
  * @author  Michal Majer
  *          Faculty of Information Technology
  *          Brno University of Technology
  *          xmajer21@stud.fit.vutbr.cz
  *
- * @brief   Static data for the app (JSON files)
+ * @brief   Functionality to load asset from sim API on the server side
  *
- * @date    31 January 2024, 10:00 (created)
+ * @date    09 February 2024, 15:00 (created)
  *
  * @section Licence
  * This file is part of the Superscalar simulator app
@@ -29,21 +29,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { promises as fs } from 'fs';
-import path from 'path';
+import { callInstructionDescriptionImpl } from '@/lib/serverCalls';
 
-export async function GET() {
-  // Find the absolute path of the "json" directory
-  const jsonDirectory = path.join(process.cwd(), 'public/json');
-  // Read the "data.json" file
-  const fileContents = await fs.readFile(
-    `${jsonDirectory}/codeExamples.json`,
-    'utf8',
-  );
-
-  const json = JSON.parse(fileContents);
-
-  return Response.json(json);
+/**
+ * This function is called from getStaticProps of each page.
+ * The data loaded is the instruction set definition.
+ */
+export async function staticInstructionLoad() {
+  const response = await callInstructionDescriptionImpl();
+  return {
+    models: response.models,
+  };
 }
-
-export const dynamic = 'force-static';

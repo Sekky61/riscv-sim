@@ -234,7 +234,6 @@ export interface Entry {
 }
 
 export interface ManagerRegistry {
-  instructionFunctionManager: Record<string, InstructionFunctionModel>;
   inputCodeManager: Record<string, InputCodeModel>;
   simCodeManager: Record<string, SimCodeModel>;
   registerModelManager: Record<string, RegisterModel>;

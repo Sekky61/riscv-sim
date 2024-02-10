@@ -41,15 +41,15 @@ import { transformErrors } from '@/lib/editor/transformErrors';
 import { selectActiveConfig } from '@/lib/redux/isaSlice';
 import type { RootState } from '@/lib/redux/store';
 import { callCompilerImpl, callParseAsmImpl } from '@/lib/serverCalls';
+import { CodeExample } from '@/lib/types/codeExamples';
 import {
   CompileResponse,
   ComplexErrorItem,
   ParseAsmResponse,
   SimpleParseError,
 } from '@/lib/types/simulatorApi';
-import { toast } from 'sonner';
-import { CodeExample } from '@/lib/types/codeExamples';
 import { saveAsFile } from '@/lib/utils';
+import { toast } from 'sonner';
 
 export type OptimizeOption =
   | 'O2'

@@ -35,7 +35,7 @@ import { SidePanel } from '@/components/simulation/SidePanel';
 import { SimGrid } from '@/components/simulation/SimGrid';
 import Timeline from '@/components/simulation/Timeline';
 
-export default function HomePage() {
+export default async function HomePage() {
   return (
     <div className='flex'>
       <div className='py-2 flex-grow h-screen'>

@@ -49,8 +49,8 @@ import {
 } from '@/lib/redux/cpustateSlice';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 
-import { stopReasonToShortString } from '@/lib/utils';
 import { IconButton } from '@/components/IconButton';
+import { stopReasonToShortString } from '@/lib/utils';
 
 export type TimelineProps = Pick<
   React.HTMLAttributes<HTMLDivElement>,
@@ -71,7 +71,8 @@ export default function Timeline({ className = '' }: TimelineProps) {
   if (tick > 0) {
     state = 1;
   }
-  if (stopReason !== 'kNotStopped') {
+  // todo why would stopReason be undefined?
+  if (stopReason !== 'kNotStopped' && stopReason !== undefined) {
     state = 2;
     message = stopReasonToShortString(stopReason);
   }

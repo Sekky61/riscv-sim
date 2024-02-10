@@ -35,25 +35,24 @@
 /**
  * True if the app is running in production mode.
  */
-const isProd = process.env.NODE_ENV === "production";
+const isProd = process.env.NODE_ENV === 'production';
 
 /**
  * True if the app is running in development mode.
  */
-const isLocal = process.env.NODE_ENV === "development";
+const isLocal = process.env.NODE_ENV === 'development';
 
 /**
  * True if the logger should be shown.
  */
 const showLogger = isLocal
-	? true
-	: process.env.NEXT_PUBLIC_SHOW_LOGGER === "true" ?? false;
+  ? true
+  : process.env.NEXT_PUBLIC_SHOW_LOGGER === 'true' ?? false;
 
 /**
  * The host of the API server. Is always defined,
  */
-const apiServerHost =
-	process.env.NEXT_PUBLIC_SIMSERVER_HOST ?? "localhost";
+const apiServerHost = process.env.NEXT_PUBLIC_SIMSERVER_HOST ?? 'localhost';
 
 /**
  * The port of the actual Java API server.
@@ -67,10 +66,10 @@ const apiServerPort = process.env.NEXT_PUBLIC_SIMSERVER_PORT ?? 8000;
 const apiBaseUrl = `http://${apiServerHost}:${apiServerPort}`;
 
 module.exports = {
-	apiBaseUrl,
-	apiServerHost,
-	apiServerPort,
-	isLocal,
-	isProd,
-	showLogger,
+  apiBaseUrl,
+  apiServerHost,
+  apiServerPort,
+  isLocal,
+  isProd,
+  showLogger,
 };

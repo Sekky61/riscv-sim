@@ -44,7 +44,7 @@ import {
 import { useReloadSim } from '@/lib/hooks/useReloadSim';
 
 export function ReloadSimModal() {
-  const { same, reload } = useReloadSim();
+  const { same, cleanReload } = useReloadSim();
   const [openModal, setOpenModal] = useState(!same);
 
   return (
@@ -60,7 +60,7 @@ export function ReloadSimModal() {
         <div className='flex gap-4'>
           <Button
             onClick={() => {
-              reload();
+              cleanReload();
               setOpenModal(false);
             }}
           >

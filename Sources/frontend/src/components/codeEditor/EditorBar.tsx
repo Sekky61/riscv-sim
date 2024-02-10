@@ -33,8 +33,8 @@ import { openFile, saveCodeToFile } from '@/lib/redux/compilerSlice';
 import { useAppDispatch } from '@/lib/redux/hooks';
 
 import { Button } from '@/components/base/ui/button';
-import React from 'react';
 import { loadFile } from '@/lib/utils';
+import React from 'react';
 
 type EditorBarProps = {
   mode: 'c' | 'asm';

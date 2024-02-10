@@ -42,6 +42,7 @@ import {
   SimulateResponse,
 } from '@/lib/types/simulatorApi';
 
+import { apiBaseUrl, apiServerHost } from '@/constant/env';
 import { CompilerOptions } from './redux/compilerSlice';
 
 export async function callCompilerImpl(
@@ -93,7 +94,23 @@ async function callApi<T extends EndpointName>(
   const endpoint = args[0];
   const request = args[1];
 
-  const response = await fetch(`/api/sim/${endpoint}`, {
+  let apiUrl: string;
+  if (typeof window === 'undefined') {
+    // Running on server
+    const host = apiBaseUrl || 'localhost:3000';
+    apiUrl = `${host}/`;
+  } else {
+    // Running in browser
+    apiUrl = '/api/sim/';
+  }
+
+  const url = `${apiUrl}${endpoint}`;
+
+  console.info(`Calling API: ${url}`);
+
+  // In browser, the absolute path works (origin is defined), but on server (node.js) it needs a full URL.
+  // The only way to know the url at build time is to use an environment variable.
+  const response = await fetch(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

@@ -66,8 +66,6 @@ public class SchemaHandler implements IRequestResolver<SchemaRequest, JsonNode>,
   @Override
   public JsonNode resolve(SchemaRequest request)
   {
-    System.out.println("SchemaHandler.resolve " + request);
-    
     boolean isRequest = Objects.equals(request.requestResponse, SchemaRequest.RequestResponse.request);
     
     // Match the request to the correct handler
