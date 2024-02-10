@@ -39,7 +39,7 @@ import {
   changeHighlightEffect,
   lineDecor,
 } from '@/lib/editor/lineDecorExtension';
-import { wordHover } from '@/lib/editor/wordHover';
+import { wordHoverFactory } from '@/lib/editor/wordHover';
 import {
   asmFieldTyping,
   callParseAsm,
@@ -59,6 +59,7 @@ import { Button } from '@/components/base/ui/button';
 import EditorBar from '@/components/codeEditor/EditorBar';
 import { StatusIcon } from '@/components/codeEditor/StatusIcon';
 import clsx from 'clsx';
+import { selectAllInstructionFunctionModels } from '@/lib/redux/cpustateSlice';
 
 /**
  * The base theme for the editor.
@@ -98,16 +99,18 @@ export default function AsmDisplay() {
   const dirty = useAppSelector(selectDirty);
   const mode = useAppSelector(selectEditorMode);
   const asmErrors = useAppSelector(selectAsmCodeMirrorErrors);
+  const functionModels = useAppSelector(selectAllInstructionFunctionModels);
 
   const isEnabled = mode === 'asm';
 
   const editor = useRef<HTMLDivElement>(null);
+  // todo: function models are loaded only from the sim page. Visiting the compiler page directly will result in an empty list.
   const { setContainer, view, state } = useCodeMirror({
     value: asm,
     height: '100%',
     width: '100%',
     readOnly: !isEnabled,
-    extensions: [lineDecor(), wordHover],
+    extensions: [lineDecor(), wordHoverFactory(functionModels)],
     theme: baseTheme,
     onChange: (value, _viewUpdate) => {
       // Keep state in sync

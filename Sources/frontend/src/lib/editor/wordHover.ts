@@ -60,66 +60,61 @@ function instructionTooltip(instruction: InstructionDescription) {
   return dom;
 }
 
-let supportedInstructions: { models: Record<string, InstructionDescription> } =
-  { models: {} };
-
 /**
- * Load supported instructions from the API immediately after the page loads
+ * It is ok if the supportedInstructions is empty, the hover will just not work.
+ * Factory pattern is used to hand over the instruction list from redux state.
+ *
+ * @param supportedInstructions All supported instructions and their descriptions
+ * @returns Word hover xtension for the ASM code editor
  */
-async function fetchSupportedInstructions() {
-  const data = await callInstructionDescriptionImpl();
+export const wordHoverFactory = (
+  supportedInstructions: Record<string, InstructionDescription>,
+) => {
+  return hoverTooltip((view, pos, side) => {
+    // Extract hovered word
+    const { from, to, text } = view.state.doc.lineAt(pos);
+    let start = pos;
+    let end = pos;
 
-  supportedInstructions = data;
-}
-fetchSupportedInstructions();
-
-/**
- * Setup the word hover tooltip
- */
-export const wordHover = hoverTooltip((view, pos, side) => {
-  // Extract hovered word
-  const { from, to, text } = view.state.doc.lineAt(pos);
-  let start = pos;
-  let end = pos;
-
-  while (start > from) {
-    const l = text[start - from - 1];
-    if (!l || !/\w/.test(l)) {
-      break;
+    while (start > from) {
+      const l = text[start - from - 1];
+      if (!l || !/\w/.test(l)) {
+        break;
+      }
+      start--;
     }
-    start--;
-  }
 
-  while (end < to) {
-    const l = text[end - from];
-    if (!l || !/\w/.test(l)) {
-      break;
+    while (end < to) {
+      const l = text[end - from];
+      if (!l || !/\w/.test(l)) {
+        break;
+      }
+      end++;
     }
-    end++;
-  }
 
-  if ((start === pos && side < 0) || (end === pos && side > 0)) {
-    return null;
-  }
+    if ((start === pos && side < 0) || (end === pos && side > 0)) {
+      return null;
+    }
 
-  // Check if the word is an instruction
-  const word = text.slice(start - from, end - from);
+    // Check if the word is an instruction
+    const word = text.slice(start - from, end - from);
 
-  // Get info and create tooltip
-  const instructionInfo = supportedInstructions.models[word];
+    // Get info and create tooltip
+    const instructionInfo = supportedInstructions[word];
 
-  if (!instructionInfo) {
-    return null;
-  }
+    if (!instructionInfo) {
+      return null;
+    }
 
-  return {
-    pos: start,
-    end,
-    above: true,
-    create(_view) {
-      // Gets wrapped in a .cm-tooltip
-      const dom = instructionTooltip(instructionInfo);
-      return { dom };
-    },
-  };
-});
+    return {
+      pos: start,
+      end,
+      above: true,
+      create(_view) {
+        // Gets wrapped in a .cm-tooltip
+        const dom = instructionTooltip(instructionInfo);
+        return { dom };
+      },
+    };
+  });
+};

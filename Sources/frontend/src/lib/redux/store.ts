@@ -50,7 +50,6 @@ import cpuReducer, { cpuInitialState } from '@/lib/redux/cpustateSlice';
 import isaReducer, { IsaReducer } from '@/lib/redux/isaSlice';
 import shortcutsReducer from '@/lib/redux/shortcutsSlice';
 import simConfigReducer, { SimConfigReducer } from '@/lib/redux/simConfigSlice';
-import { staticInstructionLoad } from '@/lib/staticInstructionLoad';
 
 /**
  * This is the root of the global state.

@@ -84,6 +84,7 @@ export async function callInstructionDescriptionImpl(): Promise<InstructionDescr
 
 /**
  * Call the simulator server API. Parse the response as JSON.
+ * Throws an error if the response is not ok, it should be caught by the caller.
  *
  * Next.js proxies the backend simulator. Set the NEXT_PUBLIC_SIMSERVER_PORT and NEXT_PUBLIC_SIMSERVER_HOST env variables (see .env.example, Dockerfile).
  * The default is the same host as the app is running on, but on port 8000.
