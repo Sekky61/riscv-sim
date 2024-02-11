@@ -32,6 +32,13 @@
 'use client';
 
 import { Button } from '@/components/base/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/base/ui/card';
 import { apiBaseUrl } from '@/constant/env';
 import { useAppSelector } from '@/lib/redux/hooks';
 import { selectActiveConfig } from '@/lib/redux/isaSlice';
@@ -71,28 +78,40 @@ export function SettingsForm() {
   };
 
   return (
-    <div className='flex flex-col gap-4'>
+    <div className='flex flex-col gap-8'>
       <div>
-        <h3 className='text-xl'>Local Memory</h3>
-        <p>
-          In case of problems, as a troubleshooting step, you can clear the
-          local memory.
-        </p>
-        <p>Remember to reload the page after clearing local memory.</p>
-        <Button onClick={clearLocalMemory}>Clear local memory</Button>
+        <Card>
+          <CardHeader>
+            <CardTitle>Local Storage</CardTitle>
+            <CardDescription>
+              You can empty the local storage as a first step in troubleshooting
+              in the event of an issue. Make sure you refresh the page
+              afterwards.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button onClick={clearLocalMemory}>Clear local memory</Button>
+          </CardContent>
+        </Card>
       </div>
       <div>
-        <h3 className='text-xl'>Export Current Settings</h3>
-        <p>
-          You can export current settings to a file. This can be useful for
-          sharing settings with others, backup, or for using the CLI version of
-          the simulator.
-        </p>
-        <div className='flex gap-4'>
-          <Button onClick={saveCpuConfig}>Save CPU Configuration</Button>
-          <Button onClick={saveCode}>Save Code</Button>
-          <Button onClick={saveMemory}>Save Memory</Button>
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Export Current Configuration</CardTitle>
+            <CardDescription>
+              The current settings can be exported to a file. This is useful for
+              utilizing the simulator's CLI version, backing up data, and
+              sharing the settings with others.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className='flex gap-4'>
+              <Button onClick={saveCpuConfig}>Export CPU Configuration</Button>
+              <Button onClick={saveCode}>Export Program in Assembly</Button>
+              <Button onClick={saveMemory}>Export Memory Objects</Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

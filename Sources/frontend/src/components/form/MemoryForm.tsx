@@ -360,21 +360,23 @@ export default function MemoryForm({
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
-      <div className='flex flex-col gap-4'>
+      <div className='flex flex-col gap-4 justify-start'>
         <FormInput
           title='Pointer Name'
           hint='Name of the memory location. Will be used as the pointer name in C/assembler.'
           {...register('name')}
           error={formState.errors.name}
         />
-        <RadioInputWithTitle
-          name='dataType'
-          title='Data type'
-          hint='Data type dictates the interpretation of provided values. For example, choosing Integer will allocate 4 bytes for each value.'
-          control={control}
-          choices={dataTypes}
-          texts={dataTypesText}
-        />
+        <div className='flex mb-4'>
+          <RadioInputWithTitle
+            name='dataType'
+            title='Data type'
+            hint='Data type dictates the interpretation of provided values. For example, choosing Integer will allocate 4 bytes for each value.'
+            control={control}
+            choices={dataTypes}
+            texts={dataTypesText}
+          />
+        </div>
         <FormInput
           type='number'
           title='Alignment (Bytes)'
@@ -382,15 +384,17 @@ export default function MemoryForm({
           {...register('alignment', { valueAsNumber: true })}
           error={formState.errors.alignment}
         />
-        <RadioInputWithTitle
-          name='dataSource'
-          title='Data Source'
-          choices={['constant', 'random', 'file']}
-          texts={['A Constant', 'Random Numbers', 'CSV File']}
-          control={control}
-        />
+        <div className='flex mb-4'>
+          <RadioInputWithTitle
+            name='dataSource'
+            title='Data Source'
+            choices={['constant', 'random', 'file']}
+            texts={['A Constant', 'Random Numbers', 'CSV File']}
+            control={control}
+          />
+        </div>
       </div>
-      <Card className='my-4 p-4'>
+      <Card className='mt-4 p-4'>
         <h2 className='text-xl mb-4'>Data Options</h2>
         <div className='h-28'>
           {watchFields.dataSource === 'constant' && (
@@ -479,24 +483,15 @@ export default function MemoryForm({
           )}
         </div>
       </Card>
-      <div className='relative'>
+      <div className='flex justify-between p-4'>
+        <Button type='submit' disabled={!isDirty || !isValid}>
+          {existing ? 'Update' : 'Create'}
+        </Button>
         {existing && (
-          <Button
-            className='absolute left-0'
-            type='button'
-            variant='destructive'
-            onClick={deleteCallback}
-          >
+          <Button type='button' variant='destructive' onClick={deleteCallback}>
             Delete
           </Button>
         )}
-        <Button
-          className='absolute right-0'
-          type='submit'
-          disabled={!isDirty || !isValid}
-        >
-          {existing ? 'Update' : 'Create'}
-        </Button>
       </div>
     </form>
   );

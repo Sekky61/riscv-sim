@@ -47,6 +47,11 @@ import clsx from 'clsx';
 import Head from 'next/head';
 import { useState } from 'react';
 
+/**
+ * This is the main page for the memory editor.
+ * It allows the user to create, edit, and delete memory locations.
+ * It also allows the user to import and export memory locations.
+ */
 export default function HomePage() {
   // Load the active ISA
   const dispatch = useAppDispatch();
@@ -82,42 +87,47 @@ export default function HomePage() {
       <h1 className='m-2 mb-6 text-2xl'>Memory Editor</h1>
       <div className='flex h-full flex-col'>
         <div className='flex divide-x'>
-          <div className='w-48 p-4 flex flex-col gap-4'>
-            <h2 className='text-lg'>Memory Locations</h2>
-            {memoryLocations?.length === 0 && (
-              <div className='text-gray-400 text-sm text-center'>
-                No memory locations
-              </div>
-            )}
-            {memoryLocations.map((memoryLocation) => {
-              const isActive = memoryLocation.name === activeMemoryLocation;
-              const style = clsx(isActive ? 'bg-gray-100' : '');
-              return (
-                <Button
-                  variant='ghost'
-                  className={style}
-                  onClick={() => setActiveMemoryLocation(memoryLocation.name)}
-                >
-                  {memoryLocation.name}
-                </Button>
-              );
-            })}
-            <div className='mt-4 pt-4 border-t'>
-              <Button
-                variant='ghost'
-                className={clsx(
-                  'new' === activeMemoryLocation ? 'bg-gray-100' : '',
-                  'w-full',
-                )}
-                onClick={() => setActiveMemoryLocation('new')}
-              >
-                New Object
+          <div className='w-48 p-4 flex flex-col gap-4 divide-y'>
+            <Button
+              variant='ghost'
+              className={clsx(
+                'new' === activeMemoryLocation && 'bg-accent',
+                'w-full',
+              )}
+              onClick={() => setActiveMemoryLocation('new')}
+            >
+              New Object
+            </Button>
+            <div className='pt-4 flex justify-around'>
+              <Button onClick={doImport} variant='ghost'>
+                Import
               </Button>
-              <div className='text-center p-2'>or</div>
-              <div className='flex gap-2'>
-                <Button onClick={doImport}>Import</Button>
-                <Button onClick={doExport}>Export</Button>
-              </div>
+              <Button onClick={doExport} variant='ghost'>
+                Export
+              </Button>
+            </div>
+            <div>
+              <h2 className='text-lg mt-4 font-semibold text-center'>
+                Memory Objects
+              </h2>
+              {memoryLocations?.length === 0 && (
+                <div className='text-gray-400 text-sm text-center'>
+                  No memory locations
+                </div>
+              )}
+              {memoryLocations.map((memoryLocation) => {
+                const isActive = memoryLocation.name === activeMemoryLocation;
+                const style = clsx(isActive && 'bg-accent', 'w-full mt-4');
+                return (
+                  <Button
+                    variant='ghost'
+                    className={style}
+                    onClick={() => setActiveMemoryLocation(memoryLocation.name)}
+                  >
+                    {memoryLocation.name}
+                  </Button>
+                );
+              })}
             </div>
           </div>
           <div className='p-4 flex-grow'>
