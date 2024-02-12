@@ -62,6 +62,7 @@ public class MemoryLocation
    * Names of the memory locations. The first name is the primary one.
    * Derived from the label in the assembly code.
    * When multiple labels point to the same memory location, they are all stored here.
+   * This is a list because GCC sometimes generates such code, but it is not allowed to use in manually written code.
    */
   public List<String> names;
   
@@ -78,8 +79,8 @@ public class MemoryLocation
    */
   public List<SpanType> dataTypes;
   /**
-   * Memory items. They lie next to each other in memory.
-   * The data type of each item is defined in the dataTypes list.
+   * Memory elements. Not bytes, but elements. They lie next to each other in memory.
+   * The data type of each item is defined using the dataTypes list.
    * Example: ["1", "2", "3.7"].
    */
   public List<String> data;

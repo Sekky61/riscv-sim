@@ -53,8 +53,8 @@ import java.util.Random;
  * The simulator expects an array of these objects.
  * Next comes the list of deviating fields:
  * <ul>
- *   <li>Instead of array of strings `names`, a String field `name` can be used.
- *   This results in the names being a list with the single name.</li>
+ *   <li>Instead of array of strings `names` as defined in MemoryLocation, a String field `name` is used.
+ *   This disallows manually created memory locations to have multiple names.</li>
  *   <li>Instead of array of SpanType `dataTypes`, a String field `dataType` can be used.
  *   This results in the dataTypes being a list with the single SpanType describing the type of all elements.
  *   As a note, the `dataTypes` or `dataType` fields must be present, but not both at the same time.</li>
@@ -129,11 +129,7 @@ public class MemoryLocationDeserializer extends StdDeserializer<MemoryLocation>
     }
     else
     {
-      JsonNode namesNodes = node.get("names");
-      for (JsonNode nameNode : namesNodes)
-      {
-        names.add(nameNode.asText());
-      }
+      throw new RuntimeException("No name found in the JSON file");
     }
     
     // Then detect if there is a `dataType` or `dataTypes` field

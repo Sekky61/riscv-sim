@@ -73,6 +73,10 @@ import simConfigReducer, { SimConfigReducer } from '@/lib/redux/simConfigSlice';
  * https://github.com/rt2zz/redux-persist/blob/HEAD/docs/migrations.md
  */
 const migrations = {
+  2: (state: PersistedState) => {
+    // Changed MemoryLocation
+    return undefined;
+  },
   10: (state: PersistedState) => {
     return state;
   },
@@ -81,6 +85,10 @@ const migrations = {
   },
   12: (state: PersistedState) => {
     // Added instructionFunctionModels
+    return undefined;
+  },
+  13: (state: PersistedState) => {
+    // Changed MemoryLocation
     return undefined;
   },
 };
@@ -92,7 +100,7 @@ const persistIsaConfig = {
   // The key in localStorage
   key: 'root',
   // Change the version when changing the schema
-  version: 12,
+  version: 13,
   storage,
   stateReconciler: hardSet,
   // This migration is used when the version number is increased
@@ -101,7 +109,7 @@ const persistIsaConfig = {
 
 const persistSimConfig = {
   key: 'simConfig',
-  version: 1,
+  version: 2,
   storage,
   stateReconciler: hardSet,
   migrate: createMigrate(migrations),

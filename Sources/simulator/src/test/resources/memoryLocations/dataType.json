@@ -1,8 +1,6 @@
 [
   {
-    "names": [
-      "Array"
-    ],
+    "name": "Array",
     "alignment": 8,
     "dataType": "kInt",
     "data": [
