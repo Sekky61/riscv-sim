@@ -1,0 +1,17 @@
+[
+  {
+    "name": "a",
+    "alignment": 8,
+    "dataTypes": [
+      {
+        "startOffset": 0,
+        "dataType": "kByte"
+      }
+    ],
+    "random": {
+      "min": "7",
+      "max": "10"
+    },
+    "size": 8
+  }
+]

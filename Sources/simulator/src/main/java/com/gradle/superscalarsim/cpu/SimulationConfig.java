@@ -142,7 +142,7 @@ public class SimulationConfig
         {
           errorMessages.add(new CpuConfigValidator.Error("Memory location bytes must not be null", "memoryLocations"));
         }
-        if (memoryLocation.name == null || memoryLocation.name.isEmpty())
+        if (memoryLocation.getName() == null || memoryLocation.getName().isEmpty())
         {
           errorMessages.add(
                   new CpuConfigValidator.Error("Memory location name must not be null or empty", "memoryLocations"));
@@ -204,7 +204,7 @@ public class SimulationConfig
     Map<String, Label> names = new HashMap<>();
     for (MemoryLocation memoryLocation : memoryLocations)
     {
-      names.put(memoryLocation.name, new Label(memoryLocation.name, -1));
+      names.put(memoryLocation.getName(), new Label(memoryLocation.getName(), -1));
     }
     return names;
   }

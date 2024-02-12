@@ -26,8 +26,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.gradle.superscalarsim.cpu;
+package com.gradle.superscalarsim.json;
 
+import com.gradle.superscalarsim.cpu.Cpu;
+import com.gradle.superscalarsim.cpu.SimulationConfig;
 import org.junit.Assert;
 import org.junit.Test;
 

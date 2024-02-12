@@ -45,6 +45,10 @@ dependencies {
 
     // https://mvnrepository.com/artifact/io.undertow/undertow-servlet
     implementation group: 'io.undertow', name: 'undertow-servlet', version: '2.3.8.Final'
+
+    // https://mvnrepository.com/artifact/com.opencsv/opencsv
+    implementation group: 'com.opencsv', name: 'opencsv', version: '5.9'
+
 }
 
 jar {

@@ -181,11 +181,10 @@ public class CodeParser
     for (MemoryLocation mem : memoryLocations)
     {
       // Address not yet known
-      Label label = new Label(mem.name, -1);
-      this.labels.put(mem.name, label);
-      if (mem.aliases != null)
+      Label label = new Label(mem.getName(), -1);
+      if (mem.names != null)
       {
-        for (String alias : mem.aliases)
+        for (String alias : mem.names)
         {
           this.labels.put(alias, label);
         }
@@ -220,14 +219,14 @@ public class CodeParser
   private void collectMemoryLocations(String code)
   {
     List<String>   lines       = splitLines(code);
-    MemoryLocation mem         = new MemoryLocation(null, 1);
+    MemoryLocation mem         = new MemoryLocation();
     boolean        isDataLabel = false;
     
     // Go through the program
     // Take note of .byte, .hword, .word, .align, .ascii, .asciiz, .string, .skip, .zero
     for (String line : lines)
     {
-      if ((!isDirective(line) || line.startsWith(".align")) && (!isLabel(line) || isDataLabel) && mem.name != null)
+      if ((!isDirective(line) || line.startsWith(".align")) && (!isLabel(line) || isDataLabel) && mem.getName() != null)
       {
         // Labeled memory ends. Save memory location.
         if (isDataLabel)
@@ -235,7 +234,7 @@ public class CodeParser
           memoryLocations.add(mem);
           // Start new memory location
         }
-        mem         = new MemoryLocation(null, 1);
+        mem         = new MemoryLocation();
         isDataLabel = false;
         // We still want to parse .align and labels
         if (!line.startsWith(".align") && !isLabel(line))
@@ -248,14 +247,7 @@ public class CodeParser
       {
         // todo multiple labels on one line
         String labelName = line.substring(0, line.length() - 1);
-        if (mem.name == null)
-        {
-          mem.name = labelName;
-        }
-        else
-        {
-          mem.addAlias(labelName);
-        }
+        mem.addName(labelName);
         continue;
       }
       
@@ -274,7 +266,7 @@ public class CodeParser
                      directive + " expected at least 1 argument, got " + argCount);
             break;
           }
-          if (mem.name == null)
+          if (mem.getName() == null)
           {
             addError(new CodeToken(0, 0, directive, CodeToken.Type.EOF), directive + " expected label before it");
             break;
@@ -301,7 +293,7 @@ public class CodeParser
             addError(new CodeToken(0, 0, directive, CodeToken.Type.EOF), ".align expected 1 argument, got " + argCount);
             break;
           }
-          if (mem.name != null)
+          if (mem.getName() != null)
           {
             addError(new CodeToken(0, 0, directive, CodeToken.Type.EOF), ".align expected before a label");
           }
@@ -342,6 +334,7 @@ public class CodeParser
         {
           // .zero is an alias for .skip
           mem.addDataChunk(DataTypeEnum.kByte);
+          isDataLabel = true;
           if (argCount != 1 && argCount != 2)
           {
             addError(new CodeToken(0, 0, directive, CodeToken.Type.EOF), ".skip expected 1 argument, got " + argCount);
@@ -361,7 +354,7 @@ public class CodeParser
       }
     }
     // Save last memory location
-    if (mem.name != null)
+    if (mem.getName() != null && isDataLabel)
     {
       memoryLocations.add(mem);
     }

@@ -472,15 +472,9 @@ public class CodeParserTest
     Assert.assertTrue(codeParser.success());
     Assert.assertEquals(1, codeParser.getMemoryLocations().size());
     MemoryLocation n = codeParser.getMemoryLocations().get(0);
-    Assert.assertEquals("N", n.name);
+    Assert.assertEquals("N", n.getName());
     Assert.assertEquals(1, n.getByteSize());
-    Assert.assertEquals((byte) 25, (byte) n.getBytes().get(0));
-    
-    // Inspect the chunk
-    Assert.assertEquals(1, n.getDataChunks().size());
-    MemoryLocation.DataChunk dataChunk = n.getDataChunks().get(0);
-    Assert.assertEquals(DataTypeEnum.kByte, dataChunk.dataType);
-    Assert.assertEquals(1, dataChunk.values.size());
+    Assert.assertEquals((byte) 25, n.getBytes()[0]);
   }
   
   @Test
@@ -495,16 +489,11 @@ public class CodeParserTest
     Assert.assertTrue(codeParser.success());
     Assert.assertEquals(1, codeParser.getMemoryLocations().size());
     MemoryLocation n = codeParser.getMemoryLocations().get(0);
-    Assert.assertEquals("N", n.name);
+    Assert.assertEquals("N", n.getName());
     Assert.assertEquals(2, n.getByteSize());
-    Assert.assertEquals((byte) 0x34, (byte) n.getBytes().get(0));
-    Assert.assertEquals((byte) 0x12, (byte) n.getBytes().get(1));
+    Assert.assertEquals((byte) 0x34, n.getBytes()[0]);
+    Assert.assertEquals((byte) 0x12, n.getBytes()[1]);
     
-    // Inspect the chunk
-    Assert.assertEquals(1, n.getDataChunks().size());
-    MemoryLocation.DataChunk dataChunk = n.getDataChunks().get(0);
-    Assert.assertEquals(DataTypeEnum.kShort, dataChunk.dataType);
-    Assert.assertEquals(1, dataChunk.values.size());
   }
   
   @Test
@@ -519,14 +508,14 @@ public class CodeParserTest
     Assert.assertTrue(codeParser.success());
     Assert.assertEquals(1, codeParser.getMemoryLocations().size());
     MemoryLocation n = codeParser.getMemoryLocations().get(0);
-    Assert.assertEquals("N", n.name);
-    Assert.assertEquals(DataTypeEnum.kInt, n.getDataChunks().get(0).dataType);
+    Assert.assertEquals("N", n.getName());
+    Assert.assertEquals(DataTypeEnum.kInt, n.getDataTypes().get(0).dataType());
     
     Assert.assertEquals(4, n.getByteSize());
-    Assert.assertEquals((byte) 0xdd, (byte) n.getBytes().get(0));
-    Assert.assertEquals((byte) 0xcc, (byte) n.getBytes().get(1));
-    Assert.assertEquals((byte) 0xbb, (byte) n.getBytes().get(2));
-    Assert.assertEquals((byte) 0xaa, (byte) n.getBytes().get(3));
+    Assert.assertEquals((byte) 0xdd, (byte) n.getBytes()[0]);
+    Assert.assertEquals((byte) 0xcc, (byte) n.getBytes()[1]);
+    Assert.assertEquals((byte) 0xbb, (byte) n.getBytes()[2]);
+    Assert.assertEquals((byte) 0xaa, (byte) n.getBytes()[3]);
   }
   
   @Test
@@ -541,13 +530,13 @@ public class CodeParserTest
     Assert.assertTrue(codeParser.success());
     Assert.assertEquals(1, codeParser.getMemoryLocations().size());
     MemoryLocation hello = codeParser.getMemoryLocations().get(0);
-    Assert.assertEquals("hello", hello.name);
-    Assert.assertEquals(DataTypeEnum.kChar, hello.getDataChunks().get(0).dataType);
+    Assert.assertEquals("hello", hello.getName());
+    Assert.assertEquals(DataTypeEnum.kChar, hello.getDataTypes().get(0).dataType());
     
     Assert.assertEquals(3, hello.getByteSize());
-    Assert.assertEquals((byte) 'a', (byte) hello.getBytes().get(0));
-    Assert.assertEquals((byte) 'b', (byte) hello.getBytes().get(1));
-    Assert.assertEquals((byte) 'c', (byte) hello.getBytes().get(2));
+    Assert.assertEquals((byte) 'a', (byte) hello.getBytes()[0]);
+    Assert.assertEquals((byte) 'b', (byte) hello.getBytes()[1]);
+    Assert.assertEquals((byte) 'c', (byte) hello.getBytes()[2]);
   }
   
   @Test
@@ -598,16 +587,16 @@ public class CodeParserTest
     Assert.assertTrue(codeParser.success());
     Assert.assertEquals(1, codeParser.getMemoryLocations().size());
     MemoryLocation hello = codeParser.getMemoryLocations().get(0);
-    Assert.assertEquals("hello", hello.name);
-    Assert.assertEquals(DataTypeEnum.kChar, hello.getDataChunks().get(0).dataType);
+    Assert.assertEquals("hello", hello.getName());
+    Assert.assertEquals(DataTypeEnum.kChar, hello.getDataTypes().get(0).dataType());
     
     Assert.assertEquals(6, hello.getByteSize());
-    Assert.assertEquals((byte) 'a', (byte) hello.getBytes().get(0));
-    Assert.assertEquals((byte) 'b', (byte) hello.getBytes().get(1));
-    Assert.assertEquals((byte) 'c', (byte) hello.getBytes().get(2));
-    Assert.assertEquals((byte) 'd', (byte) hello.getBytes().get(3));
-    Assert.assertEquals((byte) 'e', (byte) hello.getBytes().get(4));
-    Assert.assertEquals((byte) 'f', (byte) hello.getBytes().get(5));
+    Assert.assertEquals((byte) 'a', (byte) hello.getBytes()[0]);
+    Assert.assertEquals((byte) 'b', (byte) hello.getBytes()[1]);
+    Assert.assertEquals((byte) 'c', (byte) hello.getBytes()[2]);
+    Assert.assertEquals((byte) 'd', (byte) hello.getBytes()[3]);
+    Assert.assertEquals((byte) 'e', (byte) hello.getBytes()[4]);
+    Assert.assertEquals((byte) 'f', (byte) hello.getBytes()[5]);
   }
   
   @Test
@@ -622,14 +611,14 @@ public class CodeParserTest
     Assert.assertTrue(codeParser.success());
     Assert.assertEquals(1, codeParser.getMemoryLocations().size());
     MemoryLocation hello = codeParser.getMemoryLocations().get(0);
-    Assert.assertEquals("hello", hello.name);
-    Assert.assertEquals(DataTypeEnum.kChar, hello.getDataChunks().get(0).dataType);
+    Assert.assertEquals("hello", hello.getName());
+    Assert.assertEquals(DataTypeEnum.kChar, hello.getDataTypes().get(0).dataType());
     
     Assert.assertEquals(4, hello.getByteSize());
-    Assert.assertEquals((byte) 'a', (byte) hello.getBytes().get(0));
-    Assert.assertEquals((byte) 'b', (byte) hello.getBytes().get(1));
-    Assert.assertEquals((byte) 'c', (byte) hello.getBytes().get(2));
-    Assert.assertEquals((byte) 0, (byte) hello.getBytes().get(3));
+    Assert.assertEquals((byte) 'a', (byte) hello.getBytes()[0]);
+    Assert.assertEquals((byte) 'b', (byte) hello.getBytes()[1]);
+    Assert.assertEquals((byte) 'c', (byte) hello.getBytes()[2]);
+    Assert.assertEquals((byte) 0, (byte) hello.getBytes()[3]);
   }
   
   @Test
@@ -644,16 +633,16 @@ public class CodeParserTest
     Assert.assertTrue(codeParser.success());
     Assert.assertEquals(1, codeParser.getMemoryLocations().size());
     MemoryLocation hello = codeParser.getMemoryLocations().get(0);
-    Assert.assertEquals("hello", hello.name);
-    Assert.assertEquals(DataTypeEnum.kChar, hello.getDataChunks().get(0).dataType);
+    Assert.assertEquals("hello", hello.getName());
+    Assert.assertEquals(DataTypeEnum.kChar, hello.getDataTypes().get(0).dataType());
     
     Assert.assertEquals(6, hello.getByteSize());
-    Assert.assertEquals((byte) 'a', (byte) hello.getBytes().get(0));
-    Assert.assertEquals((byte) 'b', (byte) hello.getBytes().get(1));
-    Assert.assertEquals((byte) 'c', (byte) hello.getBytes().get(2));
-    Assert.assertEquals((byte) 0, (byte) hello.getBytes().get(3));
-    Assert.assertEquals((byte) 'a', (byte) hello.getBytes().get(4));
-    Assert.assertEquals((byte) 0, (byte) hello.getBytes().get(5));
+    Assert.assertEquals((byte) 'a', (byte) hello.getBytes()[0]);
+    Assert.assertEquals((byte) 'b', (byte) hello.getBytes()[1]);
+    Assert.assertEquals((byte) 'c', (byte) hello.getBytes()[2]);
+    Assert.assertEquals((byte) 0, (byte) hello.getBytes()[3]);
+    Assert.assertEquals((byte) 'a', (byte) hello.getBytes()[4]);
+    Assert.assertEquals((byte) 0, (byte) hello.getBytes()[5]);
   }
   
   @Test
@@ -668,14 +657,14 @@ public class CodeParserTest
     Assert.assertTrue(codeParser.success());
     Assert.assertEquals(1, codeParser.getMemoryLocations().size());
     MemoryLocation n = codeParser.getMemoryLocations().get(0);
-    Assert.assertEquals("N", n.name);
-    Assert.assertEquals(DataTypeEnum.kInt, n.getDataChunks().get(0).dataType);
+    Assert.assertEquals("N", n.getName());
+    Assert.assertEquals(DataTypeEnum.kInt, n.getDataTypes().get(0).dataType());
     
     Assert.assertEquals(4, n.getByteSize());
-    Assert.assertEquals((byte) 0xff, (byte) n.getBytes().get(0));
-    Assert.assertEquals((byte) 0xff, (byte) n.getBytes().get(1));
-    Assert.assertEquals((byte) 0xff, (byte) n.getBytes().get(2));
-    Assert.assertEquals((byte) 0xff, (byte) n.getBytes().get(3));
+    Assert.assertEquals((byte) 0xff, (byte) n.getBytes()[0]);
+    Assert.assertEquals((byte) 0xff, (byte) n.getBytes()[1]);
+    Assert.assertEquals((byte) 0xff, (byte) n.getBytes()[2]);
+    Assert.assertEquals((byte) 0xff, (byte) n.getBytes()[3]);
   }
   
   @Test
@@ -690,11 +679,11 @@ public class CodeParserTest
     Assert.assertTrue(codeParser.success());
     Assert.assertEquals(1, codeParser.getMemoryLocations().size());
     MemoryLocation n = codeParser.getMemoryLocations().get(0);
-    Assert.assertEquals("N", n.name);
-    Assert.assertEquals(DataTypeEnum.kByte, n.getDataChunks().get(0).dataType);
+    Assert.assertEquals("N", n.getName());
+    Assert.assertEquals(DataTypeEnum.kByte, n.getDataTypes().get(0).dataType());
     Assert.assertEquals(2, n.getByteSize());
-    Assert.assertEquals((byte) 25, (byte) n.getBytes().get(0));
-    Assert.assertEquals((byte) 26, (byte) n.getBytes().get(1));
+    Assert.assertEquals((byte) 25, (byte) n.getBytes()[0]);
+    Assert.assertEquals((byte) 26, (byte) n.getBytes()[1]);
   }
   
   @Test
@@ -744,12 +733,12 @@ public class CodeParserTest
     Assert.assertTrue(codeParser.success());
     Assert.assertEquals(1, codeParser.getMemoryLocations().size());
     MemoryLocation n = codeParser.getMemoryLocations().get(0);
-    Assert.assertEquals("N", n.name);
-    Assert.assertEquals(DataTypeEnum.kByte, n.getDataChunks().get(0).dataType);
+    Assert.assertEquals("N", n.getName());
+    Assert.assertEquals(DataTypeEnum.kByte, n.getDataTypes().get(0).dataType());
     Assert.assertEquals(8, n.getByteSize());
     for (int i = 0; i < 8; i++)
     {
-      Assert.assertEquals((byte) 0, (byte) n.getBytes().get(i));
+      Assert.assertEquals((byte) 0, n.getBytes()[i]);
     }
   }
   
@@ -765,12 +754,12 @@ public class CodeParserTest
     Assert.assertTrue(codeParser.success());
     Assert.assertEquals(1, codeParser.getMemoryLocations().size());
     MemoryLocation n = codeParser.getMemoryLocations().get(0);
-    Assert.assertEquals("N", n.name);
-    Assert.assertEquals(DataTypeEnum.kByte, n.getDataChunks().get(0).dataType);
+    Assert.assertEquals("N", n.getName());
+    Assert.assertEquals(DataTypeEnum.kByte, n.getDataTypes().get(0).dataType());
     Assert.assertEquals(5, n.getByteSize());
     for (int i = 0; i < 5; i++)
     {
-      Assert.assertEquals((byte) 2, (byte) n.getBytes().get(i));
+      Assert.assertEquals((byte) 2, n.getBytes()[i]);
     }
   }
   
