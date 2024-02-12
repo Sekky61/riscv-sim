@@ -58,8 +58,10 @@ import java.util.Random;
  *   <li>Instead of array of SpanType `dataTypes`, a String field `dataType` can be used.
  *   This results in the dataTypes being a list with the single SpanType describing the type of all elements.
  *   As a note, the `dataTypes` or `dataType` fields must be present, but not both at the same time.</li>
+ *   <li>The individual data points can be a string or a number. The numbers are converted to strings, later they are
+ *   parsed to the specified data type using Java's built-in `decode`, `parseUnsignedInt`, `floatToIntBits` and similar.></li>
  *   <li>The first alternative way of defining the data is to use the fields `constant` and `size`. This is the same
- *   as using the `data` field with the constant repeated `size` times. Remember that `constant` field is a string!</li>
+ *   as using the `data` field with the constant repeated `size` times.</li>
  *   <li>The second alternative way of defining the data is to use the fields `random` and `size`. This is the same
  *   as using the `data` field with the random value repeated `size` times.
  *   The random value is an object with the fields `min` and `max`, which are the minimum and maximum values of the
@@ -149,6 +151,10 @@ public class MemoryLocationDeserializer extends StdDeserializer<MemoryLocation>
         DataTypeEnum dataType = DataTypeEnum.valueOf(dataTypeNode.get("dataType").asText());
         dataTypes.add(new MemoryLocation.SpanType(dataTypeNode.get("startOffset").asInt(), dataType));
       }
+      if (dataTypes.isEmpty())
+      {
+        throw new RuntimeException("No data types found in the JSON file");
+      }
     }
     
     // Read alignment
@@ -222,6 +228,12 @@ public class MemoryLocationDeserializer extends StdDeserializer<MemoryLocation>
           }
         }
       }
+    }
+    
+    // questionable, but I wouldn't allow it
+    if (data.isEmpty())
+    {
+      throw new RuntimeException("No data found in the JSON file");
     }
     
     return new MemoryLocation(names, alignment, dataTypes, data);

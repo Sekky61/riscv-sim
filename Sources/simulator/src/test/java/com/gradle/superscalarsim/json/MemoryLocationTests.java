@@ -176,6 +176,93 @@ public class MemoryLocationTests
   }
   
   /**
+   * The data can be a number
+   */
+  @Test
+  public void testNumberData() throws JsonProcessingException
+  {
+    String json = loadTestResource("/memoryLocations/numberData.json");
+    List<MemoryLocation> memoryLocations = deserializer.readValue(json, new TypeReference<>()
+    {
+    });
+    
+    Assert.assertNotNull(memoryLocations);
+    Assert.assertEquals(1, memoryLocations.size());
+    Assert.assertEquals(3, memoryLocations.get(0).data.size());
+    
+    Assert.assertEquals("0", memoryLocations.get(0).data.get(0));
+    Assert.assertEquals("1", memoryLocations.get(0).data.get(1));
+    Assert.assertEquals("2", memoryLocations.get(0).data.get(2));
+  }
+  
+  /**
+   * The data can be a number
+   */
+  @Test
+  public void testNumberConstant() throws JsonProcessingException
+  {
+    String json = loadTestResource("/memoryLocations/numberConstant.json");
+    List<MemoryLocation> memoryLocations = deserializer.readValue(json, new TypeReference<>()
+    {
+    });
+    
+    Assert.assertNotNull(memoryLocations);
+    Assert.assertEquals(1, memoryLocations.size());
+    Assert.assertEquals(3, memoryLocations.get(0).data.size());
+    
+    Assert.assertEquals("32", memoryLocations.get(0).data.get(0));
+    Assert.assertEquals("32", memoryLocations.get(0).data.get(1));
+    Assert.assertEquals("32", memoryLocations.get(0).data.get(2));
+  }
+  
+  @Test
+  public void testBadRandom() throws JsonProcessingException
+  {
+    String json  = loadTestResource("/memoryLocations/badRandom.json");
+    String json2 = loadTestResource("/memoryLocations/badRandom2.json");
+    
+    Assert.assertThrows(JsonProcessingException.class,
+                        () -> deserializer.readValue(json, new TypeReference<List<MemoryLocation>>()
+                        {
+                        }));
+    Assert.assertThrows(JsonProcessingException.class,
+                        () -> deserializer.readValue(json2, new TypeReference<List<MemoryLocation>>()
+                        {
+                        }));
+  }
+  
+  @Test
+  public void testMissingFields() throws JsonProcessingException
+  {
+    String json  = loadTestResource("/memoryLocations/noName.json");
+    String json2 = loadTestResource("/memoryLocations/noAlignment.json");
+    String json3 = loadTestResource("/memoryLocations/emptyDataTypes.json");
+    String json4 = loadTestResource("/memoryLocations/emptyData.json");
+    String json5 = loadTestResource("/memoryLocations/unknownDataType.json");
+    
+    Assert.assertThrows(JsonProcessingException.class,
+                        () -> deserializer.readValue(json, new TypeReference<List<MemoryLocation>>()
+                        {
+                        }));
+    Assert.assertThrows(JsonProcessingException.class,
+                        () -> deserializer.readValue(json2, new TypeReference<List<MemoryLocation>>()
+                        {
+                        }));
+    Assert.assertThrows(JsonProcessingException.class,
+                        () -> deserializer.readValue(json3, new TypeReference<List<MemoryLocation>>()
+                        {
+                        }));
+    Assert.assertThrows(JsonProcessingException.class,
+                        () -> deserializer.readValue(json4, new TypeReference<List<MemoryLocation>>()
+                        {
+                        }));
+    Assert.assertThrows(JsonProcessingException.class,
+                        () -> deserializer.readValue(json5, new TypeReference<List<MemoryLocation>>()
+                        {
+                        }));
+  }
+  
+  /**
    * Utility to load a test resource file
    */
   public String loadTestResource(String path)
