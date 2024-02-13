@@ -120,6 +120,7 @@ public class SimulationConfig
     
     if (!codeParser.success())
     {
+      codeParser.getErrorMessages().forEach(e -> errorMessages.add(new CpuConfigValidator.Error(e.message, "code")));
       errorMessages.add(new CpuConfigValidator.Error("Code contains errors", "code"));
       codeErrors = codeParser.getErrorMessages();
     }

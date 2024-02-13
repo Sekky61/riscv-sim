@@ -348,7 +348,7 @@
         "type": "kLong"
       }
     ],
-    "interpretableAs": "\\rs1 \\rd ="
+    "interpretableAs": "\\rs1 \\rd c="
   },
   "ld": {
     "name": "ld",
@@ -486,7 +486,7 @@
         "type": "kFloat"
       }
     ],
-    "interpretableAs": "\\rs1 \\rd ="
+    "interpretableAs": "\\rs1 \\rd c="
   },
   "subi": {
     "name": "subi",
@@ -871,7 +871,7 @@
         "type": "kInt"
       }
     ],
-    "interpretableAs": "\\rs1 \\rd ="
+    "interpretableAs": "\\rs1 \\rd c="
   },
   "bgeu": {
     "name": "bgeu",
