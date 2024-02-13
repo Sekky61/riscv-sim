@@ -1,0 +1,11 @@
+[
+  {
+    "name": "identity",
+    "alignment": 4,
+    "dataType": "kInt",
+    "data": {
+      "kind": "csv",
+      "path": "examples/memory/matrix.csv"
+    }
+  }
+]
