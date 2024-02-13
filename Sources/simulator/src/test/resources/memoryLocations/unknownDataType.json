@@ -5,9 +5,12 @@
     ],
     "alignment": 8,
     "dataType": "bůlien",
-    "data": [
-      "0",
-      "1"
-    ]
+    "data": {
+      "kind": "data",
+      "data": [
+        "0",
+        "1"
+      ]
+    }
   }
 ]

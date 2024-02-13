@@ -3,10 +3,13 @@
     "name": "Valid-data-numbers",
     "alignment": 8,
     "dataType": "kInt",
-    "data": [
-      0,
-      1,
-      2
-    ]
+    "data": {
+      "kind": "data",
+      "data": [
+        0,
+        1,
+        2
+      ]
+    }
   }
 ]

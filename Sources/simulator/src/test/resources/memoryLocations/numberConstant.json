@@ -3,7 +3,10 @@
     "name": "a",
     "alignment": 8,
     "dataType": "kFloat",
-    "constant": 32,
-    "size": 3
+    "data": {
+      "kind": "constant",
+      "constant": 32,
+      "size": 3
+    }
   }
 ]

@@ -8,6 +8,9 @@
         "dataType": "kByte"
       }
     ],
-    "csv": "/memoryLocations/small.csv"
+    "data": {
+      "kind": "csv",
+      "path": "/memoryLocations/small.csv"
+    }
   }
 ]

@@ -39,6 +39,7 @@ import java.util.List;
 /**
  * Result of parsing directives in assembly code and JSON definitions from CLI or API.
  * Used in the phase of building the memory, not in the simulation itself.
+ * It is optimized for defining arrays, but structs and constants can be expressed as well.
  * <p>
  * The JSONs can include extra fields, they are ignored during deserialization.
  * One named memory location may have multiple data types. A C struct is an example:

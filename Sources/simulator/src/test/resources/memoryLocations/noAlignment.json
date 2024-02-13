@@ -7,8 +7,11 @@
         "dataType": "kByte"
       }
     ],
-    "data": [
-      "7"
-    ]
+    "data": {
+      "kind": "data",
+      "data": [
+        "7"
+      ]
+    }
   }
 ]

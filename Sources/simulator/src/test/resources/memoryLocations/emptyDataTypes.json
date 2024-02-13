@@ -6,10 +6,13 @@
     "alignment": 8,
     "dataTypes": [
     ],
-    "data": [
-      "0",
-      "1",
-      "2"
-    ]
+    "data": {
+      "kind": "data",
+      "data": [
+        "0",
+        "1",
+        "2"
+      ]
+    }
   }
 ]

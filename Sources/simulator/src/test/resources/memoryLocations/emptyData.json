@@ -5,6 +5,9 @@
     ],
     "alignment": 8,
     "dataType": "kByte",
-    "data": []
+    "data": {
+      "kind": "data",
+      "data": []
+    }
   }
 ]

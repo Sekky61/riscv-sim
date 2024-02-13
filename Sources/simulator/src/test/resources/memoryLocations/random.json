@@ -8,10 +8,11 @@
         "dataType": "kByte"
       }
     ],
-    "random": {
+    "data": {
+      "kind": "random",
       "min": "7",
-      "max": "10"
-    },
-    "size": 8
+      "max": "10",
+      "size": 8
+    }
   }
 ]

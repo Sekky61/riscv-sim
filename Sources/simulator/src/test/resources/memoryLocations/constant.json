@@ -8,7 +8,10 @@
         "dataType": "kByte"
       }
     ],
-    "constant": "9",
-    "size": 10
+    "data": {
+      "kind": "constant",
+      "constant": "9",
+      "size": 10
+    }
   }
 ]
