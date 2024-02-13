@@ -68,7 +68,8 @@ public class MemoryLocation
   
   /**
    * Alignment of the memory location in bytes.
-   * Warning: This clashes with the .align directive in the assembly code, which is in log2.
+   * Warning: This aligns with the .align directive in the assembly code, which is in log2.
+   * So alignment value 3 means 2^3 = 8 bytes.
    */
   public int alignment;
   /**

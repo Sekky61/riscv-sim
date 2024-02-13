@@ -30,18 +30,23 @@
  */
 
 import { Button, buttonVariants } from '@/components/base/ui/button';
-import { Card } from '@/components/base/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+} from '@/components/base/ui/card';
 import { Input } from '@/components/base/ui/input';
 import { Label } from '@/components/base/ui/label';
 import { FormInput } from '@/components/form/FormInput';
 import { RadioInputWithTitle } from '@/components/form/RadioInput';
 import { parseCsv } from '@/lib/csv';
 import {
-  DataChunk,
+  MemoryLocationApi,
   dataTypes,
   dataTypesText,
   memoryLocationDefaultValue,
-  memoryLocationIsa,
+  memoryLocationSchema,
 } from '@/lib/forms/Isa';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import {
@@ -49,12 +54,43 @@ import {
   selectActiveConfig,
   updateMemoryLocation,
 } from '@/lib/redux/isaSlice';
-import { ErrorMessage } from '@hookform/error-message';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useEffect } from 'react';
-import { FieldErrors, Resolver, useForm } from 'react-hook-form';
+import { useEffect, useState } from 'react';
+import {
+  FieldError,
+  FieldErrors,
+  FieldValues,
+  Resolver,
+  UseControllerProps,
+  useController,
+  useForm,
+} from 'react-hook-form';
 import { toast } from 'sonner';
-import { z } from 'zod';
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@/components/base/ui/tabs';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/base/ui/select';
+import {
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/base/ui/form';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/base/ui/tooltip';
 
 /**
  * @param fileList File list is interface of object that is returned by input[type=file]
@@ -69,95 +105,6 @@ function getFileFromFileList(fileList: unknown): File | undefined {
   ) {
     return fileList.item(0);
   }
-}
-
-function isPowerOfTwo(n: number) {
-  return (n & (n - 1)) === 0;
-}
-
-/**
- * Returns a random integer between min (inclusive) and max (exclusive)
- */
-function getRandInt(min: number, max: number) {
-  return Math.floor(Math.random() * (max - min) + min);
-}
-
-/**
- * Expand the memoryLocation form with a data input.
- * These are internal fields, not part of the ISA.
- */
-const memoryLocationWithSource = memoryLocationIsa.extend({
-  /**
-   * File is of type any, because FileList is not a class.
-   * The getFileFromFileList transform function will convert it to (File | undefined).
-   *
-   * There is a test file in `src/lib/__tests__/test.csv`.
-   */
-  file: z.any(),
-  constant: z.number().optional(),
-  randomRangeMin: z.number().min(0).optional(),
-  /**
-   * The maximum value is exclusive.
-   */
-  randomRangeMax: z.number().min(1).optional(),
-  /**
-   * Expose alignment to the user - the isa expects the exponent, not the actual value
-   */
-  alignment: z
-    .number()
-    .min(1)
-    .max(65536)
-    .refine((v) => isPowerOfTwo(v), {
-      message: 'Must be a power of 2',
-    }),
-  dataLength: z.number().min(1).optional(),
-});
-type MemoryLocationForm = z.infer<typeof memoryLocationWithSource>;
-
-/**
- * Converts the exponent, adds default values if needed
- */
-function isaMemLocationToForm(memLoc?: MemoryLocationForm): MemoryLocationForm {
-  let memoryLocation = memLoc;
-  if (memoryLocation === undefined) {
-    memoryLocation = {
-      ...memoryLocationDefaultValue,
-      dataType: 'kInt',
-      dataSource: 'constant',
-      constant: 0,
-      dataLength: 1,
-      file: null,
-      randomRangeMin: 0,
-      randomRangeMax: 255,
-    };
-  }
-  const actualAlignment = 2 ** memoryLocation.alignment;
-
-  return {
-    ...memoryLocation,
-    alignment: actualAlignment,
-  };
-}
-
-/**
- * Filter out fields not belonging to memory location
- */
-export function memoryLocationFormToIsa(memoryLocation: MemoryLocationForm) {
-  const alignmentExponent = Math.log2(memoryLocation.alignment);
-  return {
-    name: memoryLocation.name,
-    alignment: alignmentExponent,
-    dataChunks: memoryLocation.dataChunks.map((dataChunk) => ({
-      dataType: dataChunk.dataType,
-      values: dataChunk.values,
-    })),
-    dataType: memoryLocation.dataType,
-    dataSource: memoryLocation.dataSource,
-    constant: memoryLocation.constant,
-    dataLength: memoryLocation.dataLength,
-    randomRangeMin: memoryLocation.randomRangeMin,
-    randomRangeMax: memoryLocation.randomRangeMax,
-  };
 }
 
 /**
@@ -196,10 +143,35 @@ function isNotEmpty<TValue extends object>(
 }
 
 /**
+ * Convenience function to get an error from a nested object
+ */
+function getError(
+  errors: FieldErrors<MemoryLocationApi>,
+  field: string[],
+): FieldError | undefined {
+  let current: unknown = errors;
+  for (const f of field) {
+    //@ts-ignore
+    if (f in current) {
+      //@ts-ignore
+      current = current[f];
+    } else {
+      return undefined;
+    }
+  }
+  return undefined;
+}
+
+/**
  * Component for defining a memory location.
  *
- * For random data, the data is generated on submit. This means that chnging the name of the memory location
- * will generate new random data.
+ * Data can be defined in three ways:
+ * - constant: a single value is repeated
+ * - random: random values are generated in an inclusive range
+ * - data: a literal array of values. Can be fulled manually or loaded from a CSV file
+ *
+ * Note: React-hook-form cannot handle the and/or from the zoo schema, so types have to be defined manually.
+ * (https://github.com/react-hook-form/react-hook-form/issues/9287)
  */
 export default function MemoryForm({
   existing,
@@ -208,21 +180,30 @@ export default function MemoryForm({
 }: MemoryFormProps) {
   const dispatch = useAppDispatch();
   const activeIsa = useAppSelector(selectActiveConfig);
+  // File selected to fill the memory
+  const [file, setFile] = useState<File | undefined>();
+  const [activeTab, setActiveTab] = useState<'data' | 'constant' | 'random'>(
+    memoryLocationDefaultValue.data.kind,
+  );
 
   // Custom resolver
-  const resolver: Resolver<MemoryLocationForm> = async (
-    values: MemoryLocationForm,
+  const resolver: Resolver<MemoryLocationApi> = async (
+    values: MemoryLocationApi,
     ...args
   ) => {
     // Let zod do its thing
-    const r = zodResolver(memoryLocationWithSource);
+    const r = zodResolver(memoryLocationSchema);
     const val = await r(values, ...args);
+
+    const validation = memoryLocationSchema.safeParse(values);
+
+    console.log('val', val, values);
 
     if (isNotEmpty(val.errors)) {
       return val;
     }
     // Additional checks
-    const errors: FieldErrors<MemoryLocationForm> = {};
+    const errors: FieldErrors<MemoryLocationApi> = {};
 
     // Name is unique. If we are updating, the name can stay the same
     const memoryLocation = activeIsa.memoryLocations.find(
@@ -237,47 +218,15 @@ export default function MemoryForm({
       };
     }
 
-    // If file source, check if file is selected
-    if (values.dataSource === 'file') {
-      // Watch out - the file list is checked, transform has not been applied yet
-      const file = getFileFromFileList(values.file);
-      if (!isFile(file)) {
-        errors.file = {
-          type: 'manual',
-          message: 'File not selected',
-        };
-      }
-    }
-
-    // check if the random range is valid
-    if (values.dataSource === 'random') {
-      if (values.randomRangeMin === undefined) {
-        errors.randomRangeMin = {
-          type: 'manual',
-          message: 'Please fill in the lower bound',
-        };
-      } else if (values.randomRangeMax === undefined) {
-        errors.randomRangeMax = {
-          type: 'manual',
-          message: 'Please fill in the upper bound',
-        };
-      } else if (values.randomRangeMin >= values.randomRangeMax) {
-        errors.randomRangeMax = {
-          type: 'manual',
-          message: 'Lower bound must be lower than upper bound',
-        };
-      }
-    }
-
     return {
       values: val.values,
       errors,
     };
   };
 
-  const form = useForm<MemoryLocationForm>({
+  const form = useForm<MemoryLocationApi>({
     resolver,
-    defaultValues: isaMemLocationToForm(),
+    defaultValues: memoryLocationDefaultValue,
     mode: 'onChange',
   });
   const { register, handleSubmit, formState, reset, trigger, control } = form;
@@ -288,75 +237,41 @@ export default function MemoryForm({
   const memoryLocation = activeIsa.memoryLocations.find(
     (ml) => ml.name === memoryLocationName,
   );
-  // get file metadata
-  const file = getFileFromFileList(watchFields.file);
 
   // watch for changes in the active memory location
   useEffect(() => {
     if (memoryLocation) {
-      reset(isaMemLocationToForm(memoryLocation));
+      reset(memoryLocation);
     } else if (memoryLocationName === 'new') {
-      reset(isaMemLocationToForm());
+      reset(memoryLocationDefaultValue);
     } else {
       return; // Do not trigger validation
     }
     trigger(); // Validate the form, after reset
   }, [memoryLocation, memoryLocationName, reset, trigger]);
 
-  const onSubmit = async (data: MemoryLocationForm) => {
-    // random data - generate random values
-    if (data.dataSource === 'random') {
-      // todo: random floats, chars
-      const chunk: DataChunk = {
-        dataType: data.dataType,
-        values: Array.from({ length: data.dataLength ?? 0 }, () =>
-          getRandInt(
-            data.randomRangeMin ?? 0,
-            data.randomRangeMax ?? 255,
-          ).toString(),
-        ),
-      };
-      data.dataChunks = [chunk];
-    }
-    // constant data
-    if (data.dataSource === 'constant') {
-      const constant = data.constant?.toString() || '0';
-      const chunk: DataChunk = {
-        dataType: data.dataType,
-        values: Array.from({ length: data.dataLength ?? 0 }, () => constant),
-      };
-      data.dataChunks = [chunk];
-    }
-    if (data.dataSource === 'file') {
-      const file = getFileFromFileList(data.file);
-      if (!isFile(file)) {
-        throw new Error('File not selected');
-      }
-      const values = await readFromFile(file);
-
-      const chunk: DataChunk = {
-        dataType: data.dataType,
-        values,
-      };
-      data.dataChunks = [chunk];
-    }
-
-    // Filter just fields for ISA
-    const filtered = memoryLocationFormToIsa(data);
-
+  const onSubmit = async (data: MemoryLocationApi) => {
     if (existing) {
       dispatch(
         updateMemoryLocation({
           oldName: memoryLocationName,
-          memoryLocation: filtered,
+          memoryLocation: data,
         }),
       );
       toast.success(`Memory location ${memoryLocationName} updated.`);
     } else {
-      dispatch(addMemoryLocation(filtered));
+      dispatch(addMemoryLocation(data));
       toast.success(`Memory location ${data.name} created.`);
     }
   };
+
+  const randomTrigger = () => {
+    trigger('data');
+  };
+
+  console.log(watchFields);
+  console.log('errors', errors);
+  console.log(activeTab);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
@@ -368,98 +283,70 @@ export default function MemoryForm({
           error={formState.errors.name}
         />
         <div className='flex mb-4'>
-          <RadioInputWithTitle
-            name='dataType'
+          <FormInput
+            type='number'
+            title='Type Start Offset'
+            {...register('dataTypes.0.startOffset', { valueAsNumber: true })}
+            error={formState.errors.dataTypes?.[0]?.startOffset}
+          />
+          {/* <RadioInputWithTitle
+            name='dataTypes.0.dataType'
             title='Data type'
             hint='Data type dictates the interpretation of provided values. For example, choosing Integer will allocate 4 bytes for each value.'
             control={control}
             choices={dataTypes}
             texts={dataTypesText}
-          />
+          /> */}
+          <SelectInput control={control} name='dataTypes.0.dataType' />
         </div>
         <FormInput
           type='number'
-          title='Alignment (Bytes)'
-          hint='The array will be aligned to this boundary. The .align directive in assembler works differently!'
+          title='Alignment (log Bytes)'
+          hint='The array will be aligned to this boundary. The .align directive in assembler works the same way. For example, 3 will align the array to 2^3 = 8 bytes.'
           {...register('alignment', { valueAsNumber: true })}
           error={formState.errors.alignment}
         />
-        <div className='flex mb-4'>
-          <RadioInputWithTitle
-            name='dataSource'
-            title='Data Source'
-            choices={['constant', 'random', 'file']}
-            texts={['A Constant', 'Random Numbers', 'CSV File']}
-            control={control}
-          />
-        </div>
       </div>
-      <Card className='mt-4 p-4'>
-        <h2 className='text-xl mb-4'>Data Options</h2>
-        <div className='h-28'>
-          {watchFields.dataSource === 'constant' && (
-            <div>
-              <p className='text-gray-700'>
-                The selected constant value will be duplicated a specified
-                number of times.
-              </p>
-              <div className='flex justify-evenly'>
-                <FormInput
-                  type='number'
-                  title='Constant'
-                  {...register('constant', { valueAsNumber: true })}
-                  error={formState.errors.constant}
-                />
-                <FormInput
-                  type='number'
-                  title='Number of Elements'
-                  {...register('dataLength', { valueAsNumber: true })}
-                  error={formState.errors.dataLength}
-                />
-              </div>
-            </div>
-          )}
-          {watchFields.dataSource === 'random' && (
-            <div>
-              <p className='text-gray-700'>
-                Random data will be generated after each time the memory
-                location is saved.
-              </p>
-              <div className='flex gap-4 justify-evenly'>
-                <FormInput
-                  type='number'
-                  title='Lower bound of random range'
-                  {...register('randomRangeMin', { valueAsNumber: true })}
-                  error={formState.errors.randomRangeMin}
-                />
-                <FormInput
-                  type='number'
-                  title='Upper bound of random range'
-                  {...register('randomRangeMax', { valueAsNumber: true })}
-                  error={formState.errors.randomRangeMax}
-                />
-                <FormInput
-                  type='number'
-                  title='Number of Elements'
-                  {...register('dataLength', { valueAsNumber: true })}
-                  error={formState.errors.dataLength}
-                />
-              </div>
-            </div>
-          )}
-          {watchFields.dataSource === 'file' && (
-            <div>
-              <p className='text-gray-700'>
-                Choose a CSV file as the data source. The table may be of any
-                shape.
-              </p>
+      <h2 className='text-xl mb-4'>Values</h2>
+      <Tabs
+        defaultValue={activeTab}
+        className=''
+        onValueChange={(value) => {
+          // Save the information about the current tab to a state.
+          // When submitting, the fields from the current tab will be used, others will be filtered out.
+          setActiveTab(value as 'data' | 'constant' | 'random');
+          form.setValue('data.kind', value as 'data' | 'constant' | 'random');
+        }}
+      >
+        <TabsList>
+          <TabsTrigger value='data'>A List of Values</TabsTrigger>
+          <TabsTrigger value='constant'>A Repeated Constant</TabsTrigger>
+          <TabsTrigger value='random'>Random Values</TabsTrigger>
+        </TabsList>
+        <TabsContent value='data'>
+          <Card>
+            <CardHeader>
+              <CardDescription>
+                Fill the values manually or load them from a CSV file.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
               <Input
                 title='File'
                 id='fileId'
                 type='file'
                 className='hidden'
                 accept='.csv'
-                {...register('file')}
+                onChange={(e) => {
+                  const file = getFileFromFileList(e.target.files);
+                  if (file && isFile(file)) {
+                    setFile(file);
+                    readFromFile(file).then((data) => {
+                      form.setValue('data.kind', 'data');
+                      form.setValue('data.data', data);
+                    });
+                  }
+                }}
               />
               <Label
                 htmlFor='fileId'
@@ -467,22 +354,72 @@ export default function MemoryForm({
               >
                 {file?.name ? `${file.name} ✓` : 'Select file'}
               </Label>
-              <div className='mt-4'>
-                {errors.file === undefined && (
-                  <span>Size: {file?.size || '-'} bytes</span>
-                )}
-                <ErrorMessage
-                  errors={errors}
-                  name='file'
-                  render={({ message }) => (
-                    <span className='text-red-600'>{message}</span>
-                  )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value='constant'>
+          <Card>
+            <CardHeader>
+              <CardDescription>
+                The selected constant value will be duplicated a specified
+                number of times.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className='flex justify-evenly'>
+                <FormInput
+                  title='Constant'
+                  {...register('data.constant')}
+                  error={getError(errors, ['data', 'constant'])}
+                />
+                <FormInput
+                  type='number'
+                  title='Number of Elements'
+                  {...register('data.size', { valueAsNumber: true })}
+                  error={getError(errors, ['data', 'size'])}
                 />
               </div>
-            </div>
-          )}
-        </div>
-      </Card>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent
+          value='random'
+          onClick={randomTrigger}
+          onFocus={randomTrigger}
+          onBlur={randomTrigger}
+        >
+          <Card>
+            <CardHeader>
+              <CardDescription>
+                Random data will be generated after each time the memory
+                location is saved.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className='flex gap-4 justify-evenly'>
+                <FormInput
+                  type='number'
+                  title='Lower bound of random range'
+                  {...register('data.min', { valueAsNumber: true })}
+                  error={getError(errors, ['data', 'min'])}
+                />
+                <FormInput
+                  type='number'
+                  title='Upper bound of random range'
+                  {...register('data.max', { valueAsNumber: true })}
+                  error={getError(errors, ['data', 'max'])}
+                />
+                <FormInput
+                  type='number'
+                  title='Number of Elements'
+                  {...register('data.size', { valueAsNumber: true })}
+                  error={getError(errors, ['data', 'size'])}
+                />
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
       <div className='flex justify-between p-4'>
         <Button type='submit' disabled={!isDirty || !isValid}>
           {existing ? 'Update' : 'Create'}
@@ -494,5 +431,45 @@ export default function MemoryForm({
         )}
       </div>
     </form>
+  );
+}
+
+/**
+ * Can be used for textual input
+ */
+function SelectInput(props: UseControllerProps<MemoryLocationApi>) {
+  const { field, fieldState } = useController(props);
+
+  const name = 'dataTypes.0.dataType';
+  const title = 'Data Type';
+  const hint =
+    'Data type dictates the interpretation of provided values. For example, choosing Integer will allocate 4 bytes for each value.';
+
+  return (
+    <div>
+      {hint ? (
+        <Tooltip>
+          <TooltipTrigger>
+            <Label htmlFor={name}>{title}&nbsp;&#9432;</Label>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>{hint}</p>
+          </TooltipContent>
+        </Tooltip>
+      ) : (
+        <Label htmlFor={name}>{title}</Label>
+      )}
+      <Select onValueChange={field.onChange} value={field.value}>
+        <SelectTrigger className='w-[180px]'>
+          <SelectValue placeholder='Select a Type' />
+        </SelectTrigger>
+        <SelectContent>
+          {dataTypes.map((dt, i) => {
+            const name = dataTypesText[i];
+            return <SelectItem value={dt}>{name}</SelectItem>;
+          })}
+        </SelectContent>
+      </Select>
+    </div>
   );
 }

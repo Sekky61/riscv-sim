@@ -29,11 +29,129 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { defaultCpuConfig, isaFormSchema } from '@/lib/forms/Isa';
+import {
+  MemoryLocationApi,
+  defaultCpuConfig,
+  isaFormSchema,
+  memoryLocationDefaultValue,
+  memoryLocationSchema,
+} from '@/lib/forms/Isa';
 
 describe('The Default ISA configuration', () => {
   it('Should pass the validation', () => {
     // Throws ZodError if not valid
     const _result = isaFormSchema.parse(defaultCpuConfig);
+  });
+});
+
+describe('The MemoryLocation schema', () => {
+  it('Default value passes', () => {
+    // Throws ZodError if not valid
+    const _result = memoryLocationSchema.parse(memoryLocationDefaultValue);
+  });
+
+  it('constant passes', () => {
+    // Throws ZodError if not valid
+
+    const obj: MemoryLocationApi = {
+      name: 'Array',
+      alignment: 4,
+      dataTypes: [{ startOffset: 0, dataType: 'kInt' }],
+      data: {
+        kind: 'constant',
+        constant: '1',
+        size: 4,
+      },
+    };
+
+    const _result = memoryLocationSchema.parse(obj);
+  });
+
+  it('random passes', () => {
+    // Throws ZodError if not valid
+
+    const obj: MemoryLocationApi = {
+      name: 'Array',
+      alignment: 4,
+      dataTypes: [{ startOffset: 0, dataType: 'kInt' }],
+      data: {
+        kind: 'random',
+        min: 0,
+        max: 10,
+        size: 4,
+      },
+    };
+
+    const _result = memoryLocationSchema.parse(obj);
+  });
+
+  it('data passes', () => {
+    // Throws ZodError if not valid
+
+    const obj: MemoryLocationApi = {
+      name: 'Array',
+      alignment: 4,
+      dataTypes: [{ startOffset: 0, dataType: 'kInt' }],
+      data: {
+        kind: 'data',
+        data: ['1'],
+      },
+    };
+
+    const _result = memoryLocationSchema.parse(obj);
+  });
+
+  it('mixed does not pass', () => {
+    // Throws ZodError if not valid
+
+    const obj: MemoryLocationApi = {
+      name: 'Array',
+      alignment: 4,
+      dataTypes: [{ startOffset: 0, dataType: 'kInt' }],
+      data: {
+        kind: 'data',
+        //@ts-ignore This is wrong on purpose
+        constant: '9',
+        data: ['8'],
+        size: 21,
+      },
+    };
+
+    expect(() => memoryLocationSchema.parse(obj)).toThrow();
+  });
+
+  it('kind must be present', () => {
+    // Throws ZodError if not valid
+
+    const obj: MemoryLocationApi = {
+      name: 'Array',
+      alignment: 4,
+      dataTypes: [{ startOffset: 0, dataType: 'kInt' }],
+      //@ts-ignore This is wrong on purpose
+      data: {
+        constant: '12',
+        size: 12,
+      },
+    };
+
+    expect(() => memoryLocationSchema.parse(obj)).toThrow();
+  });
+
+  it('bad random range does not pass', () => {
+    // Throws ZodError if not valid
+
+    const obj: MemoryLocationApi = {
+      name: 'Array',
+      alignment: 4,
+      dataTypes: [{ startOffset: 0, dataType: 'kInt' }],
+      data: {
+        kind: 'random',
+        min: 8,
+        max: 7,
+        size: 4,
+      },
+    };
+
+    expect(() => memoryLocationSchema.parse(obj)).toThrow();
   });
 });
