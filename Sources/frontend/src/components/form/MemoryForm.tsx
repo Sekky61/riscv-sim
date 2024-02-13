@@ -33,13 +33,12 @@ import { Button, buttonVariants } from '@/components/base/ui/button';
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
+  CardTitle,
 } from '@/components/base/ui/card';
 import { Input } from '@/components/base/ui/input';
 import { Label } from '@/components/base/ui/label';
 import { FormInput } from '@/components/form/FormInput';
-import { RadioInputWithTitle } from '@/components/form/RadioInput';
 import { parseCsv } from '@/lib/csv';
 import {
   MemoryLocationApi,
@@ -59,7 +58,6 @@ import { useEffect, useState } from 'react';
 import {
   FieldError,
   FieldErrors,
-  FieldValues,
   Resolver,
   UseControllerProps,
   useController,
@@ -80,17 +78,383 @@ import {
   SelectValue,
 } from '@/components/base/ui/select';
 import {
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/base/ui/form';
-import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@/components/base/ui/tooltip';
+import { Textarea } from '@/components/base/ui/textarea';
+import { Upload } from 'lucide-react';
+import { dataTypeToSize } from '@/lib/utils';
+
+interface MemoryFormProps {
+  /**
+   * True if the memory location already exists (vs new one)
+   */
+  existing: boolean;
+  memoryLocationName: string;
+  deleteCallback: () => void;
+}
+
+/**
+ * Component for defining a memory location.
+ *
+ * Data can be defined in three ways:
+ * - constant: a single value is repeated
+ * - random: random values are generated in an inclusive range
+ * - data: a literal array of values. Can be fulled manually or loaded from a CSV file
+ *
+ * Note: React-hook-form cannot handle the and/or from the zoo schema, so types have to be defined manually.
+ * (https://github.com/react-hook-form/react-hook-form/issues/9287)
+ */
+export default function MemoryForm({
+  existing,
+  memoryLocationName,
+  deleteCallback,
+}: MemoryFormProps) {
+  const dispatch = useAppDispatch();
+  const activeIsa = useAppSelector(selectActiveConfig);
+  const [activeTab, setActiveTab] = useState<'data' | 'constant' | 'random'>(
+    memoryLocationDefaultValue.data.kind,
+  );
+
+  const {
+    register,
+    handleSubmit,
+    formState,
+    reset,
+    trigger,
+    control,
+    watch,
+    setValue,
+  } = useForm<MemoryLocationApi>({
+    resolver,
+    defaultValues: memoryLocationDefaultValue,
+    mode: 'onChange',
+    context: {
+      activeIsa,
+      memoryLocationName,
+    },
+  });
+  const watchFields = watch();
+  const { errors, isDirty, isValid } = formState;
+
+  // watch for changes in the active memory location
+  useEffect(() => {
+    // load the memory location
+    const memoryLocation = activeIsa.memoryLocations.find(
+      (ml) => ml.name === memoryLocationName,
+    );
+    if (memoryLocation) {
+      reset(memoryLocation);
+      setActiveTab(memoryLocation.data.kind);
+    } else if (memoryLocationName === 'new') {
+      reset(memoryLocationDefaultValue);
+      setActiveTab(memoryLocationDefaultValue.data.kind);
+    } else {
+      return; // Do not trigger validation
+    }
+    trigger(); // Validate the form, after reset
+  }, [activeIsa, memoryLocationName, reset, trigger]);
+
+  // Called after the form is submitted and validated by the resolver
+  const onSubmit = async (data: MemoryLocationApi) => {
+    if (existing) {
+      dispatch(
+        updateMemoryLocation({
+          oldName: memoryLocationName,
+          memoryLocation: data,
+        }),
+      );
+      toast.success(`Memory location ${memoryLocationName} updated.`);
+    } else {
+      dispatch(addMemoryLocation(data));
+      toast.success(`Memory location ${data.name} created.`);
+    }
+  };
+
+  const onTabChange = (value: 'data' | 'constant' | 'random') => {
+    // Save the information about the current tab to a state.
+    // When submitting, the fields from the current tab will be used, others will be filtered out.
+    setActiveTab(value as 'data' | 'constant' | 'random');
+    // Make it dirty manually
+    setValue('data.kind', value as 'data' | 'constant' | 'random', {
+      shouldDirty: true,
+    });
+
+    // Give defaulut values if empty
+    if (value === 'constant') {
+      //@ts-ignore
+      if (watchFields.data.size === undefined) {
+        setValue('data.size', 4);
+      }
+      //@ts-ignore
+      if (watchFields.data.constant === undefined) {
+        setValue('data.constant', '0');
+      }
+    }
+
+    if (value === 'random') {
+      //@ts-ignore
+      if (watchFields.data.size === undefined) {
+        setValue('data.size', 4);
+      }
+      //@ts-ignore
+      if (watchFields.data.min === undefined) {
+        setValue('data.min', 0);
+      }
+      //@ts-ignore
+      if (watchFields.data.max === undefined) {
+        setValue('data.max', 100);
+      }
+    }
+
+    if (value === 'data') {
+      //@ts-ignore
+      if (watchFields.data.data === undefined) {
+        setValue('data.data', ['1', '2', '3', '4']);
+      }
+    }
+  };
+
+  const randomTrigger = () => {
+    trigger();
+  };
+
+  let dataLengthElements = 0;
+  if (watchFields.data.kind === 'data') {
+    dataLengthElements = watchFields.data.data.length;
+  } else if (watchFields.data.kind === 'constant') {
+    dataLengthElements = watchFields.data.size;
+  } else if (watchFields.data.kind === 'random') {
+    dataLengthElements = watchFields.data.size;
+  }
+
+  const dataLengthBytes =
+    dataLengthElements * dataTypeToSize(watchFields.dataType);
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <div className='flex flex-col gap-4 justify-start'>
+        <FormInput
+          title='Pointer Name'
+          hint='Name of the memory location. Will be used as the pointer name in C/assembler.'
+          {...register('name')}
+          error={formState.errors.name}
+        />
+        <div className='flex gap-4'>
+          <div>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Label htmlFor='dataType'>Data Type&nbsp;&#9432;</Label>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>
+                  Data type dictates the interpretation of provided values. For
+                  example, choosing Integer will allocate 4 bytes for each
+                  value.
+                </p>
+              </TooltipContent>
+            </Tooltip>
+            <SelectInput control={control} name='dataType' />
+          </div>
+          <div className='flex items-center gap-4'>
+            <FormInput
+              type='number'
+              title='Alignment (log Bytes)'
+              hint='The array will be aligned to this boundary. The .align directive in assembler works the same way. For example, 3 will align the array to 2^3 = 8 bytes.'
+              {...register('alignment', { valueAsNumber: true })}
+              error={formState.errors.alignment}
+            />
+          </div>
+        </div>
+      </div>
+      <h2 className='text-xl mb-4'>Values</h2>
+      <Tabs
+        className=''
+        onValueChange={(value) => {
+          onTabChange(value as 'data' | 'constant' | 'random');
+        }}
+        value={activeTab}
+      >
+        <TabsList className='w-full'>
+          <TabsTrigger value='data'>List</TabsTrigger>
+          <TabsTrigger value='constant'>Repeated Constant</TabsTrigger>
+          <TabsTrigger value='random'>Random Values</TabsTrigger>
+        </TabsList>
+        <TabsContent value='data'>
+          <Card>
+            <CardHeader className='text-sm'>
+              Fill the values manually or load them from a CSV file.
+            </CardHeader>
+            <CardContent>
+              <DataTextArea control={control} name='data.data' />
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value='constant'>
+          <Card>
+            <CardHeader className='text-sm'>
+              The selected constant value will be duplicated a specified number
+              of times.
+            </CardHeader>
+            <CardContent>
+              <div className='flex gap-4'>
+                <FormInput
+                  type='number'
+                  title='Number of Elements'
+                  {...register('data.size', { valueAsNumber: true })}
+                  error={getError(errors, ['data', 'size'])}
+                />
+                <FormInput
+                  title='Constant'
+                  {...register('data.constant')}
+                  error={getError(errors, ['data', 'constant'])}
+                />
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value='random' onChange={randomTrigger}>
+          <Card>
+            <CardHeader className='text-sm'>
+              Random data will be generated after each time the memory location
+              is saved.
+            </CardHeader>
+            <CardContent>
+              <div className='flex gap-4'>
+                <FormInput
+                  type='number'
+                  title='Number of Elements'
+                  {...register('data.size', { valueAsNumber: true })}
+                  error={getError(errors, ['data', 'size'])}
+                />
+                <FormInput
+                  type='number'
+                  title='Lower bound of random range'
+                  {...register('data.min', { valueAsNumber: true })}
+                  error={getError(errors, ['data', 'min'])}
+                />
+                <FormInput
+                  type='number'
+                  title='Upper bound of random range (inclusive)'
+                  {...register('data.max', { valueAsNumber: true })}
+                  error={getError(errors, ['data', 'max'])}
+                />
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+      <Card className='mt-4'>
+        <CardHeader>
+          <CardTitle>Summary</CardTitle>
+        </CardHeader>
+        <CardContent>
+          Array called <b>{watchFields.name}</b> of {dataLengthElements}{' '}
+          elements ({dataLengthBytes} bytes). Alignment is 2
+          <sup>{watchFields.alignment}</sup> = {2 ** watchFields.alignment}{' '}
+          bytes
+          <div className='flex gap-4 mt-4'>
+            <Button type='submit' disabled={!isDirty || !isValid}>
+              {existing ? 'Update' : 'Create'}
+            </Button>
+            {existing && (
+              <Button
+                type='button'
+                variant='destructive'
+                onClick={deleteCallback}
+              >
+                Delete
+              </Button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    </form>
+  );
+}
+
+/**
+ * Forgets the file when the tab is changed
+ */
+function DataTextArea(props: UseControllerProps<MemoryLocationApi>) {
+  const { field, fieldState } = useController(props);
+
+  // File selected to fill the memory
+  const [file, setFile] = useState<File | undefined>();
+
+  return (
+    <div>
+      <Input
+        title='File'
+        id='fileId'
+        type='file'
+        className='hidden'
+        accept='.csv'
+        onChange={(e) => {
+          const file = getFileFromFileList(e.target.files);
+          if (file && file instanceof File) {
+            setFile(file);
+            readFromFile(file).then((data) => {
+              field.onChange(data);
+            });
+          }
+        }}
+      />
+      <Label htmlFor='message-2'>Values</Label>
+      <Textarea
+        onChange={(e) => {
+          // Convert the string to an array of strings
+          const data = e.target.value.split(',');
+          field.onChange(data);
+        }}
+        onKeyDown={(e) => {
+          // Disable new lines
+          if (e.key === 'Enter') {
+            e.preventDefault();
+          }
+        }}
+        value={field.value as string}
+        className='w-full border border-gray-300 rounded-md mb-2'
+        placeholder='Enter values, separated by a comma. For example: 1,2,3,4.20'
+      />
+      <Label
+        htmlFor='fileId'
+        className={buttonVariants({ variant: 'outline' })}
+      >
+        {file?.name ? (
+          `${file.name} ✓`
+        ) : (
+          <span className='flex items-center gap-4'>
+            Fill from a CSV file
+            <Upload size={20} strokeWidth={1.5} />
+          </span>
+        )}
+      </Label>
+    </div>
+  );
+}
+
+/**
+ * Can be used for textual input
+ */
+function SelectInput(props: UseControllerProps<MemoryLocationApi>) {
+  const { field, fieldState } = useController(props);
+
+  return (
+    <Select onValueChange={field.onChange} value={field.value as string}>
+      <SelectTrigger className='w-[180px]'>
+        <SelectValue placeholder='Select a Type' id={field.name} />
+      </SelectTrigger>
+      <SelectContent>
+        {dataTypes.map((dt, i) => {
+          const name = dataTypesText[i];
+          return <SelectItem value={dt}>{name}</SelectItem>;
+        })}
+      </SelectContent>
+    </Select>
+  );
+}
 
 /**
  * @param fileList File list is interface of object that is returned by input[type=file]
@@ -117,32 +481,6 @@ async function readFromFile(file: File): Promise<string[]> {
 }
 
 /**
- * Check if obj is a File
- * @param obj argument to check
- * @returns True if obj is a File
- */
-function isFile(obj: unknown): obj is File {
-  return obj instanceof File;
-}
-
-// props
-interface MemoryFormProps {
-  /**
-   * True if the memory location already exists (vs new one)
-   */
-  existing: boolean;
-  memoryLocationName: string;
-  deleteCallback: () => void;
-}
-
-function isNotEmpty<TValue extends object>(
-  // biome-ignore lint/complexity/noBannedTypes: this is what zod returns...
-  value: TValue | {},
-): value is TValue {
-  return Object.keys(value).length > 0;
-}
-
-/**
  * Convenience function to get an error from a nested object
  */
 function getError(
@@ -159,317 +497,44 @@ function getError(
       return undefined;
     }
   }
-  return undefined;
+  return current as FieldError;
 }
 
-/**
- * Component for defining a memory location.
- *
- * Data can be defined in three ways:
- * - constant: a single value is repeated
- * - random: random values are generated in an inclusive range
- * - data: a literal array of values. Can be fulled manually or loaded from a CSV file
- *
- * Note: React-hook-form cannot handle the and/or from the zoo schema, so types have to be defined manually.
- * (https://github.com/react-hook-form/react-hook-form/issues/9287)
- */
-export default function MemoryForm({
-  existing,
-  memoryLocationName,
-  deleteCallback,
-}: MemoryFormProps) {
-  const dispatch = useAppDispatch();
-  const activeIsa = useAppSelector(selectActiveConfig);
-  // File selected to fill the memory
-  const [file, setFile] = useState<File | undefined>();
-  const [activeTab, setActiveTab] = useState<'data' | 'constant' | 'random'>(
-    memoryLocationDefaultValue.data.kind,
-  );
+// Custom resolver
+const resolver: Resolver<MemoryLocationApi> = async (
+  values: MemoryLocationApi,
+  ctx,
+  options,
+) => {
+  // Let zod do its thing
+  const r = zodResolver(memoryLocationSchema);
+  const val = await r(values, ctx, options);
 
-  // Custom resolver
-  const resolver: Resolver<MemoryLocationApi> = async (
-    values: MemoryLocationApi,
-    ...args
-  ) => {
-    // Let zod do its thing
-    const r = zodResolver(memoryLocationSchema);
-    const val = await r(values, ...args);
+  const empty = Object.keys(val.errors).length === 0;
+  if (!empty) {
+    return val;
+  }
+  // Additional checks
 
-    const validation = memoryLocationSchema.safeParse(values);
+  const activeIsa = ctx.activeIsa as ReturnType<typeof selectActiveConfig>;
+  const memoryLocationName = ctx.memoryLocationName as string;
 
-    console.log('val', val, values);
-
-    if (isNotEmpty(val.errors)) {
-      return val;
-    }
-    // Additional checks
-    const errors: FieldErrors<MemoryLocationApi> = {};
-
-    // Name is unique. If we are updating, the name can stay the same
-    const memoryLocation = activeIsa.memoryLocations.find(
-      (ml) => ml.name === values.name,
-    );
-    // found, but ignore if we are updating
-    // todo: bug when updating memory
-    if (memoryLocation && memoryLocation.name !== memoryLocationName) {
-      errors.name = {
-        type: 'manual',
-        message: 'Name already exists',
-      };
-    }
-
-    return {
-      values: val.values,
-      errors,
-    };
-  };
-
-  const form = useForm<MemoryLocationApi>({
-    resolver,
-    defaultValues: memoryLocationDefaultValue,
-    mode: 'onChange',
-  });
-  const { register, handleSubmit, formState, reset, trigger, control } = form;
-  const watchFields = form.watch();
-  const { errors, isDirty, isValid } = formState;
-
-  // load the memory location
+  // Name is unique. If we are updating, the name can stay the same
   const memoryLocation = activeIsa.memoryLocations.find(
-    (ml) => ml.name === memoryLocationName,
+    (ml) => ml.name === values.name,
   );
+  // found, but ignore if we are updating
+  // todo: bug when updating memory
+  const errors: FieldErrors<MemoryLocationApi> = {};
+  if (memoryLocation && memoryLocation.name !== memoryLocationName) {
+    errors.name = {
+      type: 'manual',
+      message: 'Name already exists',
+    };
+  }
 
-  // watch for changes in the active memory location
-  useEffect(() => {
-    if (memoryLocation) {
-      reset(memoryLocation);
-    } else if (memoryLocationName === 'new') {
-      reset(memoryLocationDefaultValue);
-    } else {
-      return; // Do not trigger validation
-    }
-    trigger(); // Validate the form, after reset
-  }, [memoryLocation, memoryLocationName, reset, trigger]);
-
-  const onSubmit = async (data: MemoryLocationApi) => {
-    if (existing) {
-      dispatch(
-        updateMemoryLocation({
-          oldName: memoryLocationName,
-          memoryLocation: data,
-        }),
-      );
-      toast.success(`Memory location ${memoryLocationName} updated.`);
-    } else {
-      dispatch(addMemoryLocation(data));
-      toast.success(`Memory location ${data.name} created.`);
-    }
+  return {
+    values: val.values,
+    errors,
   };
-
-  const randomTrigger = () => {
-    trigger('data');
-  };
-
-  console.log(watchFields);
-  console.log('errors', errors);
-  console.log(activeTab);
-
-  return (
-    <form onSubmit={handleSubmit(onSubmit)}>
-      <div className='flex flex-col gap-4 justify-start'>
-        <FormInput
-          title='Pointer Name'
-          hint='Name of the memory location. Will be used as the pointer name in C/assembler.'
-          {...register('name')}
-          error={formState.errors.name}
-        />
-        <div className='flex mb-4'>
-          <FormInput
-            type='number'
-            title='Type Start Offset'
-            {...register('dataTypes.0.startOffset', { valueAsNumber: true })}
-            error={formState.errors.dataTypes?.[0]?.startOffset}
-          />
-          {/* <RadioInputWithTitle
-            name='dataTypes.0.dataType'
-            title='Data type'
-            hint='Data type dictates the interpretation of provided values. For example, choosing Integer will allocate 4 bytes for each value.'
-            control={control}
-            choices={dataTypes}
-            texts={dataTypesText}
-          /> */}
-          <SelectInput control={control} name='dataTypes.0.dataType' />
-        </div>
-        <FormInput
-          type='number'
-          title='Alignment (log Bytes)'
-          hint='The array will be aligned to this boundary. The .align directive in assembler works the same way. For example, 3 will align the array to 2^3 = 8 bytes.'
-          {...register('alignment', { valueAsNumber: true })}
-          error={formState.errors.alignment}
-        />
-      </div>
-      <h2 className='text-xl mb-4'>Values</h2>
-      <Tabs
-        defaultValue={activeTab}
-        className=''
-        onValueChange={(value) => {
-          // Save the information about the current tab to a state.
-          // When submitting, the fields from the current tab will be used, others will be filtered out.
-          setActiveTab(value as 'data' | 'constant' | 'random');
-          form.setValue('data.kind', value as 'data' | 'constant' | 'random');
-        }}
-      >
-        <TabsList>
-          <TabsTrigger value='data'>A List of Values</TabsTrigger>
-          <TabsTrigger value='constant'>A Repeated Constant</TabsTrigger>
-          <TabsTrigger value='random'>Random Values</TabsTrigger>
-        </TabsList>
-        <TabsContent value='data'>
-          <Card>
-            <CardHeader>
-              <CardDescription>
-                Fill the values manually or load them from a CSV file.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Input
-                title='File'
-                id='fileId'
-                type='file'
-                className='hidden'
-                accept='.csv'
-                onChange={(e) => {
-                  const file = getFileFromFileList(e.target.files);
-                  if (file && isFile(file)) {
-                    setFile(file);
-                    readFromFile(file).then((data) => {
-                      form.setValue('data.kind', 'data');
-                      form.setValue('data.data', data);
-                    });
-                  }
-                }}
-              />
-              <Label
-                htmlFor='fileId'
-                className={buttonVariants({ variant: 'outline' })}
-              >
-                {file?.name ? `${file.name} ✓` : 'Select file'}
-              </Label>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        <TabsContent value='constant'>
-          <Card>
-            <CardHeader>
-              <CardDescription>
-                The selected constant value will be duplicated a specified
-                number of times.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className='flex justify-evenly'>
-                <FormInput
-                  title='Constant'
-                  {...register('data.constant')}
-                  error={getError(errors, ['data', 'constant'])}
-                />
-                <FormInput
-                  type='number'
-                  title='Number of Elements'
-                  {...register('data.size', { valueAsNumber: true })}
-                  error={getError(errors, ['data', 'size'])}
-                />
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        <TabsContent
-          value='random'
-          onClick={randomTrigger}
-          onFocus={randomTrigger}
-          onBlur={randomTrigger}
-        >
-          <Card>
-            <CardHeader>
-              <CardDescription>
-                Random data will be generated after each time the memory
-                location is saved.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className='flex gap-4 justify-evenly'>
-                <FormInput
-                  type='number'
-                  title='Lower bound of random range'
-                  {...register('data.min', { valueAsNumber: true })}
-                  error={getError(errors, ['data', 'min'])}
-                />
-                <FormInput
-                  type='number'
-                  title='Upper bound of random range'
-                  {...register('data.max', { valueAsNumber: true })}
-                  error={getError(errors, ['data', 'max'])}
-                />
-                <FormInput
-                  type='number'
-                  title='Number of Elements'
-                  {...register('data.size', { valueAsNumber: true })}
-                  error={getError(errors, ['data', 'size'])}
-                />
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
-      <div className='flex justify-between p-4'>
-        <Button type='submit' disabled={!isDirty || !isValid}>
-          {existing ? 'Update' : 'Create'}
-        </Button>
-        {existing && (
-          <Button type='button' variant='destructive' onClick={deleteCallback}>
-            Delete
-          </Button>
-        )}
-      </div>
-    </form>
-  );
-}
-
-/**
- * Can be used for textual input
- */
-function SelectInput(props: UseControllerProps<MemoryLocationApi>) {
-  const { field, fieldState } = useController(props);
-
-  const name = 'dataTypes.0.dataType';
-  const title = 'Data Type';
-  const hint =
-    'Data type dictates the interpretation of provided values. For example, choosing Integer will allocate 4 bytes for each value.';
-
-  return (
-    <div>
-      {hint ? (
-        <Tooltip>
-          <TooltipTrigger>
-            <Label htmlFor={name}>{title}&nbsp;&#9432;</Label>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>{hint}</p>
-          </TooltipContent>
-        </Tooltip>
-      ) : (
-        <Label htmlFor={name}>{title}</Label>
-      )}
-      <Select onValueChange={field.onChange} value={field.value}>
-        <SelectTrigger className='w-[180px]'>
-          <SelectValue placeholder='Select a Type' />
-        </SelectTrigger>
-        <SelectContent>
-          {dataTypes.map((dt, i) => {
-            const name = dataTypesText[i];
-            return <SelectItem value={dt}>{name}</SelectItem>;
-          })}
-        </SelectContent>
-      </Select>
-    </div>
-  );
-}
+};

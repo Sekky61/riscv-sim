@@ -35,7 +35,7 @@
 
 import { Button } from '@/components/base/ui/button';
 import MemoryForm from '@/components/form/MemoryForm';
-import { MemoryLocationIsa } from '@/lib/forms/Isa';
+import { MemoryLocationApi } from '@/lib/forms/Isa';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import {
   removeMemoryLocation,
@@ -70,7 +70,7 @@ export default function HomePage() {
       // TODO: resolve issue with extra fields on the form
       const newMemoryLocations = JSON.parse(
         json_string,
-      ) as Array<MemoryLocationIsa>;
+      ) as Array<MemoryLocationApi>;
       dispatch(setMemoryLocations(newMemoryLocations));
     });
   };

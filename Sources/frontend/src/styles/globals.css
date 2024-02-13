@@ -642,4 +642,18 @@
   .expand-area:hover .expand-arrow-down {
     transform: translateY(-10%) rotateZ(-20deg);
   }
+
+  /* Memory form */
+
+  /* 3 columns of max-content */
+  .memory-form-types {
+    @apply grid gap-2;
+    grid-template-columns: repeat(4, max-content);
+  }
+
+  /* A row - subgrid */
+  .memory-form-row {
+    @apply grid gap-2 col-span-4;
+    grid-template-columns: subgrid;
+  }
 }

@@ -108,7 +108,7 @@ export const memoryLocationSchema = z
   .object({
     name: z.string().min(1),
     alignment: z.number().min(1).max(16),
-    dataTypes: z.array(spanTypeSchema).min(1),
+    dataType: z.enum(dataTypes),
     data: z.discriminatedUnion('kind', [
       z.object({
         kind: z.literal('data'),
@@ -129,12 +129,10 @@ export const memoryLocationSchema = z
   })
   .superRefine((val, ctx) => {
     // Runs just for the one discriminated variant. If no kind is present, it's not run.
-    console.log('superRefine', val.data.kind);
 
     // Random
     if (val.data.kind === 'random') {
       if (val.data.min > val.data.max) {
-        console.log('min > max');
         ctx.addIssue({
           code: ZodIssueCode.too_small,
           path: ['data', 'max'],
@@ -151,7 +149,7 @@ export type MemoryLocationApi = z.infer<typeof memoryLocationSchema>;
 export const memoryLocationDefaultValue: MemoryLocationApi = {
   name: 'Array',
   alignment: 4,
-  dataTypes: [{ startOffset: 0, dataType: 'kInt' }],
+  dataType: 'kInt',
   data: {
     kind: 'data',
     data: ['1', '2', '3', '4'],

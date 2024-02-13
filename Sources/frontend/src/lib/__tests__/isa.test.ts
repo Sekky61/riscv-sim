@@ -56,7 +56,7 @@ describe('The MemoryLocation schema', () => {
     const obj: MemoryLocationApi = {
       name: 'Array',
       alignment: 4,
-      dataTypes: [{ startOffset: 0, dataType: 'kInt' }],
+      dataType: 'kInt',
       data: {
         kind: 'constant',
         constant: '1',
@@ -73,7 +73,7 @@ describe('The MemoryLocation schema', () => {
     const obj: MemoryLocationApi = {
       name: 'Array',
       alignment: 4,
-      dataTypes: [{ startOffset: 0, dataType: 'kInt' }],
+      dataType: 'kInt',
       data: {
         kind: 'random',
         min: 0,
@@ -91,7 +91,7 @@ describe('The MemoryLocation schema', () => {
     const obj: MemoryLocationApi = {
       name: 'Array',
       alignment: 4,
-      dataTypes: [{ startOffset: 0, dataType: 'kInt' }],
+      dataType: 'kInt',
       data: {
         kind: 'data',
         data: ['1'],
@@ -143,7 +143,7 @@ describe('The MemoryLocation schema', () => {
     const obj: MemoryLocationApi = {
       name: 'Array',
       alignment: 4,
-      dataTypes: [{ startOffset: 0, dataType: 'kInt' }],
+      dataType: 'kInt',
       data: {
         kind: 'random',
         min: 8,

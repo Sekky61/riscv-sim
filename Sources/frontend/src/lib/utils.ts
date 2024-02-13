@@ -33,6 +33,7 @@ import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
 import {
+  DataTypeEnum,
   InputCodeModel,
   Reference,
   RegisterModel,
@@ -222,4 +223,28 @@ export function loadFile(callback: (contents: string) => void) {
     reader.readAsText(file);
   };
   input.click();
+}
+
+/**
+ * Convert the data type to byte size.
+ */
+export function dataTypeToSize(dataType: DataTypeEnum): number {
+  switch (dataType) {
+    case 'kBool':
+    case 'kChar':
+    case 'kByte':
+      return 1;
+    case 'kShort':
+      return 2;
+    case 'kUInt':
+    case 'kInt':
+    case 'kFloat':
+      return 4;
+    case 'kDouble':
+    case 'kULong':
+    case 'kLong':
+      return 8;
+    default:
+      return unreachable();
+  }
 }
