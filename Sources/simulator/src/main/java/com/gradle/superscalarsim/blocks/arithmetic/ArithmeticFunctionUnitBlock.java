@@ -94,7 +94,7 @@ public class ArithmeticFunctionUnitBlock extends AbstractFunctionUnitBlock
   /**
    * @param simCodeModel Instruction to be executed
    *
-   * @return True if the function unit can execute the instruction, false otherwise.
+   * @return True if the function unit can execute the instruction, false otherwise. Does not check if the function unit is busy.
    */
   @Override
   public boolean canExecuteInstruction(SimCodeModel simCodeModel)

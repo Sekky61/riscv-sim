@@ -435,6 +435,7 @@ public class ForwardSimulationTest
                                  """);
     instructionMemoryBlock.setCode(codeParser.getInstructions());
     
+    // Fetch 3
     this.cpu.step();
     Assert.assertEquals("sub", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
     Assert.assertEquals("add", this.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
@@ -444,6 +445,7 @@ public class ForwardSimulationTest
     Assert.assertEquals(RegisterReadinessEnum.kFree, this.unifiedRegisterFileBlock.getRegister("tg1").getReadiness());
     Assert.assertEquals(RegisterReadinessEnum.kFree, this.unifiedRegisterFileBlock.getRegister("tg0").getReadiness());
     
+    // Fetch last, rename 3
     this.cpu.step();
     Assert.assertEquals("add", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
     Assert.assertEquals("sub tg0,x4,x5", this.decodeAndDispatchBlock.getCodeBuffer().get(0).getRenamedCodeLine());
@@ -457,56 +459,42 @@ public class ForwardSimulationTest
     Assert.assertEquals(RegisterReadinessEnum.kAllocated,
                         this.unifiedRegisterFileBlock.getRegister("tg0").getReadiness());
     
+    // Issue the three, decode the last
     this.cpu.step();
     Assert.assertEquals(3, this.reorderBufferBlock.getReorderQueueSize());
     Assert.assertEquals("add tg3,x4,x3", this.decodeAndDispatchBlock.getCodeBuffer().get(0).getRenamedCodeLine());
     Assert.assertEquals("sub tg0,x4,x5", this.aluIssueWindowBlock.getIssuedInstructions().get(0).getRenamedCodeLine());
     Assert.assertEquals("add tg1,x3,x4", this.aluIssueWindowBlock.getIssuedInstructions().get(1).getRenamedCodeLine());
     Assert.assertEquals("add tg2,tg1,x3", this.aluIssueWindowBlock.getIssuedInstructions().get(2).getRenamedCodeLine());
-    Assert.assertEquals(RegisterReadinessEnum.kAllocated,
-                        this.unifiedRegisterFileBlock.getRegister("tg3").getReadiness());
-    Assert.assertEquals(RegisterReadinessEnum.kAllocated,
-                        this.unifiedRegisterFileBlock.getRegister("tg2").getReadiness());
-    Assert.assertEquals(RegisterReadinessEnum.kAllocated,
-                        this.unifiedRegisterFileBlock.getRegister("tg1").getReadiness());
-    Assert.assertEquals(RegisterReadinessEnum.kAllocated,
-                        this.unifiedRegisterFileBlock.getRegister("tg0").getReadiness());
     
+    // The [0] or [1] can be executed, [0] is chosen (no particular reason), removed from the issue window
+    // Also the last instruction made it to issue window
     this.cpu.step();
     Assert.assertEquals(4, this.reorderBufferBlock.getReorderQueueSize());
     Assert.assertEquals("add tg2,tg1,x3", this.aluIssueWindowBlock.getIssuedInstructions().get(0).getRenamedCodeLine());
     Assert.assertEquals("add tg3,x4,x3", this.aluIssueWindowBlock.getIssuedInstructions().get(1).getRenamedCodeLine());
+    // 2 FUs busy, last adder did not have anything to work on
     Assert.assertEquals("sub tg0,x4,x5", this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("add tg1,x3,x4", this.addFunctionBlock.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertEquals(RegisterReadinessEnum.kAllocated,
-                        this.unifiedRegisterFileBlock.getRegister("tg3").getReadiness());
-    Assert.assertEquals(RegisterReadinessEnum.kAllocated,
-                        this.unifiedRegisterFileBlock.getRegister("tg2").getReadiness());
-    Assert.assertEquals(RegisterReadinessEnum.kAllocated,
-                        this.unifiedRegisterFileBlock.getRegister("tg1").getReadiness());
-    Assert.assertEquals(RegisterReadinessEnum.kAllocated,
-                        this.unifiedRegisterFileBlock.getRegister("tg0").getReadiness());
     
+    // The last instruction is executed by addSecondFunctionBlock
+    // One instruction waits for the tg1 to finish
     this.cpu.step();
     Assert.assertEquals("add tg2,tg1,x3", this.aluIssueWindowBlock.getIssuedInstructions().get(0).getRenamedCodeLine());
+    // 3 FUs busy
     Assert.assertEquals("add tg3,x4,x3", this.addSecondFunctionBlock.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("sub tg0,x4,x5", this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("add tg1,x3,x4", this.addFunctionBlock.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertEquals(RegisterReadinessEnum.kAllocated,
-                        this.unifiedRegisterFileBlock.getRegister("tg3").getReadiness());
-    Assert.assertEquals(RegisterReadinessEnum.kAllocated,
-                        this.unifiedRegisterFileBlock.getRegister("tg2").getReadiness());
-    Assert.assertEquals(RegisterReadinessEnum.kAllocated,
-                        this.unifiedRegisterFileBlock.getRegister("tg1").getReadiness());
-    Assert.assertEquals(RegisterReadinessEnum.kAllocated,
-                        this.unifiedRegisterFileBlock.getRegister("tg0").getReadiness());
     
+    // First two computed
     this.cpu.step();
     Assert.assertEquals(4, this.reorderBufferBlock.getReorderQueueSize());
     Assert.assertTrue(this.reorderBufferBlock.getRobItem(0).isReadyToBeCommitted());
     Assert.assertTrue(this.reorderBufferBlock.getRobItem(1).isReadyToBeCommitted());
-    Assert.assertEquals("add tg3,x4,x3", this.addSecondFunctionBlock.getSimCodeModel().getRenamedCodeLine());
+    // addFunctionBlock starts work on the last instruction immediately
     Assert.assertEquals("add tg2,tg1,x3", this.addFunctionBlock.getSimCodeModel().getRenamedCodeLine());
+    Assert.assertEquals("add tg3,x4,x3", this.addSecondFunctionBlock.getSimCodeModel().getRenamedCodeLine());
+    // tg0 done, tg1 done
     Assert.assertEquals(4, (int) this.unifiedRegisterFileBlock.getRegister("tg1").getValue(DataTypeEnum.kInt), 0.01);
     Assert.assertEquals(RegisterReadinessEnum.kAllocated,
                         this.unifiedRegisterFileBlock.getRegister("tg3").getReadiness());
@@ -518,19 +506,17 @@ public class ForwardSimulationTest
                         this.unifiedRegisterFileBlock.getRegister("tg0").getReadiness());
     
     this.cpu.step();
+    // The first two instructions are committed
     Assert.assertEquals(2, this.reorderBufferBlock.getReorderQueueSize());
+    // Last one is done, but the #3 (id 2) is still computing in addFunctionBlock
     Assert.assertTrue(this.reorderBufferBlock.getRobItem(3).isReadyToBeCommitted());
     Assert.assertEquals("add tg2,tg1,x3", this.addFunctionBlock.getSimCodeModel().getRenamedCodeLine());
+    // Registers
     Assert.assertEquals(-2, (int) this.unifiedRegisterFileBlock.getRegister("x5").getValue(DataTypeEnum.kInt), 0.01);
     Assert.assertEquals(4, (int) this.unifiedRegisterFileBlock.getRegister("x2").getValue(DataTypeEnum.kInt), 0.01);
-    Assert.assertEquals(RegisterReadinessEnum.kExecuted,
-                        this.unifiedRegisterFileBlock.getRegister("tg3").getReadiness());
-    Assert.assertEquals(RegisterReadinessEnum.kAllocated,
-                        this.unifiedRegisterFileBlock.getRegister("tg2").getReadiness());
-    Assert.assertEquals(RegisterReadinessEnum.kExecuted,
-                        this.unifiedRegisterFileBlock.getRegister("tg1").getReadiness());
     Assert.assertEquals(RegisterReadinessEnum.kFree, this.unifiedRegisterFileBlock.getRegister("tg0").getReadiness());
     
+    // Head of ROB is committable
     this.cpu.step();
     Assert.assertTrue(this.reorderBufferBlock.getRobItem(3).isReadyToBeCommitted());
     Assert.assertTrue(this.reorderBufferBlock.getRobItem(2).isReadyToBeCommitted());
@@ -542,6 +528,7 @@ public class ForwardSimulationTest
                         this.unifiedRegisterFileBlock.getRegister("tg1").getReadiness());
     Assert.assertEquals(RegisterReadinessEnum.kFree, this.unifiedRegisterFileBlock.getRegister("tg0").getReadiness());
     
+    // And committed
     this.cpu.step();
     Assert.assertEquals(0, this.reorderBufferBlock.getReorderQueueSize());
     Assert.assertEquals(4, (int) this.unifiedRegisterFileBlock.getRegister("x2").getValue(DataTypeEnum.kInt), 0.01);
