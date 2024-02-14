@@ -5,10 +5,10 @@ It operates in two modes: CLI and HTTP server.
 
 ## Installation
 
-Run the bash script `install.sh`.
+Run the bash script `scripts/install.sh`.
 
 ```bash
-./install.sh
+./scripts/install.sh
 ```
 
 This should create entry point `build/install/superscalar-simulator/bin/superscalar-simulator`.
@@ -19,31 +19,31 @@ Unzip the file and run the executable in `bin`.
 
 ## Usage
 
-The app can be run directly (see installation) or using the bash script `run.sh`.
+The app can be run directly (see installation) or using the bash script `scripts/run.sh`.
 This script conveniently wraps the `superscalar-simulator` executable.
 
 ### Running the CLI
 
 ```bash
-./run.sh cli [options]
+./scripts/run.sh cli [options]
 ```
 
 To see all the available options, run:
 
 ```bash
-./run.sh cli help
+./scripts/run.sh cli help
 ```
 
 ### Running the server
 
 ```bash
-./run.sh server [options]
+./scripts/run.sh server [options]
 ```
 
 To see all the available options, run:
 
 ```bash
-./run.sh server help
+./scripts/run.sh server help
 ```
 
 ## Structure
@@ -66,9 +66,12 @@ To see all the available options, run:
         +--serialization - Serialization and deserialization to JSON
         +--server   - HTTP server, request handlers
   +--test - Tests
+./scripts
+  +--install.sh      - Bash script to install the app
+  +--run.sh          - Bash script to run the app
+  +--testExamples.sh - Bash script to test example programs
+  +--runProd.sh      - Bash script to run the app in production mode
 Readme.md       - Read me file
-install.sh      - Bash script to install the app
-run.sh          - Bash script to run the app
 ```
 
 ## Development

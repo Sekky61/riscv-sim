@@ -60,7 +60,7 @@ public class CliTests
   }
   
   /**
-   * The test is designed to work with CWD set to the root of the project
+   * The test is designed to work with CWD set to the root of the simulator
    */
   @Test
   public void testExecuteGoodArgs()
@@ -86,7 +86,7 @@ public class CliTests
   }
   
   /**
-   * The test is designed to work with CWD set to the root of the project
+   * The test is designed to work with CWD set to the root of the simulator
    */
   @Test
   public void testPrettyPrint()
