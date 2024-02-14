@@ -105,7 +105,8 @@ class CliApp implements Callable<Integer>
     try
     {
       String output = serializer.writeValueAsString(resultObject);
-      System.out.println(output);
+      // Use provided stream for simpler testing
+      spec.commandLine().getOut().println(output);
     }
     catch (JsonProcessingException e)
     {

@@ -1,0 +1,8 @@
+    lla a4,ptr # Needs a definition of ptr
+    li a5,0
+    li a3,32
+.L2:
+    sw a5,0(a4)
+    addi a5,a5,1
+    addi a4,a4,4
+    bne a5,a3,.L2
