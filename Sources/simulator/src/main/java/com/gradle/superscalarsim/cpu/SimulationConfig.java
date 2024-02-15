@@ -79,12 +79,12 @@ public class SimulationConfig
   /**
    * Constructor
    */
-  public SimulationConfig(String code, List<MemoryLocation> memoryLocations, CpuConfig cpuConfig)
+  public SimulationConfig(String code, List<MemoryLocation> memoryLocations, CpuConfig cpuConfig, Object entryPoint)
   {
     this.code            = code;
     this.memoryLocations = memoryLocations;
     this.cpuConfig       = cpuConfig;
-    entryPoint           = 0;
+    this.entryPoint      = entryPoint;
   }
   
   /**

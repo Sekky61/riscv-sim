@@ -155,7 +155,7 @@ public class ForwardSimulationTest
                                   new FunctionalUnitDescription(9, FunctionalUnitDescription.Type.Memory, 1, "Mem"));
     
     
-    SimulationConfig cfg = new SimulationConfig("", new ArrayList<>(), cpuCfg);
+    SimulationConfig cfg = new SimulationConfig("", new ArrayList<>(), cpuCfg, 0);
     
     RegisterFile registerFile = new RegisterFile(Arrays.asList(integerFile, floatFile), List.of());
     this.staticDataProvider = new DynamicDataProvider(registerFile,

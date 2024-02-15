@@ -1,4 +1,5 @@
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gradle.superscalarsim.cpu.DebugLog;
 import com.gradle.superscalarsim.serialization.Serialization;
 import org.junit.Assert;
 import org.junit.Before;
@@ -137,5 +138,36 @@ public class CliTests
     Assert.assertTrue(output.contains("\n"));
     Assert.assertTrue(output.contains("statistics"));
     Assert.assertTrue(cliApp.response.state.tick < 100);
+  }
+  
+  @Test
+  public void testCallStack()
+  {
+    int exitCode = cmd.execute("--cpu", "examples/cpuConfigurations/default.json", "--program",
+                               "examples/asmPrograms/callStack.r5", "--entry", "main");
+    Assert.assertEquals(0, exitCode);
+    
+    String output = sw.toString();
+    
+    // Is a valid JSON
+    ObjectMapper deserializer = Serialization.getDeserializer();
+    try
+    {
+      deserializer.readTree(output);
+    }
+    catch (Exception e)
+    {
+      Assert.fail("Output is not a valid JSON");
+    }
+    
+    Assert.assertTrue(output.contains("\n"));
+    Assert.assertTrue(output.contains("statistics"));
+    
+    // There are two prints. One when calling the function and one when entering the function
+    Assert.assertEquals(2, cliApp.response.state.debugLog.getEntries().size());
+    DebugLog.Entry entry  = cliApp.response.state.debugLog.getEntries().get(0);
+    DebugLog.Entry entry2 = cliApp.response.state.debugLog.getEntries().get(1);
+    Assert.assertEquals("Call f", entry.getMessage());
+    Assert.assertEquals("Enter f", entry2.getMessage());
   }
 }
