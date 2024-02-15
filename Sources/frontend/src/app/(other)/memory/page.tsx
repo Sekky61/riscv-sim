@@ -85,58 +85,56 @@ export default function HomePage() {
         <title>Memory</title>
       </Head>
       <h1 className='m-2 mb-6 text-2xl'>Memory Editor</h1>
-      <div className='flex h-full flex-col'>
-        <div className='flex divide-x'>
-          <div className='w-48 p-4 flex flex-col gap-4 divide-y'>
-            <Button
-              variant='ghost'
-              className={clsx(
-                'new' === activeMemoryLocation && 'bg-accent',
-                'w-full',
-              )}
-              onClick={() => setActiveMemoryLocation('new')}
-            >
-              New Object
+      <div className='flex divide-x'>
+        <div className='w-48 p-4 flex flex-col gap-4 divide-y'>
+          <Button
+            variant='ghost'
+            className={clsx(
+              'new' === activeMemoryLocation && 'bg-accent',
+              'w-full',
+            )}
+            onClick={() => setActiveMemoryLocation('new')}
+          >
+            New Object
+          </Button>
+          <div className='pt-4 flex justify-around'>
+            <Button onClick={doImport} variant='ghost'>
+              Import
             </Button>
-            <div className='pt-4 flex justify-around'>
-              <Button onClick={doImport} variant='ghost'>
-                Import
-              </Button>
-              <Button onClick={doExport} variant='ghost'>
-                Export
-              </Button>
-            </div>
-            <div>
-              <h2 className='text-lg mt-4 font-semibold text-center'>
-                Memory Objects
-              </h2>
-              {memoryLocations?.length === 0 && (
-                <div className='text-gray-400 text-sm text-center'>
-                  No memory locations
-                </div>
-              )}
-              {memoryLocations.map((memoryLocation) => {
-                const isActive = memoryLocation.name === activeMemoryLocation;
-                const style = clsx(isActive && 'bg-accent', 'w-full mt-4');
-                return (
-                  <Button
-                    variant='ghost'
-                    className={style}
-                    onClick={() => setActiveMemoryLocation(memoryLocation.name)}
-                  >
-                    {memoryLocation.name}
-                  </Button>
-                );
-              })}
-            </div>
+            <Button onClick={doExport} variant='ghost'>
+              Export
+            </Button>
           </div>
-          <div className='p-4 flex-grow'>
-            <MemoryForm
-              existing={activeMemoryLocation !== 'new'}
-              memoryLocationName={activeMemoryLocation}
-              deleteCallback={handleDelete}
-            />
+          <div>
+            <h2 className='text-lg mt-4 font-semibold text-center'>
+              Memory Objects
+            </h2>
+            {memoryLocations?.length === 0 && (
+              <div className='text-gray-400 text-sm text-center'>
+                No memory locations
+              </div>
+            )}
+            {memoryLocations.map((memoryLocation) => {
+              const isActive = memoryLocation.name === activeMemoryLocation;
+              const style = clsx(isActive && 'bg-accent', 'w-full mt-4');
+              return (
+                <Button
+                  variant='ghost'
+                  className={style}
+                  onClick={() => setActiveMemoryLocation(memoryLocation.name)}
+                >
+                  {memoryLocation.name}
+                </Button>
+              );
+            })}
           </div>
+        </div>
+        <div className='p-4'>
+          <MemoryForm
+            existing={activeMemoryLocation !== 'new'}
+            memoryLocationName={activeMemoryLocation}
+            deleteCallback={handleDelete}
+          />
         </div>
       </div>
     </main>

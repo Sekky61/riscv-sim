@@ -38,7 +38,7 @@ import {
 } from '@/components/base/ui/card';
 import { Input } from '@/components/base/ui/input';
 import { Label } from '@/components/base/ui/label';
-import { FormInput } from '@/components/form/FormInput';
+import { ErrorDisplay, FormInput } from '@/components/form/FormInput';
 import { parseCsv } from '@/lib/csv';
 import {
   MemoryLocationApi,
@@ -84,7 +84,7 @@ import {
 } from '@/components/base/ui/tooltip';
 import { Textarea } from '@/components/base/ui/textarea';
 import { Upload } from 'lucide-react';
-import { dataTypeToSize } from '@/lib/utils';
+import { dataTypeToSize, pluralize } from '@/lib/utils';
 
 interface MemoryFormProps {
   /**
@@ -172,6 +172,9 @@ export default function MemoryForm({
     }
   };
 
+  /**
+   * In response to a tab change, set the default values for the fields (if they are empty)
+   */
   const onTabChange = (value: 'data' | 'constant' | 'random') => {
     // Save the information about the current tab to a state.
     // When submitting, the fields from the current tab will be used, others will be filtered out.
@@ -216,17 +219,15 @@ export default function MemoryForm({
     }
   };
 
-  const randomTrigger = () => {
-    trigger();
-  };
-
   let dataLengthElements = 0;
-  if (watchFields.data.kind === 'data') {
-    dataLengthElements = watchFields.data.data.length;
-  } else if (watchFields.data.kind === 'constant') {
-    dataLengthElements = watchFields.data.size;
-  } else if (watchFields.data.kind === 'random') {
-    dataLengthElements = watchFields.data.size;
+  switch (watchFields.data.kind) {
+    case 'data':
+      dataLengthElements = watchFields.data.data.length;
+      break;
+    case 'constant': // fallthrough
+    case 'random':
+      dataLengthElements = watchFields.data.size;
+      break;
   }
 
   const dataLengthBytes =
@@ -241,14 +242,14 @@ export default function MemoryForm({
           {...register('name')}
           error={formState.errors.name}
         />
-        <div className='flex gap-4'>
+        <div className='flex gap-8'>
           <div>
             <Tooltip>
               <TooltipTrigger asChild>
                 <Label htmlFor='dataType'>Data Type&nbsp;&#9432;</Label>
               </TooltipTrigger>
               <TooltipContent>
-                <p>
+                <p className='max-w-64'>
                   Data type dictates the interpretation of provided values. For
                   example, choosing Integer will allocate 4 bytes for each
                   value.
@@ -257,20 +258,18 @@ export default function MemoryForm({
             </Tooltip>
             <SelectInput control={control} name='dataType' />
           </div>
-          <div className='flex items-center gap-4'>
-            <FormInput
-              type='number'
-              title='Alignment (log Bytes)'
-              hint='The array will be aligned to this boundary. The .align directive in assembler works the same way. For example, 3 will align the array to 2^3 = 8 bytes.'
-              {...register('alignment', { valueAsNumber: true })}
-              error={formState.errors.alignment}
-            />
-          </div>
+          <FormInput
+            type='number'
+            title='Alignment (log Bytes)'
+            hint="Allocates the array, so that its address is a multiple of a certain number. For instance, an alignment of three will align the array's start to 2^3 = 8 bytes. In assembler, the .align directive performs exactly the same thing."
+            {...register('alignment', { valueAsNumber: true })}
+            error={formState.errors.alignment}
+          />
         </div>
       </div>
       <h2 className='text-xl mb-4'>Values</h2>
       <Tabs
-        className=''
+        className='w-[600px]'
         onValueChange={(value) => {
           onTabChange(value as 'data' | 'constant' | 'random');
         }}
@@ -284,18 +283,21 @@ export default function MemoryForm({
         <TabsContent value='data'>
           <Card>
             <CardHeader className='text-sm'>
-              Fill the values manually or load them from a CSV file.
+              Either manually enter the values or import them from a CSV file.
             </CardHeader>
             <CardContent>
-              <DataTextArea control={control} name='data.data' />
+              <DataTextArea
+                control={control}
+                name='data.data'
+                memoryLocationName={memoryLocationName}
+              />
             </CardContent>
           </Card>
         </TabsContent>
         <TabsContent value='constant'>
           <Card>
             <CardHeader className='text-sm'>
-              The selected constant value will be duplicated a specified number
-              of times.
+              A single value will be repeated.
             </CardHeader>
             <CardContent>
               <div className='flex gap-4'>
@@ -314,11 +316,15 @@ export default function MemoryForm({
             </CardContent>
           </Card>
         </TabsContent>
-        <TabsContent value='random' onChange={randomTrigger}>
+        <TabsContent
+          value='random'
+          onChange={() => {
+            trigger();
+          }}
+        >
           <Card>
             <CardHeader className='text-sm'>
-              Random data will be generated after each time the memory location
-              is saved.
+              Random values will be generated in an inclusive range.
             </CardHeader>
             <CardContent>
               <div className='flex gap-4'>
@@ -328,18 +334,30 @@ export default function MemoryForm({
                   {...register('data.size', { valueAsNumber: true })}
                   error={getError(errors, ['data', 'size'])}
                 />
-                <FormInput
-                  type='number'
-                  title='Lower bound of random range'
-                  {...register('data.min', { valueAsNumber: true })}
-                  error={getError(errors, ['data', 'min'])}
-                />
-                <FormInput
-                  type='number'
-                  title='Upper bound of random range (inclusive)'
-                  {...register('data.max', { valueAsNumber: true })}
-                  error={getError(errors, ['data', 'max'])}
-                />
+                <div>
+                  <Label>Inclusive Range</Label>
+                  <div className='flex gap-2 items-center'>
+                    <Input
+                      type='number'
+                      className='w-20'
+                      {...register('data.min', { valueAsNumber: true })}
+                    />
+                    <span>-</span>
+                    <Input
+                      type='number'
+                      className='w-20'
+                      {...register('data.max', { valueAsNumber: true })}
+                    />
+                  </div>
+                  <div>
+                    <ErrorDisplay
+                      error={
+                        getError(errors, ['data', 'min']) ||
+                        getError(errors, ['data', 'max'])
+                      }
+                    />
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -351,9 +369,10 @@ export default function MemoryForm({
         </CardHeader>
         <CardContent>
           Array called <b>{watchFields.name}</b> of {dataLengthElements}{' '}
-          elements ({dataLengthBytes} bytes). Alignment is 2
+          {pluralize('element', dataLengthElements)} ({dataLengthBytes}{' '}
+          {pluralize('byte', dataLengthBytes)}). Alignment is 2
           <sup>{watchFields.alignment}</sup> = {2 ** watchFields.alignment}{' '}
-          bytes
+          {pluralize('byte', 2 ** watchFields.alignment)}.
           <div className='flex gap-4 mt-4'>
             <Button type='submit' disabled={!isDirty || !isValid}>
               {existing ? 'Update' : 'Create'}
@@ -374,14 +393,24 @@ export default function MemoryForm({
   );
 }
 
+type DataTextAreaProps = UseControllerProps<MemoryLocationApi> & {
+  memoryLocationName: string;
+};
+
 /**
- * Forgets the file when the tab is changed
+ * Text area for entering data. Can be filled from a CSV file.
+ * Forgets the file when the tab is changed.
  */
-function DataTextArea(props: UseControllerProps<MemoryLocationApi>) {
-  const { field, fieldState } = useController(props);
+function DataTextArea({ memoryLocationName, ...props }: DataTextAreaProps) {
+  const { field } = useController(props);
 
   // File selected to fill the memory
   const [file, setFile] = useState<File | undefined>();
+
+  // biome-ignore lint: reset the file when the memory location changes
+  useEffect(() => {
+    setFile(undefined);
+  }, [memoryLocationName]);
 
   return (
     <div>
@@ -415,7 +444,7 @@ function DataTextArea(props: UseControllerProps<MemoryLocationApi>) {
           }
         }}
         value={field.value as string}
-        className='w-full border border-gray-300 rounded-md mb-2'
+        className='w-full font-mono border border-gray-300 rounded-md mb-2'
         placeholder='Enter values, separated by a comma. For example: 1,2,3,4.20'
       />
       <Label
@@ -436,10 +465,11 @@ function DataTextArea(props: UseControllerProps<MemoryLocationApi>) {
 }
 
 /**
- * Can be used for textual input
+ * A select input (dropdown). Used for choosing the data type.
+ * Can be used for any textual input, if generalized.
  */
 function SelectInput(props: UseControllerProps<MemoryLocationApi>) {
-  const { field, fieldState } = useController(props);
+  const { field } = useController(props);
 
   return (
     <Select onValueChange={field.onChange} value={field.value as string}>

@@ -70,7 +70,7 @@ public class MemoryLocation
   /**
    * Alignment of the memory location in bytes.
    * Warning: This aligns with the .align directive in the assembly code, which is in log2.
-   * So alignment value 3 means 2^3 = 8 bytes.
+   * So alignment value 3 means 2^3 = 8 bytes. Alignment of 0 means no alignment (2^0 = 1 byte).
    */
   public int alignment;
   /**
@@ -116,6 +116,8 @@ public class MemoryLocation
     this.alignment = alignment;
     this.data      = data;
     this.dataTypes = dataTypes;
+    
+    assert alignment >= 0;
   }
   
   /**
@@ -123,9 +125,7 @@ public class MemoryLocation
    */
   public MemoryLocation()
   {
-    this.alignment = 1;
-    this.data      = new ArrayList<>();
-    this.dataTypes = new ArrayList<>();
+    this(new ArrayList<>(), 0, new ArrayList<>(), new ArrayList<>());
   }
   
   public List<SpanType> getDataTypes()

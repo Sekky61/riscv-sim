@@ -718,7 +718,7 @@ public class CodeParserTest
     Assert.assertEquals(2, codeParser.getMemoryLocations().size());
     MemoryLocation m = codeParser.getMemoryLocations().get(1);
     // Alignment should be reset after the label
-    Assert.assertEquals(1, m.alignment);
+    Assert.assertEquals(0, m.alignment);
   }
   
   @Test

@@ -107,7 +107,7 @@ export type SpanType = z.infer<typeof spanTypeSchema>;
 export const memoryLocationSchema = z
   .object({
     name: z.string().min(1),
-    alignment: z.number().min(1).max(16),
+    alignment: z.number().min(0).max(16),
     dataType: z.enum(dataTypes),
     data: z.discriminatedUnion('kind', [
       z.object({

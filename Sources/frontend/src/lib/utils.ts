@@ -248,3 +248,10 @@ export function dataTypeToSize(dataType: DataTypeEnum): number {
       return unreachable();
   }
 }
+
+/**
+ * Return the word in the plural form if the number is not 1
+ */
+export function pluralize(word: string, number: number): string {
+  return number === 1 ? word : `${word}s`;
+}
