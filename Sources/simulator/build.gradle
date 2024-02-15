@@ -4,6 +4,7 @@ plugins {
     id 'jacoco'
     id 'application'
     id 'com.adarshr.test-logger' version '4.0.0'
+    id "me.champeau.jmh" version "0.7.2"
 }
 
 group 'com.gradle.superscalarsim'

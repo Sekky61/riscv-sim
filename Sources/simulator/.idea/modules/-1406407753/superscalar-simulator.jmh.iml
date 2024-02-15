@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module version="4">
+  <component name="AdditionalModuleElements">
+    <content url="file:///mnt/data/projects/dp/web-based-simulator-of-superscalar-processors/Sources/simulator/src/jmh" dumb="true">
+      <sourceFolder url="file:///mnt/data/projects/dp/web-based-simulator-of-superscalar-processors/Sources/simulator/src/jmh/java" isTestSource="false" />
+    </content>
+  </component>
+</module>
