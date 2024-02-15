@@ -14,14 +14,15 @@ import java.io.StringWriter;
 public class CliTests
 {
   CommandLine cmd;
+  CliApp cliApp;
   
   StringWriter sw;
   
   @Before
   public void setUp()
   {
-    CliApp cliApp = new CliApp();
-    cmd = new CommandLine(cliApp);
+    cliApp = new CliApp();
+    cmd    = new CommandLine(cliApp);
     
     sw = new StringWriter();
     cmd.setErr(new PrintWriter(sw));
@@ -111,5 +112,30 @@ public class CliTests
     // Is pretty printed
     Assert.assertTrue(output.contains("\n"));
     Assert.assertTrue(output.contains("statistics"));
+  }
+  
+  @Test
+  public void testBasicLoop()
+  {
+    int exitCode = cmd.execute("--cpu", "examples/cpuConfigurations/default.json", "--program",
+                               "examples/asmPrograms/basicLoop.r5");
+    Assert.assertEquals(0, exitCode);
+    
+    String output = sw.toString();
+    
+    // Is a valid JSON
+    ObjectMapper deserializer = Serialization.getDeserializer();
+    try
+    {
+      deserializer.readTree(output);
+    }
+    catch (Exception e)
+    {
+      Assert.fail("Output is not a valid JSON");
+    }
+    
+    Assert.assertTrue(output.contains("\n"));
+    Assert.assertTrue(output.contains("statistics"));
+    Assert.assertTrue(cliApp.response.state.tick < 100);
   }
 }

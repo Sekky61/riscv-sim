@@ -98,8 +98,60 @@ IntelliJ IDEA should automatically pick up these rules.
 
 ## Testing from the command line
 
-Run:
+Run Java tests using the following command:
 
 ```bash
 ./gradlew test
+```
+
+Run the script that tests the example programs:
+
+```bash
+./scripts/testExamples.sh
+```
+
+## Using `jq` to inspect JSON
+
+Automating the inspection of simulation results can be done using `jq` ([GitHub](https://github.com/jqlang/jq)).
+
+For example, to extract the number of cycles from the JSON output:
+
+```bash
+./scripts/run.sh cli --cpu=examples/cpuConfigurations/default.json --program=examples/asmPrograms/basicFloatArithmetic.r5 | jq '.statistics.clockCycles'
+```
+
+Find out how many times an instruction was committed:
+
+```bash
+... | jq '.statistics.instructionStats[2].committedCount'
+```
+
+Value of a register:
+
+```bash
+... | jq '.registerValues.x4'
+```
+
+Program ended by running out of instructions:
+
+```bash
+... | jq '.stopReason == "kEndOfCode"'
+```
+
+Number of logged messages:
+
+```bash
+... | jq '.debugLog.entries | length'
+```
+
+Is there a logged message with a specific content?
+
+```bash
+...  | jq '.debugLog.entries | map(select(.message | contains("Value of x3 is")))'
+```
+
+To also extract the messages:
+
+```bash
+... | jq '.debugLog.entries | map(select(.message | contains("Value of x3"))) | .[] .message'
 ```

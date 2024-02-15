@@ -1,6 +1,6 @@
-beq x5 x0 labelIf
-subi x1 x1 10
-jal x0 labelFin
+beq x5, x0, labelIf
+subi x1, x1, 10
+jal x0, labelFin
 labelIf:
-addi x1 x1 10
+addi x1, x1, 10
 labelFin:

@@ -68,6 +68,11 @@ class CliApp implements Callable<Integer>
   @ParentCommand
   private App parent;
   
+  /**
+   * Exposed for testing purposes.
+   */
+  public SimulateResponse response;
+  
   @Override
   public Integer call()
   {
@@ -92,7 +97,7 @@ class CliApp implements Callable<Integer>
     SimulationConfig simulationConfig = new SimulationConfig(program, memoryConfig, cpuConfig);
     SimulateRequest  request          = new SimulateRequest(simulationConfig);
     SimulateHandler  handler          = new SimulateHandler();
-    SimulateResponse response         = handler.resolve(request);
+    response = handler.resolve(request);
     
     Object resultObject = response;
     if (!fullState)
