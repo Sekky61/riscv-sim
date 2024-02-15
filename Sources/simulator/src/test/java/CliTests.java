@@ -170,4 +170,31 @@ public class CliTests
     Assert.assertEquals("Call f", entry.getMessage());
     Assert.assertEquals("Enter f", entry2.getMessage());
   }
+  
+  /**
+   * The test is designed to work with CWD set to the root of the simulator
+   */
+  @Test
+  public void testConfigWithName()
+  {
+    int exitCode = cmd.execute("--cpu", "examples/cpuConfigurations/defaultWithName.json", "--program",
+                               "examples/asmPrograms/basicFloatArithmetic.r5");
+    Assert.assertEquals(0, exitCode);
+    
+    String output = sw.toString();
+    
+    // Is a valid JSON
+    ObjectMapper deserializer = Serialization.getDeserializer();
+    try
+    {
+      deserializer.readTree(output);
+    }
+    catch (Exception e)
+    {
+      Assert.fail("Output is not a valid JSON");
+    }
+    
+    Assert.assertTrue(output.contains("\n"));
+    Assert.assertTrue(output.contains("statistics"));
+  }
 }
