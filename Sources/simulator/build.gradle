@@ -1,6 +1,7 @@
 plugins {
     id 'java'
     id 'groovy'
+    id 'jacoco'
     id 'application'
     id 'com.adarshr.test-logger' version '4.0.0'
 }
@@ -110,4 +111,8 @@ testlogger {
 
     // set to false to hide failed standard out and error streams
     showFailedStandardStreams true
+}
+
+jacocoTestReport {
+    dependsOn test // tests are required to run before generating the report
 }

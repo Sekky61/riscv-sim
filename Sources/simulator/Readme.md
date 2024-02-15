@@ -110,6 +110,12 @@ Run the script that tests the example programs:
 ./scripts/testExamples.sh
 ```
 
+### Generating code coverage report
+
+Find the gradle task `jacocoTestReport` in the Gradle tool window.
+Run the task to generate the report.
+`build/reports/jacoco/test/html/index.html` will contain the report.
+
 ## Using `jq` to inspect JSON
 
 Automating the inspection of simulation results can be done using `jq` ([GitHub](https://github.com/jqlang/jq)).
