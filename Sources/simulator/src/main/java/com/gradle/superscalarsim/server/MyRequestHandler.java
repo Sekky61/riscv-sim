@@ -45,20 +45,11 @@ import java.io.OutputStream;
 public class MyRequestHandler<T, U> implements HttpHandler
 {
   
-  IRequestDeserializer<T> deserializer;
-  
   IRequestResolver<T, U> resolver;
   
-  public <R extends IRequestResolver<T, U> & IRequestDeserializer<T>> MyRequestHandler(R resolver)
+  public <R extends IRequestResolver<T, U>> MyRequestHandler(R resolver)
   {
-    this.resolver     = resolver;
-    this.deserializer = resolver;
-  }
-  
-  public MyRequestHandler(IRequestResolver<T, U> resolver, IRequestDeserializer<T> deserializer)
-  {
-    this.deserializer = deserializer;
-    this.resolver     = resolver;
+    this.resolver = resolver;
   }
   
   @Override
@@ -92,14 +83,12 @@ public class MyRequestHandler<T, U> implements HttpHandler
     // this means it will eat resources, until it finishes (which may be never).
     exchange.startBlocking();
     
-    ObjectMapper mapper = Serialization.getSerializer();
-    
     // Deserialize
     InputStream requestJson = exchange.getInputStream();
     T           request     = null;
     try
     {
-      request = deserializer.deserialize(requestJson);
+      request = resolver.deserialize(requestJson);
     }
     catch (Exception e)
     {
@@ -108,8 +97,9 @@ public class MyRequestHandler<T, U> implements HttpHandler
       // Send back
       exchange.setStatusCode(400);
       ErrorResponse errorResponse = new ErrorResponse(e.getMessage());
-      ObjectMapper  serializer    = Serialization.getSerializer();
-      exchange.getResponseSender().send(serializer.writeValueAsString(errorResponse));
+      OutputStream  outputStream  = exchange.getOutputStream();
+      ObjectMapper  mapper        = Serialization.getSerializer();
+      mapper.writeValue(outputStream, errorResponse);
       return;
     }
     
@@ -117,7 +107,7 @@ public class MyRequestHandler<T, U> implements HttpHandler
     
     // Serialize
     OutputStream outputStream = exchange.getOutputStream();
-    mapper.writeValue(outputStream, response);
+    resolver.serialize(response, outputStream);
     exchange.endExchange();
   }
   

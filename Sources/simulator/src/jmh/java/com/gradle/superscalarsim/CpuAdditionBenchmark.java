@@ -29,6 +29,7 @@ package com.gradle.superscalarsim;
 
 import com.gradle.superscalarsim.cpu.Cpu;
 import com.gradle.superscalarsim.cpu.SimulationConfig;
+import com.gradle.superscalarsim.serialization.Serialization;
 import org.openjdk.jmh.annotations.*;
 
 import java.util.concurrent.TimeUnit;
@@ -52,6 +53,16 @@ public class CpuAdditionBenchmark
   {
     Cpu cpu = new Cpu();
     return cpu;
+  }
+  
+  @Fork(value = 1)
+  @Warmup(iterations = 1, time = 1)
+  @Benchmark
+  @BenchmarkMode(Mode.AverageTime)
+  @OutputTimeUnit(TimeUnit.MILLISECONDS)
+  public void initSerializer()
+  {
+    Serialization.getSerializer();
   }
   
   @Fork(value = 1)

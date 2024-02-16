@@ -27,7 +27,15 @@
 
 package com.gradle.superscalarsim.server;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+
 public interface IRequestResolver<T, U>
 {
   U resolve(T request);
+  
+  T deserialize(InputStream json) throws IOException;
+  
+  void serialize(U response, OutputStream stream) throws IOException;
 }

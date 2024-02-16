@@ -27,15 +27,16 @@
 
 package com.gradle.superscalarsim.server.instructionDescriptions;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.gradle.superscalarsim.loader.StaticDataProvider;
 import com.gradle.superscalarsim.models.instruction.InstructionFunctionModel;
 import com.gradle.superscalarsim.serialization.Serialization;
-import com.gradle.superscalarsim.server.IRequestDeserializer;
 import com.gradle.superscalarsim.server.IRequestResolver;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Map;
 
 /**
@@ -43,8 +44,10 @@ import java.util.Map;
  * @brief Handler class for instruction description requests.
  * Gets the instruction descriptions and returns them in a map.
  */
-public class InstructionDescriptionHandler implements IRequestResolver<InstructionDescriptionRequest, InstructionDescriptionResponse>, IRequestDeserializer<InstructionDescriptionRequest>
+public class InstructionDescriptionHandler implements IRequestResolver<InstructionDescriptionRequest, InstructionDescriptionResponse>
 {
+  ObjectReader descriptionReqReader = Serialization.getDeserializer().readerFor(InstructionDescriptionRequest.class);
+  ObjectWriter descriptionRespWriter = Serialization.getSerializer().writerFor(InstructionDescriptionResponse.class);
   
   public InstructionDescriptionResponse resolve(InstructionDescriptionRequest request)
   {
@@ -57,7 +60,12 @@ public class InstructionDescriptionHandler implements IRequestResolver<Instructi
   @Override
   public InstructionDescriptionRequest deserialize(InputStream json) throws IOException
   {
-    ObjectMapper deserializer = Serialization.getDeserializer();
-    return deserializer.readValue(json, InstructionDescriptionRequest.class);
+    return descriptionReqReader.readValue(json);
+  }
+  
+  @Override
+  public void serialize(InstructionDescriptionResponse response, OutputStream stream) throws IOException
+  {
+    descriptionRespWriter.writeValue(stream, response);
   }
 }

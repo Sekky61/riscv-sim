@@ -41,11 +41,54 @@ import com.kjetland.jackson.jsonSchema.JsonSchemaGenerator;
 public class Serialization
 {
   /**
+   * Reuse the same ObjectMapper for all serialization and deserialization.
+   */
+  static ObjectMapper mapper = createObjectMapper();
+  
+  /**
    * @return ObjectMapper for serialization
    */
   public static ObjectMapper getSerializer()
   {
-    return createObjectMapper();
+    return mapper;
+  }
+  
+  /**
+   * @return ObjectMapper for serialization, with pretty printing
+   */
+  public static ObjectMapper enablePrettySerializer()
+  {
+    mapper.enable(SerializationFeature.INDENT_OUTPUT);
+    return mapper;
+  }
+  
+  /**
+   * @return ObjectMapper for serialization, without pretty printing
+   */
+  public static ObjectMapper disablePrettySerializer()
+  {
+    mapper.disable(SerializationFeature.INDENT_OUTPUT);
+    return mapper;
+  }
+  
+  /**
+   * @return ObjectMapper for deserialization
+   */
+  public static ObjectMapper getDeserializer()
+  {
+    return mapper;
+  }
+  
+  /**
+   * @param cls The class to generate JSON schema for
+   *
+   * @return JSON schema for the given class
+   */
+  public static JsonNode getSchema(Class<?> cls)
+  {
+    ObjectMapper        objectMapper = createObjectMapper();
+    JsonSchemaGenerator schemaGen    = new JsonSchemaGenerator(objectMapper);
+    return schemaGen.generateJsonSchema(cls);
   }
   
   /**
@@ -66,41 +109,5 @@ public class Serialization
                                        .withCreatorVisibility(JsonAutoDetect.Visibility.NONE));
     objectMapper.registerModule(new CustomSerializerModule());
     return objectMapper;
-  }
-  
-  /**
-   * @param pretty Whether to pretty print the JSON
-   *
-   * @return ObjectMapper for serialization
-   */
-  public static ObjectMapper getSerializer(boolean pretty)
-  {
-    ObjectMapper mapper = createObjectMapper();
-    if (pretty)
-    {
-      mapper.enable(SerializationFeature.INDENT_OUTPUT);
-    }
-    return mapper;
-    
-  }
-  
-  /**
-   * @return ObjectMapper for deserialization
-   */
-  public static ObjectMapper getDeserializer()
-  {
-    return createObjectMapper();
-  }
-  
-  /**
-   * @param cls The class to generate JSON schema for
-   *
-   * @return JSON schema for the given class
-   */
-  public static JsonNode getSchema(Class<?> cls)
-  {
-    ObjectMapper        objectMapper = createObjectMapper();
-    JsonSchemaGenerator schemaGen    = new JsonSchemaGenerator(objectMapper);
-    return schemaGen.generateJsonSchema(cls);
   }
 }

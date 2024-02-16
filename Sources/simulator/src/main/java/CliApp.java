@@ -120,7 +120,15 @@ class CliApp implements Callable<Integer>
     }
     
     // Serialize the response and output it
-    ObjectMapper serializer = Serialization.getSerializer(prettyPrint);
+    ObjectMapper serializer;
+    if (prettyPrint)
+    {
+      serializer = Serialization.enablePrettySerializer();
+    }
+    else
+    {
+      serializer = Serialization.getSerializer();
+    }
     try
     {
       String output = serializer.writeValueAsString(resultObject);

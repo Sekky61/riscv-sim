@@ -27,16 +27,17 @@
 
 package com.gradle.superscalarsim.server.simulate;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.gradle.superscalarsim.cpu.Cpu;
 import com.gradle.superscalarsim.cpu.CpuConfigValidator;
 import com.gradle.superscalarsim.cpu.SimulationConfig;
 import com.gradle.superscalarsim.serialization.Serialization;
-import com.gradle.superscalarsim.server.IRequestDeserializer;
 import com.gradle.superscalarsim.server.IRequestResolver;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  * @brief Handler for /simulate requests
@@ -45,8 +46,11 @@ import java.io.InputStream;
  * - For backwards simulation, pass a tick lower than the current tick
  * - For getting initial state from a configuration, run with tick 0
  */
-public class SimulateHandler implements IRequestResolver<SimulateRequest, SimulateResponse>, IRequestDeserializer<SimulateRequest>
+public class SimulateHandler implements IRequestResolver<SimulateRequest, SimulateResponse>
 {
+  ObjectReader simReqReader = Serialization.getDeserializer().readerFor(SimulateRequest.class);
+  ObjectWriter simRespWriter = Serialization.getSerializer().writerFor(SimulateResponse.class);
+  
   @Override
   public SimulateResponse resolve(SimulateRequest request)
   {
@@ -107,7 +111,13 @@ public class SimulateHandler implements IRequestResolver<SimulateRequest, Simula
   @Override
   public SimulateRequest deserialize(InputStream json) throws IOException
   {
-    ObjectMapper deserializer = Serialization.getDeserializer();
-    return deserializer.readValue(json, SimulateRequest.class);
+    return simReqReader.readValue(json);
+  }
+  
+  @Override
+  public void serialize(SimulateResponse response, OutputStream stream) throws IOException
+  {
+    simRespWriter.writeValue(stream, response);
+    
   }
 }

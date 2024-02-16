@@ -28,9 +28,9 @@
 package com.gradle.superscalarsim.server.schema;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.gradle.superscalarsim.serialization.Serialization;
-import com.gradle.superscalarsim.server.IRequestDeserializer;
 import com.gradle.superscalarsim.server.IRequestResolver;
 import com.gradle.superscalarsim.server.checkConfig.CheckConfigRequest;
 import com.gradle.superscalarsim.server.checkConfig.CheckConfigResponse;
@@ -45,16 +45,24 @@ import com.gradle.superscalarsim.server.simulate.SimulateResponse;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Objects;
 
-public class SchemaHandler implements IRequestResolver<SchemaRequest, JsonNode>, IRequestDeserializer<SchemaRequest>
+public class SchemaHandler implements IRequestResolver<SchemaRequest, JsonNode>
 {
+  ObjectReader schemaReqReader = Serialization.getDeserializer().readerFor(SchemaRequest.class);
+  ObjectWriter schemaRespWriter = Serialization.getSerializer().writerFor(JsonNode.class);
   
   @Override
   public SchemaRequest deserialize(InputStream json) throws IOException
   {
-    ObjectMapper deserializer = Serialization.getDeserializer();
-    return deserializer.readValue(json, SchemaRequest.class);
+    return schemaReqReader.readValue(json);
+  }
+  
+  @Override
+  public void serialize(JsonNode response, OutputStream stream) throws IOException
+  {
+    schemaRespWriter.writeValue(stream, response);
   }
   
   /**
