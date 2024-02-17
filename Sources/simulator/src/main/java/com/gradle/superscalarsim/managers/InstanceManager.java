@@ -1,10 +1,10 @@
 /**
- * @file IInstanceManager.java
+ * @file InstanceManager.java
  * @author Michal Majer
  * Faculty of Information Technology
  * Brno University of Technology
  * xmajer21@stud.fit.vutbr.cz
- * @brief File contains interface for object managers
+ * @brief File contains object manager for instances
  * @date 07 November  2023 15:00 (created)
  * @section Licence
  * This file is part of the Superscalar simulator app
@@ -32,32 +32,29 @@ import com.gradle.superscalarsim.models.Identifiable;
 import java.util.WeakHashMap;
 
 /**
+ * @param <T> Type of the instances
+ *
+ * @details The WeakHashMap has weak _keys_, not values. In this case, the values are null (the map is used as a set).
  * The references are weak, so they will be garbage collected when no other references exist.
  * The purpose of this is to serialize all instances together, in normalized form.
  * The managers should be per Cpu, so that the instances are not shared between Cpus.
  * The manager is usually filled by a factory for the given type.
- *
- * @param <T> Type of the instances
- *
- * @details The WeakHashMap has weak _keys_, not values. In this case, the values are null (map is used as a set).
- * @brief Interface for managers that hold instances of objects
+ * @brief A manager holding instances of objects of type T
  */
-public interface IInstanceManager<T extends Identifiable>
+public class InstanceManager<T extends Identifiable>
 {
   /**
-   * @param instance Instance to start tracking
+   * TODO: This should be a set, not a map
+   * TODO: In case of performance issues, consider this being an object pool
    *
-   * @brief Add instance to the manager
+   * @brief Instances of the object. The key is the instance, the value is null.
    */
-  default void addInstance(T instance)
-  {
-    getInstances().put(instance, null);
-  }
+  WeakHashMap<T, Object> instances = new WeakHashMap<>();
   
   /**
    * @brief add all instances from the collection
    */
-  default void addAllInstances(Iterable<T> instances)
+  public void addAllInstances(Iterable<T> instances)
   {
     for (T instance : instances)
     {
@@ -66,8 +63,21 @@ public interface IInstanceManager<T extends Identifiable>
   }
   
   /**
+   * @param instance Instance to start tracking
+   *
+   * @brief Add instance to the manager
+   */
+  public void addInstance(T instance)
+  {
+    instances.put(instance, null);
+  }
+  
+  /**
    * @return WeakHashMap of instances
    * @brief Get the instances
    */
-  WeakHashMap<T, Object> getInstances();
+  public WeakHashMap<T, Object> getInstances()
+  {
+    return instances;
+  }
 }

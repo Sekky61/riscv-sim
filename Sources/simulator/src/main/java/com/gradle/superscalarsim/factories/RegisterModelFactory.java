@@ -31,7 +31,7 @@ import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.enums.RegisterTypeEnum;
-import com.gradle.superscalarsim.managers.RegisterModelManager;
+import com.gradle.superscalarsim.managers.InstanceManager;
 import com.gradle.superscalarsim.models.register.RegisterModel;
 
 /**
@@ -42,14 +42,14 @@ import com.gradle.superscalarsim.models.register.RegisterModel;
 public class RegisterModelFactory
 {
   int id;
-  RegisterModelManager manager;
+  InstanceManager<RegisterModel> manager;
   
   public RegisterModelFactory()
   {
     this.manager = null;
   }
   
-  public RegisterModelFactory(RegisterModelManager manager)
+  public RegisterModelFactory(InstanceManager<RegisterModel> manager)
   {
     this.manager = manager;
   }

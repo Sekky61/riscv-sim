@@ -27,34 +27,38 @@
 
 package com.gradle.superscalarsim.managers;
 
+import com.gradle.superscalarsim.models.instruction.InputCodeModel;
+import com.gradle.superscalarsim.models.instruction.SimCodeModel;
+import com.gradle.superscalarsim.models.register.RegisterModel;
+
 /**
  * The class keeps track (through managers) of all instances of certain classes.
  * This is useful for serialization - the JSON can be normalized and the references
  * easily resolved.
  *
- * @brief Container of all managers.
+ * @brief Container of all managers to be serialized
  */
 public class ManagerRegistry
 {
   /**
    * Input code model manager
    */
-  public InputCodeModelManager inputCodeManager;
+  public InstanceManager<InputCodeModel> inputCodeManager;
   
   /**
    * Sim code model manager
    */
-  public SimCodeModelManager simCodeManager;
+  public InstanceManager<SimCodeModel> simCodeManager;
   
   /**
    * Register model manager
    */
-  public RegisterModelManager registerModelManager;
+  public InstanceManager<RegisterModel> registerModelManager;
   
   public ManagerRegistry()
   {
-    inputCodeManager     = new InputCodeModelManager();
-    simCodeManager       = new SimCodeModelManager();
-    registerModelManager = new RegisterModelManager();
+    inputCodeManager     = new InstanceManager<>();
+    simCodeManager       = new InstanceManager<>();
+    registerModelManager = new InstanceManager<>();
   }
 }

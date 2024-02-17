@@ -31,7 +31,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
-import com.gradle.superscalarsim.managers.IInstanceManager;
+import com.gradle.superscalarsim.managers.InstanceManager;
 import com.gradle.superscalarsim.models.Identifiable;
 
 import java.io.IOException;
@@ -39,21 +39,16 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.WeakHashMap;
 
-public class ManagerSerializer extends StdSerializer<IInstanceManager>
+public class ManagerSerializer extends StdSerializer<InstanceManager<?>>
 {
   
   public ManagerSerializer()
   {
-    this(null);
-  }
-  
-  public ManagerSerializer(Class<IInstanceManager> t)
-  {
-    super(t);
+    super(InstanceManager.class, false);
   }
   
   @Override
-  public void serialize(IInstanceManager value,
+  public void serialize(InstanceManager value,
                         JsonGenerator jgen,
                         SerializerProvider provider) throws IOException, JsonProcessingException
   {

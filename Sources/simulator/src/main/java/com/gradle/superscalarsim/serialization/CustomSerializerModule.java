@@ -28,17 +28,12 @@
 package com.gradle.superscalarsim.serialization;
 
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.gradle.superscalarsim.managers.InputCodeModelManager;
-import com.gradle.superscalarsim.managers.RegisterModelManager;
-import com.gradle.superscalarsim.managers.SimCodeModelManager;
 
 public class CustomSerializerModule extends SimpleModule
 {
   public CustomSerializerModule()
   {
     // Add custom serializer for every manager
-    addSerializer(InputCodeModelManager.class, new ManagerSerializer());
-    addSerializer(SimCodeModelManager.class, new ManagerSerializer());
-    addSerializer(RegisterModelManager.class, new ManagerSerializer());
+    addSerializer(new ManagerSerializer());
   }
 }

@@ -27,7 +27,7 @@
 
 package com.gradle.superscalarsim.factories;
 
-import com.gradle.superscalarsim.managers.InputCodeModelManager;
+import com.gradle.superscalarsim.managers.InstanceManager;
 import com.gradle.superscalarsim.models.instruction.InputCodeArgument;
 import com.gradle.superscalarsim.models.instruction.InputCodeModel;
 import com.gradle.superscalarsim.models.instruction.InstructionFunctionModel;
@@ -44,14 +44,14 @@ import java.util.List;
  */
 public class InputCodeModelFactory
 {
-  InputCodeModelManager manager;
+  InstanceManager<InputCodeModel> manager;
   
   public InputCodeModelFactory()
   {
     this.manager = null;
   }
   
-  public InputCodeModelFactory(InputCodeModelManager manager)
+  public InputCodeModelFactory(InstanceManager<InputCodeModel> manager)
   {
     this.manager = manager;
   }
