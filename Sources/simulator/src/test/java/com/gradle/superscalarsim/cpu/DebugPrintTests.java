@@ -31,9 +31,12 @@ import com.gradle.superscalarsim.blocks.base.UnifiedRegisterFileBlock;
 import com.gradle.superscalarsim.factories.RegisterModelFactory;
 import com.gradle.superscalarsim.loader.StaticDataProvider;
 import com.gradle.superscalarsim.models.instruction.DebugInfo;
+import com.gradle.superscalarsim.models.register.RegisterModel;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.Map;
 
 public class DebugPrintTests
 {
@@ -69,8 +72,8 @@ public class DebugPrintTests
   public void testDebugCommentMalformed()
   {
     // Setup
-    DebugLog debugLog = new DebugLog(
-            new UnifiedRegisterFileBlock(new StaticDataProvider(), 1, new RegisterModelFactory()));
+    Map<String, RegisterModel> registerMap = new StaticDataProvider().getRegisterFile().getRegisterMap(true);
+    DebugLog debugLog = new DebugLog(new UnifiedRegisterFileBlock(registerMap, 1, new RegisterModelFactory()));
     // Exercise
     debugLog.add(new DebugInfo(" ${}  $"), 0);
     debugLog.add(new DebugInfo("  $}  ${}{ "), 0);
@@ -87,8 +90,8 @@ public class DebugPrintTests
   public void testFormatter()
   {
     // Setup + exercise
-    UnifiedRegisterFileBlock registerFile = new UnifiedRegisterFileBlock(new StaticDataProvider(), 1,
-                                                                         new RegisterModelFactory());
+    Map<String, RegisterModel> registerMap = new StaticDataProvider().getRegisterFile().getRegisterMap(true);
+    UnifiedRegisterFileBlock registerFile = new UnifiedRegisterFileBlock(registerMap, 1, new RegisterModelFactory());
     DebugLog debugLog = new DebugLog(registerFile);
     
     debugLog.add(new DebugInfo("Hello World"), 0);
@@ -103,8 +106,8 @@ public class DebugPrintTests
   public void testBadFormatString()
   {
     // Setup + exercise
-    UnifiedRegisterFileBlock registerFile = new UnifiedRegisterFileBlock(new StaticDataProvider(), 1,
-                                                                         new RegisterModelFactory());
+    Map<String, RegisterModel> registerMap = new StaticDataProvider().getRegisterFile().getRegisterMap(true);
+    UnifiedRegisterFileBlock registerFile = new UnifiedRegisterFileBlock(registerMap, 1, new RegisterModelFactory());
     DebugLog debugLog = new DebugLog(registerFile);
     
     debugLog.add(new DebugInfo("Hello ${abcd}"), 0);

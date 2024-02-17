@@ -58,16 +58,16 @@ public class StaticDataProvider implements IDataProvider
   /**
    * @brief Resource path to a file with supported instructions
    */
-  public static String supportedInstructionsResourcePath = "/supportedInstructions.json";
+  public static final String supportedInstructionsResourcePath = "/supportedInstructions.json";
   /**
    * @brief Resource path to a file with register aliases
    * File structure: array of objects with keys "register" and "alias"
    */
-  public static String registerAliasesResourcePath = "/registerAliases.json";
+  public static final String registerAliasesResourcePath = "/registerAliases.json";
   /**
    * Path to the directory in resources with individual register files
    */
-  public static String registerFileResourceDirPath = "/registerFiles.json";
+  public static final String registerFileResourceDirPath = "/registerFiles.json";
   /**
    * Holds register file with all registers and aliases.
    */

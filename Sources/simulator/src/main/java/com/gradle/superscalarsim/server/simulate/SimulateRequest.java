@@ -54,9 +54,9 @@ public class SimulateRequest
   {
   }
   
-  public SimulateRequest(SimulationConfig config)
+  public SimulateRequest(SimulationConfig config, Optional<Integer> tick)
   {
     this.config = config;
-    this.tick   = Optional.empty();
+    this.tick   = tick;
   }
 }

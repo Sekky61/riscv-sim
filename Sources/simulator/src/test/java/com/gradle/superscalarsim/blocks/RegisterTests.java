@@ -9,18 +9,18 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Map;
+
 public class RegisterTests
 {
-  
-  StaticDataProvider staticDataProvider;
   
   UnifiedRegisterFileBlock unifiedRegisterFileBlock;
   
   @Before
   public void setUp()
   {
-    staticDataProvider       = new StaticDataProvider();
-    unifiedRegisterFileBlock = new UnifiedRegisterFileBlock(staticDataProvider, 320, new RegisterModelFactory());
+    Map<String, RegisterModel> registerMap = new StaticDataProvider().getRegisterFile().getRegisterMap(true);
+    unifiedRegisterFileBlock = new UnifiedRegisterFileBlock(registerMap, 320, new RegisterModelFactory());
   }
   
   /**

@@ -72,7 +72,8 @@ public class RegisterFile implements IRegisterFile
   }
   
   /**
-   * Deep copy of register file
+   * Deep copy of register file.
+   * Aliases are not copied.
    */
   public RegisterFile(RegisterFile registerFile)
   {
@@ -166,5 +167,10 @@ public class RegisterFile implements IRegisterFile
       registerMap.put(alias.alias, register);
     }
     return registerMap;
+  }
+  
+  public List<RegisterFileModel> getRegisterFileModelList()
+  {
+    return registerFileModelList;
   }
 }

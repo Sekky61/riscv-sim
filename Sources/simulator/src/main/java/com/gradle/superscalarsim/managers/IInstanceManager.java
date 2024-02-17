@@ -55,6 +55,17 @@ public interface IInstanceManager<T extends Identifiable>
   }
   
   /**
+   * @brief add all instances from the collection
+   */
+  default void addAllInstances(Iterable<T> instances)
+  {
+    for (T instance : instances)
+    {
+      addInstance(instance);
+    }
+  }
+  
+  /**
    * @return WeakHashMap of instances
    * @brief Get the instances
    */

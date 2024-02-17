@@ -67,12 +67,13 @@ public class SimulationConfig
   public Object entryPoint;
   
   /**
-   * @brief Default constructor
+   * @brief Default constructor. Not useful, because it has no code.
    */
   public SimulationConfig()
   {
     memoryLocations = new ArrayList<>();
     code            = "";
+    cpuConfig       = CpuConfig.getDefaultConfiguration();
     entryPoint      = 0;
   }
   

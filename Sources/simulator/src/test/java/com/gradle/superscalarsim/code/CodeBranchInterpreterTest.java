@@ -8,6 +8,7 @@ import com.gradle.superscalarsim.loader.StaticDataProvider;
 import com.gradle.superscalarsim.models.instruction.InputCodeArgument;
 import com.gradle.superscalarsim.models.instruction.InputCodeModel;
 import com.gradle.superscalarsim.models.instruction.SimCodeModel;
+import com.gradle.superscalarsim.models.register.RegisterModel;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -32,7 +33,8 @@ public class CodeBranchInterpreterTest
   public void setUp()
   {
     this.staticDataProvider = new StaticDataProvider();
-    urf                     = new UnifiedRegisterFileBlock(staticDataProvider, 320, new RegisterModelFactory());
+    Map<String, RegisterModel> registerMap = staticDataProvider.getRegisterFile().getRegisterMap(true);
+    urf = new UnifiedRegisterFileBlock(registerMap, 320, new RegisterModelFactory());
     
     urf.getRegister("x1").setValue(0);
     urf.getRegister("x2").setValue(25);

@@ -43,38 +43,32 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.Callable;
 
 @Command(name = "cli", description = "Launch a simulation from the command line")
 class CliApp implements Callable<Integer>
 {
-  @Spec
-  CommandSpec spec; // injected by picocli
-  
-  @Option(names = "--entry", paramLabel = "LABEL|ADDRESS", description = "Entry point for the program. Any label or address in the program can be used. (default: 0)")
-  String entryPoint = "0";
-  
-  @Option(names = "--pretty", description = "Pretty print the JSON output.")
-  boolean prettyPrint = false;
-  
-  @Option(names = "--full-state", description = "Output the full state of the CPU. By default, only the statistics, debug prints and register values are output.")
-  boolean fullState = false;
-  
-  @Option(names = "--cpu", required = true, paramLabel = "FILE", description = "Cpu configuration file.")
-  Path cpuConfigPath;
-  
-  @Option(names = "--program", required = true, paramLabel = "FILE", description = "RISC-V assembly program for the CPU to execute.")
-  Path programPath;
-  
-  @Option(names = "--memory", paramLabel = "FILE", description = "Memory configuration file. 1 or more global arrays to load into memory. Optional (default: empty memory)")
-  Path memoryConfigPath;
-  @ParentCommand
-  private App parent;
-  
   /**
    * Exposed for testing purposes.
    */
   public SimulateResponse response;
+  @Spec
+  CommandSpec spec; // injected by picocli
+  @Option(names = "--entry", paramLabel = "LABEL|ADDRESS", description = "Entry point for the program. Any label or address in the program can be used. (default: 0)")
+  String entryPoint = "0";
+  @Option(names = "--pretty", description = "Pretty print the JSON output.")
+  boolean prettyPrint = false;
+  @Option(names = "--full-state", description = "Output the full state of the CPU. By default, only the statistics, debug prints and register values are output.")
+  boolean fullState = false;
+  @Option(names = "--cpu", required = true, paramLabel = "FILE", description = "Cpu configuration file.")
+  Path cpuConfigPath;
+  @Option(names = "--program", required = true, paramLabel = "FILE", description = "RISC-V assembly program for the CPU to execute.")
+  Path programPath;
+  @Option(names = "--memory", paramLabel = "FILE", description = "Memory configuration file. 1 or more global arrays to load into memory. Optional (default: empty memory)")
+  Path memoryConfigPath;
+  @ParentCommand
+  private App parent;
   
   @Override
   public Integer call()
@@ -109,7 +103,7 @@ class CliApp implements Callable<Integer>
     
     // Reuse the same logic as in the server, to avoid code duplication
     SimulationConfig simulationConfig = new SimulationConfig(program, memoryConfig, cpuConfig, entryPointObject);
-    SimulateRequest  request          = new SimulateRequest(simulationConfig);
+    SimulateRequest  request          = new SimulateRequest(simulationConfig, Optional.empty());
     SimulateHandler  handler          = new SimulateHandler();
     response = handler.resolve(request);
     

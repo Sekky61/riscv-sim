@@ -47,7 +47,8 @@ public class CodeArithmeticInterpreterIntTest
     
     RegisterFile registerFile = new RegisterFile(Collections.singletonList(integerFile), List.of());
     staticDataProvider = new DynamicDataProvider(registerFile, setUpInstructions());
-    urf                = new UnifiedRegisterFileBlock(staticDataProvider, 320, new RegisterModelFactory());
+    urf                = new UnifiedRegisterFileBlock(staticDataProvider.getRegisterFile().getRegisterMap(true), 320,
+                                                      new RegisterModelFactory());
     
     this.codeArithmeticInterpreter = new CodeArithmeticInterpreter();
   }

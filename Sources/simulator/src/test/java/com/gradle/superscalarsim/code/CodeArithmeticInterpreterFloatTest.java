@@ -21,6 +21,7 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 public class CodeArithmeticInterpreterFloatTest
 {
@@ -45,7 +46,8 @@ public class CodeArithmeticInterpreterFloatTest
             .hasRegisterList(Arrays.asList(float1, float2, float3, float4)).build();
     
     this.staticDataProvider = new StaticDataProvider();
-    urf                     = new UnifiedRegisterFileBlock(staticDataProvider, 320, new RegisterModelFactory());
+    Map<String, RegisterModel> registerMap = new StaticDataProvider().getRegisterFile().getRegisterMap(true);
+    urf = new UnifiedRegisterFileBlock(registerMap, 320, new RegisterModelFactory());
     // This adds the reg files, but also creates speculative registers!
     urf.setRegistersWithList(new ArrayList<>());
     urf.loadRegisters(List.of(floatFile), new RegisterModelFactory());

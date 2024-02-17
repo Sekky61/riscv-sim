@@ -45,12 +45,14 @@ import com.gradle.superscalarsim.managers.ManagerRegistry;
 import com.gradle.superscalarsim.models.FunctionalUnitDescription;
 import com.gradle.superscalarsim.models.instruction.InputCodeModel;
 import com.gradle.superscalarsim.models.instruction.InstructionFunctionModel;
+import com.gradle.superscalarsim.models.register.RegisterFile;
 import com.gradle.superscalarsim.models.register.RegisterModel;
 import com.gradle.superscalarsim.serialization.Serialization;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -146,14 +148,18 @@ public class CpuState implements Serializable
     this.tick            = 0;
     this.managerRegistry = new ManagerRegistry();
     
+    // Load assets (register files, function models)
+    RegisterFile                          registerFile   = staticDataProvider.getRegisterFile();
+    Map<String, InstructionFunctionModel> functionModels = staticDataProvider.getInstructionFunctionModels();
+    
     // Factories (for tracking instances of models)
     InputCodeModelFactory inputCodeModelFactory = new InputCodeModelFactory(managerRegistry.inputCodeManager);
     SimCodeModelFactory   simCodeModelFactory   = new SimCodeModelFactory(managerRegistry.simCodeManager);
     RegisterModelFactory  registerModelFactory  = new RegisterModelFactory(managerRegistry.registerModelManager);
     
     // Hack to load all function models and registers to manager
-    staticDataProvider.getRegisterFile().getRegisterMap(false)
-            .forEach((name, model) -> managerRegistry.registerModelManager.addInstance(model));
+    registerFile.getRegisterFileModelList()
+            .forEach((model) -> managerRegistry.registerModelManager.addAllInstances(model.getRegisterList()));
     
     this.statistics      = new SimulationStatistics(-1, config.cpuConfig.coreClockFrequency, config.cpuConfig.fUnits);
     this.simulatedMemory = new SimulatedMemory(config.cpuConfig.storeLatency, config.cpuConfig.loadLatency, statistics);
@@ -162,9 +168,7 @@ public class CpuState implements Serializable
     // Parse code and allocate memory locations
     //
     
-    CodeParser codeParser = new CodeParser(staticDataProvider.getInstructionFunctionModels(),
-                                           staticDataProvider.getRegisterFile(), inputCodeModelFactory,
-                                           config.memoryLocations);
+    CodeParser codeParser = new CodeParser(functionModels, registerFile, inputCodeModelFactory, config.memoryLocations);
     codeParser.parseCode(config.code, false); // false to avoid duplicate work
     if (!codeParser.success())
     {
@@ -189,13 +193,13 @@ public class CpuState implements Serializable
     codeParser.getInstructions()
             .forEach(ins -> statistics.staticInstructionMix.increment(ins.getInstructionTypeEnum()));
     
-    InstructionFunctionModel nopFM = staticDataProvider.getInstructionFunctionModel("nop");
+    InstructionFunctionModel nopFM = functionModels.get("nop");
     InputCodeModel nop = inputCodeModelFactory.createInstance(nopFM, new ArrayList<>(),
                                                               codeParser.getInstructions().size());
     this.instructionMemoryBlock = new InstructionMemoryBlock(codeParser.getInstructions(), codeParser.getLabels(), nop);
     
     // Create memory
-    this.unifiedRegisterFileBlock = new UnifiedRegisterFileBlock(staticDataProvider,
+    this.unifiedRegisterFileBlock = new UnifiedRegisterFileBlock(registerFile.getRegisterMap(true),
                                                                  config.cpuConfig.speculativeRegisters,
                                                                  registerModelFactory);
     this.debugLog                 = new DebugLog(unifiedRegisterFileBlock);

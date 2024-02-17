@@ -75,7 +75,8 @@ public class DecodeAndDispatchBlockTest
     RegisterFile registerFile = new RegisterFile(Arrays.asList(integerFile, floatFile), List.of());
     staticDataProvider = new DynamicDataProvider(registerFile, new StaticDataProvider().getInstructionFunctionModels());
     
-    urf                 = new UnifiedRegisterFileBlock(staticDataProvider, 320, new RegisterModelFactory());
+    urf                 = new UnifiedRegisterFileBlock(staticDataProvider.getRegisterFile().getRegisterMap(true), 320,
+                                                       new RegisterModelFactory());
     renameMapTableBlock = new RenameMapTableBlock(urf);
     
     int fetchWidth          = 3;
