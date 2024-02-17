@@ -31,6 +31,7 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.gradle.superscalarsim.code.CodeParser;
 import com.gradle.superscalarsim.code.ParseError;
+import com.gradle.superscalarsim.factories.InputCodeModelFactory;
 import com.gradle.superscalarsim.loader.StaticDataProvider;
 import com.gradle.superscalarsim.serialization.Serialization;
 import com.gradle.superscalarsim.server.IRequestResolver;
@@ -63,8 +64,10 @@ public class ParseAsmHandler implements IRequestResolver<ParseAsmRequest, ParseA
     else
     {
       // Parse the code
-      StaticDataProvider loader = new StaticDataProvider();
-      CodeParser         parser = new CodeParser(loader, request.config.memoryLocations);
+      StaticDataProvider provider = new StaticDataProvider();
+      CodeParser parser = new CodeParser(provider.getInstructionFunctionModels(),
+                                         provider.getRegisterFile().getRegisterMap(true), new InputCodeModelFactory(),
+                                         request.config.memoryLocations);
       
       parser.parseCode(request.code);
       

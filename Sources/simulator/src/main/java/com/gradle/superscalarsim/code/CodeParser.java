@@ -31,12 +31,10 @@ import com.gradle.superscalarsim.cpu.MemoryLocation;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.factories.InputCodeModelFactory;
 import com.gradle.superscalarsim.loader.IDataProvider;
-import com.gradle.superscalarsim.loader.StaticDataProvider;
 import com.gradle.superscalarsim.models.instruction.DebugInfo;
 import com.gradle.superscalarsim.models.instruction.InputCodeArgument;
 import com.gradle.superscalarsim.models.instruction.InputCodeModel;
 import com.gradle.superscalarsim.models.instruction.InstructionFunctionModel;
-import com.gradle.superscalarsim.models.register.IRegisterFile;
 import com.gradle.superscalarsim.models.register.RegisterDataContainer;
 import com.gradle.superscalarsim.models.register.RegisterModel;
 
@@ -75,7 +73,7 @@ public class CodeParser
   /**
    * Descriptions of all register files. Links arguments to registers.
    */
-  IRegisterFile registerFileModelList;
+  Map<String, RegisterModel> registers;
   /**
    * Factory for creating instances of InputCodeModel
    */
@@ -105,38 +103,28 @@ public class CodeParser
    */
   public CodeParser(IDataProvider dataProvider)
   {
-    this(dataProvider.getInstructionFunctionModels(), dataProvider.getRegisterFile(), new InputCodeModelFactory(),
-         new ArrayList<>());
+    this(dataProvider.getInstructionFunctionModels(), dataProvider.getRegisterFile().getRegisterMap(true),
+         new InputCodeModelFactory(), new ArrayList<>());
   }
   
   /**
    * @brief Constructor
    */
   public CodeParser(Map<String, InstructionFunctionModel> instructionModels,
-                    IRegisterFile registerFileModelList,
+                    Map<String, RegisterModel> registers,
                     InputCodeModelFactory manager,
                     List<MemoryLocation> memoryLocations)
   {
-    this.inputCodeModelFactory = manager;
     
-    this.registerFileModelList = registerFileModelList;
     this.instructionModels     = instructionModels;
-    this.lexer                 = null;
-    this.errorMessages         = new ArrayList<>();
-    
-    // Copy list, but not the objects
-    this.labels          = new HashMap<>();
-    this.memoryLocations = new ArrayList<>();
+    this.registers             = registers;
+    this.inputCodeModelFactory = manager;
+    this.memoryLocations       = new ArrayList<>();
     this.memoryLocations.addAll(memoryLocations);
-  }
-  
-  /**
-   * For cases when instance manager is not needed, but memory locations are needed.
-   */
-  public CodeParser(StaticDataProvider staticDataProvider, List<MemoryLocation> memoryLocations)
-  {
-    this(staticDataProvider.getInstructionFunctionModels(), staticDataProvider.getRegisterFile(),
-         new InputCodeModelFactory(), memoryLocations);
+    
+    this.lexer         = null;
+    this.errorMessages = new ArrayList<>();
+    this.labels        = new HashMap<>();
   }
   
   /**
@@ -732,7 +720,7 @@ public class CodeParser
       if (argument.isRegister())
       {
         // Try to find the register. Its existence ic checked in the next step
-        RegisterModel register = registerFileModelList.getRegister(argumentToken.text());
+        RegisterModel register = registers.get(argumentToken.text());
         inputCodeArgument.setRegisterValue(register);
         isValid = checkRegisterArgument(inputCodeArgument, argument.type(), argumentToken);
       }

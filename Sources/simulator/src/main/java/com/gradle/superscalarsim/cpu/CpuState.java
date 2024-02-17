@@ -150,6 +150,7 @@ public class CpuState implements Serializable
     
     // Load assets (register files, function models)
     RegisterFile                          registerFile   = staticDataProvider.getRegisterFile();
+    Map<String, RegisterModel>            registerMap    = registerFile.getRegisterMap(true);
     Map<String, InstructionFunctionModel> functionModels = staticDataProvider.getInstructionFunctionModels();
     
     // Factories (for tracking instances of models)
@@ -168,7 +169,7 @@ public class CpuState implements Serializable
     // Parse code and allocate memory locations
     //
     
-    CodeParser codeParser = new CodeParser(functionModels, registerFile, inputCodeModelFactory, config.memoryLocations);
+    CodeParser codeParser = new CodeParser(functionModels, registerMap, inputCodeModelFactory, config.memoryLocations);
     codeParser.parseCode(config.code, false); // false to avoid duplicate work
     if (!codeParser.success())
     {
@@ -199,8 +200,7 @@ public class CpuState implements Serializable
     this.instructionMemoryBlock = new InstructionMemoryBlock(codeParser.getInstructions(), codeParser.getLabels(), nop);
     
     // Create memory
-    this.unifiedRegisterFileBlock = new UnifiedRegisterFileBlock(registerFile.getRegisterMap(true),
-                                                                 config.cpuConfig.speculativeRegisters,
+    this.unifiedRegisterFileBlock = new UnifiedRegisterFileBlock(registerMap, config.cpuConfig.speculativeRegisters,
                                                                  registerModelFactory);
     this.debugLog                 = new DebugLog(unifiedRegisterFileBlock);
     // Set the sp to the end of the stack

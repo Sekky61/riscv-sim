@@ -30,6 +30,7 @@ package com.gradle.superscalarsim.cpu;
 import com.gradle.superscalarsim.code.CodeParser;
 import com.gradle.superscalarsim.code.Label;
 import com.gradle.superscalarsim.code.ParseError;
+import com.gradle.superscalarsim.factories.InputCodeModelFactory;
 import com.gradle.superscalarsim.loader.StaticDataProvider;
 
 import java.util.ArrayList;
@@ -116,7 +117,10 @@ public class SimulationConfig
     }
     
     // Parse code
-    CodeParser codeParser = new CodeParser(new StaticDataProvider(), memoryLocations);
+    StaticDataProvider provider = new StaticDataProvider();
+    CodeParser codeParser = new CodeParser(provider.getInstructionFunctionModels(),
+                                           provider.getRegisterFile().getRegisterMap(true), new InputCodeModelFactory(),
+                                           memoryLocations);
     codeParser.parseCode(code);
     
     if (!codeParser.success())
