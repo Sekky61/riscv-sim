@@ -30,6 +30,9 @@ package com.gradle.superscalarsim.server.simulate;
 import com.gradle.superscalarsim.cpu.CpuState;
 import com.gradle.superscalarsim.cpu.StopReason;
 
+/**
+ * Response for the /simulate endpoint
+ */
 public class SimulateResponse
 {
   /**

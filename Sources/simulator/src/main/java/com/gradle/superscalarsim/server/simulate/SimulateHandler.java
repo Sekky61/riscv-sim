@@ -30,10 +30,10 @@ package com.gradle.superscalarsim.server.simulate;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.gradle.superscalarsim.cpu.Cpu;
-import com.gradle.superscalarsim.cpu.CpuConfigValidator;
 import com.gradle.superscalarsim.cpu.SimulationConfig;
 import com.gradle.superscalarsim.serialization.Serialization;
 import com.gradle.superscalarsim.server.IRequestResolver;
+import com.gradle.superscalarsim.server.ServerException;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -52,35 +52,34 @@ public class SimulateHandler implements IRequestResolver<SimulateRequest, Simula
   ObjectWriter simRespWriter = Serialization.getSerializer().writerFor(SimulateResponse.class);
   
   @Override
-  public SimulateResponse resolve(SimulateRequest request)
+  public SimulateResponse resolve(SimulateRequest request) throws ServerException
   {
-    SimulateResponse response;
-    if (request == null || request.config == null || (request.tick.isPresent() && request.tick.get() < 0))
+    if (request == null)
     {
-      // Send error
-      // TODO: Add proper error handling
-      throw new IllegalArgumentException("Invalid request fields");
+      throw new ServerException("root", "Missing request body");
     }
-    else
+    
+    if (request.config == null)
     {
-      // Check configuration, it may be used
-      SimulationConfig.ValidationResult errors = request.config.validate();
-      if (errors.valid)
-      {
-        // Run simulation
-        response = runSimulation(request);
-      }
-      else
-      {
-        // TODO: Add proper error handling
-        for (CpuConfigValidator.Error error : errors.messages)
-        {
-          System.err.println(error.message);
-        }
-        throw new IllegalArgumentException("Invalid request values");
-      }
+      throw new ServerException("config", "Missing config field");
     }
-    return response;
+    
+    if (request.tick.isPresent() && request.tick.get() < 0)
+    {
+      throw new ServerException("tick", "Tick must be a non-negative number");
+    }
+    
+    // Check configuration, it may be used
+    // TODO code is parsed twice, once here and once in the Cpu constructor
+    SimulationConfig.ValidationResult errors = request.config.validate();
+    if (!errors.valid)
+    {
+      // TODO: Add proper logging
+      throw new ServerException("config", "Invalid configuration");
+    }
+    
+    // Run simulation
+    return runSimulation(request);
   }
   
   /**

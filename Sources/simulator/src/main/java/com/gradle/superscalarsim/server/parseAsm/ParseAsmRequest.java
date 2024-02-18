@@ -30,6 +30,9 @@ package com.gradle.superscalarsim.server.parseAsm;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gradle.superscalarsim.cpu.SimulationConfig;
 
+/**
+ * @brief Request for the /parseAsm endpoint
+ */
 public class ParseAsmRequest
 {
   /**
@@ -40,7 +43,8 @@ public class ParseAsmRequest
   
   /**
    * @brief The Cpu configuration.
-   * This is not required, but if it is present, it will be used to inform the parser about the defined memory locations
+   * This is not required, but if it is present, it will be used to inform the parser about the defined memory locations.
+   * The code from this object is ignored.
    */
   @JsonProperty(required = false)
   SimulationConfig config;
@@ -51,6 +55,18 @@ public class ParseAsmRequest
   public ParseAsmRequest()
   {
   
+  }
+  
+  /**
+   * @param code   The ASM code to parse
+   * @param config The Cpu configuration
+   *
+   * @brief Constructor for the request
+   */
+  public ParseAsmRequest(String code, SimulationConfig config)
+  {
+    this.code   = code;
+    this.config = config;
   }
   
 }

@@ -552,6 +552,15 @@ public class CodeParserTest
   }
   
   @Test
+  public void parseCode_empty_no_error()
+  {
+    String code = "";
+    codeParser.parseCode(code);
+    
+    Assert.assertTrue(codeParser.success());
+  }
+  
+  @Test
   public void parseCode_wrong_label()
   {
     String code = """

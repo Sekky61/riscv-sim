@@ -31,6 +31,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
 
+/**
+ * Response for the /compile endpoint
+ */
 public class CompileResponse
 {
   /**
@@ -40,26 +43,29 @@ public class CompileResponse
   public boolean success;
   
   /**
-   * The RISC-V assembly code
+   * The RISC-V assembly code. Can be null if the compilation failed.
    */
   @JsonProperty(required = true)
   public String program;
   
   /**
    * Mapping from ASM lines to C lines.
-   * The length of this list is the same as the length of the program
+   * The length of this list is the same as the length of the program.
+   * Can be null if the compilation failed.
    */
   @JsonProperty(required = true)
   public Integer[] asmToC;
   
   /**
-   * @brief A general, short error message
+   * @brief A general, short error message.
+   * Can be null if the compilation was successful.
    */
   @JsonProperty(required = true)
   public String error;
   
   /**
-   * @brief A detailed list of compiler errors
+   * @brief A detailed list of compiler errors.
+   * Can be null if the compilation was successful.
    */
   @JsonProperty(required = true)
   public List<Object> compilerError;

@@ -37,7 +37,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * @brief Class to call GCC
+ * @brief Class to call GCC.
+ * TODO: calls to memset and others are not eliminated. It would be great if they could be provided if needed.
  */
 public class GccCaller
 {

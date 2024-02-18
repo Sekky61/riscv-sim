@@ -237,6 +237,14 @@ public class MemoryLocation
   }
   
   /**
+   * @return True if the object is in valid state
+   */
+  public boolean isValid()
+  {
+    return names != null && !names.isEmpty() && alignment >= 0 && dataTypes != null && data != null;
+  }
+  
+  /**
    * @param startOffset Offset into the list of values
    * @param dataType    Type of the data
    *

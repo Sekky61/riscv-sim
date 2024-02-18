@@ -84,8 +84,9 @@ public class MyRequestHandler<T, U> implements HttpHandler
     exchange.startBlocking();
     
     // Deserialize
-    InputStream requestJson = exchange.getInputStream();
-    T           request     = null;
+    InputStream  requestJson  = exchange.getInputStream();
+    OutputStream outputStream = exchange.getOutputStream();
+    T            request      = null;
     try
     {
       request = resolver.deserialize(requestJson);
@@ -95,20 +96,24 @@ public class MyRequestHandler<T, U> implements HttpHandler
       // Log it
       System.err.println("Invalid request: " + e.getMessage());
       // Send back
-      exchange.setStatusCode(400);
-      ErrorResponse errorResponse = new ErrorResponse(e.getMessage());
-      OutputStream  outputStream  = exchange.getOutputStream();
-      ObjectMapper  mapper        = Serialization.getSerializer();
-      mapper.writeValue(outputStream, errorResponse);
+      sendError(exchange, new ServerError("root", "Invalid request: " + e.getMessage()));
       return;
     }
     
-    U response = resolver.resolve(request);
-    
     // Serialize
-    OutputStream outputStream = exchange.getOutputStream();
-    resolver.serialize(response, outputStream);
-    exchange.endExchange();
+    try
+    {
+      U response = resolver.resolve(request);
+      resolver.serialize(response, outputStream);
+      exchange.endExchange();
+    }
+    catch (ServerException e)
+    {
+      // Send the error as a JSON, log it
+      ServerError error = e.getError();
+      sendError(exchange, error);
+      System.err.println("Server error: " + error.message());
+    }
   }
   
   /**
@@ -128,10 +133,9 @@ public class MyRequestHandler<T, U> implements HttpHandler
    * @param exchange The HttpExchange object
    *
    * @return true if the request was handled, false otherwise
-   * @throws IOException If an I/O error occurs
    * @brief Handle the request method
    */
-  public boolean handleVerb(HttpServerExchange exchange) throws IOException
+  public boolean handleVerb(HttpServerExchange exchange)
   {
     // Check that the request method is a POST or OPTIONS
     String method = exchange.getRequestMethod().toString();
@@ -160,10 +164,13 @@ public class MyRequestHandler<T, U> implements HttpHandler
   }
   
   /**
-   * Error explanation for the client.
-   * Reports the cause of the error, if it its known in the handler.
+   * @brief Send an error response
    */
-  public record ErrorResponse(String error)
+  public void sendError(HttpServerExchange exchange, ServerError error) throws IOException
   {
+    exchange.setStatusCode(400);
+    ObjectMapper mapper = Serialization.getSerializer();
+    mapper.writeValue(exchange.getOutputStream(), error);
+    exchange.endExchange();
   }
 }

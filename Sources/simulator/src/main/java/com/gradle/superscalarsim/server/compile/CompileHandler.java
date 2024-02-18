@@ -34,12 +34,12 @@ import com.gradle.superscalarsim.compiler.CompiledProgram;
 import com.gradle.superscalarsim.compiler.GccCaller;
 import com.gradle.superscalarsim.serialization.Serialization;
 import com.gradle.superscalarsim.server.IRequestResolver;
+import com.gradle.superscalarsim.server.ServerException;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.List;
 
 /**
  * @class CompileHandler
@@ -51,31 +51,36 @@ public class CompileHandler implements IRequestResolver<CompileRequest, CompileR
   ObjectReader compileReqReader = Serialization.getDeserializer().readerFor(CompileRequest.class);
   ObjectWriter compileRespWriter = Serialization.getSerializer().writerFor(CompileResponse.class);
   
-  public CompileResponse resolve(CompileRequest request)
+  public CompileResponse resolve(CompileRequest request) throws ServerException
   {
+    if (request == null)
+    {
+      throw new ServerException("root", "Missing request body");
+    }
+    
+    if (request.code == null)
+    {
+      throw new ServerException("code", "Missing code");
+    }
+    
+    if (request.optimizeFlags == null)
+    {
+      throw new ServerException("optimizeFlags", "Missing optimizeFlags");
+    }
     
     CompileResponse response;
-    if (request == null || request.code == null)
+    
+    // Compile
+    GccCaller.CompileResult res = GccCaller.compile(request.code, request.optimizeFlags);
+    if (!res.success)
     {
-      // Send error
-      response = CompileResponse.failure("Wrong request format. Expected JSON with 'code' object field", List.of());
+      response = CompileResponse.failure(res.error, res.compilerErrors);
     }
     else
     {
-      // Compile
-      GccCaller.CompileResult res = GccCaller.compile(request.code, request.optimizeFlags);
-      if (!res.success)
-      {
-        System.err.println("Failed to compile code: " + res.error);
-        response = CompileResponse.failure(res.error, res.compilerErrors);
-      }
-      else
-      {
-        int             cCodeLen            = request.code.split("\n").length;
-        CompiledProgram program             = AsmParser.parse(res.code);
-        String          concatenatedProgram = StringUtils.join(program.program, "\n");
-        response = new CompileResponse(true, concatenatedProgram, program.asmToC, null, null);
-      }
+      CompiledProgram program             = AsmParser.parse(res.code);
+      String          concatenatedProgram = StringUtils.join(program.program, "\n");
+      response = new CompileResponse(true, concatenatedProgram, program.asmToC, null, null);
     }
     
     return response;

@@ -28,15 +28,11 @@
 package com.gradle.superscalarsim.cpu;
 
 import com.gradle.superscalarsim.code.CodeParser;
-import com.gradle.superscalarsim.code.Label;
-import com.gradle.superscalarsim.code.ParseError;
 import com.gradle.superscalarsim.factories.InputCodeModelFactory;
 import com.gradle.superscalarsim.loader.StaticDataProvider;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Configuration for the simulation - code, memory, buffers, entry point etc.
@@ -64,6 +60,7 @@ public class SimulationConfig
    * The address of the entry point of the code.
    * Can be a label (string) or a number (int).
    * Address 0 is the default entry point (does not need to be specified in JSON).
+   * The second instruction would be at address 4, the third at 8, etc.
    */
   public Object entryPoint;
   
@@ -104,19 +101,27 @@ public class SimulationConfig
    */
   public ValidationResult validate()
   {
+    List<ConfigError> errorMessages = new ArrayList<>();
+    
+    // Validate CPU config
     CpuConfigValidator configValidator = new CpuConfigValidator();
     configValidator.validate(cpuConfig);
-    List<CpuConfigValidator.Error> errorMessages = new ArrayList<>();
-    List<ParseError>               codeErrors    = null;
     
     // Add validation for memory locations and code
     
     if (code == null)
     {
-      errorMessages.add(new CpuConfigValidator.Error("Code must not be null", "code"));
+      errorMessages.add(new ConfigError("Code must not be null", "code"));
+      code = "";
     }
     
-    // Parse code
+    if (memoryLocations == null)
+    {
+      errorMessages.add(new ConfigError("Memory locations must not be null", "memoryLocations"));
+      memoryLocations = new ArrayList<>();
+    }
+    
+    // Safe to parse code
     StaticDataProvider provider = new StaticDataProvider();
     CodeParser codeParser = new CodeParser(provider.getInstructionFunctionModels(),
                                            provider.getRegisterFile().getRegisterMap(true), new InputCodeModelFactory(),
@@ -125,34 +130,14 @@ public class SimulationConfig
     
     if (!codeParser.success())
     {
-      codeParser.getErrorMessages().forEach(e -> errorMessages.add(new CpuConfigValidator.Error(e.message, "code")));
-      errorMessages.add(new CpuConfigValidator.Error("Code contains errors", "code"));
-      codeErrors = codeParser.getErrorMessages();
+      codeParser.getErrorMessages().forEach(e -> errorMessages.add(new ConfigError(e.message, "code")));
     }
     
-    // Memory allocations
-    if (memoryLocations == null)
+    for (MemoryLocation memoryLocation : memoryLocations)
     {
-      errorMessages.add(new CpuConfigValidator.Error("Memory locations must not be null", "memoryLocations"));
-    }
-    else
-    {
-      for (MemoryLocation memoryLocation : memoryLocations)
+      if (!memoryLocation.isValid())
       {
-        if (memoryLocation.alignment < 0)
-        {
-          errorMessages.add(
-                  new CpuConfigValidator.Error("Memory location alignment must be greater than 0", "memoryLocations"));
-        }
-        if (memoryLocation.getBytes() == null)
-        {
-          errorMessages.add(new CpuConfigValidator.Error("Memory location bytes must not be null", "memoryLocations"));
-        }
-        if (memoryLocation.getName() == null || memoryLocation.getName().isEmpty())
-        {
-          errorMessages.add(
-                  new CpuConfigValidator.Error("Memory location name must not be null or empty", "memoryLocations"));
-        }
+        errorMessages.add(new ConfigError("Memory location is not valid", "memoryLocations"));
       }
     }
     
@@ -162,7 +147,7 @@ public class SimulationConfig
       // Check if label exists
       if (!codeParser.getLabels().containsKey(entryPoint))
       {
-        errorMessages.add(new CpuConfigValidator.Error("Entry point label does not exist", "entryPoint"));
+        errorMessages.add(new ConfigError("Entry point label does not exist", "entryPoint"));
       }
     }
     else if (entryPoint instanceof Integer)
@@ -171,61 +156,45 @@ public class SimulationConfig
       // Check if address is valid
       if (entry < 0)
       {
-        errorMessages.add(new CpuConfigValidator.Error("Entry point address must be greater than 0", "entryPoint"));
+        errorMessages.add(new ConfigError("Entry point address must be greater than 0", "entryPoint"));
       }
       int maxAddress = 4 * codeParser.getInstructions().size();
       if (entry > maxAddress)
       {
-        errorMessages.add(new CpuConfigValidator.Error("Entry point address must be pointing to a code", "entryPoint"));
+        errorMessages.add(new ConfigError("Entry point address must be pointing to a code", "entryPoint"));
       }
-      if (maxAddress % 4 != 0)
+      if (entry % 4 != 0)
       {
-        errorMessages.add(new CpuConfigValidator.Error("Entry point address must be aligned to 4 bytes", "entryPoint"));
+        errorMessages.add(new ConfigError("Entry point address must be aligned to 4 bytes", "entryPoint"));
       }
     }
     else
     {
-      errorMessages.add(
-              new CpuConfigValidator.Error("Entry point must be a label string or an address integer", "entryPoint"));
+      errorMessages.add(new ConfigError("Entry point must be a label string or an address integer", "entryPoint"));
     }
     
     if (errorMessages.isEmpty() && configValidator.isValid())
     {
-      return new ValidationResult(true, null, null);
+      return new ValidationResult(true, new ArrayList<>());
     }
     else
     {
       // Join error messages
-      List<CpuConfigValidator.Error> errors = configValidator.getErrors();
+      List<ConfigError> errors = configValidator.getErrors();
       errorMessages.addAll(errors);
-      return new ValidationResult(false, errorMessages, codeErrors);
+      return new ValidationResult(false, errorMessages);
     }
-  }
-  
-  /**
-   * Extract names of memory locations defined outside the code
-   */
-  public Map<String, Label> getMemoryLocationLabels()
-  {
-    Map<String, Label> names = new HashMap<>();
-    for (MemoryLocation memoryLocation : memoryLocations)
-    {
-      names.put(memoryLocation.getName(), new Label(memoryLocation.getName(), -1));
-    }
-    return names;
   }
   
   public static class ValidationResult
   {
     public boolean valid;
-    public List<CpuConfigValidator.Error> messages;
-    public List<ParseError> codeErrors;
+    public List<ConfigError> messages;
     
-    public ValidationResult(boolean valid, List<CpuConfigValidator.Error> messages, List<ParseError> codeErrors)
+    public ValidationResult(boolean valid, List<ConfigError> messages)
     {
-      this.valid      = valid;
-      this.messages   = messages;
-      this.codeErrors = codeErrors;
+      this.valid    = valid;
+      this.messages = messages;
     }
   }
 }

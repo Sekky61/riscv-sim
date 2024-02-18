@@ -32,6 +32,7 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.gradle.superscalarsim.serialization.Serialization;
 import com.gradle.superscalarsim.server.IRequestResolver;
+import com.gradle.superscalarsim.server.ServerException;
 import com.gradle.superscalarsim.server.checkConfig.CheckConfigRequest;
 import com.gradle.superscalarsim.server.checkConfig.CheckConfigResponse;
 import com.gradle.superscalarsim.server.compile.CompileRequest;
@@ -72,8 +73,23 @@ public class SchemaHandler implements IRequestResolver<SchemaRequest, JsonNode>
    * @brief Find the correct schema for the request
    */
   @Override
-  public JsonNode resolve(SchemaRequest request)
+  public JsonNode resolve(SchemaRequest request) throws ServerException
   {
+    if (request == null)
+    {
+      throw new ServerException("root", "Missing request body");
+    }
+    
+    if (request.endpoint == null)
+    {
+      throw new ServerException("endpoint", "Missing endpoint");
+    }
+    
+    if (request.requestResponse == null)
+    {
+      throw new ServerException("requestResponse", "Missing requestResponse");
+    }
+    
     boolean isRequest = Objects.equals(request.requestResponse, SchemaRequest.RequestResponse.request);
     
     // Match the request to the correct handler

@@ -29,16 +29,14 @@ package com.gradle.superscalarsim.server.checkConfig;
 
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
-import com.gradle.superscalarsim.cpu.CpuConfigValidator;
 import com.gradle.superscalarsim.cpu.SimulationConfig;
 import com.gradle.superscalarsim.serialization.Serialization;
 import com.gradle.superscalarsim.server.IRequestResolver;
+import com.gradle.superscalarsim.server.ServerException;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @brief Handler for the /checkConfig endpoint
@@ -49,22 +47,22 @@ public class CheckConfigHandler implements IRequestResolver<CheckConfigRequest, 
   ObjectReader compileReqReader = Serialization.getDeserializer().readerFor(CheckConfigRequest.class);
   ObjectWriter compileRespWriter = Serialization.getSerializer().writerFor(CheckConfigResponse.class);
   
-  public CheckConfigResponse resolve(CheckConfigRequest request)
+  public CheckConfigResponse resolve(CheckConfigRequest request) throws ServerException
   {
+    if (request == null)
+    {
+      throw new ServerException("root", "Missing request body");
+    }
     
-    CheckConfigResponse response;
-    if (request == null || request.config == null)
+    if (request.config == null)
     {
-      response = new CheckConfigResponse(false, new ArrayList<>(
-              List.of(new CpuConfigValidator.Error("Invalid request fields", "root"))));
+      throw new ServerException("config", "Missing config");
     }
-    else
-    {
-      // Validate
-      SimulationConfig.ValidationResult res = request.config.validate();
-      response = new CheckConfigResponse(res.valid, res.messages);
-    }
-    return response;
+    
+    // Validate
+    SimulationConfig.ValidationResult res = request.config.validate();
+    
+    return new CheckConfigResponse(res.valid, res.messages);
   }
   
   @Override

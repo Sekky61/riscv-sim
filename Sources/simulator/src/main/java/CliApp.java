@@ -32,6 +32,7 @@ import com.gradle.superscalarsim.cpu.CpuConfig;
 import com.gradle.superscalarsim.cpu.MemoryLocation;
 import com.gradle.superscalarsim.cpu.SimulationConfig;
 import com.gradle.superscalarsim.serialization.Serialization;
+import com.gradle.superscalarsim.server.ServerException;
 import com.gradle.superscalarsim.server.simulate.SimulateHandler;
 import com.gradle.superscalarsim.server.simulate.SimulateRequest;
 import com.gradle.superscalarsim.server.simulate.SimulateResponse;
@@ -105,7 +106,16 @@ class CliApp implements Callable<Integer>
     SimulationConfig simulationConfig = new SimulationConfig(program, memoryConfig, cpuConfig, entryPointObject);
     SimulateRequest  request          = new SimulateRequest(simulationConfig, Optional.empty());
     SimulateHandler  handler          = new SimulateHandler();
-    response = handler.resolve(request);
+    try
+    {
+      response = handler.resolve(request);
+    }
+    catch (ServerException e)
+    {
+      // Report the error and exit
+      // The only error that can occur here is a configuration error
+      System.err.println("Error: " + e.getError().message());
+    }
     
     Object resultObject = response;
     if (!fullState)

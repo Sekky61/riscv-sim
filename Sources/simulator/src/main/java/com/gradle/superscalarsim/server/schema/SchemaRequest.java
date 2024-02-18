@@ -52,4 +52,15 @@ public class SchemaRequest
   {
     request, response
   }
+  
+  public SchemaRequest()
+  {
+  
+  }
+  
+  public SchemaRequest(EndpointName endpoint, RequestResponse requestResponse)
+  {
+    this.endpoint        = endpoint;
+    this.requestResponse = requestResponse;
+  }
 }

@@ -1,11 +1,11 @@
 /**
- * @file CheckConfigRequest.java
+ * @file ServerException.java
  * @author Michal Majer
  * Faculty of Information Technology
  * Brno University of Technology
  * xmajer21@stud.fit.vutbr.cz
- * @brief Parameters for the /checkConfig endpoint request
- * @date 26 Sep      2023 10:00 (created)
+ * @brief Exception thrown by the server during argument parsing, etc.
+ * @date 18 Feb     2024 16:00 (created)
  * @section Licence
  * This file is part of the Superscalar simulator app
  * <p>
@@ -25,29 +25,37 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.gradle.superscalarsim.server.checkConfig;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.gradle.superscalarsim.cpu.SimulationConfig;
+package com.gradle.superscalarsim.server;
 
 /**
- * Parameters for the /checkConfig endpoint request
+ * @brief Exception thrown by the server during argument parsing.
+ * @details This exception is thrown when the server encounters an error during argument parsing.
+ * Examples include missing fields, fields with invalid values, etc.
+ * Problems during simulation are handled via different exceptions.
  */
-public class CheckConfigRequest
+public class ServerException extends Exception
 {
   /**
-   * The configuration to check
+   * @brief The error that caused this exception. Will be shown to the user.
    */
-  @JsonProperty(required = true)
-  SimulationConfig config;
+  ServerError error;
+  
+  public ServerException(ServerError error)
+  {
+    super(error.message());
+    this.error = error;
+  }
+  
+  public ServerException(String field, String message)
+  {
+    this(new ServerError(field, message));
+  }
   
   /**
-   * Constructor
-   *
-   * @param config The configuration to check
+   * @return The error that caused this exception.
    */
-  public CheckConfigRequest(SimulationConfig config)
+  public ServerError getError()
   {
-    this.config = config;
+    return error;
   }
 }
