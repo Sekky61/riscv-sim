@@ -33,7 +33,6 @@
 
 import { hoverTooltip } from '@codemirror/view';
 
-import { callInstructionDescriptionImpl } from '@/lib/serverCalls';
 import { InstructionDescription } from '../types/instructionsDatabase';
 
 /**

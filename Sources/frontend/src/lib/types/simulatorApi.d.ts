@@ -47,10 +47,28 @@ type EndpointMap = {
 };
 export type EndpointName = keyof EndpointMap;
 
-export type AsyncEndpointFunction<T extends EndpointName> = (
-  name: T,
+/**
+ * The API call
+ * As a note, there is a difference between generic type and a type that is a generic function (https://stackoverflow.com/questions/51197819/declaring-const-of-generic-type).
+ */
+export type AsyncEndpointFunction = <T extends EndpointName>(
+  endpoint: T,
   request: EndpointMap[T]['request'],
-) => EndpointMap[T]['response'];
+) => Promise<EndpointMap[T]['response']>;
+
+//
+// Error type
+//
+
+/**
+ * This type is returned on 400 errors.
+ * The name is a bit misleading, as it is sent on user errors.
+ */
+export type ServerError = {
+  field: string;
+  message: string;
+  extra?: unknown;
+};
 
 //
 // /schema

@@ -40,7 +40,11 @@ import { defaultAsmCode } from '@/constant/defaults';
 import { transformErrors } from '@/lib/editor/transformErrors';
 import { selectActiveConfig } from '@/lib/redux/isaSlice';
 import type { RootState } from '@/lib/redux/store';
-import { callCompilerImpl, callParseAsmImpl } from '@/lib/serverCalls';
+import {
+  ServerErrorException,
+  callCompilerImpl,
+  callParseAsmImpl,
+} from '@/lib/serverCalls';
 import { CodeExample } from '@/lib/types/codeExamples';
 import {
   CompileResponse,
@@ -127,7 +131,11 @@ export const callCompiler = createAsyncThunk<CompileResponse>(
         return res;
       })
       .catch((err) => {
-        toast.error('Compilation failed: server error');
+        if (err instanceof ServerErrorException) {
+          toast.error(`Server error: ${err.message}`);
+        } else {
+          toast.error('Compilation failed: server error');
+        }
         // Rethrow
         throw err;
       });
@@ -158,7 +166,11 @@ export const callParseAsm = createAsyncThunk<ParseAsmResponse>(
         return res;
       })
       .catch((err) => {
-        toast.error('Compilation failed: server error');
+        if (err instanceof ServerErrorException) {
+          toast.error(`Server error: ${err.message}`);
+        } else {
+          toast.error('Compilation failed: server error');
+        }
         // Rethrow
         throw err;
       });

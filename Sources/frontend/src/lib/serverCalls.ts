@@ -34,10 +34,12 @@ import {
   AsyncEndpointFunction,
   CompileRequest,
   CompileResponse,
+  EndpointMap,
   EndpointName,
   InstructionDescriptionResponse,
   ParseAsmRequest,
   ParseAsmResponse,
+  ServerError,
   SimulateRequest,
   SimulateResponse,
 } from '@/lib/types/simulatorApi';
@@ -83,18 +85,25 @@ export async function callInstructionDescriptionImpl(): Promise<InstructionDescr
 }
 
 /**
+ * A custom exception for the case when the server returns an error.
+ */
+export class ServerErrorException extends Error {
+  constructor(obj: ServerError) {
+    super(`Server error: ${obj.message}`);
+  }
+}
+
+/**
  * Call the simulator server API. Parse the response as JSON.
  * Throws an error if the response is not ok, it should be caught by the caller.
  *
  * Next.js proxies the backend simulator. Set the NEXT_PUBLIC_SIMSERVER_PORT and NEXT_PUBLIC_SIMSERVER_HOST env variables (see .env.example, Dockerfile).
  * The default is the same host as the app is running on, but on port 8000.
  */
-async function callApi<T extends EndpointName>(
-  ...args: Parameters<AsyncEndpointFunction<T>>
-): Promise<ReturnType<AsyncEndpointFunction<T>>> {
-  const endpoint = args[0];
-  const request = args[1];
-
+const callApi: AsyncEndpointFunction = async <T extends EndpointName>(
+  endpoint: T,
+  request: EndpointMap[T]['request'],
+) => {
   let apiUrl: string;
   if (typeof window === 'undefined') {
     // Running on server
@@ -119,9 +128,15 @@ async function callApi<T extends EndpointName>(
     body: JSON.stringify(request),
   });
 
-  if (!response.ok) {
-    throw new Error(`Network response was not ok: ${response.status}`);
+  if (response.ok) {
+    // Deserialize the response. It is either the requested object or an error message.
+    return response.json();
   }
 
-  return response.json();
-}
+  if (response.status === 400) {
+    const error = await response.json();
+    throw new ServerErrorException(error);
+  }
+
+  throw new Error(`Network response was not ok: ${response.status}`);
+};

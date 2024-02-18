@@ -46,6 +46,7 @@ import { selectActiveConfig } from '@/lib/redux/isaSlice';
 import { selectRunningConfig } from '@/lib/redux/simConfigSlice';
 import type { RootState } from '@/lib/redux/store';
 import {
+  ServerErrorException,
   callInstructionDescriptionImpl,
   callSimulationImpl,
 } from '@/lib/serverCalls';
@@ -131,7 +132,9 @@ export const loadFunctionModels =
           'Try clearing the local storage (application tab) and reloading the page',
         );
         let message = 'See the console for more details';
-        if (err instanceof SyntaxError) {
+        if (err instanceof ServerErrorException) {
+          message = err.message;
+        } else if (err instanceof SyntaxError) {
           // Unexpected token < in JSON
           message = 'Invalid response from the server';
         } else if (err instanceof TypeError) {
@@ -230,7 +233,9 @@ export const callSimulation = createAsyncThunk<SimulateResponse, number | null>(
         'Try clearing the local storage (application tab) and reloading the page',
       );
       let message = 'See the console for more details';
-      if (err instanceof SyntaxError) {
+      if (err instanceof ServerErrorException) {
+        message = err.message;
+      } else if (err instanceof SyntaxError) {
         // Unexpected token < in JSON
         message = 'Invalid response from the server';
       } else if (err instanceof TypeError) {
