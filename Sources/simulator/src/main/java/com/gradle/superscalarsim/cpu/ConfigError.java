@@ -48,4 +48,10 @@ public record ConfigError(String message, String field)
   {
     return field;
   }
+  
+  @Override
+  public String toString()
+  {
+    return field + ": " + message;
+  }
 }

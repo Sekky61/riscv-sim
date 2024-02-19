@@ -1,0 +1,13 @@
+[
+  {
+    "name": "constant",
+    "alignment": 4,
+    "dataType": "kInt",
+    "data": {
+      "kind": "data",
+      "data": [
+        "42"
+      ]
+    }
+  }
+]

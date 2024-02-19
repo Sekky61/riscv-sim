@@ -196,5 +196,14 @@ public class SimulationConfig
       this.valid    = valid;
       this.messages = messages;
     }
+    
+    /**
+     * @return A comma separated list of error messages.
+     */
+    @Override
+    public String toString()
+    {
+      return String.join(", ", messages.stream().map(ConfigError::toString).toList());
+    }
   }
 }

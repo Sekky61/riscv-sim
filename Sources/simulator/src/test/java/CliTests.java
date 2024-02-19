@@ -91,6 +91,31 @@ public class CliTests
    * The test is designed to work with CWD set to the root of the simulator
    */
   @Test
+  public void testExecuteWithMemory()
+  {
+    int exitCode = cmd.execute("--cpu", "examples/cpuConfigurations/default.json", "--program",
+                               "examples/asmPrograms/externMemory.r5", "--memory", "examples/memory/constant.json");
+    String output = sw.toString();
+    Assert.assertEquals(0, exitCode);
+    
+    // Is a valid JSON
+    ObjectMapper deserializer = Serialization.getDeserializer();
+    try
+    {
+      deserializer.readTree(output);
+    }
+    catch (Exception e)
+    {
+      Assert.fail("Output is not a valid JSON");
+    }
+    
+    Assert.assertTrue(output.contains("Loaded constant 42"));
+  }
+  
+  /**
+   * The test is designed to work with CWD set to the root of the simulator
+   */
+  @Test
   public void testPrettyPrint()
   {
     int exitCode = cmd.execute("--cpu", "examples/cpuConfigurations/default.json", "--program",

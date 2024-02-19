@@ -1,0 +1,1 @@
+lw x5, constant(x0) #DEBUG"Loaded constant ${x5}"

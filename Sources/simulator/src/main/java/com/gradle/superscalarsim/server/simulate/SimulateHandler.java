@@ -74,8 +74,7 @@ public class SimulateHandler implements IRequestResolver<SimulateRequest, Simula
     SimulationConfig.ValidationResult errors = request.config.validate();
     if (!errors.valid)
     {
-      // TODO: Add proper logging
-      throw new ServerException("config", "Invalid configuration");
+      throw new ServerException("config", errors.toString());
     }
     
     // Run simulation

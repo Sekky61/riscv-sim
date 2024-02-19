@@ -54,6 +54,11 @@ import java.util.logging.Logger;
 class CliApp implements Callable<Integer>
 {
   /**
+   * Logger for this class.
+   */
+  Logger logger = MyLogger.initializeLogger("Cli", Level.INFO);
+  
+  /**
    * Exposed for testing purposes.
    */
   public SimulateResponse response;
@@ -91,6 +96,7 @@ class CliApp implements Callable<Integer>
     }
     catch (IOException e)
     {
+      logger.severe("Error: " + e.getMessage());
       throw new RuntimeException(e);
     }
     
@@ -117,7 +123,6 @@ class CliApp implements Callable<Integer>
     {
       // Report the error and exit
       // The only error that can occur here is a configuration error
-      Logger logger = MyLogger.initializeLogger("Cli", Level.INFO);
       logger.severe("Error: " + e.getError().message());
     }
     
@@ -145,6 +150,7 @@ class CliApp implements Callable<Integer>
     }
     catch (JsonProcessingException e)
     {
+      logger.severe("Error: " + e.getMessage());
       throw new RuntimeException(e);
     }
     
@@ -212,6 +218,11 @@ class CliApp implements Callable<Integer>
       return deserializer.readValue(inputStream, new TypeReference<>()
       {
       });
+    }
+    catch (Exception e)
+    {
+      logger.severe("Error in file reading memory: " + e.getMessage());
+      throw new RuntimeException(e);
     }
   }
   

@@ -27,6 +27,7 @@
 
 package com.gradle.superscalarsim.cpu;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gradle.superscalarsim.blocks.arithmetic.ArithmeticFunctionUnitBlock;
@@ -54,6 +55,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.logging.Logger;
 
 /**
  * @class CpuState
@@ -70,65 +72,55 @@ public class CpuState implements Serializable
    * The manager registry is used to keep track of all relevant models in the CPU.
    */
   public ManagerRegistry managerRegistry;
-  
   public int tick;
-  
   public InstructionMemoryBlock instructionMemoryBlock;
-  
-  // Housekeeping
-  
   public SimulationStatistics statistics;
   
-  // Branch prediction
-  
+  // Housekeeping
   public BranchTargetBuffer branchTargetBuffer;
+  
+  // Branch prediction
   public GlobalHistoryRegister globalHistoryRegister;
   public PatternHistoryTable patternHistoryTable;
   public GShareUnit gShareUnit;
-  
-  // Blocks
-  
   public UnifiedRegisterFileBlock unifiedRegisterFileBlock;
   
+  // Blocks
   public RenameMapTableBlock renameMapTableBlock;
   public InstructionFetchBlock instructionFetchBlock;
   public DecodeAndDispatchBlock decodeAndDispatchBlock;
-  
   public Cache cache;
   public MemoryModel memoryModel;
   public CodeLoadStoreInterpreter loadStoreInterpreter;
   public StoreBufferBlock storeBufferBlock;
   public LoadBufferBlock loadBufferBlock;
-  
   // ALU
   public CodeArithmeticInterpreter arithmeticInterpreter;
   public List<ArithmeticFunctionUnitBlock> arithmeticFunctionUnitBlocks;
   public List<ArithmeticFunctionUnitBlock> fpFunctionUnitBlocks;
   public IssueWindowBlock aluIssueWindowBlock;
   public IssueWindowBlock fpIssueWindowBlock;
-  
   public CodeBranchInterpreter branchInterpreter;
   public List<BranchFunctionUnitBlock> branchFunctionUnitBlocks;
   public IssueWindowBlock branchIssueWindowBlock;
-  
   // Load/Store
   public List<LoadStoreFunctionUnit> loadStoreFunctionUnits;
   public IssueWindowBlock loadStoreIssueWindowBlock;
-  
   // Memory
   public List<MemoryAccessUnit> memoryAccessUnits;
-  
   public SimulatedMemory simulatedMemory;
-  
   public IssueWindowSuperBlock issueWindowSuperBlock;
-  
   // ROB "without the state"
   public ReorderBufferBlock reorderBufferBlock;
-  
   /**
    * @brief Debug log for debugging/presentation purposes
    */
   public DebugLog debugLog;
+  /**
+   * Logger, hidden from serialization
+   */
+  @JsonIgnore
+  Logger logger = Logger.getLogger(CpuState.class.getName());
   
   public CpuState()
   {
@@ -211,7 +203,7 @@ public class CpuState implements Serializable
     }
     else
     {
-      System.err.println("Warning: sp register not found. Not setting stack pointer.");
+      logger.warning("sp register not found. Not setting stack pointer.");
     }
     
     // Set the ra to the exit address
@@ -222,7 +214,7 @@ public class CpuState implements Serializable
     }
     else
     {
-      System.err.println("Warning: ra register not found or explicitly overwritten. Not setting exit address.");
+      logger.warning("ra register not found or explicitly overwritten. Not setting exit address.");
     }
     
     this.renameMapTableBlock = new RenameMapTableBlock(unifiedRegisterFileBlock);
@@ -509,7 +501,8 @@ public class CpuState implements Serializable
   /**
    * The order of checks sets their priority.
    *
-   * @return Reason for stopping the simulation, or kNotStopped if the simulation is still running.
+   * @return Reason for stopping the simulation, or kNotStopped if the simulation should continue.
+   * @brief Gets the simulation status. The result controls if the simulation should continue.
    */
   public StopReason simStatus()
   {
