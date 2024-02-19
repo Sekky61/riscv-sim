@@ -112,15 +112,6 @@ public abstract class AbstractFunctionUnitBlock implements AbstractBlock
   }// end of Constructor
   //----------------------------------------------------------------------
   
-  /**
-   * @brief Resets the all the lists/stacks/variables in the function unit
-   */
-  @Override
-  public void reset()
-  {
-    this.counter      = 0;
-    this.simCodeModel = null;
-  }// end of reset
   //----------------------------------------------------------------------
   
   /**
@@ -270,8 +261,7 @@ public abstract class AbstractFunctionUnitBlock implements AbstractBlock
    */
   private int getDelayBasedOnCapability()
   {
-    String                                   expr           = this.simCodeModel.getInstructionFunctionModel()
-            .getInterpretableAs();
+    String expr = this.simCodeModel.getInstructionFunctionModel().getInterpretableAs();
     FunctionalUnitDescription.CapabilityName capabilityName = FunctionalUnitDescription.classifyOperation(expr);
     if (capabilityName == null)
     {

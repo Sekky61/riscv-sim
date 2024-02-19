@@ -177,16 +177,6 @@ public class InstructionFetchBlock implements AbstractBlock
   }// end of simulate
   //----------------------------------------------------------------------
   
-  /**
-   * @brief Resets the all the lists/stacks/variables in the instruction fetch block
-   */
-  @Override
-  public void reset()
-  {
-    this.fetchedCode.clear();
-    this.stallFlag = false;
-    this.pc        = 0;
-  }// end of reset
   //----------------------------------------------------------------------
   
   /**

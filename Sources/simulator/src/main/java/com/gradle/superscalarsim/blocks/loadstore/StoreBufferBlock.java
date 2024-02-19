@@ -129,14 +129,6 @@ public class StoreBufferBlock implements AbstractBlock
   }// end of simulate
   //-------------------------------------------------------------------------------------------
   
-  /**
-   * @brief Resets the all the lists/stacks/variables in the store buffer
-   */
-  @Override
-  public void reset()
-  {
-    this.storeQueue.clear();
-  }// end of reset
   //-------------------------------------------------------------------------------------------
   
   /**

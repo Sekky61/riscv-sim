@@ -112,21 +112,4 @@ public class MemoryModel
       return memory.finishTransaction(id);
     }
   }
-  
-  /**
-   * @param id ID of the transaction
-   *
-   * @brief Reset the state of underlying memory
-   */
-  public void reset()
-  {
-    if (cache != null)
-    {
-      cache.reset();
-    }
-    else
-    {
-      memory.reset();
-    }
-  }
 }

@@ -67,30 +67,9 @@ public class BranchTargetBuffer
   {
     // TreeMap is used to have sorted keys - display in GUI
     this.buffer = new TreeMap<>();
-    reallocateTargetBuffer(size);
+    this.size   = size;
   }// end of Constructor
   //----------------------------------------------------------------------
-  
-  /**
-   * @param size New size of the buffer
-   *
-   * @brief Reallocates buffer to new size
-   */
-  public void reallocateTargetBuffer(int size)
-  {
-    this.size = size;
-    this.buffer.clear();
-  }// end of reallocateTargetBuffer
-  //----------------------------------------------------------------------
-  
-  /**
-   * @brief Resets the BTB
-   */
-  public void reset()
-  {
-    this.buffer.clear();
-    reallocateTargetBuffer(size);
-  }// end of reset
   
   /**
    * @return Map of BTB entries

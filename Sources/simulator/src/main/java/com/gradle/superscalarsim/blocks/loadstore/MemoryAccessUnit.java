@@ -243,13 +243,6 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
     return memoryModel.execute(transaction);
   }
   
-  @Override
-  public void reset()
-  {
-    super.reset();
-    this.setDelay(baseDelay);
-  }
-  
   /**
    * @param simCodeModel Instruction to be executed
    *

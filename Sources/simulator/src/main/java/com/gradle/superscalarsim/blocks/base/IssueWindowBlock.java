@@ -183,14 +183,6 @@ public class IssueWindowBlock implements AbstractBlock
     }
   }// end of checkForFailedInstructions
   
-  /**
-   * @brief Resets the all the lists/stacks/variables in the issue window
-   */
-  @Override
-  public void reset()
-  {
-    this.issuedInstructions.clear();
-  }// end of reset
   //----------------------------------------------------------------------
   
   /**

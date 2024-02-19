@@ -84,25 +84,6 @@ public class PatternHistoryTable
     this.defaultPredictorClass = defaultPredictorClass;
   }// end of Constructor
   
-  public void setDefaultTaken(boolean[] defaultTaken)
-  {
-    this.defaultTaken = defaultTaken;
-  }
-  
-  public void setDefaultPredictorClass(PredictorType defaultPredictorClass)
-  {
-    this.defaultPredictorClass = defaultPredictorClass;
-  }
-  
-  /**
-   * @brief Resets the list of  bit vectors
-   */
-  public void reset()
-  {
-    this.predictorMap.clear();
-  }// end of reset
-  //----------------------------------------------------------------------
-  
   /**
    * @param index Index of the predictor
    *

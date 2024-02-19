@@ -254,21 +254,6 @@ public class ReorderBufferBlock implements AbstractBlock
   //----------------------------------------------------------------------
   
   /**
-   * @brief Resets the Reorder Buffer lists/stacks/variables and calls reset on branch blocks
-   */
-  @Override
-  public void reset()
-  {
-    this.reorderQueue.clear();
-    
-    this.speculativePulls = false;
-    
-    gShareUnit.getGlobalHistoryRegister().reset();
-    gShareUnit.getPatternHistoryTable().reset();
-    branchTargetBuffer.reset();
-  }// end of reset
-  
-  /**
    * Writes into architectural register, updates statistics
    *
    * @param codeModel Code model of committable instruction

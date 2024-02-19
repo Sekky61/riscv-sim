@@ -107,13 +107,6 @@ public class IssueWindowSuperBlock implements AbstractBlock
   }// end of simulate
   //----------------------------------------------------------------------
   
-  /**
-   * @brief Resets the failed instruction stack
-   */
-  @Override
-  public void reset()
-  {
-  }// end of reset
   //----------------------------------------------------------------------
   
   /**

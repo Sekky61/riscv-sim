@@ -79,16 +79,6 @@ public class GlobalHistoryRegister
   //----------------------------------------------------------------------
   
   /**
-   * @brief Resets the GHR and history stack/map
-   */
-  public void reset()
-  {
-    this.history.clear();
-    Arrays.fill(this.shiftRegister, false);
-  }// end of reset
-  //----------------------------------------------------------------------
-  
-  /**
    * @param [in] isJump - Was the branch taken or not?
    *
    * @brief Shifts new bit value into the vector

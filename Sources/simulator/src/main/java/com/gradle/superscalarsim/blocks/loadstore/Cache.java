@@ -351,7 +351,8 @@ public class Cache implements AbstractBlock, MemoryBlock
           // Load new line into cache
           Triplet<Long, Integer, Integer> split = splitAddress(transaction.address());
           long                            tag   = split.getFirst();
-          CacheLineModel line = pickLineToUse(transaction.address(), cycle, transaction.getInstructionId());
+          CacheLineModel                  line  = pickLineToUse(transaction.address(), cycle,
+                                                                transaction.getInstructionId());
           // The replacement policy was updated when the line was picked
           line.setLineData(transaction.data());
           line.setValid(true);
@@ -384,22 +385,6 @@ public class Cache implements AbstractBlock, MemoryBlock
         transaction.finish();
       }
     }
-  }
-  
-  /**
-   * @brief Resets the cache state
-   */
-  public void reset()
-  {
-    //Initialize cache - everything is invalid and clean with value zero for data and tag
-    for (int i = 0; i < numberOfLines / associativity; i++)
-    {
-      for (int j = 0; j < associativity; j++)
-      {
-        cache[i][j] = new CacheLineModel(lineSize, i * associativity + j);
-      }
-    }
-    memory.reset();
   }
   
   /**

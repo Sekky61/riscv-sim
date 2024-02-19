@@ -218,14 +218,6 @@ public class SimulatedMemory implements AbstractBlock, MemoryBlock
   }// end of insertIntoMemory
   
   /**
-   * @brief Resets memory to its initial state
-   */
-  public void reset()
-  {
-    this.memory = new byte[0];
-  }// end of reset
-  
-  /**
    * Throws if the requested transaction is not in the list or not finished yet, as it would be a bug.
    *
    * @param id ID of the transaction

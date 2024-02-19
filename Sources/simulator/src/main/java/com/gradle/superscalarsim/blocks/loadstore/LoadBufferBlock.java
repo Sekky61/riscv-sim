@@ -145,14 +145,6 @@ public class LoadBufferBlock implements AbstractBlock
   }// end of simulate
   //-------------------------------------------------------------------------------------------
   
-  /**
-   * @brief Resets the all the lists/stacks/variables in the load buffer
-   */
-  @Override
-  public void reset()
-  {
-    this.loadQueue.clear();
-  }// end of reset
   //-------------------------------------------------------------------------------------------
   
   /**

@@ -310,17 +310,6 @@ public class DecodeAndDispatchBlock implements AbstractBlock
   }// end of simulate
   //----------------------------------------------------------------------
   
-  /**
-   * @brief Resets the all the lists/stacks/variables in the decode block
-   */
-  @Override
-  public void reset()
-  {
-    this.codeBuffer.clear();
-    this.renameMapTableBlock.clear();
-    this.stallFlag        = false;
-    this.stalledPullCount = 0;
-  }// end of reset
   //----------------------------------------------------------------------
   
   /**
