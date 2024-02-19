@@ -124,8 +124,7 @@ export const loadFunctionModels =
     async (arg) => {
       // @ts-ignore
       try {
-        const response = await callInstructionDescriptionImpl();
-        return response;
+        return callInstructionDescriptionImpl();
       } catch (err) {
         // Log error and show simple error message to the user
         console.warn(
@@ -219,14 +218,15 @@ export const simStepEnd = (): ThunkAction<
  */
 export const callSimulation = createAsyncThunk<SimulateResponse, number | null>(
   'cpu/callSimulation',
-  async (arg, { getState, dispatch }) => {
+  async (arg, { getState }) => {
     // @ts-ignore
     const state: RootState = getState();
-    const config = selectRunningConfig(state);
-    const tick = arg;
+    const request = {
+      tick: arg,
+      config: selectRunningConfig(state),
+    };
     try {
-      const response = await callSimulationImpl(tick, config);
-      return response;
+      return await callSimulationImpl(request);
     } catch (err) {
       // Log error and show simple error message to the user
       console.warn(

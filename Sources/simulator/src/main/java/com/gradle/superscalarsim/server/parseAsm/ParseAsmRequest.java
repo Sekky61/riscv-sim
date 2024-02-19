@@ -45,6 +45,7 @@ public class ParseAsmRequest
    * @brief The Cpu configuration.
    * This is not required, but if it is present, it will be used to inform the parser about the defined memory locations.
    * The code from this object is ignored.
+   * TODO: Change to List<MemoryLocation>
    */
   @JsonProperty(required = false)
   SimulationConfig config;

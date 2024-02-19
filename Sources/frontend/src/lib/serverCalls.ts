@@ -6,7 +6,7 @@
  *          Brno University of Technology
  *          xmajer21@stud.fit.vutbr.cz
  *
- * @brief   Call compiler API implementation
+ * @brief   Call API endpoints
  *
  * @date    19 September 2023, 22:00 (created)
  *
@@ -29,8 +29,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { SimulationConfig } from '@/lib/forms/Isa';
-import {
+import type { SimulationConfig } from '@/lib/forms/Isa';
+import type {
   AsyncEndpointFunction,
   CompileRequest,
   CompileResponse,
@@ -44,44 +44,47 @@ import {
   SimulateResponse,
 } from '@/lib/types/simulatorApi';
 
-import { apiBaseUrl, apiServerHost } from '@/constant/env';
-import { CompilerOptions } from './redux/compilerSlice';
+import { apiBaseUrl } from '@/constant/env';
 
+/**
+ * Call the /compile endpoint
+ * @param request The compilation request (code, flags)
+ * @returns       The response from the server, or throws an error
+ */
 export async function callCompilerImpl(
-  code: string,
-  options: CompilerOptions,
+  request: CompileRequest,
 ): Promise<CompileResponse> {
-  const body: CompileRequest = {
-    code,
-    optimizeFlags: options.optimizeFlags,
-  };
-  return await callApi('compile' as const, body);
+  return callApi('compile' as const, request);
 }
 
+/**
+ * Call the /parseAsm endpoint
+ * @param request The parse request (code, config) (only memory is relevant)
+ * @returns    The response from the server, or throws an error
+ */
 export async function callParseAsmImpl(
-  code: string,
-  cfg: SimulationConfig, // Does not need code
+  request: ParseAsmRequest,
 ): Promise<ParseAsmResponse> {
-  const body: ParseAsmRequest = {
-    code,
-    config: cfg,
-  };
-  return await callApi('parseAsm' as const, body);
+  return callApi('parseAsm' as const, request);
 }
 
+/**
+ * Call the /simulate endpoint
+ * @param request The simulation request (code, memory, config, start address, number of cycles)
+ * @returns    The response from the server, or throws an error
+ */
 export async function callSimulationImpl(
-  tick: number | null,
-  cfg: SimulationConfig,
+  request: SimulateRequest,
 ): Promise<SimulateResponse> {
-  const body: SimulateRequest = {
-    tick,
-    config: cfg,
-  };
-  return await callApi('simulate' as const, body);
+  return callApi('simulate' as const, request);
 }
 
+/**
+ * Call the /instructionDescription endpoint
+ * @returns The response from the server, or throws an error
+ */
 export async function callInstructionDescriptionImpl(): Promise<InstructionDescriptionResponse> {
-  return await callApi('instructionDescription' as const, {});
+  return callApi('instructionDescription' as const, {});
 }
 
 /**
@@ -104,14 +107,11 @@ const callApi: AsyncEndpointFunction = async <T extends EndpointName>(
   endpoint: T,
   request: EndpointMap[T]['request'],
 ) => {
-  let apiUrl: string;
-  if (typeof window === 'undefined') {
-    // Running on server
-    const host = apiBaseUrl || 'localhost:3000';
-    apiUrl = `${host}/`;
-  } else {
-    // Running in browser
-    apiUrl = '/api/sim/';
+  let apiUrl = '/api/sim/';
+  const isServer = typeof window === 'undefined';
+  if (isServer) {
+    // Running on server, use the actual server, not the Next.js proxy.
+    apiUrl = `${apiBaseUrl}/`;
   }
 
   const url = `${apiUrl}${endpoint}`;

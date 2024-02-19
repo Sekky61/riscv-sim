@@ -112,12 +112,14 @@ const initialState: CompilerState = {
  */
 export const callCompiler = createAsyncThunk<CompileResponse>(
   'compiler/callCompiler',
-  async (arg, { getState, dispatch }) => {
+  async (arg, { getState }) => {
     // @ts-ignore
-    const code: string = getState().compiler.cCode;
-    // @ts-ignore
-    const options: CompilerState = getState().compiler;
-    const response = await callCompilerImpl(code, options)
+    const state: RootState = getState();
+    const request = {
+      code: state.compiler.cCode,
+      optimizeFlags: state.compiler.optimizeFlags,
+    };
+    const response = await callCompilerImpl(request)
       .then((res) => {
         if (res.success) {
           toast.success('Compilation successful');
@@ -150,12 +152,14 @@ export const callCompiler = createAsyncThunk<CompileResponse>(
  */
 export const callParseAsm = createAsyncThunk<ParseAsmResponse>(
   'compiler/callParseAsm',
-  async (arg, { getState, dispatch }) => {
+  async (arg, { getState }) => {
     // @ts-ignore
     const state: RootState = getState();
-    const code: string = state.compiler.asmCode;
-    const config = selectActiveConfig(state);
-    const response = await callParseAsmImpl(code, config)
+    const request = {
+      code: state.compiler.asmCode,
+      config: selectActiveConfig(state),
+    };
+    const response = await callParseAsmImpl(request)
       .then((res) => {
         if (res.success) {
           toast.success('The assembly code is valid');
