@@ -29,12 +29,15 @@ package com.gradle.superscalarsim.compiler;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gradle.superscalarsim.app.MyLogger;
 import com.gradle.superscalarsim.loader.ConfigLoader;
 import com.gradle.superscalarsim.serialization.Serialization;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @brief Class to call GCC.
@@ -42,6 +45,8 @@ import java.util.Map;
  */
 public class GccCaller
 {
+  static Logger logger = MyLogger.initializeLogger("GCC", Level.INFO);
+  
   public static String compilerPath = ConfigLoader.gccPath;
   
   /**
@@ -85,6 +90,7 @@ public class GccCaller
     }
     catch (Exception e)
     {
+      logger.severe("Error starting GCC");
       return CompileResult.failure("Error starting GCC", List.of());
     }
     // Write the code to the process
@@ -95,6 +101,7 @@ public class GccCaller
     }
     catch (Exception e)
     {
+      logger.severe("Error writing to GCC");
       return CompileResult.failure("Error writing to GCC", List.of());
     }
     // Read the output
@@ -105,6 +112,7 @@ public class GccCaller
     }
     catch (Exception e)
     {
+      logger.severe("Error reading from GCC");
       return CompileResult.failure("Error reading from GCC", List.of());
     }
     // Wait for the process to finish
@@ -114,6 +122,7 @@ public class GccCaller
     }
     catch (Exception e)
     {
+      logger.severe("Error waiting for GCC");
       return CompileResult.failure("Error waiting for GCC", List.of());
     }
     // Read the exit value
@@ -130,14 +139,15 @@ public class GccCaller
         error = deserializer.readValue(error_string, new TypeReference<>()
         {
         });
-        System.err.println("Error from GCC: " + error);
       }
       catch (Exception e)
       {
+        logger.severe("GCC returned non-zero exit value: " + exitValue);
         return CompileResult.failure("GCC returned non-zero exit value: " + exitValue, List.of());
       }
       return CompileResult.failure("GCC returned non-zero exit value: " + exitValue, error);
     }
+    logger.info("GCC successfully invoked");
     return CompileResult.success(output);
   }
   

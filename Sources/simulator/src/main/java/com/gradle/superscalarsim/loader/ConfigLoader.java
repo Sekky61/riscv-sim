@@ -59,6 +59,9 @@ public class ConfigLoader
       // load a properties file
       prop.load(input);
       
+      // Set properties as system properties
+      prop.forEach((key, value) -> System.setProperty((String) key, (String) value));
+      
       gccPath = prop.getProperty("gcc.path");
     }
     catch (IOException ex)

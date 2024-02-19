@@ -31,8 +31,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import com.gradle.superscalarsim.app.MyLogger;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @brief Entry point of the application
@@ -50,6 +54,8 @@ class App
    */
   public static void main(String[] args)
   {
+    MyLogger.initializeLogger("App", Level.INFO);
+    Logger.getLogger("App").info("Starting the application");
     CommandLine cl       = new CommandLine(new App());
     int         exitCode = cl.execute(args);
     System.exit(exitCode);

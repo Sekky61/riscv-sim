@@ -27,6 +27,8 @@
 
 package com.gradle.superscalarsim.server;
 
+import com.gradle.superscalarsim.app.MyLogger;
+import com.gradle.superscalarsim.compiler.GccCaller;
 import com.gradle.superscalarsim.server.checkConfig.CheckConfigHandler;
 import com.gradle.superscalarsim.server.compile.CompileHandler;
 import com.gradle.superscalarsim.server.instructionDescriptions.InstructionDescriptionHandler;
@@ -39,6 +41,8 @@ import io.undertow.UndertowOptions;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.handlers.PathHandler;
 import io.undertow.server.handlers.RequestLimitingHandler;
+import io.undertow.server.handlers.accesslog.AccessLogHandler;
+import io.undertow.server.handlers.accesslog.AccessLogReceiver;
 import io.undertow.server.handlers.encoding.ContentEncodingRepository;
 import io.undertow.server.handlers.encoding.DeflateEncodingProvider;
 import io.undertow.server.handlers.encoding.EncodingHandler;
@@ -47,6 +51,8 @@ import io.undertow.server.handlers.encoding.GzipEncodingProvider;
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static io.undertow.UndertowOptions.ENABLE_HTTP2;
 
@@ -60,6 +66,7 @@ import static io.undertow.UndertowOptions.ENABLE_HTTP2;
  */
 public class Server
 {
+  private static final Logger logger = MyLogger.initializeLogger("Server", Level.INFO);
   /**
    * @brief Map of endpoints and their handlers
    */
@@ -87,11 +94,11 @@ public class Server
    * Maximum concurrent requests. If exceeded, the server will queue the requests.
    */
   int maxConcurrentRequests = 100;
+  // @formatter:on
   /**
    * @brief Use gzip encoding (or deflate) for responses
    */
   boolean useGzip = true;
-  // @formatter:on
   
   public Server(String host, int port, int timeout_ms)
   {
@@ -120,15 +127,21 @@ public class Server
     baseHandler = new RequestLimitingHandler(maxConcurrentRequests, baseHandler);
     baseHandler = new TimeoutHandler(timeout_ms, baseHandler);
     baseHandler = new ErrorHandler(baseHandler);
+    baseHandler = new AccessLogHandler(baseHandler, new MyRecv(), "%U returned %s %H %Dms",
+                                       Server.class.getClassLoader());
     
     // Start the server
     Undertow server = Undertow.builder().addHttpListener(port, host) // listen on port
             .setServerOption(UndertowOptions.NO_REQUEST_TIMEOUT,
                              100 * 1000) // idle connection timeout in milliseconds (!)
+            .setServerOption(UndertowOptions.RECORD_REQUEST_START_TIME,
+                             true) // record request start time. There is a performance penalty for this option
             .setServerOption(ENABLE_HTTP2, true) // enable HTTP/2
             .setHandler(baseHandler).build();
     server.start();
-    System.out.println("Server running on port " + port);
+    
+    logger.info("Server running on port " + port);
+    logger.info("GCC path: " + GccCaller.compilerPath);
     
     // Handling shutdown
     // The server.start is not blocking, so we need to await the shutdown signal (e.g. SIGINT)
@@ -138,9 +151,9 @@ public class Server
     // Add a shutdown hook. This will be executed when the JVM receives a shutdown signal
     Runtime.getRuntime().addShutdownHook(new Thread(() ->
                                                     {
-                                                      System.out.println("Shutting down server...");
+                                                      logger.info("Shutdown signal received");
                                                       server.stop();
-                                                      System.out.println("Server stopped.");
+                                                      logger.info("Server stopped.");
                                                       shutdownLatch.countDown();
                                                     }));
     
@@ -154,5 +167,15 @@ public class Server
       e.printStackTrace();
     }
     // At this point, the app returns to CLI handling and exits
+  }
+  
+  public static class MyRecv implements AccessLogReceiver
+  {
+    
+    @Override
+    public void logMessage(String message)
+    {
+      logger.info(message);
+    }
   }
 }

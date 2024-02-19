@@ -28,6 +28,7 @@
 package com.gradle.superscalarsim.server;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gradle.superscalarsim.app.MyLogger;
 import com.gradle.superscalarsim.serialization.Serialization;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
@@ -37,6 +38,8 @@ import io.undertow.util.HttpString;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @class MyRequestHandler
@@ -44,6 +47,7 @@ import java.io.OutputStream;
  */
 public class MyRequestHandler<T, U> implements HttpHandler
 {
+  static Logger logger = MyLogger.initializeLogger("MyRequestHandler", Level.INFO);
   
   IRequestResolver<T, U> resolver;
   
@@ -94,7 +98,7 @@ public class MyRequestHandler<T, U> implements HttpHandler
     catch (Exception e)
     {
       // Log it
-      System.err.println("Invalid request: " + e.getMessage());
+      logger.info("Invalid request: " + e.getMessage());
       // Send back
       sendError(exchange, new ServerError("root", "Cannot parse request"));
       return;
@@ -112,7 +116,13 @@ public class MyRequestHandler<T, U> implements HttpHandler
       // Send the error as a JSON, log it
       ServerError error = e.getError();
       sendError(exchange, error);
-      System.err.println("Server error: " + error.message());
+      logger.info("Request error: " + error.message());
+    }
+    catch (Exception e)
+    {
+      ServerError error = new ServerError("root", "Internal server error");
+      sendError(exchange, error);
+      logger.severe("Internal server error: " + e.getMessage());
     }
   }
   
@@ -153,7 +163,7 @@ public class MyRequestHandler<T, U> implements HttpHandler
       }
       default ->
       {
-        System.err.println("Invalid request method: " + method);
+        logger.info("Invalid request method: " + method);
         // Close
         exchange.setStatusCode(405);
         exchange.getResponseSender().send("Method not allowed");

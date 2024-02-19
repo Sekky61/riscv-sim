@@ -11,6 +11,11 @@ services:
       - NODE_ENV=production
     ports:
       - 3120:3000
+    logging:
+      driver: "local"
+      options:
+        max-size: "10m"
+        max-file: "3"
     depends_on:
       - riscvsim-server
     links:
@@ -22,3 +27,8 @@ services:
       target: runner
     ports:
       - 8120:8000
+    logging:
+      driver: "local"
+      options:
+        max-size: "10m"
+        max-file: "3"

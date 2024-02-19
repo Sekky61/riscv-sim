@@ -27,11 +27,15 @@
 
 package com.gradle.superscalarsim.server;
 
+import com.gradle.superscalarsim.app.MyLogger;
 import io.undertow.io.Sender;
 import io.undertow.server.DefaultResponseListener;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.Headers;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Root error handler for the server.
@@ -41,6 +45,11 @@ public class ErrorHandler implements HttpHandler
 {
   
   private final HttpHandler next;
+  
+  /**
+   * Logger
+   */
+  private static final Logger logger = MyLogger.initializeLogger("ErrorHandler", Level.INFO);
   
   public ErrorHandler(final HttpHandler next)
   {
@@ -64,7 +73,7 @@ public class ErrorHandler implements HttpHandler
         }
         if (exchange.getStatusCode() == 500)
         {
-          System.err.println("Internal server error called");
+          logger.log(Level.SEVERE, "Internal server error");
           final String errorPage = "{\"error\": \"Internal server error\"}";
           exchange.getResponseHeaders().put(Headers.CONTENT_LENGTH, "" + errorPage.length());
           exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/json");

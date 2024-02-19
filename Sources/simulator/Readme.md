@@ -22,6 +22,9 @@ Unzip the file and run the executable in `bin`.
 The app can be run directly (see installation) or using the bash script `scripts/run.sh`.
 This script conveniently wraps the `superscalar-simulator` executable.
 
+The results are printed to the stdout.
+Logs are printed to the stderr.
+
 ### Running the CLI
 
 ```bash

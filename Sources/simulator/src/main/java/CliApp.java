@@ -28,6 +28,7 @@
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gradle.superscalarsim.app.MyLogger;
 import com.gradle.superscalarsim.cpu.CpuConfig;
 import com.gradle.superscalarsim.cpu.MemoryLocation;
 import com.gradle.superscalarsim.cpu.SimulationConfig;
@@ -46,6 +47,8 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Callable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @Command(name = "cli", description = "Launch a simulation from the command line")
 class CliApp implements Callable<Integer>
@@ -114,7 +117,8 @@ class CliApp implements Callable<Integer>
     {
       // Report the error and exit
       // The only error that can occur here is a configuration error
-      System.err.println("Error: " + e.getError().message());
+      Logger logger = MyLogger.initializeLogger("Cli", Level.INFO);
+      logger.severe("Error: " + e.getError().message());
     }
     
     Object resultObject = response;
