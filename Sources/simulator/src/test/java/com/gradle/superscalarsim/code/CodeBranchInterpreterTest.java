@@ -93,7 +93,7 @@ public class CodeBranchInterpreterTest
     SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
     // Should jump to the label "one" which is at index 0
-    Assert.assertEquals(0, this.codeBranchInterpreter.interpretInstruction(simCodeModel).value().getAsInt());
+    Assert.assertEquals(0, this.codeBranchInterpreter.interpretInstruction(simCodeModel).value().target());
   }
   
   @Test
@@ -107,7 +107,7 @@ public class CodeBranchInterpreterTest
     SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
     // Should jump to the label "two" which is at index 1
-    Assert.assertEquals(4, this.codeBranchInterpreter.interpretInstruction(simCodeModel).value().getAsInt());
+    Assert.assertEquals(4, this.codeBranchInterpreter.interpretInstruction(simCodeModel).value().target());
   }
   
   @Test
@@ -121,7 +121,7 @@ public class CodeBranchInterpreterTest
     SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
     // Should not jump
-    Assert.assertFalse(this.codeBranchInterpreter.interpretInstruction(simCodeModel).value().isPresent());
+    Assert.assertFalse(this.codeBranchInterpreter.interpretInstruction(simCodeModel).value().jumpTaken());
   }
   
   @Test
@@ -135,7 +135,7 @@ public class CodeBranchInterpreterTest
     SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
     // Should jump to the label "three" which is at index 2
-    Assert.assertEquals(8, this.codeBranchInterpreter.interpretInstruction(simCodeModel).value().getAsInt());
+    Assert.assertEquals(8, this.codeBranchInterpreter.interpretInstruction(simCodeModel).value().target());
   }
   
   @Test
@@ -148,7 +148,7 @@ public class CodeBranchInterpreterTest
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).hasId(3).build();
     SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
-    Assert.assertFalse(this.codeBranchInterpreter.interpretInstruction(simCodeModel).value().isPresent());
+    Assert.assertFalse(this.codeBranchInterpreter.interpretInstruction(simCodeModel).value().jumpTaken());
   }
   
   @Test
@@ -162,7 +162,7 @@ public class CodeBranchInterpreterTest
     SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
     // Should jump to the label "one" which is at index 0
-    Assert.assertEquals(0, this.codeBranchInterpreter.interpretInstruction(simCodeModel).value().getAsInt());
+    Assert.assertEquals(0, this.codeBranchInterpreter.interpretInstruction(simCodeModel).value().target());
   }
   
   @Test
@@ -184,7 +184,7 @@ public class CodeBranchInterpreterTest
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).hasId(3).build();
     SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
-    Assert.assertFalse(this.codeBranchInterpreter.interpretInstruction(simCodeModel).value().isPresent());
+    Assert.assertFalse(this.codeBranchInterpreter.interpretInstruction(simCodeModel).value().jumpTaken());
   }
   
   @Test
@@ -198,7 +198,7 @@ public class CodeBranchInterpreterTest
     SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
     // Should jump to the label "one" which is at index 0
-    Assert.assertEquals(0, this.codeBranchInterpreter.interpretInstruction(simCodeModel).value().getAsInt());
+    Assert.assertEquals(0, this.codeBranchInterpreter.interpretInstruction(simCodeModel).value().target());
   }
   
   @Test
@@ -212,7 +212,7 @@ public class CodeBranchInterpreterTest
     SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
     // Should not jump
-    Assert.assertFalse(this.codeBranchInterpreter.interpretInstruction(simCodeModel).value().isPresent());
+    Assert.assertFalse(this.codeBranchInterpreter.interpretInstruction(simCodeModel).value().jumpTaken());
   }
   
   @Test
@@ -226,7 +226,7 @@ public class CodeBranchInterpreterTest
     SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
     // Should jump to the label "one" which is at index 0
-    Assert.assertEquals(0, this.codeBranchInterpreter.interpretInstruction(simCodeModel).value().getAsInt());
+    Assert.assertEquals(0, this.codeBranchInterpreter.interpretInstruction(simCodeModel).value().target());
   }
   
   @Test
@@ -240,7 +240,7 @@ public class CodeBranchInterpreterTest
     SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
     // Should jump to the label "one" which is at index 0
-    Assert.assertEquals(0, this.codeBranchInterpreter.interpretInstruction(simCodeModel).value().getAsInt());
+    Assert.assertEquals(0, this.codeBranchInterpreter.interpretInstruction(simCodeModel).value().target());
   }
   
   @Test
@@ -253,7 +253,7 @@ public class CodeBranchInterpreterTest
             .hasArguments(Arrays.asList(argument1, argument2, argument3)).hasId(3).build();
     SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
-    Assert.assertFalse(this.codeBranchInterpreter.interpretInstruction(simCodeModel).value().isPresent());
+    Assert.assertFalse(this.codeBranchInterpreter.interpretInstruction(simCodeModel).value().jumpTaken());
   }
   
   @Test
@@ -267,7 +267,7 @@ public class CodeBranchInterpreterTest
     SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
     // Should jump to the label "one" which is at index 0
-    Assert.assertEquals(0, this.codeBranchInterpreter.interpretInstruction(simCodeModel).value().getAsInt());
+    Assert.assertEquals(0, this.codeBranchInterpreter.interpretInstruction(simCodeModel).value().target());
   }
   
   @Test
@@ -281,7 +281,7 @@ public class CodeBranchInterpreterTest
     SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
     // Should jump to the label "one" which is at index 0
-    Assert.assertEquals(0, this.codeBranchInterpreter.interpretInstruction(simCodeModel).value().getAsInt());
+    Assert.assertEquals(0, this.codeBranchInterpreter.interpretInstruction(simCodeModel).value().target());
   }
   
   @Test
@@ -295,6 +295,6 @@ public class CodeBranchInterpreterTest
     SimCodeModel simCodeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
     // Should not jump
-    Assert.assertFalse(this.codeBranchInterpreter.interpretInstruction(simCodeModel).value().isPresent());
+    Assert.assertFalse(this.codeBranchInterpreter.interpretInstruction(simCodeModel).value().jumpTaken());
   }
 }

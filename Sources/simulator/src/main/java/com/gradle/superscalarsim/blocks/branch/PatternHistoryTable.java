@@ -34,7 +34,6 @@ package com.gradle.superscalarsim.blocks.branch;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
 import java.util.Map;
@@ -51,7 +50,7 @@ public class PatternHistoryTable
    * Collection of predictors
    * This collection is sparse, new predictors are added only when needed
    */
-  private final Map<Integer, IBitPredictor> predictorMap;
+  private final Map<Integer, BitPredictor> predictorMap;
   
   /**
    * Size of the PHT
@@ -59,29 +58,24 @@ public class PatternHistoryTable
   private final int size;
   
   /**
-   * Default type of the predictor, used for creating new predictors
+   * Type and initial state of all predictors in the PHT
    */
-  PredictorType defaultPredictorClass;
-  
-  /**
-   * Default state of the predictors, used for creating new predictors
-   */
-  private boolean[] defaultTaken;
+  BitPredictor defaultPredictor;
   
   /**
    * @param size                  Size of the PHT
-   * @param defaultTaken          Default state of the predictors, used for creating new predictors
+   * @param defaultState          Default state of the predictors, used for creating new predictors
    * @param defaultPredictorClass Default type of the predictor, used for creating new predictors
    *
    * @brief Constructor
    */
-  public PatternHistoryTable(int size, boolean[] defaultTaken, PredictorType defaultPredictorClass)
+  public PatternHistoryTable(int size, BitPredictor defaultPredictor)
   {
     // Use tree map to keep the order of the predictors for displaying in GUI
-    this.predictorMap          = new TreeMap<>();
-    this.size                  = size;
-    this.defaultTaken          = defaultTaken;
-    this.defaultPredictorClass = defaultPredictorClass;
+    // todo: type?
+    this.predictorMap     = new TreeMap<>();
+    this.size             = size;
+    this.defaultPredictor = defaultPredictor;
   }// end of Constructor
   
   /**
@@ -91,48 +85,18 @@ public class PatternHistoryTable
    * @brief Get predictor on specified index
    */
   @JsonIgnore
-  public IBitPredictor getPredictor(int index)
+  public BitPredictor getPredictor(int index)
   {
-    boolean hasPredictor = this.predictorMap.containsKey(index % size);
+    BitPredictor predictor    = this.predictorMap.get(index % size);
+    boolean      hasPredictor = predictor != null;
     if (!hasPredictor)
     {
       // Insert default predictor
-      IBitPredictor bitPredictor = switch (this.defaultPredictorClass)
-      {
-        case ZERO_BIT_PREDICTOR -> new ZeroBitPredictor(defaultTaken[0]);
-        case ONE_BIT_PREDICTOR -> new OneBitPredictor(defaultTaken[0]);
-        case TWO_BIT_PREDICTOR -> new TwoBitPredictor(defaultTaken);
-      };
-      this.predictorMap.put(index % size, bitPredictor);
+      predictor = new BitPredictor(this.defaultPredictor);
+      this.predictorMap.put(index % size, predictor);
     }
-    
-    return this.predictorMap.get(index % size);
+    return predictor;
   }// end of getPredictor
-  //----------------------------------------------------------------------
-  
-  /**
-   * Enum for predictor types with values
-   * Gets serialized as
-   * <p>
-   * {@code
-   * {
-   * "value": 1,
-   * "name": "ONE_BIT_PREDICTOR"
-   * }
-   * }
-   */
-  public enum PredictorType
-  {
-    ZERO_BIT_PREDICTOR(0), ONE_BIT_PREDICTOR(1), TWO_BIT_PREDICTOR(2);
-    
-    @JsonValue
-    private final int value;
-    
-    PredictorType(int value)
-    {
-      this.value = value;
-    }
-  }
   //----------------------------------------------------------------------
 }
 

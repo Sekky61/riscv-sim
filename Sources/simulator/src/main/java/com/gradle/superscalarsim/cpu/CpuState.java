@@ -220,18 +220,10 @@ public class CpuState implements Serializable
     this.renameMapTableBlock = new RenameMapTableBlock(unifiedRegisterFileBlock);
     
     this.globalHistoryRegister = new GlobalHistoryRegister(10);
-    PatternHistoryTable.PredictorType predictorType = switch (config.cpuConfig.predictorType)
-    {
-      case "0bit" -> PatternHistoryTable.PredictorType.ZERO_BIT_PREDICTOR;
-      case "1bit" -> PatternHistoryTable.PredictorType.ONE_BIT_PREDICTOR;
-      case "2bit" -> PatternHistoryTable.PredictorType.TWO_BIT_PREDICTOR;
-      default ->
-              throw new IllegalStateException("Unexpected value for predictor type: " + config.cpuConfig.predictorType);
-    };
+    BitPredictor defaultPredictor = BitPredictor.getDefaultPredictor(config.cpuConfig.predictorType,
+                                                                     config.cpuConfig.predictorDefaultState);
     
-    boolean[] defaultTaken = getDefaultTaken(config.cpuConfig);
-    
-    this.patternHistoryTable = new PatternHistoryTable(config.cpuConfig.phtSize, defaultTaken, predictorType);
+    this.patternHistoryTable = new PatternHistoryTable(config.cpuConfig.phtSize, defaultPredictor);
     this.gShareUnit          = new GShareUnit(1024, this.globalHistoryRegister, this.patternHistoryTable);
     this.branchTargetBuffer  = new BranchTargetBuffer(config.cpuConfig.btbSize);
     
@@ -292,8 +284,8 @@ public class CpuState implements Serializable
     this.branchInterpreter      = new CodeBranchInterpreter();
     this.decodeAndDispatchBlock = new DecodeAndDispatchBlock(instructionFetchBlock, renameMapTableBlock,
                                                              globalHistoryRegister, branchTargetBuffer,
-                                                             instructionMemoryBlock, config.cpuConfig.fetchWidth,
-                                                             statistics, branchInterpreter);
+                                                             config.cpuConfig.fetchWidth, statistics,
+                                                             branchInterpreter);
     
     
     // Issue
@@ -374,39 +366,6 @@ public class CpuState implements Serializable
         default -> throw new IllegalStateException("Unexpected FU type: " + fu.fuType);
       }
     }
-  }
-  
-  /**
-   * @param config The configuration
-   *
-   * @brief Get the default state for the predictor from the configuration
-   */
-  private static boolean[] getDefaultTaken(CpuConfig config)
-  {
-    boolean[] defaultTaken;
-    if (config.predictorType.equals("0bit") || config.predictorType.equals("1bit"))
-    {
-      if (!Objects.equals(config.predictorDefault, "Taken") && !Objects.equals(config.predictorDefault, "Not Taken"))
-      {
-        throw new IllegalStateException("Unexpected value for 0bit/1bit predictor: " + config.predictorDefault);
-      }
-      boolean take = config.predictorDefault.equals("taken");
-      defaultTaken = new boolean[]{take};
-    }
-    else
-    {
-      assert config.predictorType.equals("2bit");
-      defaultTaken = switch (config.predictorDefault)
-      {
-        case "Strongly Not Taken" -> new boolean[]{false, false};
-        case "Weakly Not Taken" -> new boolean[]{true, false};
-        case "Weakly Taken" -> new boolean[]{false, true};
-        case "Strongly Taken" -> new boolean[]{true, true};
-        default -> throw new IllegalStateException("Unexpected value for 2bit predictor: " + config.predictorDefault);
-      };
-    }
-    defaultTaken[0] = config.predictorDefault.equals("taken");
-    return defaultTaken;
   }
   
   /**

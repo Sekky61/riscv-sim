@@ -91,7 +91,7 @@ public class GShareUnit
    * @return Predictor on the specified index
    * @brief Get predictor from PHT
    */
-  public IBitPredictor getPredictor(int programCounter)
+  public BitPredictor getPredictor(int programCounter)
   {
     return this.patternHistoryTable.getPredictor(
             (programCounter % size) ^ globalHistoryRegister.getRegisterValueAsInt());
@@ -105,7 +105,7 @@ public class GShareUnit
    * @return Predictor on the specified index
    * @brief Get predictor from PHT with older GHT value
    */
-  public IBitPredictor getPredictorFromOld(int programCounter, int id)
+  public BitPredictor getPredictorFromOld(int programCounter, int id)
   {
     return this.patternHistoryTable.getPredictor(
             (programCounter % size) ^ globalHistoryRegister.getHistoryValueAsInt(id));

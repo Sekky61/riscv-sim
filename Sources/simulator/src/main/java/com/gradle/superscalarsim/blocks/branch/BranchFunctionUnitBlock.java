@@ -47,8 +47,6 @@ import com.gradle.superscalarsim.models.instruction.SimCodeModel;
 import com.gradle.superscalarsim.models.register.RegisterModel;
 import com.gradle.superscalarsim.models.util.Result;
 
-import java.util.OptionalInt;
-
 @JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
 public class BranchFunctionUnitBlock extends AbstractFunctionUnitBlock
 {
@@ -130,18 +128,17 @@ public class BranchFunctionUnitBlock extends AbstractFunctionUnitBlock
     }
     
     // Execute
-    Result<OptionalInt> jumpTargetRes = branchInterpreter.interpretInstruction(this.simCodeModel);
+    Result<CodeBranchInterpreter.BranchResult> jumpTargetRes = branchInterpreter.interpretInstruction(
+            this.simCodeModel);
     // I don't think jump target uses division
     assert !jumpTargetRes.isException();
-    OptionalInt jumpTarget = jumpTargetRes.value();
-    boolean     jumpTaken  = jumpTarget.isPresent();
+    CodeBranchInterpreter.BranchResult jump       = jumpTargetRes.value();
+    int                                jumpTarget = jump.target();
+    boolean                            jumpTaken  = jump.jumpTaken();
     // If the branch was taken or not
     this.simCodeModel.setBranchLogicResult(jumpTaken);
     // Used to fix BTB and PC in misprediction
-    if (jumpTaken)
-    {
-      this.simCodeModel.setBranchTarget(jumpTarget.getAsInt());
-    }
+    this.simCodeModel.setBranchTarget(jumpTarget);
     InputCodeArgument destinationArgument = simCodeModel.getArgumentByName("rd");
     if (destinationArgument != null)
     {

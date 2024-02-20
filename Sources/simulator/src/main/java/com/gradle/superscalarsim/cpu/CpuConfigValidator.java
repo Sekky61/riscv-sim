@@ -139,17 +139,11 @@ public class CpuConfigValidator
     {
       errors.add(new ConfigError("Predictor type must not be null", "predictorType"));
     }
-    // Predictor types: 0bit, 1bit, 2bit
-    if (!List.of("0bit", "1bit", "2bit").contains(cpuConfig.predictorType))
-    {
-      errors.add(new ConfigError("Predictor type must be 0bit, 1bit, or 2bit", "predictorType"));
-    }
     
     // Validate predictor default based on predictor type
-    switch (cpuConfig.predictorType)
+    if (!cpuConfig.predictorType.isValidState(cpuConfig.predictorDefaultState))
     {
-      case "0bit", "1bit" -> validateBinaryPredictorDefault(cpuConfig.predictorDefault);
-      case "2bit" -> validate2BitPredictorDefault(cpuConfig.predictorDefault);
+      errors.add(new ConfigError("Predictor default state is not valid", "predictorDefaultState"));
     }
   }
   
@@ -275,24 +269,6 @@ public class CpuConfigValidator
   public boolean isValid()
   {
     return errors.isEmpty();
-  }
-  
-  private void validateBinaryPredictorDefault(String predictorDefault)
-  {
-    if (!List.of("Taken", "Not Taken").contains(predictorDefault))
-    {
-      errors.add(new ConfigError("Predictor default must be Taken or Not Taken", "predictorDefault"));
-    }
-  }
-  
-  private void validate2BitPredictorDefault(String predictorDefault)
-  {
-    if (!List.of("Strongly Not Taken", "Weakly Not Taken", "Weakly Taken", "Strongly Taken").contains(predictorDefault))
-    {
-      errors.add(new ConfigError(
-              "Predictor default must be Strongly Not Taken, Weakly Not Taken, Weakly Taken, or Strongly Taken",
-              "predictorDefault"));
-    }
   }
   
   /**

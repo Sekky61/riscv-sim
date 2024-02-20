@@ -34,52 +34,40 @@ package com.gradle.superscalarsim.models;
 
 /**
  * @class BranchTargetEntryModel
- * @brief Container class for keeping information about branch instructions and their targets
+ * @brief An entry in BTB keeps information about a branch instruction (target address, PC tag).
+ * @details The BTB can be smaller, so an entry slot can be shared by multiple instructions.
+ * The PC tag is used to identify the instruction (and if it belongs to the same branch).
  */
 public class BranchTargetEntryModel
 {
   
   /**
-   * PC Tag which identifies instruction
+   * PC Tag which identifies an entry as belonging to a specific instruction
    */
   private final int pcTag;
   
   /**
-   * Is branch instruction conditional or unconditional
+   * True if the branch instruction is conditional, false otherwise
    */
   private final boolean isConditional;
   
   /**
-   * Target of the branch instruction
+   * Target address of the branch instruction. Not an offset.
    */
   private final int target;
   
   /**
-   * ID from decode block marking bulk of processed instructions
-   */
-  private final int instructionId;
-  
-  /**
-   * ID marking when branch instruction get committed
-   */
-  private final int commitId;
-  
-  /**
-   * @param pcTag    PC Tag which identifies instruction
-   * @param isBranch Is branch instruction conditional or unconditional
-   * @param target   Target of the branch instruction
-   * @param bulkId   ID from decode block marking bulk of processed instructions
-   * @param commitId ID marking when branch instruction get committed
+   * @param pcTag         PC Tag which identifies instruction
+   * @param isConditional Is branch instruction conditional or unconditional
+   * @param target        Target of the branch instruction
    *
    * @brief Constructor
    */
-  public BranchTargetEntryModel(int pcTag, boolean isConditional, int target, int bulkId, int commitId)
+  public BranchTargetEntryModel(int pcTag, boolean isConditional, int target)
   {
     this.pcTag         = pcTag;
     this.isConditional = isConditional;
     this.target        = target;
-    this.instructionId = bulkId;
-    this.commitId      = commitId;
   }// end of Constructor
   //----------------------------------------------------------------------
   
@@ -111,25 +99,5 @@ public class BranchTargetEntryModel
   {
     return target;
   }// end of getTarget
-  //----------------------------------------------------------------------
-  
-  /**
-   * @return Integer value of bulkId
-   * @brief Get id when was entry processed by decode block
-   */
-  public int getInstructionId()
-  {
-    return instructionId;
-  }// end of getBulkID
-  //----------------------------------------------------------------------
-  
-  /**
-   * @return Integer value of commitId
-   * @brief Get id when was entry processed by ROB block
-   */
-  public int getCommitId()
-  {
-    return commitId;
-  }// end of getCommitId
   //----------------------------------------------------------------------
 }

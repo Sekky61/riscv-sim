@@ -73,13 +73,13 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
    */
   private final List<InputCodeArgument> renamedArguments;
   /**
-   * ID when the instruction was fetched
-   */
-  private int fetchId;
-  /**
    * ID, when was instructions accepted by the issue window
    */
   public int issueWindowId;
+  /**
+   * ID when the instruction was fetched
+   */
+  private int fetchId;
   /**
    * ID of the function block, which processed this instruction
    */
@@ -102,20 +102,33 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
    */
   private boolean hasFailed;
   /**
-   * Prediction made by branch predictor at the time of fetching.
+   * Prediction made by branch predictor at the time of fetch.
    * Used for branch instructions.
    */
   private boolean branchPredicted;
   /**
+   * True if branch was computed in decode stage.
+   * This is done for branch instructions not requiring a register access.
+   * TODO: to be specified.
+   */
+  private boolean branchComputedInDecode;
+  /**
+   * Target of the branch prediction.
+   * Originates from the branch predictor in the fetch stage.
+   */
+  private int branchPredictionTarget;
+  /**
    * Result of the branch computation.
    * Used to check for mispredictions.
+   * Computed in Functional Unit.
    * True means branch was taken.
    */
   private boolean branchLogicResult;
   /**
-   * Target of the branch instruction.
+   * Absolute address of the target of the branch instruction.
    * NOT an offset. If you need offset, describe it in the interpretableAs field (see JAL instruction).
    * Result of the branch actual computation, not the prediction.
+   * If present (not -1), the value is correct.
    * Used to fix BTB and PC in misprediction.
    */
   private int branchTarget;
@@ -150,15 +163,18 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
    */
   public SimCodeModel(InputCodeModel inputCodeModel, int id, int fetchId)
   {
-    this.inputCodeModel = inputCodeModel;
-    this.id             = id;
-    this.fetchId        = fetchId;
-    this.isFinished     = false;
-    this.hasFailed      = false;
-    this.commitId       = -1;
-    this.readyId        = -1;
-    this.issueWindowId  = -1;
-    this.functionUnitId = -1;
+    this.inputCodeModel         = inputCodeModel;
+    this.id                     = id;
+    this.fetchId                = fetchId;
+    this.isFinished             = false;
+    this.hasFailed              = false;
+    this.branchComputedInDecode = false;
+    this.commitId               = -1;
+    this.readyId                = -1;
+    this.issueWindowId          = -1;
+    this.functionUnitId         = -1;
+    this.branchTarget           = -1;
+    this.branchPredictionTarget = -1;
     
     isValid       = true;
     isBusy        = true;
@@ -224,6 +240,15 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
     this.isSpeculative = speculative;
   }// end of setSpeculative
   //------------------------------------------------------
+  
+  /**
+   * @brief Sets flag that branch was computed in decode stage.
+   * This information is used when assessing if the branch was mispredicted.
+   */
+  public void setBranchComputedInDecode()
+  {
+    this.branchComputedInDecode = true;
+  }
   
   /**
    * @return Boolean value of busy bit
@@ -357,14 +382,25 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
   }// end of setHasFailed
   //------------------------------------------------------
   
+  /**
+   * @return True if the instruction was correctly predicted or computed in decode, false otherwise
+   * @brief If true, this implies that the instruction stream is correct
+   */
+  public boolean isBranchPredictedOrComputedInDecode()
+  {
+    return branchPredicted || branchComputedInDecode;
+  }
+  
   public boolean isBranchPredicted()
   {
     return branchPredicted;
   }
   
-  public void setBranchPredicted(boolean branchPredicted)
+  public void setBranchPredicted(boolean branchPredicted, int target)
   {
-    this.branchPredicted = branchPredicted;
+    // TODO: used incorrectly by decode. It should be set only in fetch.
+    this.branchPredicted        = branchPredicted;
+    this.branchPredictionTarget = target;
   }
   
   public boolean isBranchLogicResult()

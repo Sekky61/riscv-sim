@@ -1,9 +1,5 @@
 /**
  * @file App.java
- * @author Jan Vavra \n
- * Faculty of Information Technology \n
- * Brno University of Technology \n
- * xvavra20@fit.vutbr.cz
  * @author Michal Majer
  * Faculty of Information Technology
  * Brno University of Technology

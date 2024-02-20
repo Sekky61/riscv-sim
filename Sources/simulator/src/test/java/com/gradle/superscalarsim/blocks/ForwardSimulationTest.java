@@ -2,10 +2,7 @@ package com.gradle.superscalarsim.blocks;
 
 import com.gradle.superscalarsim.blocks.arithmetic.ArithmeticFunctionUnitBlock;
 import com.gradle.superscalarsim.blocks.base.*;
-import com.gradle.superscalarsim.blocks.branch.BranchFunctionUnitBlock;
-import com.gradle.superscalarsim.blocks.branch.BranchTargetBuffer;
-import com.gradle.superscalarsim.blocks.branch.GShareUnit;
-import com.gradle.superscalarsim.blocks.branch.GlobalHistoryRegister;
+import com.gradle.superscalarsim.blocks.branch.*;
 import com.gradle.superscalarsim.blocks.loadstore.*;
 import com.gradle.superscalarsim.builders.RegisterFileModelBuilder;
 import com.gradle.superscalarsim.code.*;
@@ -27,6 +24,8 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import static com.gradle.superscalarsim.blocks.branch.BitPredictor.WEAKLY_TAKEN;
 
 public class ForwardSimulationTest
 {
@@ -104,16 +103,16 @@ public class ForwardSimulationTest
             .hasRegisterList(Arrays.asList(float1, float2, float3, float4, float5)).build();
     
     CpuConfig cpuCfg = new CpuConfig();
-    cpuCfg.robSize           = 256;
-    cpuCfg.lbSize            = 64;
-    cpuCfg.sbSize            = 64;
-    cpuCfg.fetchWidth        = 3;
-    cpuCfg.branchFollowLimit = 1;
-    cpuCfg.commitWidth       = 4;
-    cpuCfg.btbSize           = 1024;
-    cpuCfg.phtSize           = 10;
-    cpuCfg.predictorType     = "2bit";
-    cpuCfg.predictorDefault  = "Weakly Taken";
+    cpuCfg.robSize               = 256;
+    cpuCfg.lbSize                = 64;
+    cpuCfg.sbSize                = 64;
+    cpuCfg.fetchWidth            = 3;
+    cpuCfg.branchFollowLimit     = 1;
+    cpuCfg.commitWidth           = 4;
+    cpuCfg.btbSize               = 1024;
+    cpuCfg.phtSize               = 10;
+    cpuCfg.predictorType         = BitPredictor.PredictorType.TWO_BIT_PREDICTOR;
+    cpuCfg.predictorDefaultState = WEAKLY_TAKEN;// "Weakly Taken";
     // cache
     cpuCfg.useCache             = true;
     cpuCfg.cacheLines           = 16;
@@ -1031,6 +1030,10 @@ public class ForwardSimulationTest
                                  """);
     instructionMemoryBlock.setCode(codeParser.getInstructions());
     instructionMemoryBlock.setLabels(codeParser.getLabels());
+    // What should happen:
+    // The first iteration beq cannot be taken (no target)
+    // The predictor is weakly taken, so the second iteration it will be weakly not taken
+    // x3 is 6 so 6 iterations will be executed
     
     // First fetch (3)
     this.cpu.step();

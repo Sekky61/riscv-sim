@@ -131,16 +131,6 @@ public class InstructionFetchBlock implements AbstractBlock
   //----------------------------------------------------------------------
   
   /**
-   * @return Number of ways
-   * @brief Gets number of ways
-   */
-  public int getNumberOfWays()
-  {
-    return numberOfWays;
-  }// end of getNumberOfWays
-  //----------------------------------------------------------------------
-  
-  /**
    * @param numberOfWays New number of fetched instructions
    *
    * @brief Set number of fetched instructions per tick
@@ -209,7 +199,7 @@ public class InstructionFetchBlock implements AbstractBlock
         if (encounteredJumps > branchFollowLimit)
         {
           // Stop loading instructions, fill with nops
-          codeModel.setBranchPredicted(false);
+          codeModel.setBranchPredicted(false, codeModel.getSavedPc() + 4);
           for (int j = i; j < numberOfWays; j++)
           {
             SimCodeModel nopCodeModel = this.simCodeModelFactory.createInstance(instructionMemoryBlock.getNop(),
@@ -227,8 +217,8 @@ public class InstructionFetchBlock implements AbstractBlock
       {
         // todo: the default example program, first fetch of jump instruction has weird behaviour
         // Follow that branch
-        codeModel.setBranchPredicted(true);
         int newPc = this.branchTargetBuffer.getEntryTarget(pc);
+        codeModel.setBranchPredicted(true, newPc);
         assert newPc >= 0;
         this.pc = newPc;
         followedBranches++;
@@ -245,13 +235,15 @@ public class InstructionFetchBlock implements AbstractBlock
   //----------------------------------------------------------------------
   
   /**
-   * @return True if branch was predicted
+   * @return True if branch was predicted.
+   * @brief True if branch should be taken and can be taken (we have destination in BTB).
+   * Predicts true for unconditional branches, even if there is a negative prediction from the predictor.
    */
   private boolean isBranchingPredicted(int pc)
   {
     int     target        = this.branchTargetBuffer.getEntryTarget(pc);
-    boolean prediction    = this.gShareUnit.getPredictor(pc).getCurrentPrediction();
     boolean unconditional = this.branchTargetBuffer.isEntryUnconditional(pc);
+    boolean prediction    = this.gShareUnit.getPredictor(pc).getCurrentPrediction();
     return target != -1 && (prediction || unconditional);
   }
   //----------------------------------------------------------------------

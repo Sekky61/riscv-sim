@@ -88,11 +88,6 @@ public class DecodeAndDispatchBlock implements AbstractBlock
    * Parser holding parsed instructions
    */
   @JsonIdentityReference(alwaysAsId = true)
-  private final InstructionMemoryBlock instructionMemoryBlock;
-  /**
-   * Parser holding parsed instructions
-   */
-  @JsonIdentityReference(alwaysAsId = true)
   private final SimulationStatistics statistics;
   /**
    * Interpreter for interpreting branch instructions
@@ -113,7 +108,7 @@ public class DecodeAndDispatchBlock implements AbstractBlock
   private int stalledPullCount;
   
   /**
-   * Decode buffer size limit
+   * Decode buffer size limit. Usually set to the width of the fetch block.
    * TODO: Make configurable
    */
   private int decodeBufferSize;
@@ -123,9 +118,9 @@ public class DecodeAndDispatchBlock implements AbstractBlock
    * @param renameMapTableBlock   Class holding mappings from architectural registers to speculative
    * @param globalHistoryRegister A bit register holding history of predictions
    * @param branchTargetBuffer    Buffer holding information about branch instructions targets
-   * @param codeParser            Parser holding parsed instructions
    * @param decodeBufferSize      Size of the decode buffer
    * @param statistics            Statistics class holding information about the run
+   * @param codeBranchInterpreter Interpreter for interpreting branch instructions
    *
    * @brief Constructor
    */
@@ -133,7 +128,6 @@ public class DecodeAndDispatchBlock implements AbstractBlock
                                 RenameMapTableBlock renameMapTableBlock,
                                 GlobalHistoryRegister globalHistoryRegister,
                                 BranchTargetBuffer branchTargetBuffer,
-                                InstructionMemoryBlock codeParser,
                                 int decodeBufferSize,
                                 SimulationStatistics statistics,
                                 CodeBranchInterpreter codeBranchInterpreter)
@@ -146,11 +140,10 @@ public class DecodeAndDispatchBlock implements AbstractBlock
     this.stallFlag        = false;
     this.stalledPullCount = 0;
     
-    this.globalHistoryRegister  = globalHistoryRegister;
-    this.branchTargetBuffer     = branchTargetBuffer;
-    this.instructionMemoryBlock = codeParser;
-    this.decodeBufferSize       = decodeBufferSize;
-    this.codeBranchInterpreter  = codeBranchInterpreter;
+    this.globalHistoryRegister = globalHistoryRegister;
+    this.branchTargetBuffer    = branchTargetBuffer;
+    this.decodeBufferSize      = decodeBufferSize;
+    this.codeBranchInterpreter = codeBranchInterpreter;
   }// end of Constructor
   //----------------------------------------------------------------------
   
@@ -162,17 +155,6 @@ public class DecodeAndDispatchBlock implements AbstractBlock
   {
     return codeBuffer;
   }// end of getAfterRenameCodeList
-  //----------------------------------------------------------------------
-  
-  
-  /**
-   * @return Boolean value of the flush flag
-   * @brief Gets the boolean value ot the flush flag
-   */
-  public boolean shouldFlush()
-  {
-    return flush;
-  }// end of shouldFlush
   //----------------------------------------------------------------------
   
   /**
@@ -204,17 +186,6 @@ public class DecodeAndDispatchBlock implements AbstractBlock
   {
     this.stalledPullCount = stalledPullCount;
   }// end of setStalledPullCount
-  //----------------------------------------------------------------------
-  
-  /**
-   * @param flush New value of the flush flag
-   *
-   * @brief Sets the flush flag
-   */
-  public void setFlush(boolean flush)
-  {
-    this.flush = flush;
-  }// end of setFlush
   //----------------------------------------------------------------------
   
   /**
@@ -310,22 +281,27 @@ public class DecodeAndDispatchBlock implements AbstractBlock
   }// end of simulate
   //----------------------------------------------------------------------
   
+  /**
+   * @return Boolean value of the flush flag
+   * @brief Gets the boolean value ot the flush flag
+   */
+  public boolean shouldFlush()
+  {
+    return flush;
+  }// end of shouldFlush
   //----------------------------------------------------------------------
   
   /**
-   * @brief Checks if fetched code (beforeRenameCodeList) holds any branch instructions and processes them
+   * @param flush New value of the flush flag
+   *
+   * @brief Sets the flush flag
    */
-  private void checkForBranchInstructions()
+  public void setFlush(boolean flush)
   {
-    for (int i = 0; i < this.codeBuffer.size(); i++)
-    {
-      SimCodeModel codeModel = this.codeBuffer.get(i);
-      if (codeModel.getInstructionTypeEnum() == InstructionTypeEnum.kJumpbranch)
-      {
-        processBranchInstruction(codeModel);
-      }
-    }
-  }// end of checkForBranchInstructions
+    this.flush = flush;
+  }// end of setFlush
+  //----------------------------------------------------------------------
+  
   //----------------------------------------------------------------------
   
   /**
@@ -393,6 +369,7 @@ public class DecodeAndDispatchBlock implements AbstractBlock
    * @param codeModel Branch code model with arguments
    *
    * @brief Processes branch instructions in decode block. Can delete from the buffer.
+   * @details Some of the branch instructions can be calculated in decode stage.
    */
   private void processBranchInstruction(final SimCodeModel codeModel)
   {
@@ -406,24 +383,31 @@ public class DecodeAndDispatchBlock implements AbstractBlock
     int         predTarget    = this.branchTargetBuffer.getEntryTarget(instructionPosition);
     OptionalInt realTargetOpt = calculateRealBranchAddress(codeModel);
     
-    boolean globalHistoryBit = prediction && predTarget != 0;
-    boolean conditionKnown   = unconditional;
-    boolean targetKnown      = realTargetOpt.isPresent();
-    boolean badCondition     = !prediction && unconditional;
-    boolean badTarget        = targetKnown && predTarget != realTargetOpt.getAsInt();
-    boolean jumpBad          = targetKnown && conditionKnown && (badCondition || badTarget);
-    if (jumpBad)
+    boolean targetKnown    = realTargetOpt.isPresent();
+    boolean conditionKnown = unconditional;
+    boolean doJump         = unconditional;
+    if (targetKnown && conditionKnown)
     {
-      // Branch badly predicted, and we know the right target and condition
-      // Fix entry in BTB, set correct PC
-      codeModel.setBranchPredicted(true);
-      this.branchTargetBuffer.setEntry(instructionPosition, codeModel, realTargetOpt.getAsInt(),
-                                       codeModel.getIntegerId(), -1);
-      this.instructionFetchBlock.setPc(realTargetOpt.getAsInt());
-      // Drop instructions after branch
-      removeAfter(codeModel);
-      globalHistoryBit = true;
+      codeModel.setBranchComputedInDecode();
+      // The jump can be calculated in decode stage
+      // Compare to the prediction and fix if needed
+      int     target       = realTargetOpt.getAsInt();
+      boolean badTarget    = predTarget != target;
+      boolean badCondition = prediction != doJump;
+      boolean jumpBad      = badCondition || badTarget;
+      
+      if (jumpBad)
+      {
+        // Branch badly predicted,fFix entry in BTB, set correct PC
+        codeModel.setBranchTarget(target);
+        this.branchTargetBuffer.setEntry(instructionPosition, codeModel, target);
+        this.instructionFetchBlock.setPc(target);
+        // Drop instructions after branch
+        removeAfter(codeModel);
+      }
     }
+    // Update global history register
+    boolean globalHistoryBit = (prediction && predTarget != -1) || doJump;
     this.globalHistoryRegister.shiftSpeculativeValue(codeModel.getIntegerId(), globalHistoryBit);
   }// end of processBranchInstruction
   //----------------------------------------------------------------------
@@ -431,7 +415,7 @@ public class DecodeAndDispatchBlock implements AbstractBlock
   /**
    * @param codeModel Branch code model
    *
-   * @return Branch jump target if possible to calculate in decode stage, empty otherwise
+   * @return Branch jump absolute target if possible to calculate in decode stage, empty otherwise
    * @brief Calculates branch instruction target if possible (label or offset)
    */
   private OptionalInt calculateRealBranchAddress(final SimCodeModel codeModel)
@@ -454,13 +438,10 @@ public class DecodeAndDispatchBlock implements AbstractBlock
     // Arguments are not registers, we can calculate the address
     // TODO - maybe more relaxed check?
     
-    Result<OptionalInt> maybeTargetRes = codeBranchInterpreter.interpretInstruction(codeModel);
-    if (maybeTargetRes.isException())
-    {
-      // Couldn't calculate target
-      return OptionalInt.empty();
-    }
-    return maybeTargetRes.value();
+    Result<CodeBranchInterpreter.BranchResult> targetRes = codeBranchInterpreter.interpretInstruction(codeModel);
+    // I don't think jump target uses division
+    assert !targetRes.isException();
+    return OptionalInt.of(targetRes.value().target());
   }// end of calculateRealBranchAddress
   //----------------------------------------------------------------------
   
@@ -487,6 +468,22 @@ public class DecodeAndDispatchBlock implements AbstractBlock
       }
     }
   }// end of removeInstructionsFromIndex
+  //----------------------------------------------------------------------
+  
+  /**
+   * @brief Checks if fetched code (beforeRenameCodeList) holds any branch instructions and processes them
+   */
+  private void checkForBranchInstructions()
+  {
+    for (int i = 0; i < this.codeBuffer.size(); i++)
+    {
+      SimCodeModel codeModel = this.codeBuffer.get(i);
+      if (codeModel.getInstructionTypeEnum() == InstructionTypeEnum.kJumpbranch)
+      {
+        processBranchInstruction(codeModel);
+      }
+    }
+  }// end of checkForBranchInstructions
   
   /**
    * @param pulledCount Number of instructions that were pulled by the ROB

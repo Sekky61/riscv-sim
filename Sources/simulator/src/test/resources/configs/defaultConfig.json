@@ -6,8 +6,8 @@
   "commitWidth": 4,
   "btbSize": 1024,
   "phtSize": 10,
-  "predictorType": "1bit",
-  "predictorDefault": "Not Taken",
+  "predictorType": "ONE_BIT_PREDICTOR",
+  "predictorDefaultState": 0,
   "fUnits": [
     {
       "id": 0,

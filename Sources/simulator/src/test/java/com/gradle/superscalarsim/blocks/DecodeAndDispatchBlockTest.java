@@ -82,8 +82,7 @@ public class DecodeAndDispatchBlockTest
     int fetchWidth          = 3;
     int maximumInstructions = 20;
     decodeAndDispatchBlock = new DecodeAndDispatchBlock(instructionFetchBlock, renameMapTableBlock,
-                                                        globalHistoryRegister, branchTargetBuffer,
-                                                        instructionMemoryBlock, fetchWidth,
+                                                        globalHistoryRegister, branchTargetBuffer, fetchWidth,
                                                         new SimulationStatistics(maximumInstructions, 1),
                                                         new CodeBranchInterpreter());
   }

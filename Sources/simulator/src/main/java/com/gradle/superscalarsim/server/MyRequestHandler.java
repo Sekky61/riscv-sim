@@ -100,7 +100,7 @@ public class MyRequestHandler<T, U> implements HttpHandler
       // Log it
       logger.info("Invalid request: " + e.getMessage());
       // Send back
-      sendError(exchange, new ServerError("root", "Cannot parse request"));
+      sendError(exchange, new ServerError("root", "Cannot parse request", e.getMessage()));
       return;
     }
     

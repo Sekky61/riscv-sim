@@ -42,6 +42,13 @@ public class CheckConfigRequest
   SimulationConfig config;
   
   /**
+   * Constructor for deserialization
+   */
+  public CheckConfigRequest()
+  {
+  }
+  
+  /**
    * Constructor
    *
    * @param config The configuration to check

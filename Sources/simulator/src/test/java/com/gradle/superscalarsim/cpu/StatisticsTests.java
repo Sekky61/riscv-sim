@@ -1,8 +1,11 @@
 package com.gradle.superscalarsim.cpu;
 
+import com.gradle.superscalarsim.blocks.branch.BitPredictor;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import static com.gradle.superscalarsim.blocks.branch.BitPredictor.NOT_TAKEN;
 
 public class StatisticsTests
 {
@@ -121,9 +124,9 @@ public class StatisticsTests
   public void testRobLoopFlush()
   {
     // Setup + exercise
-    cpuConfig.cpuConfig.predictorType    = "0bit";
-    cpuConfig.cpuConfig.predictorDefault = "Not Taken";
-    cpuConfig.code                       = """
+    cpuConfig.cpuConfig.predictorType         = BitPredictor.PredictorType.ZERO_BIT_PREDICTOR;
+    cpuConfig.cpuConfig.predictorDefaultState = NOT_TAKEN;
+    cpuConfig.code                            = """
             li t0, 0
                 li a1, 10
             .L2:

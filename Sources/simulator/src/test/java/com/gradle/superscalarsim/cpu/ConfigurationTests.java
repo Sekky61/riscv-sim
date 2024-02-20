@@ -27,6 +27,7 @@
 
 package com.gradle.superscalarsim.cpu;
 
+import com.gradle.superscalarsim.blocks.branch.BitPredictor;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -60,9 +61,9 @@ public class ConfigurationTests
   public void testPredictors()
   {
     CpuConfig config = CpuConfig.getDefaultConfiguration();
-    // A bad combination of predictors
-    config.predictorType    = "2bit";
-    config.predictorDefault = "Taken";
+    // State 4 does not exist on 2-bit predictor
+    config.predictorType         = BitPredictor.PredictorType.TWO_BIT_PREDICTOR;
+    config.predictorDefaultState = 4;
     
     CpuConfigValidator validator = new CpuConfigValidator();
     validator.validate(config);

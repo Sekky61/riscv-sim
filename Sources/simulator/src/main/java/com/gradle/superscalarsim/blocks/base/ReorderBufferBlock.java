@@ -60,7 +60,8 @@ import java.util.stream.Stream;
 
 /**
  * @class ReorderBufferBlock
- * @brief Class contains simulated implementation of Reorder buffer
+ * @brief Class contains simulated implementation of Reorder buffer.
+ * @details The BTB entry is updated, regardless of the prediction result.
  */
 @JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
 public class ReorderBufferBlock implements AbstractBlock
@@ -280,8 +281,9 @@ public class ReorderBufferBlock implements AbstractBlock
       {
         this.gShareUnit.getPredictorFromOld(pc, codeModel.getIntegerId()).downTheProbability();
       }
+      this.branchTargetBuffer.setEntry(pc, codeModel, codeModel.getBranchTarget());
       
-      if (codeModel.isBranchPredicted() == branchActuallyTaken)
+      if (codeModel.isBranchPredictedOrComputedInDecode() == branchActuallyTaken)
       {
         // Correctly predicted jump
         // Update committable status of subsequent instructions
@@ -295,7 +297,6 @@ public class ReorderBufferBlock implements AbstractBlock
         {
           resultPc = codeModel.getBranchTarget();
           // Update branch target
-          this.branchTargetBuffer.setEntry(pc, codeModel, resultPc, -1, cycle);
         }
         else
         {

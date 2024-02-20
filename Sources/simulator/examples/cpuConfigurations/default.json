@@ -6,8 +6,8 @@
   "branchFollowLimit": 1,
   "btbSize": 1024,
   "phtSize": 10,
-  "predictorType": "2bit",
-  "predictorDefault": "Weakly Taken",
+  "predictorType": "TWO_BIT_PREDICTOR",
+  "predictorDefaultState": 2,
   "useGlobalHistory": false,
   "fUnits": [
     {

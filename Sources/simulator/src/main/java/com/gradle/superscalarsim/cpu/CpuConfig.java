@@ -28,11 +28,14 @@
 package com.gradle.superscalarsim.cpu;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.gradle.superscalarsim.blocks.branch.BitPredictor;
 import com.gradle.superscalarsim.models.FunctionalUnitDescription;
 
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
+
+import static com.gradle.superscalarsim.blocks.branch.BitPredictor.WEAKLY_TAKEN;
 
 /**
  * @details @JsonIgnoreProperties makes deserialization ignore any extra properties (client sends 'name' of config)
@@ -83,17 +86,18 @@ public class CpuConfig implements Serializable
   
   /**
    * Type of the predictor held in the PHT.
-   * One of 0bit, 1bit, 2bit.
+   * One of ZERO_BIT_PREDICTOR, ONE_BIT_PREDICTOR, TWO_BIT_PREDICTOR.
    */
-  public String predictorType;
+  public BitPredictor.PredictorType predictorType;
   
   /**
-   * All predictors have this default state.
-   * For zero bit one of "Taken", "Not Taken".
-   * For one bit one of "Taken", "Not Taken".
-   * For two bit one of "Strongly Not Taken", "Weakly Not Taken", "Weakly Taken", "Strongly Taken".
+   * The initial state of all predictors in the PHT.
+   * This state is represented as a number.
+   * For zero bit it is either 1 ("Taken"), or 0 ("Not Taken").
+   * For one bit it is either 1 ("Taken"), or 0 ("Not Taken").
+   * For two bit one of 0 ("Strongly Not Taken"), 1 ("Weakly Not Taken"), 2 ("Weakly Taken"), 3 ("Strongly Taken").
    */
-  public String predictorDefault;
+  public int predictorDefaultState;
   
   /**
    * Use global history vector in the PHT.
@@ -210,11 +214,11 @@ public class CpuConfig implements Serializable
     config.commitWidth       = 4;
     config.flushPenalty      = 1;
     // Prediction
-    config.btbSize          = 1024;
-    config.phtSize          = 10;
-    config.predictorType    = "2bit";
-    config.predictorDefault = "Weakly Taken";
-    config.useGlobalHistory = false;
+    config.btbSize               = 1024;
+    config.phtSize               = 10;
+    config.predictorType         = BitPredictor.PredictorType.TWO_BIT_PREDICTOR;
+    config.predictorDefaultState = WEAKLY_TAKEN; // "Weakly Taken";
+    config.useGlobalHistory      = false;
     // FunctionalUnitDescriptions
     config.fUnits = Arrays.asList(new FunctionalUnitDescription(0, FunctionalUnitDescription.Type.FX, Arrays.asList(
                                           new FunctionalUnitDescription.Capability(FunctionalUnitDescription.CapabilityName.addition, 1),

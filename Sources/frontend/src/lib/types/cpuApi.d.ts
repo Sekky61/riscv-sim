@@ -330,6 +330,7 @@ export interface SimCodeModel {
   isFinished: boolean;
   hasFailed: boolean;
   branchPredicted: boolean;
+  branchComputedInDecode: boolean;
   branchLogicResult: boolean;
   branchTarget: number;
   isValid: boolean;
