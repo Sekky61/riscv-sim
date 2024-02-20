@@ -155,7 +155,7 @@ public class OneBitPredictorTests
     Assert.assertEquals(2 + 4 + 6 + 8,
                         (int) cpu.cpuState.unifiedRegisterFileBlock.getRegister("t1").getValue(DataTypeEnum.kInt));
     
-    // The branch prediction of instruction [3] is always wrong.
+    // The branch prediction of instruction [4] is always wrong.
     SimulationStatistics.InstructionStats stats = cpu.cpuState.statistics.instructionStats.get(4);
     Assert.assertEquals(10, stats.committedCount);
     Assert.assertEquals(1, stats.correctlyPredicted);
@@ -194,7 +194,7 @@ public class OneBitPredictorTests
     Assert.assertEquals(2 + 4 + 6 + 8,
                         (int) cpu.cpuState.unifiedRegisterFileBlock.getRegister("t1").getValue(DataTypeEnum.kInt));
     
-    // The branch prediction of instruction [3] is always wrong.
+    // The branch prediction of instruction [4] is always wrong.
     SimulationStatistics.InstructionStats stats = cpu.cpuState.statistics.instructionStats.get(4);
     Assert.assertEquals(10, stats.committedCount);
     Assert.assertEquals(1, stats.correctlyPredicted);
