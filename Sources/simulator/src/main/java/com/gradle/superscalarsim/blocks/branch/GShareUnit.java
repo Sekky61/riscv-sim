@@ -61,28 +61,27 @@ public class GShareUnit
   private int size;
   
   /**
+   * True if the global history register is used
+   */
+  private boolean useGlobalHistory;
+  
+  /**
    * @param size                  Size of the pattern table
    * @param globalHistoryRegister Bit array of branching history
    * @param patternHistoryTable   Table with all bit predictors
    *
    * @brief Constructor
    */
-  public GShareUnit(int size, GlobalHistoryRegister globalHistoryRegister, PatternHistoryTable patternHistoryTable)
+  public GShareUnit(int size,
+                    boolean useGlobalHistory,
+                    GlobalHistoryRegister globalHistoryRegister,
+                    PatternHistoryTable patternHistoryTable)
   {
     this.patternHistoryTable   = patternHistoryTable;
     this.globalHistoryRegister = globalHistoryRegister;
+    this.useGlobalHistory      = useGlobalHistory;
     this.size                  = size;
   }// end of Constructor
-  //----------------------------------------------------------------------
-  
-  /**
-   * @return Active Pattern History Table object
-   * @brief Get the current instance of the Pattern History Table
-   */
-  public PatternHistoryTable getPatternHistoryTable()
-  {
-    return patternHistoryTable;
-  }// end of getPatternHistoryTable
   //----------------------------------------------------------------------
   
   /**
@@ -93,8 +92,12 @@ public class GShareUnit
    */
   public BitPredictor getPredictor(int programCounter)
   {
-    return this.patternHistoryTable.getPredictor(
-            (programCounter % size) ^ globalHistoryRegister.getRegisterValueAsInt());
+    int index = programCounter % size;
+    if (useGlobalHistory)
+    {
+      index ^= globalHistoryRegister.getRegisterValueAsInt();
+    }
+    return this.patternHistoryTable.getPredictor(index);
   }// end of getPredictor
   //----------------------------------------------------------------------
   
@@ -107,8 +110,12 @@ public class GShareUnit
    */
   public BitPredictor getPredictorFromOld(int programCounter, int id)
   {
-    return this.patternHistoryTable.getPredictor(
-            (programCounter % size) ^ globalHistoryRegister.getHistoryValueAsInt(id));
+    int index = programCounter % size;
+    if (useGlobalHistory)
+    {
+      index ^= globalHistoryRegister.getRegisterValueAsInt();
+    }
+    return this.patternHistoryTable.getPredictor(index);
   }// end of getPredictorFromOld
   //----------------------------------------------------------------------
   
