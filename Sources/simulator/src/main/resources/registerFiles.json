@@ -256,7 +256,8 @@
         "isConstant": false,
         "value": {
           "bits": 0
-        }
+        },
+        "type": "kInt"
       }
     ]
   },
@@ -517,7 +518,8 @@
         "isConstant": false,
         "value": {
           "bits": 0
-        }
+        },
+        "type": "kFloat"
       }
     ]
   }
