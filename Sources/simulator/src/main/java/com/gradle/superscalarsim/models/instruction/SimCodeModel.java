@@ -391,6 +391,9 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
     return branchPredicted || branchComputedInDecode;
   }
   
+  /**
+   * @return True if branch was predicted as taken, false otherwise
+   */
   public boolean isBranchPredicted()
   {
     return branchPredicted;

@@ -219,6 +219,7 @@ public class CpuState implements Serializable
     
     this.renameMapTableBlock = new RenameMapTableBlock(unifiedRegisterFileBlock);
     
+    // TODO: test sharing for small global history
     this.globalHistoryRegister = new GlobalHistoryRegister(10);
     BitPredictor defaultPredictor = BitPredictor.getDefaultPredictor(config.cpuConfig.predictorType,
                                                                      config.cpuConfig.predictorDefaultState);
@@ -484,8 +485,7 @@ public class CpuState implements Serializable
     boolean pcEnd         = instructionFetchBlock.getPc() >= instructionMemoryBlock.getCode().size() * 4;
     boolean renameEmpty   = decodeAndDispatchBlock.getCodeBuffer().isEmpty();
     boolean fetchNotEmpty = !instructionFetchBlock.getFetchedCode().isEmpty();
-    boolean nop           = fetchNotEmpty && instructionFetchBlock.getFetchedCode().get(0).getInstructionName()
-            .equals("nop");
+    boolean nop = fetchNotEmpty && instructionFetchBlock.getFetchedCode().get(0).getInstructionName().equals("nop");
     if (robEmpty && pcEnd && renameEmpty && nop)
     {
       return StopReason.kEndOfCode;

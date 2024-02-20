@@ -125,16 +125,6 @@ public class BitPredictor
   }
   
   /**
-   * @return Human-readable prediction bit vector value
-   * @brief Returns the prediction bit vector value as a human-readable string
-   */
-  public String bitVectorToString()
-  {
-    return Integer.toBinaryString(state);
-  }
-  //----------------------------------------------------------------------
-  
-  /**
    * Enum for predictor types with values
    * Gets serialized as
    * <p>

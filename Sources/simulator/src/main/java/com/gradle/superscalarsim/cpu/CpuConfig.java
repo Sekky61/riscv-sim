@@ -215,7 +215,7 @@ public class CpuConfig implements Serializable
     config.flushPenalty      = 1;
     // Prediction
     config.btbSize               = 1024;
-    config.phtSize               = 10;
+    config.phtSize               = 100; // TODO: test small PHT (there might be issue with false sharing)
     config.predictorType         = BitPredictor.PredictorType.TWO_BIT_PREDICTOR;
     config.predictorDefaultState = WEAKLY_TAKEN; // "Weakly Taken";
     config.useGlobalHistory      = false;

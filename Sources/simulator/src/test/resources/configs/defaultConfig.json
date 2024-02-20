@@ -5,7 +5,7 @@
   "fetchWidth": 3,
   "commitWidth": 4,
   "btbSize": 1024,
-  "phtSize": 10,
+  "phtSize": 100,
   "predictorType": "ONE_BIT_PREDICTOR",
   "predictorDefaultState": 0,
   "fUnits": [
