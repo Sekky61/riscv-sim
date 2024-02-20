@@ -1,5 +1,8 @@
-package com.gradle.superscalarsim.cpu;
+package com.gradle.superscalarsim.memory;
 
+import com.gradle.superscalarsim.cpu.Cpu;
+import com.gradle.superscalarsim.cpu.MemoryLocation;
+import com.gradle.superscalarsim.cpu.SimulationConfig;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import org.junit.Assert;
 import org.junit.Before;
@@ -7,7 +10,7 @@ import org.junit.Test;
 
 import java.util.List;
 
-public class MemoryTests
+public class AllocationTests
 {
   private SimulationConfig cpuConfig;
   

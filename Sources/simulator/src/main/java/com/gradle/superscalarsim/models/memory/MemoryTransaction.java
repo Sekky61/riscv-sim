@@ -31,6 +31,8 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Objects;
 
+import static java.util.Arrays.copyOf;
+
 /**
  * @class MemoryTransaction
  * @brief Data class describing a memory transaction
@@ -55,6 +57,27 @@ public final class MemoryTransaction
   private byte[] data;
   private boolean isFinished = false;
   private int latency;
+  
+  /**
+   * Copy constructor
+   *
+   * @param transaction Transaction to be copied
+   */
+  public MemoryTransaction(MemoryTransaction transaction)
+  {
+    this.id            = transaction.id;
+    this.mmuId         = transaction.mmuId;
+    this.instructionId = transaction.instructionId;
+    this.timestamp     = transaction.timestamp;
+    this.address       = transaction.address;
+    this.data          = copyOf(transaction.data, transaction.data.length);
+    this.size          = transaction.size;
+    this.isStore       = transaction.isStore;
+    this.isSigned      = transaction.isSigned;
+    this.latency       = transaction.latency;
+    this.isFinished    = transaction.isFinished;
+    this.isHit         = transaction.isHit;
+  }
   
   public boolean isHit()
   {

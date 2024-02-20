@@ -1,4 +1,4 @@
-package com.gradle.superscalarsim.blocks;
+package com.gradle.superscalarsim.memory;
 
 import com.gradle.superscalarsim.blocks.loadstore.Cache;
 import com.gradle.superscalarsim.blocks.loadstore.SimulatedMemory;
@@ -471,5 +471,64 @@ public class CacheTest
     Assert.assertTrue(equals);
   }
   
+  /**
+   * Write through cache sends the data to memory immediately.
+   */
+  @Test
+  public void cache_WriteThrough()
+  {
+    cache = new Cache(memory, 16, 2, 16, 1, 1, ReplacementPoliciesEnum.RANDOM, false, statistics);
+    
+    // A write-through store to a non-loaded line triggers a memory load, memory store and cache store
+    MemoryTransaction store1 = MemoryTransaction.store(128, new byte[]{0x04, 0x03, 0x02, 0x01});
+    cache.scheduleTransaction(store1);
+    simulateCycles(1, 2);
+    cache.finishTransaction(store1.id());
+    Assert.assertEquals(0x01020304, cache.getData(128, 4));
+    Assert.assertArrayEquals(new byte[]{0x04, 0x03, 0x02, 0x01}, memory.getFromMemory(128, 4));
+  }
   
+  @Test
+  public void cache_WriteThroughBigLatency()
+  {
+    cache = new Cache(memory, 16, 2, 16, 10, 1, ReplacementPoliciesEnum.RANDOM, false, statistics);
+    
+    // A write-through store to a non-loaded line triggers a memory load, memory store and cache store
+    MemoryTransaction store1 = MemoryTransaction.store(128, new byte[]{0x04, 0x03, 0x02, 0x01});
+    cache.scheduleTransaction(store1);
+    simulateCycles(1, 11);
+    cache.finishTransaction(store1.id());
+    Assert.assertEquals(0x01020304, cache.getData(128, 4));
+    Assert.assertArrayEquals(new byte[]{0x04, 0x03, 0x02, 0x01}, memory.getFromMemory(128, 4));
+  }
+  
+  @Test
+  public void cache_WriteThroughSlowMemory()
+  {
+    memory = new SimulatedMemory(10, 10, statistics);
+    cache  = new Cache(memory, 16, 2, 16, 1, 1, ReplacementPoliciesEnum.RANDOM, false, statistics);
+    
+    // A write-through store to a non-loaded line triggers a memory load, memory store and cache store
+    MemoryTransaction store1 = MemoryTransaction.store(128, new byte[]{0x04, 0x03, 0x02, 0x01});
+    cache.scheduleTransaction(store1);
+    simulateCycles(1, 11);
+    cache.finishTransaction(store1.id());
+    Assert.assertEquals(0x01020304, cache.getData(128, 4));
+    Assert.assertArrayEquals(new byte[]{0x04, 0x03, 0x02, 0x01}, memory.getFromMemory(128, 4));
+  }
+  
+  @Test
+  public void cache_WriteThroughMisaligned()
+  {
+    cache = new Cache(memory, 16, 2, 16, 1, 1, ReplacementPoliciesEnum.RANDOM, false, statistics);
+    
+    // A write-through store to a non-loaded line triggers a memory load, memory store and cache store
+    MemoryTransaction store1 = MemoryTransaction.store(126, new byte[]{0x04, 0x03, 0x02, 0x01});
+    cache.scheduleTransaction(store1);
+    simulateCycles(1, 2);
+    cache.finishTransaction(store1.id());
+    Assert.assertEquals(0x0304, cache.getData(126, 2));
+    Assert.assertEquals(0x0102, cache.getData(128, 2));
+    Assert.assertArrayEquals(new byte[]{0x04, 0x03, 0x02, 0x01}, memory.getFromMemory(126, 4));
+  }
 }

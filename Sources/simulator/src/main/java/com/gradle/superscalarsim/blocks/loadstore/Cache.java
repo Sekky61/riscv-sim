@@ -55,6 +55,9 @@ import java.util.List;
  * It can also work on multiple transactions at the same time.
  * </p>
  * <p>
+ * If the cache is in write-through mode, the store is as slow as the main memory (they are done together).
+ * </p>
+ * <p>
  * Only {@link MemoryAccessUnit} can work with the cache.
  * A MAU can issue one operation at a time. If there are multiple MAUs, each can "work" on one cache access at a time.
  * </p>
@@ -351,8 +354,7 @@ public class Cache implements AbstractBlock, MemoryBlock
           // Load new line into cache
           Triplet<Long, Integer, Integer> split = splitAddress(transaction.address());
           long                            tag   = split.getFirst();
-          CacheLineModel                  line  = pickLineToUse(transaction.address(), cycle,
-                                                                transaction.getInstructionId());
+          CacheLineModel line = pickLineToUse(transaction.address(), cycle, transaction.getInstructionId());
           // The replacement policy was updated when the line was picked
           line.setLineData(transaction.data());
           line.setValid(true);
@@ -485,6 +487,7 @@ public class Cache implements AbstractBlock, MemoryBlock
     
     CacheLineModel line = findLane(address, true);
     assert line != null;
+    
     if (writeBack)
     {
       // todo memory transaction here (into else)
@@ -536,7 +539,6 @@ public class Cache implements AbstractBlock, MemoryBlock
     int     cacheDelay = (transaction.isStore() ? storeDelay : loadDelay);
     transaction.setId(cacheAccessId++);
     
-    
     int latency = cacheDelay;
     // todo what if the line disappears from cache later?
     if (!isHit)
@@ -560,6 +562,15 @@ public class Cache implements AbstractBlock, MemoryBlock
         latency = cacheDelay + requestCacheLineLoad(nextAddress, transaction.timestamp(),
                                                     transaction.getInstructionId());
       }
+    }
+    
+    // Write through store is as slow as the main memory
+    if (!writeBack && transaction.isStore())
+    {
+      // Write to memory as well
+      MemoryTransaction transactionCopy = new MemoryTransaction(transaction);
+      latency = Math.max(latency, memory.scheduleTransaction(transactionCopy));
+      memoryTransactions.add(transactionCopy);
     }
     
     transaction.setLatency(latency);

@@ -1,4 +1,4 @@
-package com.gradle.superscalarsim.models;
+package com.gradle.superscalarsim.memory;
 
 import com.gradle.superscalarsim.models.cache.CacheLineModel;
 import org.junit.Assert;

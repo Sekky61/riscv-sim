@@ -1,4 +1,4 @@
-package com.gradle.superscalarsim.code;
+package com.gradle.superscalarsim.memory;
 
 import com.gradle.superscalarsim.cpu.Cpu;
 import com.gradle.superscalarsim.cpu.MemoryLocation;
