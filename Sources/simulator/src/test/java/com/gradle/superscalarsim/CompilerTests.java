@@ -221,4 +221,53 @@ public class CompilerTests
     Assert.assertNotNull(labels.get("str"));
     Assert.assertEquals("str", labels.get("str").name);
   }
+  
+  @Test
+  public void test_c_matrix()
+  {
+    String cCode = """
+            int resultMatrix[16];
+            
+            int matrix1[16] =  {1,  1,  1,  1,
+                                  2,  2,  2,  2,
+                                  3,  3,  3,  3,
+                                  4,  4,  4,  4};
+            int matrix2[16] =  {1,  2,  3,  4,
+                                  1,  2,  3,  4,
+                                  1,  2,  3,  4,
+                                  1,  2,  3,  4};
+                        
+            int main()
+            {
+              for (int i = 0; i < 4; i++)
+              {
+                for(int j = 0; j < 4; j++)
+                {
+                  for(int k = 0; k < 4; k++)
+                  {
+                    resultMatrix[i*4+j] = resultMatrix[i*4+j] + matrix1[i*4+k] * matrix2[k*4+j];
+                  }
+                }
+              }
+            }
+            """;
+    StaticDataProvider loader = new StaticDataProvider();
+    CodeParser         parser = new CodeParser(loader);
+    
+    // Exercise
+    GccCaller.CompileResult compileResult = GccCaller.compile(cCode, List.of("O2"));
+    CompiledProgram         program       = AsmParser.parse(compileResult.code);
+    String                  asm           = String.join("\n", program.program);
+    parser.parseCode(asm);
+    
+    // Verify
+    Assert.assertTrue(compileResult.success);
+    Assert.assertTrue(parser.success());
+    
+    // There should be 3 memory locations, each of them 16*4 bytes
+    Assert.assertEquals(3, parser.getMemoryLocations().size());
+    Assert.assertEquals(16 * 4, parser.getMemoryLocations().get(0).getBytes().length);
+    Assert.assertEquals(16 * 4, parser.getMemoryLocations().get(1).getBytes().length);
+    Assert.assertEquals(16 * 4, parser.getMemoryLocations().get(2).getBytes().length);
+  }
 }

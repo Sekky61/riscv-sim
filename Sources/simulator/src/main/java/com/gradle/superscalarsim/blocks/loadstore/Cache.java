@@ -338,6 +338,11 @@ public class Cache implements AbstractBlock, MemoryBlock
       // Check if the operation is finished this cycle
       int finishCycle = transaction.timestamp() + transaction.latency();
       assert finishCycle >= cycle;
+      if (transaction.isCancelled())
+      {
+        toRemove.add(transaction);
+        continue;
+      }
       if (finishCycle == cycle)
       {
         // Main memory transaction finished
@@ -354,7 +359,8 @@ public class Cache implements AbstractBlock, MemoryBlock
           // Load new line into cache
           Triplet<Long, Integer, Integer> split = splitAddress(transaction.address());
           long                            tag   = split.getFirst();
-          CacheLineModel line = pickLineToUse(transaction.address(), cycle, transaction.getInstructionId());
+          CacheLineModel                  line  = pickLineToUse(transaction.address(), cycle,
+                                                                transaction.getInstructionId());
           // The replacement policy was updated when the line was picked
           line.setLineData(transaction.data());
           line.setValid(true);
@@ -367,6 +373,15 @@ public class Cache implements AbstractBlock, MemoryBlock
     memoryTransactions.removeAll(toRemove);
     
     // Cache operations
+    // Remove cancelled
+    for (int i = 0; i < this.cacheTransactions.size(); i++)
+    {
+      if (this.cacheTransactions.get(i).isCancelled())
+      {
+        this.cacheTransactions.remove(i);
+        i--;
+      }
+    }
     for (MemoryTransaction transaction : this.cacheTransactions)
     {
       assert !transaction.isFinished(); // All finished transactions should be removed from the list by the requester

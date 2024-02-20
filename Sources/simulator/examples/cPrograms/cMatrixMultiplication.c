@@ -1,14 +1,16 @@
-int main()
-{
-  int matrix1[16] =  {1,  1,  1,  1,
+int resultMatrix[16];
+
+int matrix1[16] =  {1,  1,  1,  1,
                       2,  2,  2,  2,
                       3,  3,  3,  3,
                       4,  4,  4,  4};
-  int matrix2[16] =  {1,  2,  3,  4,
+int matrix2[16] =  {1,  2,  3,  4,
                       1,  2,  3,  4,
                       1,  2,  3,  4,
                       1,  2,  3,  4};
-  int resultMatrix[16];
+
+int main()
+{
   for (int i = 0; i < 4; i=i+1)
   {
     for(int j = 0; j < 4; j=j+1)

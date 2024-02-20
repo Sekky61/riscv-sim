@@ -58,6 +58,17 @@ public final class MemoryTransaction
   private boolean isFinished = false;
   private int latency;
   
+  public boolean isCancelled()
+  {
+    return cancelled;
+  }
+  
+  /**
+   * A cancelled transaction does not need to be finished.
+   * A transaction gets cancelled when the owner of the transaction (instruction) is flushed.
+   */
+  private boolean cancelled;
+  
   /**
    * Copy constructor
    *
@@ -312,4 +323,8 @@ public final class MemoryTransaction
     return "MemoryTransaction[" + "timestamp=" + timestamp + ", " + "address=" + address + ", " + "data=" + data + ", " + "size=" + size + ", " + "isStore=" + isStore + ", " + "isSigned=" + isSigned + ']';
   }
   
+  public void setCanceled()
+  {
+    this.cancelled = true;
+  }
 }

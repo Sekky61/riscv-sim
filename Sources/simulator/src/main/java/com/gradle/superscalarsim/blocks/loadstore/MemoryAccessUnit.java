@@ -149,6 +149,13 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
         memoryModel.finishTransaction(transaction.id());
       }
       
+      // Mark the transaction as canceled
+      if (transaction != null)
+      {
+        transaction.setCanceled();
+        transaction = null;
+      }
+      
       zeroTheCounter();
       setDelay(baseDelay);
       return;

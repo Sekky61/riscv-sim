@@ -42,6 +42,32 @@ import java.util.List;
 
 public class AlgorithmTests
 {
+  static String simpleMatrixMul = """
+          int resultMatrix[16];
+          
+          int matrix1[16] =  {1,  1,  1,  1,
+                                2,  2,  2,  2,
+                                3,  3,  3,  3,
+                                4,  4,  4,  4};
+          int matrix2[16] =  {1,  2,  3,  4,
+                                1,  2,  3,  4,
+                                1,  2,  3,  4,
+                                1,  2,  3,  4};
+                      
+          int main()
+          {
+            for (int i = 0; i < 4; i++)
+            {
+              for(int j = 0; j < 4; j++)
+              {
+                for(int k = 0; k < 4; k++)
+                {
+                  resultMatrix[i*4+j] = resultMatrix[i*4+j] + matrix1[i*4+k] * matrix2[k*4+j];
+                }
+              }
+            }
+          }
+          """;
   static String recursiveFactorialCode = """
           int main() {
               int num = 2;
@@ -441,5 +467,24 @@ public class AlgorithmTests
     }
     
     Assert.assertEquals(arrayLen, correct);
+  }
+  
+  @Test
+  public void test_simpleMatrixMul()
+  {
+    // Setup
+    Cpu cpu = setupCpu(simpleMatrixMul, "main", List.of(), true);
+    cpu.execute(true);
+    
+    int[] result = new int[]{4, 8, 12, 16, 8, 16, 24, 32, 12, 24, 36, 48, 16, 32, 48, 64};
+    
+    // Verify
+    // Check array resultMatrix
+    long resultMatrixPtr = cpu.cpuState.instructionMemoryBlock.getLabelPosition("resultMatrix");
+    
+    for (int i = 0; i < 16; i++)
+    {
+      Assert.assertEquals(result[i], cpu.cpuState.simulatedMemory.getFromMemory(resultMatrixPtr + i * 4));
+    }
   }
 }

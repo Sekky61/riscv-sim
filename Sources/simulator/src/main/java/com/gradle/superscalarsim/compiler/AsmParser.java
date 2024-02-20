@@ -68,46 +68,47 @@ public class AsmParser
     // For some reason, .rodata sometimes does not have the "a" flag
     sections.removeIf(section -> (!section.flags.contains("a") && !section.name.contains("rodata")));
     
+    // Collect used labels
+    Set<String> usedLabels = collectUsedLabels(stringLines);
+    
+    // Go through the program, mark the mapping from C to ASM
+    List<Line> lines = markCMapping(stringLines);
+    
     // Join the lines of the sections. Put the code sections first, then the data sections
-    List<String> joinedLines = new ArrayList<>();
+    List<Line> joinedLines = new ArrayList<>();
     for (Section section : sections)
     {
       if (section.name.startsWith(".text"))
       {
-        joinedLines.addAll(section.lines);
+        List<Line> mappedLines   = markCMapping(section.lines);
+        List<Line> filteredLines = filterAsm(mappedLines, usedLabels);
+        joinedLines.addAll(filteredLines);
       }
     }
     for (Section section : sections)
     {
       if (!section.name.startsWith(".text"))
       {
-        joinedLines.addAll(section.lines);
+        List<Line> mappedLines   = markCMapping(section.lines);
+        List<Line> filteredLines = filterAsm(mappedLines, usedLabels);
+        joinedLines.addAll(filteredLines);
       }
     }
     
-    // Go through the program, mark the mapping from C to ASM
-    List<Line> lines = markCMapping(joinedLines);
-    
-    // Collect used labels
-    Set<String> usedLabels = collectUsedLabels(joinedLines);
-    
-    // Filter, mutates the lines
-    List<Line> filteredLines = filterAsm(lines, usedLabels);
-    
     // Add 4 spaces to the start of each line that is not a label
-    for (int i = 0; i < filteredLines.size(); i++)
+    for (int i = 0; i < joinedLines.size(); i++)
     {
-      String line = filteredLines.get(i).asmLine;
+      String line = joinedLines.get(i).asmLine;
       if (!Pattern.matches(labelRegex, line))
       {
-        filteredLines.set(i, new Line(filteredLines.get(i).cLine, "    " + line));
+        joinedLines.set(i, new Line(joinedLines.get(i).cLine, "    " + line));
       }
     }
     
     List<String>  finalLines = new ArrayList<>();
     List<Integer> asmToC     = new ArrayList<>();
     
-    for (Line line : filteredLines)
+    for (Line line : joinedLines)
     {
       finalLines.add(line.asmLine);
       asmToC.add(line.cLine);
@@ -332,7 +333,7 @@ public class AsmParser
   private static boolean isDataDirective(String line)
   {
     return line.startsWith(".byte") || line.startsWith(".word") || line.startsWith(".hword") || line.startsWith(
-            ".ascii") || line.startsWith(".asciz") || line.startsWith(".string");
+            ".ascii") || line.startsWith(".asciz") || line.startsWith(".string") || line.startsWith(".zero");
   }
   
   record Line(int cLine, String asmLine)

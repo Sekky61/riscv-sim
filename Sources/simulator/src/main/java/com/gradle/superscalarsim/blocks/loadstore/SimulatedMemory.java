@@ -177,9 +177,18 @@ public class SimulatedMemory implements AbstractBlock, MemoryBlock
   @Override
   public void simulate(int cycle)
   {
+    // Remove cancelled
+    for (int i = 0; i < this.operations.size(); i++)
+    {
+      if (this.operations.get(i).isCancelled())
+      {
+        this.operations.remove(i);
+        i--;
+      }
+    }
     for (MemoryTransaction transaction : this.operations)
     {
-      assert !transaction.isFinished(); // All finished transactions should be removed from the list by the requester
+      assert !transaction.isFinished() || transaction.isCancelled(); // All finished transactions should be removed from the list by the requester
       // Check if the operation is finished this cycle
       int finishCycle = transaction.timestamp() + transaction.latency();
       assert finishCycle >= cycle;
