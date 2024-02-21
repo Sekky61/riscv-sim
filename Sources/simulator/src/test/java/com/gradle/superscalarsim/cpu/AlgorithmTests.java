@@ -35,6 +35,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
@@ -42,50 +43,6 @@ import java.util.List;
 
 public class AlgorithmTests
 {
-  static String simpleMatrixMul = """
-          int resultMatrix[16];
-          
-          int matrix1[16] =  {1,  1,  1,  1,
-                                2,  2,  2,  2,
-                                3,  3,  3,  3,
-                                4,  4,  4,  4};
-          int matrix2[16] =  {1,  2,  3,  4,
-                                1,  2,  3,  4,
-                                1,  2,  3,  4,
-                                1,  2,  3,  4};
-                      
-          int main()
-          {
-            for (int i = 0; i < 4; i++)
-            {
-              for(int j = 0; j < 4; j++)
-              {
-                for(int k = 0; k < 4; k++)
-                {
-                  resultMatrix[i*4+j] = resultMatrix[i*4+j] + matrix1[i*4+k] * matrix2[k*4+j];
-                }
-              }
-            }
-          }
-          """;
-  static String recursiveFactorialCode = """
-          int main() {
-              int num = 2;
-              int result = factorial(num);
-              return result;
-          }
-          
-          int factorial(int n) {
-              // Base case: factorial of 0 is 1
-              if (n == 0 || n == 1) {
-                  return 1;
-              } else {
-                  // Recursive case: n! = n * (n-1)!
-                  return n * factorial(n - 1);
-              }
-          }
-          """;
-  
   static String quickSortCode = """
           
           // NOT the same as `extern char *arr`;
@@ -328,16 +285,6 @@ public class AlgorithmTests
               ret
               """;
   
-  static String writeLoopCode = """
-          int ptr[32];
-          
-          int writeMem() {
-            for(int i = 0; i < 32; i++) {
-              ptr[i] = i;
-            }
-          }
-          """;
-  
   @Test
   public void test_quicksort()
   {
@@ -369,7 +316,7 @@ public class AlgorithmTests
   public void test_recursiveFactorial()
   {
     // Alignment 2^4
-    Cpu cpu = setupCpu(recursiveFactorialCode, "main", List.of(), true);
+    Cpu cpu = setupCCode("/c/recursiveFactorial.c", "main", List.of(), true);
     cpu.execute(false);
     
     // Assert
@@ -379,8 +326,20 @@ public class AlgorithmTests
   /**
    * Setup cpu instance with the C code
    */
-  private Cpu setupCpu(String cCode, String entryPoint, List<MemoryLocation> memoryLocations, boolean optimize)
+  private Cpu setupCCode(String cCodeResourcePath,
+                         String entryPoint,
+                         List<MemoryLocation> memoryLocations,
+                         boolean optimize)
   {
+    String cCode = null;
+    try
+    {
+      cCode = new String(AlgorithmTests.class.getResourceAsStream(cCodeResourcePath).readAllBytes());
+    }
+    catch (IOException e)
+    {
+      throw new RuntimeException(e);
+    }
     List<String>            optimizationFlags = optimize ? List.of("O2") : List.of();
     GccCaller.CompileResult res               = GccCaller.compile(cCode, optimizationFlags);
     Assert.assertTrue(res.success);
@@ -394,26 +353,6 @@ public class AlgorithmTests
     return new Cpu(cfg);
   }
   
-  @Test
-  public void simulate_badSpeculativeLoad()
-  {
-    SimulationConfig cfg = SimulationConfig.getDefaultConfiguration();
-    cfg.code = """
-             addi x12, x12, -5
-             subi x13, x0, 5
-             beq x12, x13, label
-             lw x12, 0(x12)
-            label:
-            """;
-    // The load will be to a negative address, but it will be purely speculative.
-    // It should not crash the simulation
-    
-    Cpu cpu = new Cpu(cfg);
-    cpu.execute(false);
-    
-    Assert.assertEquals(-5, (int) cpu.cpuState.unifiedRegisterFileBlock.getRegister("x12").getValue(DataTypeEnum.kInt));
-  }
-  
   /**
    * TODO: miscompiles for arrayLen=1
    * Used to fail at arrayLen>50 due to losing instructions between decode and rob
@@ -422,20 +361,7 @@ public class AlgorithmTests
   public void test_simpleArrayProgram()
   {
     // Setup
-    int arrayLen = 55;
-    String cCode = String.format("""
-                                         extern float a[];
-                                         extern float b[];
-                                         const float c = 10;
-                                         
-                                         void main(){
-                                           
-                                           for (int i = 0; i < %d; i++)
-                                              a[i] += b[i]*c;
-                                              
-                                           return;
-                                         }""", arrayLen);
-    
+    int          arrayLen     = 55;
     List<String> hundredOnes  = new ArrayList<>();
     List<String> hundredNines = new ArrayList<>();
     for (int i = 0; i < arrayLen; i++)
@@ -447,7 +373,7 @@ public class AlgorithmTests
     List<MemoryLocation> memoryLocations = List.of(new MemoryLocation("a", 4, DataTypeEnum.kFloat, hundredOnes),
                                                    new MemoryLocation("b", 4, DataTypeEnum.kFloat, hundredNines));
     
-    Cpu cpu = setupCpu(cCode, "main", memoryLocations, true);
+    Cpu cpu = setupCCode("/c/axpy.c", "main", memoryLocations, true);
     cpu.execute(true);
     
     // Verify
@@ -473,7 +399,7 @@ public class AlgorithmTests
   public void test_simpleMatrixMul()
   {
     // Setup
-    Cpu cpu = setupCpu(simpleMatrixMul, "main", List.of(), true);
+    Cpu cpu = setupCCode("/c/simpleMatrixMul.c", "main", List.of(), true);
     cpu.execute(true);
     
     int[] result = new int[]{4, 8, 12, 16, 8, 16, 24, 32, 12, 24, 36, 48, 16, 32, 48, 64};
@@ -486,5 +412,34 @@ public class AlgorithmTests
     {
       Assert.assertEquals(result[i], cpu.cpuState.simulatedMemory.getFromMemory(resultMatrixPtr + i * 4));
     }
+  }
+  
+  @Test
+  public void test_LinkedList() throws IOException
+  {
+    // Setup
+    SimulationConfig cfg  = SimulationConfig.getDefaultConfiguration();
+    String           code = new String(
+            AlgorithmTests.class.getResourceAsStream("/assembler/linkedList.r5").readAllBytes());
+    cfg.code       = code;
+    cfg.entryPoint = "main";
+    Cpu cpu = new Cpu(cfg);
+    cpu.execute(true);
+    
+    // Assert
+    // There should be prints
+    List<DebugLog.Entry> logEntries = cpu.cpuState.debugLog.getEntries();
+    Assert.assertFalse(logEntries.isEmpty());
+    Assert.assertTrue(logEntries.get(0).getMessage().startsWith("Insert 1"));
+    Assert.assertTrue(logEntries.get(1).getMessage().startsWith("Insert 2"));
+    Assert.assertTrue(logEntries.get(2).getMessage().startsWith("Insert 3"));
+    Assert.assertTrue(logEntries.get(3).getMessage().startsWith("Insert 4"));
+    Assert.assertTrue(logEntries.get(4).getMessage().startsWith("Insert 5"));
+    // Print backwards
+    Assert.assertTrue(logEntries.get(5).getMessage().startsWith("Node 5"));
+    Assert.assertTrue(logEntries.get(6).getMessage().startsWith("Node 4"));
+    Assert.assertTrue(logEntries.get(7).getMessage().startsWith("Node 3"));
+    Assert.assertTrue(logEntries.get(8).getMessage().startsWith("Node 2"));
+    Assert.assertTrue(logEntries.get(9).getMessage().startsWith("Node 1"));
   }
 }

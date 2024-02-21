@@ -183,7 +183,7 @@ public class OneBitPredictorTests
                     """);
     // Iteration: 0 1 2 3 4 5 6 7 8 9
     //     Taken: N Y N Y N Y N Y N Y (5/10)
-    // Predicted: * N Y N Y N Y N Y N (* - would have predicted jump, but mandatory prediction fail)
+    // Predicted: * N Y N Y N Y N Y N (* - would have predicted jump (Y), but mandatory prediction fail. Still counts as wrong)
     
     Cpu cpu = new Cpu(config);
     
@@ -197,7 +197,7 @@ public class OneBitPredictorTests
     // The branch prediction of instruction [4] is always wrong.
     SimulationStatistics.InstructionStats stats = cpu.cpuState.statistics.instructionStats.get(4);
     Assert.assertEquals(10, stats.committedCount);
-    Assert.assertEquals(1, stats.correctlyPredicted);
+    Assert.assertEquals(0, stats.correctlyPredicted);
   }
   
   /**

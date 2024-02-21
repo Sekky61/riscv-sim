@@ -103,6 +103,7 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
   private boolean hasFailed;
   /**
    * Prediction made by branch predictor at the time of fetch.
+   * True means the branch was predicted as taken. False means not taken (PC+4).
    * Used for branch instructions.
    */
   private boolean branchPredicted;
@@ -126,6 +127,7 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
   private boolean branchLogicResult;
   /**
    * Absolute address of the target of the branch instruction.
+   * The address of the target, regardless of whether the branch is taken or not.
    * NOT an offset. If you need offset, describe it in the interpretableAs field (see JAL instruction).
    * Result of the branch actual computation, not the prediction.
    * If present (not -1), the value is correct.
@@ -137,13 +139,11 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
    * Instruction starts as valid and becomes invalid when it is flushed.
    */
   private boolean isValid;
-  
   /**
    * Instruction starts as busy and becomes not busy when the execution is finished.
    * Non-busy, non-speculative instructions are ready to be committed.
    */
   private boolean isBusy;
-  
   /**
    * Is instruction speculative?
    */
@@ -189,6 +189,15 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
       this.renamedArguments.add(new InputCodeArgument(argument));
     }
   }// end of Constructor
+  
+  /**
+   * @return Target of the branch prediction. Can differ from the actual branch target, for example
+   * in the case of RET (function called from multiple places).
+   */
+  public int getBranchPredictionTarget()
+  {
+    return branchPredictionTarget;
+  }
   
   public InstructionException getException()
   {
@@ -382,13 +391,9 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
   }// end of setHasFailed
   //------------------------------------------------------
   
-  /**
-   * @return True if the instruction was correctly predicted or computed in decode, false otherwise
-   * @brief If true, this implies that the instruction stream is correct
-   */
-  public boolean isBranchPredictedOrComputedInDecode()
+  public boolean isBranchComputedInDecode()
   {
-    return branchPredicted || branchComputedInDecode;
+    return branchComputedInDecode;
   }
   
   /**

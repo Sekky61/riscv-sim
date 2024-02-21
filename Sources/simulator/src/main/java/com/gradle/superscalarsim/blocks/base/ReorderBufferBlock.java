@@ -283,39 +283,48 @@ public class ReorderBufferBlock implements AbstractBlock
       }
       this.branchTargetBuffer.setEntry(pc, codeModel, codeModel.getBranchTarget());
       
-      if (codeModel.isBranchPredictedOrComputedInDecode() == branchActuallyTaken)
+      int nextPc = pc + 4;
+      if (branchActuallyTaken)
       {
-        // Correctly predicted jump
+        nextPc = codeModel.getBranchTarget();
+        // Update branch target
+      }
+      
+      int     nextPredictedPc = pc + 4;
+      boolean predictionMade  = codeModel.isBranchPredicted() && codeModel.getBranchPredictionTarget() != -1;
+      if (predictionMade)
+      {
+        // A successful positive prediction took place back in fetch
+        nextPredictedPc = codeModel.getBranchPredictionTarget();
+      }
+      
+      boolean correctAddressPrediction = nextPc == nextPredictedPc; // pc+4 is predicted if not taken
+      if (correctAddressPrediction || codeModel.isBranchComputedInDecode())
+      {
+        // The instruction stream is correct at this point
         // Update committable status of subsequent instructions
         validateInstructions();
       }
       else
       {
-        // Wrong prediction - feedback to predictor
-        int resultPc;
-        if (branchActuallyTaken)
-        {
-          resultPc = codeModel.getBranchTarget();
-          // Update branch target
-        }
-        else
-        {
-          resultPc = pc + 4;
-        }
-        
-        // Get the second instruction in the queue and invalidate it (flush everything after it)
+        // The next instruction is the wrong one.
+        // Flush the queue
         Optional<SimCodeModel> robItem = this.reorderQueue.stream().skip(1).findFirst();
         if (robItem.isPresent())
         {
           invalidateInstructions(robItem.get());
         }
         
+        // Feedback to predictor
+        // Update target in BTB (branch target, regardless of if it was taken or not and if target was predicted correctly)
+        this.branchTargetBuffer.setEntry(pc, codeModel, codeModel.getBranchTarget());
+        
         GlobalHistoryRegister activeRegister = gShareUnit.getGlobalHistoryRegister();
         // This also removes the value from the history stack
         activeRegister.setHistoryValueAsCurrent(codeModel.getIntegerId());
         activeRegister.shiftValue(false);
         
-        this.instructionFetchBlock.setPc(resultPc);
+        this.instructionFetchBlock.setPc(nextPc);
         
         // Note the flush in statistics
         simulationStatistics.incrementRobFlushes();

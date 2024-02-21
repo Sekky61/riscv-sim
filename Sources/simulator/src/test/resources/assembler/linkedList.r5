@@ -1,0 +1,81 @@
+# Start at main. There is a global array memory, into which 100 nodes can be stored.
+# C version at /c/linkedList.c
+
+custom_alloc:
+    lla a3,memory_index
+    lw a5,0(a3)
+    li a2,800
+    add a4,a5,a0
+    bgtu a4,a2,.L3
+    lla t0,memory
+    add a0,a5,t0
+    sw a4,0(a3)
+    ret
+.L3:
+    li a0,0
+    ret
+
+custom_free:
+    ret
+
+insert:
+    lla a4,memory_index
+    lw a5,0(a4)
+    li a2,800
+    addi a3,a5,8
+    bgtu a3,a2,.L6
+    lla t0,head
+    lw a1,0(t0)
+    lla a6,memory
+    add t1,a5,a6
+    sw a3,0(a4)
+    sw a0,0(t1)
+    sw a1,4(t1)
+    sw t1,0(t0)
+.L6:
+    ret
+
+printList:
+    lw a5,head
+    beq a5,zero,.L16
+    addi sp,sp,-16
+.L10:
+    lw a4,0(a5) #DEBUG"Node ${a4}"
+    lw a5,4(a5)
+    sw a4,12(sp)
+    bne a5,zero,.L10
+    addi sp,sp,16
+    jr ra
+.L16:
+    ret
+
+main:
+    addi sp,sp,-32
+    li a0,1
+    sw ra,28(sp)
+    call insert #DEBUG"Insert 1, return address ${x1}"
+    li a0,2
+    call insert #DEBUG"Insert 2, return address ${x1}"
+    li a0,3
+    call insert #DEBUG"Insert 3, return address ${x1}"
+    li a0,4
+    call insert #DEBUG"Insert 4, return address ${x1}"
+    li a0,5
+    call insert #DEBUG"Insert 5, return address ${x1}"
+    call printList
+    lw ra,28(sp)
+    li a0,0
+    addi sp,sp,32
+    jr ra
+
+    .align 2
+head:
+    .zero 4
+
+    .align 2
+memory_index:
+    .zero 4
+
+    .align 2
+memory:
+    .zero 800

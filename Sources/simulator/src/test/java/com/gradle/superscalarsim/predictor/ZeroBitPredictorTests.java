@@ -102,7 +102,7 @@ public class ZeroBitPredictorTests
     
     cpu.step();
     // In decode, no jump is computed.
-    Assert.assertFalse(branch2.isBranchPredictedOrComputedInDecode());
+    Assert.assertFalse(branch2.isBranchComputedInDecode());
   }
   
   /**

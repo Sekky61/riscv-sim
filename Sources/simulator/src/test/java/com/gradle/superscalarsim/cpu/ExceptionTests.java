@@ -86,6 +86,26 @@ public class ExceptionTests
   }
   
   @Test
+  public void simulate_badSpeculativeLoad()
+  {
+    SimulationConfig cfg = SimulationConfig.getDefaultConfiguration();
+    cfg.code = """
+             addi x12, x12, -5
+             subi x13, x0, 5
+             beq x12, x13, label
+             lw x12, 0(x12)
+            label:
+            """;
+    // The load will be to a negative address, but it will be purely speculative.
+    // It should not crash the simulation
+    
+    Cpu cpu = new Cpu(cfg);
+    cpu.execute(false);
+    
+    Assert.assertEquals(-5, (int) cpu.cpuState.unifiedRegisterFileBlock.getRegister("x12").getValue(DataTypeEnum.kInt));
+  }
+  
+  @Test
   public void test_badMemoryLoad()
   {
     // A simple function with ABI return. The last instruction is a return instruction, it should halt the simulation.

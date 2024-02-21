@@ -628,7 +628,8 @@ public class InstructionTests
     Assert.assertEquals(1, cpu.cpuState.statistics.getConditionalBranches());
     Assert.assertEquals(0, cpu.cpuState.statistics.getUnconditionalBranches());
     // Default prediction is to jump, but there is not a BTB entry for this branch, so we couldn't predict
-    Assert.assertEquals(1, cpu.cpuState.statistics.getCorrectlyPredictedBranches());
+    // Regardless, the prediction to jump was bad, even if it had no consequences due to the mandatory miss
+    Assert.assertEquals(0, cpu.cpuState.statistics.getCorrectlyPredictedBranches());
   }
   
   /**
@@ -647,8 +648,8 @@ public class InstructionTests
     // Assert
     Assert.assertEquals(1, cpu.cpuState.statistics.getConditionalBranches());
     Assert.assertEquals(0, cpu.cpuState.statistics.getUnconditionalBranches());
-    // Prediction was not made
-    Assert.assertEquals(0, cpu.cpuState.statistics.getCorrectlyPredictedBranches());
+    // Prediction was made, though it was not in the BTB
+    Assert.assertEquals(1, cpu.cpuState.statistics.getCorrectlyPredictedBranches());
   }
   
   /**
@@ -665,8 +666,10 @@ public class InstructionTests
     cpu.execute(false);
     
     // Assert
+    // Only the first branch is taken. BUT, though the first branch prediction cannot be made (target is not known),
+    // the result is still correct by chance (4), so no flush.
     Assert.assertEquals(1, cpu.cpuState.statistics.getTakenBranches());
-    Assert.assertEquals(1, cpu.cpuState.statistics.robFlushes);
+    Assert.assertEquals(0, cpu.cpuState.statistics.robFlushes);
     Assert.assertEquals(2, cpu.cpuState.statistics.committedInstructions);
   }
   

@@ -199,7 +199,7 @@ public class InstructionFetchBlock implements AbstractBlock
         if (encounteredJumps > branchFollowLimit)
         {
           // Stop loading instructions, fill with nops
-          codeModel.setBranchPredicted(false, codeModel.getSavedPc() + 4);
+          //          codeModel.setBranchPredicted(false, codeModel.getSavedPc() + 4);
           for (int j = i; j < numberOfWays; j++)
           {
             SimCodeModel nopCodeModel = this.simCodeModelFactory.createInstance(instructionMemoryBlock.getNop(),
@@ -212,14 +212,11 @@ public class InstructionFetchBlock implements AbstractBlock
       
       // TODO: If we cannot follow anymore, do we still fetch instructions, or end early?
       // And does it matter if the branch is taken?
-      boolean branchPredicted = isBranchingPredicted(pc);
-      if (branchPredicted && followedBranches < branchFollowLimit)
+      boolean shouldJump = isBranchingPredicted(pc);
+      int     newPc      = this.branchTargetBuffer.getEntryTarget(pc);
+      codeModel.setBranchPredicted(shouldJump, newPc);
+      if (shouldJump && newPc >= 0 && followedBranches < branchFollowLimit)
       {
-        // todo: the default example program, first fetch of jump instruction has weird behaviour
-        // Follow that branch
-        int newPc = this.branchTargetBuffer.getEntryTarget(pc);
-        codeModel.setBranchPredicted(true, newPc);
-        assert newPc >= 0;
         this.pc = newPc;
         followedBranches++;
       }
@@ -235,16 +232,14 @@ public class InstructionFetchBlock implements AbstractBlock
   //----------------------------------------------------------------------
   
   /**
-   * @return True if branch was predicted.
-   * @brief True if branch should be taken and can be taken (we have destination in BTB).
-   * Predicts true for unconditional branches, even if there is a negative prediction from the predictor.
+   * @return True if branch was predicted, regardless whether we know the target address.
+   * @brief Predicts true for unconditional branches, even if there is a negative prediction from the predictor.
    */
   private boolean isBranchingPredicted(int pc)
   {
-    int     target        = this.branchTargetBuffer.getEntryTarget(pc);
     boolean unconditional = this.branchTargetBuffer.isEntryUnconditional(pc);
     boolean prediction    = this.gShareUnit.getPredictor(pc).getCurrentPrediction();
-    return target != -1 && (prediction || unconditional);
+    return prediction || unconditional;
   }
   //----------------------------------------------------------------------
   
