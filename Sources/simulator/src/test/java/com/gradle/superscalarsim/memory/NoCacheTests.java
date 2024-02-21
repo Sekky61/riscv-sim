@@ -3,12 +3,15 @@ package com.gradle.superscalarsim.memory;
 import com.gradle.superscalarsim.cpu.Cpu;
 import com.gradle.superscalarsim.cpu.MemoryLocation;
 import com.gradle.superscalarsim.cpu.SimulationConfig;
+import com.gradle.superscalarsim.cpu.StopReason;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.List;
+
+import static com.gradle.superscalarsim.cpu.AlgorithmTests.quicksortAssembly;
 
 public class NoCacheTests
 {
@@ -82,5 +85,29 @@ public class NoCacheTests
     // 4 bytes loaded from main memory. Not 32 for a cache line.
     Assert.assertEquals(0, cpu.cpuState.statistics.mainMemoryLoadedBytes);
     Assert.assertEquals(4, cpu.cpuState.statistics.mainMemoryStoredBytes);
+  }
+  
+  @Test
+  public void test_quicksortNoCache()
+  {
+    // Alignment 2^4
+    MemoryLocation arr = new MemoryLocation("arr", 4, DataTypeEnum.kByte,
+                                            List.of("1", "16", "3", "10", "4", "6", "7", "8", "9", "5", "11", "12",
+                                                    "13", "14", "15", "2"));
+    
+    cfg.memoryLocations = List.of(arr);
+    cfg.code            = quicksortAssembly; // maybe migrate to file or C version
+    Cpu cpu = new Cpu(cfg);
+    
+    cpu.execute(true);
+    
+    // Assert
+    Assert.assertSame(StopReason.kCallStackHalt, cpu.stopReason);
+    
+    long arrPtr = cpu.cpuState.instructionMemoryBlock.getLabelPosition("arr");
+    for (int i = 0; i < 16; i++)
+    {
+      Assert.assertEquals(i + 1, cpu.cpuState.simulatedMemory.getFromMemory(arrPtr + i));
+    }
   }
 }

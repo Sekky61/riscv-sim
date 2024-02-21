@@ -86,7 +86,7 @@ public class AlgorithmTests
           }
           """;
   
-  static String quicksortAssembly = """
+  public static String quicksortAssembly = """
           main:
               addi sp,sp,-16
               li a2,15
@@ -418,9 +418,8 @@ public class AlgorithmTests
   public void test_LinkedList() throws IOException
   {
     // Setup
-    SimulationConfig cfg  = SimulationConfig.getDefaultConfiguration();
-    String           code = new String(
-            AlgorithmTests.class.getResourceAsStream("/assembler/linkedList.r5").readAllBytes());
+    SimulationConfig cfg = SimulationConfig.getDefaultConfiguration();
+    String code = new String(AlgorithmTests.class.getResourceAsStream("/assembler/linkedList.r5").readAllBytes());
     cfg.code       = code;
     cfg.entryPoint = "main";
     Cpu cpu = new Cpu(cfg);
