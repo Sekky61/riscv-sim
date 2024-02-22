@@ -27,6 +27,7 @@
 
 package com.gradle.superscalarsim;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gradle.superscalarsim.cpu.Cpu;
 import com.gradle.superscalarsim.cpu.SimulationConfig;
 import com.gradle.superscalarsim.serialization.Serialization;
@@ -46,6 +47,7 @@ public class CpuAdditionBenchmark
    */
   @Fork(value = 1)
   @Warmup(iterations = 1, time = 1)
+  @Measurement(iterations = 1)
   @Benchmark
   @BenchmarkMode(Mode.AverageTime)
   @OutputTimeUnit(TimeUnit.MILLISECONDS)
@@ -57,16 +59,18 @@ public class CpuAdditionBenchmark
   
   @Fork(value = 1)
   @Warmup(iterations = 1, time = 1)
+  @Measurement(iterations = 1)
   @Benchmark
   @BenchmarkMode(Mode.AverageTime)
   @OutputTimeUnit(TimeUnit.MILLISECONDS)
-  public void initSerializer()
+  public ObjectMapper initSerializer()
   {
-    Serialization.getSerializer();
+    return Serialization.getSerializer();
   }
   
   @Fork(value = 1)
   @Warmup(iterations = 1, time = 1)
+  @Measurement(iterations = 1)
   @Benchmark
   @BenchmarkMode(Mode.AverageTime)
   @OutputTimeUnit(TimeUnit.MILLISECONDS)
@@ -74,17 +78,11 @@ public class CpuAdditionBenchmark
   {
     // 1000 iters on a load/store loop
     String code = """
-            addi x3, x0, 1000
-            addi x8, x0, 50
-            sw x8, 16(x0)
-            loop:
-            beq x3, x0, loopEnd
-            lw x8, 16(x0)
-            addi x8, x8, 1
-            sw x8, x0, 16
-            subi x3, x3, 1
-            jal x0, loop
-            loopEnd:""";
+            addi x1, x0, 0
+            addi x2, x0, 0
+            addi x3, x0, 0
+            addi x4, x0, 0
+            addi x5, x0, 0""";
     
     SimulationConfig config = SimulationConfig.getDefaultConfiguration();
     config.code = code;
