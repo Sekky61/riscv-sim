@@ -37,7 +37,6 @@ import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.blocks.AbstractBlock;
 import com.gradle.superscalarsim.blocks.branch.BranchTargetBuffer;
-import com.gradle.superscalarsim.blocks.branch.GlobalHistoryRegister;
 import com.gradle.superscalarsim.code.CodeBranchInterpreter;
 import com.gradle.superscalarsim.cpu.SimulationStatistics;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
@@ -74,11 +73,6 @@ public class DecodeAndDispatchBlock implements AbstractBlock
   @JsonIdentityReference(alwaysAsId = true)
   private final RenameMapTableBlock renameMapTableBlock;
   /**
-   * Bit register marking history of predictions
-   */
-  @JsonIdentityReference(alwaysAsId = true)
-  private final GlobalHistoryRegister globalHistoryRegister;
-  /**
    * Buffer holding information about branch instructions targets
    */
   @JsonIdentityReference(alwaysAsId = true)
@@ -106,7 +100,6 @@ public class DecodeAndDispatchBlock implements AbstractBlock
   /**
    * @param instructionFetchBlock Block fetching N instructions each clock event
    * @param renameMapTableBlock   Class holding mappings from architectural registers to speculative
-   * @param globalHistoryRegister A bit register holding history of predictions
    * @param branchTargetBuffer    Buffer holding information about branch instructions targets
    * @param decodeBufferSize      Size of the decode buffer
    * @param statistics            Statistics class holding information about the run
@@ -116,7 +109,6 @@ public class DecodeAndDispatchBlock implements AbstractBlock
    */
   public DecodeAndDispatchBlock(InstructionFetchBlock instructionFetchBlock,
                                 RenameMapTableBlock renameMapTableBlock,
-                                GlobalHistoryRegister globalHistoryRegister,
                                 BranchTargetBuffer branchTargetBuffer,
                                 int decodeBufferSize,
                                 SimulationStatistics statistics,
@@ -129,7 +121,6 @@ public class DecodeAndDispatchBlock implements AbstractBlock
     this.codeBuffer = new ArrayList<>();
     this.stallFlag  = false;
     
-    this.globalHistoryRegister = globalHistoryRegister;
     this.branchTargetBuffer    = branchTargetBuffer;
     this.decodeBufferSize      = decodeBufferSize;
     this.codeBranchInterpreter = codeBranchInterpreter;
@@ -332,9 +323,6 @@ public class DecodeAndDispatchBlock implements AbstractBlock
         flush = true;
       }
     }
-    // Update global history register
-    boolean globalHistoryBit = (prediction && predTarget != -1) || doJump;
-    this.globalHistoryRegister.shiftSpeculativeValue(codeModel.getIntegerId(), globalHistoryBit);
     
     return flush;
   }// end of processBranchInstruction

@@ -220,9 +220,9 @@ public class CpuState implements Serializable
     this.renameMapTableBlock = new RenameMapTableBlock(unifiedRegisterFileBlock);
     
     // TODO: test sharing for small global history
-    this.globalHistoryRegister = new GlobalHistoryRegister(10);
-    BitPredictor defaultPredictor = BitPredictor.getDefaultPredictor(config.cpuConfig.predictorType,
-                                                                     config.cpuConfig.predictorDefaultState);
+    this.globalHistoryRegister = new GlobalHistoryRegister(8);
+    BitPredictor defaultPredictor = new BitPredictor(config.cpuConfig.predictorType,
+                                                     config.cpuConfig.predictorDefaultState);
     
     this.patternHistoryTable = new PatternHistoryTable(config.cpuConfig.phtSize, defaultPredictor);
     this.gShareUnit          = new GShareUnit(1024, config.cpuConfig.useGlobalHistory, this.globalHistoryRegister,
@@ -285,9 +285,8 @@ public class CpuState implements Serializable
     
     this.branchInterpreter      = new CodeBranchInterpreter();
     this.decodeAndDispatchBlock = new DecodeAndDispatchBlock(instructionFetchBlock, renameMapTableBlock,
-                                                             globalHistoryRegister, branchTargetBuffer,
-                                                             config.cpuConfig.fetchWidth, statistics,
-                                                             branchInterpreter);
+                                                             branchTargetBuffer, config.cpuConfig.fetchWidth,
+                                                             statistics, branchInterpreter);
     
     
     // Issue
@@ -485,7 +484,8 @@ public class CpuState implements Serializable
     boolean pcEnd         = instructionFetchBlock.getPc() >= instructionMemoryBlock.getCode().size() * 4;
     boolean renameEmpty   = decodeAndDispatchBlock.getCodeBuffer().isEmpty();
     boolean fetchNotEmpty = !instructionFetchBlock.getFetchedCode().isEmpty();
-    boolean nop = fetchNotEmpty && instructionFetchBlock.getFetchedCode().get(0).getInstructionName().equals("nop");
+    boolean nop           = fetchNotEmpty && instructionFetchBlock.getFetchedCode().get(0).getInstructionName()
+            .equals("nop");
     if (robEmpty && pcEnd && renameEmpty && nop)
     {
       return StopReason.kEndOfCode;

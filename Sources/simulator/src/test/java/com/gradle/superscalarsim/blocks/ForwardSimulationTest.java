@@ -918,7 +918,7 @@ public class ForwardSimulationTest
     Assert.assertEquals("nop", this.instructionFetchBlock.getFetchedCode().get(2).getInstructionName());
     Assert.assertEquals(1, this.decodeAndDispatchBlock.getCodeBuffer().size());
     Assert.assertEquals("jal tg0,lab3", this.decodeAndDispatchBlock.getCodeBuffer().get(0).getRenamedCodeLine());
-    Assert.assertEquals(1, this.globalHistoryRegister.getRegisterValueAsInt());
+    Assert.assertEquals(1, this.globalHistoryRegister.getRegisterValue());
     
     this.cpu.step();
     Assert.assertEquals("jal", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
@@ -929,7 +929,7 @@ public class ForwardSimulationTest
     Assert.assertEquals(1, this.branchIssueWindowBlock.getIssuedInstructions().size());
     Assert.assertEquals("jal tg0,lab3",
                         this.branchIssueWindowBlock.getIssuedInstructions().get(0).getRenamedCodeLine());
-    Assert.assertEquals(3, this.globalHistoryRegister.getRegisterValueAsInt());
+    Assert.assertEquals(3, this.globalHistoryRegister.getRegisterValue());
     
     this.cpu.step();
     Assert.assertEquals("jal", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
@@ -941,7 +941,7 @@ public class ForwardSimulationTest
     Assert.assertEquals("jal tg1,lab2",
                         this.branchIssueWindowBlock.getIssuedInstructions().get(0).getRenamedCodeLine());
     Assert.assertEquals("jal tg0,lab3", this.branchFunctionUnitBlock1.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertEquals(7, this.globalHistoryRegister.getRegisterValueAsInt());
+    Assert.assertEquals(7, this.globalHistoryRegister.getRegisterValue());
     
     this.cpu.step();
     Assert.assertEquals("nop", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
@@ -954,7 +954,7 @@ public class ForwardSimulationTest
                         this.branchIssueWindowBlock.getIssuedInstructions().get(0).getRenamedCodeLine());
     Assert.assertEquals("jal tg0,lab3", this.branchFunctionUnitBlock1.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("jal tg1,lab2", this.branchFunctionUnitBlock2.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertEquals(15, this.globalHistoryRegister.getRegisterValueAsInt());
+    Assert.assertEquals(15, this.globalHistoryRegister.getRegisterValue());
     
     this.cpu.step();
     Assert.assertEquals(0, this.decodeAndDispatchBlock.getCodeBuffer().size());
@@ -983,8 +983,6 @@ public class ForwardSimulationTest
     Assert.assertTrue(this.reorderBufferBlock.getRobItem(3).isReadyToBeCommitted());
     Assert.assertEquals(12, this.branchTargetBuffer.getEntryTarget(0));
     Assert.assertTrue(this.branchTargetBuffer.isEntryUnconditional(0));
-    // TODO: this value has been modified until GHR is revised
-    Assert.assertEquals(0, this.globalHistoryRegister.getHistoryValueAsInt(0));
     
     this.cpu.step();
     Assert.assertEquals(2, this.reorderBufferBlock.getReorderQueueSize());
@@ -992,7 +990,6 @@ public class ForwardSimulationTest
     Assert.assertEquals("jal tg3,labFinal", this.branchFunctionUnitBlock2.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals(8, this.branchTargetBuffer.getEntryTarget(12));
     Assert.assertTrue(this.branchTargetBuffer.isEntryUnconditional(12));
-    Assert.assertEquals(1, this.globalHistoryRegister.getHistoryValueAsInt(3));
     
     this.cpu.step();
     Assert.assertEquals(2, this.reorderBufferBlock.getReorderQueueSize());
@@ -1007,13 +1004,11 @@ public class ForwardSimulationTest
     Assert.assertTrue(this.reorderBufferBlock.getRobItem(9).isReadyToBeCommitted());
     Assert.assertEquals(4, this.branchTargetBuffer.getEntryTarget(8));
     Assert.assertTrue(this.branchTargetBuffer.isEntryUnconditional(8));
-    Assert.assertEquals(3, this.globalHistoryRegister.getHistoryValueAsInt(6));
     
     this.cpu.step();
     Assert.assertEquals(0, this.reorderBufferBlock.getReorderQueueSize());
     Assert.assertEquals(16, this.branchTargetBuffer.getEntryTarget(4));
     Assert.assertTrue(this.branchTargetBuffer.isEntryUnconditional(8));
-    Assert.assertEquals(7, this.globalHistoryRegister.getHistoryValueAsInt(9));
     Assert.assertEquals(0, (int) this.unifiedRegisterFileBlock.getRegister("x0").getValue(DataTypeEnum.kInt));
   }
   
@@ -1358,7 +1353,7 @@ public class ForwardSimulationTest
     
     this.cpu.step();
     Assert.assertEquals(10, (int) this.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt), 0.01);
-    Assert.assertEquals(0, this.globalHistoryRegister.getRegisterValueAsInt());
+    Assert.assertEquals(0, this.globalHistoryRegister.getRegisterValue());
   }
   
   
@@ -1436,7 +1431,7 @@ public class ForwardSimulationTest
     Assert.assertEquals(-10, (int) this.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt));
     
     this.cpu.step();
-    Assert.assertEquals(1, this.globalHistoryRegister.getRegisterValueAsInt());
+    Assert.assertEquals(1, this.globalHistoryRegister.getRegisterValue());
   }
   
   @Test

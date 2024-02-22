@@ -48,7 +48,7 @@ public class CpuLoopBenchmark
   @OutputTimeUnit(TimeUnit.MILLISECONDS)
   public Cpu shortLoop()
   {
-    // 100 iters on a load/store loop
+    // 100 iterations on a load/store loop
     String code = """
             addi x16, x0, 100
             label:
@@ -61,7 +61,6 @@ public class CpuLoopBenchmark
     config.code = code;
     Cpu cpu = new Cpu(config);
     cpu.execute(false);
-    
     return cpu;
   }
 }

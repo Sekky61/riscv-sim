@@ -57,15 +57,6 @@ public class BitPredictor
   private int bitWidth;
   
   /**
-   * Constructor
-   */
-  public BitPredictor(int bitWidth, int initialState)
-  {
-    this.bitWidth = bitWidth;
-    this.state    = initialState;
-  }
-  
-  /**
    * Copy constructor
    */
   public BitPredictor(BitPredictor bitPredictor)
@@ -77,12 +68,13 @@ public class BitPredictor
   /**
    * @param config The configuration
    *
-   * @brief Get the default state for the predictor from the configuration
+   * @brief Constructor via predictor type
    */
-  public static BitPredictor getDefaultPredictor(PredictorType predictorType, int initialState)
+  public BitPredictor(PredictorType predictorType, int initialState)
   {
-    int width = predictorType.getWidth();
-    return new BitPredictor(width, initialState);
+    this.bitWidth = predictorType.getWidth();
+    this.state    = initialState;
+    assert predictorType.isValidState(initialState);
   }
   
   /**
@@ -98,9 +90,24 @@ public class BitPredictor
   }
   
   /**
+   * @brief Adjusts the state of the predictor based on the actual outcome
+   */
+  public void sendFeedback(boolean outcome)
+  {
+    if (outcome)
+    {
+      upTheProbability();
+    }
+    else
+    {
+      downTheProbability();
+    }
+  }
+  
+  /**
    * @brief Ups the probability that branch instruction should be taken
    */
-  public void upTheProbability()
+  void upTheProbability()
   {
     int maxState = (1 << bitWidth) - 1;
     if (state < maxState)
@@ -112,7 +119,7 @@ public class BitPredictor
   /**
    * @brief Downs the probability that branch instruction should be taken
    */
-  public void downTheProbability()
+  void downTheProbability()
   {
     if (bitWidth == 0)
     {

@@ -35,135 +35,69 @@ package com.gradle.superscalarsim.blocks.branch;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-
 /**
- * @class GlobalHistoryRegister
- * @brief Class implements interface of manipulating with the bit array holding history of branching
- * (true if the branch was taken, false if the branch was not taken)
+ * @brief Global History Register (also known as Branch History Shift Register). Used for dynamic, global branch prediction.
+ * The maximum length of the register is artificially limited to 8 bits.
+ * @details A bit array holding history of last n branches (true if the branch was taken, false if the branch was not taken).
+ * The value of the register is used to index the table of predictors.
+ * The history is updated only by conditional branches.
  */
 @JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
 public class GlobalHistoryRegister
 {
   /**
-   * @brief Bit array.
-   * Index 0 is the newest bit. New value is written for every decoded branch instruction.
-   */
-  private final boolean[] shiftRegister;
-  /**
-   * History of bit arrays for later indexing to GShare or for bit array repair.
-   * Key is the id of an instruction.
-   * Value is the bit array shiftRegister.
-   */
-  private final Map<Integer, boolean[]> history;
-  /**
-   * Size (in bits) of the GHR
+   * Size of the GHR in bits
    */
   private final int size;
+  /**
+   * @brief Bit array.
+   * Index 0 is the newest bit. New value is written for every comitted conditional branch.
+   * The initial state is all zeros.
+   */
+  private int shiftRegister;
   
   /**
-   * @param [in] size - Size of the bit array
+   * @param size Size of the bit vector. Values 1-8 are allowed.
    *
    * @brief Constructor
    */
   public GlobalHistoryRegister(int size)
   {
-    this.shiftRegister = new boolean[size];
-    this.history       = new HashMap<>();
+    assert size >= 1 && size <= 8;
     this.size          = size;
-    
-    Arrays.fill(this.shiftRegister, false);
+    this.shiftRegister = 0;
   }// end of Constructor
   //----------------------------------------------------------------------
   
   /**
-   * @param [in] isJump - Was the branch taken or not?
+   * @param isJump Was the branch taken or not?
    *
    * @brief Shifts new bit value into the vector
    */
   public void shiftValue(boolean isJump)
   {
-    System.arraycopy(this.shiftRegister, 0, this.shiftRegister, 1, this.shiftRegister.length - 1);
-    this.shiftRegister[0] = isJump;
+    this.shiftRegister = (this.shiftRegister << 1) | (isJump ? 1 : 0);
+    int mask = (1 << this.size) - 1;
+    this.shiftRegister &= mask;
   }// end of shiftValue
-  //----------------------------------------------------------------------
-  
-  /**
-   * @param [in] id     - Bulk id the instruction
-   * @param [in] isJump - Was the branch taken or not?
-   *
-   * @brief Shifts speculative bit value into the register while saving the old into the register
-   */
-  public void shiftSpeculativeValue(int id, boolean isJump)
-  {
-    boolean[] historyValue = new boolean[this.shiftRegister.length];
-    System.arraycopy(this.shiftRegister, 0, historyValue, 0, this.shiftRegister.length);
-    this.history.put(id, historyValue);
-    System.arraycopy(this.shiftRegister, 0, this.shiftRegister, 1, this.shiftRegister.length - 1);
-    this.shiftRegister[0] = isJump;
-  }// end of shiftSpeculativeValue
   //----------------------------------------------------------------------
   
   /**
    * @return Integer value of the bit vector
    * @brief Returns the bit array as integer.
    */
-  public int getRegisterValueAsInt()
+  public int getRegisterValue()
   {
-    int result = 0;
-    for (int i = 0; i < this.shiftRegister.length; i++)
-    {
-      result += this.shiftRegister[i] ? Math.pow(2, i) : 0;
-    }
-    return result;
+    return this.shiftRegister;
   }// end of getRegisterValueAsInt
   //----------------------------------------------------------------------
   
   /**
-   * @param [in] id - Id of the history bit array (bulk id)
-   *
-   * @return Integer value of the bit vector
-   * @brief Gets bit array as integer from history
+   * @return The history as a bit array
    */
-  public int getHistoryValueAsInt(int id)
+  @Override
+  public String toString()
   {
-    boolean[] value = this.history.get(id);
-    if (value == null)
-    {
-      return -1;
-    }
-    int result = 0;
-    for (int i = 0; i < value.length; i++)
-    {
-      result += value[i] ? Math.pow(2, i) : 0;
-    }
-    return result;
-  }// end of getHistoryValueAsInt
-  //----------------------------------------------------------------------
-  
-  /**
-   * @param [in] id - Id of the history bit array (bulk id)
-   *
-   * @brief Removes history value on specified register
-   */
-  public void removeHistoryValue(int id)
-  {
-    this.history.remove(id);
-  }// end of removeHistoryValue
-  //----------------------------------------------------------------------
-  
-  /**
-   * @param id Id of the history bit array (bulk id)
-   *
-   * @brief Sets history bit array value as current value
-   */
-  public void setHistoryValueAsCurrent(int id)
-  {
-    boolean[] historyValue = this.history.get(id);
-    this.history.remove(id);
-    System.arraycopy(historyValue, 0, this.shiftRegister, 0, historyValue.length);
-  }// end of setHistoryValueAsCurrent
-  //----------------------------------------------------------------------
+    return Integer.toBinaryString(this.shiftRegister);
+  }// end of toString
 }

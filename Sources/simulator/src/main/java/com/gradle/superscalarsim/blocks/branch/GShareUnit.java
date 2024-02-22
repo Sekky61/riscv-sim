@@ -37,13 +37,13 @@ import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
 /**
- * @class GShareUnit
- * @brief Class containing GShare logic for indexing correct bit predictor
+ * @brief The interaction point between prediction and the rest of the CPU.
+ * @details Provides static and dynamic prediction, correlated and uncorrelated.
+ * <a href="https://courses.cs.washington.edu/courses/csep548/06au/lectures/branchPred.pdf">Useful link about Correlated Predictor.</a>
  */
 @JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
 public class GShareUnit
 {
-  
   /**
    * Table with all bit predictors
    */
@@ -61,12 +61,14 @@ public class GShareUnit
   private int size;
   
   /**
-   * True if the global history register is used
+   * True if the global history register is used.
+   * If false, the prediction is based only on the program counter and is no longer correlated with the history.
    */
   private boolean useGlobalHistory;
   
   /**
    * @param size                  Size of the pattern table
+   * @param useGlobalHistory      True if the global history register is used
    * @param globalHistoryRegister Bit array of branching history
    * @param patternHistoryTable   Table with all bit predictors
    *
@@ -77,10 +79,10 @@ public class GShareUnit
                     GlobalHistoryRegister globalHistoryRegister,
                     PatternHistoryTable patternHistoryTable)
   {
-    this.patternHistoryTable   = patternHistoryTable;
-    this.globalHistoryRegister = globalHistoryRegister;
-    this.useGlobalHistory      = useGlobalHistory;
     this.size                  = size;
+    this.useGlobalHistory      = useGlobalHistory;
+    this.globalHistoryRegister = globalHistoryRegister;
+    this.patternHistoryTable   = patternHistoryTable;
   }// end of Constructor
   //----------------------------------------------------------------------
   
@@ -95,28 +97,10 @@ public class GShareUnit
     int index = programCounter % size;
     if (useGlobalHistory)
     {
-      index ^= globalHistoryRegister.getRegisterValueAsInt();
+      index ^= globalHistoryRegister.getRegisterValue();
     }
     return this.patternHistoryTable.getPredictor(index);
   }// end of getPredictor
-  //----------------------------------------------------------------------
-  
-  /**
-   * @param programCounter Position of the branch instruction
-   * @param id             ID of the bit array history value
-   *
-   * @return Predictor on the specified index
-   * @brief Get predictor from PHT with older GHT value
-   */
-  public BitPredictor getPredictorFromOld(int programCounter, int id)
-  {
-    int index = programCounter % size;
-    if (useGlobalHistory)
-    {
-      index ^= globalHistoryRegister.getRegisterValueAsInt();
-    }
-    return this.patternHistoryTable.getPredictor(index);
-  }// end of getPredictorFromOld
   //----------------------------------------------------------------------
   
   /**

@@ -164,3 +164,11 @@ To also extract the messages:
 ```bash
 ... | jq '.debugLog.entries | map(select(.message | contains("Value of x3"))) | .[] .message'
 ```
+
+## Benchmarking
+
+To run a specific benchmark, use the following command:
+
+```bash
+java -jar build/libs/superscalar-simulator-1.0-jmh.jar -i 5  "CpuLoopBenchmark"
+```

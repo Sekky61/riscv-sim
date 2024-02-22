@@ -27,10 +27,10 @@ public class InstructionFetchBlockTest
     InputCodeModel nop = new InputCodeModelBuilder().hasInstructionName("nop").build();
     this.instructionMemoryBlock = new InstructionMemoryBlock(null, null, nop);
     this.branchTargetBuffer     = new BranchTargetBuffer(1000);
-    this.gShareUnit             = new GShareUnit(1, false, new GlobalHistoryRegister(1000), new PatternHistoryTable(10,
-                                                                                                                    BitPredictor.getDefaultPredictor(
-                                                                                                                            BitPredictor.PredictorType.TWO_BIT_PREDICTOR,
-                                                                                                                            2)));
+    this.gShareUnit             = new GShareUnit(1, false, new GlobalHistoryRegister(8), new PatternHistoryTable(10,
+                                                                                                                 new BitPredictor(
+                                                                                                                         BitPredictor.PredictorType.TWO_BIT_PREDICTOR,
+                                                                                                                         2)));
     SimCodeModelFactory simCodeModelFactory = new SimCodeModelFactory();
     this.instructionFetchBlock = new InstructionFetchBlock(3, 1, simCodeModelFactory, this.instructionMemoryBlock,
                                                            this.gShareUnit, this.branchTargetBuffer);

@@ -38,7 +38,6 @@ import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.blocks.AbstractBlock;
 import com.gradle.superscalarsim.blocks.branch.BranchTargetBuffer;
 import com.gradle.superscalarsim.blocks.branch.GShareUnit;
-import com.gradle.superscalarsim.blocks.branch.GlobalHistoryRegister;
 import com.gradle.superscalarsim.blocks.loadstore.LoadBufferBlock;
 import com.gradle.superscalarsim.blocks.loadstore.StoreBufferBlock;
 import com.gradle.superscalarsim.cpu.DebugLog;
@@ -268,16 +267,13 @@ public class ReorderBufferBlock implements AbstractBlock
       boolean branchActuallyTaken = codeModel.isBranchLogicResult();
       int     pc                  = codeModel.getSavedPc();
       
+      // Update global history register
+      // TODO: before or after feedback to predictor?
+      gShareUnit.getGlobalHistoryRegister().shiftValue(branchActuallyTaken);
+      
       // Feedback to predictor
       // TODO look into gshareunit
-      if (branchActuallyTaken)
-      {
-        this.gShareUnit.getPredictorFromOld(pc, codeModel.getIntegerId()).upTheProbability();
-      }
-      else
-      {
-        this.gShareUnit.getPredictorFromOld(pc, codeModel.getIntegerId()).downTheProbability();
-      }
+      this.gShareUnit.getPredictor(pc).sendFeedback(branchActuallyTaken);
       this.branchTargetBuffer.setEntry(pc, codeModel, codeModel.getBranchTarget());
       
       int nextPc = pc + 4;
@@ -315,11 +311,6 @@ public class ReorderBufferBlock implements AbstractBlock
         // Feedback to predictor
         // Update target in BTB (branch target, regardless of if it was taken or not and if target was predicted correctly)
         this.branchTargetBuffer.setEntry(pc, codeModel, codeModel.getBranchTarget());
-        
-        GlobalHistoryRegister activeRegister = gShareUnit.getGlobalHistoryRegister();
-        // This also removes the value from the history stack
-        activeRegister.setHistoryValueAsCurrent(codeModel.getIntegerId());
-        activeRegister.shiftValue(false);
         
         this.instructionFetchBlock.setPc(nextPc);
         
@@ -435,10 +426,10 @@ public class ReorderBufferBlock implements AbstractBlock
       // Notify all that instruction is invalid
       simulationStatistics.incrementFailedInstructions();
       robItem.setCommitId(cycle); // todo: is this correct?
-      if (robItem.getInstructionTypeEnum() == InstructionTypeEnum.kJumpbranch)
-      {
-        this.gShareUnit.getGlobalHistoryRegister().removeHistoryValue(robItem.getIntegerId());
-      }
+      //      if (robItem.getInstructionTypeEnum() == InstructionTypeEnum.kJumpbranch)
+      //      {
+      //        this.gShareUnit.getGlobalHistoryRegister().removeHistoryValue(robItem.getIntegerId());
+      //      }
       removeInstruction(robItem);
       this.reorderQueue.removeLast();
     }
