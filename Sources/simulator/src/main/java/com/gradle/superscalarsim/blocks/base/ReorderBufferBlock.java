@@ -269,7 +269,10 @@ public class ReorderBufferBlock implements AbstractBlock
       
       // Update global history register
       // TODO: before or after feedback to predictor?
-      gShareUnit.getGlobalHistoryRegister().shiftValue(branchActuallyTaken);
+      if (codeModel.isConditionalBranch())
+      {
+        gShareUnit.getGlobalHistoryRegister().shiftValue(branchActuallyTaken);
+      }
       
       // Feedback to predictor
       // TODO look into gshareunit
