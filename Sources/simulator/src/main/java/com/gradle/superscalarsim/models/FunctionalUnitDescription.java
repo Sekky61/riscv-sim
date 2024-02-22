@@ -162,7 +162,8 @@ public class FunctionalUnitDescription
         return CapabilityName.bitwise;
       }
     }
-    return null;
+    // Probably a type cast, move. Use an adder
+    return CapabilityName.addition;
   }
   
   /**

@@ -261,13 +261,9 @@ public abstract class AbstractFunctionUnitBlock implements AbstractBlock
    */
   private int getDelayBasedOnCapability()
   {
-    String expr = this.simCodeModel.getInstructionFunctionModel().getInterpretableAs();
+    String                                   expr           = this.simCodeModel.getInstructionFunctionModel()
+            .getInterpretableAs();
     FunctionalUnitDescription.CapabilityName capabilityName = FunctionalUnitDescription.classifyOperation(expr);
-    if (capabilityName == null)
-    {
-      // Probably a type cast, so just return the base latency
-      return this.description.latency;
-    }
     for (FunctionalUnitDescription.Capability capability : this.description.operations)
     {
       if (capability.name == capabilityName)

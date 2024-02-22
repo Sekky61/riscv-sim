@@ -104,7 +104,7 @@ public class GHRTests
       cpu.step();
     }
     
-    // BNE comitted, new history, new predictor
+    // BNE committed, new history, new predictor
     BitPredictor predictor2 = cpu.cpuState.gShareUnit.getPredictor(branchPc);
     Assert.assertNotEquals(predictor, predictor2);
   }
