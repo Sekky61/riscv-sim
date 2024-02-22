@@ -52,7 +52,6 @@ import {
   fUnitSchema,
   fuTypes,
   isArithmeticUnitConfig,
-  predictorDefaults,
   predictorTypes,
   storeBehaviorTypes,
 } from '@/lib/forms/Isa';
@@ -132,7 +131,7 @@ const isaFormMetadata: IsaFormMetadata = {
   predictorType: {
     title: 'Predictor type in PHT',
   },
-  predictorDefault: {
+  predictorDefaultState: {
     title: 'Predictor default value',
   },
   cacheLines: {
@@ -235,6 +234,14 @@ const capabilitiesMetadata: {
   },
 };
 
+const twoStatePredictor = ['Not Taken', 'Taken'] as const;
+const fourStatePredictor = [
+  'Strongly Not Taken',
+  'Weakly Not Taken',
+  'Weakly Taken',
+  'Strongly Taken',
+] as const;
+
 export type IsaSettingsFormProps = {
   disabled?: boolean;
   form: UseFormReturn<CpuConfig>;
@@ -258,9 +265,8 @@ export default function IsaSettingsForm({
 
   // When predictorType changes, set a new predictorDefault
   useEffect(() => {
-    const defaultPredictor = predictorDefaults[watchPredictorType][0];
-    setValue('predictorDefault', defaultPredictor);
-  }, [watchPredictorType, setValue]);
+    setValue('predictorDefaultState', 0);
+  }, [setValue]);
 
   // This function is valid for regular fields, but not arrays
   const simpleRegister = (
@@ -468,10 +474,20 @@ export default function IsaSettingsForm({
                   <RadioInputWithTitle
                     {...radioRegister('predictorType')}
                     choices={predictorTypes}
+                    texts={['Zero bit', 'One bit', 'Two bit']}
                   />
                   <RadioInputWithTitle
-                    {...radioRegister('predictorDefault')}
-                    choices={predictorDefaults[watchPredictorType]}
+                    {...radioRegister('predictorDefaultState')}
+                    choices={
+                      watchPredictorType === 'TWO_BIT_PREDICTOR'
+                        ? [0, 1, 2, 3]
+                        : [0, 1]
+                    }
+                    texts={
+                      watchPredictorType === 'TWO_BIT_PREDICTOR'
+                        ? fourStatePredictor
+                        : twoStatePredictor
+                    }
                   />
                   <div className='flex gap-2 items-center m-2'>
                     <input

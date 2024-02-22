@@ -98,9 +98,9 @@ const migrations = {
 // TODO: look at https://github.com/localForage/localForage
 const persistIsaConfig = {
   // The key in localStorage
-  key: 'root',
+  key: 'isa',
   // Change the version when changing the schema
-  version: 13,
+  version: 14,
   storage,
   stateReconciler: hardSet,
   // This migration is used when the version number is increased
@@ -109,7 +109,7 @@ const persistIsaConfig = {
 
 const persistSimConfig = {
   key: 'simConfig',
-  version: 2,
+  version: 3,
   storage,
   stateReconciler: hardSet,
   migrate: createMigrate(migrations),

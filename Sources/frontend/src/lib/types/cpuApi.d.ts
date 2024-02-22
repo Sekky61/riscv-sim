@@ -414,15 +414,12 @@ export interface SimCodeModelFactory {
 
 export interface DecodeAndDispatchBlock {
   codeBuffer: Reference[];
-  flush: boolean;
   stallFlag: boolean;
-  stalledPullCount: number;
   decodeBufferSize: number;
   instructionFetchBlock?: InstructionFetchBlock;
   renameMapTableBlock?: RenameMapTableBlock;
   globalHistoryRegister?: GlobalHistoryRegister;
   branchTargetBuffer?: BranchTargetBuffer;
-  instructionMemoryBlock?: InstructionMemoryBlock;
   statistics: Reference;
 }
 
@@ -516,27 +513,23 @@ export interface BranchTargetEntryModel {
   pcTag: number;
   isConditional: boolean;
   target: number;
-  instructionId: number;
-  commitId: number;
   conditional: boolean;
 }
 
 export interface GlobalHistoryRegister {
-  shiftRegister: boolean[];
-  history: {
-    [k: string]: boolean[];
-  };
   size: number;
-}
-export interface PatternHistoryTable {
-  predictorMap: {
-    [address: number]: IBitPredictor;
-  };
-  size: number;
-  defaultPredictorClass: '0' | '1' | '2';
-  defaultTaken: boolean[];
+  shiftRegister: number;
 }
 
-export interface IBitPredictor {
-  state: null | [boolean] | [boolean, boolean]; // todo, how does 0bit predictor look like?
+export interface PatternHistoryTable {
+  predictorMap: {
+    [k: string]: BitPredictor;
+  };
+  size: number;
+  defaultPredictor: BitPredictor;
+}
+
+export interface BitPredictor {
+  state: number;
+  bitWidth: number;
 }

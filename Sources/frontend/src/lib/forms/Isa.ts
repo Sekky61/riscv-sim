@@ -32,29 +32,12 @@
 import { defaultAsmCode } from '@/constant/defaults';
 import { ZodIssueCode, z } from 'zod';
 
-export const predictorDefaults = {
-  '0bit': ['Taken', 'Not Taken'],
-  '1bit': ['Taken', 'Not Taken'],
-  '2bit': [
-    'Strongly Not Taken',
-    'Weakly Not Taken',
-    'Weakly Taken',
-    'Strongly Taken',
-  ],
-} as const;
-
-export const predictorTypes = ['0bit', '1bit', '2bit'] as const;
-export type PredictorType = (typeof predictorTypes)[number];
-
-export const predictorStates = [
-  'Taken',
-  'Not Taken',
-  'Strongly Taken',
-  'Strongly Not Taken',
-  'Weakly Taken',
-  'Weakly Not Taken',
+export const predictorTypes = [
+  'ZERO_BIT_PREDICTOR',
+  'ONE_BIT_PREDICTOR',
+  'TWO_BIT_PREDICTOR',
 ] as const;
-export type PredictorState = (typeof predictorStates)[number];
+export type PredictorType = (typeof predictorTypes)[number];
 
 export const cacheReplacementTypes = ['LRU', 'FIFO', 'Random'] as const;
 export type CacheReplacementType = (typeof cacheReplacementTypes)[number];
@@ -217,7 +200,7 @@ export const isaFormSchema = z
     btbSize: z.number().min(1).max(16384),
     phtSize: z.number().min(1).max(16384),
     predictorType: z.enum(predictorTypes),
-    predictorDefault: z.enum(predictorStates),
+    predictorDefaultState: z.number().min(0).max(3), // The maximum for 2bit (4 states). Must be further validated.
     useGlobalHistory: z.boolean(),
     // Functional Units
     fUnits: z.array(fUnitSchema),
@@ -225,8 +208,6 @@ export const isaFormSchema = z
     useCache: z.boolean(),
     cacheLines: z.number().min(1).max(65536),
     cacheLineSize: z.number().min(1).max(512),
-    cacheLoadLatency: z.number().min(1).max(1000),
-    cacheStoreLatency: z.number().min(1).max(1000),
     cacheAssoc: z.number().min(1),
     cacheReplacement: z.enum(cacheReplacementTypes),
     storeBehavior: z.enum(storeBehaviorTypes),
@@ -244,15 +225,16 @@ export const isaFormSchema = z
   })
   .refine((data) => {
     // Check the predictor
-    const predictorDefault = data.predictorDefault;
+    const predictorDefault = data.predictorDefaultState;
     const predictorType = data.predictorType;
-    const predictorDefaultsForType = predictorDefaults[predictorType];
+
     if (
-      !(predictorDefaultsForType as readonly PredictorState[]).includes(
-        predictorDefault,
-      )
+      predictorType === 'ZERO_BIT_PREDICTOR' ||
+      predictorType === 'ONE_BIT_PREDICTOR'
     ) {
-      return "Predictor default state doesn't match the predictor type";
+      if (predictorDefault !== 0 && predictorDefault !== 1) {
+        return "Predictor default state doesn't match the predictor type";
+      }
     }
 
     // Check that cacheAssoc <= cacheLines
@@ -299,8 +281,8 @@ export const defaultCpuConfig: CpuConfig = {
   flushPenalty: 1,
   btbSize: 1024,
   phtSize: 10,
-  predictorType: '2bit',
-  predictorDefault: 'Weakly Taken',
+  predictorType: 'TWO_BIT_PREDICTOR',
+  predictorDefaultState: 2,
   useGlobalHistory: false,
   fUnits: [
     {
@@ -394,8 +376,6 @@ export const defaultCpuConfig: CpuConfig = {
   speculativeRegisters: 320,
   coreClockFrequency: 100000000,
   cacheClockFrequency: 100000000,
-  cacheLoadLatency: 1,
-  cacheStoreLatency: 1,
 };
 
 export const defaultSimulationConfig: SimulationConfig = {
