@@ -1,0 +1,49 @@
+init:
+    lla a5,arr
+    lla a3,drawCircle
+    lla a4,drawRectangle
+    sw a3,0(a5)
+    sw a4,4(a5)
+    sw a3,8(a5)
+    sw a4,12(a5)
+    ret
+
+drawCircle:
+    lw a5,0(a0) #DEBUG"drawCircle called"
+    slli t0,a5,1
+    sw t0,0(a0)
+    ret
+
+drawRectangle:
+    lw a5,0(a0) #DEBUG"drawRectangle called"
+    addi t0,a5,1
+    sw t0,0(a0)
+    ret
+
+main:
+    addi sp,sp,-32
+    sw s0,24(sp)
+    sw s1,20(sp)
+    sw s2,16(sp)
+    sw ra,28(sp)
+    lla s0,arr
+    call init
+    lla s2,arr+16
+    sw zero,12(sp)
+    addi s1,sp,12
+.L6:
+    lw a5,0(s0)
+    mv a0,s1
+    addi s0,s0,4
+    jalr a5
+    bne s0,s2,.L6
+    lw ra,28(sp)
+    lw s0,24(sp)
+    lw a0,12(sp)
+    lw s1,20(sp)
+    lw s2,16(sp)
+    addi sp,sp,32
+    jr ra
+    .align 2
+arr:
+    .zero 16

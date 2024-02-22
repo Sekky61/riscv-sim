@@ -441,4 +441,25 @@ public class AlgorithmTests
     Assert.assertTrue(logEntries.get(8).getMessage().startsWith("Node 2"));
     Assert.assertTrue(logEntries.get(9).getMessage().startsWith("Node 1"));
   }
+  
+  @Test
+  public void test_DynamicDispatch() throws IOException
+  {
+    // Setup
+    SimulationConfig cfg = SimulationConfig.getDefaultConfiguration();
+    String code = new String(AlgorithmTests.class.getResourceAsStream("/assembler/functionPointers.r5").readAllBytes());
+    cfg.code       = code;
+    cfg.entryPoint = "main";
+    Cpu cpu = new Cpu(cfg);
+    cpu.execute(true);
+    
+    // Assert
+    // There should be prints, first a drawCircle, then a drawRectangle
+    List<DebugLog.Entry> logEntries = cpu.cpuState.debugLog.getEntries();
+    Assert.assertFalse(logEntries.isEmpty());
+    Assert.assertTrue(logEntries.get(0).getMessage().startsWith("drawCircle"));
+    Assert.assertTrue(logEntries.get(1).getMessage().startsWith("drawRectangle"));
+    Assert.assertTrue(logEntries.get(2).getMessage().startsWith("drawCircle"));
+    Assert.assertTrue(logEntries.get(3).getMessage().startsWith("drawRectangle"));
+  }
 }
