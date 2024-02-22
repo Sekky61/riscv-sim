@@ -195,14 +195,6 @@ public class CpuConfigValidator
     {
       errors.add(new ConfigError("Cache line size must be a power of two", "cacheLineSize"));
     }
-    if (cpuConfig.cacheStoreLatency < 1)
-    {
-      errors.add(new ConfigError("Cache store latency must be positive", "cacheStoreLatency"));
-    }
-    if (cpuConfig.cacheLoadLatency < 1)
-    {
-      errors.add(new ConfigError("Cache load latency must be positive", "cacheLoadLatency"));
-    }
     if (cpuConfig.cacheAssoc < 1)
     {
       errors.add(new ConfigError("Cache associativity must be greater than 0", "cacheAssociativity"));
