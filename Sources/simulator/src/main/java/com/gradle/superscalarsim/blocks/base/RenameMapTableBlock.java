@@ -284,4 +284,12 @@ public class RenameMapTableBlock
   {
     return this.registerFileBlock.getSpeculativeRegisterFile().getRegisterCount() - this.freeList.size();
   }
+  
+  /**
+   * @return Number of free speculative registers
+   */
+  public int getFreeRegistersCount()
+  {
+    return this.freeList.size();
+  }
 }

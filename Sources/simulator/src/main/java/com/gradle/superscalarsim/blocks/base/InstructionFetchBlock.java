@@ -257,6 +257,22 @@ public class InstructionFetchBlock implements AbstractBlock
   //----------------------------------------------------------------------
   
   /**
+   * @return Number of instructions to pull. Basically filters out nops.
+   */
+  public int getPullCount()
+  {
+    int count = 0;
+    for (SimCodeModel simCode : this.getFetchedCode())
+    {
+      if (!simCode.getInstructionName().equals("nop"))
+      {
+        count++;
+      }
+    }
+    return count;
+  }
+  
+  /**
    * Get fetched instructions
    *
    * @return Fetched instructions

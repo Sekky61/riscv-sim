@@ -246,11 +246,8 @@ public class ReorderBufferBlock implements AbstractBlock
     // Check all instructions if after commit some can be removed, remove them in other units
     flushInvalidInstructions(cycle);
     
-    // Pull new instructions from decoder, unless you are flushing
-    if (!this.decodeAndDispatchBlock.shouldFlush())
-    {
-      pullNewDecodedInstructions();
-    }
+    // Pull new instructions from decoder
+    pullNewDecodedInstructions();
   }// end of simulate
   //----------------------------------------------------------------------
   
@@ -465,7 +462,6 @@ public class ReorderBufferBlock implements AbstractBlock
       {
         // No more space, stop
         this.decodeAndDispatchBlock.setStallFlag(true);
-        this.decodeAndDispatchBlock.setStalledPullCount(pulledCount);
         break;
       }
       
@@ -533,8 +529,6 @@ public class ReorderBufferBlock implements AbstractBlock
       }
     }
     
-    // clear what you can
-    this.decodeAndDispatchBlock.setFlush(true);
     // TODO: move to fetch and decode block
     this.decodeAndDispatchBlock.getCodeBuffer().forEach(
             simCodeModel -> simCodeModel.getArguments().stream().filter(argument -> argument.getName().startsWith("r"))
@@ -545,6 +539,8 @@ public class ReorderBufferBlock implements AbstractBlock
                                  renameMapTableBlock.freeMapping(argument.getValue());
                                }
                              }));
+    // clear what you can
+    this.decodeAndDispatchBlock.flush();
     
     this.instructionFetchBlock.clearFetchedCode();
     

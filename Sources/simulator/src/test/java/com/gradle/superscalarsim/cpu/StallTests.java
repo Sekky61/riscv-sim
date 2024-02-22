@@ -120,4 +120,61 @@ public class StallTests
     Assert.assertEquals(2, cpu.cpuState.decodeAndDispatchBlock.getCodeBuffer().size());
     Assert.assertEquals(3, cpu.cpuState.storeBufferBlock.getQueueSize());
   }
+  
+  @Test
+  public void testNotEnoughSpeculativeRegisters()
+  {
+    SimulationConfig cfg = SimulationConfig.getDefaultConfiguration();
+    cfg.code                           = """
+            addi x1, x0, 1
+            addi x2, x0, 2
+            addi x3, x0, 3
+            addi x4, x0, 4
+            addi x5, x0, 5
+            addi x6, x0, 6
+            """;
+    cfg.cpuConfig.fetchWidth           = 3;
+    cfg.cpuConfig.speculativeRegisters = 1;
+    Cpu cpu = new Cpu(cfg);
+    
+    cpu.step();
+    cpu.step();
+    // Nothing gets renamed, because all or nothing has to be renamed
+    // TODO: if one of the three gets renamed, the instruction in fetch stays renamed. This is not desired
+    Assert.assertEquals(0, cpu.cpuState.decodeAndDispatchBlock.getCodeBuffer().size());
+    
+    cpu.step();
+    // Cannot be decoded
+    Assert.assertEquals(0, cpu.cpuState.decodeAndDispatchBlock.getCodeBuffer().size());
+  }
+  
+  @Test
+  public void testStallDueToNoSpeculativeRegisters()
+  {
+    SimulationConfig cfg = SimulationConfig.getDefaultConfiguration();
+    cfg.code                           = """
+            addi x1, x0, 1
+            addi x2, x0, 2
+            addi x3, x0, 3
+            addi x4, x0, 4
+            addi x5, x0, 5
+            addi x6, x0, 6
+            addi x7, x0, 7
+            """;
+    cfg.cpuConfig.fetchWidth           = 3;
+    cfg.cpuConfig.speculativeRegisters = 3;
+    Cpu cpu = new Cpu(cfg);
+    
+    cpu.step();
+    cpu.step();
+    // Nothing gets renamed, because all or nothing has to be renamed
+    // TODO: if one of the three gets renamed, the instruction in fetch stays renamed. This is not desired
+    Assert.assertEquals(3, cpu.cpuState.decodeAndDispatchBlock.getCodeBuffer().size());
+    
+    cpu.step();
+    // Cannot be decoded, no more speculative registers
+    Assert.assertEquals("addi x4,x0,4",
+                        cpu.cpuState.instructionFetchBlock.getFetchedCode().get(0).getRenamedCodeLine());
+    Assert.assertEquals(0, cpu.cpuState.decodeAndDispatchBlock.getCodeBuffer().size());
+  }
 }

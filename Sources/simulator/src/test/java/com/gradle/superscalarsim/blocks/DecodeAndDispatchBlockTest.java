@@ -79,6 +79,8 @@ public class DecodeAndDispatchBlockTest
                                                        new RegisterModelFactory());
     renameMapTableBlock = new RenameMapTableBlock(urf);
     
+    Mockito.when(instructionFetchBlock.getPullCount()).thenCallRealMethod();
+    
     int fetchWidth          = 3;
     int maximumInstructions = 20;
     decodeAndDispatchBlock = new DecodeAndDispatchBlock(instructionFetchBlock, renameMapTableBlock,
