@@ -78,11 +78,6 @@ public class ReorderBufferBlock implements AbstractBlock
   public int commitLimit;
   
   /**
-   * Flag to mark newly added instructions as speculative.
-   * This flag is set after encountering branch instruction.
-   */
-  public boolean speculativePulls;
-  /**
    * @brief Flag to be set if the simulation should halt
    */
   public StopReason stopReason;
@@ -189,8 +184,6 @@ public class ReorderBufferBlock implements AbstractBlock
     this.simulationStatistics = statisticsCounter;
     
     this.reorderQueue = new ArrayDeque<>();
-    
-    this.speculativePulls = false;
     
     this.commitLimit = commitLimit;
     this.bufferSize  = bufferSize;
@@ -303,8 +296,7 @@ public class ReorderBufferBlock implements AbstractBlock
       }
       else
       {
-        // The next instruction is the wrong one.
-        // Flush the queue
+        // The next instruction is wrong. Flush the queue.
         Optional<SimCodeModel> robItem = this.reorderQueue.stream().skip(1).findFirst();
         if (robItem.isPresent())
         {
@@ -314,18 +306,11 @@ public class ReorderBufferBlock implements AbstractBlock
         // Feedback to predictor
         // Update target in BTB (branch target, regardless of if it was taken or not and if target was predicted correctly)
         this.branchTargetBuffer.setEntry(pc, codeModel, codeModel.getBranchTarget());
-        
         this.instructionFetchBlock.setPc(nextPc);
-        
+        this.decodeAndDispatchBlock.flush();
+        this.instructionFetchBlock.flush();
         // Note the flush in statistics
         simulationStatistics.incrementRobFlushes();
-      }
-      
-      // If we go to the end of the queue, we did not find a branch instruction.
-      // This means that we are not speculating at this point.
-      if (!reorderQueue.getLast().isSpeculative())
-      {
-        this.speculativePulls = false;
       }
     }
     else if (codeModel.getInstructionTypeEnum() == InstructionTypeEnum.kLoadstore)
@@ -344,6 +329,8 @@ public class ReorderBufferBlock implements AbstractBlock
           invalidateInstructions(model);
           // Repeat the bad load
           this.instructionFetchBlock.setPc(model.getSavedPc());
+          // Note the flush in statistics
+          simulationStatistics.incrementRobFlushes();
         }
         // Release store buffer entry
         storeBufferBlock.releaseStoreFirst();
@@ -429,10 +416,6 @@ public class ReorderBufferBlock implements AbstractBlock
       // Notify all that instruction is invalid
       simulationStatistics.incrementFailedInstructions();
       robItem.setCommitId(cycle); // todo: is this correct?
-      //      if (robItem.getInstructionTypeEnum() == InstructionTypeEnum.kJumpbranch)
-      //      {
-      //        this.gShareUnit.getGlobalHistoryRegister().removeHistoryValue(robItem.getIntegerId());
-      //      }
       removeInstruction(robItem);
       this.reorderQueue.removeLast();
     }
@@ -459,9 +442,11 @@ public class ReorderBufferBlock implements AbstractBlock
         break;
       }
       
-      codeModel.setSpeculative(this.speculativePulls);
+      SimCodeModel last        = this.reorderQueue.peekLast();
+      boolean      speculative = last != null && (last.isSpeculative() || last.getInstructionTypeEnum() == InstructionTypeEnum.kJumpbranch);
+      
+      codeModel.setSpeculative(speculative);
       this.reorderQueue.add(codeModel);
-      this.speculativePulls = this.speculativePulls || codeModel.getInstructionTypeEnum() == InstructionTypeEnum.kJumpbranch;
       if (codeModel.isLoad())
       {
         this.loadBufferBlock.addLoadToBuffer(codeModel);
@@ -535,12 +520,7 @@ public class ReorderBufferBlock implements AbstractBlock
                              }));
     // clear what you can
     this.decodeAndDispatchBlock.flush();
-    
-    this.instructionFetchBlock.clearFetchedCode();
-    
-    boolean keptAnyInstruction  = !this.reorderQueue.isEmpty();
-    boolean lastKeptSpeculative = keptAnyInstruction && this.reorderQueue.getLast().isSpeculative();
-    this.speculativePulls = keptAnyInstruction && lastKeptSpeculative;
+    this.instructionFetchBlock.flush();
   }// end of invalidateInstructions
   //----------------------------------------------------------------------
   

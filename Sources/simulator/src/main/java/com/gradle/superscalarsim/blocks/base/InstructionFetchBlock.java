@@ -246,12 +246,8 @@ public class InstructionFetchBlock implements AbstractBlock
   /**
    * @brief Clears fetched code buffer
    */
-  public void clearFetchedCode()
+  public void flush()
   {
-    for (SimCodeModel simCode : this.getFetchedCode())
-    {
-      simCode.setFinished(true);
-    }
     this.fetchedCode.clear();
   }
   //----------------------------------------------------------------------
