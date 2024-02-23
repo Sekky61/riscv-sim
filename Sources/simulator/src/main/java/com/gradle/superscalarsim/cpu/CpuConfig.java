@@ -47,6 +47,10 @@ import static com.gradle.superscalarsim.blocks.branch.BitPredictor.WEAKLY_TAKEN;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class CpuConfig implements Serializable
 {
+  /**
+   * Provided for organizational purposes.
+   * Not used in the simulation. Displayed on frontend.
+   */
   String name;
   /**
    * Maximum number of instructions that can be in the ROB

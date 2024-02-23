@@ -54,7 +54,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.logging.Logger;
 
 /**
@@ -239,12 +238,7 @@ public class CpuState implements Serializable
     };
     
     // Define memory
-    boolean writeBack = true;
-    if (!Objects.equals(config.cpuConfig.storeBehavior, "write-back"))
-    {
-      throw new IllegalStateException("Unexpected value for store behavior: " + config.cpuConfig.storeBehavior);
-    }
-    
+    boolean writeBack = config.cpuConfig.storeBehavior.equals("write-back");
     if (config.cpuConfig.useCache)
     {
       this.cache = new Cache(simulatedMemory, config.cpuConfig.cacheLines, config.cpuConfig.cacheAssoc,

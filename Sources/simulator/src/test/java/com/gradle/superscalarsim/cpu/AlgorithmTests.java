@@ -43,49 +43,6 @@ import java.util.List;
 
 public class AlgorithmTests
 {
-  static String quickSortCode = """
-          
-          // NOT the same as `extern char *arr`;
-          extern char arr[];
-          
-          // Starts here
-          int main() {
-              int size = 16;
-              quicksort(arr, 0, size - 1);
-              return 0;
-          }
-          
-          void swap(char *a, char *b) {
-              char temp = *a;
-              *a = *b;
-              *b = temp;
-          }
-          
-          int partition(char arr[], int low, int high) {
-              char pivot = arr[high];
-              int i = low - 1;
-              
-              for (int j = low; j < high; j++) {
-                  if (arr[j] <= pivot) {
-                      i++;
-                      swap(&arr[i], &arr[j]);
-                  }
-              }
-              
-              swap(&arr[i + 1], &arr[high]);
-              return i + 1;
-          }
-          
-          void quicksort(char arr[], int low, int high) {
-              if (low < high) {
-                  int pivotIndex = partition(arr, low, high);
-                  
-                  quicksort(arr, low, pivotIndex - 1);
-                  quicksort(arr, pivotIndex + 1, high);
-              }
-          }
-          """;
-  
   public static String quicksortAssembly = """
           main:
               addi sp,sp,-16
@@ -284,6 +241,48 @@ public class AlgorithmTests
           .L38:
               ret
               """;
+  static String quickSortCode = """
+          
+          // NOT the same as `extern char *arr`;
+          extern char arr[];
+          
+          // Starts here
+          int main() {
+              int size = 16;
+              quicksort(arr, 0, size - 1);
+              return 0;
+          }
+          
+          void swap(char *a, char *b) {
+              char temp = *a;
+              *a = *b;
+              *b = temp;
+          }
+          
+          int partition(char arr[], int low, int high) {
+              char pivot = arr[high];
+              int i = low - 1;
+              
+              for (int j = low; j < high; j++) {
+                  if (arr[j] <= pivot) {
+                      i++;
+                      swap(&arr[i], &arr[j]);
+                  }
+              }
+              
+              swap(&arr[i + 1], &arr[high]);
+              return i + 1;
+          }
+          
+          void quicksort(char arr[], int low, int high) {
+              if (low < high) {
+                  int pivotIndex = partition(arr, low, high);
+                  
+                  quicksort(arr, low, pivotIndex - 1);
+                  quicksort(arr, pivotIndex + 1, high);
+              }
+          }
+          """;
   
   @Test
   public void test_quicksort()
@@ -446,17 +445,18 @@ public class AlgorithmTests
   public void test_DynamicDispatch() throws IOException
   {
     // Setup
-    SimulationConfig cfg = SimulationConfig.getDefaultConfiguration();
+    SimulationConfig cfg = new SimulationConfig();
     String code = new String(AlgorithmTests.class.getResourceAsStream("/assembler/functionPointers.r5").readAllBytes());
-    cfg.code       = code;
-    cfg.entryPoint = "main";
+    cfg.code                                              = code;
+    cfg.entryPoint                                        = "main";
+    cfg.cpuConfig.fUnits.get(0).operations.get(0).latency = 5;
     Cpu cpu = new Cpu(cfg);
     cpu.execute(true);
     
     // Assert
     // There should be prints, first a drawCircle, then a drawRectangle
     List<DebugLog.Entry> logEntries = cpu.cpuState.debugLog.getEntries();
-    Assert.assertFalse(logEntries.isEmpty());
+    Assert.assertEquals(4, logEntries.size());
     Assert.assertTrue(logEntries.get(0).getMessage().startsWith("drawCircle"));
     Assert.assertTrue(logEntries.get(1).getMessage().startsWith("drawRectangle"));
     Assert.assertTrue(logEntries.get(2).getMessage().startsWith("drawCircle"));

@@ -107,6 +107,9 @@ public class Server
     this.timeout_ms = timeout_ms;
   }
   
+  /**
+   * TODO: would be great to use some binary protocol, to lower the overhead of JSON. However, the costs on frontend may be too high.
+   */
   public void start() throws IOException
   {
     // Register handlers
