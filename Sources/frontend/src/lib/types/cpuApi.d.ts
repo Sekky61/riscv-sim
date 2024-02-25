@@ -210,7 +210,6 @@ export interface ReorderBufferBlock {
   haltTarget: number;
   commitLimit: number;
   commitId: number;
-  speculativePulls: boolean;
   bufferSize: number;
   renameMapTableBlock?: RenameMapTableBlock;
   decodeAndDispatchBlock?: DecodeAndDispatchBlock;
@@ -516,9 +515,16 @@ export interface BranchTargetEntryModel {
   conditional: boolean;
 }
 
+/**
+ * Invariant: shiftRegisters.length >= 1
+ */
 export interface GlobalHistoryRegister {
   size: number;
+  shiftRegisters: Register[];
+}
+export interface Register {
   shiftRegister: number;
+  codeId: number;
 }
 
 export interface PatternHistoryTable {

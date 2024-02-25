@@ -193,9 +193,9 @@ export const isaFormSchema = z
     // Buffers
     robSize: z.number().min(1).max(1024),
     commitWidth: z.number().min(1).max(10),
-    branchFollowLimit: z.number().min(1).max(10),
     flushPenalty: z.number().min(1).max(100),
     fetchWidth: z.number().min(1).max(10),
+    branchFollowLimit: z.number().min(1).max(10),
     // Branch
     btbSize: z.number().min(1).max(16384),
     phtSize: z.number().min(1).max(16384),

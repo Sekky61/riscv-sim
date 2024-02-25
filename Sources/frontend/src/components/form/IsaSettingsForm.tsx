@@ -201,12 +201,6 @@ const isaFormMetadata: IsaFormMetadata = {
     title: 'Cache clock frequency (Hz)',
     hint: 'Cache clock frequency in Hz.',
   },
-  cacheLoadLatency: {
-    title: 'Cache load latency (cycles)',
-  },
-  cacheStoreLatency: {
-    title: 'Cache store latency (cycles)',
-  },
 };
 
 const capabilitiesMetadata: {
