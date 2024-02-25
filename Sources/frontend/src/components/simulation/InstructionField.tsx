@@ -133,7 +133,7 @@ export default function InstructionField({
   }
 
   const cls = clsx(
-    'group instruction-bubble w-full font-mono px-2 text-left whitespace-nowrap',
+    'group instruction-bubble w-full font-mono px-2 text-left whitespace-nowrap overflow-hidden',
     highlighted ? 'bg-gray-200' : '',
   );
 

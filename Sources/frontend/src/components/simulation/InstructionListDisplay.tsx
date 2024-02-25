@@ -60,11 +60,16 @@ export function InstructionListDisplay<T>({
   const displayCount = totalSize ?? (instructions.length || 1);
   const emptyCount = displayCount - instructions.length;
 
+  let templateColumns = 'minmax(8rem, 1fr)';
+  if (columns > 1) {
+    templateColumns = `minmax(8rem, 1fr) repeat(${columns - 1}, max-content)`;
+  }
+
   return (
     <div
-      className='grid gap-1 overflow-auto overflow-x-scroll relative'
+      className='grid gap-1 overflow-y-auto w-full'
       style={{
-        gridTemplateColumns: `repeat(${columns}, auto)`,
+        gridTemplateColumns: templateColumns,
       }}
     >
       {legend && (

@@ -125,7 +125,7 @@ export default function MainMemory() {
         </DialogContent>
       }
     >
-      <div className='max-h-80 flex text-sm gap-2 font-mono'>
+      <div className='max-h-80 flex justify-center text-sm gap-2 font-mono'>
         {memory.length === 0 ? (
           <div className='text-center text-gray-500'>Empty</div>
         ) : (
@@ -231,7 +231,7 @@ export const HexDump = ({
   }
 
   return (
-    <div className='overflow-y-auto flex text-sm gap-2 font-mono'>
+    <div className='overflow-y-auto flex text-sm gap-6 font-mono'>
       <div className='flex flex-col gap-1'>{addresses}</div>
       <div
         className='grid memory-grid justify-center gap-1'
