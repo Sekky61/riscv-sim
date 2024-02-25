@@ -45,6 +45,9 @@ export type BlockProps = {
   detailDialog?: ReactChildren; // a DialogContent component to be displayed in a modal after clicking on the More button
 } & ReactClassName;
 
+/**
+ * If you want to use a fixed width, specify it outside of the component
+ */
 export default function Block({
   children,
   className,
@@ -54,7 +57,7 @@ export default function Block({
 }: BlockProps) {
   const classes = clsx(
     className,
-    'rounded border bg-white p-2 flex gap-2 flex-col min-w-[13rem]',
+    'rounded border bg-white p-2 flex gap-2 flex-col',
   );
 
   return (

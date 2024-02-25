@@ -93,7 +93,7 @@ export default function MainMemory() {
   return (
     <Block
       title='Main Memory'
-      className=''
+      className='w-issue'
       detailDialog={
         <DialogContent>
           <DialogHeader>

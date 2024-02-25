@@ -45,7 +45,7 @@ export default function StoreBuffer() {
   if (!storeBuffer) return null;
 
   return (
-    <Block title='Store Buffer' className='storeBuffer w-96 h-96'>
+    <Block title='Store Buffer' className='storeBuffer w-issue h-96'>
       <InstructionListDisplay
         instructions={storeBuffer.storeQueue}
         totalSize={storeBuffer.bufferSize}

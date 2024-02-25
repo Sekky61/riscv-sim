@@ -50,7 +50,7 @@ export default function DecodeBlock() {
   );
 
   return (
-    <Block title='Decode Block' stats={decodeStats} className='decode'>
+    <Block title='Decode Block' stats={decodeStats} className='decode w-block'>
       <InstructionListDisplay
         instructions={after}
         totalSize={decode.decodeBufferSize}

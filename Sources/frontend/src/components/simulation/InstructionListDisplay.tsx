@@ -62,8 +62,10 @@ export function InstructionListDisplay<T>({
 
   return (
     <div
-      className='grid gap-1 overflow-auto'
-      style={{ gridTemplateColumns: `repeat(${columns}, auto)` }}
+      className='grid gap-1 overflow-auto overflow-x-scroll relative'
+      style={{
+        gridTemplateColumns: `repeat(${columns}, auto)`,
+      }}
     >
       {legend && (
         <div

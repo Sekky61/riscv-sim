@@ -62,7 +62,7 @@ export default function ReorderBuffer() {
     <Block
       title='Reorder Buffer'
       stats={robStats}
-      className='rob h-96'
+      className='rob w-block h-96'
       detailDialog={
         <DialogContent>
           <DialogHeader>

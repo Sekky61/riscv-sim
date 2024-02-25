@@ -549,12 +549,20 @@
     gap: var(--gap);
   }
 
+  .w-block {
+    @apply w-52;
+  }
+
+  .w-issue {
+    @apply w-80;
+  }
+
   .global-grid > div {
     gap: var(--gap);
   }
 
   .issue {
-    @apply flex flex-col;
+    @apply flex flex-col items-center;
     gap: var(--gap);
   }
 

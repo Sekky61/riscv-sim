@@ -99,7 +99,7 @@ export default function Program() {
   return (
     <Block
       title='Program'
-      className='program justify-self-stretch self-stretch'
+      className='program justify-self-stretch self-stretch w-block'
       stats={<div>Entry Point: {entryPointPretty}</div>}
     >
       <div

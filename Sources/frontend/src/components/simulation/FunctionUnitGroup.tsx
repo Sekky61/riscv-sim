@@ -107,7 +107,11 @@ export default function FunctionUnitGroup({ type }: FunctionUnitGroupProps) {
             <Block
               title={fu.description.name || name}
               stats={`${displayCounter}/${fu.delay}`}
-              className={clsx(className, 'row-span-1', rowPosition[i + 1])}
+              className={clsx(
+                className,
+                'row-span-1 w-block',
+                rowPosition[i + 1],
+              )}
             >
               <InstructionField instructionId={id} />
             </Block>

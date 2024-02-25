@@ -64,7 +64,7 @@ export default function FetchBlock() {
     <Block
       title='Fetch Block'
       stats={fetchStats}
-      className='fetch-position'
+      className='fetch-position w-block'
       detailDialog={
         <DialogContent>
           <DialogHeader>

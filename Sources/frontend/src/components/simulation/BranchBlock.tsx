@@ -68,7 +68,7 @@ export default function BranchBlock() {
   }
 
   return (
-    <Block title='Branch Block' className='h-28'>
+    <Block title='Branch Block' className='h-28 w-block'>
       {btbEntries.length > 0 ? (
         <div className='grid grid-cols-2'>
           <div>Address</div>
