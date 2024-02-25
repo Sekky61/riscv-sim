@@ -113,13 +113,13 @@ public class TwoBitPredictorTests
         case 0:
           break;
         case 1:
-          Assert.assertEquals(1, beq.correctlyPredicted);
+          Assert.assertEquals(0, beq.correctlyPredicted);
           break;
         case 2:
-          Assert.assertEquals(2, beq.correctlyPredicted);
+          Assert.assertEquals(1, beq.correctlyPredicted);
           break;
         case 3:
-          Assert.assertEquals(3, beq.correctlyPredicted);
+          Assert.assertEquals(2, beq.correctlyPredicted);
           return;
       }
     }
@@ -163,7 +163,7 @@ public class TwoBitPredictorTests
                     """);
     // Iteration: 0 1 2 3 4 5 6 7 8 9
     //     Taken: N Y N Y N Y N Y N Y (5/10)
-    // Predicted: Y y Y y Y y Y y Y y (5+1/10)
+    // Predicted: * y Y y Y y Y y Y y (5+1/10) (*: Y but mandatory negative prediction)
     
     Cpu cpu = new Cpu(config);
     cpu.execute(false);
@@ -175,7 +175,7 @@ public class TwoBitPredictorTests
     // The branch prediction of instruction [4] is always wrong.
     SimulationStatistics.InstructionStats stats = cpu.cpuState.statistics.instructionStats.get(4);
     Assert.assertEquals(10, stats.committedCount);
-    Assert.assertEquals(5,
+    Assert.assertEquals(5 + 1,
                         stats.correctlyPredicted); // 5 correct, 1 mandatory prediction fail, which turns out to be correct
   }
   
@@ -239,7 +239,7 @@ public class TwoBitPredictorTests
                     """);
     // Iteration: 0 1 2 3 4 5 6 7 8 9
     //     Taken: N Y N Y N Y N Y N Y (5/10)
-    // Predicted: y n y n y n y n y n (0/10)
+    // Predicted: * n y n y n y n y n (0/10) (would have said 'y' on the first iteration, but mandatory negative prediction)
     
     Cpu cpu = new Cpu(config);
     cpu.execute(false);
@@ -251,7 +251,7 @@ public class TwoBitPredictorTests
     // The branch prediction of instruction [4] is always wrong.
     SimulationStatistics.InstructionStats stats = cpu.cpuState.statistics.instructionStats.get(4);
     Assert.assertEquals(10, stats.committedCount);
-    Assert.assertEquals(0, stats.correctlyPredicted); // Just the mandatory prediction fail was wrong
+    Assert.assertEquals(1, stats.correctlyPredicted); // Just the (first) mandatory negative prediction was wrong
   }
   
   /**
@@ -309,11 +309,13 @@ public class TwoBitPredictorTests
     // The inner loop is executed 10 times, so 10 prediction fails
     SimulationStatistics.InstructionStats inner = cpu.cpuState.statistics.instructionStats.get(9);
     Assert.assertEquals(100, inner.committedCount);
-    Assert.assertEquals(90, inner.correctlyPredicted); // First one was the mandatory prediction fail, counts as correct
+    Assert.assertEquals(90 - 1,
+                        inner.correctlyPredicted); // First one was the mandatory prediction fail, counts as incorrect
     
     // The outer loop is executed once, so 1 prediction fail + 1 mandatory prediction fail
     SimulationStatistics.InstructionStats outer = cpu.cpuState.statistics.instructionStats.get(11);
     Assert.assertEquals(10, outer.committedCount);
-    Assert.assertEquals(10 - 1, outer.correctlyPredicted); // 1 prediction fail
+    Assert.assertEquals(10 - 2,
+                        outer.correctlyPredicted); // 1 prediction fail (last one) + 1 mandatory negative prediction
   }
 }

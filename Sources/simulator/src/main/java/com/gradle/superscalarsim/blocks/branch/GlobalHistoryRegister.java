@@ -35,12 +35,16 @@ package com.gradle.superscalarsim.blocks.branch;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * @brief Global History Register (also known as Branch History Shift Register). Used for dynamic, global branch prediction.
  * The maximum length of the register is artificially limited to 8 bits.
  * @details A bit array holding history of last n branches (true if the branch was taken, false if the branch was not taken).
  * The value of the register is used to index the table of predictors.
- * The history is updated only by conditional branches.
+ * The history is updated only by conditional branches in the _fetch_ stage.
+ * The GHR is updated speculatively, therefore it must be restore-able to a previous state.
  */
 @JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
 public class GlobalHistoryRegister
@@ -50,11 +54,10 @@ public class GlobalHistoryRegister
    */
   private final int size;
   /**
-   * @brief Bit array.
-   * Index 0 is the newest bit. New value is written for every comitted conditional branch.
-   * The initial state is all zeros.
+   * @brief History of the shift register. The first element is the architectural state of the register.
+   * The rest of the elements are the changes of the register. The changes are used for restoration after a flush.
    */
-  private int shiftRegister;
+  private List<Register> shiftRegisters;
   
   /**
    * @param size Size of the bit vector. Values 1-8 are allowed.
@@ -64,33 +67,94 @@ public class GlobalHistoryRegister
   public GlobalHistoryRegister(int size)
   {
     assert size >= 1 && size <= 8;
-    this.size          = size;
-    this.shiftRegister = 0;
+    this.size = size;
+    
+    // The initial state of the shift register is all zeros
+    this.shiftRegisters = new ArrayList<>();
+    this.shiftRegisters.add(new Register(0, -1));
   }// end of Constructor
   //----------------------------------------------------------------------
+  
+  /**
+   * Get the architectural state of the shift register
+   */
+  public int getArchitecturalState()
+  {
+    assert !this.shiftRegisters.isEmpty();
+    return this.shiftRegisters.get(0).shiftRegister;
+  }
   
   /**
    * @param isJump Was the branch taken or not?
    *
    * @brief Shifts new bit value into the vector
    */
-  public void shiftValue(boolean isJump)
+  public void shiftValue(boolean isJump, int codeId)
   {
-    this.shiftRegister = (this.shiftRegister << 1) | (isJump ? 1 : 0);
-    int mask = (1 << this.size) - 1;
-    this.shiftRegister &= mask;
-  }// end of shiftValue
-  //----------------------------------------------------------------------
+    int lastRegisterValue = getRegisterValue();
+    int newRegisterValue  = (lastRegisterValue << 1) | (isJump ? 1 : 0);
+    int mask              = (1 << size) - 1;
+    newRegisterValue &= mask;
+    shiftRegisters.add(new Register(newRegisterValue, codeId));
+  }
   
   /**
-   * @return Integer value of the bit vector
+   * @return Current integer value of the bit vector.
    * @brief Returns the bit array as integer.
    */
   public int getRegisterValue()
   {
-    return this.shiftRegister;
+    return shiftRegisters.get(shiftRegisters.size() - 1).shiftRegister;
   }// end of getRegisterValueAsInt
   //----------------------------------------------------------------------
+  
+  /**
+   * @brief Called when part of the history is to be restored. This happens after a flush.
+   */
+  public void flush(int lastValidCodeId)
+  {
+    // They are sorted, so find the point where to cut and remove the rest
+    int i = shiftRegisters.size() - 1;
+    while (i > 0 && shiftRegisters.get(i).codeId > lastValidCodeId)
+    {
+      i--;
+    }
+    shiftRegisters = shiftRegisters.subList(0, i + 1);
+    assert !shiftRegisters.isEmpty();
+  }
+  
+  /**
+   * Fix a bad prediction. Called when committing a conditional branch and the prediction was wrong.
+   * Flush must have been called, so this change will be at the top of the list.
+   */
+  public void fixPrediction(boolean isJump, int codeId)
+  {
+    Register register = shiftRegisters.get(shiftRegisters.size() - 1);
+    assert register.codeId == codeId;
+    
+    int lastRegisterValue = register.shiftRegister;
+    // set or clear the last bit
+    int newRegisterValue = isJump ? lastRegisterValue | 1 : lastRegisterValue & ~1;
+    shiftRegisters.remove(shiftRegisters.size() - 1);
+    shiftRegisters.add(new Register(newRegisterValue, codeId));
+  }
+  
+  /**
+   * @brief Called when a conditional branch is committed. The speculative history is confirmed.
+   * @details This keeps the list short.
+   */
+  public void commit(int codeId)
+  {
+    // Set new base, new architectural state
+    // So find an index, take the sublist
+    int i = 0;
+    while (i < shiftRegisters.size() - 1 && shiftRegisters.get(i).codeId < codeId)
+    {
+      i++;
+    }
+    shiftRegisters = shiftRegisters.subList(i, shiftRegisters.size());
+    assert !shiftRegisters.isEmpty();
+  }
   
   /**
    * @return The history as a bit array
@@ -98,6 +162,17 @@ public class GlobalHistoryRegister
   @Override
   public String toString()
   {
-    return Integer.toBinaryString(this.shiftRegister);
+    return Integer.toBinaryString(getRegisterValue());
   }// end of toString
+  
+  /**
+   * @param shiftRegister The value of the shift register. A bit array.
+   * @param codeId        The code id of the conditional branch instruction that caused the shift. Used for restoration/confirmation.
+   *
+   * @brief An entry for state of the shift register
+   * @details Index 0 is the newest bit. New value is written for every committed conditional branch. The initial state is all zeros.
+   */
+  record Register(int shiftRegister, int codeId)
+  {
+  }
 }

@@ -197,7 +197,8 @@ public class OneBitPredictorTests
     // The branch prediction of instruction [4] is always wrong.
     SimulationStatistics.InstructionStats stats = cpu.cpuState.statistics.instructionStats.get(4);
     Assert.assertEquals(10, stats.committedCount);
-    Assert.assertEquals(0, stats.correctlyPredicted);
+    // First prediction is correct, it said not taken, and it wasn't (even though it had to say not taken, mandatory negative prediction)
+    Assert.assertEquals(1, stats.correctlyPredicted);
   }
   
   /**

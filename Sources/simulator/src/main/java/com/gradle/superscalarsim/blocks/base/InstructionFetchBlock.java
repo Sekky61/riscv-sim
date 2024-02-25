@@ -212,10 +212,13 @@ public class InstructionFetchBlock implements AbstractBlock
       
       // TODO: If we cannot follow anymore, do we still fetch instructions, or end early?
       // And does it matter if the branch is taken?
-      boolean shouldJump = isBranchingPredicted(pc);
-      int     newPc      = this.branchTargetBuffer.getEntryTarget(pc);
-      codeModel.setBranchPredicted(shouldJump, newPc);
-      if (shouldJump && newPc >= 0 && followedBranches < branchFollowLimit)
+      boolean unconditional = this.branchTargetBuffer.isEntryUnconditional(pc);
+      boolean prediction    = this.gShareUnit.getPredictor(pc).getCurrentPrediction();
+      boolean shouldJump    = prediction || unconditional;
+      int     newPc         = this.branchTargetBuffer.getEntryTarget(pc);
+      boolean areWeJumping  = shouldJump && newPc >= 0;
+      codeModel.setBranchPredicted(areWeJumping, newPc);
+      if (areWeJumping && followedBranches < branchFollowLimit)
       {
         this.pc = newPc;
         followedBranches++;
@@ -225,6 +228,13 @@ public class InstructionFetchBlock implements AbstractBlock
         // No jump, just increment PC
         this.pc += 4;
       }
+      
+      // Update global history register
+      if (codeModel.isConditionalBranch())
+      {
+        gShareUnit.getGlobalHistoryRegister().shiftValue(areWeJumping, codeModel.getIntegerId());
+      }
+      
       fetchedCode.add(codeModel);
     }
     return fetchedCode;

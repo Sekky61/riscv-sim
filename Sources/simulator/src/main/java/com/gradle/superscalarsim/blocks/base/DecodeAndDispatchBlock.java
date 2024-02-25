@@ -322,6 +322,8 @@ public class DecodeAndDispatchBlock implements AbstractBlock
         // Drop instructions after branch
         flush = true;
       }
+      
+      // TODO: A GHT update might be missing here, though the issue may not surface since we only work with unconditional jumps here
     }
     
     return flush;

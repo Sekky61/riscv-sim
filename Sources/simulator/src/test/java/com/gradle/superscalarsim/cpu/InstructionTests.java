@@ -628,8 +628,8 @@ public class InstructionTests
     Assert.assertEquals(1, cpu.cpuState.statistics.getConditionalBranches());
     Assert.assertEquals(0, cpu.cpuState.statistics.getUnconditionalBranches());
     // Default prediction is to jump, but there is not a BTB entry for this branch, so we couldn't predict
-    // Regardless, the prediction to jump was bad, even if it had no consequences due to the mandatory miss
-    Assert.assertEquals(0, cpu.cpuState.statistics.getCorrectlyPredictedBranches());
+    // Regardless, the prediction to jump was correct. mandatory miss
+    Assert.assertEquals(1, cpu.cpuState.statistics.getCorrectlyPredictedBranches());
   }
   
   /**
@@ -648,8 +648,8 @@ public class InstructionTests
     // Assert
     Assert.assertEquals(1, cpu.cpuState.statistics.getConditionalBranches());
     Assert.assertEquals(0, cpu.cpuState.statistics.getUnconditionalBranches());
-    // Prediction was made, though it was not in the BTB
-    Assert.assertEquals(1, cpu.cpuState.statistics.getCorrectlyPredictedBranches());
+    // Correct prediction (do jump) was made, but BTB is empty, so no jump, which was correct
+    Assert.assertEquals(0, cpu.cpuState.statistics.getCorrectlyPredictedBranches());
   }
   
   /**

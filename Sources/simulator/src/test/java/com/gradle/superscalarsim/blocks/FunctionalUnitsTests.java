@@ -105,15 +105,15 @@ public class FunctionalUnitsTests
     Assert.assertTrue(cpu.stopReason == StopReason.kEndOfCode || cpu.stopReason == StopReason.kCallStackHalt);
     
     // Asserts specific to programs
-    if (program.equals(programs[0]))
+    if (program == programs[0])
     {
       Assert.assertEquals(3, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x5").getValue(DataTypeEnum.kInt));
     }
-    else if (program.equals(programs[1]))
+    else if (program == programs[1])
     {
       Assert.assertEquals(0, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x3").getValue(DataTypeEnum.kInt));
     }
-    else if (program.equals(programs[2]))
+    else if (program == programs[2])
     {
       long offset = cpu.cpuState.instructionMemoryBlock.getLabelPosition("ptr");
       Assert.assertEquals(0, cpu.cpuState.simulatedMemory.getFromMemory(offset));

@@ -52,6 +52,7 @@ public class GShareUnit
   
   /**
    * Bit array of branching history
+   * TODO: one architectural and a list of bit changes. The bits have to be marked with simcodeid, to know how many to flush.
    */
   @JsonIdentityReference(alwaysAsId = true)
   private GlobalHistoryRegister globalHistoryRegister;

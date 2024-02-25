@@ -54,7 +54,6 @@ import com.gradle.superscalarsim.models.memory.StoreBufferItem;
 import java.util.ArrayDeque;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 /**
@@ -260,17 +259,16 @@ public class ReorderBufferBlock implements AbstractBlock
       boolean branchActuallyTaken = codeModel.isBranchLogicResult();
       int     pc                  = codeModel.getSavedPc();
       
-      // Update global history register
-      // TODO: before or after feedback to predictor?
-      if (codeModel.isConditionalBranch())
-      {
-        gShareUnit.getGlobalHistoryRegister().shiftValue(branchActuallyTaken);
-      }
-      
       // Feedback to predictor
       // TODO look into gshareunit
       this.gShareUnit.getPredictor(pc).sendFeedback(branchActuallyTaken);
       this.branchTargetBuffer.setEntry(pc, codeModel, codeModel.getBranchTarget());
+      
+      // Update GHT
+      if (codeModel.isConditionalBranch())
+      {
+        this.gShareUnit.getGlobalHistoryRegister().commit(codeModel.getIntegerId());
+      }
       
       int nextPc = pc + 4;
       if (branchActuallyTaken)
@@ -297,20 +295,18 @@ public class ReorderBufferBlock implements AbstractBlock
       else
       {
         // The next instruction is wrong. Flush the queue.
-        Optional<SimCodeModel> robItem = this.reorderQueue.stream().skip(1).findFirst();
-        if (robItem.isPresent())
-        {
-          invalidateInstructions(robItem.get());
-        }
+        SimCodeModel robItem = this.reorderQueue.stream().skip(1).findFirst().orElse(null);
+        flush(robItem); // OK to call with null
         
         // Feedback to predictor
         // Update target in BTB (branch target, regardless of if it was taken or not and if target was predicted correctly)
         this.branchTargetBuffer.setEntry(pc, codeModel, codeModel.getBranchTarget());
         this.instructionFetchBlock.setPc(nextPc);
-        this.decodeAndDispatchBlock.flush();
-        this.instructionFetchBlock.flush();
-        // Note the flush in statistics
-        simulationStatistics.incrementRobFlushes();
+        // Update GHT
+        if (codeModel.isConditionalBranch())
+        {
+          this.gShareUnit.getGlobalHistoryRegister().fixPrediction(branchActuallyTaken, codeModel.getIntegerId());
+        }
       }
     }
     else if (codeModel.getInstructionTypeEnum() == InstructionTypeEnum.kLoadstore)
@@ -326,11 +322,9 @@ public class ReorderBufferBlock implements AbstractBlock
         {
           // Bad load found, invalidate it
           SimCodeModel model = badLoad.getSimCodeModel();
-          invalidateInstructions(model);
+          flush(model);
           // Repeat the bad load
           this.instructionFetchBlock.setPc(model.getSavedPc());
-          // Note the flush in statistics
-          simulationStatistics.incrementRobFlushes();
         }
         // Release store buffer entry
         storeBufferBlock.releaseStoreFirst();
@@ -490,13 +484,14 @@ public class ReorderBufferBlock implements AbstractBlock
   /**
    * Mark firstInvalidInstruction and all subsequent instructions as invalid.
    *
-   * @param firstInvalidInstruction First instruction that should be invalidated
+   * @param firstInvalidInstruction First instruction that should be invalidated. If null, nothing in ROB is flushed.
    *
-   * @brief Sets instruction flags to notify ROB to flush itself
+   * @brief Sets instruction flags to notify ROB to flush itself. Also flushes decode and fetch blocks.
    */
-  public void invalidateInstructions(SimCodeModel firstInvalidInstruction)
+  public void flush(SimCodeModel firstInvalidInstruction)
   {
-    boolean flush = false;
+    boolean flush           = false;
+    int     lowestFlushedId = Integer.MAX_VALUE;
     for (SimCodeModel robItem : this.reorderQueue)
     {
       flush = flush || robItem == firstInvalidInstruction;
@@ -505,10 +500,10 @@ public class ReorderBufferBlock implements AbstractBlock
         robItem.setSpeculative(false);
         robItem.setValid(false);
         robItem.setHasFailed(true);
+        lowestFlushedId = Math.min(lowestFlushedId, robItem.getIntegerId());
       }
     }
     
-    // TODO: move to fetch and decode block
     this.decodeAndDispatchBlock.getCodeBuffer().forEach(
             simCodeModel -> simCodeModel.getArguments().stream().filter(argument -> argument.getName().startsWith("r"))
                     .forEach(argument ->
@@ -521,6 +516,14 @@ public class ReorderBufferBlock implements AbstractBlock
     // clear what you can
     this.decodeAndDispatchBlock.flush();
     this.instructionFetchBlock.flush();
+    
+    simulationStatistics.incrementRobFlushes();
+    
+    // Update global history register
+    if (lowestFlushedId != Integer.MAX_VALUE)
+    {
+      gShareUnit.getGlobalHistoryRegister().flush(lowestFlushedId);
+    }
   }// end of invalidateInstructions
   //----------------------------------------------------------------------
   
