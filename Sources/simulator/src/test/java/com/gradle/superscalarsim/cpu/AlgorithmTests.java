@@ -417,8 +417,9 @@ public class AlgorithmTests
   public void test_LinkedList() throws IOException
   {
     // Setup
-    SimulationConfig cfg = SimulationConfig.getDefaultConfiguration();
-    String code = new String(AlgorithmTests.class.getResourceAsStream("/assembler/linkedList.r5").readAllBytes());
+    SimulationConfig cfg  = SimulationConfig.getDefaultConfiguration();
+    String           code = new String(
+            AlgorithmTests.class.getResourceAsStream("/assembler/linkedList.r5").readAllBytes());
     cfg.code       = code;
     cfg.entryPoint = "main";
     Cpu cpu = new Cpu(cfg);
@@ -445,8 +446,9 @@ public class AlgorithmTests
   public void test_DynamicDispatch() throws IOException
   {
     // Setup
-    SimulationConfig cfg = new SimulationConfig();
-    String code = new String(AlgorithmTests.class.getResourceAsStream("/assembler/functionPointers.r5").readAllBytes());
+    SimulationConfig cfg  = new SimulationConfig();
+    String           code = new String(
+            AlgorithmTests.class.getResourceAsStream("/assembler/functionPointers.r5").readAllBytes());
     cfg.code                                              = code;
     cfg.entryPoint                                        = "main";
     cfg.cpuConfig.fUnits.get(0).operations.get(0).latency = 5;

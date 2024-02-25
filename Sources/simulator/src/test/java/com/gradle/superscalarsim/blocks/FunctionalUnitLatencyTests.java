@@ -19,7 +19,7 @@ import java.util.List;
  * Run tests for different combinations of latencies for functional units
  */
 @RunWith(Theories.class)
-public class FunctionalUnitsTests
+public class FunctionalUnitLatencyTests
 {
   @DataPoints("adderLatencies")
   public static int[] adderLatency = {1, 2, 3};
