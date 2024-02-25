@@ -31,6 +31,7 @@
 
 'use client';
 
+import { HighlightProvider } from '@/components/HighlightProvider';
 import BranchBlock from '@/components/simulation/BranchBlock';
 import CacheBlock from '@/components/simulation/CacheBlock';
 import DecodeBlock from '@/components/simulation/DecodeBlock';
@@ -45,37 +46,39 @@ import StoreBuffer from '@/components/simulation/StoreBuffer';
 
 export function SimGrid() {
   return (
-    <div className='global-grid'>
-      <div className='top-grid'>
-        <Program />
-        <div className='block-stack'>
-          <BranchBlock />
-          <FetchBlock />
-          <DecodeBlock />
+    <HighlightProvider>
+      <div className='global-grid'>
+        <div className='top-grid'>
+          <Program />
+          <div className='block-stack'>
+            <BranchBlock />
+            <FetchBlock />
+            <DecodeBlock />
+          </div>
+          <ReorderBuffer />
+          <div className='issue'>
+            <IssueWindow type='alu' />
+            <FunctionUnitGroup type='alu' />
+          </div>
+          <div className='issue'>
+            <IssueWindow type='fp' />
+            <FunctionUnitGroup type='fp' />
+          </div>
+          <div className='issue'>
+            <IssueWindow type='branch' />
+            <FunctionUnitGroup type='branch' />
+          </div>
         </div>
-        <ReorderBuffer />
-        <div className='issue'>
-          <IssueWindow type='alu' />
-          <FunctionUnitGroup type='alu' />
-        </div>
-        <div className='issue'>
-          <IssueWindow type='fp' />
-          <FunctionUnitGroup type='fp' />
-        </div>
-        <div className='issue'>
-          <IssueWindow type='branch' />
-          <FunctionUnitGroup type='branch' />
+        <div className='bottom-grid pb-8'>
+          <StoreBuffer />
+          <LoadBuffer />
+          <div className='block-stack'>
+            <FunctionUnitGroup type='memory' />
+            <MainMemory />
+          </div>
+          <CacheBlock />
         </div>
       </div>
-      <div className='bottom-grid pb-8'>
-        <StoreBuffer />
-        <LoadBuffer />
-        <div className='block-stack'>
-          <FunctionUnitGroup type='memory' />
-          <MainMemory />
-        </div>
-        <CacheBlock />
-      </div>
-    </div>
+    </HighlightProvider>
   );
 }

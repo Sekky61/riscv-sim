@@ -34,11 +34,8 @@ import clsx from 'clsx';
 import {
   ParsedArgument,
   getValue,
-  highlightSimCode,
-  selectHighlightedSimCode,
   selectSimCodeModel,
   selectStatistics,
-  unhighlightSimCode,
 } from '@/lib/redux/cpustateSlice';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import { Reference } from '@/lib/types/cpuApi';
@@ -62,6 +59,8 @@ import {
   instructionTypeName,
   isValidRegisterValue,
 } from '@/lib/utils';
+import { useHighlight } from '@/components/HighlightProvider';
+import { set } from 'zod';
 
 export type InstructionFieldProps = {
   instructionId: Reference | null;
@@ -77,12 +76,9 @@ export default function InstructionField({
   instructionId: simCodeId,
   showSpeculative = false,
 }: InstructionFieldProps) {
-  const dispatch = useAppDispatch();
+  const setHighlightedCodeId = useHighlight();
   const q = useAppSelector((state) => selectSimCodeModel(state, simCodeId));
   const statistics = useAppSelector(selectStatistics);
-  const highlightedId = useAppSelector((state) =>
-    selectHighlightedSimCode(state),
-  );
   if (!q || simCodeId === null || statistics === undefined) {
     // Empty field
     return (
@@ -93,7 +89,6 @@ export default function InstructionField({
   }
 
   const { simCodeModel, args, inputCodeModel, functionModel } = q;
-  const highlighted = highlightedId === simCodeId;
   const isBranch = functionModel.instructionType === 'kJumpbranch';
   const pc = inputCodeModel.codeId * 4;
 
@@ -104,11 +99,14 @@ export default function InstructionField({
   };
 
   const handleMouseEnter = () => {
-    dispatch(highlightSimCode(simCodeId));
+    setHighlightedCodeId({
+      simcode: simCodeId,
+      inputcode: inputCodeModel.codeId,
+    });
   };
 
   const handleMouseLeave = () => {
-    dispatch(unhighlightSimCode(simCodeId));
+    setHighlightedCodeId(null);
   };
 
   function renderInstructionSyntax() {
@@ -133,8 +131,7 @@ export default function InstructionField({
   }
 
   const cls = clsx(
-    'group instruction-bubble w-full font-mono px-2 text-left whitespace-nowrap overflow-hidden',
-    highlighted ? 'bg-gray-200' : '',
+    'group instruction instruction-bubble w-full font-mono px-2 text-left whitespace-nowrap overflow-hidden',
   );
 
   // Tabindex and button for accessibility
@@ -146,6 +143,7 @@ export default function InstructionField({
           className={cls}
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
+          data-instruction-id={simCodeId}
         >
           {renderInstructionSyntax()}
           {showSpeculative && (

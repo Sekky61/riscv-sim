@@ -185,7 +185,7 @@ export function ProgramInstruction({
   // Id is mappable to address
   const address = inputCodeAddress(instructionId);
 
-  const cls = clsx(className, 'font-mono text-sm');
+  const cls = clsx(className, 'font-mono text-sm inputcodemodel');
   return (
     <>
       {showAddress && (
@@ -193,7 +193,7 @@ export function ProgramInstruction({
           {address}
         </div>
       )}
-      <span className={cls}>
+      <span className={cls} data-inputcode-id={instructionId}>
         {children}
         <span title={model.interpretableAs}>{model.name}</span>
         {argsValues.map((arg, idx) => {
