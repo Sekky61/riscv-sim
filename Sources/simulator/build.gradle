@@ -73,6 +73,14 @@ jar {
     }
 }
 
+tasks.register('testProd', Test) {
+    // Configure the test task
+    systemProperty "config.profile", "prod"
+
+    // Optionally, you can specify test classes or test suites to run
+    // include 'com.example.package.*'
+}
+
 application {
     mainClass = 'App'
 }

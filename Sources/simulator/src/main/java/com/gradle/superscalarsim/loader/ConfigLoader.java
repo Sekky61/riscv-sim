@@ -28,9 +28,14 @@
 
 package com.gradle.superscalarsim.loader;
 
+import com.gradle.superscalarsim.app.MyLogger;
+import com.gradle.superscalarsim.compiler.GccCaller;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @class ConfigLoader
@@ -38,6 +43,7 @@ import java.util.Properties;
  */
 public class ConfigLoader
 {
+  static Logger logger = MyLogger.initializeLogger("ConfigLoader", Level.INFO);
   public static String gccPath;
   public static String registerFileDirPath;
   public static Integer serverTimeoutMs;
@@ -49,7 +55,9 @@ public class ConfigLoader
    */
   static
   {
-    String profile        = System.getProperty("config.profile", "dev");
+    String profile = System.getProperty("config.profile", "dev");
+    logger.info("Loading configuration for profile: " + profile);
+    logger.info("All properties: " + System.getProperties());
     String configFileName = "/config_" + profile + ".properties";
     // This is a path to a resource file, not an ordinary file
     try (InputStream input = ConfigLoader.class.getResourceAsStream(configFileName))
@@ -63,6 +71,8 @@ public class ConfigLoader
       prop.forEach((key, value) -> System.setProperty((String) key, (String) value));
       
       gccPath = prop.getProperty("gcc.path");
+      logger.info("call to GccCaller.setCompilerPath(" + gccPath + ")");
+      GccCaller.setCompilerPath(gccPath);
     }
     catch (IOException ex)
     {

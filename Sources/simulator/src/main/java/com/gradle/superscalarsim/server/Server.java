@@ -144,7 +144,7 @@ public class Server
     server.start();
     
     logger.info("Server running on port " + port);
-    logger.info("GCC path: " + GccCaller.compilerPath);
+    logger.info("GCC path: " + GccCaller.getCompilerPath());
     
     // Handling shutdown
     // The server.start is not blocking, so we need to await the shutdown signal (e.g. SIGINT)

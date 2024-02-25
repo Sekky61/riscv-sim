@@ -47,7 +47,18 @@ public class GccCaller
 {
   static Logger logger = MyLogger.initializeLogger("GCC", Level.INFO);
   
-  public static String compilerPath = ConfigLoader.gccPath;
+  private static String compilerPath = ConfigLoader.gccPath;
+  
+  public static void setCompilerPath(String path)
+  {
+    logger.info("Setting GCC path to " + path);
+    compilerPath = path;
+  }
+  
+  public static String getCompilerPath()
+  {
+    return compilerPath;
+  }
   
   /**
    * Map of optimization flags

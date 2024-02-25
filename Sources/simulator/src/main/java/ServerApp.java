@@ -55,7 +55,7 @@ class ServerApp implements Callable<Integer>
     // override the configLoader
     if (gccPath != null)
     {
-      GccCaller.compilerPath = gccPath;
+      GccCaller.setCompilerPath(gccPath);
     }
     
     // Handle the server timeout parameter

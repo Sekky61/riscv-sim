@@ -50,7 +50,7 @@ public class AsmParser
   static String labelRegex = "^[a-zA-Z0-9_.]+:";
   
   /**
-   * @param program The output of GCC
+   * @param program The output of GCC. It is assumed that the program is not null
    *
    * @return The filtered assembly, and a mapping from ASM lines to C lines
    * @brief The parser
@@ -58,6 +58,7 @@ public class AsmParser
    */
   public static CompiledProgram parse(String program)
   {
+    assert program != null;
     // Split into lines, remove comments, replace \t with spaces, trim
     List<String> stringLines = splitLines(program);
     
