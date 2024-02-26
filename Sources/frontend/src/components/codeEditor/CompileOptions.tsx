@@ -29,242 +29,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { useHotkeys } from 'react-hotkeys-hook';
-import useSWR from 'swr';
-
-import {
-  callCompiler,
-  openExampleAndCompile,
-  selectAsmManuallyEdited,
-  toggleOptimizeFlag,
-} from '@/lib/redux/compilerSlice';
-import {
-  enterEditorMode,
-  selectEditorMode,
-  selectOptimize,
-} from '@/lib/redux/compilerSlice';
-import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
-
-import Tooltip from '@/components/Tooltip';
-import { Button } from '@/components/base/ui/button';
-import { Checkbox } from '@/components/base/ui/checkbox';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/base/ui/dropdown-menu';
-
-import { type CodeExample } from '@/lib/types/codeExamples';
-
-import { COMPILE_SHORTCUT } from '@/components/shortcuts/CompilerShortcuts';
-import clsx from 'clsx';
-import { RadioInput } from '../form/RadioInput';
+import { ExamplesButton } from '@/components/codeEditor/ExamplesButton';
+import { OptimizeRadio } from '@/components/codeEditor/OptimizeRadio';
+import { CompileButton } from '@/components/codeEditor/CompileButton';
+import { loadCodeExamples } from '@/app/api/codeExamples/route';
 
 /**
  * The compile options component. On the left side to the editor.
  * Contains the compile button, examples and optimization flags.
+ * Examples are loaded on the server side.
  */
-export default function CompileOptions() {
-  const dispatch = useAppDispatch();
-  const optimize = useAppSelector(selectOptimize);
-  const mode = useAppSelector(selectEditorMode);
-
-  const optimizeOptions = [
-    {
-      label: 'Optimize',
-      value: 'O2',
-      checked: optimize.includes('O2'),
-      clickCallback: () => dispatch(toggleOptimizeFlag('O2')),
-    },
-    {
-      label: 'Rename registers',
-      value: 'rename',
-      checked: optimize.includes('rename'),
-      clickCallback: () => dispatch(toggleOptimizeFlag('rename')),
-    },
-    {
-      label: 'Unroll loops',
-      value: 'unroll',
-      checked: optimize.includes('unroll'),
-      clickCallback: () => dispatch(toggleOptimizeFlag('unroll')),
-    },
-    {
-      label: 'Peel loops',
-      value: 'peel',
-      checked: optimize.includes('peel'),
-      clickCallback: () => dispatch(toggleOptimizeFlag('peel')),
-    },
-    {
-      label: 'Inline functions',
-      value: 'inline',
-      checked: optimize.includes('inline'),
-      clickCallback: () => dispatch(toggleOptimizeFlag('inline')),
-    },
-    {
-      label: 'Omit frame pointer',
-      value: 'omit-frame-pointer',
-      checked: optimize.includes('omit-frame-pointer'),
-      clickCallback: () => dispatch(toggleOptimizeFlag('omit-frame-pointer')),
-    },
-  ];
-
-  const editorModeChanged = (newVal: string) => {
-    if (newVal !== 'c' && newVal !== 'asm') {
-      console.error(`Unknown mode '${newVal}' while changing editor mode`);
-      return;
-    }
-    dispatch(enterEditorMode(newVal));
-  };
-
+export default async function CompileOptions() {
+  const examples = await loadCodeExamples();
   return (
     <div className='flex flex-col items-stretch gap-4'>
       <div>
-        <h3 className='mb-2'>Editor Mode</h3>
-        <RadioInput
-          choices={['c', 'asm']}
-          texts={['C', 'ASM']}
-          value={mode}
-          onNewValue={editorModeChanged}
-        />
-      </div>
-      <ExamplesButton />
-      <div>
-        <h3 className='mb-2'>Optimizations</h3>
-        <div className='rounded border flex flex-col gap-2 p-2'>
-          {optimizeOptions.map((option) => (
-            <div key={option.value} className='flex items-center space-x-2'>
-              <Checkbox
-                id={option.value}
-                checked={option.checked}
-                onCheckedChange={option.clickCallback}
-              />
-              <label
-                htmlFor={option.value}
-                className='text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70'
-              >
-                {option.label}
-              </label>
-            </div>
-          ))}
-        </div>
+        <h3 className='mb-2'>Optimization</h3>
+        <OptimizeRadio />
       </div>
       <CompileButton />
+      <ExamplesButton examples={examples} />
     </div>
   );
-}
-
-/**
- * A fetcher function to wrap the native fetch function and return the result of a call to the URL in JSON format
- */
-//@ts-ignore
-const fetcher = (...args) => fetch(...args).then((res) => res.json());
-
-/**
- * The button to reveal available examples and load them into the editor.
- * The examples are fetched from the Next.js backend, not Java simulator backend.
- */
-function ExamplesButton() {
-  const dispatch = useAppDispatch();
-  const { data: examples, error } = useSWR<CodeExample[]>(
-    '/api/codeExamples',
-    fetcher,
-  );
-
-  if (error) {
-    return (
-      <Button variant='outline' disabled>
-        Failed to load examples
-      </Button>
-    );
-  }
-
-  if (!examples) {
-    return (
-      <Button variant='outline' disabled>
-        Loading examples...
-      </Button>
-    );
-  }
-
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant='outline'>Load Example</Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent side='right'>
-        <DropdownMenuLabel>Examples</DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        {examples.map((example) => {
-          // Wrapped in two divs, to not lose hover when the mouse moves over
-          return (
-            <DropdownMenuItem
-              key={example.name}
-              onClick={() => {
-                dispatch(openExampleAndCompile(example));
-              }}
-              className='flex gap-1'
-            >
-              <div className='flex-grow'>{example.name}</div>
-              <div className='flex justify-center w-8 rounded px-0.5 mr-1 bg-amber-300 text-[#694848] text-xs'>
-                {example.type}
-              </div>
-            </DropdownMenuItem>
-          );
-        })}
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-}
-
-/**
- * The compile button. It calls the compiler and mutates the state with the result.
- * TODO: shortcut is not working when the editor is focused
- */
-function CompileButton() {
-  const compileStatus = useAppSelector((state) => state.compiler.compileStatus);
-  const asmEdited = useAppSelector(selectAsmManuallyEdited);
-  const dispatch = useAppDispatch();
-
-  function handleCompile() {
-    // Show warning if the user is about to lose data
-    if (asmEdited) {
-      const res = confirm(
-        'You have manually edited the assembly code. Are you sure you want to compile?',
-      );
-      if (!res) {
-        return;
-      }
-    }
-    dispatch(callCompiler());
-  }
-
-  useHotkeys(COMPILE_SHORTCUT, () => {
-    handleCompile();
-  });
-
-  const statusStyle = statusToClass(compileStatus);
-  return (
-    <Button className={clsx(statusStyle, 'tooltip')} onClick={handleCompile}>
-      Compile
-      <Tooltip text='Compile' shortcut={COMPILE_SHORTCUT} />
-    </Button>
-  );
-}
-
-function statusToClass(status: 'idle' | 'success' | 'loading' | 'failed') {
-  switch (status) {
-    case 'idle':
-      return 'ring-gray-200';
-    case 'loading':
-      return 'ring-yellow-200';
-    case 'success':
-      return 'ring-green-200';
-    case 'failed':
-      return 'ring-red-200';
-    default:
-      throw new Error(`Unknown status '${status}'`);
-  }
 }

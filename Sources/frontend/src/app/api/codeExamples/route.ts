@@ -29,10 +29,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { CodeExample } from '@/lib/types/codeExamples';
 import { promises as fs } from 'fs';
 import path from 'path';
 
 export async function GET() {
+  const json = await loadCodeExamples();
+  return Response.json(json);
+}
+
+export async function loadCodeExamples(): Promise<CodeExample[]> {
   // Find the absolute path of the "json" directory
   const jsonDirectory = path.join(process.cwd(), 'public/json');
   // Read the "data.json" file
@@ -42,8 +48,7 @@ export async function GET() {
   );
 
   const json = JSON.parse(fileContents);
-
-  return Response.json(json);
+  return json;
 }
 
 export const dynamic = 'force-static';

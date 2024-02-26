@@ -55,16 +55,10 @@ import {
 import { saveAsFile } from '@/lib/utils';
 import { toast } from 'sonner';
 
-export type OptimizeOption =
-  | 'O2'
-  | 'rename'
-  | 'unroll'
-  | 'peel'
-  | 'inline'
-  | 'omit-frame-pointer';
+export type OptimizeOption = 'O0' | 'O2' | 'O3' | 'Os';
 
 export interface CompilerOptions {
-  optimizeFlags: OptimizeOption[];
+  optimizeFlag: OptimizeOption;
 }
 
 // Define a type for the slice state
@@ -74,8 +68,6 @@ interface CompilerState extends CompilerOptions {
   // Mapping from c_line to asm_line(s) and back
   asmToC: number[];
   compileStatus: 'idle' | 'loading' | 'success' | 'failed';
-  // Editor options
-  editorMode: 'c' | 'asm';
   entryPoint: string | number;
   // True if the c_code or asm code has been changed since the last call to the compiler
   cDirty: boolean;
@@ -97,8 +89,7 @@ const initialState: CompilerState = {
   cDirty: false,
   asmDirty: false,
   compileStatus: 'idle',
-  optimizeFlags: [],
-  editorMode: 'c',
+  optimizeFlag: 'O2',
   entryPoint: 0,
   asmManuallyEdited: false,
   cErrors: [],
@@ -117,7 +108,7 @@ export const callCompiler = createAsyncThunk<CompileResponse>(
     const state: RootState = getState();
     const request = {
       code: state.compiler.cCode,
-      optimizeFlags: state.compiler.optimizeFlags,
+      optimizeFlags: [state.compiler.optimizeFlag], // todo api allows multiple flags
     };
     const response = await callCompilerImpl(request)
       .then((res) => {
@@ -202,16 +193,16 @@ export const openExampleAndCompile = createAsyncThunk<void, CodeExample>(
  *
  * Example: dispatch(saveToFile('c'));
  */
-export const saveCodeToFile = createAsyncThunk<
-  void,
-  CompilerState['editorMode']
->('compiler/saveToFile', async (mode, { getState }) => {
-  // @ts-ignore
-  const state: RootState = getState();
-  const suggestedFileName = mode === 'c' ? 'code.c' : 'code.asm';
-  const code = mode === 'c' ? state.compiler.cCode : state.compiler.asmCode;
-  saveAsFile(code, suggestedFileName);
-});
+export const saveCodeToFile = createAsyncThunk<void, 'c' | 'asm'>(
+  'compiler/saveToFile',
+  async (mode, { getState }) => {
+    // @ts-ignore
+    const state: RootState = getState();
+    const suggestedFileName = mode === 'c' ? 'code.c' : 'code.asm';
+    const code = mode === 'c' ? state.compiler.cCode : state.compiler.asmCode;
+    saveAsFile(code, suggestedFileName);
+  },
+);
 
 export const compilerSlice = createSlice({
   name: 'compiler',
@@ -248,27 +239,13 @@ export const compilerSlice = createSlice({
     setEntryPoint: (state, action: PayloadAction<number | string>) => {
       state.entryPoint = action.payload;
     },
-    toggleOptimizeFlag: (state, action: PayloadAction<OptimizeOption>) => {
-      // Special case for -O2
-      if (action.payload === 'O2' && !state.optimizeFlags.includes('O2')) {
-        state.optimizeFlags = ['O2', 'omit-frame-pointer', 'inline', 'rename'];
-        return;
-      }
-      const idx = state.optimizeFlags.indexOf(action.payload);
-      if (idx === -1) {
-        state.optimizeFlags.push(action.payload);
-      } else {
-        state.optimizeFlags.splice(idx, 1);
-      }
-    },
-    enterEditorMode: (state, action: PayloadAction<'c' | 'asm'>) => {
-      state.editorMode = action.payload;
+    setOptimizeFlag: (state, action: PayloadAction<OptimizeOption>) => {
+      state.optimizeFlag = action.payload;
     },
     openExample: (state, action: PayloadAction<CodeExample>) => {
       state.cCode = action.payload.type === 'c' ? action.payload.code : '';
       state.asmCode = action.payload.type === 'asm' ? action.payload.code : '';
       state.asmToC = [];
-      state.editorMode = action.payload.type;
       state.cDirty = false;
       state.asmDirty = false;
       state.entryPoint = action.payload.entryPoint || 0;
@@ -285,7 +262,6 @@ export const compilerSlice = createSlice({
         state.asmCode = action.payload.code;
       }
       state.asmToC = [];
-      state.editorMode = action.payload.type;
       state.cDirty = false;
       state.asmDirty = false;
       state.entryPoint = 0;
@@ -342,8 +318,7 @@ export type CompilerReducer = ReturnType<typeof compilerSlice.reducer>;
 export const {
   setCCode,
   setAsmCode,
-  toggleOptimizeFlag,
-  enterEditorMode,
+  setOptimizeFlag,
   cFieldTyping,
   asmFieldTyping,
   openExample,
@@ -358,9 +333,7 @@ export const selectCompileStatus = (state: RootState) =>
 export const selectCErrors = (state: RootState) => state.compiler.cErrors;
 export const selectAsmErrors = (state: RootState) => state.compiler.asmErrors;
 export const selectAsmCode = (state: RootState) => state.compiler.asmCode;
-export const selectOptimize = (state: RootState) =>
-  state.compiler.optimizeFlags;
-export const selectEditorMode = (state: RootState) => state.compiler.editorMode;
+export const selectOptimize = (state: RootState) => state.compiler.optimizeFlag;
 export const selectCDirty = (state: RootState) => state.compiler.cDirty;
 export const selectAsmDirty = (state: RootState) => state.compiler.asmDirty;
 export const selectAsmManuallyEdited = (state: RootState) =>
@@ -385,13 +358,6 @@ export const selectCCodeMappings = createSelector(
     return arr;
   },
 );
-
-export const selectActiveCode = (state: RootState) => {
-  if (state.compiler.editorMode === 'c') {
-    return state.compiler.cCode;
-  }
-  return state.compiler.asmCode;
-};
 
 export interface Instruction {
   // Id of instruction in program. ~line number

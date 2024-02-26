@@ -31,8 +31,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-'use client';
-
 import Head from 'next/head';
 
 import AsmDisplay from '@/components/codeEditor/AsmDisplay';
@@ -49,7 +47,7 @@ export default function HomePage() {
       </Head>
       <div className='flex h-full flex-col'>
         <h1 className='m-2 mb-6 text-2xl'>Code Editor</h1>
-        <div className=' editor-container grid min-h-0 flex-grow grid-cols-[160px_2fr_minmax(350px,1fr)] gap-4'>
+        <div className=' editor-container grid min-h-0 flex-grow grid-cols-[160px_minmax(350px,2fr)_minmax(350px,1fr)] gap-4'>
           <CompileOptions />
           <CCodeInput />
           <AsmDisplay />

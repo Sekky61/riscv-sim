@@ -61,12 +61,9 @@ public class GccCaller
   }
   
   /**
-   * Map of optimization flags
+   * Map of optimization flags. TODO: check that only one is used
    */
-  public static Map<String, String> optimizeFlags = Map.of("O2", "-O2", "rename", "-frename-registers", "unroll",
-                                                           "-funroll-all-loops", "peel", "-fpeel-loops", "inline",
-                                                           "-finline-functions", "omit-frame-pointer",
-                                                           "-fomit-frame-pointer");
+  public static Map<String, String> optimizeFlags = Map.of("O0", "-O0", "O2", "-O2", "O3", "-O3", "Os", "-Os");
   
   /**
    * <a href="https://gcc.gnu.org/onlinedocs/gcc/Code-Gen-Options.html">GCC options</a>

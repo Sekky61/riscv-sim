@@ -74,7 +74,10 @@ import simConfigReducer, { SimConfigReducer } from '@/lib/redux/simConfigSlice';
  */
 const migrations = {
   2: (state: PersistedState) => {
-    // Changed MemoryLocation
+    // Changed MemoryLocation, compile
+    return undefined;
+  },
+  3: (state: PersistedState) => {
     return undefined;
   },
   10: (state: PersistedState) => {
@@ -117,7 +120,7 @@ const persistSimConfig = {
 
 const persistCompileConfig = {
   key: 'compiler',
-  version: 1,
+  version: 2,
   storage,
   stateReconciler: hardSet,
   migrate: createMigrate(migrations),

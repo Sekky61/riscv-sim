@@ -29,6 +29,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+'use client';
+
 import { StreamLanguage } from '@codemirror/language';
 import { c } from '@codemirror/legacy-modes/mode/clike';
 import { setDiagnostics } from '@codemirror/lint';
@@ -48,7 +50,6 @@ import {
   selectCDirty,
   selectCErrors,
   selectDirty,
-  selectEditorMode,
 } from '@/lib/redux/compilerSlice';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 
@@ -86,20 +87,16 @@ const _ = 'cm-line cm-focused';
  */
 export default function CCodeInput() {
   const dispatch = useAppDispatch();
-  const mode = useAppSelector(selectEditorMode);
   const dirty = useAppSelector(selectDirty);
   const code = useAppSelector((state) => state.compiler.cCode);
   const mappedCLines = useAppSelector(selectCCodeMappings);
   const cErrors = useAppSelector(selectCCodeMirrorErrors);
-
-  const isEnabled = mode === 'c';
 
   const editor = useRef<HTMLDivElement>(null);
   const { setContainer, view, state } = useCodeMirror({
     value: code,
     height: '100%',
     width: '100%',
-    readOnly: !isEnabled,
     extensions: [StreamLanguage.define(c), lineDecor()],
     theme: baseTheme,
     onChange: (value, _viewUpdate) => {
@@ -150,9 +147,6 @@ export default function CCodeInput() {
       <EditorBar mode='c' checkSlot={<CErrorsDisplay />} />
       <div className='relative flex-grow'>
         <div className='h-full w-full relative' ref={editor} />
-        {!isEnabled && (
-          <div className='pointer-events-none absolute inset-0 bg-gray-100/40' />
-        )}
       </div>
     </div>
   );

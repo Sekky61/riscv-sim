@@ -29,12 +29,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+'use client';
+
 import { openFile, saveCodeToFile } from '@/lib/redux/compilerSlice';
 import { useAppDispatch } from '@/lib/redux/hooks';
 
 import { Button } from '@/components/base/ui/button';
 import { loadFile } from '@/lib/utils';
 import React from 'react';
+import { Download, Upload } from 'lucide-react';
 
 type EditorBarProps = {
   mode: 'c' | 'asm';
@@ -71,13 +74,13 @@ export default function EditorBar({
   return (
     <div className='p-0.5 pl-3 text-sm flex flex-wrap items-center gap-1 bg-[#f5f5f5] sticky top-0 z-10'>
       <div className='py-1 px-0.5 font-bold'>{editorName}</div>
-      {checkSlot}
       <label>
         <Button
           variant='ghost'
           onClick={handleLoadFile}
           className='button-interactions px-2 rounded py-0.5 my-0.5 h-6'
         >
+          <Upload size={16} strokeWidth={1.75} className='mr-1' />
           Load
         </Button>
       </label>
@@ -86,8 +89,10 @@ export default function EditorBar({
         onClick={handleSaveFile}
         className='button-interactions px-2 rounded py-0.5 my-0.5 h-6'
       >
+        <Download size={16} strokeWidth={1.75} className='mr-1' />
         Save
       </Button>
+      {checkSlot}
       {entryPointSlot}
     </div>
   );

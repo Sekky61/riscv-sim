@@ -29,6 +29,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+'use client';
+
 import { setDiagnostics } from '@codemirror/lint';
 import { EditorView } from '@codemirror/view';
 import { useCodeMirror } from '@uiw/react-codemirror';
@@ -49,7 +51,6 @@ import {
   selectAsmErrors,
   selectAsmMappings,
   selectDirty,
-  selectEditorMode,
   selectEntryPoint,
   setEntryPoint,
 } from '@/lib/redux/compilerSlice';
@@ -60,6 +61,17 @@ import EditorBar from '@/components/codeEditor/EditorBar';
 import { StatusIcon } from '@/components/codeEditor/StatusIcon';
 import clsx from 'clsx';
 import { selectAllInstructionFunctionModels } from '@/lib/redux/cpustateSlice';
+import { Label } from '@/components/base/ui/label';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/base/ui/dropdown-menu';
+import { Play } from 'lucide-react';
 
 /**
  * The base theme for the editor.
@@ -97,11 +109,8 @@ export default function AsmDisplay() {
   const asm = useAppSelector(selectAsmCode);
   const cLineMap = useAppSelector(selectAsmMappings);
   const dirty = useAppSelector(selectDirty);
-  const mode = useAppSelector(selectEditorMode);
   const asmErrors = useAppSelector(selectAsmCodeMirrorErrors);
   const functionModels = useAppSelector(selectAllInstructionFunctionModels);
-
-  const isEnabled = mode === 'asm';
 
   const editor = useRef<HTMLDivElement>(null);
   // todo: function models are loaded only from the sim page. Visiting the compiler page directly will result in an empty list.
@@ -109,7 +118,6 @@ export default function AsmDisplay() {
     value: asm,
     height: '100%',
     width: '100%',
-    readOnly: !isEnabled,
     extensions: [lineDecor(), wordHoverFactory(functionModels)],
     theme: baseTheme,
     onChange: (value, _viewUpdate) => {
@@ -153,14 +161,16 @@ export default function AsmDisplay() {
     <div className='flex flex-col flex-grow overflow-y-scroll rounded border relative'>
       <EditorBar
         mode='asm'
-        checkSlot={<AsmErrorsDisplay />}
-        entryPointSlot={<EntryPointSelector />}
+        checkSlot={null}
+        entryPointSlot={
+          <div className='flex items-center gap-2'>
+            <AsmCheckButton />
+            <EntryPointSelector />
+          </div>
+        }
       />
       <div className='flex-grow relative'>
         <div className='h-full w-full relative' ref={editor} />
-        {!isEnabled && (
-          <div className='pointer-events-none absolute inset-0 bg-gray-100/40' />
-        )}
       </div>
     </div>
   );
@@ -170,7 +180,7 @@ export default function AsmDisplay() {
  * Button to check the assembly code with the backend.
  * Green if no errors, red if errors, gray if not checked yet (dirty).
  */
-const AsmErrorsDisplay = () => {
+const AsmCheckButton = () => {
   const dispatch = useAppDispatch();
   const errors = useAppSelector(selectAsmErrors);
   const dirty = useAppSelector(selectAsmDirty);
@@ -218,10 +228,13 @@ function EntryPointSelector() {
   const entryPoint = useAppSelector(selectEntryPoint);
   const asmCode = useAppSelector(selectAsmCode);
 
-  const labels = [];
+  const labels: string[] = [];
   for (const line of asmCode.split('\n')) {
     if (line.includes(':')) {
-      labels.push(line.split(':')[0]);
+      const label = line.split(':')[0];
+      if (label) {
+        labels.push(label);
+      }
     }
   }
 
@@ -239,26 +252,43 @@ function EntryPointSelector() {
   }
 
   // TODO: solve problem with reseting the sim (tick)
-  const handleEntryPointChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleEntryPointChange = (s: string) => {
     // try parsing a number
-    const num = parseInt(e.target.value);
+    const num = parseInt(s);
     if (!Number.isNaN(num)) {
       dispatch(setEntryPoint(num));
       return;
     }
-    dispatch(setEntryPoint(e.target.value));
+    dispatch(setEntryPoint(s));
   };
 
   return (
     <div className='flex items-center'>
-      <div className='mr-2'>Entry Point:</div>
-      <select
-        className='rounded'
-        value={entryPoint}
-        onChange={handleEntryPointChange}
-      >
-        {selectOptions}
-      </select>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button className='flex items-center gap-2 px-2 rounded py-0.5 my-0.5 h-6 text-black bg-gray-200 hover:bg-gray-300'>
+            <Play size={16} strokeWidth={1.75} />
+            Entry Point: <span className='font-semibold'>{entryPoint}</span>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className='w-56'>
+          <DropdownMenuLabel>Select Entry Point</DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DropdownMenuRadioGroup
+            value={entryPoint.toString()}
+            onValueChange={handleEntryPointChange}
+          >
+            <DropdownMenuRadioItem value='0'>Address 0</DropdownMenuRadioItem>
+            {labels.map((label) => {
+              return (
+                <DropdownMenuRadioItem key={label} value={label}>
+                  {label}
+                </DropdownMenuRadioItem>
+              );
+            })}
+          </DropdownMenuRadioGroup>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   );
 }
