@@ -585,8 +585,13 @@
   }
 
   /* make space every 4 bytes */
-  .memory-grid *:nth-child(4n) {
+  .memory-grid *:nth-child(4n + 1) {
     margin-right: 0.5em;
+  }
+
+  /* gray out 0s */
+  .memory-grid div[data-value='0'] {
+    @apply text-gray-500;
   }
   
   /* cache subgrid */

@@ -42,53 +42,27 @@ import {
 } from '@/components/base/ui/dialog';
 import Block from '@/components/simulation/Block';
 import { Label } from '@/lib/types/cpuApi';
-import React, { useDeferredValue } from 'react';
-
-/**
- * Get the indexes of the memory that are different
- */
-function getChangedIndexes(
-  oldMemory: Uint8Array,
-  newMemory: Uint8Array,
-): number[] {
-  const indexes: number[] = [];
-  const length = Math.min(oldMemory.length, newMemory.length);
-  for (let i = 0; i < length; i++) {
-    if (oldMemory[i] !== newMemory[i]) {
-      indexes.push(i);
-    }
-  }
-  // Add the rest of the bytes
-  const rest = oldMemory.length > newMemory.length ? oldMemory : newMemory;
-  for (let i = length; i < rest.length; i++) {
-    indexes.push(i);
-  }
-  return indexes;
-}
+import { memo, useMemo, useRef } from 'react';
+import clsx from 'clsx';
 
 /**
  * Display the memory like a hexdump.
  * Displays the whole memory, up to the highes touched address.
+ *
+ * TODO filter out program labels
  */
 export default function MainMemory() {
   const program = useAppSelector(selectProgram);
   const memory = useAppSelector(selectMemoryBytes) ?? new Uint8Array(0);
-  const oldMemory = useDeferredValue(memory);
+  const oldMemory = usePrevious(memory);
 
   if (!program) {
     return null;
   }
 
-  // TODO filter out program labels
-  const labelTable = [];
-  for (const label of Object.values(program.labels)) {
-    labelTable.push(
-      <tr key={label.name}>
-        <td>{label.name}</td>
-        <td>{label.address.stringRepresentation}</td>
-      </tr>,
-    );
-  }
+  const labelArray = Object.values(program.labels);
+
+  // TODO Memoize labels, memory
 
   return (
     <Block
@@ -109,7 +83,16 @@ export default function MainMemory() {
                 <th>Address</th>
               </tr>
             </thead>
-            <tbody>{labelTable}</tbody>
+            <tbody>
+              {labelArray.map((label) => {
+                return (
+                  <tr key={label.name}>
+                    <td>{label.name}</td>
+                    <td>{label.address.stringRepresentation}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
           </table>
           <div className='py-1 text-md'>
             Memory Inspector shows the memory up to the highest touched address
@@ -117,7 +100,8 @@ export default function MainMemory() {
           <div className='max-h-64 overflow-scroll rounded-md border p-2 shadow-inner'>
             <HexDump
               memory={memory}
-              labels={program.labels}
+              oldMemory={oldMemory}
+              labels={labelArray}
               bytesInRow={16}
               showAscii
             />
@@ -126,16 +110,12 @@ export default function MainMemory() {
       }
     >
       <div className='max-h-80 flex justify-center text-sm gap-2 font-mono'>
-        {memory.length === 0 ? (
-          <div className='text-center text-gray-500'>Empty</div>
-        ) : (
-          <HexDump
-            memory={memory}
-            labels={program.labels}
-            bytesInRow={8}
-            oldMemory={oldMemory}
-          />
-        )}
+        <HexDump
+          memory={memory}
+          oldMemory={oldMemory}
+          labels={labelArray}
+          bytesInRow={8}
+        />
       </div>
     </Block>
   );
@@ -143,8 +123,8 @@ export default function MainMemory() {
 
 export type HexDumpProps = {
   memory: Uint8Array;
-  oldMemory?: Uint8Array;
-  labels: { [k: string]: Label };
+  oldMemory: Uint8Array;
+  labels: Label[];
   /**
    * Should be a multiple of 4
    */
@@ -152,16 +132,23 @@ export type HexDumpProps = {
   showAscii?: boolean;
 };
 
-export const HexDump = ({
-  memory,
-  oldMemory,
+/**
+ * The spacing between columns is done with the .memory-grid class (see globals.css)
+ */
+const HexDump = memo(function HexDump({
   labels,
   bytesInRow,
   showAscii = false,
-}: HexDumpProps) => {
+}: HexDumpProps) {
+  const memory = useAppSelector(selectMemoryBytes) ?? new Uint8Array(0);
+  const oldMemory = usePrevious(memory);
   const rows = memory.length / bytesInRow;
 
-  const startAddress = 624;
+  const startAddress = 624; // TODO
+
+  if (memory.length === 0) {
+    return <div className='text-center text-gray-500'>Empty</div>;
+  }
 
   const addresses = [];
   for (let i = 0; i < rows; i++) {
@@ -172,21 +159,26 @@ export const HexDump = ({
     );
   }
 
-  const bytes = [];
-  for (const [index, byte] of memory.entries()) {
-    bytes.push(
-      <div key={index} className={byte === 0 ? 'text-gray-500' : undefined}>
+  const bytes = new Array<JSX.Element>(memory.length);
+  memory.forEach((byte, index) => {
+    const changed = oldMemory && oldMemory[index] !== byte;
+    const cls = clsx(changed && 'bg-green-300');
+    bytes[index] = (
+      //biome-ignore lint: Index is appropriate here
+      <div key={index} className={cls} data-value={byte}>
         {byte.toString(16).padStart(2, '0')}
-      </div>,
+      </div>
     );
-  }
+  });
+
   // Add labels
   // TODO: separate the data labels and code labels using an extra field in the label object
-  for (const label of Object.values(labels)) {
-    const el = bytes[Number(label.address.stringRepresentation)];
-    bytes[Number(label.address.stringRepresentation)] = (
+  for (const label of labels) {
+    const index = label.address.bits;
+    const el = bytes[index];
+    bytes[index] = (
       <div
-        key={label.address.bits}
+        key={index}
         className='relative bg-gray-200 -m-1 p-1 rounded hover:bg-red-500 hover:rounded-l-none duration-150 group'
       >
         <div className='absolute top-0 right-full h-full p-1 rounded-l bg-red-500 invisible opacity-0 group-hover:visible group-hover:opacity-100 duration-150 translate-x-6 group-hover:translate-x-0'>
@@ -196,22 +188,10 @@ export const HexDump = ({
       </div>
     );
   }
-  // Highlight changed bytes
-  // todo scroll to changed bytes
-  if (oldMemory) {
-    const changedIndexes = getChangedIndexes(oldMemory, memory);
-    for (const index of changedIndexes) {
-      const el = bytes[index];
-      bytes[index] = (
-        <div key={index} className='bg-yellow-300'>
-          {el}
-        </div>
-      );
-    }
-  }
 
-  const ascii = [];
+  let ascii = null;
   if (showAscii) {
+    ascii = [];
     // Build string of bytesInRow bytes
     for (let i = 0; i < memory.length; i += bytesInRow) {
       let str = '';
@@ -232,16 +212,47 @@ export const HexDump = ({
 
   return (
     <div className='overflow-y-auto flex text-sm gap-6 font-mono'>
-      <div className='flex flex-col gap-1'>{addresses}</div>
       <div
         className='grid memory-grid justify-center gap-1'
         style={{
-          gridTemplateColumns: `repeat(${bytesInRow}, max-content)`,
+          gridTemplateColumns: `repeat(${bytesInRow + 1}, max-content)`,
         }}
       >
+        <div
+          className='grid grid-rows-subgrid row-span-full col-span-1'
+          style={{
+            gridRowStart: 'span 9001', // A hack for implicitly sized grid
+          }}
+        >
+          {addresses}
+        </div>
         {bytes}
+        {showAscii && (
+          <div
+            className='grid grid-rows-subgrid row-span-full col-span-1'
+            style={{
+              gridRowStart: 'span 9001', // A hack for implicitly sized grid
+              gridColumn: '-1',
+            }}
+          >
+            {ascii}
+          </div>
+        )}
       </div>
-      {showAscii && <div className='flex flex-col gap-1'>{ascii}</div>}
     </div>
   );
-};
+});
+
+/**
+ * Custom hook to keep track of the previous value
+ * Source: https://github.com/sergeyleschev/react-custom-hooks
+ */
+function usePrevious<T>(value: T) {
+  const currentRef = useRef(value);
+  const previousRef = useRef<T>();
+  if (currentRef.current !== value) {
+    previousRef.current = currentRef.current;
+    currentRef.current = value;
+  }
+  return previousRef.current;
+}
