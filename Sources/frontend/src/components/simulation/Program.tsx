@@ -36,7 +36,6 @@ import React, { useEffect } from 'react';
 
 import {
   selectFetch,
-  selectHighlightedInputCode,
   selectInputCodeModelById,
   selectInstructionFunctionModelById,
   selectProgram,
@@ -60,19 +59,15 @@ export default function Program() {
   const program = useAppSelector(selectProgram);
   const fetch = useAppSelector(selectFetch);
   const codeOrder = useAppSelector(selectProgramWithLabels);
-  const highlightedInputCodeId = useAppSelector(selectHighlightedInputCode);
   const entryPoint = useAppSelector(selectEntryPoint);
 
   // Scroll to PC on every render using scrollTop, because scrollIntoView makes the whole page jump
-  useEffect(() => {
-    if (!pcRef.current || !containerRef.current) {
-      return;
-    }
+  if (pcRef.current && containerRef.current) {
     const pcTop = pcRef.current.offsetTop;
     const containerTop = containerRef.current.offsetTop;
     const containerHeight = containerRef.current.offsetHeight;
     containerRef.current.scrollTop = pcTop - containerTop - containerHeight / 2;
-  }, [pcRef, containerRef]);
+  }
 
   if (!program || !fetch || !codeOrder) return null;
 
@@ -119,14 +114,12 @@ export default function Program() {
             );
           }
           const isPointedTo = instructionOrLabel === pc;
-          const highlighted = instructionOrLabel === highlightedInputCodeId;
-          const cls = clsx('ml-6 rounded-sm', highlighted && 'bg-gray-200');
           // Instruction
           return (
             <ProgramInstruction
               key={`ins-${instructionOrLabel}`}
               instructionId={instructionOrLabel}
-              className={cls}
+              className='ml-6 rounded-sm'
             >
               {isPointedTo && pcPointer}
             </ProgramInstruction>

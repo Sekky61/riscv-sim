@@ -33,7 +33,6 @@
 
 import {
   Action,
-  PayloadAction,
   ThunkAction,
   createAsyncThunk,
   createSelector,
@@ -80,15 +79,6 @@ interface CpuSlice {
    */
   state: CpuState | null;
   /**
-   * Reference to the currently highlighted line in the input code.
-   * Used to highlight the corresponding objects in visualizations.
-   */
-  highlightedInputCode: Reference | null;
-  /**
-   * Reference to the currently highlighted register.
-   */
-  highlightedRegister: string | null;
-  /**
    * Reason for stopping the simulation. Enumeration of possible reasons, like exception, end of program, etc.
    */
   stopReason: StopReason;
@@ -103,8 +93,6 @@ interface CpuSlice {
  */
 export const cpuInitialState: CpuSlice = {
   state: null,
-  highlightedInputCode: null,
-  highlightedRegister: null,
   stopReason: 'kNotStopped',
   instructionFunctionModels: {},
 };
@@ -247,17 +235,7 @@ export const cpuSlice = createSlice({
   name: 'cpu',
   // `createSlice` will infer the state type from the `initialState` argument
   initialState: cpuInitialState,
-  reducers: {
-    highlightRegister: (state, action: PayloadAction<string | null>) => {
-      state.highlightedRegister = action.payload;
-    },
-    unhighlightRegister: (state, action: PayloadAction<string | null>) => {
-      // Do not unhighlight somebody else's highlight
-      if (state.highlightedRegister === action.payload) {
-        state.highlightedRegister = null;
-      }
-    },
-  },
+  reducers: {},
   extraReducers: (builder) => {
     builder
       .addCase(callSimulation.fulfilled, (state, action) => {
@@ -283,7 +261,7 @@ export const cpuSlice = createSlice({
   },
 });
 
-export const { highlightRegister, unhighlightRegister } = cpuSlice.actions;
+// export const {} = cpuSlice.actions;
 
 //
 // Selectors
@@ -326,12 +304,6 @@ export const selectMemoryBytes = createSelector([selectMemory], (memory) => {
 
 export const selectProgram = (state: RootState) =>
   state.cpu.state?.instructionMemoryBlock;
-
-export const selectHighlightedInputCode = (state: RootState) =>
-  state.cpu.highlightedInputCode;
-
-export const selectHighlightedRegister = (state: RootState) =>
-  state.cpu.highlightedRegister;
 
 export const selectLabels = (state: RootState) =>
   state.cpu.state?.instructionMemoryBlock?.labels;

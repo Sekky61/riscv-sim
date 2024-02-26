@@ -76,7 +76,7 @@ export default function InstructionField({
   instructionId: simCodeId,
   showSpeculative = false,
 }: InstructionFieldProps) {
-  const setHighlightedCodeId = useHighlight();
+  const { setHighlightedInstruction } = useHighlight();
   const q = useAppSelector((state) => selectSimCodeModel(state, simCodeId));
   const statistics = useAppSelector(selectStatistics);
   if (!q || simCodeId === null || statistics === undefined) {
@@ -99,14 +99,14 @@ export default function InstructionField({
   };
 
   const handleMouseEnter = () => {
-    setHighlightedCodeId({
+    setHighlightedInstruction({
       simcode: simCodeId,
       inputcode: inputCodeModel.codeId,
     });
   };
 
   const handleMouseLeave = () => {
-    setHighlightedCodeId(null);
+    setHighlightedInstruction(null);
   };
 
   function renderInstructionSyntax() {
@@ -330,12 +330,26 @@ export interface InstructionArgumentProps {
  */
 function InstructionArgument({ arg }: InstructionArgumentProps) {
   const value = getValue(arg);
+  const { setHighlightedRegister } = useHighlight();
+
+  const handleMouseEnter = () => {
+    setHighlightedRegister(arg.register?.name ?? null);
+  };
+
+  const handleMouseLeave = () => {
+    setHighlightedRegister(null);
+  };
 
   // Add negative margin so the highlight is bigger
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <span className='rounded hover:bg-gray-300 -m-1 p-1'>
+        <span
+          className='register rounded hover:bg-gray-300 -m-1 p-1'
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+          data-register-id={arg.register?.name}
+        >
           {arg.origArg.stringValue}
         </span>
       </TooltipTrigger>

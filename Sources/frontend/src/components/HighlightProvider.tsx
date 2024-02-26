@@ -29,18 +29,30 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import React, { createContext, useCallback, useContext, useState } from 'react';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+} from 'react';
 
 /**
  * The value itself is not provided, only the setter.
  * This is crucial for optimization of re-renders - the setter is memoized, so hovering over the instructions
  * does not cause React re-renders.
  */
-export type HighlightContextType = (
-  id: { simcode: number; inputcode: number } | null,
-) => void;
+export type HighlightContextType = {
+  setHighlightedRegister: (id: string | null) => void;
+  setHighlightedInstruction: (
+    id: { simcode: number; inputcode: number } | null,
+  ) => void;
+};
 
-export const HighlightContext = createContext<HighlightContextType>(() => {});
+export const HighlightContext = createContext<HighlightContextType>({
+  setHighlightedRegister: () => {},
+  setHighlightedInstruction: () => {},
+});
 
 export const useHighlight = () => useContext(HighlightContext);
 
@@ -53,15 +65,21 @@ export const HighlightProvider: React.FC<Props> = ({ children }) => {
     inputcode: number;
   } | null>(null);
 
-  // Memoize the setter
-  const setHighlightedCodeIdMemo = useCallback(
-    (id: { simcode: number; inputcode: number } | null) => {
-      setHighlightedCodeId(id);
-    },
+  const [highlightedRegister, setHighlightedRegister] = useState<string | null>(
+    null,
+  );
+
+  // useMemo to memoize the context object
+  const contextValue = useMemo(
+    () => ({
+      setHighlightedRegister,
+      setHighlightedInstruction: setHighlightedCodeId,
+    }),
     [],
   );
 
   // Create a style for all children with class .instruction and data-instruction-id equal to highlightedCodeId
+  // It may be interesting to try to separate into 3 styles.
   const instructionStyle = `
     .instruction[data-instruction-id="${highlightedCodeId?.simcode}"] {
       background-color: #f0f0f0;
@@ -70,10 +88,14 @@ export const HighlightProvider: React.FC<Props> = ({ children }) => {
     .inputcodemodel[data-inputcode-id="${highlightedCodeId?.inputcode}"] {
       background-color: #f0f0f0;
     }
+
+    .register[data-register-id="${highlightedRegister}"] {
+      background-color: #f0f0f0;
+    }
   `;
 
   return (
-    <HighlightContext.Provider value={setHighlightedCodeIdMemo}>
+    <HighlightContext.Provider value={contextValue}>
       <style>{instructionStyle}</style>
       {children}
     </HighlightContext.Provider>

@@ -31,12 +31,7 @@
 
 import clsx from 'clsx';
 
-import {
-  highlightRegister,
-  selectHighlightedRegister,
-  selectRegisterById,
-  unhighlightRegister,
-} from '@/lib/redux/cpustateSlice';
+import { selectRegisterById } from '@/lib/redux/cpustateSlice';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import { ReactClassName } from '@/lib/types/reactTypes';
 
@@ -47,6 +42,7 @@ import {
 } from '@/components/base/ui/tooltip';
 import ValueInformation from '@/components/simulation/ValueTooltip';
 import { isValidRegisterValue } from '@/lib/utils';
+import { useHighlight } from '@/components/HighlightProvider';
 
 export type RegisterReferenceProps = {
   registerId: string;
@@ -58,15 +54,21 @@ export default function RegisterReference({
   className,
   showValue = false,
 }: RegisterReferenceProps) {
-  const dispatch = useAppDispatch();
   const register = useAppSelector((state) =>
     selectRegisterById(state, registerId),
   );
-  const highlightedId = useAppSelector(selectHighlightedRegister);
+  const { setHighlightedRegister } = useHighlight();
 
   if (!register) return null;
 
-  const highlighted = highlightedId === registerId;
+  const handleMouseEnter = () => {
+    setHighlightedRegister(registerId);
+  };
+
+  const handleMouseLeave = () => {
+    setHighlightedRegister(null);
+  };
+
   const valid = isValidRegisterValue(register);
 
   let displayValue = registerId;
@@ -74,18 +76,14 @@ export default function RegisterReference({
     displayValue = register.value.stringRepresentation ?? '???';
   }
 
-  const cls = clsx(highlighted && 'bg-gray-200', className);
   return (
     <Tooltip>
       <TooltipTrigger asChild>
         <span
-          className={cls}
-          onMouseEnter={() => {
-            dispatch(highlightRegister(registerId));
-          }}
-          onMouseLeave={() => {
-            dispatch(unhighlightRegister(registerId));
-          }}
+          className={className}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+          data-register-id={registerId}
         >
           {displayValue}
         </span>
