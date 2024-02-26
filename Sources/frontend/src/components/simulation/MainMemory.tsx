@@ -42,8 +42,20 @@ import {
 } from '@/components/base/ui/dialog';
 import Block from '@/components/simulation/Block';
 import { Label } from '@/lib/types/cpuApi';
-import { memo, useMemo, useRef } from 'react';
+import { memo, useEffect, useMemo, useRef } from 'react';
 import clsx from 'clsx';
+
+function memoryCompare(a: Uint8Array | null, b: Uint8Array | null) {
+  if (a === null || b === null || a.length !== b.length) {
+    return false;
+  }
+  for (let i = 0; i < a.length; i++) {
+    if (a[i] !== b[i]) {
+      return false;
+    }
+  }
+  return true;
+}
 
 /**
  * Display the memory like a hexdump.
@@ -53,14 +65,41 @@ import clsx from 'clsx';
  */
 export default function MainMemory() {
   const program = useAppSelector(selectProgram);
-  const memory = useAppSelector(selectMemoryBytes) ?? new Uint8Array(0);
+  const memory =
+    useAppSelector(selectMemoryBytes, {
+      equalityFn: memoryCompare,
+    }) ?? new Uint8Array(0);
   const oldMemory = usePrevious(memory);
+
+  // Memoize labels. They do not change and trigger re-renders.
+  const labelArray = useRef<Label[] | null>(null);
+  useEffect(() => {
+    if (!program?.labels) {
+      return;
+    }
+    const currentLabels = Object.values(program.labels);
+    // Compare the labels
+    let changed = false;
+    if (labelArray.current === null) {
+      changed = true;
+    } else if (currentLabels.length !== labelArray.current.length) {
+      changed = true;
+    } else {
+      for (let i = 0; i < currentLabels.length; i++) {
+        if (currentLabels[i]?.name !== labelArray.current[i]?.name) {
+          changed = true;
+          break;
+        }
+      }
+    }
+    if (changed) {
+      labelArray.current = Object.values(program.labels);
+    }
+  }, [program]);
 
   if (!program) {
     return null;
   }
-
-  const labelArray = Object.values(program.labels);
 
   // TODO Memoize labels, memory
 
@@ -84,7 +123,7 @@ export default function MainMemory() {
               </tr>
             </thead>
             <tbody>
-              {labelArray.map((label) => {
+              {labelArray.current?.map((label) => {
                 return (
                   <tr key={label.name}>
                     <td>{label.name}</td>
@@ -101,7 +140,7 @@ export default function MainMemory() {
             <HexDump
               memory={memory}
               oldMemory={oldMemory}
-              labels={labelArray}
+              labels={labelArray.current ?? []}
               bytesInRow={16}
               showAscii
             />
@@ -113,7 +152,7 @@ export default function MainMemory() {
         <HexDump
           memory={memory}
           oldMemory={oldMemory}
-          labels={labelArray}
+          labels={labelArray.current ?? []}
           bytesInRow={8}
         />
       </div>
@@ -136,12 +175,12 @@ export type HexDumpProps = {
  * The spacing between columns is done with the .memory-grid class (see globals.css)
  */
 const HexDump = memo(function HexDump({
+  memory,
+  oldMemory,
   labels,
   bytesInRow,
   showAscii = false,
 }: HexDumpProps) {
-  const memory = useAppSelector(selectMemoryBytes) ?? new Uint8Array(0);
-  const oldMemory = usePrevious(memory);
   const rows = memory.length / bytesInRow;
 
   const startAddress = 624; // TODO
@@ -161,7 +200,7 @@ const HexDump = memo(function HexDump({
 
   const bytes = new Array<JSX.Element>(memory.length);
   memory.forEach((byte, index) => {
-    const changed = oldMemory && oldMemory[index] !== byte;
+    const changed = oldMemory[index] !== undefined && oldMemory[index] !== byte;
     const cls = clsx(changed && 'bg-green-300');
     bytes[index] = (
       //biome-ignore lint: Index is appropriate here
@@ -216,14 +255,10 @@ const HexDump = memo(function HexDump({
         className='grid memory-grid justify-center gap-1'
         style={{
           gridTemplateColumns: `repeat(${bytesInRow + 1}, max-content)`,
+          gridTemplateRows: `repeat(${rows}, max-content)`,
         }}
       >
-        <div
-          className='grid grid-rows-subgrid row-span-full col-span-1'
-          style={{
-            gridRowStart: 'span 9001', // A hack for implicitly sized grid
-          }}
-        >
+        <div className='grid grid-rows-subgrid row-span-full col-span-1'>
           {addresses}
         </div>
         {bytes}
@@ -231,7 +266,6 @@ const HexDump = memo(function HexDump({
           <div
             className='grid grid-rows-subgrid row-span-full col-span-1'
             style={{
-              gridRowStart: 'span 9001', // A hack for implicitly sized grid
               gridColumn: '-1',
             }}
           >
@@ -249,7 +283,7 @@ const HexDump = memo(function HexDump({
  */
 function usePrevious<T>(value: T) {
   const currentRef = useRef(value);
-  const previousRef = useRef<T>();
+  const previousRef = useRef<T>(value);
   if (currentRef.current !== value) {
     previousRef.current = currentRef.current;
     currentRef.current = value;

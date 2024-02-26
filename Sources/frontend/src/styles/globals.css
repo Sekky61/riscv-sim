@@ -585,7 +585,7 @@
   }
 
   /* make space every 4 bytes */
-  .memory-grid *:nth-child(4n + 1) {
+  .memory-grid>*:nth-child(4n + 1) {
     margin-right: 0.5em;
   }
 
