@@ -31,8 +31,7 @@
 
 'use client';
 
-import clsx from 'clsx';
-import React, { useEffect } from 'react';
+import React from 'react';
 
 import {
   selectFetch,
@@ -42,8 +41,11 @@ import {
   selectProgramWithLabels,
 } from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
-import { Reference } from '@/lib/types/cpuApi';
-import { ReactClassName } from '@/lib/types/reactTypes';
+import {
+  InputCodeArgument,
+  InstructionFunctionModel,
+  Reference,
+} from '@/lib/types/cpuApi';
 import { hexPadEven, inputCodeAddress } from '@/lib/utils';
 
 import Block from '@/components/simulation/Block';
@@ -157,28 +159,6 @@ export function ProgramInstruction({
 
   if (!instruction || !model) return null;
 
-  const argValues = instruction.arguments;
-  const modelArgs = model.arguments;
-
-  const argsNames = [];
-  for (const arg of modelArgs) {
-    if (arg.silent) {
-      continue;
-    }
-    argsNames.push(arg.name);
-  }
-
-  const argsValues = [];
-  for (const argName of argsNames) {
-    const arg = argValues.find((a) => a.name === argName);
-    if (!arg) {
-      throw new Error(
-        `Argument ${argName} not found in instruction ${model.name}`,
-      );
-    }
-    argsValues.push(arg);
-  }
-
   // Id is mappable to address
   const address = inputCodeAddress(instructionId);
 
@@ -189,21 +169,35 @@ export function ProgramInstruction({
           {address}
         </div>
       )}
-      <span
+      <div
         className='rounded-sm text-sm inputcodemodel'
         data-inputcode-id={instructionId}
       >
         {children}
-        <span title={model.interpretableAs}>{model.name}</span>
-        {argsValues.map((arg, idx) => {
-          return (
-            <span key={arg.name}>
-              {idx === 0 ? ' ' : ','}
-              {arg.stringValue}
-            </span>
-          );
-        })}
-      </span>
+        <InstructionSyntax functionModel={model} args={instruction.arguments} />
+      </div>
     </>
   );
+}
+
+/**
+ * Renders the syntax of an instruction.
+ * Bit of code duplication, but ok.
+ */
+function InstructionSyntax({
+  functionModel,
+  args,
+}: {
+  functionModel: InstructionFunctionModel;
+  args: InputCodeArgument[];
+}) {
+  // syntaxTemplate is an array of strings. Some of them are arguments, some are not. Example: ['addi ', 'rd', ', ', 'rs1', ', ', 'imm'].
+  const formatSplit = functionModel.syntaxTemplate;
+  // if a part matches an argument, wrap it in a tooltip
+  return formatSplit.map((part, i) => {
+    const arg = args.find((a) => a.name === part);
+    const key = `${part}-${i}`;
+    const token = arg?.stringValue ?? part;
+    return <span key={key}>{token}</span>;
+  });
 }

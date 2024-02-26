@@ -73,13 +73,13 @@ public class FunctionalUnitCapabilityTests
    * Tests different combinations of latencies for adder, multiplier and divider.
    */
   @Theory
-  public void latencyCombinations(@FromDataPoints("fxCapabilites") Capability adderCap1,
-                                  @FromDataPoints("fxCapabilites") Capability adderCap2,
-                                  @FromDataPoints("fxCapabilites") Capability adderCap3,
-                                  @FromDataPoints("memoryUnitCount") int memoryUnitCount,
-                                  @FromDataPoints("branchUnitCount") int branchUnitCount,
-                                  @FromDataPoints("lsUnitCount") int lsUnitCount,
-                                  @FromDataPoints("programs") String program)
+  public void capabilityCombinations(@FromDataPoints("fxCapabilites") Capability adderCap1,
+                                     @FromDataPoints("fxCapabilites") Capability adderCap2,
+                                     @FromDataPoints("fxCapabilites") Capability adderCap3,
+                                     @FromDataPoints("memoryUnitCount") int memoryUnitCount,
+                                     @FromDataPoints("branchUnitCount") int branchUnitCount,
+                                     @FromDataPoints("lsUnitCount") int lsUnitCount,
+                                     @FromDataPoints("programs") String program)
   {
     assumeTrue(adderCap1.name != adderCap2.name);
     assumeTrue(adderCap1.name != adderCap3.name);

@@ -34,7 +34,6 @@ package com.gradle.superscalarsim.models.instruction;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.code.Expression;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
@@ -444,39 +443,22 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
    * Used for testing
    *
    * @return String with renamed code line
-   * @brief Gets string representation of the instruction with renamed arguments
+   * @brief Gets string representation of the instruction with renamed arguments (tags).
    */
-  @JsonProperty
   public String getRenamedCodeLine()
   {
-    StringBuilder genericLine = new StringBuilder(getInstructionName());
-    genericLine.append(" ");
-    List<InstructionFunctionModel.Argument> args = inputCodeModel.getInstructionFunctionModel().getAsmArguments();
-    for (int i = 0; i < args.size(); i++)
+    List<String>  template    = getInstructionFunctionModel().getSyntaxTemplate();
+    StringBuilder genericLine = new StringBuilder();
+    for (String token : template)
     {
-      boolean wrapInParens = inputCodeModel.getInstructionFunctionModel().getInstructionType()
-              .equals(InstructionTypeEnum.kLoadstore) && i == args.size() - 1;
-      if (i != 0)
+      InputCodeArgument argument = getArgumentByName(token);
+      if (argument != null)
       {
-        if (wrapInParens)
-        {
-          genericLine.append("(");
-        }
-        else
-        {
-          genericLine.append(",");
-        }
+        genericLine.append(argument.getValue());
       }
-      InstructionFunctionModel.Argument arg        = args.get(i);
-      InputCodeArgument                 renamedArg = getArgumentByName(arg.name());
-      if (renamedArg == null)
+      else
       {
-        throw new RuntimeException("Argument " + arg.name() + " not found in " + this);
-      }
-      genericLine.append(renamedArg.getValue());
-      if (wrapInParens)
-      {
-        genericLine.append(")");
+        genericLine.append(token);
       }
     }
     return genericLine.toString();

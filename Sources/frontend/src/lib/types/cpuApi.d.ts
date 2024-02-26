@@ -304,6 +304,10 @@ export interface InstructionFunctionModel {
   arguments: Argument[];
   interpretableAs: string;
   unconditionalJump: boolean;
+  /**
+   * Tokens for syntax of the instruction
+   */
+  syntaxTemplate: string[];
 }
 
 export interface Argument {
@@ -341,7 +345,6 @@ export interface SimCodeModel {
   load: boolean;
   readyToBeCommitted: boolean;
   readyToExecute: boolean;
-  renamedCodeLine: string;
   speculative: boolean;
   conditionalBranch: boolean;
   store: boolean;

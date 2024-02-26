@@ -200,6 +200,44 @@ public class InstructionFunctionModel implements Identifiable
   }// end of getId
   
   /**
+   * Used for creating string representation of the instruction with renamed arguments
+   * Example of an output: "addi rd, rs1, imm", "lw rd, imm(rs1)", only it is tokenized, so ["addi ", "rd", ",", "rs1", ",", "imm"].
+   * Note the space after instruction name.
+   *
+   * @return List of tokens representing the template of the instruction
+   */
+  @JsonProperty
+  public List<String> getSyntaxTemplate()
+  {
+    List<String> syntaxTemplate = new ArrayList<>();
+    syntaxTemplate.add(name + " ");
+    boolean        isLoadStore = instructionType == InstructionTypeEnum.kLoadstore;
+    List<Argument> args        = getAsmArguments();
+    for (int i = 0; i < args.size(); i++)
+    {
+      boolean wrapInParens = isLoadStore && i == args.size() - 1;
+      if (i != 0)
+      {
+        if (wrapInParens)
+        {
+          syntaxTemplate.add("(");
+        }
+        else
+        {
+          syntaxTemplate.add(",");
+        }
+      }
+      InstructionFunctionModel.Argument arg = args.get(i);
+      syntaxTemplate.add(arg.name);
+    }
+    if (isLoadStore)
+    {
+      syntaxTemplate.add(")");
+    }
+    return syntaxTemplate;
+  }// end of getRenamedCodeLine
+  
+  /**
    * @param name         Name of the argument (example: "rd")
    * @param type         Data type of the argument (example: "kInt")
    * @param defaultValue Default value of the argument (example: "0" or null)

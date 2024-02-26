@@ -80,17 +80,18 @@ export const HighlightProvider: React.FC<Props> = ({ children }) => {
 
   // Create a style for all children with class .instruction and data-instruction-id equal to highlightedCodeId
   // It may be interesting to try to separate into 3 styles.
+  // Opacity, so that the register can be highlighted over a highlighted instruction
   const instructionStyle = `
     .instruction[data-instruction-id="${highlightedCodeId?.simcode}"] {
-      background-color: #f0f0f0;
+      background-color: rgba(100, 100, 100, 0.15);
     }
 
     .inputcodemodel[data-inputcode-id="${highlightedCodeId?.inputcode}"] {
-      background-color: #f0f0f0;
+      background-color: rgba(100, 100, 100, 0.15);
     }
 
     .register[data-register-id="${highlightedRegister}"] {
-      background-color: #f0f0f0;
+      background-color: rgba(100, 100, 100, 0.15);
     }
   `;
 

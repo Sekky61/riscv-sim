@@ -37,8 +37,8 @@ import {
   selectSimCodeModel,
   selectStatistics,
 } from '@/lib/redux/cpustateSlice';
-import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
-import { Reference } from '@/lib/types/cpuApi';
+import { useAppSelector } from '@/lib/redux/hooks';
+import { InstructionFunctionModel, Reference } from '@/lib/types/cpuApi';
 
 import {
   Dialog,
@@ -60,7 +60,6 @@ import {
   isValidRegisterValue,
 } from '@/lib/utils';
 import { useHighlight } from '@/components/HighlightProvider';
-import { set } from 'zod';
 
 export type InstructionFieldProps = {
   instructionId: Reference | null;
@@ -89,14 +88,6 @@ export default function InstructionField({
   }
 
   const { simCodeModel, args, inputCodeModel, functionModel } = q;
-  const isBranch = functionModel.instructionType === 'kJumpbranch';
-  const pc = inputCodeModel.codeId * 4;
-
-  // This can be null because of NOP
-  const instructionStats = statistics.instructionStats[simCodeId] ?? {
-    committedCount: 0,
-    correctlyPredicted: 0,
-  };
 
   const handleMouseEnter = () => {
     setHighlightedInstruction({
@@ -109,43 +100,18 @@ export default function InstructionField({
     setHighlightedInstruction(null);
   };
 
-  function renderInstructionSyntax() {
-    // simCodeModel.renamedCodeLine contains the instruction with renamed arguments, e.g. addi r1, r2, 5
-    // Wrap the arguments in a tooltip and make them highlightable
-    const formatSplit = simCodeModel.renamedCodeLine.split(/( |,|\)|\()/g);
-    // if a part matches an argument, wrap it in a tooltip
-    return formatSplit.map((part, i) => {
-      // This may cause problems in the future, if the argument is not unique (e.g. addi sp, sp, -40)
-      const arg = args.find((a) => a.origArg.stringValue === part);
-      const key = `${simCodeModel.renamedCodeLine}-${i}`;
-      if (arg) {
-        return <InstructionArgument arg={arg} key={key} />;
-      }
-      // Add z-index to make the argument highlight below the parentheses etc.
-      return (
-        <span className='relative z-10' key={key}>
-          {part}
-        </span>
-      );
-    });
-  }
-
-  const cls = clsx(
-    'group instruction instruction-bubble w-full font-mono px-2 text-left whitespace-nowrap overflow-hidden',
-  );
-
   // Tabindex and button for accessibility
   return (
     <Dialog>
       <DialogTrigger asChild>
         <button
           type='button'
-          className={cls}
+          className='group instruction instruction-bubble w-full font-mono px-2 text-left whitespace-nowrap overflow-hidden'
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
           data-instruction-id={simCodeId}
         >
-          {renderInstructionSyntax()}
+          <InstructionSyntax functionModel={functionModel} args={args} />
           {showSpeculative && (
             <span className='absolute top-0 right-0 p-1 text-xs'>
               {simCodeModel.speculative ? 'S' : ''}
@@ -185,7 +151,9 @@ export function InstructionDetailPopup({
   return (
     <DialogContent className='max-w-4xl'>
       <DialogHeader>
-        <DialogTitle>{simCodeModel.renamedCodeLine}</DialogTitle>
+        <DialogTitle>
+          <InstructionSyntax functionModel={functionModel} args={args} />
+        </DialogTitle>
         <DialogDescription>
           Detailed view of instruction #{simCodeModel.id}
         </DialogDescription>
@@ -370,3 +338,32 @@ const renderTimestamp = (timestamp: number) =>
  * Render a flag.
  */
 const renderFlag = (flag: boolean) => (flag ? 'Yes' : 'No');
+
+/**
+ * Render the instruction syntax.
+ * Wraps the arguments in a tooltip and makes them highlightable.
+ */
+function InstructionSyntax({
+  functionModel,
+  args,
+}: {
+  functionModel: InstructionFunctionModel;
+  args: ParsedArgument[];
+}) {
+  // syntaxTemplate is an array of strings. Some of them are arguments, some are not. Example: ['addi ', 'rd', ', ', 'rs1', ', ', 'imm'].
+  const formatSplit = functionModel.syntaxTemplate;
+  // if a part matches an argument, wrap it in a tooltip
+  return formatSplit.map((part, i) => {
+    const arg = args.find((a) => a.origArg.name === part);
+    const key = `${part}-${i}`;
+    if (arg) {
+      return <InstructionArgument arg={arg} key={key} />;
+    }
+    // Add z-index to make the argument highlight below the parentheses etc.
+    return (
+      <span className='relative z-10' key={key}>
+        {part}
+      </span>
+    );
+  });
+}
