@@ -221,7 +221,7 @@ function InstructionStatsCard({
           value={stat}
           onNewValue={(v) => setStat(v)}
         />
-        <div className='pt-4 heatmap-transition'>
+        <div className='pt-4 heatmap-transition font-mono'>
           {codeOrder.map((instructionOrLabel) => {
             if (typeof instructionOrLabel === 'string') {
               return (

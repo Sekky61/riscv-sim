@@ -77,10 +77,7 @@ export default function Program() {
   const pcPointer = (
     <div ref={pcRef} className='relative w-full flex items-center'>
       <div className='absolute w-full h-0.5 bg-red-500 rounded-full' />
-      <div
-        className='absolute -left-6 bg-red-500 text-white text-xs rectangle h-4 pl-1'
-        title={`PC: ${fetch.pc}`}
-      >
+      <div className='absolute -left-6 bg-red-500 text-white text-xs rectangle h-4 pl-1'>
         <div className='relative rectangle'>PC</div>
       </div>
     </div>
@@ -94,52 +91,59 @@ export default function Program() {
   return (
     <Block
       title='Program'
-      className='program justify-self-stretch self-stretch w-block'
+      className='program justify-self-stretch self-stretch w-block h-full'
       stats={<div>Entry Point: {entryPointPretty}</div>}
     >
-      <div
-        className='max-h-96 grid gap-1 overflow-y-auto pt-4'
-        style={{ gridTemplateColumns: 'auto auto' }}
-        ref={containerRef}
-      >
-        {codeOrder.map((instructionOrLabel) => {
-          if (typeof instructionOrLabel === 'string') {
+      <div className='flex-1 relative'>
+        <div
+          className='absolute inset-x-0 top-0 max-h-full grid gap-y-1 gap-x-7 overflow-y-auto pt-4 font-mono'
+          style={{ gridTemplateColumns: 'auto auto' }}
+          ref={containerRef}
+        >
+          {codeOrder.map((instructionOrLabel) => {
+            if (typeof instructionOrLabel === 'string') {
+              return (
+                <div
+                  key={`lab-${instructionOrLabel}`}
+                  className='font-bold text-sm col-span-2'
+                >
+                  {instructionOrLabel}:
+                </div>
+              );
+            }
+            const isPointedTo = instructionOrLabel === pc;
+            // Instruction
             return (
-              <div
-                key={`lab-${instructionOrLabel}`}
-                className='font-bold text-sm col-span-2'
-              >
-                {instructionOrLabel}:
-              </div>
+              <>
+                <ProgramInstruction
+                  key={`ins-${instructionOrLabel}`}
+                  instructionId={instructionOrLabel}
+                >
+                  {isPointedTo && pcPointer}
+                </ProgramInstruction>
+              </>
             );
-          }
-          const isPointedTo = instructionOrLabel === pc;
-          // Instruction
-          return (
-            <ProgramInstruction
-              key={`ins-${instructionOrLabel}`}
-              instructionId={instructionOrLabel}
-              className='ml-6 rounded-sm'
-            >
-              {isPointedTo && pcPointer}
-            </ProgramInstruction>
-          );
-        })}
+          })}
+        </div>
       </div>
     </Block>
   );
 }
 
+type ProgramInstructionProps = {
+  instructionId: Reference;
+  showAddress?: boolean;
+  children?: React.ReactNode;
+};
+
+/**
+ * Used here in program block and in stats
+ */
 export function ProgramInstruction({
   instructionId,
-  className,
   children,
   showAddress = true,
-}: {
-  instructionId: Reference;
-  children?: React.ReactNode;
-  showAddress?: boolean;
-} & ReactClassName) {
+}: ProgramInstructionProps) {
   const instruction = useAppSelector((state) =>
     selectInputCodeModelById(state, instructionId),
   );
@@ -178,15 +182,17 @@ export function ProgramInstruction({
   // Id is mappable to address
   const address = inputCodeAddress(instructionId);
 
-  const cls = clsx(className, 'font-mono text-sm inputcodemodel');
   return (
     <>
       {showAddress && (
-        <div className='text-xs text-gray-600 font-mono flex justify-center items-center'>
+        <div className='text-xs text-gray-600 justify-self-end self-center'>
           {address}
         </div>
       )}
-      <span className={cls} data-inputcode-id={instructionId}>
+      <span
+        className='rounded-sm text-sm inputcodemodel'
+        data-inputcode-id={instructionId}
+      >
         {children}
         <span title={model.interpretableAs}>{model.name}</span>
         {argsValues.map((arg, idx) => {
