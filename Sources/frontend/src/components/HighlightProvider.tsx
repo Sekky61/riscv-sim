@@ -29,13 +29,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import React, {
-  createContext,
-  useCallback,
-  useContext,
-  useMemo,
-  useState,
-} from 'react';
+import React, { createContext, useContext, useMemo, useState } from 'react';
 
 /**
  * The value itself is not provided, only the setter.
@@ -83,15 +77,15 @@ export const HighlightProvider: React.FC<Props> = ({ children }) => {
   // Opacity, so that the register can be highlighted over a highlighted instruction
   const instructionStyle = `
     .instruction[data-instruction-id="${highlightedCodeId?.simcode}"] {
-      background-color: rgba(100, 100, 100, 0.15);
+      background-color: var(--hover-highlight-color);
     }
 
     .inputcodemodel[data-inputcode-id="${highlightedCodeId?.inputcode}"] {
-      background-color: rgba(100, 100, 100, 0.15);
+      background-color: var(--hover-highlight-color);
     }
 
     .register[data-register-id="${highlightedRegister}"] {
-      background-color: rgba(100, 100, 100, 0.15);
+      background-color: var(--hover-highlight-color);
     }
   `;
 

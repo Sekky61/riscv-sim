@@ -294,14 +294,15 @@ export interface InstructionArgumentProps {
 /**
  * Displays a single argument of an instruction.
  * Delegaltes to RegisterReference if the argument is a register.
- * Highlights the argument on hover.
+ * Highlights the argument on hover, whether it is a register or not.
  */
 function InstructionArgument({ arg }: InstructionArgumentProps) {
-  const value = getValue(arg);
   const { setHighlightedRegister } = useHighlight();
+  const value = getValue(arg);
+  const idToHighlight = arg.register?.name ?? arg.origArg.stringValue;
 
   const handleMouseEnter = () => {
-    setHighlightedRegister(arg.register?.name ?? null);
+    setHighlightedRegister(idToHighlight);
   };
 
   const handleMouseLeave = () => {
@@ -313,10 +314,10 @@ function InstructionArgument({ arg }: InstructionArgumentProps) {
     <Tooltip>
       <TooltipTrigger asChild>
         <span
-          className='register rounded hover:bg-gray-300 -m-1 p-1'
+          className='register rounded -m-1 p-1'
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
-          data-register-id={arg.register?.name}
+          data-register-id={idToHighlight}
         >
           {arg.origArg.stringValue}
         </span>

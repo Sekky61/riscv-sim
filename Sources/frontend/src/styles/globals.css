@@ -65,6 +65,9 @@
     --ring: 20 14.3% 4.1%;
  
     --radius: 0.5rem;
+
+    /* Used for the register/instruction highlight on hover. TODO: dark mode */
+    --hover-highlight-color: rgba(100, 100, 100, 0.15);
   }
  
   .dark {
