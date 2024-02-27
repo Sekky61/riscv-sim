@@ -72,6 +72,7 @@ export interface CpuState {
   simulatedMemory: SimulatedMemory;
   issueWindowSuperBlock: IssueWindowSuperBlock;
   reorderBufferBlock: ReorderBufferBlock;
+  debugLog: DebugLog;
 }
 
 export type SimulationStatistics = {
@@ -219,6 +220,17 @@ export interface ReorderBufferBlock {
   instructionFetchBlock?: InstructionFetchBlock;
   loadBufferBlock?: LoadBufferBlock;
   storeBufferBlock?: StoreBufferBlock;
+  debugLog: DebugLog;
+}
+
+export interface DebugLog {
+  entries: Entry[];
+  registerFile: Reference;
+}
+
+export interface Entry {
+  message: string;
+  cycle: number;
 }
 
 export interface ManagerRegistry {
@@ -238,7 +250,7 @@ export interface InstructionMemoryBlock {
 
 export interface Label {
   name: string;
-  address: number;
+  address: RegisterDataContainer;
 }
 
 export type InstructionTypeEnum =
@@ -274,6 +286,11 @@ export interface InputCodeModel {
   arguments: InputCodeArgument[];
   instructionTypeEnum: InstructionTypeEnum;
   instructionFunctionModel: Reference;
+  debugInfo: DebugInfo;
+}
+
+export interface DebugInfo {
+  formatString: string;
 }
 
 export interface InputCodeArgument {

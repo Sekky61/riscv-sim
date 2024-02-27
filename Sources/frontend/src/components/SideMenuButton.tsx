@@ -29,12 +29,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+'use client';
+
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { ReactNode } from 'react';
 
-import AnimatedButton from '@/components/AnimatedButton';
-import Tooltip from '@/components/Tooltip';
+import { IconButton } from '@/components/IconButton';
 
 export type SideMenuButtonProps = {
   Icon: ReactNode;
@@ -59,16 +60,19 @@ export default function SideMenuButton({
   };
 
   return (
-    <Link href={href} className='tooltip'>
-      <AnimatedButton
+    <Link
+      href={href}
+      className='flex gap-4 items-center rounded-full hover:bg-gray-200 hover:underline'
+    >
+      <IconButton
         active={isActive}
         clickCallback={clickCallback}
         shortCut={shortcut}
         description={hoverText}
       >
         {Icon}
-      </AnimatedButton>
-      <Tooltip text={hoverText} shortcut={shortcut} />
+      </IconButton>
+      <div className='nav-text text-nowrap'>{hoverText}</div>
     </Link>
   );
 }

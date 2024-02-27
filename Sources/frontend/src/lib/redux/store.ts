@@ -30,7 +30,6 @@
  */
 
 import { combineReducers, configureStore } from '@reduxjs/toolkit';
-import { reducer as notificationsReducer } from 'reapop';
 import {
   FLUSH,
   PAUSE,
@@ -49,7 +48,6 @@ import storage from 'redux-persist/lib/storage';
 import compilerReducer, { CompilerReducer } from '@/lib/redux/compilerSlice';
 import cpuReducer from '@/lib/redux/cpustateSlice';
 import isaReducer, { IsaReducer } from '@/lib/redux/isaSlice';
-import modalsReducer from '@/lib/redux/modalSlice';
 import shortcutsReducer from '@/lib/redux/shortcutsSlice';
 import simConfigReducer, { SimConfigReducer } from '@/lib/redux/simConfigSlice';
 
@@ -124,13 +122,11 @@ const reducers = combineReducers({
     persistCompileConfig,
     compilerReducer,
   ),
-  notifications: notificationsReducer(),
   shortcuts: shortcutsReducer,
-  modals: modalsReducer,
   cpu: cpuReducer,
 });
 
-export const store = configureStore({
+/* export const store = configureStore({
   reducer: reducers,
   middleware: (gDM) =>
     gDM({
@@ -138,10 +134,25 @@ export const store = configureStore({
         ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
       },
     }),
-});
-export const persistor = persistStore(store);
+}); */
 
+export const makeStore = () => {
+  const store = configureStore({
+    reducer: reducers,
+    middleware: (gDM) =>
+      gDM({
+        serializableCheck: {
+          ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
+        },
+      }),
+  });
+  const persistor = persistStore(store);
+  return { store, persistor };
+};
+
+export type AppPersistedStore = ReturnType<typeof makeStore>;
+export type AppStore = ReturnType<typeof makeStore>['store'];
 // Infer the `RootState` and `AppDispatch` types from the store itself
-export type RootState = ReturnType<typeof store.getState>;
-// Inferred type: {posts: PostsState, comments: CommentsState, users: UsersState}
-export type AppDispatch = typeof store.dispatch;
+// Infer the `RootState` and `AppDispatch` types from the store itself
+export type RootState = ReturnType<AppStore['getState']>;
+export type AppDispatch = AppStore['dispatch'];

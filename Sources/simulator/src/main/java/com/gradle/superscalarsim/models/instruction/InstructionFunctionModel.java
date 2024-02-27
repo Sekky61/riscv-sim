@@ -205,7 +205,7 @@ public class InstructionFunctionModel implements Identifiable
    * @param defaultValue Default value of the argument (example: "0" or null)
    * @param writeBack    True if the argument should be written back to register file on commit
    *
-   * @brief Could be a record, but is not because of serialization issues
+   * @brief Could be a record, but is not because of serialization issues. Name convention: "r" for register, "i" for immediate.
    * TODO: is serialized redundantly.
    */
   public static class Argument

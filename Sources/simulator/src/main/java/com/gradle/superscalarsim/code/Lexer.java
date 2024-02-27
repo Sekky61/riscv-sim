@@ -27,6 +27,9 @@
 
 package com.gradle.superscalarsim.code;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Inspired by <a href="https://github.com/AZHenley/riscv-parser">riscv-parser</a>
  *
@@ -53,7 +56,14 @@ public class Lexer
    * Current index in the code
    */
   int index;
-  
+  /**
+   * Precomputed tokens
+   */
+  List<CodeToken> tokens;
+  /**
+   * Pointer to the next token
+   */
+  int tokenPtr;
   /**
    * Current character
    */
@@ -82,13 +92,32 @@ public class Lexer
     this.line   = 1;
     this.column = 1;
     this.index  = 0;
+    
+    this.tokens   = new ArrayList<>();
+    this.tokenPtr = 0;
+    collectTokens();
+    assert !tokens.isEmpty();
+    assert tokens.get(tokens.size() - 1).type() == CodeToken.Type.EOF;
+  }
+  
+  private void collectTokens()
+  {
+    while (true)
+    {
+      CodeToken token = parseToken();
+      tokens.add(token);
+      if (token.type() == CodeToken.Type.EOF)
+      {
+        break;
+      }
+    }
   }
   
   /**
-   * @return Next token
+   * @return New token form the code
    * @brief Produce next token
    */
-  public CodeToken nextToken()
+  public CodeToken parseToken()
   {
     skipSpaces();
     
@@ -165,6 +194,12 @@ public class Lexer
           symbol.append(ch);
           nextChar();
         }
+        if (ch == ':')
+        {
+          nextChar();
+          // Save token without colon
+          return new CodeToken(line, columnStart, symbol.toString(), CodeToken.Type.LABEL);
+        }
         return new CodeToken(line, columnStart, symbol.toString(), CodeToken.Type.SYMBOL);
       }
     }
@@ -211,6 +246,42 @@ public class Lexer
   private boolean isNewLine()
   {
     return ch == '\n';
+  }
+  
+  public List<CodeToken> getTokens()
+  {
+    return tokens;
+  }
+  
+  /**
+   * @return Next token
+   * @brief Produce next token
+   */
+  public CodeToken nextToken()
+  {
+    if (tokenPtr >= tokens.size())
+    {
+      return tokens.get(tokens.size() - 1);
+    }
+    return tokens.get(tokenPtr++);
+  }
+  
+  public CodeToken currentToken()
+  {
+    if (tokenPtr >= tokens.size())
+    {
+      return tokens.get(tokens.size() - 1);
+    }
+    return tokens.get(tokenPtr);
+  }
+  
+  public CodeToken peekToken()
+  {
+    if (tokenPtr + 1 >= tokens.size())
+    {
+      return tokens.get(tokens.size() - 1);
+    }
+    return tokens.get(tokenPtr + 1);
   }
   
   private boolean isHexDigit()

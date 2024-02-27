@@ -129,4 +129,31 @@ public class MemoryTests
     Assert.assertEquals(0, cpu.cpuState.simulatedMemory.getFromMemory(offset2 + 2));
     Assert.assertEquals(0, cpu.cpuState.simulatedMemory.getFromMemory(offset2 + 3));
   }
+  
+  /**
+   * The X pointer should be at stack pointer + something
+   */
+  @Test
+  public void test_Execute()
+  {
+    // Setup + exercise
+    cpuConfig.code = """
+              lla a5,X
+              flw fa5,0(a5)
+            X:
+              .word   1067030938
+            """;
+    Cpu cpu = new Cpu(cpuConfig);
+    cpu.execute(false);
+    
+    // Assert
+    // X is after the stack pointer in memory
+    long address = cpu.cpuState.instructionMemoryBlock.getLabelPosition("X");
+    Assert.assertTrue(address > cpuConfig.cpuConfig.callStackSize);
+    
+    // a5 is pointing to address
+    int a5 = (int) cpu.cpuState.unifiedRegisterFileBlock.getRegister("a5").getValueContainer()
+            .getValue(DataTypeEnum.kInt);
+    Assert.assertEquals(address, a5);
+  }
 }

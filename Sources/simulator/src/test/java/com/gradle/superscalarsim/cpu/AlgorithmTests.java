@@ -35,6 +35,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.util.ArrayList;
 import java.util.List;
 
 public class AlgorithmTests
@@ -340,7 +343,7 @@ public class AlgorithmTests
   public void test_recursiveFactorial()
   {
     // Alignment 2^4
-    Cpu cpu = setupCpu(recursiveFactorialCode, "main", List.of());
+    Cpu cpu = setupCpu(recursiveFactorialCode, "main", List.of(), true);
     cpu.execute(false);
     
     // Assert
@@ -350,9 +353,10 @@ public class AlgorithmTests
   /**
    * Setup cpu instance with the C code
    */
-  private Cpu setupCpu(String cCode, String entryPoint, List<MemoryLocation> memoryLocations)
+  private Cpu setupCpu(String cCode, String entryPoint, List<MemoryLocation> memoryLocations, boolean optimize)
   {
-    GccCaller.CompileResult res = GccCaller.compile(cCode, List.of("O2"));
+    List<String>            optimizationFlags = optimize ? List.of("O2") : List.of();
+    GccCaller.CompileResult res               = GccCaller.compile(cCode, optimizationFlags);
     Assert.assertTrue(res.success);
     CompiledProgram program             = AsmParser.parse(res.code);
     String          concatenatedProgram = StringUtils.join(program.program, "\n");
@@ -382,5 +386,60 @@ public class AlgorithmTests
     cpu.execute(false);
     
     Assert.assertEquals(-5, (int) cpu.cpuState.unifiedRegisterFileBlock.getRegister("x12").getValue(DataTypeEnum.kInt));
+  }
+  
+  /**
+   * TODO: miscompiles for arrayLen=1
+   * Used to fail at arrayLen>50 due to losing instructions between decode and rob
+   */
+  @Test
+  public void test_simpleArrayProgram()
+  {
+    // Setup
+    int arrayLen = 55;
+    String cCode = String.format("""
+                                         extern float a[];
+                                         extern float b[];
+                                         const float c = 10;
+                                         
+                                         void main(){
+                                           
+                                           for (int i = 0; i < %d; i++)
+                                              a[i] += b[i]*c;
+                                              
+                                           return;
+                                         }""", arrayLen);
+    
+    List<String> hundredOnes  = new ArrayList<>();
+    List<String> hundredNines = new ArrayList<>();
+    for (int i = 0; i < arrayLen; i++)
+    {
+      hundredOnes.add("1");
+      hundredNines.add("9");
+    }
+    
+    List<MemoryLocation> memoryLocations = List.of(new MemoryLocation("a", 4, DataTypeEnum.kFloat, hundredOnes),
+                                                   new MemoryLocation("b", 4, DataTypeEnum.kFloat, hundredNines));
+    
+    Cpu cpu = setupCpu(cCode, "main", memoryLocations, true);
+    cpu.execute(true);
+    
+    // Verify
+    // Check memory at a
+    long aPtr    = cpu.cpuState.instructionMemoryBlock.getLabelPosition("a");
+    int  correct = 0;
+    for (int i = 0; i < arrayLen; i++)
+    {
+      byte[]  bytes     = cpu.cpuState.simulatedMemory.getFromMemory(aPtr + i * 4, 4);
+      float   converted = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN).getFloat();
+      boolean isCorrect = Math.abs(converted - 91.0f) < 0.01;
+      if (isCorrect)
+      {
+        correct++;
+      }
+      //      Assert.assertEquals(91.0f, converted, 0.01);
+    }
+    
+    Assert.assertEquals(arrayLen, correct);
   }
 }

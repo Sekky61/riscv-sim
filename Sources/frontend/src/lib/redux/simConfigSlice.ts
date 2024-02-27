@@ -32,7 +32,6 @@
 import { SimulationConfig, defaultSimulationConfig } from '@/lib/forms/Isa';
 import { selectAsmCode, selectEntryPoint } from '@/lib/redux/compilerSlice';
 import { selectActiveConfig } from '@/lib/redux/isaSlice';
-import { openModal } from '@/lib/redux/modalSlice';
 import { RootState } from '@/lib/redux/store';
 import {
   Action,
@@ -50,48 +49,6 @@ interface SimConfigSlice {
 
 const initialState: SimConfigSlice = {
   config: defaultSimulationConfig,
-};
-
-/**
- * Compare differences between the current simulation config and the code editor and config page.
- * If there are any, ask the user if they want to reload the simulation.
- */
-export const checkAskSimReload = (): ThunkAction<
-  void,
-  RootState,
-  unknown,
-  Action<string>
-> => {
-  return async (dispatch, getState) => {
-    const state: RootState = getState();
-    const config = selectActiveConfig(state);
-    const runningConfig = selectRunningConfig(state);
-    const code = selectAsmCode(state);
-    const entryPoint = selectEntryPoint(state);
-
-    const memoryEqual =
-      JSON.stringify(config.memoryLocations) ===
-      JSON.stringify(runningConfig.memoryLocations);
-
-    const cpuConfigEqual =
-      JSON.stringify(config.cpuConfig) ===
-      JSON.stringify(runningConfig.cpuConfig);
-
-    const same =
-      code === runningConfig.code &&
-      entryPoint === runningConfig.entryPoint &&
-      memoryEqual &&
-      cpuConfigEqual;
-
-    if (!same) {
-      dispatch(
-        openModal({
-          modalType: 'SIM_CONFIG_NOT_UP_TO_DATE_MODAL',
-          modalProps: {},
-        }),
-      );
-    }
-  };
 };
 
 /**

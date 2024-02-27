@@ -35,7 +35,6 @@ import {
   createSelector,
   createSlice,
 } from '@reduxjs/toolkit';
-import { notify } from 'reapop';
 
 import { defaultAsmCode } from '@/constant/defaults';
 import { transformErrors } from '@/lib/editor/transformErrors';
@@ -48,6 +47,8 @@ import {
   ParseAsmResponse,
   SimpleParseError,
 } from '@/lib/types/simulatorApi';
+import { toast } from 'sonner';
+import { CodeExample } from '@/lib/types/codeExamples';
 
 export type OptimizeOption =
   | 'O2'
@@ -59,16 +60,6 @@ export type OptimizeOption =
 
 export interface CompilerOptions {
   optimizeFlags: OptimizeOption[];
-}
-
-/**
- * Example code. Describes the JSON structure in @/constant/codeExamples.json
- */
-export interface Example {
-  name: string;
-  type: 'c' | 'asm';
-  code: string;
-  entryPoint?: number | string;
 }
 
 // Define a type for the slice state
@@ -124,36 +115,18 @@ export const callCompiler = createAsyncThunk<CompileResponse>(
     const response = await callCompilerImpl(code, options)
       .then((res) => {
         if (res.success) {
-          dispatch(
-            notify({
-              title: 'Compilation successful',
-              message: 'To use this code, reload the simulation.',
-              status: 'success',
-            }),
-          );
+          toast.success('Compilation successful');
         } else {
           // Show the short error message
-          dispatch(
-            notify({
-              message: `Compilation failed: ${res.error}`,
-              status: 'error',
-              dismissible: true,
-              // Do not automatically dismiss
-              dismissAfter: 0,
-            }),
-          );
+          toast.error(`Compilation failed: ${res.error}`, {
+            dismissible: true,
+            duration: 0,
+          });
         }
         return res;
       })
       .catch((err) => {
-        dispatch(
-          notify({
-            message: 'Compilation failed: server error',
-            status: 'error',
-            dismissible: true,
-            dismissAfter: 2000,
-          }),
-        );
+        toast.error('Compilation failed: server error');
         // Rethrow
         throw err;
       });
@@ -176,35 +149,15 @@ export const callParseAsm = createAsyncThunk<ParseAsmResponse>(
     const response = await callParseAsmImpl(code, config)
       .then((res) => {
         if (res.success) {
-          dispatch(
-            notify({
-              title: 'The assembly code is valid',
-              status: 'success',
-            }),
-          );
+          toast.success('The assembly code is valid');
         } else {
           // Show the short error message
-          dispatch(
-            notify({
-              message: 'Check failed',
-              status: 'error',
-              dismissible: true,
-              // Do not automatically dismiss
-              dismissAfter: 0,
-            }),
-          );
+          toast.error('The assembly code is invalid');
         }
         return res;
       })
       .catch((err) => {
-        dispatch(
-          notify({
-            message: 'Compilation failed: server error',
-            status: 'error',
-            dismissible: true,
-            dismissAfter: 2000,
-          }),
-        );
+        toast.error('Compilation failed: server error');
         // Rethrow
         throw err;
       });
@@ -217,7 +170,7 @@ export const callParseAsm = createAsyncThunk<ParseAsmResponse>(
  *
  * Example: dispatch(openExampleAndCompile("example1"));
  */
-export const openExampleAndCompile = createAsyncThunk<void, Example>(
+export const openExampleAndCompile = createAsyncThunk<void, CodeExample>(
   'compiler/openExampleAndCompile',
   async (example, { dispatch }) => {
     dispatch(openExample(example));
@@ -301,7 +254,7 @@ export const compilerSlice = createSlice({
     enterEditorMode: (state, action: PayloadAction<'c' | 'asm'>) => {
       state.editorMode = action.payload;
     },
-    openExample: (state, action: PayloadAction<Example>) => {
+    openExample: (state, action: PayloadAction<CodeExample>) => {
       state.cCode = action.payload.type === 'c' ? action.payload.code : '';
       state.asmCode = action.payload.type === 'asm' ? action.payload.code : '';
       state.asmToC = [];

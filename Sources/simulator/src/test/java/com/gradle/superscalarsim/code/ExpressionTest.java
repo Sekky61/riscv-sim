@@ -108,4 +108,45 @@ public class ExpressionTest
     
     Assert.assertThrows(IllegalArgumentException.class, () -> Expression.interpret("5 \\x +", vars));
   }
+  
+  @Test
+  public void testLabelExpression()
+  {
+    long evaluated = ExpressionEvaluator.evaluate("1+2");
+    Assert.assertEquals(3, evaluated);
+    
+    evaluated = ExpressionEvaluator.evaluate("1+2*3");
+    Assert.assertEquals(7, evaluated);
+    
+    evaluated = ExpressionEvaluator.evaluate("1<<2");
+    Assert.assertEquals(4, evaluated);
+    
+    evaluated = ExpressionEvaluator.evaluate("5");
+    Assert.assertEquals(5, evaluated);
+    
+    evaluated = ExpressionEvaluator.evaluate("-40");
+    Assert.assertEquals(-40, evaluated);
+  }
+  
+  @Test
+  public void testLabelExpressionTokenizer()
+  {
+    String[] tokens = ExpressionEvaluator.tokenize("1+2*3");
+    Assert.assertArrayEquals(new String[]{"1", "+", "2", "*", "3"}, tokens);
+    
+    tokens = ExpressionEvaluator.tokenize("1<<2");
+    Assert.assertArrayEquals(new String[]{"1", "<<", "2"}, tokens);
+    
+    tokens = ExpressionEvaluator.tokenize("5");
+    Assert.assertArrayEquals(new String[]{"5"}, tokens);
+    
+    tokens = ExpressionEvaluator.tokenize("two+40");
+    Assert.assertArrayEquals(new String[]{"two", "+", "40"}, tokens);
+    
+    tokens = ExpressionEvaluator.tokenize("-40");
+    Assert.assertArrayEquals(new String[]{"-40"}, tokens);
+    
+    tokens = ExpressionEvaluator.tokenize(".labelWithDot");
+    Assert.assertArrayEquals(new String[]{".labelWithDot"}, tokens);
+  }
 }

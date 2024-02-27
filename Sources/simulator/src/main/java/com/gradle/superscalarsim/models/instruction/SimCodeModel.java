@@ -79,7 +79,7 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
   /**
    * ID, when was instructions accepted by the issue window
    */
-  private int issueWindowId;
+  public int issueWindowId;
   /**
    * ID of the function block, which processed this instruction
    */
@@ -592,5 +592,13 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
   public boolean isConditionalBranch()
   {
     return inputCodeModel.isConditionalBranch();
+  }
+  
+  /**
+   * @return debug message info (format string) or null if not present.
+   */
+  public DebugInfo getDebugInfo()
+  {
+    return inputCodeModel.getDebugInfo();
   }
 }

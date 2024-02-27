@@ -30,7 +30,7 @@
  */
 
 import { useHotkeys } from 'react-hotkeys-hook';
-import _examples from 'src/constant/codeExamples.json';
+import useSWR from 'swr';
 
 import {
   callCompiler,
@@ -57,12 +57,12 @@ import {
   DropdownMenuTrigger,
 } from '@/components/base/ui/dropdown-menu';
 
-import { CodeExample } from '@/constant/codeExamples';
+import { type CodeExample } from '@/lib/types/codeExamples';
 
 import clsx from 'clsx';
 import { RadioInput } from '../form/RadioInput';
-
-const examples = _examples as unknown as Array<CodeExample>;
+import { useEffect, useState } from 'react';
+import { COMPILE_SHORTCUT } from '@/components/shortcuts/CompilerShortcuts';
 
 export default function CompileOptions() {
   const dispatch = useAppDispatch();
@@ -167,8 +167,32 @@ export default function CompileOptions() {
   );
 }
 
+// Write a fetcher function to wrap the native fetch function and return the result of a call to the URL in JSON format
+//@ts-ignore
+const fetcher = (...args) => fetch(...args).then((res) => res.json());
+
 function ExamplesButton() {
   const dispatch = useAppDispatch();
+  const { data: examples, error } = useSWR<CodeExample[]>(
+    '/api/codeExamples',
+    fetcher,
+  );
+
+  if (error) {
+    return (
+      <Button variant='outline' disabled>
+        Failed to load examples
+      </Button>
+    );
+  }
+
+  if (!examples) {
+    return (
+      <Button variant='outline' disabled>
+        Loading examples...
+      </Button>
+    );
+  }
 
   return (
     <DropdownMenu>
@@ -199,8 +223,6 @@ function ExamplesButton() {
     </DropdownMenu>
   );
 }
-
-const COMPILE_SHORTCUT = 'ctrl+enter';
 
 function CompileButton({ handleCompile }: { handleCompile: () => void }) {
   const compileStatus = useAppSelector((state) => state.compiler.compileStatus);

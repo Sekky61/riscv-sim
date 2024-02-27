@@ -35,7 +35,6 @@ package com.gradle.superscalarsim.blocks.base;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
-import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.models.RenameMapModel;
 import com.gradle.superscalarsim.models.register.RegisterModel;
@@ -138,6 +137,10 @@ public class RenameMapTableBlock
   public RegisterModel mapRegister(String registerName, int order)
   {
     // TODO: what if there is no free tag or free register in the field? Currently it throws exception
+    if (this.freeList.isEmpty())
+    {
+      throw new RuntimeException("No free registers available");
+    }
     String speculativeRegister = this.freeList.iterator().next();
     this.registerMap.put(speculativeRegister, new RenameMapModel(registerName, order));
     this.freeList.remove(speculativeRegister);
@@ -146,6 +149,16 @@ public class RenameMapTableBlock
     return registerFileBlock.getRegister(speculativeRegister);
   }// end of mapRegister
   //----------------------------------------------------------------------
+  
+  /**
+   * If there are no free registers, decode should stall.
+   *
+   * @return True if there are free registers, false otherwise.
+   */
+  public boolean hasFreeRegisters()
+  {
+    return !this.freeList.isEmpty();
+  }
   
   /**
    * @param speculativeRegister Speculative register to be referenced
@@ -259,8 +272,7 @@ public class RenameMapTableBlock
     {
       String        architecturalRegister = this.registerMap.get(speculativeRegister).getArchitecturalRegister();
       RegisterModel register              = this.registerFileBlock.getRegister(speculativeRegister);
-      long          value                 = (long) register.getValue(DataTypeEnum.kLong);
-      this.registerFileBlock.getRegister(architecturalRegister).setValue(value);
+      this.registerFileBlock.getRegister(architecturalRegister).copyFrom(register);
     }
   }// end of directCopyMapping
   //----------------------------------------------------------------------

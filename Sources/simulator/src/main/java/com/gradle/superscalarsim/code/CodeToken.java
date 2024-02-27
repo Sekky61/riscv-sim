@@ -49,6 +49,6 @@ public record CodeToken(int line, int columnStart, String text, Type type)
   
   public enum Type
   {
-    SYMBOL, L_PAREN, R_PAREN, COLON, COMMA, NEWLINE, COMMENT, EOF, STRING, NUMBER
+    SYMBOL, L_PAREN, R_PAREN, COLON, COMMA, NEWLINE, COMMENT, EOF, STRING, NUMBER, LABEL
   }
 }

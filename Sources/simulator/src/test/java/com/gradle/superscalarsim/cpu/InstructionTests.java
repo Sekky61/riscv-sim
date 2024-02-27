@@ -214,13 +214,14 @@ public class InstructionTests
   }
   
   /**
-   * SLLI shifts the register left by the immediate
+   * SLLI shifts the register left by the immediate.
    */
   @Test
   public void testSLLI()
   {
     // Setup + exercise
-    cpuConfig.code = "slli x2, x1, 2";
+    cpuConfig.code = """
+            slli x2, x1, 2""";
     Cpu cpu = new Cpu(cpuConfig);
     cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(1);
     cpu.execute(false);
@@ -657,7 +658,7 @@ public class InstructionTests
   public void testBEQZ()
   {
     // Setup + exercise
-    cpuConfig.code = "beqz x1, 4 \n" + "beqz x2, 8";
+    cpuConfig.code = "beqz x1, 4 \n" + "beqz x2, -4";
     Cpu cpu = new Cpu(cpuConfig);
     cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").setValue(0);
     cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(2);
@@ -665,6 +666,8 @@ public class InstructionTests
     
     // Assert
     Assert.assertEquals(1, cpu.cpuState.statistics.getTakenBranches());
+    Assert.assertEquals(1, cpu.cpuState.statistics.robFlushes);
+    Assert.assertEquals(2, cpu.cpuState.statistics.committedInstructions);
   }
   
   /**
@@ -1690,22 +1693,29 @@ public class InstructionTests
   }
   
   /**
-   * LB loads a byte from memory
+   * LB loads a byte from memory.
+   * This test uses both syntaxes
    */
   @Test
   public void testLB()
   {
     // Setup + exercise
-    cpuConfig.code = "lb x1, 0(x2)\n" + "lb x3, 2(x4)";
+    cpuConfig.code = """
+            lb x1, 0(x2)
+            lb x3, 2(x4)
+            lb x5, 1(x2)""";
     Cpu cpu = new Cpu(cpuConfig);
     cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").setValue(0x100);
     cpu.cpuState.unifiedRegisterFileBlock.getRegister("x4").setValue(0xfe);
-    cpu.cpuState.simulatedMemory.insertIntoMemory(0x100, new byte[]{(byte) 0b11});
+    cpu.cpuState.simulatedMemory.insertIntoMemory(0x100, new byte[]{(byte) 0b11, (byte) 0x88});
     cpu.execute(false);
     
     // Assert
     Assert.assertEquals(0b11, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt));
     Assert.assertEquals(0b11, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x3").getValue(DataTypeEnum.kInt));
+    // Sign extends
+    Assert.assertEquals(0xffffff88,
+                        cpu.cpuState.unifiedRegisterFileBlock.getRegister("x5").getValue(DataTypeEnum.kInt));
   }
   
   /**
@@ -1864,7 +1874,8 @@ public class InstructionTests
   }
   
   /**
-   * LA loads the address of the label into the register
+   * LA loads the address of the label into the register.
+   * For this simulator, identical to LLA.
    */
   @Test
   public void testLA()
@@ -1875,6 +1886,28 @@ public class InstructionTests
             la x1, l1
             l2:
             la x2, l2
+            """;
+    Cpu cpu = new Cpu(cpuConfig);
+    cpu.execute(false);
+    
+    // Assert
+    Assert.assertEquals(0x00, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt));
+    Assert.assertEquals(0x04, cpu.cpuState.unifiedRegisterFileBlock.getRegister("x2").getValue(DataTypeEnum.kInt));
+  }
+  
+  /**
+   * LLA loads the address of the label into the register.
+   * For this simulator, identical to LA.
+   */
+  @Test
+  public void testLLA()
+  {
+    // Setup + exercise
+    cpuConfig.code = """
+            l1:
+            lla x1, l1
+            l2:
+            lla x2, l2
             """;
     Cpu cpu = new Cpu(cpuConfig);
     cpu.execute(false);

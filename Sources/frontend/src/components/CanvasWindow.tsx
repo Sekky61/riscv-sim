@@ -31,80 +31,152 @@
 
 'use client';
 
+import { IconButton } from '@/components/IconButton';
 import { ReactChildren } from '@/lib/types/reactTypes';
 import clsx from 'clsx';
-import { useRef, useState } from 'react';
+import { ZoomIn, ZoomOut } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 
 type CanvasWindowProps = {
   children: ReactChildren;
-  scale: number;
 };
 
 /**
  * Canvas window component.
- * Scrollable, draggable with control and mouse.
+ * Scrollable, draggable with middle click.
  * Zoomable with scale prop.
- *
- * TODO: when zoomed, the corners are not visible
  */
-export default function CanvasWindow({ children, scale }: CanvasWindowProps) {
+export default function CanvasWindow({ children }: CanvasWindowProps) {
   const elRef = useRef<HTMLDivElement>(null);
-  const [ctrlHeld, setCtrlHeld] = useState(false);
+  const [middleHeld, setMiddleHeld] = useState(false);
+  const [scale, setScale] = useState(1);
 
-  // Add cursor change on ctrl
-  useHotkeys(
-    'ctrl',
-    (e) => {
-      setCtrlHeld(e.type === 'keydown');
-    },
-    { keyup: true, keydown: true },
-  );
-
-  // Dragging event listeners
-  const onDragStart = () => {
-    if (!ctrlHeld) {
-      return;
-    }
-
-    const body = document.getElementsByTagName('body')[0];
-    if (!body) {
-      throw new Error('Body not found');
-    }
-    body.style.userSelect = 'none';
-    // todo cursor grab not working
-    body.classList.add('cursor-grabbing');
-
-    function onDrag(this: Window, ee: MouseEvent) {
-      // get the change in x and y
-      const dx = ee.movementX;
-      const dy = ee.movementY;
-      // set the new offset
-      if (elRef.current) {
-        elRef.current.scrollLeft = elRef.current.scrollLeft - dx;
-        elRef.current.scrollTop = elRef.current.scrollTop - dy;
-      }
-    }
-
-    const onDragEnd = () => {
-      window.removeEventListener('mousemove', onDrag);
-      window.removeEventListener('mouseup', onDragEnd);
-      body.style.userSelect = 'auto';
-      body.classList.remove('cursor-grabbing');
-    };
-
-    window.addEventListener('mousemove', onDrag);
-    window.addEventListener('mouseup', onDragEnd);
+  const scaleUp = () => {
+    setScale(scale + 0.2);
   };
 
+  const scaleDown = () => {
+    setScale(scale - 0.2);
+  };
+
+  // Middle click hold and drag
+
+  function onPointerUpDown(e: PointerEvent) {
+    const isDown = e.type === 'pointerdown';
+    const isMiddle = e.button === 1;
+    if (isMiddle) {
+      setMiddleHeld(isDown);
+      if (isDown) {
+        // Pointer capture solves the problem of pointer leaving the element
+        elRef.current?.setPointerCapture(e.pointerId);
+        elRef.current?.addEventListener('pointermove', onPointerMove);
+      } else {
+        elRef.current?.releasePointerCapture(e.pointerId);
+        elRef.current?.removeEventListener('pointermove', onPointerMove);
+      }
+    }
+  }
+
+  function onPointerMove(ee: PointerEvent) {
+    // get the change in x and y
+    const dx = ee.movementX;
+    const dy = ee.movementY;
+    // set the new offset
+    if (elRef.current) {
+      const newOffsetLeft = elRef.current.scrollLeft - dx;
+      const newOffsetTop = elRef.current.scrollTop - dy;
+      elRef.current.scrollLeft = newOffsetLeft;
+      elRef.current.scrollTop = newOffsetTop;
+    }
+  }
+
+  function onScroll(e: Event) {
+    // Roll the background with the scroll
+    const el = e.target;
+    if (!(el instanceof HTMLElement)) return;
+    el.style.backgroundPosition = `${0 - el.scrollLeft}px ${
+      0 - el.scrollTop
+    }px`;
+  }
+
+  // Register on component mount
+  useEffect(() => {
+    elRef.current?.addEventListener('pointerdown', onPointerUpDown);
+    elRef.current?.addEventListener('pointerup', onPointerUpDown);
+    elRef.current?.addEventListener('scroll', onScroll);
+    return () => {
+      elRef.current?.removeEventListener('pointerdown', onPointerUpDown);
+      elRef.current?.removeEventListener('pointerup', onPointerUpDown);
+      elRef.current?.removeEventListener('scroll', onScroll);
+    };
+  }, []);
+
   const cls = clsx(
-    'relative overflow-auto w-full h-full dotted-bg',
-    ctrlHeld && 'hover:cursor-grab',
+    'overflow-auto dotted-bg min-h-full min-w-full',
+    middleHeld && 'cursor-grabbing',
+    !middleHeld && 'cursor-grab',
   );
 
+  // The w-6 h-6 trick to make the overflow not affect initial size of the component
   return (
-    <div onMouseDown={onDragStart} className={cls} ref={elRef}>
-      <div style={{ transform: `scale(${scale})` }}>{children}</div>
+    <div className={cls} ref={elRef}>
+      <div style={{ transform: `scale(${scale})` }} className='h-6 w-6'>
+        {children}
+      </div>
+      <ScaleButtons scaleUp={scaleUp} scaleDown={scaleDown} />
     </div>
   );
 }
+
+export type ScaleButtonsProps = {
+  scaleUp: () => void;
+  scaleDown: () => void;
+};
+
+/**
+ * Scale buttons (in the corner).
+ * also provides shortcuts.
+ */
+const ScaleButtons = ({ scaleUp, scaleDown }: ScaleButtonsProps) => {
+  useHotkeys(
+    'ctrl-+',
+    () => {
+      scaleUp();
+    },
+    { combinationKey: '-', preventDefault: true },
+    [scaleUp],
+  );
+
+  useHotkeys(
+    'ctrl+-',
+    () => {
+      scaleDown();
+    },
+    { preventDefault: true },
+    [scaleDown],
+  );
+
+  return (
+    <div className='absolute bottom-0 right-0 flex flex-col gap-4 p-6'>
+      <IconButton
+        shortCut='ctrl-+'
+        shortCutOptions={{ combinationKey: '-', preventDefault: true }}
+        clickCallback={scaleUp}
+        className='bg-gray-100 rounded-full drop-shadow'
+        description='Zoom in'
+      >
+        <ZoomIn strokeWidth={1.5} />
+      </IconButton>
+      <IconButton
+        shortCut='ctrl+-'
+        shortCutOptions={{ preventDefault: true }}
+        clickCallback={scaleDown}
+        className='bg-gray-100 rounded-full drop-shadow'
+        description='Zoom out'
+      >
+        <ZoomOut strokeWidth={1.5} />
+      </IconButton>
+    </div>
+  );
+};

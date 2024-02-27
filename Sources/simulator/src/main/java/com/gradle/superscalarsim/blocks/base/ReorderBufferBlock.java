@@ -41,9 +41,11 @@ import com.gradle.superscalarsim.blocks.branch.GShareUnit;
 import com.gradle.superscalarsim.blocks.branch.GlobalHistoryRegister;
 import com.gradle.superscalarsim.blocks.loadstore.LoadBufferBlock;
 import com.gradle.superscalarsim.blocks.loadstore.StoreBufferBlock;
+import com.gradle.superscalarsim.cpu.DebugLog;
 import com.gradle.superscalarsim.cpu.SimulationStatistics;
 import com.gradle.superscalarsim.cpu.StopReason;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
+import com.gradle.superscalarsim.models.instruction.DebugInfo;
 import com.gradle.superscalarsim.models.instruction.InputCodeArgument;
 import com.gradle.superscalarsim.models.instruction.InstructionFunctionModel;
 import com.gradle.superscalarsim.models.instruction.SimCodeModel;
@@ -85,6 +87,11 @@ public class ReorderBufferBlock implements AbstractBlock
    */
   public StopReason stopReason;
   /**
+   * Debug log
+   */
+  @JsonIdentityReference(alwaysAsId = true)
+  DebugLog debugLog;
+  /**
    * Reorder buffer size limit.
    */
   private int bufferSize;
@@ -97,48 +104,45 @@ public class ReorderBufferBlock implements AbstractBlock
    */
   @JsonIdentityReference(alwaysAsId = true)
   private RenameMapTableBlock renameMapTableBlock;
-  
   /**
    * Class, which simulates instruction decode and renames registers
    */
   @JsonIdentityReference(alwaysAsId = true)
   private DecodeAndDispatchBlock decodeAndDispatchBlock;
-  
   /**
    * Class for statistics gathering
    */
   @JsonIdentityReference(alwaysAsId = true)
   private SimulationStatistics simulationStatistics;
-  
   /**
    * GShare unit for getting correct prediction counters
    */
   @JsonIdentityReference(alwaysAsId = true)
   private GShareUnit gShareUnit;
-  
   /**
    * Buffer holding information about branch instructions targets
    */
   @JsonIdentityReference(alwaysAsId = true)
   private BranchTargetBuffer branchTargetBuffer;
-  
   /**
    * Class that fetches code from CodeParser
    */
   @JsonIdentityReference(alwaysAsId = true)
   private InstructionFetchBlock instructionFetchBlock;
-  
   /**
    * Buffer that tracks all in-flight load instructions
    */
   @JsonIdentityReference(alwaysAsId = true)
   private LoadBufferBlock loadBufferBlock;
-  
   /**
    * Buffer that tracks all in-flight store instructions
    */
   @JsonIdentityReference(alwaysAsId = true)
   private StoreBufferBlock storeBufferBlock;
+  /**
+   * Issues instructions to individual issue windows
+   */
+  private IssueWindowSuperBlock issueWindowSuperBlock;
   
   public ReorderBufferBlock()
   {
@@ -164,16 +168,19 @@ public class ReorderBufferBlock implements AbstractBlock
                             DecodeAndDispatchBlock decodeAndDispatchBlock,
                             StoreBufferBlock storeBufferBlock,
                             LoadBufferBlock loadBufferBlock,
+                            IssueWindowSuperBlock issueWindowSuperBlock,
                             GShareUnit gShareUnit,
                             BranchTargetBuffer branchTargetBuffer,
                             InstructionFetchBlock instructionFetchBlock,
                             SimulationStatistics statisticsCounter,
-                            long haltTarget)
+                            long haltTarget,
+                            DebugLog debugLog)
   {
     this.renameMapTableBlock    = renameMapTableBlock;
     this.decodeAndDispatchBlock = decodeAndDispatchBlock;
     this.storeBufferBlock       = storeBufferBlock;
     this.loadBufferBlock        = loadBufferBlock;
+    this.issueWindowSuperBlock  = issueWindowSuperBlock;
     
     this.gShareUnit            = gShareUnit;
     this.branchTargetBuffer    = branchTargetBuffer;
@@ -189,18 +196,8 @@ public class ReorderBufferBlock implements AbstractBlock
     this.bufferSize  = bufferSize;
     this.stopReason  = StopReason.kNotStopped;
     this.haltTarget  = haltTarget;
+    this.debugLog    = debugLog;
   }// end of Constructor
-  //----------------------------------------------------------------------
-  
-  /**
-   * @param storeBufferBlock A Store Buffer block object
-   *
-   * @brief Sets Store Buffer block object
-   */
-  public void setStoreBufferBlock(StoreBufferBlock storeBufferBlock)
-  {
-    this.storeBufferBlock = storeBufferBlock;
-  }// end of setStoreBufferBlock
   //----------------------------------------------------------------------
   
   /**
@@ -228,12 +225,12 @@ public class ReorderBufferBlock implements AbstractBlock
       
       if (robItem.getException() != null)
       {
-        // TODO do we want to commit this? probably not
+        // TODO do we want to commit this? maybe
         stopReason = StopReason.kException;
       }
       
       commitCount++;
-      processCommittableInstruction(robItem, cycle);
+      commitInstruction(robItem, cycle);
       removeInstruction(robItem);
       
       if (robItem.getBranchTarget() == haltTarget)
@@ -279,7 +276,7 @@ public class ReorderBufferBlock implements AbstractBlock
    *
    * @brief Process instruction that is ready to be committed
    */
-  private void processCommittableInstruction(SimCodeModel codeModel, int cycle)
+  private void commitInstruction(SimCodeModel codeModel, int cycle)
   {
     codeModel.setCommitId(cycle);
     simulationStatistics.reportCommittedInstruction(codeModel);
@@ -392,6 +389,13 @@ public class ReorderBufferBlock implements AbstractBlock
       }
       renameMapTableBlock.directCopyMapping(tempRegName);
     }
+    
+    // Arch registers are now updated, print debug info
+    DebugInfo debugInfo = codeModel.getDebugInfo();
+    if (debugInfo != null)
+    {
+      debugLog.add(debugInfo, cycle);
+    }
   }// end of processCommittableInstruction
   
   /**
@@ -467,7 +471,7 @@ public class ReorderBufferBlock implements AbstractBlock
         // No more space, stop
         this.decodeAndDispatchBlock.setStallFlag(true);
         this.decodeAndDispatchBlock.setStalledPullCount(pulledCount);
-        return;
+        break;
       }
       
       codeModel.setSpeculative(this.speculativePulls);
@@ -483,6 +487,9 @@ public class ReorderBufferBlock implements AbstractBlock
       }
       pulledCount++;
     }
+    
+    // Remove pulledCount instructions from decode
+    this.decodeAndDispatchBlock.removePulledInstructions(pulledCount);
   }// end of pullNewDecodedInstructions
   //----------------------------------------------------------------------
   
@@ -576,4 +583,19 @@ public class ReorderBufferBlock implements AbstractBlock
   {
     return this.reorderQueue.stream();
   }// end of getReorderQueue
+  
+  /**
+   *
+   */
+  public void simulate_issue(int tick)
+  {
+    // Issue instruction without a IssueWindowId
+    for (SimCodeModel codeModel : this.reorderQueue)
+    {
+      if (codeModel.issueWindowId == -1)
+      {
+        issueWindowSuperBlock.selectCorrectIssueWindow(codeModel.getInstructionFunctionModel(), codeModel);
+      }
+    }
+  }
 }

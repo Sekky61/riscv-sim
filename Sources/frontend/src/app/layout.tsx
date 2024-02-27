@@ -29,31 +29,30 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-'use client';
-
 import { Inter as FontSans } from 'next/font/google';
-import { type ReactNode, useRef } from 'react';
-import { Provider } from 'react-redux';
-import { PersistGate } from 'redux-persist/integration/react';
+import { type ReactNode } from 'react';
 
 import '@/styles/globals.css';
 
-import { persistor, store } from '@/lib/redux/store';
 import { cn } from '@/lib/utils';
 
-import Notifications from '@/components/Notifications';
-import SideBar from '@/components/SideBar';
+import Navbar from '@/components/Navbar';
 import { TooltipProvider } from '@/components/base/ui/tooltip';
-import ModalRoot from '@/components/modals/ModalRoot';
+import PersistedStoreProvider from '@/lib/redux/PersistedStoreProvider';
+import { Toaster } from '@/components/base/ui/sonner';
 
 const fontSans = FontSans({
   subsets: ['latin'],
   variable: '--font-sans',
 });
 
+/**
+ * This is the root layout of the app. It provides the state (redux), toast notifications and
+ * the HTML head with viewport meta tag and title.
+ *
+ * Other layout are nested inside this layout.
+ */
 export default function RootLayout({ children }: { children: ReactNode }) {
-  const appRef = useRef<HTMLDivElement>(null);
-
   return (
     <html lang='en'>
       <head>
@@ -69,23 +68,12 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           fontSans.variable,
         )}
       >
-        <Provider store={store}>
-          <PersistGate loading={null} persistor={persistor}>
-            <ModalRoot appRef={appRef} />
-            <TooltipProvider delayDuration={0}>
-              <div className='flex h-screen max-h-screen w-full'>
-                <SideBar />
-                <div
-                  className='relative flex-grow overflow-y-auto'
-                  ref={appRef}
-                >
-                  {children}
-                </div>
-              </div>
-            </TooltipProvider>
-            <Notifications />
-          </PersistGate>
-        </Provider>
+        <PersistedStoreProvider>
+          <TooltipProvider delayDuration={0}>
+            <div className='flex h-screen max-h-screen'>{children}</div>
+            <Toaster position='top-right' />
+          </TooltipProvider>
+        </PersistedStoreProvider>
       </body>
     </html>
   );

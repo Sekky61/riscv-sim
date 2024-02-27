@@ -84,7 +84,8 @@ public class InstructionMemoryBlock
   
   
   /**
-   * Get the position of the label in the memory. (Assumes the label exists and instructions are 4 bytes long)
+   * Get the position of the label in the memory. (Assumes the label exists and instructions are 4 bytes long).
+   * For debugging purposes.
    *
    * @param label Label name to search for. (example: "loop")
    *
@@ -97,7 +98,7 @@ public class InstructionMemoryBlock
     {
       return -1;
     }
-    return labelObj.address;
+    return (int) labelObj.getAddress();
   }
   //-------------------------------------------------------------------------------------------
   

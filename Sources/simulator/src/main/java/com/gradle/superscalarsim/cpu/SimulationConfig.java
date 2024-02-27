@@ -115,8 +115,8 @@ public class SimulationConfig
     }
     
     // Parse code
-    CodeParser codeParser = new CodeParser(new InitLoader());
-    codeParser.parseCode(code, getMemoryLocationLabels());
+    CodeParser codeParser = new CodeParser(new InitLoader(), memoryLocations);
+    codeParser.parseCode(code);
     
     if (!codeParser.success())
     {

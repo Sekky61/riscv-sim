@@ -100,13 +100,12 @@ export default function IssueWindow({ type }: IssueWindowProps) {
     </>
   );
 
-  const cls = clsx(getGridClassName(type), 'w-80');
+  const cls = clsx(getGridClassName(type), 'w-80 h-96');
 
   // TODO: Is this limit suitable?
   return (
     <Block title={title} stats={stats} className={cls}>
       <InstructionListDisplay
-        limit={6}
         columns={3}
         instructions={issue.issuedInstructions}
         legend={

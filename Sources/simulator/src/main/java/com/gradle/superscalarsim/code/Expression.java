@@ -779,9 +779,8 @@ public class Expression
     @Override
     public String toString()
     {
-      String       typeStr  = type == null ? "null" : type.toString();
-      DataTypeEnum typeType = this.type == null ? DataTypeEnum.kULong : this.type;
-      return tag + ":" + typeStr + ":" + value.getString(typeType);
+      String typeStr = type == null ? "null" : type.toString();
+      return tag + ":" + typeStr + ":" + value.getStringRepresentation();
     }
   }
 }

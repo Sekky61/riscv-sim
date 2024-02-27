@@ -209,7 +209,7 @@ public class CompilerTests
     // There is a string label
     Label str = parser.getLabels().get("str");
     Assert.assertNotNull(str);
-    Assert.assertNotEquals(0, str.address);
+    Assert.assertNotEquals(0, str.getAddress());
     
     
     // The program is loadable

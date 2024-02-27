@@ -30,22 +30,25 @@
  */
 
 import { selectROB } from '@/lib/redux/cpustateSlice';
-import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
-import { openModal } from '@/lib/redux/modalSlice';
+import { useAppSelector } from '@/lib/redux/hooks';
 
+import {
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/base/ui/dialog';
 import Block from '@/components/simulation/Block';
 import InstructionField from '@/components/simulation/InstructionField';
 import { InstructionListDisplay } from '@/components/simulation/InstructionListDisplay';
+import InstructionTable from '@/components/simulation/InstructionTable';
 
 export default function ReorderBuffer() {
-  const dispatch = useAppDispatch();
   const rob = useAppSelector(selectROB);
 
   if (!rob) return null;
 
   const used = rob.reorderQueue.length;
-  const showLimit = 16;
-  const showMore = used > showLimit;
 
   const robStats = (
     <>
@@ -55,25 +58,30 @@ export default function ReorderBuffer() {
     </>
   );
 
-  const handleMore = () => {
-    dispatch(
-      openModal({
-        modalType: 'ROB_DETAILS_MODAL',
-        modalProps: null,
-      }),
-    );
-  };
-
   return (
     <Block
       title='Reorder Buffer'
       stats={robStats}
-      handleMore={handleMore}
-      className='rob'
+      className='rob h-96'
+      detailDialog={
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Reorder Buffer</DialogTitle>
+            <DialogDescription>
+              Detailed view of the Reorder Buffer
+            </DialogDescription>
+          </DialogHeader>
+          <h2>Buffer</h2>
+          <div>
+            Capacity: {rob.reorderQueue.length}/{rob.bufferSize}
+          </div>
+          <InstructionTable instructions={rob.reorderQueue} />
+        </DialogContent>
+      }
     >
       <InstructionListDisplay
         instructions={rob.reorderQueue}
-        limit={showLimit}
+        totalSize={rob.bufferSize}
         instructionRenderer={(simCodeModel, i) => {
           if (simCodeModel === null) {
             return <InstructionField instructionId={null} key={`item_${i}`} />;
@@ -85,11 +93,6 @@ export default function ReorderBuffer() {
           );
         }}
       />
-      {showMore && (
-        <div className='flex justify-center'>
-          And {used - showLimit} more...
-        </div>
-      )}
     </Block>
   );
 }

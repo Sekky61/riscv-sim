@@ -4,7 +4,7 @@
   "registerList": [
     {
       "name": "f0",
-      "isConstant": true,
+      "isConstant": false,
       "value": {
         "bits": 0
       },

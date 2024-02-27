@@ -30,7 +30,9 @@ package com.gradle.superscalarsim.cpu;
 
 import com.gradle.superscalarsim.blocks.loadstore.SimulatedMemory;
 import com.gradle.superscalarsim.code.Label;
+import com.gradle.superscalarsim.enums.DataTypeEnum;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -49,12 +51,19 @@ public class MemoryInitializer
    * Amount of memory to reserve for the stack
    */
   public int stackSize;
-  
   /**
    * State of the memory allocator
    * Pointer to the next free memory location
    */
   private long memoryPtr;
+  /**
+   * Label name to name + address object mapping
+   */
+  Map<String, Label> dataLabels;
+  /**
+   * Locations of memory data
+   */
+  List<MemoryLocation> locations;
   
   /**
    * Constructor
@@ -64,58 +73,58 @@ public class MemoryInitializer
     this.freeMemoryStart = freeMemoryStart;
     this.stackSize       = stackSize;
     this.memoryPtr       = freeMemoryStart + stackSize;
+    this.dataLabels      = null; // this warns about not loading labels from the code parser
+    this.locations       = new ArrayList<>();
   }// end of Constructor
+  
+  /**
+   * Assign address to a location based on already allocated memory and data size
+   *
+   * @param location Location to assign address to (mutates the object)
+   */
+  public void addLocation(MemoryLocation location)
+  {
+    // Align it (ceil to the next multiple of alignment)
+    if (location.alignment > 1)
+    {
+      // 2^alignment
+      int alignment = 1 << location.alignment;
+      memoryPtr = (memoryPtr + alignment - 1) / alignment * alignment;
+    }
+    
+    Label label = dataLabels.get(location.name);
+    label.getAddressContainer().setValue(memoryPtr, DataTypeEnum.kLong);
+    
+    memoryPtr += location.getByteSize();
+    
+    locations.add(location);
+  }
+  
+  public void addLocations(List<MemoryLocation> locations)
+  {
+    for (MemoryLocation location : locations)
+    {
+      addLocation(location);
+    }
+  }
+  
+  /**
+   * Supply labels from the code parser. Changing these will change the instruction argument values.
+   */
+  public void setLabels(Map<String, Label> labels)
+  {
+    dataLabels = labels;
+  }
   
   /**
    * Can be called multiple times
    *
-   * @param memory    Memory to initialize
-   * @param locations Locations to initialize memory with
+   * @param memory Memory to initialize
    *
-   * @brief Initializes memory with data from MemoryLocation objects
+   * @brief Initializes memory with the locations registered before this call
    */
-  public void initializeMemory(SimulatedMemory memory, List<MemoryLocation> locations, Map<String, Label> labels)
+  public void initializeMemory(SimulatedMemory memory)
   {
-    // First step - allocate memory
-    for (MemoryLocation memoryLocation : locations)
-    {
-      // Align it (ceil to the next multiple of alignment)
-      if (memoryLocation.alignment > 1)
-      {
-        // 2^alignment
-        int alignment = 1 << memoryLocation.alignment;
-        memoryPtr = (memoryPtr + alignment - 1) / alignment * alignment;
-      }
-      
-      // Save label address
-      if (labels.containsKey(memoryLocation.name))
-      {
-        labels.get(memoryLocation.name).address = (int) memoryPtr;
-      }
-      else
-      {
-        throw new RuntimeException("Label " + memoryLocation.name + " not found");
-      }
-      
-      // Point other labels to the same address
-      if (memoryLocation.aliases != null)
-      {
-        for (String alias : memoryLocation.aliases)
-        {
-          if (labels.containsKey(alias))
-          {
-            labels.get(alias).address = (int) memoryPtr;
-          }
-          else
-          {
-            throw new RuntimeException("Label " + alias + " not found");
-          }
-        }
-      }
-      
-      memoryPtr += memoryLocation.getByteSize();
-    }
-    
     // Second step - fill the memory values
     for (MemoryLocation memoryLocation : locations)
     {
@@ -125,10 +134,11 @@ public class MemoryInitializer
         for (int i = 0; i < dataChunk.values.size(); i++)
         {
           String value = dataChunk.values.get(i);
-          if (labels.containsKey(value))
+          if (dataLabels.containsKey(value))
           {
+            // This solves the labels linking to other labels
             // Save label address
-            dataChunk.values.set(i, String.valueOf(labels.get(value).address));
+            dataChunk.values.set(i, String.valueOf(dataLabels.get(value).getAddress()));
           }
         }
         
@@ -138,8 +148,11 @@ public class MemoryInitializer
           data[i] = memoryLocation.getBytes().get(i);
         }
         
-        long pointer = labels.get(memoryLocation.name).address;
-        memory.insertIntoMemory(pointer, data);
+        Label label   = dataLabels.get(memoryLocation.name);
+        long  address = (long) label.getAddress();
+        
+        // Insert data into memory
+        memory.insertIntoMemory(address, data);
       }
     }
   }

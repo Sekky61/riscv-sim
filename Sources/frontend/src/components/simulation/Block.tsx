@@ -36,12 +36,13 @@ import clsx from 'clsx';
 import { MoreVertical } from 'lucide-react';
 
 import { ReactChildren, ReactClassName } from '@/lib/types/reactTypes';
+import { Dialog, DialogTrigger } from '@radix-ui/react-dialog';
 
 export type BlockProps = {
   title: string;
   stats?: ReactChildren;
   children: ReactChildren;
-  handleMore?: () => void;
+  detailDialog?: ReactChildren; // a DialogContent component to be displayed in a modal after clicking on the More button
 } & ReactClassName;
 
 export default function Block({
@@ -49,7 +50,7 @@ export default function Block({
   className,
   title,
   stats,
-  handleMore,
+  detailDialog,
 }: BlockProps) {
   const classes = clsx(
     className,
@@ -60,14 +61,15 @@ export default function Block({
     <div className={classes}>
       <div className='flex justify-between'>
         <span className='font-bold'>{title}</span>
-        {handleMore && (
-          <button
-            type='button'
-            onClick={handleMore}
-            className='iconHighlight h-6 w-6 rounded-full'
-          >
-            <MoreVertical strokeWidth={1.5} />
-          </button>
+        {detailDialog && (
+          <Dialog>
+            <DialogTrigger>
+              <div className='iconHighlight h-6 w-6 rounded-full'>
+                <MoreVertical strokeWidth={1.5} />
+              </div>
+            </DialogTrigger>
+            {detailDialog}
+          </Dialog>
         )}
       </div>
       {stats && <div className='text-sm'>{stats}</div>}

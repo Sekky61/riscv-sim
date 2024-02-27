@@ -33,45 +33,53 @@ import type { ReactElement } from 'react';
 
 export type InstructionListDisplayProps<T> = {
   instructions: Array<T>;
-  limit: number;
+  // Size of the buffer (ex. 256)
   instructionRenderer: (
     item: T | null,
     id: number,
   ) => ReactElement<{ key: string }>;
+  totalSize?: number;
   legend?: ReactElement;
   columns?: number;
 };
 
 /**
  * A component for displaying a list.
- * It pads or truncates the list to the specified limit.
+ * It renders `totalSize` items, first from instructions array, then pads with nulls.
  * Calls renderer for each item.
  *
  * Can render into multiple columns.
  */
 export function InstructionListDisplay<T>({
   instructions,
-  limit,
+  totalSize,
   instructionRenderer,
   legend,
   columns = 1,
 }: InstructionListDisplayProps<T>) {
-  const displayLimit = Math.min(limit, instructions.length);
-  const emptyCount = limit - instructions.length;
-
-  // Pad the array with nulls, limit the length
-  const displayArray: Array<T | null> = instructions.slice(0, displayLimit);
-  if (emptyCount > 0) {
-    displayArray.push(...new Array(emptyCount).fill(null));
-  }
+  const displayCount = totalSize ?? (instructions.length || 1);
+  const emptyCount = displayCount - instructions.length;
 
   return (
-    <ol
-      className='grid gap-1'
+    <div
+      className='grid gap-1 overflow-auto'
       style={{ gridTemplateColumns: `repeat(${columns}, auto)` }}
     >
-      {legend && <li className='contents'>{legend}</li>}
-      {displayArray.map((inst, id) => instructionRenderer(inst, id))}
-    </ol>
+      {legend && (
+        <div
+          className='grid grid-cols-subgrid sticky top-0 bg-white'
+          style={{
+            gridColumn: `1 / span ${columns}`,
+            alignSelf: 'start',
+          }}
+        >
+          {legend}
+        </div>
+      )}
+      {instructions.map((inst, id) => instructionRenderer(inst, id))}
+      {Array.from({ length: emptyCount }).map((_, id) =>
+        instructionRenderer(null, id + instructions.length),
+      )}
+    </div>
   );
 }

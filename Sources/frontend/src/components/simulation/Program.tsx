@@ -29,6 +29,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+'use client';
+
 import clsx from 'clsx';
 import React, { useEffect } from 'react';
 
@@ -43,7 +45,7 @@ import {
 import { useAppSelector } from '@/lib/redux/hooks';
 import { Reference } from '@/lib/types/cpuApi';
 import { ReactClassName } from '@/lib/types/reactTypes';
-import { hexPad, hexPadEven, inputCodeAddress } from '@/lib/utils';
+import { hexPadEven, inputCodeAddress } from '@/lib/utils';
 
 import Block from '@/components/simulation/Block';
 import { selectEntryPoint } from '@/lib/redux/compilerSlice';

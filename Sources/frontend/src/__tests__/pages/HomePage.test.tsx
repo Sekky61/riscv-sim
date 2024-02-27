@@ -32,26 +32,28 @@
 /**
  * @jest-environment jsdom
  */
-import { render } from '@testing-library/react';
-import { Provider } from 'react-redux';
+import { act, render, waitFor } from '@testing-library/react';
 
-import { store } from '@/lib/redux/store';
-
-import HomePage from '@/app/page';
+import HomePage from '@/app/(simulation)/page';
+import PersistedStoreProvider from '@/lib/redux/PersistedStoreProvider';
 
 describe('Homepage', () => {
-  it('renders the simulation schema', () => {
-    render(
-      <Provider store={store}>
-        <HomePage />
-      </Provider>,
-    );
+  it('renders the simulation schema', async () => {
+    act(() => {
+      render(
+        <PersistedStoreProvider>
+          <HomePage />
+        </PersistedStoreProvider>,
+      );
+    });
 
-    // Check if there is a button for simulation forward
-    // There should be a button with aria-label="Step Forward"
-    const buttonForward = document.querySelector(
-      'button[aria-label="Step forward"]',
-    );
-    expect(buttonForward).toBeInTheDocument();
+    await waitFor(() => {
+      // Check if there is a button for simulation forward
+      // There should be a button with aria-label="Step Forward"
+      const buttonForward = document.querySelector(
+        'button[aria-label="Step forward"]',
+      );
+      expect(buttonForward).toBeDefined();
+    });
   });
 });

@@ -117,8 +117,9 @@
     @apply bg-neutral-99 text-neutral-10;
   }
 
+  /* 5px is the offset */
   .dotted-bg {
-    background-image: radial-gradient(circle at 1px 1px, #cca 1px, transparent 0);
+    background-image: radial-gradient(circle at 5px 5px, #cca 1px, transparent 0);
     background-size: 20px 20px;
   }
 
@@ -288,6 +289,55 @@
     background-color: #f5f5f5;
   }
 
+  /* Navbar */
+
+  /* The navbar will shrink to 12 on smaller screens. Z index creates stacking context, which
+     renders navbar above page content.
+  */
+  .navbar-slot {
+    @apply shrink min-w-12 w-12 2xl:w-64 relative z-30;
+  }
+
+  /* Parent of .navbar */
+  *:has(> .navbar) {
+    container: navbarslot / inline-size;
+  }
+ 
+  /* Show texts if the container is big (large screens) */
+  @container navbarslot (min-width: 15rem) {
+    .nav-text {
+      @apply block;
+    }
+  }
+
+  .navbar {
+    @apply w-12 h-full;
+  }
+  
+  .navbar-inner {
+    @apply bg-background w-12 h-full p-2;
+  }
+
+  .navbar:hover .navbar-inner {
+    @apply w-64 drop-shadow;
+  }
+  
+  .nav-text {
+    @apply hidden;
+  }
+
+  .navbar:hover .nav-text {
+    @apply block;
+  }
+
+  /* Instruction table */
+
+  /* responsive columns - max content, spread the rest using gaps */
+  .instruction-table {
+    grid-template-columns: repeat(4, max-content);
+    justify-content: space-between;
+  }
+
   /* Tooltip - behavior only */
 
   .tooltip {
@@ -443,20 +493,29 @@
     z-index: 12;
   }
 
-  .iconHighlight {
-    @apply duration-100 hover:bg-gray-200 active:bg-gray-300;
-  }
-
   /* Icon highlight */
-  .timelineHighlight {
-    @apply duration-100 hover:bg-black/10;
+
+  .iconHighlight {
+    @apply duration-100;
+  }
+  
+  .iconHighlight:focus,
+  .iconHighlight:hover {
+    @apply bg-black/10;
   }
 
-  .tlbutton-animation-outer {
-    @apply bg-gray-300;
+  /* Active after hover, so it has bigger precedence */
+  .iconHighlight:active,
+  .iconHighlight[data-clicked] {
+    @apply bg-black/30;
   }
 
-  .tlbutton-animation-inner {
+  .iconHighlight[data-active='true'] {
+    @apply bg-black/20;
+  }
+
+  .iconHighlight:active:not([data-active='true']) > *,
+  .iconHighlight[data-clicked] > * {
     transform: translateY(2px);
   }
 
@@ -475,83 +534,35 @@
   }
 
   /* Simulation view grid */
-  .sim-grid {
-    @apply inline-grid gap-4 justify-center;
-    grid-auto-columns: 1fr;
-    grid-auto-rows: auto;
-  }
-
-  .col-grid {
-    @apply flex gap-4 justify-center m-4;
-  }
 
   .global-grid {
-    @apply grid justify-items-start items-start gap-4  mt-16;
-    grid-template-columns: repeat(2, max-content);
+    @apply grid items-start mt-16 m-4;
+    --gap: 2rem;
+    gap: var(--gap);
   }
 
-  .program {
-    @apply w-full h-full;
-    grid-column: 1 / span 1;
-    grid-row: 1 / span 3;
+  .global-grid > div {
+    gap: var(--gap);
   }
 
-  .fetch-position {
-    grid-column: 2 / span 1;
-    grid-row: 1 / span 2;
+  .issue {
+    @apply flex flex-col;
+    gap: var(--gap);
   }
 
-  .decode {
-    grid-column: 2 / span 1;
-    grid-row: 3 / span 2;
+  .block-stack {
+    @apply flex flex-col;
+    gap: var(--gap);
   }
 
-  .rob {
-    grid-column: 3 / span 1;
-    grid-row: 1 / span 5;
+  .top-grid {
+    @apply grid gap-4 pr-8;
+    grid-template-columns: repeat(3, max-content) repeat(3, max-content);
   }
 
-  .aluIssue {
-    grid-column: 1 / span 1;
-    grid-row: 1 / span 1;
-  }
-
-  /* FUs also define tailwind class for positioning in a row */
-  .aluFu {
-    grid-column: 1 / span 1;
-    grid-row-end: span 1;
-  }
-
-  .fpIssue {
-    grid-column: 2 / span 1;
-    grid-row: 1 / span 1;
-  }
-
-  .fpFu {
-    grid-column: 2 / span 1;
-    grid-row-end: span 1;
-  }
-
-  .branchIssue {
-    grid-column: 3 / span 1;
-    grid-row: 1 / span 1;
-  }
-
-  .branchFu {
-    grid-column: 3 / span 1;
-    grid-row-end: span 1;
-  }
-
-
-
-  .storeBuffer {
-    grid-column: 1 / span 2;
-    grid-row: 1 / span 2;
-  }
-
-  .loadBuffer {
-    grid-column: 3 / span 2;
-    grid-row: 1 / span 2;
+  .bottom-grid {
+    @apply grid gap-4 pr-8;
+    grid-template-columns: repeat(2, 1fr) max-content max-content;
   }
 
   /* make space every 4 bytes */
@@ -588,5 +599,39 @@
   /* Heatmap statistic transition */
   .heatmap-transition  * {
     @apply transition-colors ease-in duration-200;
+  }
+
+  /* Expand side panel */
+
+  .expand-area {
+    transform: translateY(-50%);
+  }
+
+  .expand-area * {
+    @apply transition-all duration-200;
+  }
+
+  .expand-arrow-up {
+    transform: translateY(10%);
+  }
+
+  .expand-arrow-down {
+    transform: translateY(-10%);
+  }
+
+  .expand-area[data-expanded='true']:hover .expand-arrow-up {
+    transform: translateY(10%) rotateZ(-20deg);
+  }
+
+  .expand-area:hover .expand-arrow-up {
+    transform: translateY(10%) rotateZ(20deg);
+  }
+
+  .expand-area[data-expanded='true']:hover .expand-arrow-down {
+    transform: translateY(-10%) rotateZ(20deg);
+  }
+
+  .expand-area:hover .expand-arrow-down {
+    transform: translateY(-10%) rotateZ(-20deg);
   }
 }

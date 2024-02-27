@@ -64,8 +64,9 @@ public class GccCaller
                                                 "-g", "-fverbose-asm", "-fcf-protection=none", "-fno-stack-protector",
                                                 "-fno-asynchronous-unwind-tables", "-mno-explicit-relocs",
                                                 "-ffunction-sections", "-fdata-sections", "-fno-dwarf2-cfi-asm",
-                                                "-mstrict-align", "-nostdlib", "-fdiagnostics-format=json", "-fPIE",
-                                                "-fno-plt", "-fvisibility=default", "-xc", "-");
+                                                "-finhibit-size-directive", "-mstrict-align", "-nostdlib",
+                                                "-fdiagnostics-format=json", "-fPIE", "-fno-plt",
+                                                "-fvisibility=default", "-xc", "-");
   
   public static CompileResult compile(String code, List<String> optimizeFlags)
   {
