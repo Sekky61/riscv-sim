@@ -33,6 +33,7 @@ import { ExamplesButton } from '@/components/codeEditor/ExamplesButton';
 import { OptimizeRadio } from '@/components/codeEditor/OptimizeRadio';
 import { CompileButton } from '@/components/codeEditor/CompileButton';
 import { loadCodeExamples } from '@/app/api/codeExamples/route';
+import Link from 'next/link';
 
 /**
  * The compile options component. On the left side to the editor.
@@ -49,6 +50,9 @@ export default async function CompileOptions() {
       </div>
       <CompileButton />
       <ExamplesButton examples={examples} />
+      <Link className='link' href='/help#code'>
+        Tips for writing code
+      </Link>
     </div>
   );
 }
