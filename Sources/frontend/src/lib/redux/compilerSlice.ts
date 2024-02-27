@@ -347,8 +347,7 @@ export const selectCCodeMappings = createSelector(
     const codeLength = lines.length;
     const arr = new Array(codeLength + 1);
     // Go through the mapping, note that the mapping is 1-indexed
-    for (let i = 0; i < asmToC.length; i++) {
-      const cLine = asmToC[i];
+    for (const cLine of asmToC) {
       if (cLine === undefined || cLine === 0) {
         continue;
       }

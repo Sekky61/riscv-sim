@@ -34,7 +34,12 @@
 import { setDiagnostics } from '@codemirror/lint';
 import { EditorView } from '@codemirror/view';
 import { useCodeMirror } from '@uiw/react-codemirror';
-import React, { useEffect, useRef } from 'react';
+import React, {
+  FocusEventHandler,
+  MouseEventHandler,
+  useEffect,
+  useRef,
+} from 'react';
 
 import {
   changeDirtyEffect,
@@ -61,7 +66,6 @@ import EditorBar from '@/components/codeEditor/EditorBar';
 import { StatusIcon } from '@/components/codeEditor/StatusIcon';
 import clsx from 'clsx';
 import { selectAllInstructionFunctionModels } from '@/lib/redux/cpustateSlice';
-import { Label } from '@/components/base/ui/label';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -72,16 +76,13 @@ import {
   DropdownMenuTrigger,
 } from '@/components/base/ui/dropdown-menu';
 import { Play } from 'lucide-react';
+import { useLineHighlight } from '@/components/codeEditor/LineHighlightContext';
 
 /**
  * The base theme for the editor.
  * Uses --line-highlight-color which is used for color mapping C lines to assembly lines.
  */
 const baseTheme = EditorView.baseTheme({
-  '.cm-activeLine': {
-    backgroundColor: 'rgba(var(--line-highlight-color), 0.25)',
-    backdropFilter: 'contrast(1.1)',
-  },
   '.cm-content': {
     borderTopWidth: '1px',
   },
@@ -96,8 +97,6 @@ const baseTheme = EditorView.baseTheme({
   },
 });
 
-export type AsmDisplayProps = React.HTMLAttributes<HTMLDivElement>;
-
 /**
  * Component to display the assembly code editor.
  * Reads and updates compilerSlice state as the code is typed.
@@ -111,6 +110,7 @@ export default function AsmDisplay() {
   const dirty = useAppSelector(selectDirty);
   const asmErrors = useAppSelector(selectAsmCodeMirrorErrors);
   const functionModels = useAppSelector(selectAllInstructionFunctionModels);
+  const { setHoveredCLine } = useLineHighlight();
 
   const editor = useRef<HTMLDivElement>(null);
   // todo: function models are loaded only from the sim page. Visiting the compiler page directly will result in an empty list.
@@ -156,6 +156,16 @@ export default function AsmDisplay() {
     }
   }, [setContainer]);
 
+  const enterLine: MouseEventHandler<HTMLDivElement> &
+    FocusEventHandler<HTMLDivElement> = (e) => {
+    if (e.target instanceof HTMLElement) {
+      const targetIsLine = e.target.classList.contains('cm-line');
+      if (targetIsLine) {
+        setHoveredCLine(Number(e.target.getAttribute('data-c-line')));
+      }
+    }
+  };
+
   // The ref is on an inner div so that the gray background is always after the editor
   return (
     <div className='flex flex-col flex-grow overflow-y-scroll rounded border relative'>
@@ -170,7 +180,13 @@ export default function AsmDisplay() {
         }
       />
       <div className='flex-grow relative'>
-        <div className='h-full w-full relative' ref={editor} />
+        <div
+          className='h-full w-full relative'
+          ref={editor}
+          onMouseOver={enterLine}
+          onFocus={enterLine}
+          onMouseLeave={() => setHoveredCLine(null)}
+        />
       </div>
     </div>
   );
@@ -291,4 +307,7 @@ function EntryPointSelector() {
       </DropdownMenu>
     </div>
   );
+}
+function setHoveredCLine(arg0: number) {
+  throw new Error('Function not implemented.');
 }

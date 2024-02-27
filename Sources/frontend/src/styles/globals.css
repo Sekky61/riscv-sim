@@ -216,18 +216,19 @@
 }
 
 @layer components {
+
+  /* A line in code editor. */
   .cm-line {
-    background-color: rgba(var(--line-highlight-color), 0.13);
     position: relative;
   }
 
-  /* add a rectangle :before */
+  /* add a colorful rectangle :before a line */
   .cm-line::before {
     content: '';
     position: absolute;
     top: 0;
     left: 0;
-    width: 0.3rem;
+    width: 0.2rem;
     height: 100%;
     background-color: rgba(var(--line-highlight-color), 0.38);
   }

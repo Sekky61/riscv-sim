@@ -36,7 +36,12 @@ import { c } from '@codemirror/legacy-modes/mode/clike';
 import { setDiagnostics } from '@codemirror/lint';
 import { EditorView } from '@codemirror/view';
 import { useCodeMirror } from '@uiw/react-codemirror';
-import React, { useEffect, useRef } from 'react';
+import React, {
+  FocusEventHandler,
+  MouseEventHandler,
+  useEffect,
+  useRef,
+} from 'react';
 
 import {
   changeDirtyEffect,
@@ -55,15 +60,12 @@ import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 
 import EditorBar from '@/components/codeEditor/EditorBar';
 import { StatusIcon } from '@/components/codeEditor/StatusIcon';
+import { useLineHighlight } from '@/components/codeEditor/LineHighlightContext';
 
 /**
  * The base theme for the editor.
  */
 const baseTheme = EditorView.baseTheme({
-  '.cm-activeLine': {
-    backgroundColor: 'rgba(var(--line-highlight-color), 0.25)',
-    backdropFilter: 'contrast(1.1)',
-  },
   '.cm-content': {
     borderTopWidth: '1px',
   },
@@ -89,8 +91,9 @@ export default function CCodeInput() {
   const dispatch = useAppDispatch();
   const dirty = useAppSelector(selectDirty);
   const code = useAppSelector((state) => state.compiler.cCode);
-  const mappedCLines = useAppSelector(selectCCodeMappings);
+  const mappedCLines = useAppSelector(selectCCodeMappings); // todo optimize
   const cErrors = useAppSelector(selectCCodeMirrorErrors);
+  const { setHoveredCLine } = useLineHighlight();
 
   const editor = useRef<HTMLDivElement>(null);
   const { setContainer, view, state } = useCodeMirror({
@@ -141,12 +144,28 @@ export default function CCodeInput() {
     }
   }, [setContainer]);
 
+  const enterLine: MouseEventHandler<HTMLDivElement> &
+    FocusEventHandler<HTMLDivElement> = (e) => {
+    if (e.target instanceof HTMLElement) {
+      const targetIsLine = e.target.classList.contains('cm-line');
+      if (targetIsLine) {
+        setHoveredCLine(Number(e.target.getAttribute('data-c-line')));
+      }
+    }
+  };
+
   // The ref is on an inner div so that the gray background is always after the editor
   return (
     <div className='flex flex-col flex-grow overflow-y-scroll rounded border relative'>
       <EditorBar mode='c' checkSlot={<CErrorsDisplay />} />
       <div className='relative flex-grow'>
-        <div className='h-full w-full relative' ref={editor} />
+        <div
+          className='h-full w-full relative'
+          ref={editor}
+          onMouseOver={enterLine}
+          onFocus={enterLine}
+          onMouseLeave={() => setHoveredCLine(null)}
+        />
       </div>
     </div>
   );

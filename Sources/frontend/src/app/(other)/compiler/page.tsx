@@ -37,6 +37,7 @@ import AsmDisplay from '@/components/codeEditor/AsmDisplay';
 import CCodeInput from '@/components/codeEditor/CCodeInput';
 import CompileOptions from '@/components/codeEditor/CompileOptions';
 import CompilerShortcuts from '@/components/shortcuts/CompilerShortcuts';
+import { LineHighlightProvider } from '@/components/codeEditor/LineHighlightContext';
 
 export default function HomePage() {
   // Note: min-h-0 fixes overflow of the flex container
@@ -49,8 +50,10 @@ export default function HomePage() {
         <h1 className='m-2 mb-6 text-2xl'>Code Editor</h1>
         <div className=' editor-container grid min-h-0 flex-grow grid-cols-[160px_minmax(350px,2fr)_minmax(350px,1fr)] gap-4'>
           <CompileOptions />
-          <CCodeInput />
-          <AsmDisplay />
+          <LineHighlightProvider>
+            <CCodeInput />
+            <AsmDisplay />
+          </LineHighlightProvider>
         </div>
       </div>
       <CompilerShortcuts />
