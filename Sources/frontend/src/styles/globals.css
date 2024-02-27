@@ -219,6 +219,7 @@
 
   /* A line in code editor. */
   .cm-line {
+    @apply transition-colors duration-75;
     position: relative;
   }
 
@@ -421,7 +422,13 @@
   }
 
   /* instruction hover */
-  /* .instruction-tooltip */
+  .instruction-tooltip {
+    @apply flex flex-col divide-y;
+  }
+
+  .instruction-tooltip > * {
+    @apply p-2;
+  }
 
   .cm-tooltip {
     @apply rounded bg-gray-200 p-1;

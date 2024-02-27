@@ -48,12 +48,30 @@ function instructionTooltip(instruction: InstructionDescription) {
   instructionName.textContent = instruction.name;
   instructionName.className = 'tooltip-name';
 
+  const argumentList = document.createElement('ul');
+  for (const arg of instruction.arguments) {
+    const argElement = document.createElement('li');
+    const typ = arg.register ? 'register' : 'immediate';
+    if (arg.writeBack) {
+      argElement.classList.add('font-bold');
+    }
+    argElement.textContent = `${arg.name} (${typ})`;
+    argumentList.appendChild(argElement);
+  }
+
   // TODO: add syntax example to InstructionFunctionModel
 
   const instructionInterpretable = document.createElement('div');
-  instructionInterpretable.textContent = `Interpretable as: ${instruction.interpretableAs}`;
+  const interpretableAs = document.createElement('div');
+  interpretableAs.textContent = 'Interpretable as';
+  interpretableAs.className = 'font-bold';
+  instructionInterpretable.appendChild(interpretableAs);
+  const interp = document.createElement('div');
+  interp.textContent = instruction.interpretableAs;
+  instructionInterpretable.appendChild(interp);
 
   dom.appendChild(instructionName);
+  dom.appendChild(argumentList);
   dom.appendChild(instructionInterpretable);
 
   return dom;
@@ -99,6 +117,7 @@ export const wordHoverFactory = (
     const word = text.slice(start - from, end - from);
 
     // Get info and create tooltip
+    console.log('word', word, supportedInstructions);
     const instructionInfo = supportedInstructions[word];
 
     if (!instructionInfo) {

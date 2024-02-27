@@ -40,7 +40,11 @@ import React, {
   useEffect,
   useRef,
 } from 'react';
-
+import {
+  loadFunctionModels,
+  reloadSimulation,
+  selectCpu,
+} from '@/lib/redux/cpustateSlice';
 import {
   changeDirtyEffect,
   changeHighlightEffect,
@@ -125,6 +129,11 @@ export default function AsmDisplay() {
       dispatch(asmFieldTyping(value));
     },
   });
+
+  // Load function models once
+  useEffect(() => {
+    dispatch(loadFunctionModels());
+  }, [dispatch]);
 
   // Update errors when cErrors change
   useEffect(() => {
