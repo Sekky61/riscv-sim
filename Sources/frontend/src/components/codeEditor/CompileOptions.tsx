@@ -32,8 +32,8 @@
 import { ExamplesButton } from '@/components/codeEditor/ExamplesButton';
 import { OptimizeRadio } from '@/components/codeEditor/OptimizeRadio';
 import { CompileButton } from '@/components/codeEditor/CompileButton';
-import { loadCodeExamples } from '@/app/api/codeExamples/route';
 import Link from 'next/link';
+import { loadCodeExamples } from '@/lib/staticLoaders';
 
 /**
  * The compile options component. On the left side to the editor.

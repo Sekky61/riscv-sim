@@ -1,14 +1,14 @@
 /**
- * @file    route.ts
+ * @file    staticLoaders.ts
  *
  * @author  Michal Majer
  *          Faculty of Information Technology
  *          Brno University of Technology
  *          xmajer21@stud.fit.vutbr.cz
  *
- * @brief   Static data for the app (JSON files)
+ * @brief   Static data (public folder) loaders
  *
- * @date    31 January 2024, 10:00 (created)
+ * @date    28 February 2024, 09:00 (created)
  *
  * @section Licence
  * This file is part of the Superscalar simulator app
@@ -29,11 +29,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { loadCodeExamples } from '@/lib/staticLoaders';
+import { CodeExample } from '@/lib/types/codeExamples';
+import { promises as fs } from 'fs';
+import path from 'path';
 
-export async function GET() {
-  const json = await loadCodeExamples();
-  return Response.json(json);
+export async function loadCodeExamples(): Promise<CodeExample[]> {
+  // Find the absolute path of the "json" directory
+  const jsonDirectory = path.join(process.cwd(), 'public/json');
+  // Read the "data.json" file
+  const fileContents = await fs.readFile(
+    `${jsonDirectory}/codeExamples.json`,
+    'utf8',
+  );
+
+  const json = JSON.parse(fileContents);
+  return json;
 }
-
-export const dynamic = 'force-static';
