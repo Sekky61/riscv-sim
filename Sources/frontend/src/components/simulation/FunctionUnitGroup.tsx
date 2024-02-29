@@ -32,7 +32,6 @@
 'use client';
 
 import clsx from 'clsx';
-import { Fragment } from 'react';
 
 import {
   selectArithmeticFunctionUnitBlocks,
@@ -45,100 +44,89 @@ import { useAppSelector } from '@/lib/redux/hooks';
 import Block from '@/components/simulation/Block';
 import InstructionField from '@/components/simulation/InstructionField';
 import { Badge } from '@/components/base/ui/badge';
-
-export default function FunctionUnitGroup({ type }: FunctionUnitGroupProps) {
-  const { name, className, selector } = getFuInfo(type);
-  const fus = useAppSelector(selector);
-
-  if (!fus) return null;
-
-  // TODO: has no limit
-  return (
-    <>
-      {fus.map((fu, i) => {
-        const displayCounter = fu.simCodeModel === null ? 0 : fu.counter + 1;
-        const id = fu.simCodeModel ?? null;
-        return (
-          <Fragment key={`${fu.description.name}-${fu.functionUnitId}`}>
-            <Block
-              title={fu.description.name || name}
-              stats={
-                <div className='flex gap-2'>
-                  <div className='w-6 shrink-0'>{`${displayCounter}/${fu.delay}`}</div>
-                  <div className='flex gap-1 overflow-auto snap-x'>
-                    {fu.description.operations?.map((op, i) => (
-                      <Badge
-                        key={op.name}
-                        variant='outline'
-                        className='snap-start flex divide-x gap-1'
-                      >
-                        <div>{op.name}</div>
-                        <div className='pl-1'>{op.latency}</div>
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              }
-              className={clsx(
-                className,
-                'row-span-1 w-block',
-                rowPosition[i + 1],
-              )}
-            >
-              <InstructionField instructionId={id} />
-            </Block>
-          </Fragment>
-        );
-      })}
-    </>
-  );
-}
-
-function FU({ name, className, selector });
+import { AbstractFunctionUnitBlock } from '@/lib/types/cpuApi';
 
 type FUType = 'alu' | 'fp' | 'branch' | 'memory';
-
-const rowPosition = [
-  'row-start-1',
-  'row-start-2',
-  'row-start-3',
-  'row-start-4',
-  'row-start-5',
-  'row-start-6',
-  'row-start-7',
-];
 
 export type FunctionUnitGroupProps = {
   type: FUType;
 };
 
-function getFuInfo(type: FUType) {
-  switch (type) {
-    case 'alu':
-      return {
-        selector: selectArithmeticFunctionUnitBlocks,
-        name: 'ALU',
-        className: 'aluFu',
-      };
-    case 'fp':
-      return {
-        selector: selectFpFunctionUnitBlocks,
-        name: 'FP',
-        className: 'fpFu',
-      };
-    case 'branch':
-      return {
-        selector: selectBranchFunctionUnitBlocks,
-        name: 'Branch',
-        className: 'branchFu',
-      };
-    case 'memory':
-      return {
-        selector: selectMemoryAccessUnitBlocks,
-        name: 'Memory Access',
-        className: 'memoryFu',
-      };
-    default:
-      throw new Error(`Invalid type ${type}`);
-  }
+/**
+ * A component for displaying all functional units of a given type.
+ */
+export default function FunctionUnitGroup({ type }: FunctionUnitGroupProps) {
+  const fus = useAppSelector(selectors[type]);
+  if (!fus) return null;
+
+  // TODO: has no limit
+  return (
+    <>
+      {fus.map((fu) => {
+        return <FU fu={fu} key={fu.functionUnitId} type={type} />;
+      })}
+    </>
+  );
 }
+
+type FUProps = {
+  type: FUType;
+  fu: AbstractFunctionUnitBlock;
+};
+
+function FU({ type, fu }: FUProps) {
+  const { name, className } = fuInfo[type];
+  const displayCounter = fu.counter;
+
+  return (
+    <Block
+      title={fu.description.name || name}
+      stats={
+        <div className='flex gap-2'>
+          <div className='w-6 shrink-0'>{`${displayCounter}/${fu.delay}`}</div>
+          <div className='flex gap-1 overflow-auto snap-x'>
+            {fu.description.operations?.map((op) => (
+              <Badge
+                key={op.name}
+                variant='outline'
+                className='snap-start flex divide-x gap-1'
+              >
+                <div>{op.name}</div>
+                <div className='pl-1'>{op.latency}</div>
+              </Badge>
+            ))}
+          </div>
+        </div>
+      }
+      className={clsx(className, 'w-block')}
+    >
+      <InstructionField instructionId={fu.simCodeModel} />
+    </Block>
+  );
+}
+
+const selectors = {
+  alu: selectArithmeticFunctionUnitBlocks,
+  fp: selectFpFunctionUnitBlocks,
+  branch: selectBranchFunctionUnitBlocks,
+  memory: selectMemoryAccessUnitBlocks,
+} as const;
+
+const fuInfo = {
+  alu: {
+    name: 'ALU',
+    className: 'aluFu',
+  },
+  fp: {
+    name: 'FP',
+    className: 'fpFu',
+  },
+  branch: {
+    name: 'Branch',
+    className: 'branchFu',
+  },
+  memory: {
+    name: 'Memory Access',
+    className: 'memoryFu',
+  },
+} as const;

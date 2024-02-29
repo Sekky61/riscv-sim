@@ -48,7 +48,8 @@ import com.gradle.superscalarsim.models.instruction.SimCodeModel;
 public abstract class AbstractFunctionUnitBlock implements AbstractBlock
 {
   /**
-   * ID specifying when instruction passed specified FU
+   * ID specifying when instruction passed specified FU.
+   * Must be unique.
    */
   protected int functionUnitId;
   
@@ -261,8 +262,7 @@ public abstract class AbstractFunctionUnitBlock implements AbstractBlock
    */
   private int getDelayBasedOnCapability()
   {
-    String                                   expr           = this.simCodeModel.getInstructionFunctionModel()
-            .getInterpretableAs();
+    String expr = this.simCodeModel.getInstructionFunctionModel().getInterpretableAs();
     FunctionalUnitDescription.CapabilityName capabilityName = FunctionalUnitDescription.classifyOperation(expr);
     for (FunctionalUnitDescription.Capability capability : this.description.operations)
     {
