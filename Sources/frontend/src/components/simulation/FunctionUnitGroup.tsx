@@ -91,7 +91,7 @@ function FU({ type, fu }: FUProps) {
                 variant='outline'
                 className='snap-start flex divide-x gap-1'
               >
-                <div>{op.name}</div>
+                <div className='capitalize'>{op.name}</div>
                 <div className='pl-1'>{op.latency}</div>
               </Badge>
             ))}
