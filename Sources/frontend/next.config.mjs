@@ -1,10 +1,15 @@
-const { apiBaseUrl } = require('./src/constant/env');
+import { apiBaseUrl } from './src/constant/env.js';
+import analyzer from '@next/bundle-analyzer';
 
-const withBundleAnalyzer = require('@next/bundle-analyzer')({
+// @ts-check
+
+const withBundleAnalyzer = analyzer({
   enabled: process.env.ANALYZE === 'true',
 });
 
-/** @type {import('next').NextConfig} */
+/**
+ * @type {import('next').NextConfig}
+ */
 const nextConfig = withBundleAnalyzer({
   reactStrictMode: true,
   swcMinify: true,
@@ -18,7 +23,7 @@ const nextConfig = withBundleAnalyzer({
   // },
 
   // Proxy simulation requests to Java backend API.
-  // The destination is on the same server (localhost).
+  // The destination is on the same network (localhost).
   async rewrites() {
     return [
       {
@@ -61,4 +66,4 @@ const nextConfig = withBundleAnalyzer({
   },
 });
 
-module.exports = nextConfig;
+export default nextConfig;
