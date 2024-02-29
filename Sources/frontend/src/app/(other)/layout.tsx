@@ -37,14 +37,12 @@ import Navbar from '@/components/Navbar';
  */
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <div className='flex w-screen'>
+    <div className='flex w-screen h-screen overflow-hidden'>
       <div className='navbar-slot'>
         <Navbar />
       </div>
-      <div className='shrink-0 flex-grow small-container box-border h-full px-4 py-10'>
-        <div className='small-container h-full'>
-          <div className='h-full'>{children}</div>
-        </div>
+      <div className='h-screen shrink-0 flex-grow py-10 overflow-y-auto'>
+        <div className='small-container'>{children}</div>
       </div>
     </div>
   );

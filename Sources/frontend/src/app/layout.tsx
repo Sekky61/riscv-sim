@@ -59,6 +59,7 @@ const fontSans = FontSans({
 export default async function RootLayout({
   children,
 }: { children: ReactNode }) {
+  // Body is overflow-hidden to prevent FU configuration from expanding the page
   return (
     <html lang='en'>
       <head>
@@ -70,7 +71,7 @@ export default async function RootLayout({
       </head>
       <body
         className={cn(
-          'min-h-screen bg-background font-sans antialiased',
+          'min-h-screen bg-background font-sans antialiased overflow-hidden',
           fontSans.variable,
         )}
       >
