@@ -116,14 +116,12 @@ export default function Program() {
             const isPointedTo = instructionOrLabel === pc;
             // Instruction
             return (
-              <>
-                <ProgramInstruction
-                  key={`ins-${instructionOrLabel}`}
-                  instructionId={instructionOrLabel}
-                >
-                  {isPointedTo && pcPointer}
-                </ProgramInstruction>
-              </>
+              <ProgramInstruction
+                key={`ins-${instructionOrLabel}`}
+                instructionId={instructionOrLabel}
+              >
+                {isPointedTo && pcPointer}
+              </ProgramInstruction>
             );
           })}
         </div>

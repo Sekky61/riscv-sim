@@ -453,6 +453,9 @@ export interface FunctionalUnitDescription {
   name: string;
   latency: number;
   fuType: 'FX' | 'FP' | 'L_S' | 'Branch' | 'Memory';
+  /**
+   * Only for FX and FP
+   */
   operations?: Capability[];
 }
 

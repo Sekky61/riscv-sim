@@ -29,6 +29,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+'use client';
+
 import clsx from 'clsx';
 import { Fragment } from 'react';
 
@@ -42,6 +44,57 @@ import { useAppSelector } from '@/lib/redux/hooks';
 
 import Block from '@/components/simulation/Block';
 import InstructionField from '@/components/simulation/InstructionField';
+import { Badge } from '@/components/base/ui/badge';
+
+export default function FunctionUnitGroup({ type }: FunctionUnitGroupProps) {
+  const { name, className, selector } = getFuInfo(type);
+  const fus = useAppSelector(selector);
+
+  if (!fus) return null;
+
+  // TODO: has no limit
+  return (
+    <>
+      {fus.map((fu, i) => {
+        const displayCounter = fu.simCodeModel === null ? 0 : fu.counter + 1;
+        const id = fu.simCodeModel ?? null;
+        return (
+          <Fragment key={`${fu.description.name}-${fu.functionUnitId}`}>
+            <Block
+              title={fu.description.name || name}
+              stats={
+                <div className='flex gap-2'>
+                  <div className='w-6 shrink-0'>{`${displayCounter}/${fu.delay}`}</div>
+                  <div className='flex gap-1 overflow-auto snap-x'>
+                    {fu.description.operations?.map((op, i) => (
+                      <Badge
+                        key={op.name}
+                        variant='outline'
+                        className='snap-start flex divide-x gap-1'
+                      >
+                        <div>{op.name}</div>
+                        <div className='pl-1'>{op.latency}</div>
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              }
+              className={clsx(
+                className,
+                'row-span-1 w-block',
+                rowPosition[i + 1],
+              )}
+            >
+              <InstructionField instructionId={id} />
+            </Block>
+          </Fragment>
+        );
+      })}
+    </>
+  );
+}
+
+function FU({ name, className, selector });
 
 type FUType = 'alu' | 'fp' | 'branch' | 'memory';
 
@@ -88,36 +141,4 @@ function getFuInfo(type: FUType) {
     default:
       throw new Error(`Invalid type ${type}`);
   }
-}
-
-export default function FunctionUnitGroup({ type }: FunctionUnitGroupProps) {
-  const { name, className, selector } = getFuInfo(type);
-  const fus = useAppSelector(selector);
-
-  if (!fus) return null;
-
-  // TODO: has no limit
-  return (
-    <>
-      {fus.map((fu, i) => {
-        const displayCounter = fu.simCodeModel === null ? 0 : fu.counter + 1;
-        const id = fu.simCodeModel ?? null;
-        return (
-          <Fragment key={`${fu.description.name}-${fu.functionUnitId}`}>
-            <Block
-              title={fu.description.name || name}
-              stats={`${displayCounter}/${fu.delay}`}
-              className={clsx(
-                className,
-                'row-span-1 w-block',
-                rowPosition[i + 1],
-              )}
-            >
-              <InstructionField instructionId={id} />
-            </Block>
-          </Fragment>
-        );
-      })}
-    </>
-  );
 }
