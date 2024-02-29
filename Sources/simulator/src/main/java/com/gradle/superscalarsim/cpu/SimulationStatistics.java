@@ -27,7 +27,9 @@
  */
 package com.gradle.superscalarsim.cpu;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.models.FunctionalUnitDescription;
 import com.gradle.superscalarsim.models.instruction.SimCodeModel;
@@ -41,6 +43,7 @@ import java.util.Map;
  * @class SimulationStatistics
  * @brief Class that contains data from blocks for displaying statistics about the run
  */
+@JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
 public class SimulationStatistics
 {
   /**
