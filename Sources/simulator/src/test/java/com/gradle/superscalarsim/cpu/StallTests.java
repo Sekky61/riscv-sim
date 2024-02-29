@@ -68,7 +68,7 @@ public class StallTests
     Assert.assertEquals(2, decodeAfterCommit.size());
     Assert.assertEquals(decode5.get(1), decodeAfterCommit.get(0));
     Assert.assertEquals(decode5.get(2), decodeAfterCommit.get(1));
-    List<SimCodeModel> fetch = cpu.cpuState.instructionFetchBlock.getFetchedCode();
+    List<SimCodeModel> fetch = new ArrayList<>(cpu.cpuState.instructionFetchBlock.getFetchedCode());
     
     cpu.step();
     Assert.assertEquals(2, cpu.cpuState.statistics.committedInstructions);

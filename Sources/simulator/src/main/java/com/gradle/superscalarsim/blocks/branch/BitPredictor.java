@@ -132,6 +132,14 @@ public class BitPredictor
   }
   
   /**
+   * @return State of the predictor
+   */
+  public int getState()
+  {
+    return state;
+  }
+  
+  /**
    * Enum for predictor types with values
    * Gets serialized as
    * <p>

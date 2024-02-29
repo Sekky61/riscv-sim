@@ -34,6 +34,7 @@ package com.gradle.superscalarsim.models.instruction;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.code.Expression;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
@@ -101,38 +102,10 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
    */
   private boolean hasFailed;
   /**
-   * Prediction made by branch predictor at the time of fetch.
-   * True means the branch was predicted as taken. False means not taken (PC+4).
-   * Used for branch instructions.
+   * Prediction and result of the branch computation.
+   * Null for non-branch instructions.
    */
-  private boolean branchPredicted;
-  /**
-   * True if branch was computed in decode stage.
-   * This is done for branch instructions not requiring a register access.
-   * TODO: to be specified.
-   */
-  private boolean branchComputedInDecode;
-  /**
-   * Target of the branch prediction.
-   * Originates from the branch predictor in the fetch stage.
-   */
-  private int branchPredictionTarget;
-  /**
-   * Result of the branch computation.
-   * Used to check for mispredictions.
-   * Computed in Functional Unit.
-   * True means branch was taken.
-   */
-  private boolean branchLogicResult;
-  /**
-   * Absolute address of the target of the branch instruction.
-   * The address of the target, regardless of whether the branch is taken or not.
-   * NOT an offset. If you need offset, describe it in the interpretableAs field (see JAL instruction).
-   * Result of the branch actual computation, not the prediction.
-   * If present (not -1), the value is correct.
-   * Used to fix BTB and PC in misprediction.
-   */
-  private int branchTarget;
+  private BranchInfo branchInfo;
   /**
    * Invalid instructions are scheduled to be removed from the system.
    * Instruction starts as valid and becomes invalid when it is flushed.
@@ -162,18 +135,17 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
    */
   public SimCodeModel(InputCodeModel inputCodeModel, int id, int fetchId)
   {
-    this.inputCodeModel         = inputCodeModel;
-    this.id                     = id;
-    this.fetchId                = fetchId;
-    this.isFinished             = false;
-    this.hasFailed              = false;
-    this.branchComputedInDecode = false;
-    this.commitId               = -1;
-    this.readyId                = -1;
-    this.issueWindowId          = -1;
-    this.functionUnitId         = -1;
-    this.branchTarget           = -1;
-    this.branchPredictionTarget = -1;
+    this.inputCodeModel = inputCodeModel;
+    this.id             = id;
+    this.fetchId        = fetchId;
+    this.isFinished     = false;
+    this.hasFailed      = false;
+    this.commitId       = -1;
+    this.readyId        = -1;
+    this.issueWindowId  = -1;
+    this.functionUnitId = -1;
+    
+    this.branchInfo = null;
     
     isValid       = true;
     isBusy        = true;
@@ -195,7 +167,8 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
    */
   public int getBranchPredictionTarget()
   {
-    return branchPredictionTarget;
+    assert branchInfo != null;
+    return branchInfo.predictedTarget;
   }
   
   public InstructionException getException()
@@ -232,6 +205,7 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
    * @return Boolean value of speculative bit
    * @brief Gets speculative bit
    */
+  @JsonIgnore
   public boolean isSpeculative()
   {
     return this.isSpeculative;
@@ -255,13 +229,15 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
    */
   public void setBranchComputedInDecode()
   {
-    this.branchComputedInDecode = true;
+    assert branchInfo != null;
+    this.branchInfo.branchComputedInDecode = true;
   }
   
   /**
    * @return Boolean value of busy bit
    * @brief Gets busy bit
    */
+  @JsonIgnore
   public boolean isBusy()
   {
     return this.isBusy;
@@ -280,6 +256,7 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
   /**
    * @return True if instruction is valid, false otherwise
    */
+  @JsonIgnore
   public boolean isValid()
   {
     return isValid;
@@ -373,6 +350,7 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
    * @return Boolean value marking failure to finish
    * @brief Get the bit value corresponding to failure due to wrong prediction
    */
+  @JsonIgnore
   public boolean hasFailed()
   {
     return hasFailed;
@@ -390,44 +368,58 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
   }// end of setHasFailed
   //------------------------------------------------------
   
+  @JsonIgnore
   public boolean isBranchComputedInDecode()
   {
-    return branchComputedInDecode;
+    assert branchInfo != null;
+    return branchInfo.branchComputedInDecode;
   }
   
   /**
    * @return True if branch was predicted as taken, false otherwise
    */
+  @JsonIgnore
   public boolean isBranchPredicted()
   {
-    return branchPredicted;
+    assert branchInfo != null;
+    return branchInfo.predictorVerdict;
   }
   
-  public void setBranchPredicted(boolean branchPredicted, int target)
+  /**
+   * Initializes the branch prediction info.
+   */
+  public void registerBranch(int predictorIndex, int predictorState, boolean predictorVerdict, int predictedTarget)
   {
-    // TODO: used incorrectly by decode. It should be set only in fetch.
-    this.branchPredicted        = branchPredicted;
-    this.branchPredictionTarget = target;
+    branchInfo                                = new BranchInfo();
+    branchInfo.predictorVerdict               = predictorVerdict;
+    branchInfo.predictedTarget                = predictedTarget;
+    branchInfo.predictorIndex                 = predictorIndex;
+    branchInfo.predictorStateBeforePrediction = predictorState;
   }
   
+  @JsonIgnore
   public boolean isBranchLogicResult()
   {
-    return branchLogicResult;
+    assert branchInfo != null;
+    return branchInfo.branchCondition;
   }
   
   public void setBranchLogicResult(boolean branchLogicResult)
   {
-    this.branchLogicResult = branchLogicResult;
+    assert branchInfo != null;
+    this.branchInfo.branchCondition = branchLogicResult;
   }
   
   public int getBranchTarget()
   {
-    return branchTarget;
+    assert branchInfo != null;
+    return branchInfo.branchTarget;
   }
   
   public void setBranchTarget(int branchTarget)
   {
-    this.branchTarget = branchTarget;
+    assert branchInfo != null;
+    this.branchInfo.branchTarget = branchTarget;
   }
   
   /**
@@ -626,5 +618,61 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
   public DebugInfo getDebugInfo()
   {
     return inputCodeModel.getDebugInfo();
+  }
+  
+  /**
+   * Additional information specific for branch instructions.
+   */
+  public static class BranchInfo
+  {
+    /**
+     * Prediction made by branch predictor at the time of fetch.
+     * True means the branch was predicted as taken and its target is predictedTarget.
+     * False means not taken (PC+4).
+     */
+    public boolean predictorVerdict;
+    /**
+     * Target of the branch prediction
+     */
+    public int predictedTarget;
+    /**
+     * Result of the branch computation.
+     * Used to check for mispredictions.
+     * Computed in Functional Unit.
+     * True means branch was taken.
+     */
+    public boolean branchCondition;
+    /**
+     * Absolute address of the target of the branch instruction.
+     * The address of the target, regardless of whether the branch is taken or not.
+     * NOT an offset. If you need offset, describe it in the interpretableAs field (see JAL instruction).
+     * Result of the branch actual computation, not the prediction.
+     * If present (not -1), the value is correct.
+     * Used to fix BTB and PC in misprediction.
+     */
+    public int branchTarget;
+    /**
+     * True if branch was computed in decode stage.
+     * This is done for branch instructions not requiring a register access (TODO: to be specified).
+     */
+    public boolean branchComputedInDecode;
+    /**
+     * Index of the predictor used. If -1, then not applicable (unconditional jump).
+     */
+    public int predictorIndex;
+    /**
+     * The state of the predictor from which the prediction was taken.
+     * For debugging, user output purposes.
+     */
+    public int predictorStateBeforePrediction;
+    
+    /**
+     * Constructor
+     */
+    public BranchInfo()
+    {
+      this.predictedTarget = -1;
+      this.branchTarget    = -1;
+    }
   }
 }

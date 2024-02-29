@@ -114,7 +114,7 @@ export default function InstructionField({
           <InstructionSyntax functionModel={functionModel} args={args} />
           {showSpeculative && (
             <span className='absolute top-0 right-0 p-1 text-xs'>
-              {simCodeModel.speculative ? 'S' : ''}
+              {simCodeModel.isSpeculative ? 'S' : ''}
             </span>
           )}
         </button>
@@ -144,7 +144,7 @@ export function InstructionDetailPopup({
 
   // This can be null because of NOP
   const instructionStats = statistics.instructionStats[simCodeId] ?? {
-    committedCount: 0,
+    committedCount: 1,
     correctlyPredicted: 0,
   };
 
@@ -269,10 +269,18 @@ export function InstructionDetailPopup({
                 </li>
                 <li>
                   Branch Result:{' '}
-                  {simCodeModel.branchPredicted ? 'Branch' : 'Do not branch'}
+                  {simCodeModel.branchInfo?.predictorVerdict
+                    ? 'Branch'
+                    : 'Do not branch'}
                 </li>
-                <li>Prediction target: {simCodeModel.branchTarget}</li>
-                <li>Prediction Accuracy: {instructionStats.committedCount}</li>
+                <li>
+                  Prediction target:{' '}
+                  {`${hexPadEven(
+                    simCodeModel.branchInfo?.branchTarget ?? 0,
+                  )} (${simCodeModel.branchInfo?.branchTarget})`}
+                </li>
+                <li>Prediction Accuracy: {instructionStats.committedCount}</li>{' '}
+                {/* TODO */}
               </ul>
             </>
           )}

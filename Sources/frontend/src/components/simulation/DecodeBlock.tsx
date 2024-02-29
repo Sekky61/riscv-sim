@@ -35,24 +35,27 @@ import { useAppSelector } from '@/lib/redux/hooks';
 import Block from '@/components/simulation/Block';
 import InstructionField from '@/components/simulation/InstructionField';
 import { InstructionListDisplay } from '@/components/simulation/InstructionListDisplay';
+import { Badge } from '@/components/base/ui/badge';
 
 export default function DecodeBlock() {
   const decode = useAppSelector(selectDecode);
 
   if (!decode) return null;
 
-  const after = decode.codeBuffer;
-
-  const decodeStats = (
-    <>
-      <div>Stalled: {decode.stallFlag ? 'Yes' : 'No'}</div>
-    </>
-  );
-
   return (
-    <Block title='Decode Block' stats={decodeStats} className='decode w-block'>
+    <Block
+      title='Decode Block'
+      stats={
+        <>
+          {decode.stallFlag ? (
+            <Badge variant='destructive'>Stalled</Badge>
+          ) : null}
+        </>
+      }
+      className='decode w-block'
+    >
       <InstructionListDisplay
-        instructions={after}
+        instructions={decode.codeBuffer}
         totalSize={decode.decodeBufferSize}
         instructionRenderer={(instruction, i) => (
           <InstructionField instructionId={instruction} key={`instr_${i}`} />

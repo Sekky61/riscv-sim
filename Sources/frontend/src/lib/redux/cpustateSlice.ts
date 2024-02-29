@@ -552,6 +552,10 @@ export const selectGlobalHistoryRegister = (state: RootState) =>
 export const selectPatternHistoryTable = (state: RootState) =>
   state.cpu.state?.patternHistoryTable;
 
+export const selectPredictor = (state: RootState, pc: number) =>
+  state.cpu.state?.patternHistoryTable.predictorMap[pc] ??
+  state.cpu.state?.patternHistoryTable.defaultPredictor;
+
 // Issue window blocks
 
 export const selectAluIssueWindowBlock = (state: RootState) =>

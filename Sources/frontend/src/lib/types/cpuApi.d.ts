@@ -323,31 +323,35 @@ export interface Argument {
 
 export interface SimCodeModel {
   id: number;
-  fetchId: number;
   inputCodeModel: Reference;
   renamedArguments: InputCodeArgument[];
   issueWindowId: number;
+  fetchId: number;
   functionUnitId: number;
   readyId: number;
   commitId: number;
   isFinished: boolean;
   hasFailed: boolean;
-  branchPredicted: boolean;
-  branchComputedInDecode: boolean;
-  branchLogicResult: boolean;
-  branchTarget: number;
+  branchInfo?: BranchInfo;
   isValid: boolean;
   isBusy: boolean;
   isSpeculative: boolean;
   exception: InstructionException | null;
-  busy: boolean;
-  valid: boolean;
-  load: boolean;
-  readyToBeCommitted: boolean;
-  readyToExecute: boolean;
-  speculative: boolean;
   conditionalBranch: boolean;
+  load: boolean;
+  readyToExecute: boolean;
+  readyToBeCommitted: boolean;
   store: boolean;
+}
+
+export interface BranchInfo {
+  predictorVerdict: boolean;
+  predictedTarget: number;
+  branchCondition: boolean;
+  branchTarget: number;
+  branchComputedInDecode: boolean;
+  predictorIndex: number;
+  predictorStateBeforePrediction: number;
 }
 
 export interface InstructionException {

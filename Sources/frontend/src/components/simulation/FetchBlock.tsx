@@ -45,6 +45,7 @@ import InstructionField from '@/components/simulation/InstructionField';
 import { InstructionListDisplay } from '@/components/simulation/InstructionListDisplay';
 import InstructionTable from '@/components/simulation/InstructionTable';
 import { hexPadEven } from '@/lib/utils';
+import { Badge } from '@/components/base/ui/badge';
 
 /**
  * A component for displaying the Fetch block.
@@ -57,7 +58,11 @@ export default function FetchBlock() {
   const fetchStats = (
     <>
       <div>PC: {hexPadEven(fetchObject.pc)}</div>
-      <div>{fetchObject.stallFlag ? 'Stalled' : null}</div>
+      <div>
+        {fetchObject.stallFlag ? (
+          <Badge variant='destructive'>Stalled</Badge>
+        ) : null}
+      </div>
     </>
   );
 

@@ -160,10 +160,11 @@ public class InstructionFetchBlock implements AbstractBlock
     if (stallFlag)
     {
       // Fetch is stalled. Do nothing, resume next cycle
-      this.stallFlag = false;
+      stallFlag = false;
       return;
     }
-    this.fetchedCode = fetchInstructions(cycle);
+    fetchedCode.clear();
+    fetchInstructions(cycle);
   }// end of simulate
   //----------------------------------------------------------------------
   
@@ -178,11 +179,10 @@ public class InstructionFetchBlock implements AbstractBlock
    * @return Fetched instructions
    * @brief Fetching logic
    */
-  private List<SimCodeModel> fetchInstructions(int cycle)
+  private void fetchInstructions(int cycle)
   {
-    List<SimCodeModel> fetchedCode      = new ArrayList<>();
-    int                followedBranches = 0;
-    int                encounteredJumps = 0;
+    int followedBranches = 0;
+    int encounteredJumps = 0;
     
     for (int i = 0; i < numberOfWays; i++)
     {
@@ -208,49 +208,40 @@ public class InstructionFetchBlock implements AbstractBlock
           }
           break;
         }
-      }
-      
-      // TODO: If we cannot follow anymore, do we still fetch instructions, or end early?
-      // And does it matter if the branch is taken?
-      boolean unconditional = this.branchTargetBuffer.isEntryUnconditional(pc);
-      boolean prediction    = this.gShareUnit.getPredictor(pc).getCurrentPrediction();
-      boolean shouldJump    = prediction || unconditional;
-      int     newPc         = this.branchTargetBuffer.getEntryTarget(pc);
-      boolean areWeJumping  = shouldJump && newPc >= 0;
-      codeModel.setBranchPredicted(areWeJumping, newPc);
-      if (areWeJumping && followedBranches < branchFollowLimit)
-      {
-        this.pc = newPc;
-        followedBranches++;
+        
+        int predictorIndex = gShareUnit.getPredictorIndex(pc);
+        int predictorState = gShareUnit.getPredictor(pc).getState();
+        
+        boolean unconditional = this.branchTargetBuffer.isEntryUnconditional(pc);
+        boolean prediction    = this.gShareUnit.getPredictor(pc).getCurrentPrediction();
+        boolean shouldJump    = prediction || unconditional;
+        int     newPc         = this.branchTargetBuffer.getEntryTarget(pc);
+        boolean areWeJumping  = shouldJump && newPc >= 0;
+        codeModel.registerBranch(predictorIndex, predictorState, areWeJumping, newPc);
+        if (areWeJumping && followedBranches < branchFollowLimit)
+        {
+          this.pc = newPc;
+          followedBranches++;
+        }
+        else
+        {
+          // No jump, just increment PC
+          this.pc += 4;
+        }
+        // Update global history register
+        if (codeModel.isConditionalBranch())
+        {
+          gShareUnit.getGlobalHistoryRegister().shiftValue(areWeJumping, codeModel.getIntegerId());
+        }
       }
       else
       {
-        // No jump, just increment PC
         this.pc += 4;
-      }
-      
-      // Update global history register
-      if (codeModel.isConditionalBranch())
-      {
-        gShareUnit.getGlobalHistoryRegister().shiftValue(areWeJumping, codeModel.getIntegerId());
       }
       
       fetchedCode.add(codeModel);
     }
-    return fetchedCode;
   }// end of fetchInstructions
-  //----------------------------------------------------------------------
-  
-  /**
-   * @return True if branch was predicted, regardless whether we know the target address.
-   * @brief Predicts true for unconditional branches, even if there is a negative prediction from the predictor.
-   */
-  private boolean isBranchingPredicted(int pc)
-  {
-    boolean unconditional = this.branchTargetBuffer.isEntryUnconditional(pc);
-    boolean prediction    = this.gShareUnit.getPredictor(pc).getCurrentPrediction();
-    return prediction || unconditional;
-  }
   //----------------------------------------------------------------------
   
   /**
@@ -306,10 +297,8 @@ public class InstructionFetchBlock implements AbstractBlock
    */
   public void setPc(int pc)
   {
-    if (pc < 0)
-    {
-      throw new IllegalArgumentException("PC cannot be negative");
-    }
+    assert pc % 4 == 0;
+    assert pc >= 0;
     this.pc = pc;
   }// end of setPcCounter
 }

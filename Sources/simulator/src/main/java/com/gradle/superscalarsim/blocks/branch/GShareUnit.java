@@ -95,14 +95,20 @@ public class GShareUnit
    */
   public BitPredictor getPredictor(int programCounter)
   {
+    int index = getPredictorIndex(programCounter);
+    return this.patternHistoryTable.getPredictor(index);
+  }// end of getPredictor
+  //----------------------------------------------------------------------
+  
+  public int getPredictorIndex(int programCounter)
+  {
     int index = programCounter % size;
     if (useGlobalHistory)
     {
       index ^= globalHistoryRegister.getRegisterValue();
     }
-    return this.patternHistoryTable.getPredictor(index);
-  }// end of getPredictor
-  //----------------------------------------------------------------------
+    return index;
+  }// end of getPredictorIndex
   
   /**
    * @return GHT block object

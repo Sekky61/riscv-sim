@@ -225,7 +225,7 @@ public class ReorderBufferBlock implements AbstractBlock
       commitInstruction(robItem, cycle);
       removeInstruction(robItem);
       
-      if (robItem.getBranchTarget() == haltTarget)
+      if (robItem.getInstructionTypeEnum() == InstructionTypeEnum.kJumpbranch && robItem.getBranchTarget() == haltTarget)
       {
         stopReason = StopReason.kCallStackHalt;
       }
