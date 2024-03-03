@@ -47,7 +47,10 @@ import InstructionTable from '@/components/simulation/InstructionTable';
 import { hexPadEven } from '@/lib/utils';
 import { Badge } from '@/components/base/ui/badge';
 import { Fragment } from 'react';
-import { PredictorGraph } from '@/components/prediction/PredictorGraph';
+import {
+  PredictorGraph,
+  PredictorGraphFromCodeId,
+} from '@/components/prediction/PredictorGraph';
 
 /**
  * A component for displaying the Fetch block.
@@ -112,7 +115,7 @@ export default function FetchBlock() {
           <Fragment key={`instr_${codeModel}_${i}`}>
             <InstructionField instructionId={codeModel} />
             <div>
-              <PredictorGraph simCodeId={codeModel} />
+              <PredictorGraphFromCodeId simCodeId={codeModel} />
             </div>
           </Fragment>
         )}

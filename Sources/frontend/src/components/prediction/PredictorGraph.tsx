@@ -29,6 +29,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+'use client';
+
 import {
   selectPredictorWidth,
   selectSimCodeModel,
@@ -42,9 +44,11 @@ import {
   TooltipTrigger,
 } from '@/components/base/ui/tooltip';
 import { BranchTable } from '@/components/prediction/BranchTable';
+import { BranchInfo } from '@/lib/types/cpuApi';
+import { PredictorIcon } from '@/components/prediction/PredictorIcon';
 
 type PredictorGraphProps = {
-  simCodeId: number | null;
+  branchInfo: BranchInfo;
 };
 
 /**
@@ -52,34 +56,15 @@ type PredictorGraphProps = {
  * It shows the state of the predictor before the prediction.
  * Hovering over the widget shows details relevant to prediction.
  */
-export function PredictorGraph({ simCodeId }: PredictorGraphProps) {
-  const q = useAppSelector((state) => selectSimCodeModel(state, simCodeId));
+export function PredictorGraph({ branchInfo }: PredictorGraphProps) {
   const predictorStateWidth = useAppSelector(selectPredictorWidth);
-  if (!q || simCodeId === null || predictorStateWidth === undefined) {
+  if (predictorStateWidth === undefined) {
     // Empty field
-    return null;
-  }
-
-  const { simCodeModel } = q;
-
-  const branchInfo = simCodeModel.branchInfo;
-
-  if (!branchInfo) {
     return null;
   }
 
   const state = branchInfo.predictorStateBeforePrediction;
   const verdict = branchInfo.predictorVerdict;
-
-  let icon = null;
-  if (predictorStateWidth === 2) {
-    icon = <TwoBitIcon state={state} />;
-  } else if (predictorStateWidth === 1) {
-    icon = <OneBitIcon state={state} />;
-  } else {
-    // 0 width predictor
-    icon = null;
-  }
 
   return (
     <Tooltip>
@@ -91,7 +76,7 @@ export function PredictorGraph({ simCodeId }: PredictorGraphProps) {
             !verdict && 'ring-red-300',
           )}
         >
-          {icon}
+          <PredictorIcon state={state} width={predictorStateWidth} />
         </div>
       </TooltipTrigger>
       <TooltipContent>
@@ -101,90 +86,19 @@ export function PredictorGraph({ simCodeId }: PredictorGraphProps) {
   );
 }
 
-function fill(i: number, active: number) {
-  if (i === active) {
-    return '#ff7171';
+/**
+ * A variant of PredictorGraph for when only a simcodeid is available.
+ */
+export function PredictorGraphFromCodeId({
+  simCodeId,
+}: { simCodeId: number | null }) {
+  const q = useAppSelector((state) => selectSimCodeModel(state, simCodeId));
+  const simCodeModel = q?.simCodeModel;
+  const branchInfo = simCodeModel?.branchInfo;
+
+  if (branchInfo === undefined || branchInfo === null) {
+    return null;
   }
-  return 'transparent';
-}
 
-type IconProps = {
-  state: number;
-};
-
-function TwoBitIcon({ state }: IconProps) {
-  return (
-    <svg
-      viewBox='0 0 100 100'
-      xmlns='http://www.w3.org/2000/svg'
-      className='pointer-events-none'
-    >
-      <title>Predictor state {state}</title>
-      <line x1='30' y1='18' x2='70' y2='18' stroke='black' strokeWidth='5' />
-      <circle
-        cx='18'
-        cy='18'
-        r='15'
-        fill={fill(0, state)}
-        stroke='black'
-        strokeWidth='5'
-      />
-      <line x1='72' y1='28' x2='28' y2='72' stroke='black' strokeWidth='5' />
-      <circle
-        cx='82'
-        cy='18'
-        r='15'
-        fill={fill(1, state)}
-        stroke='black'
-        strokeWidth='5'
-      />
-
-      <line x1='30' y1='82' x2='70' y2='82' stroke='black' strokeWidth='5' />
-      <circle
-        cx='18'
-        cy='82'
-        r='15'
-        fill={fill(2, state)}
-        stroke='black'
-        strokeWidth='5'
-      />
-      <circle
-        cx='82'
-        cy='82'
-        r='15'
-        fill={fill(3, state)}
-        stroke='black'
-        strokeWidth='5'
-      />
-    </svg>
-  );
-}
-
-function OneBitIcon({ state }: IconProps) {
-  return (
-    <svg
-      viewBox='0 0 100 100'
-      xmlns='http://www.w3.org/2000/svg'
-      className='pointer-events-none'
-    >
-      <title>Predictor state {state}</title>
-      <line x1='30' y1='50' x2='70' y2='50' stroke='black' strokeWidth='5' />
-      <circle
-        cx='18'
-        cy='50'
-        r='15'
-        fill={fill(0, state)}
-        stroke='black'
-        strokeWidth='5'
-      />
-      <circle
-        cx='82'
-        cy='50'
-        r='15'
-        fill={fill(1, state)}
-        stroke='black'
-        strokeWidth='5'
-      />
-    </svg>
-  );
+  return <PredictorGraph branchInfo={branchInfo} />;
 }

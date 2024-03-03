@@ -486,6 +486,7 @@ export default function IsaSettingsForm({
                   <div className='flex gap-2 items-center m-2'>
                     <input
                       {...register('useGlobalHistory')}
+                      id='useGlobalHistory'
                       type='checkbox'
                       className='m-2'
                     />

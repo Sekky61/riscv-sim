@@ -332,7 +332,7 @@ export interface SimCodeModel {
   commitId: number;
   isFinished: boolean;
   hasFailed: boolean;
-  branchInfo?: BranchInfo;
+  branchInfo: BranchInfo | null;
   isValid: boolean;
   isBusy: boolean;
   isSpeculative: boolean;

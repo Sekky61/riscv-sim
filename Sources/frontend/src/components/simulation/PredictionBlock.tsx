@@ -29,6 +29,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+'use client';
+
 import {
   selectBranchTargetBuffer,
   selectFetch,
@@ -39,39 +41,27 @@ import {
 import { useAppSelector } from '@/lib/redux/hooks';
 
 import Block from '@/components/simulation/Block';
-import { hexPadEven } from '@/lib/utils';
 import type { GlobalHistoryRegister } from '@/lib/types/cpuApi';
+import {
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/base/ui/dialog';
+import { PredictorIcon } from '@/components/prediction/PredictorIcon';
 
-export default function BranchBlock() {
-  const btb = useAppSelector(selectBranchTargetBuffer);
+export default function PredictionBlock() {
   const ghr = useAppSelector(selectGlobalHistoryRegister);
-  const pht = useAppSelector(selectPatternHistoryTable);
-  const fetch = useAppSelector(selectFetch);
   const gshare = useAppSelector(selectGShare);
 
-  if (!btb || !ghr || !pht || !fetch || !gshare) return null;
-
-  const pc = fetch.pc;
-  const addresses = [];
-  for (let i = 0; i < fetch.numberOfWays; i++) {
-    addresses.push(pc + i * 4);
-  }
-
-  // TODO: target label if exists
-  const btbEntries: React.ReactNode[] = [];
-  for (const address of addresses) {
-    const entry = btb.buffer[address];
-    if (!entry) continue;
-    btbEntries.push(
-      <div key={address} className='instruction-bubble contents'>
-        <div>{hexPadEven(address)}</div>
-        <div>{hexPadEven(entry.target)}</div>
-      </div>,
-    );
-  }
+  if (!ghr || !gshare) return null;
 
   return (
-    <Block title='Branch Block' className='h-28 w-block'>
+    <Block
+      title='Prediction Block'
+      className='w-block'
+      detailDialog={<BranchDetailDialog />}
+    >
       {gshare.useGlobalHistory && <GhrVector ghr={ghr} />}
     </Block>
   );
@@ -105,5 +95,52 @@ function GhrVector({ ghr }: GhrVectorProps) {
         ))}
       </div>
     </div>
+  );
+}
+
+function BranchDetailDialog() {
+  const btb = useAppSelector(selectBranchTargetBuffer);
+  const ghr = useAppSelector(selectGlobalHistoryRegister);
+  const pht = useAppSelector(selectPatternHistoryTable);
+  const fetch = useAppSelector(selectFetch);
+  const gshare = useAppSelector(selectGShare);
+
+  if (!btb || !ghr || !pht || !fetch || !gshare) return null;
+
+  // array of size, all elements pointing to defaultPredictor
+  const predictors = Array.from(
+    { length: pht.size },
+    () => pht.defaultPredictor,
+  );
+  for (const [key, value] of Object.entries(pht.predictorMap)) {
+    predictors[key as unknown as number] = value;
+  }
+
+  return (
+    <DialogContent>
+      <DialogHeader>
+        <DialogTitle>Branch Prediction</DialogTitle>
+        <DialogDescription>
+          Detailed view of the branch predictor
+        </DialogDescription>
+      </DialogHeader>
+      <div>
+        <div
+          className='grid gap-4'
+          style={{
+            gridTemplateColumns: 'repeat(10, 2.5rem)',
+          }}
+        >
+          {predictors.map((predictor, i) => (
+            <div key={i}>
+              <PredictorIcon
+                state={predictor.state}
+                width={predictor.bitWidth}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+    </DialogContent>
   );
 }

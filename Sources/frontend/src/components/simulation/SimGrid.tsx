@@ -32,7 +32,7 @@
 'use client';
 
 import { HighlightProvider } from '@/components/HighlightProvider';
-import BranchBlock from '@/components/simulation/BranchBlock';
+import PredictionBlock from '@/components/simulation/PredictionBlock';
 import CacheBlock from '@/components/simulation/CacheBlock';
 import DecodeBlock from '@/components/simulation/DecodeBlock';
 import FetchBlock from '@/components/simulation/FetchBlock';
@@ -51,7 +51,7 @@ export function SimGrid() {
         <div className='top-grid'>
           <Program />
           <div className='block-stack'>
-            <BranchBlock />
+            <PredictionBlock />
             <FetchBlock />
             <DecodeBlock />
           </div>
