@@ -72,7 +72,7 @@ export default function EditorBar({
   };
 
   return (
-    <div className='p-0.5 pl-3 text-sm flex flex-wrap items-center gap-1 bg-[#f5f5f5] sticky top-0 z-10'>
+    <div className='p-0.5 pl-3 text-sm flex flex-wrap items-center gap-1 accent-bg sticky top-0 z-10'>
       <div className='py-1 px-0.5 font-bold'>{editorName}</div>
       <label>
         <Button

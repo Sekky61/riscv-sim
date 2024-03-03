@@ -163,7 +163,7 @@ const ScaleButtons = ({ scaleUp, scaleDown }: ScaleButtonsProps) => {
         shortCut='ctrl-+'
         shortCutOptions={{ combinationKey: '-', preventDefault: true }}
         clickCallback={scaleUp}
-        className='bg-gray-100 rounded-full drop-shadow'
+        className='neutral-bg rounded-full drop-shadow'
         description='Zoom in'
       >
         <ZoomIn strokeWidth={1.5} />
@@ -172,7 +172,7 @@ const ScaleButtons = ({ scaleUp, scaleDown }: ScaleButtonsProps) => {
         shortCut='ctrl+-'
         shortCutOptions={{ preventDefault: true }}
         clickCallback={scaleDown}
-        className='bg-gray-100 rounded-full drop-shadow'
+        className='neutral-bg rounded-full drop-shadow'
         description='Zoom out'
       >
         <ZoomOut strokeWidth={1.5} />

@@ -86,7 +86,7 @@ export default function Timeline({ className = '' }: TimelineProps) {
     <div className={cls} data-state={state} data-reset={false}>
       <div
         className={clsx(
-          'controls rounded-full h-full box-content border bg-gray-100 flex flex-row-reverse justify-end items-center',
+          'controls rounded-full h-full box-content border accent-bg flex flex-row-reverse justify-end items-center',
           simulationStatus === 'loading' && 'loading-border',
         )}
       >

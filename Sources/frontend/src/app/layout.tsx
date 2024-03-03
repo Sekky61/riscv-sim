@@ -39,6 +39,7 @@ import { cn } from '@/lib/utils';
 import { Toaster } from '@/components/base/ui/sonner';
 import { TooltipProvider } from '@/components/base/ui/tooltip';
 import PersistedStoreProvider from '@/lib/redux/PersistedStoreProvider';
+import { ThemeProvider } from '@/components/ThemeProvider';
 
 /**
  * Font loading by next.js.
@@ -75,12 +76,19 @@ export default async function RootLayout({
           fontSans.variable,
         )}
       >
-        <PersistedStoreProvider>
-          <TooltipProvider delayDuration={0}>
-            <div className='flex h-screen max-h-screen'>{children}</div>
-            <Toaster position='top-right' />
-          </TooltipProvider>
-        </PersistedStoreProvider>
+        <ThemeProvider
+          attribute='class'
+          defaultTheme='system'
+          enableSystem
+          disableTransitionOnChange
+        >
+          <PersistedStoreProvider>
+            <TooltipProvider delayDuration={0}>
+              <div className='flex h-screen max-h-screen'>{children}</div>
+              <Toaster position='top-right' />
+            </TooltipProvider>
+          </PersistedStoreProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

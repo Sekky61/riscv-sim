@@ -31,6 +31,7 @@
 
 'use client';
 
+import { ModeToggle } from '@/components/ModeToggle';
 import { Button } from '@/components/base/ui/button';
 import {
   Card,
@@ -110,6 +111,19 @@ export function SettingsForm() {
               <Button onClick={saveCode}>Export Program in Assembly</Button>
               <Button onClick={saveMemory}>Export Memory Objects</Button>
             </div>
+          </CardContent>
+        </Card>
+      </div>
+      <div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Light/Dark Mode</CardTitle>
+            <CardDescription>
+              You can toggle the light/dark mode of the application.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ModeToggle />
           </CardContent>
         </Card>
       </div>

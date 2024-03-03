@@ -34,7 +34,7 @@ import { fontFamily } from 'tailwindcss/defaultTheme';
 
 export default {
   content: ['./src/**/*.{js,jsx,ts,tsx}'],
-  darkMode: ['class'],
+  darkMode: ['selector'],
   theme: {
     extend: {
       fontFamily: {
@@ -77,7 +77,7 @@ export default {
         dark: '#222222',
         neutral: {
           10: '#1a1a1a',
-          99: '#fcfcfc',
+          99: '#fdfdfd',
         },
         important: '#ff7171',
       },

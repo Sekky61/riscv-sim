@@ -74,7 +74,7 @@ export function InstructionListDisplay<T>({
     >
       {legend && (
         <div
-          className='grid grid-cols-subgrid sticky top-0 bg-white'
+          className='grid grid-cols-subgrid sticky top-0 neutral-bg'
           style={{
             gridColumn: `1 / span ${columns}`,
             alignSelf: 'start',
