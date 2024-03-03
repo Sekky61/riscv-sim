@@ -41,6 +41,7 @@ import {
 
 import {
   reloadSimulation,
+  selectSimulationStatus,
   selectStopReason,
   selectTick,
   simStepBackward,
@@ -63,6 +64,7 @@ export default function Timeline({ className = '' }: TimelineProps) {
   const dispatch = useAppDispatch();
   const tick = useAppSelector(selectTick);
   const stopReason = useAppSelector(selectStopReason);
+  const simulationStatus = useAppSelector(selectSimulationStatus);
 
   const cls = clsx('timeline-grid drop-shadow', className);
 
@@ -78,10 +80,16 @@ export default function Timeline({ className = '' }: TimelineProps) {
   }
 
   // The .controls is rotated, see the css file.
+  // Loading border shows a loading animation while the simulation is loading
   // todo make buttons unselectable in certain states
   return (
     <div className={cls} data-state={state} data-reset={false}>
-      <div className='controls rounded-full h-full box-content border bg-gray-100 flex flex-row-reverse justify-end items-center'>
+      <div
+        className={clsx(
+          'controls rounded-full h-full box-content border bg-gray-100 flex flex-row-reverse justify-end items-center',
+          simulationStatus === 'loading' && 'loading-border',
+        )}
+      >
         <IconButton
           shortCut='left'
           clickCallback={() => dispatch(simStepBackward())}

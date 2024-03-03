@@ -86,6 +86,10 @@ interface CpuSlice {
    * Descriptions of all instructions in the program. Loaded from the server separately, as a static resource.
    */
   instructionFunctionModels: Record<Reference, InstructionFunctionModel>;
+  /**
+   * State of request to the simulation API
+   */
+  simulationStatus: 'idle' | 'loading' | 'failed';
 }
 
 /**
@@ -95,6 +99,7 @@ export const cpuInitialState: CpuSlice = {
   state: null,
   stopReason: 'kNotStopped',
   instructionFunctionModels: {},
+  simulationStatus: 'idle',
 };
 
 /**
@@ -239,15 +244,17 @@ export const cpuSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(callSimulation.fulfilled, (state, action) => {
+        state.simulationStatus = 'idle';
         state.state = action.payload.state;
         state.stopReason = action.payload.stopReason;
       })
       .addCase(callSimulation.rejected, (state, _action) => {
+        state.simulationStatus = 'failed';
         state.state = null;
         state.stopReason = 'kNotStopped';
       })
-      .addCase(callSimulation.pending, (_state, _action) => {
-        // nothing
+      .addCase(callSimulation.pending, (state, _action) => {
+        state.simulationStatus = 'loading';
       })
       .addCase(loadFunctionModels.fulfilled, (state, action) => {
         state.instructionFunctionModels = action.payload.models;
@@ -270,6 +277,8 @@ export const cpuSlice = createSlice({
 export const selectCpu = (state: RootState) => state.cpu.state;
 export const selectTick = (state: RootState) => state.cpu.state?.tick ?? 0;
 export const selectStopReason = (state: RootState) => state.cpu.stopReason;
+export const selectSimulationStatus = (state: RootState) =>
+  state.cpu.simulationStatus;
 
 export const selectAllInstructionFunctionModels = (state: RootState) =>
   state.cpu.instructionFunctionModels;
