@@ -33,15 +33,30 @@ import { CodeExample } from '@/lib/types/codeExamples';
 import { promises as fs } from 'fs';
 import path from 'path';
 
-export async function loadCodeExamples(): Promise<CodeExample[]> {
+/**
+ * Load a JSON file from the "public/json" directory. Can only be done server-side.
+ */
+async function loadPublicJsonFile<T>(fileName: string): Promise<T> {
   // Find the absolute path of the "json" directory
   const jsonDirectory = path.join(process.cwd(), 'public/json');
   // Read the "data.json" file
   const fileContents = await fs.readFile(
-    `${jsonDirectory}/codeExamples.json`,
+    `${jsonDirectory}/${fileName}`,
     'utf8',
   );
+  return JSON.parse(fileContents);
+}
 
-  const json = JSON.parse(fileContents);
-  return json;
+/**
+ * Load the code examples from the "public/json/codeExamples.json" file, parse it and return the data.
+ */
+export async function loadCodeExamples(): Promise<CodeExample[]> {
+  return loadPublicJsonFile('codeExamples.json');
+}
+
+/**
+ * Load the block descriptions from the "public/json/blockDescriptions.json" file, parse it and return the data.
+ */
+export async function loadBlockDescriptions(): Promise<Record<string, string>> {
+  return loadPublicJsonFile('blockDescriptions.json');
 }

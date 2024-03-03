@@ -255,3 +255,17 @@ export function dataTypeToSize(dataType: DataTypeEnum): number {
 export function pluralize(word: string, number: number): string {
   return number === 1 ? word : `${word}s`;
 }
+
+/**
+ * Format the fraction as a percentage. Returns 0% for 0 denominator.
+ */
+export function formatFracPercentage(
+  numerator: number,
+  denominator: number,
+): string {
+  let frac = 0;
+  if (denominator !== 0) {
+    frac = (numerator / denominator) * 100;
+  }
+  return `${frac.toFixed(2)}%`;
+}

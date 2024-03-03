@@ -79,6 +79,7 @@ export default {
           10: '#1a1a1a',
           99: '#fcfcfc',
         },
+        important: '#ff7171',
       },
       borderRadius: {
         lg: 'var(--radius)',

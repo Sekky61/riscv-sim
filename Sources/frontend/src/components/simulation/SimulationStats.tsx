@@ -65,19 +65,10 @@ import {
   InstructionStats,
   SimulationStatistics,
 } from '@/lib/types/cpuApi';
+import { formatFracPercentage } from '@/lib/utils';
 import Link from 'next/link';
 import { useState } from 'react';
 import { PieChart } from 'react-minimal-pie-chart';
-
-/**
- * @return The ratio in percentage, formatted. Zero if the denominator is zero.
- */
-function formatRatio(numerator: number, denominator: number) {
-  if (denominator === 0) {
-    return '0%';
-  }
-  return `${((numerator / denominator) * 100).toFixed(2)}%`;
-}
 
 /**
  * TODO does not show (due to the null check) after reloading the stats page
@@ -243,7 +234,7 @@ function InstructionStatsCard({
               // TODO hide stat for non-memory instructions
             }
             const heatCoef = instructionStat / max;
-            const percentage = formatRatio(instructionStat, max);
+            const percentage = formatFracPercentage(instructionStat, max);
             return (
               <div
                 className='flex'
@@ -403,7 +394,7 @@ function FuStatsDash({ stats, totalCycles }: FuStatsProps) {
                   <TableCell className='font-medium'>{name}</TableCell>
                   <TableCell>{stat.busyCycles}</TableCell>
                   <TableCell>
-                    {formatRatio(stat.busyCycles, totalCycles)}
+                    {formatFracPercentage(stat.busyCycles, totalCycles)}
                   </TableCell>
                 </TableRow>
               );
@@ -429,11 +420,11 @@ function InstructionMixDash({ mix, title, description }: InstructionMixProps) {
     mix.memory +
     mix.other;
   const percentages = {
-    intArithmetic: formatRatio(mix.intArithmetic, total),
-    floatArithmetic: formatRatio(mix.floatArithmetic, total),
-    branch: formatRatio(mix.branch, total),
-    memory: formatRatio(mix.memory, total),
-    other: formatRatio(mix.other, total),
+    intArithmetic: formatFracPercentage(mix.intArithmetic, total),
+    floatArithmetic: formatFracPercentage(mix.floatArithmetic, total),
+    branch: formatFracPercentage(mix.branch, total),
+    memory: formatFracPercentage(mix.memory, total),
+    other: formatFracPercentage(mix.other, total),
   };
 
   return (

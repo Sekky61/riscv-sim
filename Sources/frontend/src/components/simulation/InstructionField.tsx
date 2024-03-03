@@ -55,11 +55,13 @@ import {
 } from '@/components/base/ui/tooltip';
 import ValueInformation from '@/components/simulation/ValueTooltip';
 import {
+  formatFracPercentage,
   hexPadEven,
   instructionTypeName,
   isValidRegisterValue,
 } from '@/lib/utils';
 import { useHighlight } from '@/components/HighlightProvider';
+import { BranchTable } from '@/components/prediction/BranchTable';
 
 export type InstructionFieldProps = {
   instructionId: Reference | null;
@@ -142,11 +144,12 @@ export function InstructionDetailPopup({
   const isBranch = functionModel.instructionType === 'kJumpbranch';
   const pc = inputCodeModel.codeId * 4;
 
-  // This can be null because of NOP
-  const instructionStats = statistics.instructionStats[simCodeId] ?? {
-    committedCount: 1,
-    correctlyPredicted: 0,
-  };
+  const instructionStats = statistics.instructionStats[inputCodeModel.codeId];
+
+  // This can be null because of NOP, so clicking NOP does not show the dialog
+  if (!instructionStats) {
+    return null;
+  }
 
   return (
     <DialogContent className='max-w-4xl'>
@@ -195,6 +198,10 @@ export function InstructionDetailPopup({
               Address: {hexPadEven(pc)} ({pc})
             </li>
             <li>Committed: {instructionStats.committedCount} times</li>
+            <li>
+              Exception Raised: {simCodeModel.exception ? 'Yes' : 'No'}
+              {simCodeModel.exception?.exceptionMessage}
+            </li>
           </ul>
           <h2 className='text-xl mt-2'>Timestamps</h2>
           <table>
@@ -261,34 +268,38 @@ export function InstructionDetailPopup({
           {isBranch && (
             <>
               <h2 className='text-xl mt-2'>Branch</h2>
-              <ul>
-                <li>
-                  {functionModel.unconditionalJump
-                    ? 'Unconditional'
-                    : 'Conditional'}
-                </li>
-                <li>
-                  Branch Result:{' '}
-                  {simCodeModel.branchInfo?.predictorVerdict
-                    ? 'Branch'
-                    : 'Do not branch'}
-                </li>
-                <li>
-                  Prediction target:{' '}
-                  {`${hexPadEven(
-                    simCodeModel.branchInfo?.branchTarget ?? 0,
-                  )} (${simCodeModel.branchInfo?.branchTarget})`}
-                </li>
-                <li>Prediction Accuracy: {instructionStats.committedCount}</li>{' '}
-                {/* TODO */}
-              </ul>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Flag</th>
+                    <th>Value</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Branch</td>
+                    <td>
+                      {functionModel.unconditionalJump
+                        ? 'Unconditional'
+                        : 'Conditional'}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Prediction Accuracy</td>
+                    <td>
+                      {formatFracPercentage(
+                        instructionStats.correctlyPredicted,
+                        instructionStats.committedCount,
+                      )}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+              {simCodeModel.branchInfo && (
+                <BranchTable branchInfo={simCodeModel.branchInfo} />
+              )}
             </>
           )}
-          <h2 className='text-xl mt-2'>Exception Raised</h2>
-          <p>
-            {simCodeModel.exception ? 'Yes' : 'No'}
-            {simCodeModel.exception?.exceptionMessage}
-          </p>
         </div>
       </div>
     </DialogContent>
