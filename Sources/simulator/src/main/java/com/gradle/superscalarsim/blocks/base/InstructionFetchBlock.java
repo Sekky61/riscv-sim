@@ -203,7 +203,7 @@ public class InstructionFetchBlock implements AbstractBlock
           for (int j = i; j < numberOfWays; j++)
           {
             SimCodeModel nopCodeModel = this.simCodeModelFactory.createInstance(instructionMemoryBlock.getNop(),
-                                                                                simCodeId, cycle);
+                                                                                simCodeId + j, cycle);
             fetchedCode.add(nopCodeModel);
           }
           break;

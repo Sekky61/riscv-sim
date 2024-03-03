@@ -35,7 +35,6 @@ import { Button } from '@/components/base/ui/button';
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from '@/components/base/ui/tooltip';
 import { COMPILE_SHORTCUT } from '@/components/shortcuts/CompilerShortcuts';
@@ -76,20 +75,18 @@ export function CompileButton() {
 
   const statusStyle = statusToClass(compileStatus);
   return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            className={clsx(statusStyle, 'ring flex gap-2')}
-            onClick={handleCompile}
-          >
-            <Hammer size={20} strokeWidth={1.75} />
-            Compile
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>{COMPILE_SHORTCUT} to Compile</TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button
+          className={clsx(statusStyle, 'ring flex gap-2')}
+          onClick={handleCompile}
+        >
+          <Hammer size={20} strokeWidth={1.75} />
+          Compile
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent>{COMPILE_SHORTCUT} to Compile</TooltipContent>
+    </Tooltip>
   );
 }
 

@@ -361,9 +361,10 @@ export interface InstructionException {
 }
 
 export interface GShareUnit {
+  size: number;
+  useGlobalHistory: boolean;
   patternHistoryTable?: PatternHistoryTable;
   globalHistoryRegister?: GlobalHistoryRegister;
-  size: number;
 }
 
 export interface UnifiedRegisterFileBlock {

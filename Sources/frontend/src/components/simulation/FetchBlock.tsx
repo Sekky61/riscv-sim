@@ -109,7 +109,7 @@ export default function FetchBlock() {
         totalSize={fetchObject.numberOfWays}
         columns={2}
         instructionRenderer={(codeModel, i) => (
-          <Fragment key={`instr_${i}`}>
+          <Fragment key={`instr_${codeModel}_${i}`}>
             <InstructionField instructionId={codeModel} />
             <div>
               <PredictorGraph simCodeId={codeModel} />

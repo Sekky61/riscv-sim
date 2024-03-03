@@ -32,6 +32,7 @@
 import {
   selectBranchTargetBuffer,
   selectFetch,
+  selectGShare,
   selectGlobalHistoryRegister,
   selectPatternHistoryTable,
 } from '@/lib/redux/cpustateSlice';
@@ -39,14 +40,16 @@ import { useAppSelector } from '@/lib/redux/hooks';
 
 import Block from '@/components/simulation/Block';
 import { hexPadEven } from '@/lib/utils';
+import type { GlobalHistoryRegister } from '@/lib/types/cpuApi';
 
 export default function BranchBlock() {
   const btb = useAppSelector(selectBranchTargetBuffer);
   const ghr = useAppSelector(selectGlobalHistoryRegister);
   const pht = useAppSelector(selectPatternHistoryTable);
   const fetch = useAppSelector(selectFetch);
+  const gshare = useAppSelector(selectGShare);
 
-  if (!btb || !ghr || !pht || !fetch) return null;
+  if (!btb || !ghr || !pht || !fetch || !gshare) return null;
 
   const pc = fetch.pc;
   const addresses = [];
@@ -69,15 +72,38 @@ export default function BranchBlock() {
 
   return (
     <Block title='Branch Block' className='h-28 w-block'>
-      {btbEntries.length > 0 ? (
-        <div className='grid grid-cols-2'>
-          <div>Address</div>
-          <div>Target</div>
-          {btbEntries}
-        </div>
-      ) : (
-        <div className='text-sm text-gray-500'>No relevant entries</div>
-      )}
+      {gshare.useGlobalHistory && <GhrVector ghr={ghr} />}
     </Block>
+  );
+}
+
+type GhrVectorProps = {
+  ghr: GlobalHistoryRegister;
+};
+
+function GhrVector({ ghr }: GhrVectorProps) {
+  const latest = ghr.shiftRegisters[ghr.shiftRegisters.length - 1];
+
+  if (!latest) {
+    throw new Error('GHR error state');
+  }
+
+  // Take the last size bits
+  const vector = latest.shiftRegister
+    .toString(2)
+    .padStart(ghr.size, '0')
+    .split('');
+
+  return (
+    <div className='flex gap-2'>
+      <span>GHR</span>
+      <div className='flex items-center border font-mono text-xs divide-x justify-start rounded-sm'>
+        {vector.map((bit, i) => (
+          <span key={i} className='py-0.5 px-1 text-center'>
+            {bit}
+          </span>
+        ))}
+      </div>
+    </div>
   );
 }

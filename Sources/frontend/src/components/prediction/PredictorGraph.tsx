@@ -30,7 +30,6 @@
  */
 
 import {
-  selectPatternHistoryTable,
   selectPredictorWidth,
   selectSimCodeModel,
 } from '@/lib/redux/cpustateSlice';
@@ -40,7 +39,6 @@ import clsx from 'clsx';
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from '@/components/base/ui/tooltip';
 import { BranchTable } from '@/components/prediction/BranchTable';
@@ -84,36 +82,30 @@ export function PredictorGraph({ simCodeId }: PredictorGraphProps) {
   }
 
   return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <div
-            className={clsx(
-              'instruction-bubble w-8 p-1 ring-2 ring-inset',
-              verdict && 'ring-green-300',
-              !verdict && 'ring-red-300',
-            )}
-          >
-            {icon}
-          </div>
-        </TooltipTrigger>
-        <TooltipContent>
-          <BranchTable
-            branchInfo={branchInfo}
-            predictorWidth={predictorStateWidth}
-          />
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <div
+          className={clsx(
+            'instruction-bubble w-8 p-1 ring-2 ring-inset',
+            verdict && 'ring-green-300',
+            !verdict && 'ring-red-300',
+          )}
+        >
+          {icon}
+        </div>
+      </TooltipTrigger>
+      <TooltipContent>
+        <BranchTable branchInfo={branchInfo} />
+      </TooltipContent>
+    </Tooltip>
   );
 }
 
 function fill(i: number, active: number) {
   if (i === active) {
     return '#ff7171';
-  } else {
-    return 'transparent';
   }
+  return 'transparent';
 }
 
 type IconProps = {

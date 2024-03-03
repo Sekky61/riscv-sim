@@ -559,6 +559,8 @@ export const selectPredictor = (state: RootState, pc: number) =>
   state.cpu.state?.patternHistoryTable.predictorMap[pc] ??
   state.cpu.state?.patternHistoryTable.defaultPredictor;
 
+export const selectGShare = (state: RootState) => state.cpu.state?.gShareUnit;
+
 // Issue window blocks
 
 export const selectAluIssueWindowBlock = (state: RootState) =>
