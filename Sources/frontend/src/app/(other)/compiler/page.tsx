@@ -33,11 +33,10 @@
 
 import Head from 'next/head';
 
-import AsmDisplay from '@/components/codeEditor/AsmDisplay';
-import CCodeInput from '@/components/codeEditor/CCodeInput';
-import CompileOptions from '@/components/codeEditor/CompileOptions';
-import CompilerShortcuts from '@/components/shortcuts/CompilerShortcuts';
-import { LineHighlightProvider } from '@/components/codeEditor/LineHighlightContext';
+import { AsmDisplay } from '@/app/(other)/compiler/AsmDisplay';
+import { CCodeInput } from '@/app/(other)/compiler/CCodeInput';
+import { CompileOptions } from '@/app/(other)/compiler/CompileOptions';
+import { LineHighlightProvider } from '@/app/(other)/compiler/LineHighlightContext';
 
 export default function HomePage() {
   // Note: min-h-0 fixes overflow of the flex container
@@ -56,7 +55,6 @@ export default function HomePage() {
           </LineHighlightProvider>
         </div>
       </div>
-      <CompilerShortcuts />
     </main>
   );
 }

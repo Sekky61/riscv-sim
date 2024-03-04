@@ -58,9 +58,9 @@ import {
 } from '@/lib/redux/compilerSlice';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 
-import EditorBar from '@/components/codeEditor/EditorBar';
-import { StatusIcon } from '@/components/codeEditor/StatusIcon';
-import { useLineHighlight } from '@/components/codeEditor/LineHighlightContext';
+import EditorBar from '@/app/(other)/compiler/EditorBar';
+import { StatusIcon } from '@/app/(other)/compiler/StatusIcon';
+import { useLineHighlight } from '@/app/(other)/compiler/LineHighlightContext';
 
 /**
  * The base theme for the editor.
@@ -87,7 +87,7 @@ const _ = 'cm-line cm-focused';
  * The C code editor.
  * Communicates with the compilerSlice.
  */
-export default function CCodeInput() {
+export function CCodeInput() {
   const dispatch = useAppDispatch();
   const dirty = useAppSelector(selectDirty);
   const code = useAppSelector((state) => state.compiler.cCode);

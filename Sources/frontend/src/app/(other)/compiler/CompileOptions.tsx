@@ -29,9 +29,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { ExamplesButton } from '@/components/codeEditor/ExamplesButton';
-import { OptimizeRadio } from '@/components/codeEditor/OptimizeRadio';
-import { CompileButton } from '@/components/codeEditor/CompileButton';
+import { ExamplesButton } from '@/app/(other)/compiler/ExamplesButton';
+import { OptimizeRadio } from '@/app/(other)/compiler/OptimizeRadio';
+import { CompileButton } from '@/app/(other)/compiler/CompileButton';
 import Link from 'next/link';
 import { loadCodeExamples } from '@/lib/staticLoaders';
 
@@ -40,7 +40,7 @@ import { loadCodeExamples } from '@/lib/staticLoaders';
  * Contains the compile button, examples and optimization flags.
  * Examples are loaded on the server side.
  */
-export default async function CompileOptions() {
+export async function CompileOptions() {
   const examples = await loadCodeExamples();
   return (
     <div className='flex flex-col items-stretch gap-4'>

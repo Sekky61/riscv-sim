@@ -37,7 +37,6 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/base/ui/tooltip';
-import { COMPILE_SHORTCUT } from '@/components/shortcuts/CompilerShortcuts';
 import {
   callCompiler,
   selectAsmManuallyEdited,
@@ -46,6 +45,8 @@ import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import clsx from 'clsx';
 import { Hammer } from 'lucide-react';
 import { useHotkeys } from 'react-hotkeys-hook';
+
+const COMPILE_SHORTCUT = 'ctrl+enter';
 
 /**
  * The compile button. It calls the compiler and mutates the state with the result.

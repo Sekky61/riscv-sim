@@ -66,8 +66,8 @@ import {
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 
 import { Button } from '@/components/base/ui/button';
-import EditorBar from '@/components/codeEditor/EditorBar';
-import { StatusIcon } from '@/components/codeEditor/StatusIcon';
+import EditorBar from '@/app/(other)/compiler/EditorBar';
+import { StatusIcon } from '@/app/(other)/compiler/StatusIcon';
 import clsx from 'clsx';
 import { selectAllInstructionFunctionModels } from '@/lib/redux/cpustateSlice';
 import {
@@ -80,7 +80,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/base/ui/dropdown-menu';
 import { Play } from 'lucide-react';
-import { useLineHighlight } from '@/components/codeEditor/LineHighlightContext';
+import { useLineHighlight } from '@/app/(other)/compiler/LineHighlightContext';
 
 /**
  * The base theme for the editor.
@@ -107,7 +107,7 @@ const baseTheme = EditorView.baseTheme({
  *
  * TODO: debounce typing
  */
-export default function AsmDisplay() {
+export function AsmDisplay() {
   const dispatch = useAppDispatch();
   const asm = useAppSelector(selectAsmCode);
   const cLineMap = useAppSelector(selectAsmMappings);
