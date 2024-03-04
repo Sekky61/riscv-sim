@@ -84,7 +84,11 @@ import {
 } from '@/components/base/ui/tooltip';
 import { Textarea } from '@/components/base/ui/textarea';
 import { Upload } from 'lucide-react';
-import { dataTypeToSize, pluralize } from '@/lib/utils';
+import {
+  dataTypeToSize,
+  memoryLocationSizeInElements,
+  pluralize,
+} from '@/lib/utils';
 
 interface MemoryFormProps {
   /**
@@ -219,16 +223,7 @@ export default function MemoryForm({
     }
   };
 
-  let dataLengthElements = 0;
-  switch (watchFields.data.kind) {
-    case 'data':
-      dataLengthElements = watchFields.data.data.length;
-      break;
-    case 'constant': // fallthrough
-    case 'random':
-      dataLengthElements = watchFields.data.size;
-      break;
-  }
+  const dataLengthElements = memoryLocationSizeInElements(watchFields);
 
   const dataLengthBytes =
     dataLengthElements * dataTypeToSize(watchFields.dataType);

@@ -34,6 +34,7 @@ import { OptimizeRadio } from '@/app/(other)/compiler/OptimizeRadio';
 import { CompileButton } from '@/app/(other)/compiler/CompileButton';
 import Link from 'next/link';
 import { loadCodeExamples } from '@/lib/staticLoaders';
+import { MemorySummary } from '@/app/(other)/compiler/MemorySummary';
 
 /**
  * The compile options component. On the left side to the editor.
@@ -50,6 +51,7 @@ export async function CompileOptions() {
       </div>
       <CompileButton />
       <ExamplesButton examples={examples} />
+      <MemorySummary />
       <Link className='link' href='/help#code'>
         Tips for writing code
       </Link>

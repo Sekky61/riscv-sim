@@ -39,6 +39,7 @@ import {
   RegisterModel,
   StopReason,
 } from '@/lib/types/cpuApi';
+import { MemoryLocationApi, dataTypes, dataTypesText } from '@/lib/forms/Isa';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -247,6 +248,33 @@ export function dataTypeToSize(dataType: DataTypeEnum): number {
     default:
       return unreachable();
   }
+}
+
+/**
+ * Convert the data type to human-readable string.
+ */
+export function dataTypeToText(dataType: DataTypeEnum): string {
+  const i = dataTypes.indexOf(dataType);
+  return dataTypesText[i] ?? dataType;
+}
+
+/**
+ * Get the size of a memory location in elements
+ */
+export function memoryLocationSizeInElements(
+  location: MemoryLocationApi,
+): number {
+  let dataLengthElements = 0;
+  switch (location.data.kind) {
+    case 'data':
+      dataLengthElements = location.data.data.length;
+      break;
+    case 'constant': // fallthrough
+    case 'random':
+      dataLengthElements = location.data.size;
+      break;
+  }
+  return dataLengthElements;
 }
 
 /**

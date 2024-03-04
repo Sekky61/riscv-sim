@@ -1,14 +1,14 @@
 /**
- * @file    ExamplesButton.tsx
+ * @file    MemorySummary.tsx
  *
  * @author  Michal Majer
  *          Faculty of Information Technology
  *          Brno University of Technology
  *          xmajer21@stud.fit.vutbr.cz
  *
- * @brief   The button for the examples. Pop up.
+ * @brief   Memory summary component
  *
- * @date    26 February 2024, 21:00 (created)
+ * @date    04 March 2024, 13:00 (created)
  *
  * @section Licence
  * This file is part of the Superscalar simulator app
@@ -31,6 +31,8 @@
 
 'use client';
 
+import { useAppSelector } from '@/lib/redux/hooks';
+import { selectActiveConfig } from '@/lib/redux/isaSlice';
 import { Button } from '@/components/base/ui/button';
 import {
   DropdownMenu,
@@ -40,50 +42,41 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/base/ui/dropdown-menu';
-import { openExampleAndCompile } from '@/lib/redux/compilerSlice';
-import { useAppDispatch } from '@/lib/redux/hooks';
-import { CodeExample } from '@/lib/types/codeExamples';
-import { FileCode2 } from 'lucide-react';
+import { dataTypeToText, memoryLocationSizeInElements } from '@/lib/utils';
+import { MemoryStick } from 'lucide-react';
 
 /**
- * The button to reveal available examples and load them into the editor.
- * The examples are loaded after the page load (from client).
- * The examples are fetched from the Next.js backend, not Java simulator backend.
- * After selecting an example, it is loaded into the editor and compiled (if the code is C).
+ * Expandable memory summary component.
+ * Shows basic information about defined memory elements.
  */
-export function ExamplesButton({ examples }: { examples: CodeExample[] }) {
-  const dispatch = useAppDispatch();
-
-  if (!examples) {
-    throw new Error('Examples not loaded');
-  }
+export function MemorySummary() {
+  const activeIsa = useAppSelector(selectActiveConfig);
+  const memoryLocations = activeIsa?.memoryLocations;
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant='outline' className='flex gap-2'>
-          <FileCode2 size={20} strokeWidth={1.75} />
-          Load Example
+          <MemoryStick size={20} strokeWidth={1.75} />
+          Show Memory
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent side='right'>
-        <DropdownMenuLabel>Examples</DropdownMenuLabel>
+        <DropdownMenuLabel>Memory Locations</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        {examples.map((example) => {
+        {memoryLocations.map((loc) => {
+          const elements = memoryLocationSizeInElements(loc);
           // Wrapped in two divs, to not lose hover when the mouse moves over
           return (
-            <DropdownMenuItem
-              key={example.name}
-              onClick={() => {
-                dispatch(openExampleAndCompile(example));
-              }}
-              className='flex gap-1'
+            <DropdownMenuLabel
+              key={loc.name}
+              className='flex gap-1 font-normal'
             >
-              <div className='flex-grow'>{example.name}</div>
-              <div className='font-bold flex justify-center w-8 rounded px-1 py-0.5 mr-1 bg-amber-300 text-[#694848] text-xs'>
-                {example.type}
+              <div className='flex-grow'>{loc.name}</div>
+              <div className='font-bold flex justify-center rounded px-1 py-0.5 mr-1 bg-amber-300 text-[#694848] text-xs'>
+                {elements} x {dataTypeToText(loc.dataType)}
               </div>
-            </DropdownMenuItem>
+            </DropdownMenuLabel>
           );
         })}
       </DropdownMenuContent>
