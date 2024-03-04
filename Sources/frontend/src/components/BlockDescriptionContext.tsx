@@ -1,14 +1,14 @@
 /**
- * @file    codeExamples.d.ts
+ * @file    BlockDescriptionContext.tsx
  *
  * @author  Michal Majer
  *          Faculty of Information Technology
  *          Brno University of Technology
  *          xmajer21@stud.fit.vutbr.cz
  *
- * @brief   Typescript types for code examples
+ * @brief   A context for the block descriptions
  *
- * @date    19 September 2023, 22:00 (created)
+ * @date    04 March 2024, 18:00 (created)
  *
  * @section Licence
  * This file is part of the Superscalar simulator app
@@ -29,23 +29,34 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- * Example code. Describes the JSON structure in /public/json/codeExamples.json which is also served through the API.
- */
-export type CodeExample = {
-  name: string;
-  type: 'c' | 'asm';
-  code: string;
-  entryPoint?: number | string;
-};
+'use client';
+
+import React, { createContext, useContext, useEffect, useState } from 'react';
+
+import { BlockDescriptions } from '@/lib/types/codeExamples';
 
 /**
- * Description of a block such as fetch, decode, PHT
+ * A context for the block descriptions
  */
-export type BlockDescription = {
-  name: string;
-  shortDescription: string;
-  longDescription: string;
-};
+export const BlockDescriptionContext = createContext<BlockDescriptions>({});
 
-export type BlockDescriptions = Record<string, BlockDescription>;
+/**
+ * A provider for the block descriptions
+ */
+export async function BlockDescriptionProvider({
+  children,
+  descriptions,
+}: { children: React.ReactNode; descriptions: BlockDescriptions }) {
+  return (
+    <BlockDescriptionContext.Provider value={descriptions}>
+      {children}
+    </BlockDescriptionContext.Provider>
+  );
+}
+
+/**
+ * A hook for the block descriptions
+ */
+export function useBlockDescriptions() {
+  return useContext(BlockDescriptionContext);
+}

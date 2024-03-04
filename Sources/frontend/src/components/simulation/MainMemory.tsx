@@ -44,6 +44,7 @@ import Block from '@/components/simulation/Block';
 import { Label } from '@/lib/types/cpuApi';
 import { memo, useEffect, useMemo, useRef } from 'react';
 import clsx from 'clsx';
+import { useBlockDescriptions } from '@/components/BlockDescriptionContext';
 
 function memoryCompare(a: Uint8Array | null, b: Uint8Array | null) {
   if (a === null || b === null || a.length !== b.length) {
@@ -65,6 +66,7 @@ function memoryCompare(a: Uint8Array | null, b: Uint8Array | null) {
  */
 export default function MainMemory() {
   const program = useAppSelector(selectProgram);
+  const descriptions = useBlockDescriptions();
   const memory =
     useAppSelector(selectMemoryBytes, {
       equalityFn: memoryCompare,
@@ -112,7 +114,7 @@ export default function MainMemory() {
           <DialogHeader>
             <DialogTitle>Main Memory</DialogTitle>
             <DialogDescription>
-              Detailed view of the Main Memory
+              {descriptions.mainMemory?.shortDescription}
             </DialogDescription>
           </DialogHeader>
           <table className='mb-4'>

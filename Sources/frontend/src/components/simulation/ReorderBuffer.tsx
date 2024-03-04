@@ -42,9 +42,11 @@ import Block from '@/components/simulation/Block';
 import InstructionField from '@/components/simulation/InstructionField';
 import { InstructionListDisplay } from '@/components/simulation/InstructionListDisplay';
 import InstructionTable from '@/components/simulation/InstructionTable';
+import { useBlockDescriptions } from '@/components/BlockDescriptionContext';
 
 export default function ReorderBuffer() {
   const rob = useAppSelector(selectROB);
+  const descriptions = useBlockDescriptions();
 
   if (!rob) return null;
 
@@ -68,7 +70,7 @@ export default function ReorderBuffer() {
           <DialogHeader>
             <DialogTitle>Reorder Buffer</DialogTitle>
             <DialogDescription>
-              Detailed view of the Reorder Buffer
+              {descriptions.rob?.shortDescription}
             </DialogDescription>
           </DialogHeader>
           <h2>Buffer</h2>

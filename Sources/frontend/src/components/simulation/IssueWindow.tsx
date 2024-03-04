@@ -29,16 +29,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+'use client';
+
 import clsx from 'clsx';
 
 import {
-  ParsedArgument,
   getValue,
   selectAluIssueWindowBlock,
   selectBranchIssueWindowBlock,
   selectFpIssueWindowBlock,
   selectLoadStoreIssueWindowBlock,
-  selectRegisterById,
   selectSimCodeModel,
 } from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
@@ -53,6 +53,13 @@ import Block from '@/components/simulation/Block';
 import InstructionField from '@/components/simulation/InstructionField';
 import { InstructionListDisplay } from '@/components/simulation/InstructionListDisplay';
 import ValueInformation from '@/components/simulation/ValueTooltip';
+import {
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/base/ui/dialog';
+import { useBlockDescriptions } from '@/components/BlockDescriptionContext';
 
 type IssueType = 'alu' | 'fp' | 'branch' | 'ls';
 
@@ -86,6 +93,7 @@ function getGridClassName(type: IssueType) {
 
 export default function IssueWindow({ type }: IssueWindowProps) {
   const issue = useAppSelector(getSelector(type));
+  const descriptions = useBlockDescriptions();
 
   if (!issue) return null;
   const instrCount = issue.issuedInstructions.length;
@@ -104,7 +112,21 @@ export default function IssueWindow({ type }: IssueWindowProps) {
 
   // TODO: Is this limit suitable?
   return (
-    <Block title={title} stats={stats} className={cls}>
+    <Block
+      title={title}
+      stats={stats}
+      className={cls}
+      detailDialog={
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Issue Window</DialogTitle>
+            <DialogDescription>
+              {descriptions.issue?.shortDescription}
+            </DialogDescription>
+          </DialogHeader>
+        </DialogContent>
+      }
+    >
       <InstructionListDisplay
         columns={3}
         instructions={issue.issuedInstructions}

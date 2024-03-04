@@ -35,6 +35,13 @@ import { useAppSelector } from '@/lib/redux/hooks';
 import Block from '@/components/simulation/Block';
 import { hexPadEven } from '@/lib/utils';
 import clsx from 'clsx';
+import {
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/base/ui/dialog';
+import { useBlockDescriptions } from '@/components/BlockDescriptionContext';
 
 /**
  * Display the cache, lines are grouped by the index.
@@ -42,6 +49,7 @@ import clsx from 'clsx';
  */
 export default function CacheBlock() {
   const cache = useAppSelector(selectCache);
+  const descriptions = useBlockDescriptions();
 
   if (!cache) return null;
 
@@ -50,7 +58,20 @@ export default function CacheBlock() {
   const policy = cache.replacementPolicyType;
 
   return (
-    <Block title='Cache' stats={policy}>
+    <Block
+      title='Cache'
+      stats={policy}
+      detailDialog={
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Cache</DialogTitle>
+            <DialogDescription>
+              {descriptions.cache?.shortDescription}
+            </DialogDescription>
+          </DialogHeader>
+        </DialogContent>
+      }
+    >
       <div className='cache-grid'>
         <div className='border-b'>Index</div>
         <div className='border-b'>Tag</div>

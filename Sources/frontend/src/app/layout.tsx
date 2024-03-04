@@ -40,6 +40,8 @@ import { Toaster } from '@/components/base/ui/sonner';
 import { TooltipProvider } from '@/components/base/ui/tooltip';
 import PersistedStoreProvider from '@/lib/redux/PersistedStoreProvider';
 import { ThemeProvider } from '@/components/ThemeProvider';
+import { BlockDescriptionProvider } from '@/components/BlockDescriptionContext';
+import { loadBlockDescriptions } from '@/lib/staticLoaders';
 
 /**
  * Font loading by next.js.
@@ -61,6 +63,8 @@ export default async function RootLayout({
   children,
 }: { children: ReactNode }) {
   // Body is overflow-hidden to prevent FU configuration from expanding the page
+  const descriptions = await loadBlockDescriptions();
+
   return (
     <html lang='en'>
       <head>
@@ -82,12 +86,14 @@ export default async function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <PersistedStoreProvider>
-            <TooltipProvider delayDuration={0}>
-              <div className='flex h-screen max-h-screen'>{children}</div>
-              <Toaster position='top-right' />
-            </TooltipProvider>
-          </PersistedStoreProvider>
+          <BlockDescriptionProvider descriptions={descriptions}>
+            <PersistedStoreProvider>
+              <TooltipProvider delayDuration={0}>
+                <div className='flex h-screen max-h-screen'>{children}</div>
+                <Toaster position='top-right' />
+              </TooltipProvider>
+            </PersistedStoreProvider>
+          </BlockDescriptionProvider>
         </ThemeProvider>
       </body>
     </html>

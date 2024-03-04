@@ -38,16 +38,37 @@ import Block from '@/components/simulation/Block';
 import InstructionField from '@/components/simulation/InstructionField';
 import { InstructionListDisplay } from '@/components/simulation/InstructionListDisplay';
 import RegisterReference from '@/components/simulation/RegisterReference';
+import {
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/base/ui/dialog';
+import { useBlockDescriptions } from '@/components/BlockDescriptionContext';
 
 export default function LoadBuffer() {
   const loadBuffer = useAppSelector(selectLoadBuffer);
+  const descriptions = useBlockDescriptions();
 
   if (!loadBuffer) return null;
 
   const limit = Math.min(16, loadBuffer.bufferSize);
 
   return (
-    <Block title='Load Buffer' className='loadBuffer w-issue h-96'>
+    <Block
+      title='Load Buffer'
+      className='loadBuffer w-issue h-96'
+      detailDialog={
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Load Buffer</DialogTitle>
+            <DialogDescription>
+              {descriptions.loadBuffer?.shortDescription}
+            </DialogDescription>
+          </DialogHeader>
+        </DialogContent>
+      }
+    >
       <InstructionListDisplay
         instructions={loadBuffer.loadQueue}
         totalSize={loadBuffer.bufferSize}

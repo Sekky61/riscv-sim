@@ -1,12 +1,42 @@
 {
   "fetch": {
     "name": "Fetch",
-    "shortDescription": "Loads instructions from memory and predicts branches.",
+    "shortDescription": "The Fetch unit loads instructions from memory and predicts branches.",
     "longDescription": ""
   },
   "decode": {
     "name": "Decode",
-    "shortDescription": "The decode block is responsible for translating incoming instructions from their binary representation into a form that can be executed by the processor. It also renames registers as a part of the Tomasulo algorithm.",
+    "shortDescription": "The Decode block is responsible for translating incoming instructions from their binary representation into a form that can be executed by the processor. It also renames registers as a part of the Tomasulo algorithm.",
+    "longDescription": ""
+  },
+  "rob": {
+    "name": "Reorder Buffer",
+    "shortDescription": "The Reorder Buffer is a queue that holds instructions in program order. Computed instructions are written back from the head of the queue.",
+    "longDescription": ""
+  },
+  "issue": {
+    "name": "Issue Window",
+    "shortDescription": "The Issue Window is a buffer that holds instructions of the same type. Once an instruction has all of its operands ready, it is issued to the functional units.",
+    "longDescription": ""
+  },
+  "storeBuffer": {
+    "name": "Store Buffer",
+    "shortDescription": "The Store Buffer holds store instructions. It is used to ensure that speculative stores do not leak to memory until they are committed.",
+    "longDescription": ""
+  },
+  "loadBuffer": {
+    "name": "Load Buffer",
+    "shortDescription": "The Load Buffer holds load instructions. It ensures that speculative loads do not work with stale data.",
+    "longDescription": ""
+  },
+  "mainMemory": {
+    "name": "Main Memory",
+    "shortDescription": "The Main Memory is an addressable array of bytes. It is used to store both instructions and data.",
+    "longDescription": ""
+  },
+  "cache": {
+    "name": "Cache",
+    "shortDescription": "The Cache is a small, fast memory that holds recently accessed data. It is used to speed up memory access.",
     "longDescription": ""
   }
 }

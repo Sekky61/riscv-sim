@@ -36,9 +36,17 @@ import Block from '@/components/simulation/Block';
 import InstructionField from '@/components/simulation/InstructionField';
 import { InstructionListDisplay } from '@/components/simulation/InstructionListDisplay';
 import { Badge } from '@/components/base/ui/badge';
+import { useBlockDescriptions } from '@/components/BlockDescriptionContext';
+import {
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/base/ui/dialog';
 
 export default function DecodeBlock() {
   const decode = useAppSelector(selectDecode);
+  const descriptions = useBlockDescriptions();
 
   if (!decode) return null;
 
@@ -51,6 +59,16 @@ export default function DecodeBlock() {
             <Badge variant='destructive'>Stalled</Badge>
           ) : null}
         </>
+      }
+      detailDialog={
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Decode Block</DialogTitle>
+            <DialogDescription>
+              {descriptions.decode?.shortDescription}
+            </DialogDescription>
+          </DialogHeader>
+        </DialogContent>
       }
       className='decode w-block'
     >

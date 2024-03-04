@@ -47,16 +47,15 @@ import InstructionTable from '@/components/simulation/InstructionTable';
 import { hexPadEven } from '@/lib/utils';
 import { Badge } from '@/components/base/ui/badge';
 import { Fragment } from 'react';
-import {
-  PredictorGraph,
-  PredictorGraphFromCodeId,
-} from '@/components/prediction/PredictorGraph';
+import { PredictorGraphFromCodeId } from '@/components/prediction/PredictorGraph';
+import { useBlockDescriptions } from '@/components/BlockDescriptionContext';
 
 /**
  * A component for displaying the Fetch block.
  */
 export default function FetchBlock() {
   const fetchObject = useAppSelector(selectFetch);
+  const descriptions = useBlockDescriptions();
 
   if (!fetchObject) return null;
 
@@ -81,7 +80,7 @@ export default function FetchBlock() {
           <DialogHeader>
             <DialogTitle>Fetch Block</DialogTitle>
             <DialogDescription>
-              Detailed view of the Fetch block
+              {descriptions.fetch?.shortDescription}
             </DialogDescription>
           </DialogHeader>
           <table>
