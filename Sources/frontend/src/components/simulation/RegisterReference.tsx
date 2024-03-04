@@ -35,6 +35,7 @@ import { selectRegisterById } from '@/lib/redux/cpustateSlice';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import { ReactClassName } from '@/lib/types/reactTypes';
 
+import { useHighlight } from '@/components/HighlightProvider';
 import {
   Tooltip,
   TooltipContent,
@@ -42,7 +43,6 @@ import {
 } from '@/components/base/ui/tooltip';
 import ValueInformation from '@/components/simulation/ValueTooltip';
 import { isValidRegisterValue } from '@/lib/utils';
-import { useHighlight } from '@/components/HighlightProvider';
 
 export type RegisterReferenceProps = {
   registerId: string;

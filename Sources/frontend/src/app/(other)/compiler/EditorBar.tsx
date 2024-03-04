@@ -36,8 +36,8 @@ import { useAppDispatch } from '@/lib/redux/hooks';
 
 import { Button } from '@/components/base/ui/button';
 import { loadFile } from '@/lib/utils';
-import React from 'react';
 import { Download, Upload } from 'lucide-react';
+import React from 'react';
 
 type EditorBarProps = {
   mode: 'c' | 'asm';

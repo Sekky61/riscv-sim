@@ -36,11 +36,11 @@ import '@/styles/globals.css';
 
 import { cn } from '@/lib/utils';
 
+import { BlockDescriptionProvider } from '@/components/BlockDescriptionContext';
+import { ThemeProvider } from '@/components/ThemeProvider';
 import { Toaster } from '@/components/base/ui/sonner';
 import { TooltipProvider } from '@/components/base/ui/tooltip';
 import PersistedStoreProvider from '@/lib/redux/PersistedStoreProvider';
-import { ThemeProvider } from '@/components/ThemeProvider';
-import { BlockDescriptionProvider } from '@/components/BlockDescriptionContext';
 import { loadBlockDescriptions } from '@/lib/staticLoaders';
 
 /**

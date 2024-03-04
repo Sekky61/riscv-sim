@@ -41,9 +41,9 @@ import {
 } from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
 
+import { Badge } from '@/components/base/ui/badge';
 import Block from '@/components/simulation/Block';
 import InstructionField from '@/components/simulation/InstructionField';
-import { Badge } from '@/components/base/ui/badge';
 import { AbstractFunctionUnitBlock } from '@/lib/types/cpuApi';
 
 type FUType = 'alu' | 'fp' | 'branch' | 'memory';

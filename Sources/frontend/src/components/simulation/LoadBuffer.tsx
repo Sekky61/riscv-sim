@@ -34,17 +34,17 @@ import { useAppSelector } from '@/lib/redux/hooks';
 import { LoadBufferItem } from '@/lib/types/cpuApi';
 import { hexPadEven } from '@/lib/utils';
 
-import Block from '@/components/simulation/Block';
-import InstructionField from '@/components/simulation/InstructionField';
-import { InstructionListDisplay } from '@/components/simulation/InstructionListDisplay';
-import RegisterReference from '@/components/simulation/RegisterReference';
+import { useBlockDescriptions } from '@/components/BlockDescriptionContext';
 import {
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/base/ui/dialog';
-import { useBlockDescriptions } from '@/components/BlockDescriptionContext';
+import Block from '@/components/simulation/Block';
+import InstructionField from '@/components/simulation/InstructionField';
+import { InstructionListDisplay } from '@/components/simulation/InstructionListDisplay';
+import RegisterReference from '@/components/simulation/RegisterReference';
 
 export default function LoadBuffer() {
   const loadBuffer = useAppSelector(selectLoadBuffer);

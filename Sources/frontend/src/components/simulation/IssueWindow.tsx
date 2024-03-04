@@ -44,6 +44,13 @@ import {
 import { useAppSelector } from '@/lib/redux/hooks';
 import { Reference, RegisterDataContainer } from '@/lib/types/cpuApi';
 
+import { useBlockDescriptions } from '@/components/BlockDescriptionContext';
+import {
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/base/ui/dialog';
 import {
   Tooltip,
   TooltipContent,
@@ -53,13 +60,6 @@ import Block from '@/components/simulation/Block';
 import InstructionField from '@/components/simulation/InstructionField';
 import { InstructionListDisplay } from '@/components/simulation/InstructionListDisplay';
 import ValueInformation from '@/components/simulation/ValueTooltip';
-import {
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/base/ui/dialog';
-import { useBlockDescriptions } from '@/components/BlockDescriptionContext';
 
 type IssueType = 'alu' | 'fp' | 'branch' | 'ls';
 

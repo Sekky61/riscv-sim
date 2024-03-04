@@ -44,8 +44,8 @@ import {
   TooltipTrigger,
 } from '@/components/base/ui/tooltip';
 import { BranchTable } from '@/components/prediction/BranchTable';
-import { BranchInfo } from '@/lib/types/cpuApi';
 import { PredictorIcon } from '@/components/prediction/PredictorIcon';
+import { BranchInfo } from '@/lib/types/cpuApi';
 
 type PredictorGraphProps = {
   branchInfo: BranchInfo;

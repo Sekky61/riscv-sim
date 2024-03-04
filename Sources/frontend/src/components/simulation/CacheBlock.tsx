@@ -32,16 +32,16 @@
 import { DecodedCacheLine, selectCache } from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
 
-import Block from '@/components/simulation/Block';
-import { hexPadEven } from '@/lib/utils';
-import clsx from 'clsx';
+import { useBlockDescriptions } from '@/components/BlockDescriptionContext';
 import {
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/base/ui/dialog';
-import { useBlockDescriptions } from '@/components/BlockDescriptionContext';
+import Block from '@/components/simulation/Block';
+import { hexPadEven } from '@/lib/utils';
+import clsx from 'clsx';
 
 /**
  * Display the cache, lines are grouped by the index.

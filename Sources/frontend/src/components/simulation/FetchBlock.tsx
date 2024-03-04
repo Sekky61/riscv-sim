@@ -34,21 +34,21 @@
 import { selectFetch } from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
 
+import { useBlockDescriptions } from '@/components/BlockDescriptionContext';
+import { Badge } from '@/components/base/ui/badge';
 import {
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/base/ui/dialog';
+import { PredictorGraphFromCodeId } from '@/components/prediction/PredictorGraph';
 import Block from '@/components/simulation/Block';
 import InstructionField from '@/components/simulation/InstructionField';
 import { InstructionListDisplay } from '@/components/simulation/InstructionListDisplay';
 import InstructionTable from '@/components/simulation/InstructionTable';
 import { hexPadEven } from '@/lib/utils';
-import { Badge } from '@/components/base/ui/badge';
 import { Fragment } from 'react';
-import { PredictorGraphFromCodeId } from '@/components/prediction/PredictorGraph';
-import { useBlockDescriptions } from '@/components/BlockDescriptionContext';
 
 /**
  * A component for displaying the Fetch block.

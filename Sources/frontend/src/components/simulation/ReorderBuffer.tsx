@@ -32,6 +32,7 @@
 import { selectROB } from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
 
+import { useBlockDescriptions } from '@/components/BlockDescriptionContext';
 import {
   DialogContent,
   DialogDescription,
@@ -42,7 +43,6 @@ import Block from '@/components/simulation/Block';
 import InstructionField from '@/components/simulation/InstructionField';
 import { InstructionListDisplay } from '@/components/simulation/InstructionListDisplay';
 import InstructionTable from '@/components/simulation/InstructionTable';
-import { useBlockDescriptions } from '@/components/BlockDescriptionContext';
 
 export default function ReorderBuffer() {
   const rob = useAppSelector(selectROB);

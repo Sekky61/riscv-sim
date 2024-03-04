@@ -31,8 +31,6 @@
 
 'use client';
 
-import { useAppSelector } from '@/lib/redux/hooks';
-import { selectActiveConfig } from '@/lib/redux/isaSlice';
 import { Button } from '@/components/base/ui/button';
 import {
   DropdownMenu,
@@ -42,6 +40,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/base/ui/dropdown-menu';
+import { useAppSelector } from '@/lib/redux/hooks';
+import { selectActiveConfig } from '@/lib/redux/isaSlice';
 import { dataTypeToText, memoryLocationSizeInElements } from '@/lib/utils';
 import { MemoryStick } from 'lucide-react';
 

@@ -34,6 +34,7 @@
 import { selectMemoryBytes, selectProgram } from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
 
+import { useBlockDescriptions } from '@/components/BlockDescriptionContext';
 import {
   DialogContent,
   DialogDescription,
@@ -42,9 +43,8 @@ import {
 } from '@/components/base/ui/dialog';
 import Block from '@/components/simulation/Block';
 import { Label } from '@/lib/types/cpuApi';
-import { memo, useEffect, useMemo, useRef } from 'react';
 import clsx from 'clsx';
-import { useBlockDescriptions } from '@/components/BlockDescriptionContext';
+import { memo, useEffect, useMemo, useRef } from 'react';
 
 function memoryCompare(a: Uint8Array | null, b: Uint8Array | null) {
   if (a === null || b === null || a.length !== b.length) {

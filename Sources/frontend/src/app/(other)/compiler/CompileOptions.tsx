@@ -29,12 +29,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { ExamplesButton } from '@/app/(other)/compiler/ExamplesButton';
-import { OptimizeRadio } from '@/app/(other)/compiler/OptimizeRadio';
 import { CompileButton } from '@/app/(other)/compiler/CompileButton';
-import Link from 'next/link';
-import { loadCodeExamples } from '@/lib/staticLoaders';
+import { ExamplesButton } from '@/app/(other)/compiler/ExamplesButton';
 import { MemorySummary } from '@/app/(other)/compiler/MemorySummary';
+import { OptimizeRadio } from '@/app/(other)/compiler/OptimizeRadio';
+import { loadCodeExamples } from '@/lib/staticLoaders';
+import Link from 'next/link';
 
 /**
  * The compile options component. On the left side to the editor.

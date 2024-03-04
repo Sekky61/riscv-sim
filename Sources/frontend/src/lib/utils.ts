@@ -32,6 +32,7 @@
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
+import { MemoryLocationApi, dataTypes, dataTypesText } from '@/lib/forms/Isa';
 import {
   DataTypeEnum,
   InputCodeModel,
@@ -39,7 +40,6 @@ import {
   RegisterModel,
   StopReason,
 } from '@/lib/types/cpuApi';
-import { MemoryLocationApi, dataTypes, dataTypesText } from '@/lib/forms/Isa';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));

@@ -31,20 +31,6 @@
 
 'use client';
 
-import { setDiagnostics } from '@codemirror/lint';
-import { EditorView } from '@codemirror/view';
-import { useCodeMirror } from '@uiw/react-codemirror';
-import React, {
-  FocusEventHandler,
-  MouseEventHandler,
-  useEffect,
-  useRef,
-} from 'react';
-import {
-  loadFunctionModels,
-  reloadSimulation,
-  selectCpu,
-} from '@/lib/redux/cpustateSlice';
 import {
   changeDirtyEffect,
   changeHighlightEffect,
@@ -63,13 +49,26 @@ import {
   selectEntryPoint,
   setEntryPoint,
 } from '@/lib/redux/compilerSlice';
+import {
+  loadFunctionModels,
+  reloadSimulation,
+  selectCpu,
+} from '@/lib/redux/cpustateSlice';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
+import { setDiagnostics } from '@codemirror/lint';
+import { EditorView } from '@codemirror/view';
+import { useCodeMirror } from '@uiw/react-codemirror';
+import React, {
+  FocusEventHandler,
+  MouseEventHandler,
+  useEffect,
+  useRef,
+} from 'react';
 
-import { Button } from '@/components/base/ui/button';
 import EditorBar from '@/app/(other)/compiler/EditorBar';
+import { useLineHighlight } from '@/app/(other)/compiler/LineHighlightContext';
 import { StatusIcon } from '@/app/(other)/compiler/StatusIcon';
-import clsx from 'clsx';
-import { selectAllInstructionFunctionModels } from '@/lib/redux/cpustateSlice';
+import { Button } from '@/components/base/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -79,8 +78,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/base/ui/dropdown-menu';
+import { selectAllInstructionFunctionModels } from '@/lib/redux/cpustateSlice';
+import clsx from 'clsx';
 import { Play } from 'lucide-react';
-import { useLineHighlight } from '@/app/(other)/compiler/LineHighlightContext';
 
 /**
  * The base theme for the editor.

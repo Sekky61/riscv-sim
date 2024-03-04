@@ -32,17 +32,17 @@
 import { selectDecode } from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
 
-import Block from '@/components/simulation/Block';
-import InstructionField from '@/components/simulation/InstructionField';
-import { InstructionListDisplay } from '@/components/simulation/InstructionListDisplay';
-import { Badge } from '@/components/base/ui/badge';
 import { useBlockDescriptions } from '@/components/BlockDescriptionContext';
+import { Badge } from '@/components/base/ui/badge';
 import {
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/base/ui/dialog';
+import Block from '@/components/simulation/Block';
+import InstructionField from '@/components/simulation/InstructionField';
+import { InstructionListDisplay } from '@/components/simulation/InstructionListDisplay';
 
 export default function DecodeBlock() {
   const decode = useAppSelector(selectDecode);

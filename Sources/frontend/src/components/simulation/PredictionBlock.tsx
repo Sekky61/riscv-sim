@@ -40,8 +40,6 @@ import {
 } from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
 
-import Block from '@/components/simulation/Block';
-import type { GlobalHistoryRegister } from '@/lib/types/cpuApi';
 import {
   DialogContent,
   DialogDescription,
@@ -49,6 +47,8 @@ import {
   DialogTitle,
 } from '@/components/base/ui/dialog';
 import { PredictorIcon } from '@/components/prediction/PredictorIcon';
+import Block from '@/components/simulation/Block';
+import type { GlobalHistoryRegister } from '@/lib/types/cpuApi';
 
 export default function PredictionBlock() {
   const ghr = useAppSelector(selectGlobalHistoryRegister);

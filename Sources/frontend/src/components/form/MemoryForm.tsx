@@ -38,6 +38,25 @@ import {
 } from '@/components/base/ui/card';
 import { Input } from '@/components/base/ui/input';
 import { Label } from '@/components/base/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/base/ui/select';
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@/components/base/ui/tabs';
+import { Textarea } from '@/components/base/ui/textarea';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/base/ui/tooltip';
 import { ErrorDisplay, FormInput } from '@/components/form/FormInput';
 import { parseCsv } from '@/lib/csv';
 import {
@@ -53,7 +72,13 @@ import {
   selectActiveConfig,
   updateMemoryLocation,
 } from '@/lib/redux/isaSlice';
+import {
+  dataTypeToSize,
+  memoryLocationSizeInElements,
+  pluralize,
+} from '@/lib/utils';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { Upload } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import {
   FieldError,
@@ -64,31 +89,6 @@ import {
   useForm,
 } from 'react-hook-form';
 import { toast } from 'sonner';
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '@/components/base/ui/tabs';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/base/ui/select';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/components/base/ui/tooltip';
-import { Textarea } from '@/components/base/ui/textarea';
-import { Upload } from 'lucide-react';
-import {
-  dataTypeToSize,
-  memoryLocationSizeInElements,
-  pluralize,
-} from '@/lib/utils';
 
 interface MemoryFormProps {
   /**

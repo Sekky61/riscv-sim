@@ -30,13 +30,13 @@
  */
 
 import type { SimulationConfig } from '@/lib/forms/Isa';
+import type { MemoryLocationApi } from '@/lib/forms/Isa';
 import type { OptimizeOption } from '@/lib/redux/compilerSlice';
 import type {
   CpuState,
   InstructionFunctionModel,
   StopReason,
 } from '@/lib/types/cpuApi';
-import type { MemoryLocationApi } from '@/lib/forms/Isa';
 
 type EndpointMap = {
   compile: CompileEndpoint;

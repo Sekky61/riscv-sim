@@ -40,6 +40,7 @@ import {
 import { useAppSelector } from '@/lib/redux/hooks';
 import { InstructionFunctionModel, Reference } from '@/lib/types/cpuApi';
 
+import { useHighlight } from '@/components/HighlightProvider';
 import {
   Dialog,
   DialogContent,
@@ -53,6 +54,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/base/ui/tooltip';
+import { BranchTable } from '@/components/prediction/BranchTable';
 import ValueInformation from '@/components/simulation/ValueTooltip';
 import {
   formatFracPercentage,
@@ -60,8 +62,6 @@ import {
   instructionTypeName,
   isValidRegisterValue,
 } from '@/lib/utils';
-import { useHighlight } from '@/components/HighlightProvider';
-import { BranchTable } from '@/components/prediction/BranchTable';
 
 export type InstructionFieldProps = {
   instructionId: Reference | null;

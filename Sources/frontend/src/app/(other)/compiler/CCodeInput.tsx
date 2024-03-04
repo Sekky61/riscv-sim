@@ -59,8 +59,8 @@ import {
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 
 import EditorBar from '@/app/(other)/compiler/EditorBar';
-import { StatusIcon } from '@/app/(other)/compiler/StatusIcon';
 import { useLineHighlight } from '@/app/(other)/compiler/LineHighlightContext';
+import { StatusIcon } from '@/app/(other)/compiler/StatusIcon';
 
 /**
  * The base theme for the editor.
