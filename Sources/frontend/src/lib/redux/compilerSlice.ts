@@ -150,7 +150,7 @@ export const callParseAsm = createAsyncThunk<ParseAsmResponse>(
     const state: RootState = getState();
     const request = {
       code: state.compiler.asmCode,
-      config: selectActiveConfig(state),
+      memoryLocations: selectActiveConfig(state).memoryLocations,
     };
     const response = await callParseAsmImpl(request)
       .then((res) => {

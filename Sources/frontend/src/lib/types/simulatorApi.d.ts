@@ -148,10 +148,10 @@ export interface ParseAsmEndpoint {
   response: ParseAsmResponse;
 }
 
-export interface ParseAsmRequest {
+export type ParseAsmRequest = {
   code: string;
-  memoryLocations?: MemoryLocation[];
-}
+  memoryLocations: MemoryLocation[];
+};
 
 export type ParseAsmResponse =
   | {
