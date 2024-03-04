@@ -93,9 +93,10 @@ export const wordHoverFactory = (
     let start = pos;
     let end = pos;
 
+    // A word is alphanumeric characters and dots
     while (start > from) {
       const l = text[start - from - 1];
-      if (!l || !/\w/.test(l)) {
+      if (!l || !/[\w\.]/.test(l)) {
         break;
       }
       start--;
@@ -103,7 +104,7 @@ export const wordHoverFactory = (
 
     while (end < to) {
       const l = text[end - from];
-      if (!l || !/\w/.test(l)) {
+      if (!l || !/[\w\.]/.test(l)) {
         break;
       }
       end++;
@@ -117,7 +118,6 @@ export const wordHoverFactory = (
     const word = text.slice(start - from, end - from);
 
     // Get info and create tooltip
-    console.log('word', word, supportedInstructions);
     const instructionInfo = supportedInstructions[word];
 
     if (!instructionInfo) {
