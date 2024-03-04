@@ -248,7 +248,7 @@ export const compilerSlice = createSlice({
       state.asmToC = [];
       state.cDirty = false;
       state.asmDirty = false;
-      state.entryPoint = action.payload.entryPoint || 0;
+      state.entryPoint = action.payload.entryPoint ?? 0;
     },
     openFile: (
       state,
@@ -286,7 +286,6 @@ export const compilerSlice = createSlice({
         state.cErrors = [];
         state.asmManuallyEdited = false;
         state.asmToC = action.payload.asmToC;
-        state.entryPoint = 0;
       })
       .addCase(callCompiler.rejected, (state, _action) => {
         state.compileStatus = 'failed';

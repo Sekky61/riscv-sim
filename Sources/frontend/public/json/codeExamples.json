@@ -2,36 +2,43 @@
   {
     "name": "Basic load/store",
     "type": "asm",
-    "code": "addi x1,x0,10\naddi x2,x0,10\n\naddi x3,x0,20\nsw x1,0(x3)\nsw x2,0(x3)\n\naddi x4,x0,20\nlw x5,0(x4)\nlw x6,0(x4)"
+    "code": "addi x1,x0,10\naddi x2,x0,10\n\naddi x3,x0,20\nsw x1,0(x3)\nsw x2,0(x3)\n\naddi x4,x0,20\nlw x5,0(x4)\nlw x6,0(x4)",
+    "entryPoint": 0
   },
   {
     "name": "Simple loop",
     "type": "asm",
-    "code": "  addi x3, x0, 3\nloop:\n  beq  x3,x0,loopEnd\n  subi x3,x3,1\n  jal  x0,loop\nloopEnd:"
+    "code": "  addi x3, x0, 3\nloop:\n  beq  x3,x0,loopEnd\n  subi x3,x3,1\n  jal  x0,loop\nloopEnd:",
+    "entryPoint": 0
   },
   {
     "name": "Bubble sort",
     "type": "c",
-    "code": "int array [16] = {5, 6, 7, 1, 2, 1, 8, 4,\n                  8, 4, 3, 9, 5, 5, 6, 7};\n\nint main()\n{\n  int n = 16;\n  int temp;\n  for (int i = 0; i < n - 1; i = i+1) {\n    for (int j = 0; j < n - i - 1; j = j+1) { \n      if (array[j] > array[j + 1]){\n        temp = array[j];\n        array[j] = array[j + 1];\n        array[j + 1] = temp;\n      }\n    }\n  }\n}\n\n"
+    "code": "int array [16] = {5, 6, 7, 1, 2, 1, 8, 4,\n                  8, 4, 3, 9, 5, 5, 6, 7};\n\nint main()\n{\n  int n = 16;\n  int temp;\n  for (int i = 0; i < n - 1; i = i+1) {\n    for (int j = 0; j < n - i - 1; j = j+1) { \n      if (array[j] > array[j + 1]){\n        temp = array[j];\n        array[j] = array[j + 1];\n        array[j + 1] = temp;\n      }\n    }\n  }\n}\n\n",
+    "entryPoint": "main"
   },
   {
     "name": "Loop unrolling",
     "type": "c",
-    "code": "// Notice that iterations are independent\nint f(int *dest, int *src, int N)\n{\n  #pragma GCC unroll 4\n  for (int i = 0; i < N; ++i) {\n    dest[i] = 5;\n  }\n}\n"
+    "code": "// Notice that iterations are independent\nint f(int *dest, int *src, int N)\n{\n  #pragma GCC unroll 4\n  for (int i = 0; i < N; ++i) {\n    dest[i] = 5;\n  }\n}\n",
+    "entryPoint": "f"
   },
   {
     "name": "Store to array",
     "type": "c",
-    "code": "int ptr[32];\n\nint writeMem() {\n  for(int i = 0; i < 32; i++) {\n    ptr[i] = i;\n  }\n}\n"
+    "code": "int ptr[32];\n\nint writeMem() {\n  for(int i = 0; i < 32; i++) {\n    ptr[i] = i;\n  }\n}\n",
+    "entryPoint": "writeMem"
   },
   {
     "name": "Divide by zero",
     "type": "c",
-    "code": "int main() {\n  int a = 1;\n  int b = 0;\n  int c = a / b;\n}\n"
+    "code": "int main() {\n  int a = 1;\n  int b = 0;\n  int c = a / b;\n}\n",
+    "entryPoint": "main"
   },
   {
     "name": "AXPY",
     "type": "c",
-    "code": "// Remember to define the arrays in /memory page!\nextern float a[];\nextern float b[];\nconst float c = 10;\n\nvoid main(){\n  for (int i = 0; i < 100; i++) { \n     a[i] += b[i]*c;\n  }\n}\n"
+    "code": "// Remember to define the arrays in /memory page!\nextern float a[];\nextern float b[];\nconst float c = 10;\n\nvoid main(){\n  for (int i = 0; i < 100; i++) { \n     a[i] += b[i]*c;\n  }\n}\n",
+    "entryPoint": "main"
   }
 ]
