@@ -1,6 +1,7 @@
 package com.gradle.superscalarsim;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.gradle.superscalarsim.cpu.MemoryLocation;
 import com.gradle.superscalarsim.cpu.SimulationConfig;
 import com.gradle.superscalarsim.server.EndpointName;
 import com.gradle.superscalarsim.server.ServerError;
@@ -25,8 +26,11 @@ import com.gradle.superscalarsim.server.simulate.SimulateResponse;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import static com.gradle.superscalarsim.enums.DataTypeEnum.kInt;
 
 /**
  * Test for the endpoint handlers
@@ -113,7 +117,7 @@ public class EndpointHandlersTests
   @Test
   public void testCompileEndpoint() throws ServerException
   {
-    CompileRequest request = new CompileRequest("", List.of());
+    CompileRequest request = new CompileRequest("", List.of(), List.of());
     CompileHandler handler = new CompileHandler();
     
     CompileResponse response = handler.resolve(request);
@@ -130,7 +134,7 @@ public class EndpointHandlersTests
   @Test
   public void testCompileMissingCode()
   {
-    CompileRequest request = new CompileRequest(null, List.of());
+    CompileRequest request = new CompileRequest(null, List.of(), List.of());
     CompileHandler handler = new CompileHandler();
     
     try
@@ -143,6 +147,52 @@ public class EndpointHandlersTests
       Assert.assertEquals("Missing code", error.message());
       Assert.assertEquals("code", error.field());
     }
+  }
+  
+  @Test
+  public void testCompileEndpointMemory() throws ServerException
+  {
+    MemoryLocation arr = new MemoryLocation("arr", 4, kInt, List.of("0", "1", "2", "3"));
+    CompileRequest request = new CompileRequest("""
+                                                        extern int arr[];
+                                                        int main() {
+                                                          return arr[1];
+                                                        }""", List.of(), List.of(arr));
+    CompileHandler handler = new CompileHandler();
+    
+    CompileResponse response = handler.resolve(request);
+    
+    // Assert - successful, so mapping must be there
+    Assert.assertNotNull(response);
+    Assert.assertTrue(response.success);
+    Assert.assertNotNull(response.program);
+    Assert.assertNotNull(response.asmToC);
+    Assert.assertNull(response.compilerError);
+    Assert.assertNull(response.error);
+    Assert.assertNull(response.asmErrors);
+  }
+  
+  @Test
+  public void testCompileEndpointMemoryError() throws ServerException
+  {
+    CompileRequest request = new CompileRequest("""
+                                                        extern int arr[];
+                                                        int main() {
+                                                          return arr[1];
+                                                        }""", List.of(), List.of());
+    CompileHandler handler = new CompileHandler();
+    
+    CompileResponse response = handler.resolve(request);
+    
+    // Assert - there is an error
+    Assert.assertNotNull(response);
+    Assert.assertFalse(response.success);
+    Assert.assertNull(response.program);
+    Assert.assertNull(response.asmToC);
+    
+    Assert.assertNull(response.compilerError);
+    Assert.assertNotNull(response.error);
+    Assert.assertNotNull(response.asmErrors);
   }
   
   @Test
@@ -162,7 +212,21 @@ public class EndpointHandlersTests
   @Test
   public void testParseAsm() throws ServerException
   {
-    ParseAsmRequest request = new ParseAsmRequest("addi x1, x2, 3", SimulationConfig.getDefaultConfiguration());
+    ParseAsmRequest request = new ParseAsmRequest("addi x1, x2, 3", new ArrayList<>());
+    ParseAsmHandler handler = new ParseAsmHandler();
+    
+    ParseAsmResponse response = handler.resolve(request);
+    
+    Assert.assertNotNull(response);
+    Assert.assertTrue(response.success);
+    Assert.assertNotNull(response.errors);
+  }
+  
+  @Test
+  public void testParseAsmMemory() throws ServerException
+  {
+    MemoryLocation  ptr     = new MemoryLocation("ptr", 4, kInt, List.of("7"));
+    ParseAsmRequest request = new ParseAsmRequest("lla x7, ptr", List.of(ptr));
     ParseAsmHandler handler = new ParseAsmHandler();
     
     ParseAsmResponse response = handler.resolve(request);
@@ -175,7 +239,7 @@ public class EndpointHandlersTests
   @Test
   public void testParseAsmInvalid() throws ServerException
   {
-    ParseAsmRequest request = new ParseAsmRequest("invalid", SimulationConfig.getDefaultConfiguration());
+    ParseAsmRequest request = new ParseAsmRequest("invalid", new ArrayList<>());
     ParseAsmHandler handler = new ParseAsmHandler();
     
     ParseAsmResponse response = handler.resolve(request);

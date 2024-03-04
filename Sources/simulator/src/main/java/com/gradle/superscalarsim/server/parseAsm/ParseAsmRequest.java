@@ -28,7 +28,9 @@
 package com.gradle.superscalarsim.server.parseAsm;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.gradle.superscalarsim.cpu.SimulationConfig;
+import com.gradle.superscalarsim.cpu.MemoryLocation;
+
+import java.util.List;
 
 /**
  * @brief Request for the /parseAsm endpoint
@@ -42,13 +44,11 @@ public class ParseAsmRequest
   String code;
   
   /**
-   * @brief The Cpu configuration.
+   * @brief The defined memory locations.
    * This is not required, but if it is present, it will be used to inform the parser about the defined memory locations.
-   * The code from this object is ignored.
-   * TODO: Change to List<MemoryLocation>
    */
   @JsonProperty(required = false)
-  SimulationConfig config;
+  List<MemoryLocation> memoryLocations;
   
   /**
    * @brief Default constructor for deserialization
@@ -64,10 +64,10 @@ public class ParseAsmRequest
    *
    * @brief Constructor for the request
    */
-  public ParseAsmRequest(String code, SimulationConfig config)
+  public ParseAsmRequest(String code, List<MemoryLocation> memoryLocations)
   {
-    this.code   = code;
-    this.config = config;
+    this.code            = code;
+    this.memoryLocations = memoryLocations;
   }
   
 }

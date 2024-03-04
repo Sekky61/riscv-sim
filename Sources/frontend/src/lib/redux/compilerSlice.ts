@@ -103,12 +103,14 @@ const initialState: CompilerState = {
  */
 export const callCompiler = createAsyncThunk<CompileResponse>(
   'compiler/callCompiler',
-  async (arg, { getState }) => {
+  async (arg, { getState, dispatch }) => {
     // @ts-ignore
     const state: RootState = getState();
+    const activeIsa = selectActiveConfig(state);
     const request = {
       code: state.compiler.cCode,
       optimizeFlags: [state.compiler.optimizeFlag], // todo api allows multiple flags
+      memoryLocations: activeIsa.memoryLocations,
     };
     const response = await callCompilerImpl(request)
       .then((res) => {
@@ -276,6 +278,7 @@ export const compilerSlice = createSlice({
         if (!action.payload.success) {
           state.compileStatus = 'failed';
           state.cErrors = action.payload.compilerError ?? [];
+          state.asmErrors = action.payload.asmErrors ?? [];
           // Delete mapping
           state.asmToC = [];
           state.asmCode = '';

@@ -29,9 +29,12 @@ package com.gradle.superscalarsim.server.compile;
 
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.gradle.superscalarsim.code.CodeParser;
 import com.gradle.superscalarsim.compiler.AsmParser;
 import com.gradle.superscalarsim.compiler.CompiledProgram;
 import com.gradle.superscalarsim.compiler.GccCaller;
+import com.gradle.superscalarsim.factories.InputCodeModelFactory;
+import com.gradle.superscalarsim.loader.StaticDataProvider;
 import com.gradle.superscalarsim.serialization.Serialization;
 import com.gradle.superscalarsim.server.IRequestResolver;
 import com.gradle.superscalarsim.server.ServerException;
@@ -74,16 +77,26 @@ public class CompileHandler implements IRequestResolver<CompileRequest, CompileR
     GccCaller.CompileResult res = GccCaller.compile(request.code, request.optimizeFlags);
     if (!res.success)
     {
-      response = CompileResponse.failure(res.error, res.compilerErrors);
-    }
-    else
-    {
-      CompiledProgram program             = AsmParser.parse(res.code);
-      String          concatenatedProgram = StringUtils.join(program.program, "\n");
-      response = new CompileResponse(true, concatenatedProgram, program.asmToC, null, null);
+      return CompileResponse.failure(res.error, res.compilerErrors, null);
     }
     
-    return response;
+    CompiledProgram program             = AsmParser.parse(res.code);
+    String          concatenatedProgram = StringUtils.join(program.program, "\n");
+    
+    // Compilation OK, now asm check
+    
+    StaticDataProvider provider = new StaticDataProvider();
+    CodeParser parser = new CodeParser(provider.getInstructionFunctionModels(),
+                                       provider.getRegisterFile().getRegisterMap(true), new InputCodeModelFactory(),
+                                       request.memoryLocations);
+    parser.parseCode(concatenatedProgram);
+    
+    if (!parser.success())
+    {
+      return CompileResponse.failure("ASM check failed", null, parser.getErrorMessages());
+    }
+    
+    return CompileResponse.success(concatenatedProgram, program.asmToC);
   }
   
   @Override

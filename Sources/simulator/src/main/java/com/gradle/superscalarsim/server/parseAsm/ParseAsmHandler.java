@@ -62,21 +62,16 @@ public class ParseAsmHandler implements IRequestResolver<ParseAsmRequest, ParseA
       throw new ServerException("code", "Missing code field");
     }
     
-    if (request.config == null)
+    if (request.memoryLocations == null)
     {
-      throw new ServerException("config", "Missing config field");
-    }
-    
-    if (request.config.memoryLocations == null)
-    {
-      throw new ServerException("config.memoryLocations", "Missing memoryLocations field");
+      throw new ServerException("memoryLocations", "Missing memoryLocations field");
     }
     
     // Parse the code
     StaticDataProvider provider = new StaticDataProvider();
     CodeParser parser = new CodeParser(provider.getInstructionFunctionModels(),
                                        provider.getRegisterFile().getRegisterMap(true), new InputCodeModelFactory(),
-                                       request.config.memoryLocations);
+                                       request.memoryLocations);
     parser.parseCode(request.code);
     
     return new ParseAsmResponse(parser.success(), parser.getErrorMessages());

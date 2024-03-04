@@ -28,6 +28,7 @@
 package com.gradle.superscalarsim.server.compile;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.gradle.superscalarsim.code.ParseError;
 
 import java.util.List;
 
@@ -70,33 +71,54 @@ public class CompileResponse
   @JsonProperty(required = true)
   public List<Object> compilerError;
   
+  /**
+   * @brief Errors from the analysis of the assembly code.
+   * Takes into account memory locations
+   */
+  @JsonProperty(required = true)
+  public List<ParseError> asmErrors;
+  
   public CompileResponse()
   {
     this.success       = false;
     this.program       = null;
     this.asmToC        = null;
+    this.error         = null;
     this.compilerError = null;
+    this.asmErrors     = null;
   }
   
   public CompileResponse(boolean success,
                          String program,
                          List<Integer> asmToC,
                          String error,
-                         List<Object> compilerError)
+                         List<Object> compilerError,
+                         List<ParseError> asmErrors)
   {
     this.success       = success;
     this.program       = program;
     this.asmToC        = asmToC.toArray(new Integer[0]);
     this.error         = error;
     this.compilerError = compilerError;
+    this.asmErrors     = asmErrors;
   }
   
-  public static CompileResponse failure(String error, List<Object> compilerError)
+  public static CompileResponse success(String program, List<Integer> asmToC)
+  {
+    CompileResponse res = new CompileResponse();
+    res.success = true;
+    res.program = program;
+    res.asmToC  = asmToC.toArray(new Integer[0]);
+    return res;
+  }
+  
+  public static CompileResponse failure(String error, List<Object> compilerError, List<ParseError> asmErrors)
   {
     CompileResponse res = new CompileResponse();
     res.error         = error;
     res.success       = false;
     res.compilerError = compilerError;
+    res.asmErrors     = asmErrors;
     return res;
   }
 }

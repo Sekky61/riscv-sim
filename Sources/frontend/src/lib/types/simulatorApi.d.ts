@@ -36,6 +36,7 @@ import type {
   InstructionFunctionModel,
   StopReason,
 } from '@/lib/types/cpuApi';
+import type { MemoryLocationApi } from '@/lib/forms/Isa';
 
 type EndpointMap = {
   compile: CompileEndpoint;
@@ -102,6 +103,7 @@ export interface CompileEndpoint {
 export interface CompileRequest {
   code: string;
   optimizeFlags: OptimizeOption[];
+  memoryLocations: MemoryLocationApi[];
 }
 
 export type CompileResponse =
@@ -113,7 +115,8 @@ export type CompileResponse =
   | {
       success: false;
       error: string;
-      compilerError: ComplexErrorItem[];
+      compilerError: ComplexErrorItem[] | null;
+      asmErrors: SimpleParseError[] | null;
     };
 
 export type ComplexErrorItem = {
@@ -147,7 +150,7 @@ export interface ParseAsmEndpoint {
 
 export interface ParseAsmRequest {
   code: string;
-  config?: SimulationConfig;
+  memoryLocations?: MemoryLocation[];
 }
 
 export type ParseAsmResponse =
