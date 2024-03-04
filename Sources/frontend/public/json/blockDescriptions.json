@@ -1,0 +1,12 @@
+{
+  "fetch": {
+    "name": "Fetch",
+    "shortDescription": "Loads instructions from memory and predicts branches.",
+    "longDescription": ""
+  },
+  "decode": {
+    "name": "Decode",
+    "shortDescription": "The decode block is responsible for translating incoming instructions from their binary representation into a form that can be executed by the processor. It also renames registers as a part of the Tomasulo algorithm.",
+    "longDescription": ""
+  }
+}

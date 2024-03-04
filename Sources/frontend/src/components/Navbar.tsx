@@ -35,6 +35,7 @@ import {
   BrainCircuit,
   Code,
   Cpu,
+  GraduationCap,
   Info,
   MemoryStick,
   Settings,
@@ -56,46 +57,52 @@ export default function Navbar() {
           <SideMenuButton
             Icon={<Code strokeWidth={1.5} />}
             href='/compiler'
-            hoverText='Code editor'
+            hoverText='Code Editor'
             shortcut='Digit2'
           />
           <SideMenuButton
             Icon={<MemoryStick strokeWidth={1.5} />}
             href='/memory'
-            hoverText='Memory settings'
+            hoverText='Memory Settings'
             shortcut='Digit3'
           />
           <SideMenuButton
             Icon={<Cpu strokeWidth={1.5} />}
             href='/isa'
-            hoverText='Architecture settings'
+            hoverText='Architecture Settings'
             shortcut='Digit4'
           />
           <SideMenuButton
             Icon={<BarChart3 strokeWidth={1.5} />}
             href='/stats'
-            hoverText='Runtime statistics'
+            hoverText='Runtime Statistics'
             shortcut='Digit5'
           />
         </div>
         <div className='flex flex-col gap-3'>
           <SideMenuButton
+            Icon={<GraduationCap strokeWidth={1.5} />}
+            href='/learn'
+            hoverText='Architecture Overview'
+            shortcut='Digit6'
+          />
+          <SideMenuButton
             Icon={<BookOpen strokeWidth={1.5} />}
             href='/docs'
-            hoverText='RISC-V documentation'
-            shortcut='Digit6'
+            hoverText='RISC-V Documentation'
+            shortcut='Digit7'
           />
           <SideMenuButton
             Icon={<Settings strokeWidth={1.5} />}
             href='/settings'
-            hoverText='App settings'
-            shortcut='Digit7'
+            hoverText='App Settings'
+            shortcut='Digit8'
           />
           <SideMenuButton
             Icon={<Info strokeWidth={1.5} />}
             href='/help'
             hoverText='Help'
-            shortcut='Digit8'
+            shortcut='Digit9'
           />
         </div>
       </div>

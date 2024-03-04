@@ -29,7 +29,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { CodeExample } from '@/lib/types/codeExamples';
+import { BlockDescription, CodeExample } from '@/lib/types/codeExamples';
 import { promises as fs } from 'fs';
 import path from 'path';
 
@@ -57,6 +57,8 @@ export async function loadCodeExamples(): Promise<CodeExample[]> {
 /**
  * Load the block descriptions from the "public/json/blockDescriptions.json" file, parse it and return the data.
  */
-export async function loadBlockDescriptions(): Promise<Record<string, string>> {
+export async function loadBlockDescriptions(): Promise<
+  Record<string, BlockDescription>
+> {
   return loadPublicJsonFile('blockDescriptions.json');
 }

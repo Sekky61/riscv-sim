@@ -99,17 +99,21 @@ const shortcuts = {
     description: 'Show statistics tab',
     keys: ['5'],
   },
+  learnTab: {
+    description: 'Show Architecture Overview tab',
+    keys: ['6'],
+  },
   riscVDocTab: {
     description: 'Show RISC-V documentation tab',
-    keys: ['6'],
+    keys: ['7'],
   },
   settingsTab: {
     description: 'Show Settings tab',
-    keys: ['7'],
+    keys: ['8'],
   },
   helpTab: {
     description: 'Show Help tab',
-    keys: ['8'],
+    keys: ['9'],
   },
   stepForward: {
     description: 'Step simulation forward',
@@ -151,6 +155,7 @@ const shortcutCategories = [
       'memoryTab',
       'isaSettingsTab',
       'statisticsTab',
+      'learnTab',
       'riscVDocTab',
       'settingsTab',
       'helpTab',

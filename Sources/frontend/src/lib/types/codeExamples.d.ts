@@ -38,3 +38,12 @@ export type CodeExample = {
   code: string;
   entryPoint?: number | string;
 };
+
+/**
+ * Description of a block such as fetch, decode, PHT
+ */
+export type BlockDescription = {
+  name: string;
+  shortDescription: string;
+  longDescription: string;
+};
