@@ -108,7 +108,7 @@ export default function InstructionField({
       <DialogTrigger asChild>
         <button
           type='button'
-          className='group instruction instruction-bubble w-full font-mono px-2 text-left whitespace-nowrap overflow-hidden'
+          className='group instruction rounded-[6px] h-8 w-full font-mono px-2 text-left whitespace-nowrap overflow-hidden'
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
           data-instruction-id={simCodeId}

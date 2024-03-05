@@ -51,7 +51,6 @@ export function SimGrid() {
         <div className='top-grid'>
           <Program />
           <div className='block-stack'>
-            <PredictionBlock />
             <FetchBlock />
             <DecodeBlock />
           </div>

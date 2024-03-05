@@ -43,6 +43,7 @@ import Block from '@/components/simulation/Block';
 import InstructionField from '@/components/simulation/InstructionField';
 import { InstructionListDisplay } from '@/components/simulation/InstructionListDisplay';
 import InstructionTable from '@/components/simulation/InstructionTable';
+import { DividedBadge } from '@/components/DividedBadge';
 
 export default function ReorderBuffer() {
   const rob = useAppSelector(selectROB);
@@ -54,8 +55,13 @@ export default function ReorderBuffer() {
 
   const robStats = (
     <>
-      <div>
-        Capacity: {used}/{rob.bufferSize}
+      <div className='flex'>
+        <DividedBadge>
+          <div>Capacity</div>
+          <div>
+            {used}/{rob.bufferSize}
+          </div>
+        </DividedBadge>
       </div>
     </>
   );

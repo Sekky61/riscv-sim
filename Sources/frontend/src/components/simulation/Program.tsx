@@ -50,6 +50,7 @@ import { hexPadEven, inputCodeAddress } from '@/lib/utils';
 
 import Block from '@/components/simulation/Block';
 import { selectEntryPoint } from '@/lib/redux/compilerSlice';
+import { DividedBadge } from '@/components/DividedBadge';
 
 /**
  * A block displaying the program instructions.
@@ -78,9 +79,9 @@ export default function Program() {
   // A thin red line
   const pcPointer = (
     <div ref={pcRef} className='relative w-full flex items-center'>
-      <div className='absolute w-full h-0.5 bg-red-500 rounded-full' />
-      <div className='absolute -left-6 bg-red-500 text-white text-xs rectangle h-4 pl-1'>
-        <div className='relative rectangle'>PC</div>
+      <div className='absolute w-full h-0.5 bg-tertiary rounded-full' />
+      <div className='absolute -left-6 bg-tertiary text-xs rectangle h-4 pl-1'>
+        <div className='relative rectangle text-onTertiary pt-[1px]'>PC</div>
       </div>
     </div>
   );
@@ -94,11 +95,18 @@ export default function Program() {
     <Block
       title='Program'
       className='program justify-self-stretch self-stretch w-block h-full'
-      stats={<div>Entry Point: {entryPointPretty}</div>}
+      stats={
+        <div className='flex'>
+          <DividedBadge>
+            <div>Entry Point</div>
+            <div>{entryPointPretty}</div>
+          </DividedBadge>
+        </div>
+      }
     >
-      <div className='flex-1 relative'>
+      <div className='flex-1 relative surface-container-lowest rounded-[8px]'>
         <div
-          className='absolute inset-x-0 top-0 max-h-full grid gap-y-1 gap-x-7 overflow-y-auto pt-4 font-mono'
+          className='absolute inset-x-0 top-0 max-h-full grid gap-y-1 gap-x-7 overflow-y-auto p-[4px] pt-4 font-mono'
           style={{ gridTemplateColumns: 'auto auto' }}
           ref={containerRef}
         >

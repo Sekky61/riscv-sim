@@ -38,6 +38,7 @@ import {
 } from '@/lib/redux/cpustateSlice';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import clsx from 'clsx';
+import { ChevronLeft } from 'lucide-react';
 import React, { useState } from 'react';
 
 /**
@@ -54,8 +55,6 @@ export function SidePanel() {
 
   const branchAccuracy = `${(statistics.predictionAccuracy * 100).toFixed(2)}%`;
 
-  const cls = clsx('h-screen p-2 relative flex flex-col gap-2');
-
   const gridCls = clsx(
     'grid gap-2',
     isExpanded && 'grid-cols-3',
@@ -63,24 +62,14 @@ export function SidePanel() {
   );
 
   return (
-    <div className={cls}>
-      <div
-        className='absolute top-1/2 right-full mr-5 expand-area w-8 h-16'
-        data-expanded={isExpanded}
+    <div className='h-screen p-2 relative flex flex-col gap-2'>
+      <button
+        type='button'
+        className='w-full h-[40px] secondary-container rounded-[12px] flex justify-center items-center'
+        onClick={() => setIsExpanded(!isExpanded)}
       >
-        <button
-          type='button'
-          className='w-full h-full'
-          onClick={() => setIsExpanded(!isExpanded)}
-        >
-          <div className='w-full h-full flex justify-center items-center'>
-            <div className='w-6 h-6 flex flex-col items-center'>
-              <div className='h-3 w-1 rounded-full bg-primary expand-arrow-up' />
-              <div className='h-3 w-1 rounded-full bg-primary expand-arrow-down' />
-            </div>
-          </div>
-        </button>
-      </div>
+        <ChevronLeft className={clsx(isExpanded && 'rotate-180')} />
+      </button>
       <div className={gridCls}>
         <SmallBubble label='Cycles' value={statistics.clockCycles.toString()} />
         <SmallBubble
@@ -114,7 +103,7 @@ interface StatProps {
 
 function SmallBubble({ label, value }: StatProps) {
   return (
-    <div className='w-20 text-wrap font-bold aspect-square p-1 rounded-md text-sm flex flex-col justify-center gap-1 items-center border-2 border-primary'>
+    <div className='w-20 surface border border-outlineVariant rounded-[12px] text-wrap font-bold aspect-square p-1 text-sm flex flex-col justify-center gap-1 items-center'>
       <span className='text-center'>{label}</span>
       <span className='font-normal'>{value}</span>
     </div>
@@ -136,7 +125,7 @@ function DebugLog() {
   // the key can be the cycle, because at most one entry is added per cycle
   return (
     <div
-      className='w-0 min-w-full h-0 min-h-full overflow-x-clip overflow-y-scroll rounded-md border p-2 text-nowrap font-mono text-sm grid content-start'
+      className='w-0 min-w-full h-0 min-h-full overflow-x-clip overflow-y-scroll surface-container-highest rounded-md border p-2 text-nowrap font-mono text-sm grid content-start'
       style={{
         gridTemplateColumns: 'max-content 1fr',
       }}
@@ -149,12 +138,12 @@ function DebugLog() {
           >
             <button
               type='button'
-              className='self-start font-bold text-end hover:underline'
+              className='self-start font-bold text-end underline'
               onClick={() => loadSim(entry.cycle)}
             >
-              {entry.cycle}:
+              {entry.cycle}
             </button>
-            <div className='text-wrap'>{entry.message}</div>
+            <div className='text-wrap'>: {entry.message}</div>
           </div>
         );
       })}

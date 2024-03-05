@@ -45,6 +45,7 @@ import { Badge } from '@/components/base/ui/badge';
 import Block from '@/components/simulation/Block';
 import InstructionField from '@/components/simulation/InstructionField';
 import { AbstractFunctionUnitBlock } from '@/lib/types/cpuApi';
+import { DividedBadge } from '@/components/DividedBadge';
 
 type FUType = 'alu' | 'fp' | 'branch' | 'memory';
 
@@ -86,19 +87,15 @@ function FU({ type, fu }: FUProps) {
           <div className='w-6 shrink-0'>{`${displayCounter}/${fu.delay}`}</div>
           <div className='flex gap-1 overflow-auto snap-x'>
             {fu.description.operations?.map((op) => (
-              <Badge
-                key={op.name}
-                variant='outline'
-                className='snap-start flex divide-x gap-1'
-              >
+              <DividedBadge key={op.name}>
                 <div className='capitalize'>{op.name}</div>
-                <div className='pl-1'>{op.latency}</div>
-              </Badge>
+                <div>{op.latency}</div>
+              </DividedBadge>
             ))}
           </div>
         </div>
       }
-      className={clsx(className, 'w-block')}
+      className={clsx(className, 'w-issue')}
     >
       <InstructionField instructionId={fu.simCodeModel} />
     </Block>

@@ -60,6 +60,7 @@ import Block from '@/components/simulation/Block';
 import InstructionField from '@/components/simulation/InstructionField';
 import { InstructionListDisplay } from '@/components/simulation/InstructionListDisplay';
 import ValueInformation from '@/components/simulation/ValueTooltip';
+import { DividedBadge } from '@/components/DividedBadge';
 
 type IssueType = 'alu' | 'fp' | 'branch' | 'ls';
 
@@ -102,8 +103,11 @@ export default function IssueWindow({ type }: IssueWindowProps) {
 
   const stats = (
     <>
-      <div>
-        {instrCount} {instrCount === 1 ? 'instruction' : 'instructions'}
+      <div className='flex'>
+        <DividedBadge>
+          <div>Instructions</div>
+          <div>{instrCount}</div>
+        </DividedBadge>
       </div>
     </>
   );

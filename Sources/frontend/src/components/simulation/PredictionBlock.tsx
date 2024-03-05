@@ -98,7 +98,7 @@ function GhrVector({ ghr }: GhrVectorProps) {
   );
 }
 
-function BranchDetailDialog() {
+export function BranchDetailDialog() {
   const btb = useAppSelector(selectBranchTargetBuffer);
   const ghr = useAppSelector(selectGlobalHistoryRegister);
   const pht = useAppSelector(selectPatternHistoryTable);

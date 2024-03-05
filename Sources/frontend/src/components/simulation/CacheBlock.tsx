@@ -42,6 +42,7 @@ import {
 import Block from '@/components/simulation/Block';
 import { hexPadEven } from '@/lib/utils';
 import clsx from 'clsx';
+import { DividedBadge } from '@/components/DividedBadge';
 
 /**
  * Display the cache, lines are grouped by the index.
@@ -60,7 +61,13 @@ export default function CacheBlock() {
   return (
     <Block
       title='Cache'
-      stats={policy}
+      stats={
+        <div className='flex'>
+          <DividedBadge>
+            <div>{policy}</div>
+          </DividedBadge>
+        </div>
+      }
       detailDialog={
         <DialogContent>
           <DialogHeader>

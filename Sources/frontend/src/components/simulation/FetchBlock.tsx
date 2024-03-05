@@ -37,10 +37,12 @@ import { useAppSelector } from '@/lib/redux/hooks';
 import { useBlockDescriptions } from '@/components/BlockDescriptionContext';
 import { Badge } from '@/components/base/ui/badge';
 import {
+  Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from '@/components/base/ui/dialog';
 import { PredictorGraphFromCodeId } from '@/components/prediction/PredictorGraph';
 import Block from '@/components/simulation/Block';
@@ -49,6 +51,9 @@ import { InstructionListDisplay } from '@/components/simulation/InstructionListD
 import InstructionTable from '@/components/simulation/InstructionTable';
 import { hexPadEven } from '@/lib/utils';
 import { Fragment } from 'react';
+import { DividedBadge } from '@/components/DividedBadge';
+import { BranchDetailDialog } from '@/components/simulation/PredictionBlock';
+import { Expand } from 'lucide-react';
 
 /**
  * A component for displaying the Fetch block.
@@ -61,11 +66,21 @@ export default function FetchBlock() {
 
   const fetchStats = (
     <>
-      <div>PC: {hexPadEven(fetchObject.pc)}</div>
-      <div>
-        {fetchObject.stallFlag ? (
-          <Badge variant='destructive'>Stalled</Badge>
-        ) : null}
+      <div className='flex gap-2 flex-wrap'>
+        <DividedBadge>
+          <div>PC</div>
+          <div>{hexPadEven(fetchObject.pc)}</div>
+        </DividedBadge>
+        {fetchObject.stallFlag ? <DividedBadge>Stalled</DividedBadge> : null}
+        <Dialog>
+          <DialogTrigger>
+            <DividedBadge>
+              <div>Prediction</div>
+              <Expand size={16} strokeWidth={1.5} />
+            </DividedBadge>
+          </DialogTrigger>
+          <BranchDetailDialog />
+        </Dialog>
       </div>
     </>
   );
