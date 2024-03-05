@@ -238,9 +238,13 @@
     @apply text-4xl font-medium m-2 mb-6;
   }
 
+  h2 {
+    @apply text-2xl font-medium m-1 mb-4
+  }
+
   /* 5px is the offset */
   .sim-bg {
-    @apply surface-container-high;
+    @apply surface-container-highest;
     /* background-image: radial-gradient(circle at 5px 5px, hsl(var(--accent)) 1px, hsl(var(--background)) 0); */
     background-size: 20px 20px;
   }
@@ -263,6 +267,24 @@
 
   input {
     @apply border-outline;
+  }
+
+  /* tables */
+
+  table {
+    @apply w-full rounded-md overflow-hidden;
+  }
+
+  thead {
+    @apply primary-container;
+  }
+
+  tbody {
+    @apply surface-container divide-y;
+  }
+
+  td {
+    @apply px-4 py-2;
   }
 
   .small-container {

@@ -151,24 +151,20 @@ export function InstructionDetailPopup({
   }
 
   return (
-    <DialogContent className='max-w-4xl'>
+    <DialogContent className='max-w-6xl max-h-screen bg-surfaceBright'>
       <DialogHeader>
-        <DialogTitle>
+        <DialogTitle className='text-4xl'>
           <InstructionSyntax functionModel={functionModel} args={args} />
         </DialogTitle>
-        <DialogDescription>
+        <DialogDescription className='text-onSurfaceVariant'>
           Detailed view of instruction #{simCodeModel.id}
         </DialogDescription>
       </DialogHeader>
-      <div className='grid grid-cols-2 gap-4'>
+      <div
+        className={clsx('grid gap-4', isBranch ? 'grid-cols-3' : 'grid-cols-2')}
+      >
         <div>
-          <h1 className='text-2xl'>
-            {inputCodeModel.instructionName.toUpperCase()}
-          </h1>
-          <ul>
-            <li>Type: {instructionTypeName(inputCodeModel)}</li>
-          </ul>
-          <h2 className='text-xl mt-2'>Operands</h2>
+          <h2>Operands</h2>
           <ul className='flex flex-col gap-4'>
             {args.map((operand) => {
               const value = getValue(operand);
@@ -189,10 +185,10 @@ export function InstructionDetailPopup({
             })}
           </ul>
         </div>
-        <div>
-          <h1 className='text-2xl'>Runtime</h1>
+        <div className='flex flex-col gap-2'>
           <ul>
             <li>ID: {simCodeModel.id}</li>
+            <li>Type: {instructionTypeName(inputCodeModel)}</li>
             <li>
               Address: {hexPadEven(pc)} ({pc})
             </li>
@@ -202,7 +198,7 @@ export function InstructionDetailPopup({
               {simCodeModel.exception?.exceptionMessage}
             </li>
           </ul>
-          <h2 className='text-xl mt-2'>Timestamps</h2>
+          <h2>Timestamps</h2>
           <table>
             <thead>
               <tr>
@@ -229,7 +225,7 @@ export function InstructionDetailPopup({
               </tr>
             </tbody>
           </table>
-          <h2 className='text-xl mt-2'>Flags</h2>
+          <h2>Flags</h2>
           <table>
             <thead>
               <tr>
@@ -264,42 +260,42 @@ export function InstructionDetailPopup({
               </tr>
             </tbody>
           </table>
-          {isBranch && (
-            <>
-              <h2 className='text-xl mt-2'>Branch</h2>
-              <table>
-                <thead>
-                  <tr>
-                    <th>Flag</th>
-                    <th>Value</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>Branch</td>
-                    <td>
-                      {functionModel.unconditionalJump
-                        ? 'Unconditional'
-                        : 'Conditional'}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>Prediction Accuracy</td>
-                    <td>
-                      {formatFracPercentage(
-                        instructionStats.correctlyPredicted,
-                        instructionStats.committedCount,
-                      )}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-              {simCodeModel.branchInfo && (
-                <BranchTable branchInfo={simCodeModel.branchInfo} />
-              )}
-            </>
-          )}
         </div>
+        {isBranch && (
+          <div className='flex flex-col gap-2'>
+            <h2>Branch</h2>
+            <table>
+              <thead>
+                <tr>
+                  <th>Flag</th>
+                  <th>Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Branch</td>
+                  <td>
+                    {functionModel.unconditionalJump
+                      ? 'Unconditional'
+                      : 'Conditional'}
+                  </td>
+                </tr>
+                <tr>
+                  <td>Prediction Accuracy</td>
+                  <td>
+                    {formatFracPercentage(
+                      instructionStats.correctlyPredicted,
+                      instructionStats.committedCount,
+                    )}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            {simCodeModel.branchInfo && (
+              <BranchTable branchInfo={simCodeModel.branchInfo} />
+            )}
+          </div>
+        )}
       </div>
     </DialogContent>
   );

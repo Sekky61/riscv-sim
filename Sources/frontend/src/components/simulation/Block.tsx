@@ -37,6 +37,11 @@ import { MoreVertical } from 'lucide-react';
 
 import { ReactChildren, ReactClassName } from '@/lib/types/reactTypes';
 import { Dialog, DialogTrigger } from '@radix-ui/react-dialog';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/base/ui/tooltip';
 
 export type BlockProps = {
   title: string;
@@ -62,14 +67,19 @@ export default function Block({
 
   return (
     <div className={classes}>
-      <div className='flex justify-between pl-2 pt-1'>
+      <div className='flex justify-between items-center pl-2'>
         <span className='font-bold '>{title}</span>
         {detailDialog && (
           <Dialog>
             <DialogTrigger>
-              <div className='iconHighlight h-6 w-6 rounded-full'>
-                <MoreVertical strokeWidth={1.5} />
-              </div>
+              <Tooltip>
+                <TooltipTrigger>
+                  <div className='iconHighlight h-8 w-8 p-1 rounded-full text-primary'>
+                    <MoreVertical strokeWidth={1.5} />
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent side='bottom'>See details</TooltipContent>
+              </Tooltip>
             </DialogTrigger>
             {detailDialog}
           </Dialog>

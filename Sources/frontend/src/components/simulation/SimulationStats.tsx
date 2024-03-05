@@ -93,27 +93,27 @@ export function SimulationStats() {
   return (
     <div className='grid gap-6'>
       <div className='grid md:grid-cols-3 gap-6'>
-        <Card>
+        <Card className='flex flex-col'>
           <CardHeader>
             <CardTitle>IPC</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className='flex-grow flex items-end'>
             <span className='text-7xl'>{statistics.ipc.toFixed(2)}</span>
           </CardContent>
         </Card>
-        <Card>
+        <Card className='flex flex-col'>
           <CardHeader>
             <CardTitle>Clocks</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className='flex-grow flex items-end'>
             <span className='text-7xl'>{statistics.clockCycles}</span>
           </CardContent>
         </Card>
-        <Card>
+        <Card className='flex flex-col'>
           <CardHeader>
             <CardTitle>Branch Prediction Accuracy</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className='flex-grow flex items-end'>
             <span className='text-7xl'>{branchAccuracy}</span>
           </CardContent>
         </Card>
@@ -307,10 +307,15 @@ function DetailedSimulationStats({ stats }: DetailedStatsProps) {
           </TableHeader>
           <TableBody>
             {Object.entries(detailedStatNames).map(([name, displayName]) => {
+              let stat: string | number = stats[name as DetailedStatName];
+              // if needed, format to two decimal places
+              if (typeof stat === 'number' && !Number.isInteger(stat)) {
+                stat = stat.toFixed(2);
+              }
               return (
                 <TableRow>
                   <TableCell className='font-medium'>{displayName}</TableCell>
-                  <TableCell>{stats[name as DetailedStatName]}</TableCell>
+                  <TableCell>{stat}</TableCell>
                 </TableRow>
               );
             })}
@@ -499,15 +504,6 @@ function InstructionMixDash({ mix, title, description }: InstructionMixProps) {
 interface PieChartProps {
   mix: InstructionMix;
 }
-/*
-<PieChart
-  data={[
-    { title: 'One', value: 10, color: '#E38627' },
-    { title: 'Two', value: 15, color: '#C13C37' },
-    { title: 'Three', value: 20, color: '#6A2135' },
-  ]}
-/>;
-*/
 
 function MixPieChart({ mix }: PieChartProps) {
   const data = [

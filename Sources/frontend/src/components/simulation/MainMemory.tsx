@@ -203,7 +203,7 @@ const HexDump = memo(function HexDump({
   const bytes = new Array<JSX.Element>(memory.length);
   memory.forEach((byte, index) => {
     const changed = oldMemory[index] !== undefined && oldMemory[index] !== byte;
-    const cls = clsx(changed && 'bg-green-300');
+    const cls = clsx(changed && 'bg-primary rounded-md text-onPrimary');
     bytes[index] = (
       //biome-ignore lint: Index is appropriate here
       <div key={index} className={cls} data-value={byte}>

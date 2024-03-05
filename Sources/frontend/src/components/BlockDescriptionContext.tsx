@@ -31,7 +31,7 @@
 
 'use client';
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext } from 'react';
 
 import { BlockDescriptions } from '@/lib/types/codeExamples';
 
@@ -43,7 +43,7 @@ export const BlockDescriptionContext = createContext<BlockDescriptions>({});
 /**
  * A provider for the block descriptions
  */
-export async function BlockDescriptionProvider({
+export function BlockDescriptionProvider({
   children,
   descriptions,
 }: { children: React.ReactNode; descriptions: BlockDescriptions }) {

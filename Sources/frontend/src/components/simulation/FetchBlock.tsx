@@ -126,12 +126,13 @@ export default function FetchBlock() {
         totalSize={fetchObject.numberOfWays}
         columns={2}
         instructionRenderer={(codeModel, i) => (
-          <Fragment key={`instr_${codeModel}_${i}`}>
-            <div className='grid grid-cols-subgrid col-span-2'>
-              <InstructionField instructionId={codeModel} />
-              <PredictorGraphFromCodeId simCodeId={codeModel} />
-            </div>
-          </Fragment>
+          <div
+            className='grid grid-cols-subgrid col-span-2'
+            key={`instr_${codeModel}_${i}`}
+          >
+            <InstructionField instructionId={codeModel} />
+            <PredictorGraphFromCodeId simCodeId={codeModel} />
+          </div>
         )}
       />
     </Block>
