@@ -43,7 +43,7 @@ import Navbar from '@/components/Navbar';
 export default function Layout({ children }: { children: ReactNode }) {
   return (
     <>
-      <div className='w-12 relative z-30'>
+      <div className='w-14 relative z-30'>
         <Navbar />
       </div>
       <div className='relative flex-grow overflow-y-auto'>{children}</div>

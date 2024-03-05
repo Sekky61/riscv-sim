@@ -53,7 +53,9 @@ export function SimGrid() {
             <FetchBlock />
             <DecodeBlock />
           </div>
-          <ReorderBuffer />
+          <div className='w-block h-full relative'>
+            <ReorderBuffer />
+          </div>
           <div className='issue'>
             <IssueWindow type='alu' />
             <FunctionUnitGroup type='alu' />

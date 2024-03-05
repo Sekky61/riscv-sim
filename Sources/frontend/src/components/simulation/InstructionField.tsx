@@ -68,7 +68,6 @@ import {
 
 export type InstructionFieldProps = {
   instructionId: Reference | null;
-  showSpeculative?: boolean;
 };
 
 /**
@@ -78,7 +77,6 @@ export type InstructionFieldProps = {
  */
 export default function InstructionField({
   instructionId: simCodeId,
-  showSpeculative = false,
 }: InstructionFieldProps) {
   const { setHighlightedInstruction } = useHighlight();
   const q = useAppSelector((state) => selectSimCodeModel(state, simCodeId));
@@ -120,11 +118,6 @@ export default function InstructionField({
           data-instruction-id={simCodeId}
         >
           <InstructionSyntax functionModel={functionModel} args={args} />
-          {showSpeculative && (
-            <span className='absolute top-0 right-0 p-1 text-xs'>
-              {simCodeModel.isSpeculative ? 'S' : ''}
-            </span>
-          )}
         </button>
       </DialogTrigger>
       <InstructionDetailPopup simCodeId={simCodeId} />
@@ -205,7 +198,7 @@ export function InstructionDetailPopup({
             </li>
             <li>Committed: {instructionStats.committedCount} times</li>
             <li>
-              Exception Raised: {simCodeModel.exception ? 'Yes' : 'No'}
+              Exception Raised: {simCodeModel.exception ? 'Yes -' : 'No'}{' '}
               {simCodeModel.exception?.exceptionMessage}
             </li>
           </ul>

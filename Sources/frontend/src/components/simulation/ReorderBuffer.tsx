@@ -29,7 +29,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { selectROB } from '@/lib/redux/cpustateSlice';
+import { selectROB, selectSimCodeModel } from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
 
 import { useBlockDescriptions } from '@/components/BlockDescriptionContext';
@@ -70,7 +70,7 @@ export default function ReorderBuffer() {
     <Block
       title='Reorder Buffer'
       stats={robStats}
-      className='rob w-block h-96'
+      className='rob w-block absolute inset-0'
       detailDialog={
         <DialogContent>
           <DialogHeader>
@@ -90,17 +90,36 @@ export default function ReorderBuffer() {
       <InstructionListDisplay
         instructions={rob.reorderQueue}
         totalSize={rob.bufferSize}
+        columns={2}
         instructionRenderer={(simCodeModel, i) => {
-          if (simCodeModel === null) {
-            return <InstructionField instructionId={null} key={`item_${i}`} />;
-          }
           return (
-            <div className='relative' key={`item_${i}`}>
-              <InstructionField instructionId={simCodeModel} showSpeculative />
+            <div
+              className='grid grid-cols-subgrid col-span-2'
+              key={`item_${i}`}
+            >
+              <InstructionField instructionId={simCodeModel} />
+              <RobInfo instructionId={simCodeModel} />
             </div>
           );
         }}
       />
     </Block>
+  );
+}
+
+export function RobInfo({ instructionId }: { instructionId: number | null }) {
+  const q = useAppSelector((state) => selectSimCodeModel(state, instructionId));
+  if (!q || instructionId === null) {
+    // Empty field
+    return null;
+  }
+
+  const { simCodeModel } = q;
+
+  return (
+    <div className='flex gap-0.5 items-start'>
+      {simCodeModel.isSpeculative && <DividedBadge>S</DividedBadge>}
+      {simCodeModel.exception && <DividedBadge>Ex</DividedBadge>}
+    </div>
   );
 }
