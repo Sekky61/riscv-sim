@@ -101,8 +101,10 @@ export function LoadBufferItemComponent({
 }: LoadBufferItemProps) {
   if (!item) {
     return (
-      <div className='instruction-bubble flex justify-center px-2 py-1 font-mono col-span-4'>
-        <span className='text-gray-400'>empty</span>
+      <div className='col-span-4 pointer-events-none w-full font-mono px-2 text-left whitespace-nowrap'>
+        <button type='button' className='text-gray-400 h-8'>
+          empty
+        </button>
       </div>
     );
   }

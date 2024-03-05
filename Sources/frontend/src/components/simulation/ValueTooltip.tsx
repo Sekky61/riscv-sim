@@ -39,12 +39,9 @@ export type ValueInformationProps = {
 
 /**
  * Value of a register or constant.
- * Used in the tooltip and instruction modals.
+ * Used in the instruction modals.
  */
-export default function ValueInformation({
-  value,
-  valid,
-}: ValueInformationProps) {
+export function ValueInformation({ value, valid }: ValueInformationProps) {
   return (
     <div className='flex flex-col'>
       <div className='flex flex-row'>
@@ -63,6 +60,27 @@ export default function ValueInformation({
           <div>{hexPad(value.bits)}</div>
         </div>
       </div>
+    </div>
+  );
+}
+
+/**
+ * Shorter version for hover
+ */
+export function ShortValueInformation({ value, valid }: ValueInformationProps) {
+  return (
+    <div
+      className='z-50 grid gap-1 secondary-container px-3 py-1.5'
+      style={{
+        gridTemplateColumns: 'auto auto',
+      }}
+    >
+      <div className=' font-bold'>Value</div>
+      <div>{value.stringRepresentation}</div>
+      <div>Type</div>
+      <div>{value.currentType}</div>
+      <div>Valid</div>
+      <div>{valid ? 'Yes' : 'No'}</div>
     </div>
   );
 }

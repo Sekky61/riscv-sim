@@ -29,10 +29,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import clsx from 'clsx';
-
 import { selectRegisterById } from '@/lib/redux/cpustateSlice';
-import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
+import { useAppSelector } from '@/lib/redux/hooks';
 import { ReactClassName } from '@/lib/types/reactTypes';
 
 import { useHighlight } from '@/components/HighlightProvider';
@@ -41,7 +39,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/base/ui/tooltip';
-import ValueInformation from '@/components/simulation/ValueTooltip';
+import { ValueInformation } from '@/components/simulation/ValueTooltip';
 import { isValidRegisterValue } from '@/lib/utils';
 
 export type RegisterReferenceProps = {

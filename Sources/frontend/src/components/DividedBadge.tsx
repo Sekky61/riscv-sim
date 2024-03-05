@@ -31,7 +31,7 @@
 
 export function DividedBadge({ children }: { children: React.ReactNode }) {
   return (
-    <div className='inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold transition-colors secondary-container divide-pad snap-start divide-x gap-1'>
+    <div className='inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold transition-colors secondary-container divide-pad snap-start divide-x divide-primary-50 gap-1'>
       {children}
     </div>
   );

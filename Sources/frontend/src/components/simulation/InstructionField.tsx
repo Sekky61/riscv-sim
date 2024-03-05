@@ -55,7 +55,10 @@ import {
   TooltipTrigger,
 } from '@/components/base/ui/tooltip';
 import { BranchTable } from '@/components/prediction/BranchTable';
-import ValueInformation from '@/components/simulation/ValueTooltip';
+import {
+  ShortValueInformation,
+  ValueInformation,
+} from '@/components/simulation/ValueTooltip';
 import {
   formatFracPercentage,
   hexPadEven,
@@ -83,9 +86,12 @@ export default function InstructionField({
   if (!q || simCodeId === null || statistics === undefined) {
     // Empty field
     return (
-      <div className='instruction-bubble flex justify-center items-center px-2 font-mono'>
+      <button
+        type='button'
+        className='pointer-events-none group instruction rounded-[6px] h-8 w-full font-mono px-2 text-left whitespace-nowrap overflow-hidden'
+      >
         <span className='text-gray-400'>empty</span>
-      </div>
+      </button>
     );
   }
 
@@ -342,7 +348,7 @@ function InstructionArgument({ arg }: InstructionArgumentProps) {
         </span>
       </TooltipTrigger>
       <TooltipContent>
-        <ValueInformation value={value} valid={arg.valid} />
+        <ShortValueInformation value={value} valid={arg.valid} />
       </TooltipContent>
     </Tooltip>
   );
