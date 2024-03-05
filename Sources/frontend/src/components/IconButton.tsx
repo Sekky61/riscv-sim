@@ -29,6 +29,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+'use client';
+
 import clsx from 'clsx';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { OptionsOrDependencyArray } from 'react-hotkeys-hook/dist/types';

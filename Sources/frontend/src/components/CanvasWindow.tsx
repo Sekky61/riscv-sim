@@ -113,7 +113,7 @@ export default function CanvasWindow({ children }: CanvasWindowProps) {
   }, []);
 
   const cls = clsx(
-    'overflow-auto dotted-bg min-h-full min-w-full',
+    'overflow-auto sim-bg min-h-full min-w-full',
     middleHeld && 'cursor-grabbing',
     !middleHeld && 'cursor-grab',
   );
@@ -163,7 +163,7 @@ const ScaleButtons = ({ scaleUp, scaleDown }: ScaleButtonsProps) => {
         shortCut='ctrl-+'
         shortCutOptions={{ combinationKey: '-', preventDefault: true }}
         clickCallback={scaleUp}
-        className='neutral-bg rounded-full drop-shadow'
+        className='secondary-container rounded-[8px] drop-shadow'
         description='Zoom in'
       >
         <ZoomIn strokeWidth={1.5} />
@@ -172,7 +172,7 @@ const ScaleButtons = ({ scaleUp, scaleDown }: ScaleButtonsProps) => {
         shortCut='ctrl+-'
         shortCutOptions={{ preventDefault: true }}
         clickCallback={scaleDown}
-        className='neutral-bg rounded-full drop-shadow'
+        className='secondary-container rounded-full drop-shadow'
         description='Zoom out'
       >
         <ZoomOut strokeWidth={1.5} />

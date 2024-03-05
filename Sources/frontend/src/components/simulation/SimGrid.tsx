@@ -39,7 +39,6 @@ import FunctionUnitGroup from '@/components/simulation/FunctionUnitGroup';
 import IssueWindow from '@/components/simulation/IssueWindow';
 import LoadBuffer from '@/components/simulation/LoadBuffer';
 import MainMemory from '@/components/simulation/MainMemory';
-import PredictionBlock from '@/components/simulation/PredictionBlock';
 import Program from '@/components/simulation/Program';
 import ReorderBuffer from '@/components/simulation/ReorderBuffer';
 import StoreBuffer from '@/components/simulation/StoreBuffer';

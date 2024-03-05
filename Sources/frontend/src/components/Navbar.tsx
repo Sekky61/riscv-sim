@@ -46,8 +46,8 @@ import SideMenuButton from '@/components/SideMenuButton';
 export default function Navbar() {
   return (
     <nav className='navbar'>
-      <div className='navbar-inner flex flex-col justify-between'>
-        <div className='flex flex-col gap-3'>
+      <div className='navbar-inner surface w-14 h-full flex flex-col justify-between py-12'>
+        <div className='flex flex-col'>
           <SideMenuButton
             Icon={<BrainCircuit strokeWidth={1.5} />}
             href='/'
@@ -79,7 +79,7 @@ export default function Navbar() {
             shortcut='Digit5'
           />
         </div>
-        <div className='flex flex-col gap-3'>
+        <div className='flex flex-col'>
           <SideMenuButton
             Icon={<GraduationCap strokeWidth={1.5} />}
             href='/learn'

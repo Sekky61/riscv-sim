@@ -194,6 +194,10 @@
     @apply text-onTertiaryContainer;
   }
 
+  .surface-variant * {
+    @apply text-onSurfaceVariant;
+  }
+
   /* main pane is for the page main content body */
   .main-pane {
     @apply surface rounded-2xl p-10;
@@ -204,16 +208,12 @@
     @apply border-outlineVariant;
   }
 
-  .neutral-bg {
-    @apply bg-neutral-99 text-neutral-10 dark:bg-neutral-10 dark:text-neutral-99;
-  }
-
   .sim-shadow {
     box-shadow: 2px 1px 3px 0px rgb(0 0 0 / 0.07), 0px 4px 9px 3px rgb(0 0 0 / 0.06);
   }
 
   .sim-block {
-    @apply surface-container-low rounded-[12px] sim-shadow;
+    @apply surface-container rounded-[12px] sim-shadow;
 
   }
 
@@ -227,8 +227,8 @@
   }
 
   /* 5px is the offset */
-  .dotted-bg {
-    @apply bg-gray-100;
+  .sim-bg {
+    @apply surface-container-high;
     /* background-image: radial-gradient(circle at 5px 5px, hsl(var(--accent)) 1px, hsl(var(--background)) 0); */
     background-size: 20px 20px;
   }
@@ -387,7 +387,7 @@
      renders navbar above page content.
   */
   .navbar-slot {
-    @apply shrink min-w-12 w-12 2xl:w-64 relative z-30;
+    @apply shrink min-w-12 w-12 2xl:w-[18rem] relative z-30;
   }
 
   /* Parent of .navbar */
@@ -398,9 +398,9 @@
   .navbar {
     @apply w-12 h-full;
   }
-  
-  .navbar-inner {
-    @apply surface w-12 h-full p-2;
+
+  .navbar * {
+    @apply transition-all duration-100;
   }
 
   .nav-text {
@@ -409,24 +409,47 @@
 
   .navbar:hover .nav-text {
     @apply block;
-  } 
+  }
+
+  .item-expanded {
+    @apply h-12 pl-3 ml-2 mr-3;
+  }
+
+  
   
   /* Style for popup navbar */
-  @container navbarslot (max-width: 15rem) {
+  @container navbarslot (max-width: 17rem) {
     .navbar:hover .navbar-inner {
-      @apply w-64 drop-shadow;
+      @apply drop-shadow;
+      width: 18rem;
+    }
+
+    .navbar:hover .navbar-inner {
+      @apply rounded-r-3xl;
+    }
+
+    .navbar:not(:hover) .sidemenu-button {
+      @apply w-12 mx-1 justify-center;
+    }
+  
+    .navbar:hover .sidemenu-button {
+      @apply item-expanded;
     }
   } 
   
   /* Style for always-visible navbar */
-  @container navbarslot (min-width: 15rem) {
+  @container navbarslot (min-width: 17rem) {
 
     .nav-text {
       @apply block;
     }
 
     .navbar-inner {
-      @apply w-64;
+      width: 18rem;
+    }
+
+    .sidemenu-button {
+      @apply item-expanded;
     }
   }
 
@@ -651,17 +674,17 @@
   
   .iconHighlight:focus,
   .iconHighlight:hover {
-    @apply bg-black/10;
+    @apply bg-primary-90;
   }
 
   /* Active after hover, so it has bigger precedence */
   .iconHighlight:active,
   .iconHighlight[data-clicked] {
-    @apply bg-black/30;
+    @apply bg-primary/30;
   }
 
   .iconHighlight[data-active='true'] {
-    @apply bg-black/20;
+    @apply bg-primary/20;
   }
 
   .iconHighlight:active:not([data-active='true']) > *,
