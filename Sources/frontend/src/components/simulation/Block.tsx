@@ -55,10 +55,7 @@ export default function Block({
   stats,
   detailDialog,
 }: BlockProps) {
-  const classes = clsx(
-    className,
-    'rounded border p-2 flex gap-2 flex-col neutral-bg',
-  );
+  const classes = clsx(className, 'p-2 flex gap-2 flex-col sim-block');
 
   return (
     <div className={classes}>

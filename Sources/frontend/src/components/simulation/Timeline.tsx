@@ -53,20 +53,13 @@ import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import { IconButton } from '@/components/IconButton';
 import { stopReasonToShortString } from '@/lib/utils';
 
-export type TimelineProps = Pick<
-  React.HTMLAttributes<HTMLDivElement>,
-  'className'
->;
-
 // Control ticks of simulation
 // Go forward, back, finish
-export default function Timeline({ className = '' }: TimelineProps) {
+export default function Timeline() {
   const dispatch = useAppDispatch();
   const tick = useAppSelector(selectTick);
   const stopReason = useAppSelector(selectStopReason);
   const simulationStatus = useAppSelector(selectSimulationStatus);
-
-  const cls = clsx('timeline-grid drop-shadow', className);
 
   let state = 0;
   let message = '';
@@ -83,10 +76,14 @@ export default function Timeline({ className = '' }: TimelineProps) {
   // Loading border shows a loading animation while the simulation is loading
   // todo make buttons unselectable in certain states
   return (
-    <div className={cls} data-state={state} data-reset={false}>
+    <div
+      className='timeline-grid drop-shadow'
+      data-state={state}
+      data-reset={false}
+    >
       <div
         className={clsx(
-          'controls rounded-full h-full box-content border accent-bg flex flex-row-reverse justify-end items-center',
+          'controls rounded-[16px] h-full box-content primary-container flex flex-row-reverse justify-end items-center',
           simulationStatus === 'loading' && 'loading-border',
         )}
       >
@@ -115,7 +112,7 @@ export default function Timeline({ className = '' }: TimelineProps) {
           <ChevronLast strokeWidth={1.5} />
         </IconButton>
       </div>
-      <div className='reset h-full box-content border flex items-center justify-between bg-[#ff7171] rounded-full'>
+      <div className='reset h-full box-content flex items-center justify-between tertiary-container rounded-[16px]'>
         <IconButton
           clickCallback={() => dispatch(reloadSimulation())}
           shortCut='r'
@@ -127,7 +124,7 @@ export default function Timeline({ className = '' }: TimelineProps) {
         <div
           className={`${
             state === 2 ? 'opacity-100' : 'opacity-0'
-          } flex-grow text-center rotate-180 mr-4`}
+          } flex-grow text-center rotate-180 mr-4 font-medium`}
         >
           {message}
         </div>

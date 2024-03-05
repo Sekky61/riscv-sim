@@ -37,7 +37,7 @@ export default function Page() {
 
   return (
     <div className='pb-20'>
-      <h1 className='text-2xl'>RISC-V quick reference</h1>
+      <h1>RISC-V quick reference</h1>
       <section>
         <h2 className='mt-4 text-xl'>The basics</h2>
         <p>RISC-V has a little-endian memory system.</p>

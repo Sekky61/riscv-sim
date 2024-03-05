@@ -8,7 +8,7 @@
 
  *          xmajer21@stud.fit.vutbr.cz
  *
- * @brief   The compiler page
+ * @brief   The compiler page root
  *
  * @date    19 September 2023, 22:00 (created)
  *
@@ -38,7 +38,7 @@ import { CCodeInput } from '@/app/(other)/compiler/CCodeInput';
 import { CompileOptions } from '@/app/(other)/compiler/CompileOptions';
 import { LineHighlightProvider } from '@/app/(other)/compiler/LineHighlightContext';
 
-export default function HomePage() {
+export default function Page() {
   // Note: min-h-0 fixes overflow of the flex container
   return (
     <main className='h-full'>
@@ -46,8 +46,8 @@ export default function HomePage() {
         <title>Code Editor</title>
       </Head>
       <div className='flex h-full flex-col'>
-        <h1 className='m-2 mb-6 text-2xl'>Code Editor</h1>
-        <div className=' editor-container grid min-h-0 flex-grow grid-cols-[160px_minmax(350px,2fr)_minmax(350px,1fr)] gap-4'>
+        <h1>Code Editor</h1>
+        <div className='editor-container grid min-h-0 flex-grow grid-cols-[160px_minmax(350px,2fr)_minmax(350px,1fr)] gap-4'>
           <CompileOptions />
           <LineHighlightProvider>
             <CCodeInput />

@@ -35,6 +35,8 @@
 @tailwind utilities;
 
 @layer base {
+
+  /* shadcn/ui */
   :root {
     --background: 0 0% 100%;
     --foreground: 20 14.3% 4.1%;
@@ -70,7 +72,7 @@
     --hover-highlight-color: rgba(100, 100, 100, 0.15);
   }
  
-  .dark {
+  /* .dark {
     --background: 200 5.9% 10%;
     --foreground: 60 9.1% 97.8%;
  
@@ -98,35 +100,133 @@
     --border: 12 6.5% 15.1%;
     --input: 12 6.5% 15.1%;
     --ring: 24 5.7% 82.9%;
-  }
+  } */
 }
  
 @layer base {
+
+  /* Default border color */
   * {
-    @apply border-border;
+    @apply border-outline list-inside;
   }
+
   body {
-    @apply bg-background text-foreground;
+    @apply surface-container;
+    font-family: 'Open Sans', sans-serif;
   }
 }
 
 @layer base {
-  body {
-    font-family: 'Open Sans', sans-serif;
-    @apply neutral-bg;
+
+  /* Also use text-onSurfaceVariant for lower emphasis text */
+  .surface {
+    @apply bg-surface text-onSurface;
+  }
+
+  .surface * {
+    @apply text-onSurface;
+  }
+  
+  .surface-container-lowest {
+    @apply bg-surfaceContainerLowest text-onSurface;
+  }
+
+  .surface-container-lowest * {
+    @apply text-onSurface;
+  }
+  
+  .surface-container-low {
+    @apply bg-surfaceContainerLow text-onSurface;
+  }
+
+  .surface-container-low * {
+    @apply text-onSurface;
+  }
+
+  .surface-container {
+    @apply bg-surfaceContainer text-onSurface;
+  }
+
+  .surface-container * {
+    @apply text-onSurface;
+  }
+
+  .surface-container-high {
+    @apply bg-surfaceContainerHigh text-onSurface;
+  }
+
+  .surface-container-high * {
+    @apply text-onSurface;
+  }
+
+  .surface-container-highest {
+    @apply bg-surfaceContainerHighest text-onSurface;
+  }
+
+  .surface-container-highest * {
+    @apply text-onSurface;
+  }
+
+  .primary-container {
+    @apply bg-primaryContainer text-onPrimaryContainer;
+  }
+
+  .primary-container * {
+    @apply text-onPrimaryContainer;
+  }
+
+  .secondary-container {
+    @apply bg-secondaryContainer text-onSecondaryContainer;
+  }
+
+  .secondary-container * {
+    @apply text-onSecondaryContainer;
+  }
+
+  .tertiary-container {
+    @apply bg-tertiaryContainer text-onTertiaryContainer;
+  }
+
+  .tertiary-container * {
+    @apply text-onTertiaryContainer;
+  }
+
+  /* main pane is for the page main content body */
+  .main-pane {
+    @apply surface rounded-2xl p-10;
+  }
+
+  /* border colors */
+  .decorative-border {
+    @apply border-outlineVariant;
   }
 
   .neutral-bg {
     @apply bg-neutral-99 text-neutral-10 dark:bg-neutral-10 dark:text-neutral-99;
   }
 
+  .sim-shadow {
+    box-shadow: 2px 1px 3px 0px rgb(0 0 0 / 0.07), 0px 4px 9px 3px rgb(0 0 0 / 0.06);
+  }
+
+  .sim-block {
+    @apply surface-container-low rounded-[12px] sim-shadow;
+
+  }
+
   .accent-bg {
     @apply bg-[#f5f5f5] dark:bg-gray-700;
   }
 
+  /* Page main title. Use h1 once in a page for the most important heading. */
+  h1 {
+    @apply text-4xl font-medium m-2 mb-6;
+  }
+
   /* 5px is the offset */
   .dotted-bg {
-    background-image: radial-gradient(circle at 5px 5px, hsl(var(--accent)) 1px, hsl(var(--background)) 0);
+    @apply bg-gray-100;
+    /* background-image: radial-gradient(circle at 5px 5px, hsl(var(--accent)) 1px, hsl(var(--background)) 0); */
     background-size: 20px 20px;
   }
 
@@ -302,7 +402,7 @@
   }
   
   .navbar-inner {
-    @apply bg-background w-12 h-full p-2;
+    @apply surface w-12 h-full p-2;
   }
 
   .nav-text {
@@ -519,6 +619,7 @@
   }
     
   .loading-border::before {
+    @apply bg-primary;
     content: '';
     position: absolute;
     z-index: -2;
@@ -529,21 +630,18 @@
     /* matches bg-gray-100 */
     --bg: rgb(243, 244, 246);
     --loading-color: rgb(209, 213, 219);
-    background-color: var(--loading-color);
     animation: rotate 4s linear infinite;
     border-radius: 4px;
   }
     
   .loading-border::after {
-    @apply bg-gray-100;
+    background-color: inherit;
     content: '';
     position: absolute;
     z-index: -1;
-    left: 3px;
-    top: 3px;
-    width: calc(100% - 6px);
-    height: calc(100% - 6px);
-    border-radius: 9999px;
+    inset: 0;
+    margin: 3px;
+    border-radius: 13px;
   }
   
 

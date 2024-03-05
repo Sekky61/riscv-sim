@@ -84,7 +84,7 @@ export default function HomePage() {
       <Head>
         <title>Memory</title>
       </Head>
-      <h1 className='m-2 mb-6 text-2xl'>Memory Editor</h1>
+      <h1>Memory Editor</h1>
       <div className='flex divide-x'>
         <div className='w-48 p-4 flex flex-col gap-4 divide-y'>
           <Button

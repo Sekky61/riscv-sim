@@ -76,7 +76,7 @@ export default async function RootLayout({
       </head>
       <body
         className={cn(
-          'min-h-screen bg-background font-sans antialiased overflow-hidden',
+          'min-h-screen font-sans antialiased overflow-hidden',
           fontSans.variable,
         )}
       >
