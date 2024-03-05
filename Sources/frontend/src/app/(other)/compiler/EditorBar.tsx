@@ -76,7 +76,7 @@ export default function EditorBar({
       <div className='py-1 px-0.5 font-bold'>{editorName}</div>
       <label>
         <Button
-          variant='ghost'
+          variant='secondary'
           onClick={handleLoadFile}
           className='button-interactions px-2 rounded py-0.5 my-0.5 h-6'
         >
@@ -85,7 +85,7 @@ export default function EditorBar({
         </Button>
       </label>
       <Button
-        variant='ghost'
+        variant='secondary'
         onClick={handleSaveFile}
         className='button-interactions px-2 rounded py-0.5 my-0.5 h-6'
       >

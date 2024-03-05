@@ -42,7 +42,7 @@ export default {
       },
       colors: {
         border: 'hsl(var(--border))',
-        input: 'hsl(var(--input))',
+        input: '#6F797A',
         ring: 'hsl(var(--ring))',
         foreground: 'hsl(var(--foreground))',
         destructive: {

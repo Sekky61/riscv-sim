@@ -121,6 +121,12 @@
 
 @layer base {
 
+  /* main pane is for the page main content body */
+  /* above other definitions so it has less power */
+  .main-pane {
+    @apply surface rounded-2xl p-10;
+  }
+
   /* Also use text-onSurfaceVariant for lower emphasis text */
   .surface {
     @apply bg-surface text-onSurface;
@@ -198,10 +204,15 @@
     @apply text-onSurfaceVariant;
   }
 
-  /* main pane is for the page main content body */
-  .main-pane {
-    @apply surface rounded-2xl p-10;
+  .error {
+    @apply bg-error text-onError;
   }
+
+  .error * {
+    @apply text-onError;
+  }
+
+
 
   /* border colors */
   .decorative-border {
@@ -219,6 +230,12 @@
 
   .accent-bg {
     @apply bg-[#f5f5f5] dark:bg-gray-700;
+  }
+
+  /* apply text colors for all descendants */
+
+  .primary-text-desc * {
+    @apply text-onPrimary;
   }
 
   /* Page main title. Use h1 once in a page for the most important heading. */
@@ -249,12 +266,16 @@
     padding: 2px 5px;
   }
 
+  input {
+    @apply border-outline;
+  }
+
   .small-container {
     @apply mx-auto w-full xl:w-[1200px];
   }
 
   .heading-underline {
-    @apply decoration-primary-40 dark: decoration-primary-80 underline decoration-4 underline-offset-[5px];
+    @apply decoration-primary-40 dark:decoration-primary-80 underline decoration-4 underline-offset-[5px];
   }
 
   .primary-text {
@@ -506,17 +527,6 @@
 
   .radio-selected {
     @apply bg-background text-foreground shadow-sm cursor-default;
-  }
-
-  /* radio input */
-  /* Source: https://thestizmedia.com/radio-buttons-as-toggle-buttons-with-css/ */
-  .radio-field input[type='radio']:checked + label {
-    @apply radio-selected;
-  }
-
-  /* Sometimes, radix ui uses button instead of input */
-  .radio-field button[role='radio'][aria-checked='true'] + label {
-    @apply radio-selected;
   }
 
   /* schemaLine */

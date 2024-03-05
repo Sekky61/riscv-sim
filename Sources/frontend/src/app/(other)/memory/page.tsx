@@ -88,9 +88,9 @@ export default function HomePage() {
       <div className='flex divide-x'>
         <div className='w-48 p-4 flex flex-col gap-4 divide-y'>
           <Button
-            variant='ghost'
+            variant='secondary'
             className={clsx(
-              'new' === activeMemoryLocation && 'bg-accent',
+              'new' === activeMemoryLocation && 'bg-secondary',
               'w-full',
             )}
             onClick={() => setActiveMemoryLocation('new')}
@@ -98,10 +98,10 @@ export default function HomePage() {
             New Object
           </Button>
           <div className='pt-4 flex justify-around'>
-            <Button onClick={doImport} variant='ghost'>
+            <Button onClick={doImport} variant='secondary'>
               Import
             </Button>
-            <Button onClick={doExport} variant='ghost'>
+            <Button onClick={doExport} variant='secondary'>
               Export
             </Button>
           </div>
@@ -116,10 +116,13 @@ export default function HomePage() {
             )}
             {memoryLocations.map((memoryLocation) => {
               const isActive = memoryLocation.name === activeMemoryLocation;
-              const style = clsx(isActive && 'bg-accent', 'w-full mt-4');
+              const style = clsx(
+                isActive && 'bg-primary text-onPrimary',
+                'w-full mt-4',
+              );
               return (
                 <Button
-                  variant='ghost'
+                  variant='text'
                   className={style}
                   onClick={() => setActiveMemoryLocation(memoryLocation.name)}
                 >

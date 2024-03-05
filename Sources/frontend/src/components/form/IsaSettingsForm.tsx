@@ -668,6 +668,7 @@ function FUAdder({ control }: { control: Control<CpuConfig> }) {
 
   return (
     <div>
+      <h3 className='mb-4'>Add a Unit</h3>
       <div className=''>
         <ControlRadioInput
           control={subControl}
