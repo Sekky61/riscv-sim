@@ -59,8 +59,8 @@ export default function Block({
 
   return (
     <div className={classes}>
-      <div className='flex justify-between'>
-        <span className='font-bold'>{title}</span>
+      <div className='flex justify-between pl-2 pt-1'>
+        <span className='font-bold '>{title}</span>
         {detailDialog && (
           <Dialog>
             <DialogTrigger>

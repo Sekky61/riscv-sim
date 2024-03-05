@@ -82,22 +82,15 @@ function FU({ type, fu }: FUProps) {
   return (
     <Block
       title={fu.description.name || name}
-      stats={
-        <div className='flex gap-2'>
-          <div className='w-6 shrink-0'>{`${displayCounter}/${fu.delay}`}</div>
-          <div className='flex gap-1 overflow-auto snap-x'>
-            {fu.description.operations?.map((op) => (
-              <DividedBadge key={op.name}>
-                <div className='capitalize'>{op.name}</div>
-                <div>{op.latency}</div>
-              </DividedBadge>
-            ))}
-          </div>
-        </div>
-      }
       className={clsx(className, 'w-issue')}
     >
-      <InstructionField instructionId={fu.simCodeModel} />
+      <div className='flex gap-4 items-center'>
+        <DividedBadge>
+          <div>Cycle</div>
+          <div>{`${displayCounter}/${fu.delay}`}</div>
+        </DividedBadge>
+        <InstructionField instructionId={fu.simCodeModel} />
+      </div>
     </Block>
   );
 }

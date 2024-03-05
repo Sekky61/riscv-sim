@@ -127,8 +127,8 @@ export default function FetchBlock() {
         columns={2}
         instructionRenderer={(codeModel, i) => (
           <Fragment key={`instr_${codeModel}_${i}`}>
-            <InstructionField instructionId={codeModel} />
-            <div>
+            <div className='grid grid-cols-subgrid col-span-2'>
+              <InstructionField instructionId={codeModel} />
               <PredictorGraphFromCodeId simCodeId={codeModel} />
             </div>
           </Fragment>

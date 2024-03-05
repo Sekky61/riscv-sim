@@ -135,11 +135,11 @@ export default function IssueWindow({ type }: IssueWindowProps) {
         columns={3}
         instructions={issue.issuedInstructions}
         legend={
-          <>
+          <div className='grid grid-cols-subgrid col-span-3'>
             <div>Instruction</div>
             <div>Arg 1</div>
             <div>Arg 2</div>
-          </>
+          </div>
         }
         instructionRenderer={(instruction, i) => (
           <IssueWindowItem simCodeId={instruction} key={`instr_${i}`} />
@@ -196,7 +196,7 @@ export function IssueWindowItem({ simCodeId }: IssueWindowItemProps) {
   );
 
   return (
-    <>
+    <div className='grid grid-cols-subgrid col-span-3'>
       <InstructionField instructionId={simCodeId} />
       <Tooltip>
         <TooltipTrigger>
@@ -223,6 +223,6 @@ export function IssueWindowItem({ simCodeId }: IssueWindowItemProps) {
           )}
         </TooltipContent>
       </Tooltip>
-    </>
+    </div>
   );
 }

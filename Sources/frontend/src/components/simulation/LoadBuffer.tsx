@@ -57,7 +57,7 @@ export default function LoadBuffer() {
   return (
     <Block
       title='Load Buffer'
-      className='loadBuffer w-issue h-96'
+      className='loadBuffer w-ls h-96'
       detailDialog={
         <DialogContent>
           <DialogHeader>
@@ -74,12 +74,12 @@ export default function LoadBuffer() {
         totalSize={loadBuffer.bufferSize}
         columns={4}
         legend={
-          <>
+          <div className='grid grid-cols-subgrid col-span-4'>
             <div>Instruction</div>
             <div>Address</div>
             <div>Data</div>
             <div>Bypass</div>
-          </>
+          </div>
         }
         instructionRenderer={(buffItem, i) => (
           <LoadBufferItemComponent loadItem={buffItem} key={`item_${i}`} />
@@ -111,7 +111,7 @@ export function LoadBufferItemComponent({
   const displayAddress = item.address === -1 ? '???' : hexPadEven(item.address);
 
   return (
-    <>
+    <div className='grid grid-cols-subgrid col-span-4'>
       <InstructionField instructionId={item.simCodeModel} />
       <div className='instruction-bubble h-full flex justify-center items-center'>
         {displayAddress}
@@ -126,6 +126,6 @@ export function LoadBufferItemComponent({
       <div className='instruction-bubble h-full flex justify-center items-center'>
         {item.hasBypassed ? 'True' : 'False'}
       </div>
-    </>
+    </div>
   );
 }

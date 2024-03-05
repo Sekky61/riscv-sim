@@ -55,7 +55,7 @@ export default function StoreBuffer() {
   return (
     <Block
       title='Store Buffer'
-      className='storeBuffer w-issue h-96'
+      className='storeBuffer w-ls h-96'
       detailDialog={
         <DialogContent>
           <DialogHeader>
@@ -72,11 +72,11 @@ export default function StoreBuffer() {
         totalSize={storeBuffer.bufferSize}
         columns={3}
         legend={
-          <>
+          <div className='grid grid-cols-subgrid col-span-3'>
             <div>Instruction</div>
             <div>Address</div>
             <div>Data</div>
-          </>
+          </div>
         }
         instructionRenderer={(bufItem, i) => (
           <StoreBufferItemComponent storeItem={bufItem} key={`item_${i}`} />
@@ -108,7 +108,7 @@ export function StoreBufferItemComponent({
   const displayAddress = item.address === -1 ? '???' : hexPadEven(item.address);
 
   return (
-    <>
+    <div className='grid grid-cols-subgrid col-span-3'>
       <InstructionField instructionId={item.simCodeModel} />
       <div className='instruction-bubble h-full flex justify-center items-center'>
         {displayAddress}
@@ -120,6 +120,6 @@ export function StoreBufferItemComponent({
           showValue
         />
       </div>
-    </>
+    </div>
   );
 }

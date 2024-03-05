@@ -76,7 +76,9 @@ export default function DecodeBlock() {
         instructions={decode.codeBuffer}
         totalSize={decode.decodeBufferSize}
         instructionRenderer={(instruction, i) => (
-          <InstructionField instructionId={instruction} key={`instr_${i}`} />
+          <div>
+            <InstructionField instructionId={instruction} key={`instr_${i}`} />
+          </div>
         )}
       />
     </Block>

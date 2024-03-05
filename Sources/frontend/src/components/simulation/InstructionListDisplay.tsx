@@ -67,22 +67,12 @@ export function InstructionListDisplay<T>({
 
   return (
     <div
-      className='grid gap-1 overflow-y-auto w-full divide-y instruction-list-container surface-container-low rounded-[8px]'
+      className='grid gap-1 gap-x-2 overflow-y-auto w-full divide-y instruction-list-container surface-container-low rounded-[8px]'
       style={{
         gridTemplateColumns: templateColumns,
       }}
     >
-      {legend && (
-        <div
-          className='grid grid-cols-subgrid sticky top-0 surface-container-low'
-          style={{
-            gridColumn: `1 / span ${columns}`,
-            alignSelf: 'start',
-          }}
-        >
-          {legend}
-        </div>
-      )}
+      {legend}
       {instructions.map((inst, id) => instructionRenderer(inst, id))}
       {Array.from({ length: emptyCount }).map((_, id) =>
         instructionRenderer(null, id + instructions.length),

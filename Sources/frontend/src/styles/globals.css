@@ -725,11 +725,15 @@
   }
 
   .w-block {
-    @apply w-52;
+    @apply w-64;
   }
 
   .w-issue {
-    @apply w-80;
+    @apply w-96;
+  }
+
+  .w-ls {
+    @apply w-[28rem];
   }
 
   .global-grid > div {
