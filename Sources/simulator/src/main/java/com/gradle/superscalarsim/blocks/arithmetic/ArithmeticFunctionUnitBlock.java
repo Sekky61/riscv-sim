@@ -203,6 +203,8 @@ public class ArithmeticFunctionUnitBlock extends AbstractFunctionUnitBlock
     
     this.simCodeModel.setBusy(false);
     this.simCodeModel = null;
+    this.setDelay(0);
+    this.zeroTheCounter();
   }
   //----------------------------------------------------------------------
   

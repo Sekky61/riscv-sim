@@ -77,7 +77,6 @@ type FUProps = {
 
 function FU({ type, fu }: FUProps) {
   const { name, className } = fuInfo[type];
-  const displayCounter = fu.counter;
 
   return (
     <Block
@@ -87,7 +86,7 @@ function FU({ type, fu }: FUProps) {
       <div className='flex gap-4 items-center'>
         <DividedBadge>
           <div>Cycle</div>
-          <div>{`${displayCounter}/${fu.delay}`}</div>
+          <div>{`${fu.counter}/${fu.delay}`}</div>
         </DividedBadge>
         <InstructionField instructionId={fu.simCodeModel} />
       </div>

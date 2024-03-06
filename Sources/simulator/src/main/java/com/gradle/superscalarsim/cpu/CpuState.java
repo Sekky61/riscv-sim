@@ -418,6 +418,11 @@ public class CpuState implements Serializable
     }
     // rob
     reorderBufferBlock.simulate(tick);
+    // run all AbstractIssueWindowBlock blocks
+    aluIssueWindowBlock.simulate(tick);
+    fpIssueWindowBlock.simulate(tick);
+    branchIssueWindowBlock.simulate(tick);
+    loadStoreIssueWindowBlock.simulate(tick);
     // Run all FUs
     arithmeticFunctionUnitBlocks.forEach(arithmeticFunctionUnitBlock -> arithmeticFunctionUnitBlock.simulate(tick));
     fpFunctionUnitBlocks.forEach(arithmeticFunctionUnitBlock -> arithmeticFunctionUnitBlock.simulate(tick));
@@ -437,11 +442,6 @@ public class CpuState implements Serializable
       storeBufferBlock.simulate(tick);
       loadBufferBlock.simulate(tick);
     }
-    // run all AbstractIssueWindowBlock blocks
-    aluIssueWindowBlock.simulate(tick);
-    fpIssueWindowBlock.simulate(tick);
-    branchIssueWindowBlock.simulate(tick);
-    loadStoreIssueWindowBlock.simulate(tick);
     //    issueWindowSuperBlock.simulate(tick);
     reorderBufferBlock.simulate_issue(tick);
     decodeAndDispatchBlock.simulate(tick);
@@ -478,8 +478,7 @@ public class CpuState implements Serializable
     boolean pcEnd         = instructionFetchBlock.getPc() >= instructionMemoryBlock.getCode().size() * 4;
     boolean renameEmpty   = decodeAndDispatchBlock.getCodeBuffer().isEmpty();
     boolean fetchNotEmpty = !instructionFetchBlock.getFetchedCode().isEmpty();
-    boolean nop           = fetchNotEmpty && instructionFetchBlock.getFetchedCode().get(0).getInstructionName()
-            .equals("nop");
+    boolean nop = fetchNotEmpty && instructionFetchBlock.getFetchedCode().get(0).getInstructionName().equals("nop");
     if (robEmpty && pcEnd && renameEmpty && nop)
     {
       return StopReason.kEndOfCode;

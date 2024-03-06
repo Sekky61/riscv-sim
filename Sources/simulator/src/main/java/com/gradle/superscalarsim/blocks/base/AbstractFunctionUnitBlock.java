@@ -161,7 +161,7 @@ public abstract class AbstractFunctionUnitBlock implements AbstractBlock
    */
   protected boolean hasDelayPassed()
   {
-    return this.counter == this.delay;
+    return this.counter == (this.delay + 1);
   }// end of hasDelayPassed
   //----------------------------------------------------------------------
   
@@ -170,7 +170,7 @@ public abstract class AbstractFunctionUnitBlock implements AbstractBlock
    */
   public void tickCounter()
   {
-    this.counter = Math.min(this.counter + 1, this.delay);
+    this.counter = this.counter + 1;
   }// end of tickCounter
   
   /**
@@ -178,7 +178,7 @@ public abstract class AbstractFunctionUnitBlock implements AbstractBlock
    */
   public boolean hasTimerStartedThisTick()
   {
-    return this.counter == 0;
+    return this.counter == 1;
   }
   
   /**
@@ -192,14 +192,25 @@ public abstract class AbstractFunctionUnitBlock implements AbstractBlock
   //----------------------------------------------------------------------
   
   /**
+   * @return True if function unit is busy, false otherwise
+   */
+  public boolean isBusy()
+  {
+    return simCodeModel != null;// && counter < delay;
+  }
+  
+  /**
    * @param decodeCodeModel Instruction to be executed
    *
    * @brief Sets instruction to be executed
    */
   public void setSimCodeModel(SimCodeModel simCodeModel)
   {
+    this.counter      = 0;
     this.simCodeModel = simCodeModel;
     this.simCodeModel.setFunctionUnitId(this.functionUnitId);
+    // The cycle the instruction was issued counts as the first cycle
+    //    this.counter = 1;
   }// end of setDecodeCodeModel
   //----------------------------------------------------------------------
   

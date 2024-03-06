@@ -136,14 +136,13 @@ public class IssueWindowBlock implements AbstractBlock
         }
         eligibleFound = true;
         
-        if (functionUnitBlock.getSimCodeModel() != null)
+        if (functionUnitBlock.isBusy())
         {
           // FU is taken
           continue;
         }
         
         // Instruction is ready for execution and there is a free FU -> issue the instruction
-        functionUnitBlock.resetCounter();
         functionUnitBlock.setSimCodeModel(currentModel);
         functionUnitBlock.setDelayBasedOnInstruction();
         // Remove the instruction from the list
@@ -157,11 +156,9 @@ public class IssueWindowBlock implements AbstractBlock
       // A wrong configuration for the given code
       if (!eligibleFound)
       {
-        
         throw new IllegalStateException(
                 "No eligible FU found for instruction: " + currentModel.getInstructionFunctionModel().getName());
       }
-      
     }
     
     this.windowId = cycle;
