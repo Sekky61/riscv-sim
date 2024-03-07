@@ -123,6 +123,8 @@ public class MyRequestHandler<T, U> implements HttpHandler
       ServerError error = new ServerError("root", "Internal server error");
       sendError(exchange, error);
       logger.severe("Internal server error: " + e.getMessage());
+      // print trace
+      e.printStackTrace();
     }
   }
   

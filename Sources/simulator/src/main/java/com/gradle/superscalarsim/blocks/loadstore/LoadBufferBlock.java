@@ -174,7 +174,8 @@ public class LoadBufferBlock implements AbstractBlock
     LoadBufferItem workForMa = null;
     for (LoadBufferItem item : this.loadQueue)
     {
-      boolean dataShouldBeLoaded = item.getAddress() != -1 && !item.isAccessingMemory() && !item.isDestinationReady();
+      boolean ready              = item.getAddress() != -1 && !item.isAccessingMemory() && !item.isDestinationReady();
+      boolean dataShouldBeLoaded = ready && !item.hasBypassed();
       if (!dataShouldBeLoaded)
       {
         continue;
@@ -260,10 +261,9 @@ public class LoadBufferBlock implements AbstractBlock
     {
       boolean addressesMatch = bufferItem.getAddress() == address;
       boolean isAfterStore   = bufferItem.getSimCodeModel().getIntegerId() > cycle;
-      // Do not mark bypassed loads as conflicting
-      boolean bypassed = bufferItem.hasBypassed();
+      // There used to be a bypassed check here, but it was removed
       // TODO: what if the load is not yet in MA/executed?
-      if (addressesMatch && isAfterStore && !bypassed)
+      if (addressesMatch && isAfterStore)
       {
         return bufferItem;
       }

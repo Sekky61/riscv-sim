@@ -187,6 +187,11 @@ public class DecodeAndDispatchBlock implements AbstractBlock
     for (int i = 0; i < pullCount; i++)
     {
       SimCodeModel simCodeModel = this.instructionFetchBlock.getFetchedCode().get(i);
+      if (simCodeModel.getInstructionName().equals("nop"))
+      {
+        pullCount++;
+        continue;
+      }
       this.codeBuffer.add(simCodeModel);
       renameSourceRegisters(simCodeModel);
       boolean renameSuccessful = renameDestinationRegister(simCodeModel);

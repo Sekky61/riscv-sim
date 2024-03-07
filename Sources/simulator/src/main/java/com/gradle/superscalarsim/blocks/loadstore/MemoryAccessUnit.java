@@ -292,9 +292,13 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
     this.simCodeModel.setFunctionUnitId(this.functionUnitId - 1);
     this.simCodeModel = null;
     this.zeroTheCounter();
+    this.setDelay(0);
     
-    this.setDelay(baseDelay);
-    // todo cancel transaction?
+    if (transaction != null)
+    {
+      transaction.setCanceled();
+      transaction = null;
+    }
   }// end of tryRemoveCodeModel
   //----------------------------------------------------------------------
   

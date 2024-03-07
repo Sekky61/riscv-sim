@@ -284,6 +284,36 @@ public class AlgorithmTests
           }
           """;
   
+  String writeMem = """
+          writeMem:
+              addi sp,sp,-32
+              sw s0,28(sp)
+              addi s0,sp,32
+              sw zero,-20(s0)
+              j .L2
+          .L3:
+              lla a4,ptr
+              lw a5,-20(s0)
+              slli a5,a5,2
+              add a5,a4,a5
+              lw a4,-20(s0)
+              sw a4,0(a5)
+              lw a5,-20(s0)
+              addi a5,a5,1
+              sw a5,-20(s0)
+          .L2:
+              lw a4,-20(s0)
+              li a5,31
+              ble a4,a5,.L3
+              nop
+              mv a0,a5
+              lw s0,28(sp)
+              addi sp,sp,32
+              jr ra
+              .align 2
+          ptr:
+              .zero 128""";
+  
   @Test
   public void test_quicksort()
   {
@@ -417,9 +447,8 @@ public class AlgorithmTests
   public void test_LinkedList() throws IOException
   {
     // Setup
-    SimulationConfig cfg  = SimulationConfig.getDefaultConfiguration();
-    String           code = new String(
-            AlgorithmTests.class.getResourceAsStream("/assembler/linkedList.r5").readAllBytes());
+    SimulationConfig cfg = SimulationConfig.getDefaultConfiguration();
+    String code = new String(AlgorithmTests.class.getResourceAsStream("/assembler/linkedList.r5").readAllBytes());
     cfg.code       = code;
     cfg.entryPoint = "main";
     Cpu cpu = new Cpu(cfg);
@@ -446,9 +475,8 @@ public class AlgorithmTests
   public void test_DynamicDispatch() throws IOException
   {
     // Setup
-    SimulationConfig cfg  = new SimulationConfig();
-    String           code = new String(
-            AlgorithmTests.class.getResourceAsStream("/assembler/functionPointers.r5").readAllBytes());
+    SimulationConfig cfg = new SimulationConfig();
+    String code = new String(AlgorithmTests.class.getResourceAsStream("/assembler/functionPointers.r5").readAllBytes());
     cfg.code                                              = code;
     cfg.entryPoint                                        = "main";
     cfg.cpuConfig.fUnits.get(0).operations.get(0).latency = 5;
@@ -463,5 +491,26 @@ public class AlgorithmTests
     Assert.assertTrue(logEntries.get(1).getMessage().startsWith("drawRectangle"));
     Assert.assertTrue(logEntries.get(2).getMessage().startsWith("drawCircle"));
     Assert.assertTrue(logEntries.get(3).getMessage().startsWith("drawRectangle"));
+  }
+  
+  @Test
+  public void test_writeMem()
+  {
+    // Setup
+    SimulationConfig cfg = SimulationConfig.getDefaultConfiguration();
+    cfg.code       = writeMem;
+    cfg.entryPoint = "writeMem";
+    Cpu cpu = new Cpu(cfg);
+    cpu.execute(true);
+    
+    // Assert
+    // TODO, for now just happy it doesn't crash
+    
+    // get ptr
+    long ptr = cpu.cpuState.instructionMemoryBlock.getLabelPosition("ptr");
+    for (int i = 0; i < 32; i++)
+    {
+      Assert.assertEquals(i, cpu.cpuState.simulatedMemory.getFromMemory(ptr + i));
+    }
   }
 }

@@ -195,8 +195,9 @@ public class ArithmeticFunctionUnitBlock extends AbstractFunctionUnitBlock
   {
     // Instruction computed
     // Write result to the destination register
-    InputCodeArgument           destinationArgument = simCodeModel.getArgumentByName("rd");
-    Result<Expression.Variable> result              = arithmeticInterpreter.interpretInstruction(this.simCodeModel);
+    InputCodeArgument destinationArgument = simCodeModel.getArgumentByName("rd");
+    assert destinationArgument != null;
+    Result<Expression.Variable> result = arithmeticInterpreter.interpretInstruction(this.simCodeModel);
     
     if (result.isException())
     {
