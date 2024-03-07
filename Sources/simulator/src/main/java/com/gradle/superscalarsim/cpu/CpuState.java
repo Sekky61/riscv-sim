@@ -287,8 +287,8 @@ public class CpuState implements Serializable
     this.arithmeticInterpreter = new CodeArithmeticInterpreter();
     
     // Memory blocks
-    this.storeBufferBlock = new StoreBufferBlock(config.cpuConfig.sbSize, unifiedRegisterFileBlock);
-    this.loadBufferBlock  = new LoadBufferBlock(config.cpuConfig.lbSize, storeBufferBlock, unifiedRegisterFileBlock);
+    this.storeBufferBlock = new StoreBufferBlock(config.cpuConfig.sbSize);
+    this.loadBufferBlock  = new LoadBufferBlock(config.cpuConfig.lbSize, storeBufferBlock);
     
     // FUs
     this.aluIssueWindowBlock       = new IssueWindowBlock(InstructionTypeEnum.kIntArithmetic);

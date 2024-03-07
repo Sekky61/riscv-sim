@@ -28,7 +28,9 @@
 package com.gradle.superscalarsim.models.memory;
 
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gradle.superscalarsim.models.instruction.SimCodeModel;
+import com.gradle.superscalarsim.models.register.RegisterModel;
 
 /**
  * @class LoadBufferItem
@@ -36,12 +38,6 @@ import com.gradle.superscalarsim.models.instruction.SimCodeModel;
  */
 public class LoadBufferItem
 {
-  /**
-   * Name of the destination register (result)
-   * TODO: change to a reference to the register
-   */
-  private final String destinationRegister;
-  
   /**
    * The instruction itself
    */
@@ -85,17 +81,16 @@ public class LoadBufferItem
    *
    * @brief Constructor
    */
-  public LoadBufferItem(SimCodeModel simCodeModel, String destinationRegister)
+  public LoadBufferItem(SimCodeModel simCodeModel)
   {
-    this.simCodeModel        = simCodeModel;
-    this.destinationRegister = destinationRegister;
-    this.destinationReady    = false;
-    this.address             = -1;
-    this.isAccessingMemory   = false;
-    this.memoryAccessId      = -1;
-    this.hasBypassed         = false;
-    this.memoryFailedId      = -1;
-    this.accessingMemoryId   = -1;
+    this.simCodeModel      = simCodeModel;
+    this.destinationReady  = false;
+    this.address           = -1;
+    this.isAccessingMemory = false;
+    this.memoryAccessId    = -1;
+    this.hasBypassed       = false;
+    this.memoryFailedId    = -1;
+    this.accessingMemoryId = -1;
   }// end of Constructor
   //-------------------------------------------------------------------------------------------
   
@@ -103,9 +98,15 @@ public class LoadBufferItem
    * @return Name of the destination register
    * @brief Get destination register name
    */
-  public String getDestinationRegister()
+  @JsonProperty
+  @JsonIdentityReference(alwaysAsId = true)
+  public RegisterModel getDestinationRegister()
   {
-    return destinationRegister;
+    if (simCodeModel == null)
+    {
+      return null;
+    }
+    return simCodeModel.getArgumentByName("rd").getRegisterValue();
   }// end of getDestinationRegister
   //-------------------------------------------------------------------------------------------
   
