@@ -506,11 +506,12 @@ public class AlgorithmTests
     // Assert
     // TODO, for now just happy it doesn't crash
     
-    // get ptr
+    // get ptr, it should be an array: [0, 1, 2, 3, ..., 31]
     long ptr = cpu.cpuState.instructionMemoryBlock.getLabelPosition("ptr");
     for (int i = 0; i < 32; i++)
     {
-      Assert.assertEquals(i, cpu.cpuState.simulatedMemory.getFromMemory(ptr + i));
+      byte[] data = cpu.cpuState.memoryModel.getData(ptr + 4 * i, 4);
+      Assert.assertEquals(i, data[0]);
     }
   }
 }

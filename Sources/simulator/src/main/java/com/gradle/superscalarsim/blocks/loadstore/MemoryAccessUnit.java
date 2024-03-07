@@ -142,7 +142,6 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
   
   private void handleInstruction(int cycle)
   {
-    incrementBusyCycles();
     if (this.simCodeModel.hasFailed())
     {
       // Instruction has failed, remove it from MAU
@@ -191,6 +190,7 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
     tickCounter();
     if (hasDelayPassed())
     {
+      incrementBusyCycles();
       finishExecution();
     }
     

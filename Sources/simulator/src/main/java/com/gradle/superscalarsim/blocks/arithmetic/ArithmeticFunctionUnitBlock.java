@@ -165,7 +165,6 @@ public class ArithmeticFunctionUnitBlock extends AbstractFunctionUnitBlock
    */
   private void handleInstruction()
   {
-    incrementBusyCycles();
     if (this.simCodeModel.hasFailed())
     {
       this.simCodeModel.setFunctionUnitId(this.functionUnitId);
@@ -181,6 +180,7 @@ public class ArithmeticFunctionUnitBlock extends AbstractFunctionUnitBlock
     tickCounter();
     if (!hasDelayPassed())
     {
+      incrementBusyCycles();
       return;
     }
     
