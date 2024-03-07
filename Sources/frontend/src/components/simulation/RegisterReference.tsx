@@ -31,64 +31,35 @@
 
 import { selectRegisterById } from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
-import { ReactClassName } from '@/lib/types/reactTypes';
 
-import { useHighlight } from '@/components/HighlightProvider';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/components/base/ui/tooltip';
-import { ValueInformation } from '@/components/simulation/ValueTooltip';
 import { isValidRegisterValue } from '@/lib/utils';
+import { ArgumentTableCell } from '@/components/simulation/IssueWindow';
 
 export type RegisterReferenceProps = {
   registerId: string;
-  showValue?: boolean;
-} & ReactClassName;
+};
 
 export default function RegisterReference({
   registerId,
-  className,
-  showValue = false,
 }: RegisterReferenceProps) {
   const register = useAppSelector((state) =>
     selectRegisterById(state, registerId),
   );
-  const { setHighlightedRegister } = useHighlight();
 
   if (!register) return null;
-
-  const handleMouseEnter = () => {
-    setHighlightedRegister(registerId);
-  };
-
-  const handleMouseLeave = () => {
-    setHighlightedRegister(null);
-  };
 
   const valid = isValidRegisterValue(register);
 
   let displayValue = registerId;
-  if (showValue && valid) {
+  if (valid) {
     displayValue = register.value.stringRepresentation ?? '???';
   }
 
   return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <span
-          className={className}
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
-          data-register-id={registerId}
-        >
-          {displayValue}
-        </span>
-      </TooltipTrigger>
-      <TooltipContent>
-        <ValueInformation value={register.value} valid={valid} />
-      </TooltipContent>
-    </Tooltip>
+    <ArgumentTableCell
+      item={register.value}
+      valid={valid}
+      registerName={register.name}
+    />
   );
 }

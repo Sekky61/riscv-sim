@@ -135,7 +135,7 @@ export const memoryLocationDefaultValue: MemoryLocationApi = {
   dataType: 'kInt',
   data: {
     kind: 'data',
-    data: ['1', '2', '3', '4'],
+    data: [],
   },
 };
 

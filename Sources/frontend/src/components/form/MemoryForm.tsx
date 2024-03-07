@@ -278,7 +278,8 @@ export default function MemoryForm({
         <TabsContent value='data'>
           <Card>
             <CardHeader className='text-sm'>
-              Either manually enter the values or import them from a CSV file.
+              You can import the values from a CSV file or manually enter them.
+              As a separator, use a comma.
             </CardHeader>
             <CardContent>
               <DataTextArea

@@ -181,6 +181,7 @@ export interface SimulatedMemory {
 
 export interface MemoryTransaction {
   data?: number[];
+  handledBy: 'main_memory' | 'cache' | 'cache_with_miss' | null;
   mmuId: number;
   timestamp: number;
   address: number;
@@ -466,7 +467,10 @@ export interface FunctionalUnitDescription {
 
 export type ArithmeticFunctionUnitBlock = AbstractFunctionUnitBlock;
 export type BranchFunctionUnitBlock = AbstractFunctionUnitBlock;
-export type MemoryAccessUnit = AbstractFunctionUnitBlock;
+export type MemoryAccessUnit = AbstractFunctionUnitBlock & {
+  transaction: MemoryTransaction;
+  handledBy: string | null;
+};
 
 // L/S
 
@@ -475,11 +479,11 @@ export interface LoadBufferBlock {
   bufferSize: number;
   memoryAccessUnitList?: MemoryAccessUnit[];
   storeBufferBlock?: StoreBufferBlock;
-  registerFileBlock?: UnifiedRegisterFileBlock;
 }
+
 export interface LoadBufferItem {
   simCodeModel: Reference;
-  destinationRegister: string;
+  destinationRegister: StringReference;
   destinationReady: boolean;
   address: number;
   isAccessingMemory: boolean;
@@ -494,12 +498,11 @@ export interface StoreBufferBlock {
   storeQueue: StoreBufferItem[];
   bufferSize: number;
   memoryAccessUnitList?: MemoryAccessUnit[];
-  registerFileBlock?: UnifiedRegisterFileBlock;
 }
 
 export interface StoreBufferItem {
   simCodeModel: Reference;
-  sourceRegister: string;
+  sourceRegister: StringReference;
   sourceResultId: number;
   sourceReady: boolean;
   address: number;

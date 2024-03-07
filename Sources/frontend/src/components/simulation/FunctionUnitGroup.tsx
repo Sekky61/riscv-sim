@@ -44,7 +44,10 @@ import { useAppSelector } from '@/lib/redux/hooks';
 import { Badge } from '@/components/base/ui/badge';
 import Block from '@/components/simulation/Block';
 import InstructionField from '@/components/simulation/InstructionField';
-import { AbstractFunctionUnitBlock } from '@/lib/types/cpuApi';
+import {
+  AbstractFunctionUnitBlock,
+  MemoryAccessUnit,
+} from '@/lib/types/cpuApi';
 import { DividedBadge } from '@/components/DividedBadge';
 
 type FUType = 'alu' | 'fp' | 'branch' | 'memory';
@@ -78,21 +81,38 @@ type FUProps = {
 function FU({ type, fu }: FUProps) {
   const { name, className } = fuInfo[type];
 
+  const handledBy = (fu as MemoryAccessUnit)?.transaction?.handledBy;
+
   return (
     <Block
       title={fu.description.name || name}
       className={clsx(className, 'w-issue')}
     >
       <div className='flex gap-4 items-center'>
-        <DividedBadge>
-          <div>Cycle</div>
-          <div>{`${fu.counter}/${fu.delay}`}</div>
-        </DividedBadge>
+        <div className='flex gap-2 items-center'>
+          <DividedBadge>
+            <div>Cycle</div>
+            <div>{`${fu.counter}/${fu.delay}`}</div>
+          </DividedBadge>
+          {handledBy && (
+            <DividedBadge>
+              <div className='whitespace-nowrap'>
+                {handledPretty[handledBy]}
+              </div>
+            </DividedBadge>
+          )}
+        </div>
         <InstructionField instructionId={fu.simCodeModel} />
       </div>
     </Block>
   );
 }
+
+const handledPretty = {
+  main_memory: 'Memory',
+  cache: 'Cache',
+  cache_with_miss: 'Cache Miss',
+};
 
 const selectors = {
   alu: selectArithmeticFunctionUnitBlocks,

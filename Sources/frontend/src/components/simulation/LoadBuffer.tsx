@@ -31,7 +31,7 @@
 
 import { selectLoadBuffer } from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
-import { LoadBufferItem } from '@/lib/types/cpuApi';
+import { LoadBufferItem, RegisterDataContainer } from '@/lib/types/cpuApi';
 import { hexPadEven } from '@/lib/utils';
 
 import { useBlockDescriptions } from '@/components/BlockDescriptionContext';
@@ -45,6 +45,7 @@ import Block from '@/components/simulation/Block';
 import InstructionField from '@/components/simulation/InstructionField';
 import { InstructionListDisplay } from '@/components/simulation/InstructionListDisplay';
 import RegisterReference from '@/components/simulation/RegisterReference';
+import { ArgumentTableCell } from '@/components/simulation/IssueWindow';
 
 export default function LoadBuffer() {
   const loadBuffer = useAppSelector(selectLoadBuffer);
@@ -110,21 +111,17 @@ export function LoadBufferItemComponent({
   }
 
   // If address is -1, it is not known yet
-  const displayAddress = item.address === -1 ? '???' : hexPadEven(item.address);
+  const addressContainer: RegisterDataContainer = {
+    bits: item.address,
+    currentType: 'kInt',
+    stringRepresentation: hexPadEven(item.address),
+  };
 
   return (
     <div className='grid grid-cols-subgrid col-span-4'>
       <InstructionField instructionId={item.simCodeModel} />
-      <div className='instruction-bubble h-full flex justify-center items-center'>
-        {displayAddress}
-      </div>
-      <div>
-        <RegisterReference
-          registerId={item.destinationRegister}
-          className='h-full flex justify-center items-center'
-          showValue
-        />
-      </div>
+      <ArgumentTableCell item={addressContainer} valid={item.address !== -1} />
+      <RegisterReference registerId={item.destinationRegister} />
       <div className='instruction-bubble h-full flex justify-center items-center'>
         {item.hasBypassed ? 'True' : 'False'}
       </div>

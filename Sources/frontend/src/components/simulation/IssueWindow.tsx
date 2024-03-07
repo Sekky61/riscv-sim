@@ -59,8 +59,12 @@ import {
 import Block from '@/components/simulation/Block';
 import InstructionField from '@/components/simulation/InstructionField';
 import { InstructionListDisplay } from '@/components/simulation/InstructionListDisplay';
-import { ValueInformation } from '@/components/simulation/ValueTooltip';
+import {
+  ShortValueInformation,
+  ValueInformation,
+} from '@/components/simulation/ValueTooltip';
 import { DividedBadge } from '@/components/DividedBadge';
+import { useHighlight } from '@/components/HighlightProvider';
 
 type IssueType = 'alu' | 'fp' | 'branch' | 'ls';
 
@@ -170,59 +174,102 @@ export function IssueWindowItem({ simCodeId }: IssueWindowItemProps) {
 
   let item1: RegisterDataContainer | null = null;
   let item1Valid = false;
+  let item1Name = '';
   let item2: RegisterDataContainer | null = null;
   let item2Valid = false;
+  let item2Name = '';
+  // TODO fmadd has 3 arguments, what to do though?
   for (const arg of args) {
     if (arg.origArg.name !== 'rd') {
       if (item1 === null) {
         item1 = getValue(arg);
         item1Valid = arg.valid;
+        item1Name = arg.origArg.stringValue;
       } else {
         item2 = getValue(arg);
         item2Valid = arg.valid;
+        item2Name = arg.origArg.stringValue;
       }
     }
   }
 
-  const item1Style = clsx(
-    'instruction-bubble flex px-2',
-    item1Valid && 'text-green-500',
-    item1 === null && 'invisible',
-  );
-  const item2Style = clsx(
-    'instruction-bubble flex px-2',
-    item2Valid && 'text-green-500',
-    item2 === null && 'invisible',
-  );
-
   return (
     <div className='grid grid-cols-subgrid col-span-3'>
       <InstructionField instructionId={simCodeId} />
-      <Tooltip>
-        <TooltipTrigger>
-          <div className={item1Style}>{item1?.stringRepresentation ?? '-'}</div>
-        </TooltipTrigger>
-        <TooltipContent>
-          {item1 ? (
-            <ValueInformation value={item1} valid={item1Valid} />
-          ) : (
-            <div className='text-gray-400'>No value</div>
-          )}
-        </TooltipContent>
-      </Tooltip>
-      <Tooltip>
-        <TooltipTrigger>
-          <div className={item2Style}>{item2?.stringRepresentation ?? '-'}</div>
-        </TooltipTrigger>
-
-        <TooltipContent>
-          {item2 ? (
-            <ValueInformation value={item2} valid={item2Valid} />
-          ) : (
-            <div className='text-gray-400'>No value</div>
-          )}
-        </TooltipContent>
-      </Tooltip>
+      <ArgumentTableCell
+        item={item1}
+        valid={item1Valid}
+        registerName={item1Name}
+      />
+      <ArgumentTableCell
+        item={item2}
+        valid={item2Valid}
+        registerName={item2Name}
+      />
     </div>
+  );
+}
+
+type ArgumentTableCellProps = {
+  item: RegisterDataContainer | null;
+  valid: boolean;
+  registerName?: string;
+};
+
+/**
+ * Displays a single parameter of a specific instruction.
+ * If the value is valid, it shows the value in green.
+ * It displays the register name if not valid.
+ */
+export function ArgumentTableCell({
+  item,
+  valid,
+  registerName,
+}: ArgumentTableCellProps) {
+  const { setHighlightedRegister } = useHighlight();
+  const idToHighlight = registerName || 'INVALID';
+
+  const item1Style = clsx(
+    'register rounded flex px-2 h-full flex justify-center items-center',
+    valid && 'text-green-500',
+  );
+
+  let text = '-';
+  if (item) {
+    if (valid) {
+      text = item.stringRepresentation;
+    } else {
+      text = registerName || '-';
+    }
+  }
+
+  const handleMouseEnter = () => {
+    setHighlightedRegister(idToHighlight);
+  };
+
+  const handleMouseLeave = () => {
+    setHighlightedRegister(null);
+  };
+
+  return (
+    <Tooltip>
+      <TooltipTrigger>
+        <div
+          className={item1Style}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+          data-register-id={idToHighlight}
+        >
+          {text}
+        </div>
+      </TooltipTrigger>
+      <TooltipContent>
+        {item ? (
+          <ShortValueInformation value={item} valid={valid} />
+        ) : (
+          <div className='text-gray-400'>No value</div>
+        )}
+      </TooltipContent>
+    </Tooltip>
   );
 }

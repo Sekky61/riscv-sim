@@ -70,17 +70,21 @@ export function ValueInformation({ value, valid }: ValueInformationProps) {
 export function ShortValueInformation({ value, valid }: ValueInformationProps) {
   return (
     <div
-      className='z-50 grid gap-1 secondary-container px-3 py-1.5'
+      className='z-50 grid gap-1 secondary-container px-3 py-1.5 font-mono'
       style={{
         gridTemplateColumns: 'auto auto',
       }}
     >
-      <div className=' font-bold'>Value</div>
-      <div>{value.stringRepresentation}</div>
-      <div>Type</div>
-      <div>{value.currentType}</div>
-      <div>Valid</div>
-      <div>{valid ? 'Yes' : 'No'}</div>
+      {valid ? (
+        <>
+          <div className=' font-bold'>Value</div>
+          <div>{value.stringRepresentation}</div>
+          <div>Type</div>
+          <div>{value.currentType}</div>
+        </>
+      ) : (
+        <div className='col-span-2'>Invalid register</div>
+      )}
     </div>
   );
 }
