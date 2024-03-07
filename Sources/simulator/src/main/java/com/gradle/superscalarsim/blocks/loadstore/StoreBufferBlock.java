@@ -227,8 +227,7 @@ public class StoreBufferBlock implements AbstractBlock
     {
       if (memoryAccessUnit.isFunctionUnitEmpty())
       {
-        memoryAccessUnit.resetCounter();
-        memoryAccessUnit.setSimCodeModel(storeItem.getSimCodeModel());
+        memoryAccessUnit.startExecuting(storeItem.getSimCodeModel());
         storeItem.setAccessingMemory(true);
         storeItem.setAccessingMemoryId(cycle);
         // todo: return here??

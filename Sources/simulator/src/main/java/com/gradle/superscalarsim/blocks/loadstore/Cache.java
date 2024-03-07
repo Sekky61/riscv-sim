@@ -359,8 +359,7 @@ public class Cache implements AbstractBlock, MemoryBlock
           // Load new line into cache
           Triplet<Long, Integer, Integer> split = splitAddress(transaction.address());
           long                            tag   = split.getFirst();
-          CacheLineModel                  line  = pickLineToUse(transaction.address(), cycle,
-                                                                transaction.getInstructionId());
+          CacheLineModel line = pickLineToUse(transaction.address(), cycle, transaction.getInstructionId());
           // The replacement policy was updated when the line was picked
           line.setLineData(transaction.data());
           line.setValid(true);
@@ -553,6 +552,7 @@ public class Cache implements AbstractBlock, MemoryBlock
     boolean isHit      = line != null;
     int     cacheDelay = (transaction.isStore() ? storeDelay : loadDelay);
     transaction.setId(cacheAccessId++);
+    transaction.setHandledBy(MemoryTransaction.CACHE);
     
     int latency = cacheDelay;
     // todo what if the line disappears from cache later?
@@ -562,6 +562,7 @@ public class Cache implements AbstractBlock, MemoryBlock
       // Create a memory transaction for the whole cache line
       latency = cacheDelay + requestCacheLineLoad(transaction.address(), transaction.timestamp(),
                                                   transaction.getInstructionId());
+      transaction.setHandledBy(MemoryTransaction.CACHE_WITH_MISS);
     }
     
     boolean spansTwoLines = (transaction.address() & (lineSize - 1)) + transaction.size() > lineSize;

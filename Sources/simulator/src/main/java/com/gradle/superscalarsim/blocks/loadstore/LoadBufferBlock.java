@@ -218,7 +218,7 @@ public class LoadBufferBlock implements AbstractBlock
       {
         continue;
       }
-      memoryAccessUnit.setSimCodeModel(workForMa.getSimCodeModel());
+      memoryAccessUnit.startExecuting(workForMa.getSimCodeModel());
       workForMa.setAccessingMemory(true);
       workForMa.setAccessingMemoryId(cycle);
       return;

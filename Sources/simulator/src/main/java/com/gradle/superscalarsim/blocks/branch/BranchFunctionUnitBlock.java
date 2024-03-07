@@ -74,6 +74,38 @@ public class BranchFunctionUnitBlock extends AbstractFunctionUnitBlock
   }// end of Constructor
   
   /**
+   * @brief Finishes execution of the instruction
+   */
+  @Override
+  protected void finishExecution()
+  {
+    // Execute
+    Result<CodeBranchInterpreter.BranchResult> jumpTargetRes = branchInterpreter.interpretInstruction(
+            this.simCodeModel);
+    // I don't think jump target uses division
+    assert !jumpTargetRes.isException();
+    CodeBranchInterpreter.BranchResult jump       = jumpTargetRes.value();
+    int                                jumpTarget = jump.target();
+    boolean                            jumpTaken  = jump.jumpTaken();
+    // If the branch was taken or not
+    this.simCodeModel.setBranchLogicResult(jumpTaken);
+    // Used to fix BTB and PC in misprediction
+    this.simCodeModel.setBranchTarget(jumpTarget);
+    InputCodeArgument destinationArgument = simCodeModel.getArgumentByName("rd");
+    if (destinationArgument != null)
+    {
+      // Write the result to the register
+      RegisterModel reg                     = destinationArgument.getRegisterValue();
+      int           nextInstructionPosition = this.simCodeModel.getSavedPc() + 4;
+      reg.setValue(nextInstructionPosition);
+      reg.setReadiness(RegisterReadinessEnum.kExecuted);
+    }
+    
+    this.simCodeModel.setBusy(false);
+    this.simCodeModel = null;
+  }
+  
+  /**
    * @param simCodeModel Instruction to be executed
    *
    * @return True if the function unit can execute the instruction, false otherwise.
@@ -127,30 +159,7 @@ public class BranchFunctionUnitBlock extends AbstractFunctionUnitBlock
       return;
     }
     
-    // Execute
-    Result<CodeBranchInterpreter.BranchResult> jumpTargetRes = branchInterpreter.interpretInstruction(
-            this.simCodeModel);
-    // I don't think jump target uses division
-    assert !jumpTargetRes.isException();
-    CodeBranchInterpreter.BranchResult jump       = jumpTargetRes.value();
-    int                                jumpTarget = jump.target();
-    boolean                            jumpTaken  = jump.jumpTaken();
-    // If the branch was taken or not
-    this.simCodeModel.setBranchLogicResult(jumpTaken);
-    // Used to fix BTB and PC in misprediction
-    this.simCodeModel.setBranchTarget(jumpTarget);
-    InputCodeArgument destinationArgument = simCodeModel.getArgumentByName("rd");
-    if (destinationArgument != null)
-    {
-      // Write the result to the register
-      RegisterModel reg                     = destinationArgument.getRegisterValue();
-      int           nextInstructionPosition = this.simCodeModel.getSavedPc() + 4;
-      reg.setValue(nextInstructionPosition);
-      reg.setReadiness(RegisterReadinessEnum.kExecuted);
-    }
-    
-    this.simCodeModel.setBusy(false);
-    this.simCodeModel = null;
+    finishExecution();
   }
   
   //----------------------------------------------------------------------

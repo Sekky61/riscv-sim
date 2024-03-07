@@ -39,6 +39,10 @@ import static java.util.Arrays.copyOf;
  */
 public final class MemoryTransaction
 {
+  public static final String MAIN_MEMORY = "main_memory";
+  public static final String CACHE = "cache";
+  public static final String CACHE_WITH_MISS = "cache_with_miss";
+  
   private final int mmuId;
   /**
    * ID (index) of the instruction in code. aka. getCodeId() aka. ID of InputCodeModel
@@ -57,17 +61,16 @@ public final class MemoryTransaction
   private byte[] data;
   private boolean isFinished = false;
   private int latency;
-  
-  public boolean isCancelled()
-  {
-    return cancelled;
-  }
-  
+  /**
+   * @brief Who is handling the transaction: main memory, cache, or cache with miss
+   */
+  private String handledBy;
   /**
    * A cancelled transaction does not need to be finished.
    * A transaction gets cancelled when the owner of the transaction (instruction) is flushed.
    */
   private boolean cancelled;
+  private boolean isHit;
   
   /**
    * Copy constructor
@@ -89,18 +92,6 @@ public final class MemoryTransaction
     this.isFinished    = transaction.isFinished;
     this.isHit         = transaction.isHit;
   }
-  
-  public boolean isHit()
-  {
-    return isHit;
-  }
-  
-  public void setHit(boolean hit)
-  {
-    isHit = hit;
-  }
-  
-  private boolean isHit;
   
   /**
    * Constructor
@@ -178,6 +169,31 @@ public final class MemoryTransaction
   public static MemoryTransaction load(long address, int size, int timestamp)
   {
     return new MemoryTransaction(-1, -1, -1, timestamp, address, null, size, false, false);
+  }
+  
+  public String handledBy()
+  {
+    return handledBy;
+  }
+  
+  public void setHandledBy(String handledBy)
+  {
+    this.handledBy = handledBy;
+  }
+  
+  public boolean isCancelled()
+  {
+    return cancelled;
+  }
+  
+  public boolean isHit()
+  {
+    return isHit;
+  }
+  
+  public void setHit(boolean hit)
+  {
+    isHit = hit;
   }
   
   public int getInstructionId()

@@ -143,7 +143,7 @@ public class IssueWindowBlock implements AbstractBlock
         }
         
         // Instruction is ready for execution and there is a free FU -> issue the instruction
-        functionUnitBlock.setSimCodeModel(currentModel);
+        functionUnitBlock.startExecuting(currentModel);
         functionUnitBlock.setDelayBasedOnInstruction();
         // Remove the instruction from the list
         this.issuedInstructions.remove(i);

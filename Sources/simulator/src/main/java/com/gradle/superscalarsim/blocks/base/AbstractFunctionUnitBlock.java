@@ -178,7 +178,7 @@ public abstract class AbstractFunctionUnitBlock implements AbstractBlock
    */
   public boolean hasTimerStartedThisTick()
   {
-    return this.counter == 1;
+    return this.counter == 0;
   }
   
   /**
@@ -196,23 +196,38 @@ public abstract class AbstractFunctionUnitBlock implements AbstractBlock
    */
   public boolean isBusy()
   {
+    if (counter == delay)
+    {
+      return false;
+    }
     return simCodeModel != null;// && counter < delay;
   }
   
   /**
    * @param decodeCodeModel Instruction to be executed
    *
-   * @brief Sets instruction to be executed
+   * @brief Sets instruction to be executed. If there is already instruction, it is finished and overwritten
    */
-  public void setSimCodeModel(SimCodeModel simCodeModel)
+  public void startExecuting(SimCodeModel simCodeModel)
   {
+    if (this.simCodeModel != null)
+    {
+      assert this.counter == this.delay;
+      finishExecution();
+    }
     this.counter      = 0;
     this.simCodeModel = simCodeModel;
     this.simCodeModel.setFunctionUnitId(this.functionUnitId);
     // The cycle the instruction was issued counts as the first cycle
     //    this.counter = 1;
   }// end of setDecodeCodeModel
+  
   //----------------------------------------------------------------------
+  
+  /**
+   * @brief Finishes execution of the instruction
+   */
+  protected abstract void finishExecution();
   
   /**
    * @return True if function unit is idle, false if busy

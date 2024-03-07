@@ -423,12 +423,6 @@ public class CpuState implements Serializable
     fpIssueWindowBlock.simulate(tick);
     branchIssueWindowBlock.simulate(tick);
     loadStoreIssueWindowBlock.simulate(tick);
-    // Run all FUs
-    arithmeticFunctionUnitBlocks.forEach(arithmeticFunctionUnitBlock -> arithmeticFunctionUnitBlock.simulate(tick));
-    fpFunctionUnitBlocks.forEach(arithmeticFunctionUnitBlock -> arithmeticFunctionUnitBlock.simulate(tick));
-    loadStoreFunctionUnits.forEach(loadStoreFunctionUnit -> loadStoreFunctionUnit.simulate(tick));
-    memoryAccessUnits.forEach(memoryAccessUnit -> memoryAccessUnit.simulate(tick));
-    branchFunctionUnitBlocks.forEach(branchFunctionUnitBlock -> branchFunctionUnitBlock.simulate(tick));
     // Check which buffer contains older instruction at the top
     // Null check first, if any is empty, the order does not matter
     if (loadBufferBlock.getQueueSize() == 0 || storeBufferBlock.getQueueSize() == 0 || loadBufferBlock.getLoadQueueFirst()
@@ -442,6 +436,12 @@ public class CpuState implements Serializable
       storeBufferBlock.simulate(tick);
       loadBufferBlock.simulate(tick);
     }
+    // Run all FUs
+    arithmeticFunctionUnitBlocks.forEach(arithmeticFunctionUnitBlock -> arithmeticFunctionUnitBlock.simulate(tick));
+    fpFunctionUnitBlocks.forEach(arithmeticFunctionUnitBlock -> arithmeticFunctionUnitBlock.simulate(tick));
+    loadStoreFunctionUnits.forEach(loadStoreFunctionUnit -> loadStoreFunctionUnit.simulate(tick));
+    memoryAccessUnits.forEach(memoryAccessUnit -> memoryAccessUnit.simulate(tick));
+    branchFunctionUnitBlocks.forEach(branchFunctionUnitBlock -> branchFunctionUnitBlock.simulate(tick));
     //    issueWindowSuperBlock.simulate(tick);
     reorderBufferBlock.simulate_issue(tick);
     decodeAndDispatchBlock.simulate(tick);
@@ -478,7 +478,8 @@ public class CpuState implements Serializable
     boolean pcEnd         = instructionFetchBlock.getPc() >= instructionMemoryBlock.getCode().size() * 4;
     boolean renameEmpty   = decodeAndDispatchBlock.getCodeBuffer().isEmpty();
     boolean fetchNotEmpty = !instructionFetchBlock.getFetchedCode().isEmpty();
-    boolean nop = fetchNotEmpty && instructionFetchBlock.getFetchedCode().get(0).getInstructionName().equals("nop");
+    boolean nop           = fetchNotEmpty && instructionFetchBlock.getFetchedCode().get(0).getInstructionName()
+            .equals("nop");
     if (robEmpty && pcEnd && renameEmpty && nop)
     {
       return StopReason.kEndOfCode;

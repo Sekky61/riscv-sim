@@ -75,6 +75,38 @@ public class LoadStoreFunctionUnit extends AbstractFunctionUnitBlock
   }
   
   /**
+   * @brief Finishes execution of the instruction
+   */
+  @Override
+  protected void finishExecution()
+  {
+    // Execute
+    Result<Long> addressRes = loadStoreInterpreter.interpretAddress(simCodeModel);
+    
+    if (addressRes.isException())
+    {
+      // Handle exception, make sure the ROB will clear it, and that MAU will not execute
+      this.simCodeModel.setException(addressRes.exception());
+      this.simCodeModel.setBusy(false);
+      // Do not set the address
+    }
+    else
+    {
+      long address = addressRes.value();
+      if (simCodeModel.isStore())
+      {
+        storeBufferBlock.setAddress(simCodeModel.getIntegerId(), address);
+      }
+      else
+      {
+        // A load
+        loadBufferBlock.setAddress(simCodeModel.getIntegerId(), address);
+      }
+    }
+    this.simCodeModel = null;
+  }
+  
+  /**
    * @param description          Description of the function unit
    * @param issueWindowBlock     Issue window block for comparing instruction and data types
    * @param loadBufferBlock      Load buffer with all load instruction entries
@@ -153,30 +185,7 @@ public class LoadStoreFunctionUnit extends AbstractFunctionUnitBlock
       return;
     }
     
-    // Execute
-    Result<Long> addressRes = loadStoreInterpreter.interpretAddress(simCodeModel);
-    
-    if (addressRes.isException())
-    {
-      // Handle exception, make sure the ROB will clear it, and that MAU will not execute
-      this.simCodeModel.setException(addressRes.exception());
-      this.simCodeModel.setBusy(false);
-      // Do not set the address
-    }
-    else
-    {
-      long address = addressRes.value();
-      if (simCodeModel.isStore())
-      {
-        storeBufferBlock.setAddress(simCodeModel.getIntegerId(), address);
-      }
-      else
-      {
-        // A load
-        loadBufferBlock.setAddress(simCodeModel.getIntegerId(), address);
-      }
-    }
-    this.simCodeModel = null;
+    finishExecution();
   }
   //----------------------------------------------------------------------
 }

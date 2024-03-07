@@ -168,6 +168,7 @@ public class SimulatedMemory implements AbstractBlock, MemoryBlock
     int latency = transaction.isStore() ? this.storeLatency : this.loadLatency;
     transaction.setLatency(latency);
     transaction.setId(this.transactionId++);
+    transaction.setHandledBy(MemoryTransaction.MAIN_MEMORY);
     return latency;
   }
   

@@ -184,6 +184,15 @@ public class ArithmeticFunctionUnitBlock extends AbstractFunctionUnitBlock
       return;
     }
     
+    finishExecution();
+  }
+  //----------------------------------------------------------------------
+  
+  /**
+   * @brief Finish the execution of the instruction. Set destination register and finish the instruction
+   */
+  protected void finishExecution()
+  {
     // Instruction computed
     // Write result to the destination register
     InputCodeArgument           destinationArgument = simCodeModel.getArgumentByName("rd");
@@ -206,7 +215,6 @@ public class ArithmeticFunctionUnitBlock extends AbstractFunctionUnitBlock
     this.setDelay(0);
     this.zeroTheCounter();
   }
-  //----------------------------------------------------------------------
   
   /**
    * @return List of allowed operators
