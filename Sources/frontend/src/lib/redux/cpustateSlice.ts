@@ -595,6 +595,9 @@ export const selectFpFunctionUnitBlocks = (state: RootState) =>
 export const selectBranchFunctionUnitBlocks = (state: RootState) =>
   state.cpu.state?.branchFunctionUnitBlocks;
 
+export const selectLoadStoreFunctionUnitBlocks = (state: RootState) =>
+  state.cpu.state?.loadStoreFunctionUnits;
+
 export const selectMemoryAccessUnitBlocks = (state: RootState) =>
   state.cpu.state?.memoryAccessUnits; // todo: inconsistent name
 

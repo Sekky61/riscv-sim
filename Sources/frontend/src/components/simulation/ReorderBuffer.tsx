@@ -118,8 +118,16 @@ export function RobInfo({ instructionId }: { instructionId: number | null }) {
 
   return (
     <div className='flex gap-0.5 items-start'>
-      {simCodeModel.isSpeculative && <DividedBadge>S</DividedBadge>}
-      {simCodeModel.exception && <DividedBadge>Ex</DividedBadge>}
+      {simCodeModel.isSpeculative && (
+        <DividedBadge title='Speculative'>S</DividedBadge>
+      )}
+      {simCodeModel.exception && (
+        <DividedBadge
+          title={`Exception: ${simCodeModel.exception.exceptionMessage}`}
+        >
+          Ex
+        </DividedBadge>
+      )}
     </div>
   );
 }

@@ -103,6 +103,8 @@ public class BranchFunctionUnitBlock extends AbstractFunctionUnitBlock
     
     this.simCodeModel.setBusy(false);
     this.simCodeModel = null;
+    zeroTheCounter();
+    setDelay(0);
   }
   
   /**
@@ -144,12 +146,14 @@ public class BranchFunctionUnitBlock extends AbstractFunctionUnitBlock
       this.simCodeModel.setFunctionUnitId(this.functionUnitId);
       this.simCodeModel = null;
       this.zeroTheCounter();
+      this.setDelay(0);
       return;
     }
     
     if (hasTimerStartedThisTick())
     {
       this.simCodeModel.setFunctionUnitId(this.functionUnitId);
+      this.setDelay(this.delay);
     }
     
     tickCounter();

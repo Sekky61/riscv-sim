@@ -67,7 +67,7 @@ export function InstructionListDisplay<T>({
 
   return (
     <div
-      className='grid gap-1 gap-x-2 overflow-y-auto w-full divide-y instruction-list-container surface-container-low rounded-[8px]'
+      className='grid gap-1 gap-x-2 p-1 overflow-y-auto w-full divide-y instruction-list-container surface-container-low rounded-[8px]'
       style={{
         gridTemplateColumns: templateColumns,
       }}

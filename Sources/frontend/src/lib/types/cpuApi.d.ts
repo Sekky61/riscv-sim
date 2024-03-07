@@ -467,6 +467,7 @@ export interface FunctionalUnitDescription {
 
 export type ArithmeticFunctionUnitBlock = AbstractFunctionUnitBlock;
 export type BranchFunctionUnitBlock = AbstractFunctionUnitBlock;
+export type LoadStoreFunctionUnit = AbstractFunctionUnitBlock;
 export type MemoryAccessUnit = AbstractFunctionUnitBlock & {
   transaction: MemoryTransaction;
   handledBy: string | null;

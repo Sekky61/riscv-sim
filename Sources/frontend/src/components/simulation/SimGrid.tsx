@@ -73,6 +73,7 @@ export function SimGrid() {
           <StoreBuffer />
           <LoadBuffer />
           <div className='block-stack'>
+            <FunctionUnitGroup type='ls' />
             <FunctionUnitGroup type='memory' />
             <MainMemory />
           </div>

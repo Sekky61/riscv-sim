@@ -833,7 +833,7 @@
   }
 
   /* Container for lists of instructions */
-  .instruction-list-container > * {
+  .instruction-list-container > *:not(:first-child) {
     @apply pt-1;
   }
 }

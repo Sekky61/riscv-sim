@@ -135,7 +135,7 @@ function OneBitIcon({ state }: IconProps) {
 
 function fill(i: number, active: number) {
   if (i === active) {
-    return '#ff7171';
+    return '#9EEFFD'; // primary fixed
   }
   return 'transparent';
 }

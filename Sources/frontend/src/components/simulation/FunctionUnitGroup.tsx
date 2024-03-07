@@ -37,11 +37,11 @@ import {
   selectArithmeticFunctionUnitBlocks,
   selectBranchFunctionUnitBlocks,
   selectFpFunctionUnitBlocks,
+  selectLoadStoreFunctionUnitBlocks,
   selectMemoryAccessUnitBlocks,
 } from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
 
-import { Badge } from '@/components/base/ui/badge';
 import Block from '@/components/simulation/Block';
 import InstructionField from '@/components/simulation/InstructionField';
 import {
@@ -50,7 +50,7 @@ import {
 } from '@/lib/types/cpuApi';
 import { DividedBadge } from '@/components/DividedBadge';
 
-type FUType = 'alu' | 'fp' | 'branch' | 'memory';
+type FUType = 'alu' | 'fp' | 'branch' | 'ls' | 'memory';
 
 export type FunctionUnitGroupProps = {
   type: FUType;
@@ -118,6 +118,7 @@ const selectors = {
   alu: selectArithmeticFunctionUnitBlocks,
   fp: selectFpFunctionUnitBlocks,
   branch: selectBranchFunctionUnitBlocks,
+  ls: selectLoadStoreFunctionUnitBlocks,
   memory: selectMemoryAccessUnitBlocks,
 } as const;
 
@@ -133,6 +134,10 @@ const fuInfo = {
   branch: {
     name: 'Branch',
     className: 'branchFu',
+  },
+  ls: {
+    name: 'Load/Store',
+    className: 'lsFu',
   },
   memory: {
     name: 'Memory Access',

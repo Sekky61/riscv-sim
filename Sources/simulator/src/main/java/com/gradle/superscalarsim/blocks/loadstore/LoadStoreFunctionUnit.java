@@ -104,6 +104,8 @@ public class LoadStoreFunctionUnit extends AbstractFunctionUnitBlock
       }
     }
     this.simCodeModel = null;
+    this.zeroTheCounter();
+    this.setDelay(0);
   }
   
   /**
@@ -170,12 +172,14 @@ public class LoadStoreFunctionUnit extends AbstractFunctionUnitBlock
       this.simCodeModel.setFunctionUnitId(this.functionUnitId);
       this.simCodeModel = null;
       this.zeroTheCounter();
+      this.setDelay(0);
       return;
     }
     
     if (hasTimerStartedThisTick())
     {
       this.simCodeModel.setFunctionUnitId(this.functionUnitId);
+      this.setDelay(this.delay);
     }
     
     tickCounter();

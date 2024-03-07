@@ -71,9 +71,9 @@ export function PredictorGraph({ branchInfo }: PredictorGraphProps) {
       <TooltipTrigger asChild>
         <div
           className={clsx(
-            'instruction-bubble w-8 p-1 ring-2 ring-inset',
-            verdict && 'ring-green-300',
-            !verdict && 'ring-red-300',
+            'w-8 rounded-lg p-1 ring-2 ring-inset',
+            verdict && 'ring-teal-500',
+            !verdict && 'ring-rose-500',
           )}
         >
           <PredictorIcon state={state} width={predictorStateWidth} />
