@@ -131,87 +131,42 @@
   .surface {
     @apply bg-surface text-onSurface;
   }
-
-  .surface * {
-    @apply text-onSurface;
-  }
   
   .surface-container-lowest {
     @apply bg-surfaceContainerLowest text-onSurface;
-  }
-
-  .surface-container-lowest * {
-    @apply text-onSurface;
   }
   
   .surface-container-low {
     @apply bg-surfaceContainerLow text-onSurface;
   }
 
-  .surface-container-low * {
-    @apply text-onSurface;
-  }
-
   .surface-container {
     @apply bg-surfaceContainer text-onSurface;
-  }
-
-  .surface-container * {
-    @apply text-onSurface;
   }
 
   .surface-container-high {
     @apply bg-surfaceContainerHigh text-onSurface;
   }
 
-  .surface-container-high * {
-    @apply text-onSurface;
-  }
-
   .surface-container-highest {
     @apply bg-surfaceContainerHighest text-onSurface;
-  }
-
-  .surface-container-highest * {
-    @apply text-onSurface;
   }
 
   .primary-container {
     @apply bg-primaryContainer text-onPrimaryContainer;
   }
 
-  .primary-container * {
-    @apply text-onPrimaryContainer;
-  }
-
   .secondary-container {
     @apply bg-secondaryContainer text-onSecondaryContainer;
-  }
-
-  .secondary-container * {
-    @apply text-onSecondaryContainer;
   }
 
   .tertiary-container {
     @apply bg-tertiaryContainer text-onTertiaryContainer;
   }
 
-  .tertiary-container * {
-    @apply text-onTertiaryContainer;
-  }
-
-  .surface-variant * {
-    @apply text-onSurfaceVariant;
-  }
-
   .error {
     @apply bg-error text-onError;
   }
-
-  .error * {
-    @apply text-onError;
-  }
-
 
 
   /* border colors */
@@ -276,11 +231,11 @@
   }
 
   thead {
-    @apply primary-container;
+    @apply bg-primary-80 text-primary-10; 
   }
 
   tbody {
-    @apply surface-container divide-y;
+    @apply divide-y;
   }
 
   td {
@@ -701,7 +656,7 @@
   
   .iconHighlight:focus,
   .iconHighlight:hover {
-    @apply bg-primary-90;
+    @apply bg-primary/15;
   }
 
   /* Active after hover, so it has bigger precedence */

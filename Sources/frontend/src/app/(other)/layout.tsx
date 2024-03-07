@@ -41,8 +41,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <div className='navbar-slot'>
         <Navbar />
       </div>
-      <div className='h-screen shrink-0 flex-grow py-10 overflow-y-auto'>
-        <div className='small-container main-pane min-h-full'>{children}</div>
+      <div className='shrink-0 flex-grow py-10 overflow-y-auto'>
+        <div className='small-container main-pane'>{children}</div>
       </div>
     </div>
   );

@@ -85,7 +85,7 @@ export default function HomePage() {
         <title>Memory</title>
       </Head>
       <h1>Memory Editor</h1>
-      <div className='flex divide-x'>
+      <div className='flex divide-x justify-center'>
         <div className='w-48 p-4 flex flex-col gap-4 divide-y'>
           <Button
             variant='secondary'
@@ -97,7 +97,7 @@ export default function HomePage() {
           >
             New Object
           </Button>
-          <div className='pt-4 flex justify-around'>
+          <div className='pt-4 flex justify-around gap-3'>
             <Button onClick={doImport} variant='secondary'>
               Import
             </Button>

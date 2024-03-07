@@ -41,13 +41,13 @@ import { LineHighlightProvider } from '@/app/(other)/compiler/LineHighlightConte
 export default function Page() {
   // Note: min-h-0 fixes overflow of the flex container
   return (
-    <main className='h-full'>
+    <>
       <Head>
         <title>Code Editor</title>
       </Head>
-      <div className='flex h-full flex-col'>
-        <h1>Code Editor</h1>
-        <div className='editor-container grid min-h-0 flex-grow grid-cols-[160px_minmax(350px,2fr)_minmax(350px,1fr)] gap-4'>
+      <h1>Code Editor</h1>
+      <div className='flex-grow flex h-full flex-col'>
+        <div className='editor-container grid min-h-0 h-full flex-grow grid-cols-[160px_minmax(350px,2fr)_minmax(350px,1fr)] gap-4'>
           <CompileOptions />
           <LineHighlightProvider>
             <CCodeInput />
@@ -55,6 +55,6 @@ export default function Page() {
           </LineHighlightProvider>
         </div>
       </div>
-    </main>
+    </>
   );
 }

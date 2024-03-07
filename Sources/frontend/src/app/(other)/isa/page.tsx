@@ -46,7 +46,7 @@ import {
   selectIsas,
   updateIsa,
 } from '@/lib/redux/isaSlice';
-import { cn, loadFile, saveAsJsonFile } from '@/lib/utils';
+import { cn, loadFile, pluralize, saveAsJsonFile } from '@/lib/utils';
 
 import { Button } from '@/components/base/ui/button';
 import {
@@ -72,6 +72,7 @@ import {
 import IsaSettingsForm from '@/components/form/IsaSettingsForm';
 import Link from 'next/link';
 import { toast } from 'sonner';
+import { DividedBadge } from '@/components/DividedBadge';
 
 // TODO: delete configuration
 // TODO: prevent from leaving the page with unsaved changes
@@ -192,8 +193,8 @@ export default function Page() {
 
   return (
     <div>
-      <h1 className='mb-8 text-2xl'>ISA Configuration</h1>
-      <div className='border-b mb-4 pb-4'>
+      <h1>Architecture Settings</h1>
+      <div className='border-b mb-4 pb-4 pt-6'>
         <div className='flex justify-center items-center gap-4'>
           <span className='font-bold'>Active configuration</span>
           <Popover open={savesOpen} onOpenChange={(op) => setSavesOpen(op)}>
@@ -304,15 +305,17 @@ function MemoryInfo() {
   );
 
   return (
-    <div>
+    <div className='flex gap-2 pt-4'>
       {mem.length === 0 ? (
         <span>No {memoryLink} locations defined.</span>
       ) : (
         <span>
-          {mem.length} {memoryLink} location{mem.length > 1 ? 's' : ''} defined:{' '}
-          {names.join(', ')}
+          {mem.length} {memoryLink} {pluralize('location', mem.length)} defined:
         </span>
       )}
+      {names.map((name) => {
+        return <DividedBadge key={name}>{name}</DividedBadge>;
+      })}
     </div>
   );
 }

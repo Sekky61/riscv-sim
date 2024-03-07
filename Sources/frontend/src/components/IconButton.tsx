@@ -49,6 +49,7 @@ export type IconButtonProps = {
   children: ReactChildren;
   className?: string;
   description: string;
+  animate?: boolean;
 };
 
 /**
@@ -65,6 +66,7 @@ export const IconButton = ({
   children,
   className,
   description,
+  animate = false,
 }: IconButtonProps) => {
   const buttonRef = useRef<HTMLButtonElement>(null);
 
@@ -88,7 +90,11 @@ export const IconButton = ({
     <button
       ref={buttonRef}
       type='button'
-      className={clsx('iconHighlight h-8 w-8 rounded-full p-1', className)}
+      className={clsx(
+        'h-8 w-8 rounded-full p-1',
+        className,
+        animate && 'iconHighlight',
+      )}
       onClick={onClick}
       aria-label={description}
       data-active={active ? 'true' : undefined}

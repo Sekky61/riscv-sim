@@ -163,8 +163,9 @@ const ScaleButtons = ({ scaleUp, scaleDown }: ScaleButtonsProps) => {
         shortCut='ctrl-+'
         shortCutOptions={{ combinationKey: '-', preventDefault: true }}
         clickCallback={scaleUp}
-        className='secondary-container rounded-[8px] drop-shadow'
+        className='secondary-container rounded-[9px] drop-shadow'
         description='Zoom in'
+        animate
       >
         <ZoomIn strokeWidth={1.5} />
       </IconButton>
@@ -172,8 +173,9 @@ const ScaleButtons = ({ scaleUp, scaleDown }: ScaleButtonsProps) => {
         shortCut='ctrl+-'
         shortCutOptions={{ preventDefault: true }}
         clickCallback={scaleDown}
-        className='secondary-container rounded-full drop-shadow'
+        className='secondary-container rounded-[9px] drop-shadow'
         description='Zoom out'
+        animate
       >
         <ZoomOut strokeWidth={1.5} />
       </IconButton>

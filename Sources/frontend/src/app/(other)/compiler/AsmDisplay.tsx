@@ -292,8 +292,9 @@ function EntryPointSelector() {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button className='flex items-center gap-2 px-2 rounded py-0.5 my-0.5 h-6 text-black bg-gray-200 hover:bg-gray-300'>
-            <Play size={16} strokeWidth={1.75} />
-            Entry Point: <span className='font-semibold'>{entryPoint}</span>
+            <Play size={16} strokeWidth={1.75} color='black' />
+            Entry Point:{' '}
+            <span className='font-semibold text-black'>{entryPoint}</span>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className='w-56'>

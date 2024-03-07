@@ -445,7 +445,7 @@ function DataTextArea({ memoryLocationName, ...props }: DataTextAreaProps) {
       />
       <Label
         htmlFor='fileId'
-        className={buttonVariants({ variant: 'outline' })}
+        className={buttonVariants({ variant: 'secondary' })}
       >
         {file?.name ? (
           `${file.name} ✓`

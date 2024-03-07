@@ -92,6 +92,7 @@ export default function Timeline() {
           clickCallback={() => dispatch(simStepBackward())}
           description='Step backward'
           className='left-arrow m-1 rotate-180'
+          animate
         >
           <ChevronLeft strokeWidth={1.5} />
         </IconButton>
@@ -100,6 +101,7 @@ export default function Timeline() {
           clickCallback={() => dispatch(simStepForward())}
           description='Step forward'
           className='right-arrow m-1 rotate-180'
+          animate
         >
           <ChevronRight strokeWidth={1.5} />
         </IconButton>
@@ -108,6 +110,7 @@ export default function Timeline() {
           shortCut='ctrl+enter'
           description='Skip to the end of simulation'
           className='m-1 rotate-180'
+          animate
         >
           <ChevronLast strokeWidth={1.5} />
         </IconButton>
@@ -118,6 +121,7 @@ export default function Timeline() {
           shortCut='r'
           description='Reload simulation'
           className='m-1 rotate-180'
+          animate
         >
           <ChevronFirst strokeWidth={1.5} />
         </IconButton>

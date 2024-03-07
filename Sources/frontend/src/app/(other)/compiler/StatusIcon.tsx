@@ -37,10 +37,10 @@ import { CheckCircle, Circle, XCircle } from 'lucide-react';
 export const StatusIcon = ({ type }: { type: 'circle' | 'tick' | 'x' }) => {
   switch (type) {
     case 'circle':
-      return <Circle size={16} />;
+      return <Circle size={16} color='black' />;
     case 'tick':
-      return <CheckCircle size={16} className='text-green-500' />;
+      return <CheckCircle size={16} color='green' />;
     case 'x':
-      return <XCircle size={16} className='text-red-500' />;
+      return <XCircle size={16} color='red' />;
   }
 };

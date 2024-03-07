@@ -34,7 +34,7 @@ import { SettingsForm } from '@/components/form/SettingsForm';
 export default function Page() {
   return (
     <main>
-      <h2 className='text-2xl mb-4'>Settings</h2>
+      <h1>Settings</h1>
       <SettingsForm />
     </main>
   );
