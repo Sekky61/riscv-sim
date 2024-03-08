@@ -39,9 +39,8 @@ import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.models.RenameMapModel;
 import com.gradle.superscalarsim.models.register.RegisterModel;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
+import java.util.Stack;
 import java.util.TreeMap;
 
 /**
@@ -53,9 +52,10 @@ import java.util.TreeMap;
 public class RenameMapTableBlock
 {
   /**
-   * List of free speculative registers
+   * Set of free speculative registers. Starts out with the lowest number on top (tg0).
+   * When a register is freed, it is added to the top of the stack.
    */
-  private final List<String> freeList;
+  private final Stack<String> freeTags;
   /**
    * Map of speculative to architectural registers
    */
@@ -76,7 +76,7 @@ public class RenameMapTableBlock
    */
   public RenameMapTableBlock()
   {
-    this.freeList          = new ArrayList<>();
+    this.freeTags          = new Stack<>();
     this.registerMap       = new TreeMap<>();
     this.referenceMap      = new TreeMap<>();
     this.registerFileBlock = null;
@@ -89,7 +89,7 @@ public class RenameMapTableBlock
    */
   public RenameMapTableBlock(UnifiedRegisterFileBlock registerFileBlock)
   {
-    this.freeList = new ArrayList<>();
+    this.freeTags = new Stack<>();
     // TreeMaps to keep the order of keys - important for comparing serialized forms
     this.registerMap       = new TreeMap<>();
     this.referenceMap      = new TreeMap<>();
@@ -106,25 +106,11 @@ public class RenameMapTableBlock
    */
   private void initiateFreeList(int specRegistersCount)
   {
-    for (int i = 0; i < specRegistersCount; i++)
+    for (int i = specRegistersCount - 1; i >= 0; i--)
     {
-      this.freeList.add("tg" + i);
+      this.freeTags.add("tg" + i);
     }
   }// end of createSpeculativeRegisters
-  //----------------------------------------------------------------------
-  
-  /**
-   * @brief Clears all the active mappings
-   */
-  public void clear()
-  {
-    // Broken clear. TODO: remove all clearing and resetting. We have CpuConfiguration for that
-    //    this.registerFileBlock.refreshRegisters();
-    this.freeList.clear();
-    this.registerMap.clear();
-    this.referenceMap.clear();
-    //    initiateFreeList(registerFileBlock.getSpeculativeRegisterFile().getRegisterList());
-  }// end of clear
   //----------------------------------------------------------------------
   
   /**
@@ -137,13 +123,12 @@ public class RenameMapTableBlock
   public RegisterModel mapRegister(String registerName, int order)
   {
     // TODO: what if there is no free tag or free register in the field? Currently it throws exception
-    if (this.freeList.isEmpty())
+    if (this.freeTags.isEmpty())
     {
       throw new RuntimeException("No free registers available");
     }
-    String speculativeRegister = this.freeList.iterator().next();
+    String speculativeRegister = this.freeTags.pop();
     this.registerMap.put(speculativeRegister, new RenameMapModel(registerName, order));
-    this.freeList.remove(speculativeRegister);
     this.referenceMap.put(speculativeRegister, 1);
     this.registerFileBlock.getRegister(speculativeRegister).setReadiness(RegisterReadinessEnum.kAllocated);
     return registerFileBlock.getRegister(speculativeRegister);
@@ -157,7 +142,7 @@ public class RenameMapTableBlock
    */
   public boolean hasFreeRegisters()
   {
-    return !this.freeList.isEmpty();
+    return !this.freeTags.isEmpty();
   }
   
   /**
@@ -218,7 +203,7 @@ public class RenameMapTableBlock
     this.registerFileBlock.getRegister(speculativeRegister).setReadiness(RegisterReadinessEnum.kFree);
     this.referenceMap.remove(specRegister.getName());
     this.registerMap.remove(specRegister.getName());
-    this.freeList.add(specRegister.getName());
+    this.freeTags.add(specRegister.getName());
     
   }// end of freeMapping
   //----------------------------------------------------------------------
@@ -231,7 +216,7 @@ public class RenameMapTableBlock
    */
   public boolean isSpeculativeRegister(String register)
   {
-    return freeList.contains(register) || registerMap.containsKey(register);
+    return freeTags.contains(register) || registerMap.containsKey(register);
   }// end of isSpeculativeRegister
   //----------------------------------------------------------------------
   
@@ -282,7 +267,7 @@ public class RenameMapTableBlock
    */
   public int getAllocatedSpeculativeRegistersCount()
   {
-    return this.registerFileBlock.getSpeculativeRegisterFile().getRegisterCount() - this.freeList.size();
+    return this.registerFileBlock.getSpeculativeRegisterFile().getRegisterCount() - this.freeTags.size();
   }
   
   /**
@@ -290,6 +275,6 @@ public class RenameMapTableBlock
    */
   public int getFreeRegistersCount()
   {
-    return this.freeList.size();
+    return this.freeTags.size();
   }
 }
