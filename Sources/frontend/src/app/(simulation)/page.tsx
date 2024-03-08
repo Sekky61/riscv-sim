@@ -38,12 +38,12 @@ import Timeline from '@/components/simulation/Timeline';
 export default async function HomePage() {
   return (
     <div className='flex'>
-      <div className='py-2 flex-grow h-screen'>
-        <div className='relative rounded-lg border w-full h-full shadow-inner'>
+      <div className='flex-grow h-screen'>
+        <div className='relative w-full h-full shadow-inner'>
           <CanvasWindow>
             <SimGrid />
           </CanvasWindow>
-          <div className='fixed top-4 left-1/2'>
+          <div className='fixed top-3 left-1/2'>
             <Timeline />
           </div>
         </div>

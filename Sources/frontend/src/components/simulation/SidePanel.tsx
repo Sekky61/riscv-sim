@@ -62,7 +62,7 @@ export function SidePanel() {
   );
 
   return (
-    <div className='h-screen p-2 relative flex flex-col gap-2'>
+    <div className='h-screen p-2 relative flex flex-col gap-2 shadow'>
       <button
         type='button'
         className='w-full h-[40px] secondary-container rounded-[12px] flex justify-center items-center'

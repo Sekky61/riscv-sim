@@ -49,80 +49,88 @@ type CanvasWindowProps = {
  */
 export default function CanvasWindow({ children }: CanvasWindowProps) {
   const elRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
   const [middleHeld, setMiddleHeld] = useState(false);
   const [scale, setScale] = useState(1);
 
   const scaleUp = () => {
-    setScale(scale + 0.2);
+    setScale(scale + 0.1);
   };
 
   const scaleDown = () => {
-    setScale(scale - 0.2);
+    setScale(scale - 0.1);
   };
 
   // Middle click hold and drag
 
   function onPointerUpDown(e: PointerEvent) {
-    const isDown = e.type === 'pointerdown';
     const isMiddle = e.button === 1;
-    if (isMiddle) {
-      setMiddleHeld(isDown);
-      if (isDown) {
-        // Pointer capture solves the problem of pointer leaving the element
-        elRef.current?.setPointerCapture(e.pointerId);
-        elRef.current?.addEventListener('pointermove', onPointerMove);
-      } else {
-        elRef.current?.releasePointerCapture(e.pointerId);
-        elRef.current?.removeEventListener('pointermove', onPointerMove);
-      }
+    if (!isMiddle) {
+      return;
+    }
+    const isDown = e.type === 'pointerdown';
+    setMiddleHeld(isDown);
+    if (isDown) {
+      // Pointer capture solves the problem of pointer leaving the element
+      elRef.current?.setPointerCapture(e.pointerId);
+      elRef.current?.addEventListener('pointermove', onPointerMove);
+    } else {
+      elRef.current?.releasePointerCapture(e.pointerId);
+      elRef.current?.removeEventListener('pointermove', onPointerMove);
     }
   }
 
   function onPointerMove(ee: PointerEvent) {
     // get the change in x and y
+    // set the new offset
+    if (!elRef.current || !contentRef.current) {
+      return;
+    }
+
     const dx = ee.movementX;
     const dy = ee.movementY;
-    // set the new offset
-    if (elRef.current) {
-      const newOffsetLeft = elRef.current.scrollLeft - dx;
-      const newOffsetTop = elRef.current.scrollTop - dy;
-      elRef.current.scrollLeft = newOffsetLeft;
-      elRef.current.scrollTop = newOffsetTop;
-    }
-  }
 
-  function onScroll(e: Event) {
-    // Roll the background with the scroll
-    const el = e.target;
-    if (!(el instanceof HTMLElement)) return;
-    el.style.backgroundPosition = `${0 - el.scrollLeft}px ${
-      0 - el.scrollTop
-    }px`;
+    // get the current offset from attributes. The right and bottom should be defined as inline styles
+    const right = contentRef.current.style.right || '0';
+    const top = contentRef.current.style.bottom || '0';
+
+    const newOffsetRight = parseInt(right);
+    const newOffsetBottom = parseInt(top);
+
+    const offsetRight = newOffsetRight - dx;
+    const offsetBottom = newOffsetBottom - dy;
+
+    // add offset to position of the element (right, bottom)
+    contentRef.current.style.right = `${offsetRight}px`;
+    contentRef.current.style.bottom = `${offsetBottom}px`;
   }
 
   // Register on component mount
   useEffect(() => {
     elRef.current?.addEventListener('pointerdown', onPointerUpDown);
     elRef.current?.addEventListener('pointerup', onPointerUpDown);
-    elRef.current?.addEventListener('scroll', onScroll);
     return () => {
       elRef.current?.removeEventListener('pointerdown', onPointerUpDown);
       elRef.current?.removeEventListener('pointerup', onPointerUpDown);
-      elRef.current?.removeEventListener('scroll', onScroll);
     };
   }, []);
 
   const cls = clsx(
-    'overflow-auto sim-bg min-h-full min-w-full',
-    middleHeld && 'cursor-grabbing',
-    !middleHeld && 'cursor-grab',
+    'overflow-hidden sim-bg min-h-full min-w-full',
+    middleHeld ? 'cursor-grabbing' : 'cursor-grab',
   );
 
   // The w-6 h-6 trick to make the overflow not affect initial size of the component
   return (
     <div className={cls} ref={elRef}>
-      <div style={{ transform: `scale(${scale})` }} className='h-6 w-6'>
-        {children}
+      <div className='relative w-6 h-6'>
+        <div
+          style={{ transform: `scale(${scale})`, right: 0, bottom: 0 }}
+          className='absolute h-6 w-6'
+          ref={contentRef}
+        >
+          {children}
+        </div>
       </div>
       <ScaleButtons scaleUp={scaleUp} scaleDown={scaleDown} />
     </div>
