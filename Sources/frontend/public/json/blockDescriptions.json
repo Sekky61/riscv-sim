@@ -38,5 +38,10 @@
     "name": "Cache",
     "shortDescription": "The Cache is a small, fast memory that holds recently accessed data. It is used to speed up memory access.",
     "longDescription": ""
+  },
+  "registerFile": {
+    "name": "Register File",
+    "shortDescription": "The Register File is a small, fast memory that holds the values of the processor's registers.",
+    "longDescription": ""
   }
 }

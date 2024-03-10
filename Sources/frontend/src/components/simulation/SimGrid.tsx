@@ -40,6 +40,7 @@ import IssueWindow from '@/components/simulation/IssueWindow';
 import LoadBuffer from '@/components/simulation/LoadBuffer';
 import MainMemory from '@/components/simulation/MainMemory';
 import Program from '@/components/simulation/Program';
+import RegisterBlock from '@/components/simulation/RegisterBlock';
 import ReorderBuffer from '@/components/simulation/ReorderBuffer';
 import StoreBuffer from '@/components/simulation/StoreBuffer';
 
@@ -78,6 +79,9 @@ export function SimGrid() {
             <MainMemory />
           </div>
           <CacheBlock />
+        </div>
+        <div className='grid'>
+          <RegisterBlock />
         </div>
       </div>
     </HighlightProvider>

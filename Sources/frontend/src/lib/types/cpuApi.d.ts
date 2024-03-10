@@ -369,10 +369,24 @@ export interface GShareUnit {
 }
 
 export interface UnifiedRegisterFileBlock {
+  /**
+   * Only architectural, but including aliases
+   */
   registerMap: {
     [k: string]: Reference;
   };
-  speculativeRegisterFile?: SpeculativeRegisterFile;
+  speculativeRegisterFile: SpeculativeRegisterFile;
+}
+
+export interface SpeculativeRegisterFile {
+  name: string;
+  numberOfRegisters: number;
+  /**
+   * Ref to RegisterModel
+   */
+  registers: {
+    [k: string]: StringReference;
+  };
 }
 
 export interface RegisterModel {
