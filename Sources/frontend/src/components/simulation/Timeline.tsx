@@ -37,6 +37,7 @@ import {
   ChevronLast,
   ChevronLeft,
   ChevronRight,
+  Play,
 } from 'lucide-react';
 
 import {

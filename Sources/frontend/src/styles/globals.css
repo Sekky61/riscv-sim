@@ -604,6 +604,18 @@
     z-index: 12;
   }
 
+  .autoplay {
+    @apply absolute top-0 left-0;
+    width: var(--cell-size);
+    /* transform: translateX(calc(0px - var(--cell-size) * 4 - var(--cell-gap))); */
+  }
+
+  .autoplay-ms {
+    @apply absolute top-0;
+    left: calc(var(--cell-size) + var(--cell-gap));
+    width: calc(2*var(--cell-size));
+  }
+
   /* Timeline loading spin
   Source: https://codepen.io/Chester/pen/QPoyjN
    */

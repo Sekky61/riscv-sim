@@ -29,6 +29,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { AutoPlay } from '@/app/(simulation)/AutoPlay';
 import CanvasWindow from '@/components/CanvasWindow';
 import { ReloadSimModal } from '@/components/ReloadSimModal';
 import { SidePanel } from '@/components/simulation/SidePanel';
@@ -43,8 +44,11 @@ export default async function HomePage() {
           <CanvasWindow>
             <SimGrid />
           </CanvasWindow>
-          <div className='fixed top-3 left-1/2'>
+          <div className='absolute top-3 left-1/2'>
             <Timeline />
+          </div>
+          <div className='absolute top-3 left-4'>
+            <AutoPlay />
           </div>
         </div>
       </div>

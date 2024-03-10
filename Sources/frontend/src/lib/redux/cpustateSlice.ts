@@ -33,6 +33,7 @@
 
 import {
   Action,
+  PayloadAction,
   ThunkAction,
   createAsyncThunk,
   createSelector,
@@ -90,6 +91,14 @@ interface CpuSlice {
    * State of request to the simulation API
    */
   simulationStatus: 'idle' | 'loading' | 'failed';
+  /**
+   * True if the autoplay is on, false otherwise
+   */
+  autoplay: boolean;
+  /**
+   * Interval of the autoplay in milliseconds
+   */
+  autoplayIntervalMs: number;
 }
 
 /**
@@ -100,6 +109,8 @@ export const cpuInitialState: CpuSlice = {
   stopReason: 'kNotStopped',
   instructionFunctionModels: {},
   simulationStatus: 'idle',
+  autoplay: false,
+  autoplayIntervalMs: 1000,
 };
 
 /**
@@ -240,7 +251,20 @@ export const cpuSlice = createSlice({
   name: 'cpu',
   // `createSlice` will infer the state type from the `initialState` argument
   initialState: cpuInitialState,
-  reducers: {},
+  reducers: {
+    /**
+     * Set the autoplay state
+     */
+    setAutoplay: (state, action: PayloadAction<boolean>) => {
+      state.autoplay = action.payload;
+    },
+    /**
+     * Set the autoplay interval
+     */
+    setAutoplayInterval: (state, action: PayloadAction<number>) => {
+      state.autoplayIntervalMs = action.payload;
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(callSimulation.fulfilled, (state, action) => {
@@ -268,7 +292,7 @@ export const cpuSlice = createSlice({
   },
 });
 
-// export const {} = cpuSlice.actions;
+export const { setAutoplay, setAutoplayInterval } = cpuSlice.actions;
 
 //
 // Selectors
@@ -279,6 +303,10 @@ export const selectTick = (state: RootState) => state.cpu.state?.tick ?? 0;
 export const selectStopReason = (state: RootState) => state.cpu.stopReason;
 export const selectSimulationStatus = (state: RootState) =>
   state.cpu.simulationStatus;
+
+export const selectAutoplay = (state: RootState) => state.cpu.autoplay;
+export const selectAutoplayInterval = (state: RootState) =>
+  state.cpu.autoplayIntervalMs;
 
 export const selectAllInstructionFunctionModels = (state: RootState) =>
   state.cpu.instructionFunctionModels;
