@@ -33,6 +33,8 @@ import {
   DecodedCacheLine,
   selectAllRegisters,
   selectCache,
+  selectRegisterMap,
+  selectRenameMap,
 } from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
 
@@ -47,6 +49,13 @@ import Block from '@/components/simulation/Block';
 import { hexPadEven } from '@/lib/utils';
 import clsx from 'clsx';
 import { DividedBadge } from '@/components/DividedBadge';
+import { RegisterModel } from '@/lib/types/cpuApi';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/base/ui/tooltip';
+import { useHighlight } from '@/components/HighlightProvider';
 
 /**
  * Display the cache, lines are grouped by the index.
@@ -54,10 +63,11 @@ import { DividedBadge } from '@/components/DividedBadge';
  */
 export default function RegisterBlock() {
   // including speculative
-  const registers = useAppSelector(selectAllRegisters);
+  const registers = useAppSelector(selectRegisterMap);
+  const renameBlock = useAppSelector(selectRenameMap);
   const descriptions = useBlockDescriptions();
 
-  if (!registers) return null;
+  if (!registers || !renameBlock) return null;
 
   // first dimension is the index, second is the associativity
 
@@ -67,7 +77,8 @@ export default function RegisterBlock() {
       stats={
         <div className='flex'>
           <DividedBadge>
-            <div>nal</div>
+            <div>Allocated Speculative Registers</div>
+            <div>{renameBlock.allocatedSpeculativeRegistersCount}</div>
           </DividedBadge>
         </div>
       }
@@ -82,65 +93,65 @@ export default function RegisterBlock() {
         </DialogContent>
       }
     >
-      <div>
-        {Object.values(registers).map((reg, index) => {
-          return (
-            <div key={index}>
-              {reg.name}: {hexPadEven(reg.value.bits)}
-            </div>
-          );
-        })}
+      <div className='flex gap-10'>
+        <div className='grid grid-cols-4 grid-rows-8 grid-flow-col gap-x-2 gap-y-1'>
+          {architecturalIntRegisters.map((regName, index) => {
+            const reg = registers[regName];
+            if (!reg) {
+              throw new Error(`Register ${regName} not found`);
+            }
+            return <Register key={index} register={reg} />;
+          })}
+        </div>
+        <div className='grid grid-cols-4 grid-rows-8 grid-flow-col gap-x-2 gap-y-1'>
+          {architecturalFloatRegisters.map((regName, index) => {
+            const reg = registers[regName];
+            if (!reg) {
+              throw new Error(`Register ${regName} not found`);
+            }
+            return <Register key={index} register={reg} />;
+          })}
+        </div>
       </div>
     </Block>
   );
 }
 
-/**
- * Display a single row of the memory
- */
-function CacheLane({
-  lanes,
-}: {
-  lanes: DecodedCacheLine[];
-}) {
-  const nOfLanes = lanes.length;
+function Register({ register }: { register: RegisterModel }) {
+  const { setHighlightedRegister } = useHighlight();
+
+  const handleMouseEnter = () => {
+    setHighlightedRegister(register.name);
+  };
+
+  const handleMouseLeave = () => {
+    setHighlightedRegister(null);
+  };
+
   return (
-    <div
-      className='cache-line font-mono'
-      style={{
-        gridRow: `span ${nOfLanes}`,
-        gridTemplateRows: `repeat(${nOfLanes}, 1fr)`,
-      }}
-    >
-      <div
-        className='flex justify-center items-center font-bold border-x border-b box-border p-1'
-        style={{
-          gridRow: `span ${nOfLanes} / span ${nOfLanes}`,
-        }}
-      >
-        {hexPadEven(lanes[0]?.index || 0)}
-      </div>
-      {lanes.map((lane, index) => {
-        const cls = clsx(
-          'border-r border-b p-1',
-          lane.valid && 'bg-green-200',
-          !lane.valid && 'text-gray-400',
-        );
-        return (
-          <div key={index} className='cache-lines-cont'>
-            <div className={cls}>{hexPadEven(lane.tag)}</div>
-            <div className='flex gap-1 border-b border-r p-1'>
-              {lane.decodedLine.map((byte, index) => {
-                return (
-                  <div key={index}>
-                    <div>{byte.toString(16).padStart(2, '0')}</div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        );
-      })}
-    </div>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <div
+          className='register w-24'
+          data-register-id={register.name}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+        >
+          <span className='font-bold font-mono'>{register.name}</span>:{' '}
+          {hexPadEven(register.value.bits)}
+        </div>
+      </TooltipTrigger>
+      <TooltipContent>
+        {register.renames.length === 0 ? 'No renames' : 'Renames: '}
+        {register.renames.join(', ')}
+      </TooltipContent>
+    </Tooltip>
   );
 }
+
+const architecturalIntRegisters = Array.from({ length: 32 }, (_, i) => `x${i}`);
+
+const architecturalFloatRegisters = Array.from(
+  { length: 32 },
+  (_, i) => `f${i}`,
+);

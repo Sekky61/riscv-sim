@@ -395,6 +395,12 @@ export interface RegisterModel {
   type: RegisterTypeEnum;
   value: RegisterDataContainer;
   readiness: RegisterReadinessEnum;
+  referenceCount: number;
+  /**
+   * Ref to RegisterModel
+   */
+  renames: StringReference[];
+  architecturalRegister: StringReference | null;
   speculative: boolean;
 }
 
@@ -406,13 +412,8 @@ export interface RegisterDataContainer {
 
 export interface RenameMapTableBlock {
   freeList: string[];
-  registerMap: {
-    [k: string]: RenameMapModel;
-  };
-  referenceMap: {
-    [k: string]: number;
-  };
   registerFileBlock?: UnifiedRegisterFileBlock;
+  allocatedSpeculativeRegistersCount: number;
 }
 export interface RenameMapModel {
   architecturalRegister: StringReference;

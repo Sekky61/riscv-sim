@@ -34,6 +34,7 @@ package com.gradle.superscalarsim.blocks.base;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.models.register.RegisterModel;
@@ -180,6 +181,7 @@ public class RenameMapTableBlock
   /**
    * @return Number of allocated speculative registers
    */
+  @JsonProperty
   public int getAllocatedSpeculativeRegistersCount()
   {
     return this.registerFileBlock.getSpeculativeRegisterFile().getRegisterCount() - this.freeTags.size();

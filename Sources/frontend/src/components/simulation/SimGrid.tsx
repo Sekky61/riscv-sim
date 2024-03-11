@@ -80,7 +80,7 @@ export function SimGrid() {
           </div>
           <CacheBlock />
         </div>
-        <div className='grid'>
+        <div className='flex'>
           <RegisterBlock />
         </div>
       </div>

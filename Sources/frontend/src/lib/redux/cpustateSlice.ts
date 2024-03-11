@@ -397,6 +397,9 @@ export const selectAllRegisters = (state: RootState) =>
 export const selectRegisterIdMap = (state: RootState) =>
   state.cpu.state?.unifiedRegisterFileBlock.registerMap;
 
+export const selectRenameMap = (state: RootState) =>
+  state.cpu.state?.renameMapTableBlock;
+
 /**
  * Add aliases to the map of registers.
  */
@@ -545,27 +548,6 @@ export const selectSimCodeModel = (state: RootState, id: Reference | null) => {
  */
 export const selectRegisterById = (state: RootState, regName: string) =>
   selectRegisterMap(state)?.[regName] ?? null;
-
-/**
- * Get architectural register for a given speculative register.
- */
-export const selectArchRegisterBySpeculative = (
-  state: RootState,
-  regName: string,
-): RegisterModel | null => {
-  const map = state.cpu.state?.renameMapTableBlock.registerMap;
-  if (!map) {
-    return null;
-  }
-
-  const register = map[regName];
-  const archName = register?.architecturalRegister;
-  if (!archName) {
-    return null;
-  }
-
-  return selectRegisterById(state, archName);
-};
 
 // Stages
 
