@@ -32,6 +32,7 @@
  */
 package com.gradle.superscalarsim.models;
 
+import com.gradle.superscalarsim.models.register.RegisterModel;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -43,7 +44,7 @@ public class RenameMapModel implements Comparable<RenameMapModel>
   /**
    * Name of the architectural register
    */
-  private final String architecturalRegister;
+  private final RegisterModel architecturalRegister;
   
   /**
    * Order id, specifying order between multiple same mapping
@@ -57,9 +58,9 @@ public class RenameMapModel implements Comparable<RenameMapModel>
    *
    * @brief Constructor
    */
-  public RenameMapModel(String registerName, int order)
+  public RenameMapModel(RegisterModel register, int order)
   {
-    this.architecturalRegister = registerName;
+    this.architecturalRegister = register;
     this.order                 = order;
   }// end of Constructor
   //------------------------------------------------------
@@ -81,7 +82,7 @@ public class RenameMapModel implements Comparable<RenameMapModel>
    * @return Name of the mapped architectural register
    * @brief Get name of the mapped architectural register
    */
-  public String getArchitecturalRegister()
+  public RegisterModel getArchitecturalRegister()
   {
     return architecturalRegister;
   }// end of getArchitecturalRegister

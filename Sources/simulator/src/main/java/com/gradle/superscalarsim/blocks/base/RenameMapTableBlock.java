@@ -114,7 +114,7 @@ public class RenameMapTableBlock
    * @return Reference to the speculative register
    * @brief Maps architectural register to free speculative one
    */
-  public RegisterModel mapRegister(String registerName, int order)
+  public RegisterModel mapRegister(RegisterModel archRegister, int order)
   {
     // TODO: what if there is no free tag or free register in the field? Currently it throws exception
     if (this.freeTags.isEmpty())
@@ -122,7 +122,7 @@ public class RenameMapTableBlock
       throw new RuntimeException("No free registers available");
     }
     String speculativeRegister = this.freeTags.pop();
-    this.registerMap.put(speculativeRegister, new RenameMapModel(registerName, order));
+    this.registerMap.put(speculativeRegister, new RenameMapModel(archRegister, order));
     
     RegisterModel register = registerFileBlock.getRegister(speculativeRegister);
     register.setReadiness(RegisterReadinessEnum.kAllocated);
@@ -193,18 +193,19 @@ public class RenameMapTableBlock
    *
    * @return Reference to a register that is currently mapped to `register`
    */
-  public RegisterModel getMappingForRegister(String register)
+  public RegisterModel getMappingForRegister(RegisterModel archRegister)
   {
-    if (this.registerFileBlock.getRegister(register).isConstant())
+    if (archRegister.isConstant())
     {
-      return registerFileBlock.getRegister(register);
+      return archRegister;
     }
     // Iterate all renames, get the freshest rename
-    String newestMapping = register;
+    String newestMapping = archRegister.getName();
     int    newestOrder   = -1;
     for (Map.Entry<String, RenameMapModel> entry : this.registerMap.entrySet())
     {
-      if (entry.getValue().getArchitecturalRegister().equals(register) && entry.getValue().getOrder() > newestOrder)
+      RegisterModel reg = entry.getValue().getArchitecturalRegister();
+      if (reg.equals(archRegister) && entry.getValue().getOrder() > newestOrder)
       {
         newestMapping = entry.getKey();
         newestOrder   = entry.getValue().getOrder();
@@ -225,8 +226,9 @@ public class RenameMapTableBlock
     {
       return;
     }
-    String architecturalRegister = this.registerMap.get(speculativeRegister.getName()).getArchitecturalRegister();
-    this.registerFileBlock.getRegister(architecturalRegister).copyFrom(speculativeRegister);
+    RegisterModel architecturalRegister = this.registerMap.get(speculativeRegister.getName())
+            .getArchitecturalRegister();
+    architecturalRegister.copyFrom(speculativeRegister);
   }// end of directCopyMapping
   //----------------------------------------------------------------------
   

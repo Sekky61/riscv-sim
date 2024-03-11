@@ -237,9 +237,8 @@ public class DecodeAndDispatchBlock implements AbstractBlock
       boolean shouldRename = !argDesc.writeBack() && argDesc.isRegister();
       if (shouldRename)
       {
-        InputCodeArgument argument         = simCodeModel.getArgumentByName(argDesc.name());
-        String            oldArgumentValue = argument.getValue();
-        RegisterModel     rename           = renameMapTableBlock.getMappingForRegister(oldArgumentValue);
+        InputCodeArgument argument = simCodeModel.getArgumentByName(argDesc.name());
+        RegisterModel     rename   = renameMapTableBlock.getMappingForRegister(argument.getRegisterValue());
         argument.setRegisterValue(rename);
         if (rename.isSpeculative())
         {
@@ -272,7 +271,7 @@ public class DecodeAndDispatchBlock implements AbstractBlock
           return false;
         }
         
-        RegisterModel mappedReg = renameMapTableBlock.mapRegister(destinationArgument.getValue(),
+        RegisterModel mappedReg = renameMapTableBlock.mapRegister(destinationArgument.getRegisterValue(),
                                                                   simCodeModel.getIntegerId());
         assert mappedReg != null;
         // Set reference
