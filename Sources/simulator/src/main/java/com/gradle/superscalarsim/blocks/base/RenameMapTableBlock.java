@@ -39,9 +39,7 @@ import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.models.RenameMapModel;
 import com.gradle.superscalarsim.models.register.RegisterModel;
 
-import java.util.Map;
 import java.util.Stack;
-import java.util.TreeMap;
 
 /**
  * @class RenameMapTableBlock
@@ -57,11 +55,6 @@ public class RenameMapTableBlock
    */
   private final Stack<String> freeTags;
   /**
-   * Map of speculative to architectural registers
-   */
-  @JsonIdentityReference(alwaysAsId = true)
-  private final Map<String, RenameMapModel> registerMap;
-  /**
    * Class containing all registers, that simulator uses
    */
   @JsonIdentityReference(alwaysAsId = true)
@@ -73,7 +66,6 @@ public class RenameMapTableBlock
   public RenameMapTableBlock()
   {
     this.freeTags          = new Stack<>();
-    this.registerMap       = new TreeMap<>();
     this.registerFileBlock = null;
   }
   
@@ -84,9 +76,7 @@ public class RenameMapTableBlock
    */
   public RenameMapTableBlock(UnifiedRegisterFileBlock registerFileBlock)
   {
-    this.freeTags = new Stack<>();
-    // TreeMaps to keep the order of keys - important for comparing serialized forms
-    this.registerMap       = new TreeMap<>();
+    this.freeTags          = new Stack<>();
     this.registerFileBlock = registerFileBlock;
     
     initiateFreeList(registerFileBlock.getSpeculativeRegisterFile().getRegisterCount());
@@ -121,10 +111,10 @@ public class RenameMapTableBlock
     {
       throw new RuntimeException("No free registers available");
     }
-    String speculativeRegister = this.freeTags.pop();
-    this.registerMap.put(speculativeRegister, new RenameMapModel(archRegister, order));
+    String        speculativeRegister = this.freeTags.pop();
+    RegisterModel register            = registerFileBlock.getRegister(speculativeRegister);
+    archRegister.addRename(new RenameMapModel(register, order));
     
-    RegisterModel register = registerFileBlock.getRegister(speculativeRegister);
     register.setReadiness(RegisterReadinessEnum.kAllocated);
     register.setReferenceCount(1);
     return register;
@@ -182,54 +172,11 @@ public class RenameMapTableBlock
     speculativeRegister.setReadiness(RegisterReadinessEnum.kFree);
     speculativeRegister.setReferenceCount(0);
     String regName = speculativeRegister.getName();
-    this.registerMap.remove(regName);
     this.freeTags.add(regName);
     
+    RegisterModel archRegister = speculativeRegister.getArchitecturalMapping();
+    archRegister.removeRename(speculativeRegister);
   }// end of freeMapping
-  //----------------------------------------------------------------------
-  
-  /**
-   * @param register architectural register
-   *
-   * @return Reference to a register that is currently mapped to `register`
-   */
-  public RegisterModel getMappingForRegister(RegisterModel archRegister)
-  {
-    if (archRegister.isConstant())
-    {
-      return archRegister;
-    }
-    // Iterate all renames, get the freshest rename
-    String newestMapping = archRegister.getName();
-    int    newestOrder   = -1;
-    for (Map.Entry<String, RenameMapModel> entry : this.registerMap.entrySet())
-    {
-      RegisterModel reg = entry.getValue().getArchitecturalRegister();
-      if (reg.equals(archRegister) && entry.getValue().getOrder() > newestOrder)
-      {
-        newestMapping = entry.getKey();
-        newestOrder   = entry.getValue().getOrder();
-      }
-    }
-    return registerFileBlock.getRegister(newestMapping);
-  }// end of getMappingForRegister
-  //----------------------------------------------------------------------
-  
-  /**
-   * @param speculativeRegister Name of the register to transfer value from
-   *
-   * @brief Directly copy the value from speculative to the mapped one
-   */
-  public void directCopyMapping(RegisterModel speculativeRegister)
-  {
-    if (!speculativeRegister.isSpeculative())
-    {
-      return;
-    }
-    RegisterModel architecturalRegister = this.registerMap.get(speculativeRegister.getName())
-            .getArchitecturalRegister();
-    architecturalRegister.copyFrom(speculativeRegister);
-  }// end of directCopyMapping
   //----------------------------------------------------------------------
   
   /**

@@ -351,12 +351,15 @@ public class ReorderBufferBlock implements AbstractBlock
       }
       assert argument.isRegister();
       InputCodeArgument codeArgument = codeModel.getArgumentByName(argument.name());
-      String            tempRegName  = codeArgument.getValue();
       if (codeArgument == null)
       {
         throw new IllegalArgumentException("Argument " + argument.name() + " not found in code model");
       }
-      renameMapTableBlock.directCopyMapping(codeArgument.getRegisterValue());
+      RegisterModel reg = codeArgument.getRegisterValue();
+      if (reg.isSpeculative())
+      {
+        reg.copyToArchitectural();
+      }
     }
     
     // Arch registers are now updated, print debug info

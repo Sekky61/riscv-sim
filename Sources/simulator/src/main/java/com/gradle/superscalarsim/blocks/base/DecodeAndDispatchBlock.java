@@ -238,7 +238,7 @@ public class DecodeAndDispatchBlock implements AbstractBlock
       if (shouldRename)
       {
         InputCodeArgument argument = simCodeModel.getArgumentByName(argDesc.name());
-        RegisterModel     rename   = renameMapTableBlock.getMappingForRegister(argument.getRegisterValue());
+        RegisterModel     rename   = argument.getRegisterValue().getNewestMapping();
         argument.setRegisterValue(rename);
         if (rename.isSpeculative())
         {

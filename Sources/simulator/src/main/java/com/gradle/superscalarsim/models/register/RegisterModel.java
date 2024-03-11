@@ -39,6 +39,10 @@ import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.enums.RegisterTypeEnum;
 import com.gradle.superscalarsim.models.Identifiable;
+import com.gradle.superscalarsim.models.RenameMapModel;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @class RegisterModel
@@ -78,10 +82,21 @@ public class RegisterModel implements Identifiable
   private int referenceCount;
   
   /**
+   * List of renames to speculative registers. Relevant only for architectural registers.
+   */
+  List<RenameMapModel> registerMap;
+  
+  /**
+   * The architectural register that this speculative register is mapped to. Relevant only for speculative registers.
+   */
+  private RegisterModel architecturalRegister;
+  
+  /**
    * @brief Default constructor for deserialization
    */
   public RegisterModel()
   {
+    registerMap = new ArrayList<>();
   }
   
   /**
@@ -113,11 +128,13 @@ public class RegisterModel implements Identifiable
    */
   public RegisterModel(String name, boolean isConstant, RegisterTypeEnum type, RegisterReadinessEnum readiness)
   {
-    this.name       = name;
-    this.isConstant = isConstant;
-    this.type       = type;
-    this.readiness  = readiness;
-    this.value      = new RegisterDataContainer();
+    this.name             = name;
+    this.isConstant       = isConstant;
+    this.type             = type;
+    this.readiness        = readiness;
+    this.value            = new RegisterDataContainer();
+    registerMap           = new ArrayList<>();
+    architecturalRegister = null;
   }// end of Constructor
   //------------------------------------------------------
   
@@ -174,6 +191,10 @@ public class RegisterModel implements Identifiable
     this.type       = register.type;
     this.readiness  = register.readiness;
     this.value      = new RegisterDataContainer(register.value);
+    
+    this.referenceCount   = register.referenceCount;
+    this.registerMap      = new ArrayList<>(register.registerMap);
+    architecturalRegister = register.architecturalRegister;
   }// end of Copy constructor
   //------------------------------------------------------
   
@@ -378,5 +399,53 @@ public class RegisterModel implements Identifiable
   public void setReferenceCount(int referenceCount)
   {
     this.referenceCount = referenceCount;
+  }
+  
+  /**
+   * Add a rename to an architectural register. Invalid to call on speculative registers.
+   * Link the rename back, both ways.
+   */
+  public void addRename(RenameMapModel rename)
+  {
+    registerMap.add(rename);
+    rename.getArchitecturalRegister().architecturalRegister = this;
+  }
+  
+  public RegisterModel getArchitecturalMapping()
+  {
+    return architecturalRegister;
+  }
+  
+  public void removeRename(RegisterModel speculativeRegister)
+  {
+    // called on the architectural register
+    registerMap.removeIf(rename -> rename.getArchitecturalRegister() == speculativeRegister);
+    speculativeRegister.architecturalRegister = null;
+  }
+  
+  public RegisterModel getNewestMapping()
+  {
+    if (isConstant())
+    {
+      return this;
+    }
+    // Iterate all renames, get the freshest rename
+    RegisterModel newestMapping = this;
+    int           newestOrder   = -1;
+    for (RenameMapModel rename : registerMap)
+    {
+      if (rename.getOrder() > newestOrder)
+      {
+        newestMapping = rename.getArchitecturalRegister();
+        newestOrder   = rename.getOrder();
+      }
+    }
+    
+    return newestMapping;
+  }
+  
+  public void copyToArchitectural()
+  {
+    getArchitecturalMapping().copyFrom(this);
   }
 }
