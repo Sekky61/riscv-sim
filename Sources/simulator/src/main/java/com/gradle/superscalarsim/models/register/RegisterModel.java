@@ -33,20 +33,20 @@
 package com.gradle.superscalarsim.models.register;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.enums.RegisterTypeEnum;
 import com.gradle.superscalarsim.models.Identifiable;
-import com.gradle.superscalarsim.models.RenameMapModel;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * @class RegisterModel
- * @brief Definition of single register in register file
+ * @brief Definition of single register in register file. It also holds data needed for renaming (references to speculative registers).
  */
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "name")
 public class RegisterModel implements Identifiable
@@ -84,11 +84,13 @@ public class RegisterModel implements Identifiable
   /**
    * List of renames to speculative registers. Relevant only for architectural registers.
    */
-  List<RenameMapModel> registerMap;
+  @JsonIdentityReference(alwaysAsId = true)
+  List<RegisterModel> renames;
   
   /**
    * The architectural register that this speculative register is mapped to. Relevant only for speculative registers.
    */
+  @JsonIdentityReference(alwaysAsId = true)
   private RegisterModel architecturalRegister;
   
   /**
@@ -96,7 +98,7 @@ public class RegisterModel implements Identifiable
    */
   public RegisterModel()
   {
-    registerMap = new ArrayList<>();
+    renames = new ArrayList<>();
   }
   
   /**
@@ -133,7 +135,7 @@ public class RegisterModel implements Identifiable
     this.type             = type;
     this.readiness        = readiness;
     this.value            = new RegisterDataContainer();
-    registerMap           = new ArrayList<>();
+    renames               = new ArrayList<>();
     architecturalRegister = null;
   }// end of Constructor
   //------------------------------------------------------
@@ -193,7 +195,7 @@ public class RegisterModel implements Identifiable
     this.value      = new RegisterDataContainer(register.value);
     
     this.referenceCount   = register.referenceCount;
-    this.registerMap      = new ArrayList<>(register.registerMap);
+    this.renames          = new ArrayList<>(register.renames);
     architecturalRegister = register.architecturalRegister;
   }// end of Copy constructor
   //------------------------------------------------------
@@ -358,7 +360,7 @@ public class RegisterModel implements Identifiable
    */
   public boolean isSpeculative()
   {
-    // todo: a small hack
+    // todo: this is a small hack
     return this.name.startsWith("tg");
   }
   
@@ -394,56 +396,51 @@ public class RegisterModel implements Identifiable
   }
   
   /**
-   * @brief Set reference count to the given value
-   */
-  public void setReferenceCount(int referenceCount)
-  {
-    this.referenceCount = referenceCount;
-  }
-  
-  /**
    * Add a rename to an architectural register. Invalid to call on speculative registers.
    * Link the rename back, both ways.
    */
-  public void addRename(RenameMapModel rename)
+  public void addRename(RegisterModel rename)
   {
-    registerMap.add(rename);
-    rename.getArchitecturalRegister().architecturalRegister = this;
+    renames.add(rename);
+    rename.architecturalRegister = this;
   }
   
+  /**
+   * @return The architectural register that this speculative register is mapped to, or null if it is not mapped.
+   */
   public RegisterModel getArchitecturalMapping()
   {
     return architecturalRegister;
   }
   
+  /**
+   * @param speculativeRegister Speculative register to be removed from the list of renames
+   *
+   * @brief Remove a rename from the list of renames. Removes both ways of relation.
+   */
   public void removeRename(RegisterModel speculativeRegister)
   {
     // called on the architectural register
-    registerMap.removeIf(rename -> rename.getArchitecturalRegister() == speculativeRegister);
+    renames.removeIf(rename -> rename == speculativeRegister);
     speculativeRegister.architecturalRegister = null;
   }
   
+  /**
+   * @return The newest mapping of the register. If the register is constant or has no renames, returns itself.
+   */
   public RegisterModel getNewestMapping()
   {
-    if (isConstant())
+    if (isConstant() || renames.isEmpty())
     {
       return this;
     }
-    // Iterate all renames, get the freshest rename
-    RegisterModel newestMapping = this;
-    int           newestOrder   = -1;
-    for (RenameMapModel rename : registerMap)
-    {
-      if (rename.getOrder() > newestOrder)
-      {
-        newestMapping = rename.getArchitecturalRegister();
-        newestOrder   = rename.getOrder();
-      }
-    }
     
-    return newestMapping;
+    return renames.get(renames.size() - 1);
   }
   
+  /**
+   * Transfer the value of this register to the architectural register it is mapped to.
+   */
   public void copyToArchitectural()
   {
     getArchitecturalMapping().copyFrom(this);

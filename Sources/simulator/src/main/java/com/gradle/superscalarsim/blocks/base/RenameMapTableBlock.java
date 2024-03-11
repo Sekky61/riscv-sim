@@ -36,15 +36,13 @@ import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
-import com.gradle.superscalarsim.models.RenameMapModel;
 import com.gradle.superscalarsim.models.register.RegisterModel;
 
 import java.util.Stack;
 
 /**
  * @class RenameMapTableBlock
- * @brief Class that keeps track of mappings between speculative and architectural registers
- * and free speculative registers
+ * @brief Keeps track of free speculative registers and gives API to map and free them
  */
 @JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
 public class RenameMapTableBlock
@@ -104,7 +102,7 @@ public class RenameMapTableBlock
    * @return Reference to the speculative register
    * @brief Maps architectural register to free speculative one
    */
-  public RegisterModel mapRegister(RegisterModel archRegister, int order)
+  public RegisterModel mapRegister(RegisterModel archRegister)
   {
     // TODO: what if there is no free tag or free register in the field? Currently it throws exception
     if (this.freeTags.isEmpty())
@@ -113,10 +111,11 @@ public class RenameMapTableBlock
     }
     String        speculativeRegister = this.freeTags.pop();
     RegisterModel register            = registerFileBlock.getRegister(speculativeRegister);
-    archRegister.addRename(new RenameMapModel(register, order));
+    archRegister.addRename(register);
     
     register.setReadiness(RegisterReadinessEnum.kAllocated);
-    register.setReferenceCount(1);
+    assert register.getReferenceCount() == 0;
+    register.increaseReference();
     return register;
   }// end of mapRegister
   //----------------------------------------------------------------------
@@ -170,7 +169,6 @@ public class RenameMapTableBlock
     }
     
     speculativeRegister.setReadiness(RegisterReadinessEnum.kFree);
-    speculativeRegister.setReferenceCount(0);
     String regName = speculativeRegister.getName();
     this.freeTags.add(regName);
     

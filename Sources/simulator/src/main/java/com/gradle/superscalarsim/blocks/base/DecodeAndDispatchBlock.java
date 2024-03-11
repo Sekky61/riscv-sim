@@ -271,8 +271,7 @@ public class DecodeAndDispatchBlock implements AbstractBlock
           return false;
         }
         
-        RegisterModel mappedReg = renameMapTableBlock.mapRegister(destinationArgument.getRegisterValue(),
-                                                                  simCodeModel.getIntegerId());
+        RegisterModel mappedReg = renameMapTableBlock.mapRegister(destinationArgument.getRegisterValue());
         assert mappedReg != null;
         // Set reference
         destinationArgument.setRegisterValue(mappedReg);
