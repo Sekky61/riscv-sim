@@ -246,7 +246,8 @@ public class DecodeAndDispatchBlock implements AbstractBlock
           // Rename the string only if the register is speculative. This is because of register aliases
           argument.setStringValue(rename.getName());
         }
-        renameMapTableBlock.increaseReference(rename.getName());
+        rename.increaseReference();
+        renameMapTableBlock.increaseReference(rename);
       }
     }
   }// end of renameSourceRegisters

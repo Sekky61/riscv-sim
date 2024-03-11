@@ -50,6 +50,7 @@ import com.gradle.superscalarsim.models.instruction.InstructionFunctionModel;
 import com.gradle.superscalarsim.models.instruction.SimCodeModel;
 import com.gradle.superscalarsim.models.memory.LoadBufferItem;
 import com.gradle.superscalarsim.models.memory.StoreBufferItem;
+import com.gradle.superscalarsim.models.register.RegisterModel;
 
 import java.util.ArrayDeque;
 import java.util.Iterator;
@@ -348,13 +349,14 @@ public class ReorderBufferBlock implements AbstractBlock
       {
         continue;
       }
+      assert argument.isRegister();
       InputCodeArgument codeArgument = codeModel.getArgumentByName(argument.name());
       String            tempRegName  = codeArgument.getValue();
       if (codeArgument == null)
       {
         throw new IllegalArgumentException("Argument " + argument.name() + " not found in code model");
       }
-      renameMapTableBlock.directCopyMapping(tempRegName);
+      renameMapTableBlock.directCopyMapping(codeArgument.getRegisterValue());
     }
     
     // Arch registers are now updated, print debug info
@@ -375,13 +377,20 @@ public class ReorderBufferBlock implements AbstractBlock
     // Reduce references to speculative registers
     for (InputCodeArgument argument : simCodeModel.getArguments())
     {
-      if (!argument.getName().startsWith("r"))
+      if (!argument.isRegister())
       {
         continue;
       }
-      if (renameMapTableBlock.reduceReference(argument.getValue()))
+      
+      RegisterModel register = argument.getRegisterValue();
+      if (!register.isSpeculative())
       {
-        renameMapTableBlock.freeMapping(argument.getValue());
+        continue;
+      }
+      register.reduceReference();
+      if (renameMapTableBlock.reduceReference(argument.getRegisterValue()))
+      {
+        renameMapTableBlock.freeMapping(argument.getRegisterValue());
       }
     }
     
@@ -505,12 +514,19 @@ public class ReorderBufferBlock implements AbstractBlock
     }
     
     this.decodeAndDispatchBlock.getCodeBuffer().forEach(
-            simCodeModel -> simCodeModel.getArguments().stream().filter(argument -> argument.getName().startsWith("r"))
+            simCodeModel -> simCodeModel.getArguments().stream().filter(InputCodeArgument::isRegister)
                     .forEach(argument ->
                              {
-                               if (renameMapTableBlock.reduceReference(argument.getValue()))
+                               RegisterModel register = argument.getRegisterValue();
+                               if (!register.isSpeculative())
                                {
-                                 renameMapTableBlock.freeMapping(argument.getValue());
+                                 return;
+                               }
+                               register.reduceReference();
+                               
+                               if (renameMapTableBlock.reduceReference(argument.getRegisterValue()))
+                               {
+                                 renameMapTableBlock.freeMapping(argument.getRegisterValue());
                                }
                              }));
     // clear what you can

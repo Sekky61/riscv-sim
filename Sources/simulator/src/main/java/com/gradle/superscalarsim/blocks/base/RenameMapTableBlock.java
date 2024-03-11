@@ -150,16 +150,17 @@ public class RenameMapTableBlock
    *
    * @brief Increases number of references on certain speculative register
    */
-  public void increaseReference(String speculativeRegister)
+  public void increaseReference(RegisterModel speculativeRegister)
   {
-    if (referenceMap.containsKey(speculativeRegister))
+    String regName = speculativeRegister.getName();
+    if (referenceMap.containsKey(regName))
     {
-      int currentRefCount = this.referenceMap.get(speculativeRegister) + 1;
-      this.referenceMap.replace(speculativeRegister, currentRefCount);
+      int currentRefCount = this.referenceMap.get(regName) + 1;
+      this.referenceMap.replace(regName, currentRefCount);
     }
     else
     {
-      this.referenceMap.put(speculativeRegister, 1);
+      this.referenceMap.put(regName, 1);
     }
   }// end of increaseReference
   //----------------------------------------------------------------------
@@ -170,14 +171,15 @@ public class RenameMapTableBlock
    * @return True if the reference count reached 0, false otherwise (not found or above 0)
    * @brief Lowers speculative register reference count and eventually frees the register from registerMap
    */
-  public boolean reduceReference(String speculativeRegister)
+  public boolean reduceReference(RegisterModel speculativeRegister)
   {
-    if (!this.registerMap.containsKey(speculativeRegister) || !this.referenceMap.containsKey(speculativeRegister))
+    String regName = speculativeRegister.getName();
+    if (!this.registerMap.containsKey(regName) || !this.referenceMap.containsKey(regName))
     {
       return false;
     }
-    int currentRefCount = this.referenceMap.get(speculativeRegister) - 1;
-    this.referenceMap.replace(speculativeRegister, currentRefCount);
+    int currentRefCount = this.referenceMap.get(regName) - 1;
+    this.referenceMap.replace(regName, currentRefCount);
     return currentRefCount == 0;
   }// end of reduceReference
   //----------------------------------------------------------------------
@@ -187,37 +189,20 @@ public class RenameMapTableBlock
    *
    * @brief Only frees the specified register
    */
-  public void freeMapping(String speculativeRegister)
+  public void freeMapping(RegisterModel speculativeRegister)
   {
-    if (!isSpeculativeRegister(speculativeRegister))
+    if (!speculativeRegister.isSpeculative())
     {
       return;
     }
     
-    RegisterModel specRegister = this.registerFileBlock.getRegister(speculativeRegister);
-    if (specRegister == null)
-    {
-      throw new RuntimeException("Speculative register " + speculativeRegister + " not found");
-    }
-    
-    this.registerFileBlock.getRegister(speculativeRegister).setReadiness(RegisterReadinessEnum.kFree);
-    this.referenceMap.remove(specRegister.getName());
-    this.registerMap.remove(specRegister.getName());
-    this.freeTags.add(specRegister.getName());
+    speculativeRegister.setReadiness(RegisterReadinessEnum.kFree);
+    String regName = speculativeRegister.getName();
+    this.referenceMap.remove(regName);
+    this.registerMap.remove(regName);
+    this.freeTags.add(regName);
     
   }// end of freeMapping
-  //----------------------------------------------------------------------
-  
-  /**
-   * @param register Name of the register to be checked
-   *
-   * @return True if register is speculative, false otherwise
-   * @brief Checks if the provided register if speculative or not
-   */
-  public boolean isSpeculativeRegister(String register)
-  {
-    return freeTags.contains(register) || registerMap.containsKey(register);
-  }// end of isSpeculativeRegister
   //----------------------------------------------------------------------
   
   /**
@@ -251,14 +236,14 @@ public class RenameMapTableBlock
    *
    * @brief Directly copy the value from speculative to the mapped one
    */
-  public void directCopyMapping(String speculativeRegister)
+  public void directCopyMapping(RegisterModel speculativeRegister)
   {
-    if (isSpeculativeRegister(speculativeRegister))
+    if (!speculativeRegister.isSpeculative())
     {
-      String        architecturalRegister = this.registerMap.get(speculativeRegister).getArchitecturalRegister();
-      RegisterModel register              = this.registerFileBlock.getRegister(speculativeRegister);
-      this.registerFileBlock.getRegister(architecturalRegister).copyFrom(register);
+      return;
     }
+    String architecturalRegister = this.registerMap.get(speculativeRegister.getName()).getArchitecturalRegister();
+    this.registerFileBlock.getRegister(architecturalRegister).copyFrom(speculativeRegister);
   }// end of directCopyMapping
   //----------------------------------------------------------------------
   

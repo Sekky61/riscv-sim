@@ -133,6 +133,14 @@ public class InputCodeArgument
   }// end of getName
   
   /**
+   * @return True if the argument is a register
+   */
+  public boolean isRegister()
+  {
+    return registerValue != null;
+  }
+  
+  /**
    * @return Argument value
    * @brief Get value of the argument
    */

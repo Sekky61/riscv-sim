@@ -72,6 +72,10 @@ public class RegisterModel implements Identifiable
    * Architecture registers are `kAssigned` by default, speculative ones are `kFree`
    */
   private RegisterReadinessEnum readiness;
+  /**
+   * Reference count. Relevant only for speculative registers.
+   */
+  private int referenceCount;
   
   /**
    * @brief Default constructor for deserialization
@@ -98,7 +102,6 @@ public class RegisterModel implements Identifiable
     this(name, isConstant, type, readiness);
     this.value.setValue(value);
   }// end of Constructor
-  //------------------------------------------------------
   
   /**
    * @param name       Register name
@@ -172,6 +175,12 @@ public class RegisterModel implements Identifiable
     this.readiness  = register.readiness;
     this.value      = new RegisterDataContainer(register.value);
   }// end of Copy constructor
+  //------------------------------------------------------
+  
+  public int getReferenceCount()
+  {
+    return referenceCount;
+  }
   
   /**
    * @return String representation of the object
@@ -346,4 +355,20 @@ public class RegisterModel implements Identifiable
       case kFloat, kDouble -> type == RegisterTypeEnum.kFloat;
     };
   }// end of checkDatatype
+  
+  /**
+   * @brief Decrease reference count
+   */
+  public void reduceReference()
+  {
+    referenceCount--;
+  }
+  
+  /**
+   * @brief Increase reference count
+   */
+  public void increaseReference()
+  {
+    referenceCount++;
+  }
 }
