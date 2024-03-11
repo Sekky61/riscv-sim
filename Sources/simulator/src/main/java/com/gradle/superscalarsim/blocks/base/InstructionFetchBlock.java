@@ -176,7 +176,6 @@ public class InstructionFetchBlock implements AbstractBlock
    * If there is an entry in the BTB, it will follow the branch.
    * Otherwise, it will fetch following instructions.
    *
-   * @return Fetched instructions
    * @brief Fetching logic
    */
   private void fetchInstructions(int cycle)
@@ -203,7 +202,7 @@ public class InstructionFetchBlock implements AbstractBlock
           for (int j = i; j < numberOfWays; j++)
           {
             SimCodeModel nopCodeModel = this.simCodeModelFactory.createInstance(instructionMemoryBlock.getNop(),
-                                                                                simCodeId + j, cycle);
+                                                                                cycle * numberOfWays + j, cycle);
             fetchedCode.add(nopCodeModel);
           }
           break;
