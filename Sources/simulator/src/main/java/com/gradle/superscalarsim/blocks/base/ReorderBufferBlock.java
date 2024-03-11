@@ -387,10 +387,7 @@ public class ReorderBufferBlock implements AbstractBlock
       {
         continue;
       }
-      if (renameMapTableBlock.reduceReference(argument.getRegisterValue()))
-      {
-        renameMapTableBlock.freeMapping(argument.getRegisterValue());
-      }
+      renameMapTableBlock.reduceReference(argument.getRegisterValue());
     }
     
     simCodeModel.setFinished(true);
@@ -521,10 +518,7 @@ public class ReorderBufferBlock implements AbstractBlock
                                {
                                  return;
                                }
-                               if (renameMapTableBlock.reduceReference(argument.getRegisterValue()))
-                               {
-                                 renameMapTableBlock.freeMapping(argument.getRegisterValue());
-                               }
+                               renameMapTableBlock.reduceReference(argument.getRegisterValue());
                              }));
     // clear what you can
     this.decodeAndDispatchBlock.flush();

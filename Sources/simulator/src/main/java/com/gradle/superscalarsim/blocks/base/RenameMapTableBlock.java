@@ -62,10 +62,6 @@ public class RenameMapTableBlock
   @JsonIdentityReference(alwaysAsId = true)
   private final Map<String, RenameMapModel> registerMap;
   /**
-   * Map of references to certain speculative register
-   */
-  private final Map<String, Integer> referenceMap;
-  /**
    * Class containing all registers, that simulator uses
    */
   @JsonIdentityReference(alwaysAsId = true)
@@ -78,7 +74,6 @@ public class RenameMapTableBlock
   {
     this.freeTags          = new Stack<>();
     this.registerMap       = new TreeMap<>();
-    this.referenceMap      = new TreeMap<>();
     this.registerFileBlock = null;
   }
   
@@ -92,7 +87,6 @@ public class RenameMapTableBlock
     this.freeTags = new Stack<>();
     // TreeMaps to keep the order of keys - important for comparing serialized forms
     this.registerMap       = new TreeMap<>();
-    this.referenceMap      = new TreeMap<>();
     this.registerFileBlock = registerFileBlock;
     
     initiateFreeList(registerFileBlock.getSpeculativeRegisterFile().getRegisterCount());
@@ -130,11 +124,9 @@ public class RenameMapTableBlock
     String speculativeRegister = this.freeTags.pop();
     this.registerMap.put(speculativeRegister, new RenameMapModel(registerName, order));
     
-    this.referenceMap.put(speculativeRegister, 1);
     RegisterModel register = registerFileBlock.getRegister(speculativeRegister);
     register.setReadiness(RegisterReadinessEnum.kAllocated);
     register.setReferenceCount(1);
-    assert register.getReferenceCount() == this.referenceMap.get(speculativeRegister);
     return register;
   }// end of mapRegister
   //----------------------------------------------------------------------
@@ -156,38 +148,22 @@ public class RenameMapTableBlock
    */
   public void increaseReference(RegisterModel speculativeRegister)
   {
-    String regName = speculativeRegister.getName();
-    if (referenceMap.containsKey(regName))
-    {
-      int currentRefCount = this.referenceMap.get(regName) + 1;
-      this.referenceMap.replace(regName, currentRefCount);
-      speculativeRegister.increaseReference();
-    }
-    else
-    {
-      this.referenceMap.put(regName, 1);
-      speculativeRegister.setReferenceCount(1);
-    }
-    assert speculativeRegister.getReferenceCount() == this.referenceMap.get(regName);
+    speculativeRegister.increaseReference();
   }// end of increaseReference
   //----------------------------------------------------------------------
   
   /**
    * @param speculativeRegister Speculative speculativeRegister to be freed
    *
-   * @return True if the reference count reached 0, false otherwise (not found or above 0)
    * @brief Lowers speculative register reference count and eventually frees the register from registerMap
    */
-  public boolean reduceReference(RegisterModel speculativeRegister)
+  public void reduceReference(RegisterModel speculativeRegister)
   {
-    String regName = speculativeRegister.getName();
-    assert this.registerMap.containsKey(regName) && this.referenceMap.containsKey(regName);
-    
-    int currentRefCount = this.referenceMap.get(regName) - 1;
-    this.referenceMap.replace(regName, currentRefCount);
     speculativeRegister.reduceReference();
-    assert speculativeRegister.getReferenceCount() == this.referenceMap.get(regName);
-    return currentRefCount == 0;
+    if (speculativeRegister.getReferenceCount() == 0)
+    {
+      freeMapping(speculativeRegister);
+    }
   }// end of reduceReference
   //----------------------------------------------------------------------
   
@@ -206,7 +182,6 @@ public class RenameMapTableBlock
     speculativeRegister.setReadiness(RegisterReadinessEnum.kFree);
     speculativeRegister.setReferenceCount(0);
     String regName = speculativeRegister.getName();
-    this.referenceMap.remove(regName);
     this.registerMap.remove(regName);
     this.freeTags.add(regName);
     
