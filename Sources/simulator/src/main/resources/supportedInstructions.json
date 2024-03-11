@@ -1533,7 +1533,7 @@
     "instructionType": "kJumpbranch",
     "arguments": [
       {
-        "name": "rd1",
+        "name": "rd",
         "type": "kInt",
         "defaultValue": "x1",
         "writeBack": true,
@@ -1545,7 +1545,7 @@
         "isOffset": true
       }
     ],
-    "interpretableAs": "\\imm \\pc + \\pc 4 + \\rd1 =:true"
+    "interpretableAs": "\\imm \\pc + \\pc 4 + \\rd =:true"
   },
   "tail": {
     "name": "tail",
