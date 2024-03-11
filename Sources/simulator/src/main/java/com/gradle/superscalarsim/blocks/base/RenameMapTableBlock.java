@@ -129,9 +129,13 @@ public class RenameMapTableBlock
     }
     String speculativeRegister = this.freeTags.pop();
     this.registerMap.put(speculativeRegister, new RenameMapModel(registerName, order));
+    
     this.referenceMap.put(speculativeRegister, 1);
-    this.registerFileBlock.getRegister(speculativeRegister).setReadiness(RegisterReadinessEnum.kAllocated);
-    return registerFileBlock.getRegister(speculativeRegister);
+    RegisterModel register = registerFileBlock.getRegister(speculativeRegister);
+    register.setReadiness(RegisterReadinessEnum.kAllocated);
+    register.setReferenceCount(1);
+    assert register.getReferenceCount() == this.referenceMap.get(speculativeRegister);
+    return register;
   }// end of mapRegister
   //----------------------------------------------------------------------
   
@@ -157,11 +161,14 @@ public class RenameMapTableBlock
     {
       int currentRefCount = this.referenceMap.get(regName) + 1;
       this.referenceMap.replace(regName, currentRefCount);
+      speculativeRegister.increaseReference();
     }
     else
     {
       this.referenceMap.put(regName, 1);
+      speculativeRegister.setReferenceCount(1);
     }
+    assert speculativeRegister.getReferenceCount() == this.referenceMap.get(regName);
   }// end of increaseReference
   //----------------------------------------------------------------------
   
@@ -174,12 +181,12 @@ public class RenameMapTableBlock
   public boolean reduceReference(RegisterModel speculativeRegister)
   {
     String regName = speculativeRegister.getName();
-    if (!this.registerMap.containsKey(regName) || !this.referenceMap.containsKey(regName))
-    {
-      return false;
-    }
+    assert this.registerMap.containsKey(regName) && this.referenceMap.containsKey(regName);
+    
     int currentRefCount = this.referenceMap.get(regName) - 1;
     this.referenceMap.replace(regName, currentRefCount);
+    speculativeRegister.reduceReference();
+    assert speculativeRegister.getReferenceCount() == this.referenceMap.get(regName);
     return currentRefCount == 0;
   }// end of reduceReference
   //----------------------------------------------------------------------
@@ -197,6 +204,7 @@ public class RenameMapTableBlock
     }
     
     speculativeRegister.setReadiness(RegisterReadinessEnum.kFree);
+    speculativeRegister.setReferenceCount(0);
     String regName = speculativeRegister.getName();
     this.referenceMap.remove(regName);
     this.registerMap.remove(regName);

@@ -371,4 +371,12 @@ public class RegisterModel implements Identifiable
   {
     referenceCount++;
   }
+  
+  /**
+   * @brief Set reference count to the given value
+   */
+  public void setReferenceCount(int referenceCount)
+  {
+    this.referenceCount = referenceCount;
+  }
 }

@@ -387,7 +387,6 @@ public class ReorderBufferBlock implements AbstractBlock
       {
         continue;
       }
-      register.reduceReference();
       if (renameMapTableBlock.reduceReference(argument.getRegisterValue()))
       {
         renameMapTableBlock.freeMapping(argument.getRegisterValue());
@@ -522,8 +521,6 @@ public class ReorderBufferBlock implements AbstractBlock
                                {
                                  return;
                                }
-                               register.reduceReference();
-                               
                                if (renameMapTableBlock.reduceReference(argument.getRegisterValue()))
                                {
                                  renameMapTableBlock.freeMapping(argument.getRegisterValue());
