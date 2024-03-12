@@ -400,6 +400,10 @@ export const selectRegisterIdMap = (state: RootState) =>
 export const selectRenameMap = (state: RootState) =>
   state.cpu.state?.renameMapTableBlock;
 
+export const selectSpecRegisterCount = (state: RootState) =>
+  state.cpu.state?.unifiedRegisterFileBlock.speculativeRegisterFile
+    .numberOfRegisters;
+
 /**
  * Add aliases to the map of registers.
  */

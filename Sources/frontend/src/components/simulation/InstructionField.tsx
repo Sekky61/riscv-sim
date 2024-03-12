@@ -177,7 +177,9 @@ export function InstructionDetailPopup({
                   className='text-sm border rounded-md p-4'
                 >
                   <span className='text-lg'>
-                    {operand.origArg.name}: {value.stringRepresentation}
+                    {operand.origArg.name}
+                    {operand.register &&
+                      `: renamed from ${operand.register.architecturalRegister}`}
                   </span>
                   {value && <ValueInformation value={value} valid={valid} />}
                 </li>

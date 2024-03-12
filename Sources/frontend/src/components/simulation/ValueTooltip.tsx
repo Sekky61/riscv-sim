@@ -29,19 +29,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { RegisterDataContainer } from '@/lib/types/cpuApi';
+import { RegisterDataContainer, RegisterModel } from '@/lib/types/cpuApi';
 import { binPad32, hexPad } from '@/lib/utils';
 
 export type ValueInformationProps = {
   value: RegisterDataContainer;
   valid: boolean;
+  register?: RegisterModel;
 };
 
 /**
  * Value of a register or constant.
  * Used in the instruction modals.
  */
-export function ValueInformation({ value, valid }: ValueInformationProps) {
+export function ValueInformation({
+  value,
+  valid,
+  register,
+}: ValueInformationProps) {
   return (
     <div className='flex flex-col'>
       <div className='flex flex-row'>

@@ -35,6 +35,7 @@ import {
   selectCache,
   selectRegisterMap,
   selectRenameMap,
+  selectSpecRegisterCount,
 } from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
 
@@ -66,6 +67,7 @@ export default function RegisterBlock() {
   const registers = useAppSelector(selectRegisterMap);
   const renameBlock = useAppSelector(selectRenameMap);
   const descriptions = useBlockDescriptions();
+  const specCount = useAppSelector(selectSpecRegisterCount);
 
   if (!registers || !renameBlock) return null;
 
@@ -78,7 +80,9 @@ export default function RegisterBlock() {
         <div className='flex'>
           <DividedBadge>
             <div>Allocated Speculative Registers</div>
-            <div>{renameBlock.allocatedSpeculativeRegistersCount}</div>
+            <div>
+              {renameBlock.allocatedSpeculativeRegistersCount}/{specCount}
+            </div>
           </DividedBadge>
         </div>
       }
@@ -93,8 +97,8 @@ export default function RegisterBlock() {
         </DialogContent>
       }
     >
-      <div className='flex gap-10'>
-        <div className='grid grid-cols-4 grid-rows-8 grid-flow-col gap-x-2 gap-y-1'>
+      <div className='flex gap-12'>
+        <div className='grid grid-cols-4 grid-rows-8 grid-flow-col'>
           {architecturalIntRegisters.map((regName, index) => {
             const reg = registers[regName];
             if (!reg) {
@@ -103,7 +107,7 @@ export default function RegisterBlock() {
             return <Register key={index} register={reg} />;
           })}
         </div>
-        <div className='grid grid-cols-4 grid-rows-8 grid-flow-col gap-x-2 gap-y-1'>
+        <div className='grid grid-cols-4 grid-rows-8 grid-flow-col'>
           {architecturalFloatRegisters.map((regName, index) => {
             const reg = registers[regName];
             if (!reg) {
@@ -128,22 +132,33 @@ function Register({ register }: { register: RegisterModel }) {
     setHighlightedRegister(null);
   };
 
+  const lastRename = register.renames[register.renames.length - 1];
+
   return (
     <Tooltip>
       <TooltipTrigger asChild>
         <div
-          className='register w-24'
+          className='register px-2 py-1 rounded'
           data-register-id={register.name}
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
         >
-          <span className='font-bold font-mono'>{register.name}</span>:{' '}
-          {hexPadEven(register.value.bits)}
+          <div className='flex justify-between'>
+            <div className='font-bold font-mono w-8 py-0.5'>
+              {register.name}
+            </div>
+            <div className='w-11 text-sm rounded border px-1 py-0.5'>
+              {lastRename}
+            </div>
+          </div>
+          <div className='w-24 font-mono'>
+            {hexPadEven(register.value.bits)}
+          </div>
         </div>
       </TooltipTrigger>
-      <TooltipContent>
+      <TooltipContent className='p-4'>
         {register.renames.length === 0 ? 'No renames' : 'Renames: '}
-        {register.renames.join(', ')}
+        <p className='w-48'>{register.renames.join(', ')}</p>
       </TooltipContent>
     </Tooltip>
   );

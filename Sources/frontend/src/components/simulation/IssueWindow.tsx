@@ -59,10 +59,7 @@ import {
 import Block from '@/components/simulation/Block';
 import InstructionField from '@/components/simulation/InstructionField';
 import { InstructionListDisplay } from '@/components/simulation/InstructionListDisplay';
-import {
-  ShortValueInformation,
-  ValueInformation,
-} from '@/components/simulation/ValueTooltip';
+import { ShortValueInformation } from '@/components/simulation/ValueTooltip';
 import { DividedBadge } from '@/components/DividedBadge';
 import { useHighlight } from '@/components/HighlightProvider';
 
