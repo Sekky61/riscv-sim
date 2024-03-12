@@ -35,7 +35,7 @@ import { binPad32, hexPad } from '@/lib/utils';
 export type ValueInformationProps = {
   value: RegisterDataContainer;
   valid: boolean;
-  register?: RegisterModel;
+  register: RegisterModel | null;
 };
 
 /**
@@ -49,12 +49,17 @@ export function ValueInformation({
 }: ValueInformationProps) {
   return (
     <div className='flex flex-col'>
+      <span className='text-lg'>
+        {register?.architecturalRegister
+          ? `${register.name}: renamed from ${register.architecturalRegister}`
+          : value.stringRepresentation}
+      </span>
       <div className='flex flex-row'>
         <div className='flex flex-col'>
           <div>Value</div>
           <div>Type</div>
           <div>Valid</div>
-          <div>Bits</div>
+          <div>Bin</div>
           <div>Hex</div>
         </div>
         <div className='flex flex-col ml-2'>
@@ -72,7 +77,11 @@ export function ValueInformation({
 /**
  * Shorter version for hover
  */
-export function ShortValueInformation({ value, valid }: ValueInformationProps) {
+export function ShortValueInformation({
+  value,
+  valid,
+  register,
+}: ValueInformationProps) {
   return (
     <div
       className='z-50 grid gap-1 secondary-container px-3 py-1.5 font-mono'
@@ -80,6 +89,16 @@ export function ShortValueInformation({ value, valid }: ValueInformationProps) {
         gridTemplateColumns: 'auto auto',
       }}
     >
+      {register && (
+        <div className='col-span-2'>
+          {register.name}
+          {register.architecturalRegister && (
+            <div className='text-xs font-normal'>
+              renamed from {register.architecturalRegister}
+            </div>
+          )}
+        </div>
+      )}
       {valid ? (
         <>
           <div className=' font-bold'>Value</div>

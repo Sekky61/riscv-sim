@@ -29,7 +29,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { selectRegisterById } from '@/lib/redux/cpustateSlice';
+import { ParsedArgument, selectRegisterById } from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
 
 import { isValidRegisterValue } from '@/lib/utils';
@@ -55,11 +55,16 @@ export default function RegisterReference({
     displayValue = register.value.stringRepresentation ?? '???';
   }
 
-  return (
-    <ArgumentTableCell
-      item={register.value}
-      valid={valid}
-      registerName={register.name}
-    />
-  );
+  const arg: ParsedArgument = {
+    register,
+    valid,
+    origArg: {
+      constantValue: null,
+      name: registerId,
+      stringValue: displayValue,
+      registerValue: register.name,
+    },
+  };
+
+  return <ArgumentTableCell arg={arg} />;
 }

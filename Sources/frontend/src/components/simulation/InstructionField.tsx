@@ -176,12 +176,13 @@ export function InstructionDetailPopup({
                   key={operand.origArg.name}
                   className='text-sm border rounded-md p-4'
                 >
-                  <span className='text-lg'>
-                    {operand.origArg.name}
-                    {operand.register &&
-                      `: renamed from ${operand.register.architecturalRegister}`}
-                  </span>
-                  {value && <ValueInformation value={value} valid={valid} />}
+                  {value && (
+                    <ValueInformation
+                      value={value}
+                      valid={valid}
+                      register={operand.register}
+                    />
+                  )}
                 </li>
               );
             })}
@@ -339,7 +340,11 @@ function InstructionArgument({ arg }: InstructionArgumentProps) {
         </span>
       </TooltipTrigger>
       <TooltipContent>
-        <ShortValueInformation value={value} valid={arg.valid} />
+        <ShortValueInformation
+          value={value}
+          valid={arg.valid}
+          register={arg.register}
+        />
       </TooltipContent>
     </Tooltip>
   );

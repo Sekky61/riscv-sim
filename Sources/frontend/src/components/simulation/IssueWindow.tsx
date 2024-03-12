@@ -34,6 +34,7 @@
 import clsx from 'clsx';
 
 import {
+  ParsedArgument,
   getValue,
   selectAluIssueWindowBlock,
   selectBranchIssueWindowBlock,
@@ -62,6 +63,7 @@ import { InstructionListDisplay } from '@/components/simulation/InstructionListD
 import { ShortValueInformation } from '@/components/simulation/ValueTooltip';
 import { DividedBadge } from '@/components/DividedBadge';
 import { useHighlight } from '@/components/HighlightProvider';
+import { A } from '@svgdotjs/svg.js';
 
 type IssueType = 'alu' | 'fp' | 'branch' | 'ls';
 
@@ -169,23 +171,15 @@ export function IssueWindowItem({ simCodeId }: IssueWindowItemProps) {
 
   const { args } = q;
 
-  let item1: RegisterDataContainer | null = null;
-  let item1Valid = false;
-  let item1Name = '';
-  let item2: RegisterDataContainer | null = null;
-  let item2Valid = false;
-  let item2Name = '';
+  let arg1 = null;
+  let arg2 = null;
   // TODO fmadd has 3 arguments, what to do though?
   for (const arg of args) {
     if (arg.origArg.name !== 'rd') {
-      if (item1 === null) {
-        item1 = getValue(arg);
-        item1Valid = arg.valid;
-        item1Name = arg.origArg.stringValue;
+      if (arg1 === null) {
+        arg1 = arg;
       } else {
-        item2 = getValue(arg);
-        item2Valid = arg.valid;
-        item2Name = arg.origArg.stringValue;
+        arg2 = arg;
       }
     }
   }
@@ -193,24 +187,14 @@ export function IssueWindowItem({ simCodeId }: IssueWindowItemProps) {
   return (
     <div className='grid grid-cols-subgrid col-span-3'>
       <InstructionField instructionId={simCodeId} />
-      <ArgumentTableCell
-        item={item1}
-        valid={item1Valid}
-        registerName={item1Name}
-      />
-      <ArgumentTableCell
-        item={item2}
-        valid={item2Valid}
-        registerName={item2Name}
-      />
+      <ArgumentTableCell arg={arg1} />
+      <ArgumentTableCell arg={arg2} />
     </div>
   );
 }
 
 type ArgumentTableCellProps = {
-  item: RegisterDataContainer | null;
-  valid: boolean;
-  registerName?: string;
+  arg: ParsedArgument | null;
 };
 
 /**
@@ -218,13 +202,13 @@ type ArgumentTableCellProps = {
  * If the value is valid, it shows the value in green.
  * It displays the register name if not valid.
  */
-export function ArgumentTableCell({
-  item,
-  valid,
-  registerName,
-}: ArgumentTableCellProps) {
+export function ArgumentTableCell({ arg }: ArgumentTableCellProps) {
   const { setHighlightedRegister } = useHighlight();
-  const idToHighlight = registerName || 'INVALID';
+  const idToHighlight = arg?.register?.name || arg?.origArg.constantValue?.bits;
+
+  const item = arg && getValue(arg);
+  const registerName = arg?.register?.name || arg?.origArg.stringValue;
+  const valid = arg?.valid;
 
   const item1Style = clsx(
     'register rounded flex px-2 h-full flex justify-center items-center',
@@ -233,7 +217,7 @@ export function ArgumentTableCell({
 
   let text = '-';
   if (item) {
-    if (valid) {
+    if (arg.valid) {
       text = item.stringRepresentation;
     } else {
       text = registerName || '-';
@@ -241,7 +225,9 @@ export function ArgumentTableCell({
   }
 
   const handleMouseEnter = () => {
-    setHighlightedRegister(idToHighlight);
+    if (idToHighlight) {
+      setHighlightedRegister(idToHighlight as string);
+    }
   };
 
   const handleMouseLeave = () => {
@@ -262,7 +248,11 @@ export function ArgumentTableCell({
       </TooltipTrigger>
       <TooltipContent>
         {item ? (
-          <ShortValueInformation value={item} valid={valid} />
+          <ShortValueInformation
+            value={item}
+            valid={arg.valid}
+            register={arg.register}
+          />
         ) : (
           <div className='text-gray-400'>No value</div>
         )}
