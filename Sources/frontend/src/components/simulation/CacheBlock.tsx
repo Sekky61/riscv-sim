@@ -47,6 +47,7 @@ import { DividedBadge } from '@/components/DividedBadge';
 /**
  * Display the cache, lines are grouped by the index.
  * Valid lines are highlighted.
+ * Note: cache _line_ is the correct term (not lane)
  */
 export default function CacheBlock() {
   const cache = useAppSelector(selectCache);
@@ -90,9 +91,11 @@ export default function CacheBlock() {
       }
     >
       <div className='cache-grid'>
-        <div className='border-b'>Index</div>
-        <div className='border-b'>Tag</div>
-        <div className='border-b'>Line</div>
+        <div className='grid grid-cols-subgrid col-span-3'>
+          <div>Index</div>
+          <div>Tag</div>
+          <div>Line</div>
+        </div>
         {cache.cache.map((row, index) => (
           <CacheLane key={index} lanes={row} />
         ))}
@@ -119,7 +122,7 @@ function CacheLane({
       }}
     >
       <div
-        className='flex justify-center items-center font-bold border-x border-b box-border p-1'
+        className='flex justify-center items-center font-bold border-x border-b rounded-l box-border px-2'
         style={{
           gridRow: `span ${nOfLanes} / span ${nOfLanes}`,
         }}
@@ -127,20 +130,16 @@ function CacheLane({
         {hexPadEven(lanes[0]?.index || 0)}
       </div>
       {lanes.map((lane, index) => {
-        const cls = clsx(
-          'border-r border-b p-1',
-          lane.valid && 'bg-green-200',
-          !lane.valid && 'text-gray-400',
-        );
+        const cls = clsx('cache-lines-content', lane.valid && 'valid-line');
         return (
-          <div key={index} className='cache-lines-cont'>
-            <div className={cls}>{hexPadEven(lane.tag)}</div>
-            <div className='flex gap-1 border-b border-r p-1'>
+          <div key={index} className={cls}>
+            <div className='line-tag border-r border-b p-1'>
+              {hexPadEven(lane.tag)}
+            </div>
+            <div className='flex gap-1 items-center border-b border-r p-1 cache-line-bytes'>
               {lane.decodedLine.map((byte, index) => {
                 return (
-                  <div key={index}>
-                    <div>{byte.toString(16).padStart(2, '0')}</div>
-                  </div>
+                  <span key={index}>{byte.toString(16).padStart(2, '0')}</span>
                 );
               })}
             </div>

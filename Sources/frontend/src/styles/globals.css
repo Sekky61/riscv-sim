@@ -758,7 +758,6 @@
   .cache-grid {
     @apply grid justify-center;
     grid-template-columns: repeat(3, max-content);
-    grid-auto-rows: auto;
   }
 
   .cache-line {
@@ -768,11 +767,30 @@
     grid-template-columns: subgrid;
   }
 
-  .cache-lines-cont {
-    @apply grid;
+  /* Fix the top border of cache */
+  .cache-line:nth-child(2) {
+    @apply border-t rounded-t;
+  }
+
+  .cache-lines-content {
+    @apply grid text-gray-500;
     grid-column: span 2;
     grid-template-columns: subgrid;
     grid-template-rows: subgrid;
+  }
+
+  /* Valid line - highlight text */
+  .cache-lines-content.valid-line {
+    @apply text-inherit;
+  }
+
+  /* Valid line - highlight the tag */
+  .valid-line > .line-tag {
+    @apply bg-green-300;
+  }
+
+  .cache-line-bytes > *:nth-child(4n) {
+    @apply pr-2;
   }
 
   /* Heatmap statistic transition */
