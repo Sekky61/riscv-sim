@@ -204,6 +204,14 @@ public class CpuConfigValidator
       errors.add(
               new ConfigError("Cache associativity must be less than or equal to cache lines", "cacheAssociativity"));
     }
+    // Cache assoc must be a power of two multiple of cacheAssoc (example 8*assoc, 16*assoc).
+    boolean dividesWithoutRemainder     = cpuConfig.cacheLines % cpuConfig.cacheAssoc == 0;
+    int     numberOfIndexes             = cpuConfig.cacheLines / cpuConfig.cacheAssoc;
+    boolean isNumberOfIndexesPowerOfTwo = Integer.bitCount(numberOfIndexes) == 1;
+    if (!dividesWithoutRemainder || !isNumberOfIndexesPowerOfTwo)
+    {
+      errors.add(new ConfigError("Cache associativity must be a power of two multiple of cacheAssoc", "cacheLines"));
+    }
     if (!List.of("LRU", "FIFO", "Random").contains(cpuConfig.cacheReplacement))
     {
       errors.add(new ConfigError("Cache replacement must be LRU, FIFO, or Random", "cacheReplacement"));

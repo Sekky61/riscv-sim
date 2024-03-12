@@ -297,3 +297,10 @@ export function formatFracPercentage(
   }
   return `${frac.toFixed(2)}%`;
 }
+
+/**
+ * Return true if the number is a power of two
+ */
+export function isPowerOfTwo(n: number): boolean {
+  return Math.log2(n) % 1 === 0;
+}

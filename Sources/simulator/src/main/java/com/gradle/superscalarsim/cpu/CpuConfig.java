@@ -134,7 +134,7 @@ public class CpuConfig implements Serializable
   public boolean useCache;
   
   /**
-   * Number of cache lines.
+   * Number of cache lines. Must be a power of two multiple of cacheAssoc (example 8*assoc, 16*assoc).
    */
   @JsonProperty(required = true)
   public int cacheLines;

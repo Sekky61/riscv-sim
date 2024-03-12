@@ -30,6 +30,7 @@
  */
 
 import { defaultAsmCode } from '@/constant/defaults';
+import { isPowerOfTwo } from '@/lib/utils';
 import { ZodIssueCode, z } from 'zod';
 
 export const predictorTypes = [
@@ -223,24 +224,45 @@ export const isaFormSchema = z
     coreClockFrequency: z.number().min(1),
     cacheClockFrequency: z.number().min(1),
   })
-  .refine((data) => {
+  .superRefine((data, ctx) => {
+    console.log('Validating ISA form', data);
     // Check the predictor
     const predictorDefault = data.predictorDefaultState;
     const predictorType = data.predictorType;
-
     if (
       predictorType === 'ZERO_BIT_PREDICTOR' ||
       predictorType === 'ONE_BIT_PREDICTOR'
     ) {
       if (predictorDefault !== 0 && predictorDefault !== 1) {
-        return "Predictor default state doesn't match the predictor type";
+        ctx.addIssue({
+          code: ZodIssueCode.invalid_enum_value,
+          path: ['predictorDefaultState'],
+          message: 'Predictor default state must be Taken or Not Taken',
+          options: [0, 1],
+          received: predictorDefault,
+        });
       }
     }
 
-    // Check that cacheAssoc <= cacheLines
-    if (data.cacheAssoc > data.cacheLines) {
-      return 'Cache associativity must be less than or equal to cache lines';
+    // Check that all indexes exist in cache (cacheLine / cacheAssoc = number of sets)
+    const dividesEvenly = data.cacheLines % data.cacheAssoc === 0;
+    const sets = data.cacheLines / data.cacheAssoc;
+    const setsIsPowerOfTwo = isPowerOfTwo(sets);
+    if (!dividesEvenly) {
+      ctx.addIssue({
+        code: ZodIssueCode.custom,
+        path: ['cacheAssoc'],
+        message: 'Cache lines must be divisible by cache associativity',
+      });
     }
+    if (!setsIsPowerOfTwo) {
+      ctx.addIssue({
+        code: ZodIssueCode.custom,
+        path: ['cacheLines'],
+        message: 'Number of sets must be a power of two',
+      });
+    }
+
     // Config is correct
     return true;
   });
