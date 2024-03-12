@@ -29,7 +29,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { selectStoreBuffer } from '@/lib/redux/cpustateSlice';
+import { ParsedArgument, selectStoreBuffer } from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
 import { RegisterDataContainer, StoreBufferItem } from '@/lib/types/cpuApi';
 import { hexPadEven } from '@/lib/utils';
@@ -73,7 +73,7 @@ export default function StoreBuffer() {
         totalSize={storeBuffer.bufferSize}
         columns={3}
         legend={
-          <div className='grid grid-cols-subgrid col-span-3'>
+          <div className='grid grid-cols-subgrid col-span-3 sticky top-0 bg-inherit'>
             <div>Instruction</div>
             <div>Address</div>
             <div>Data</div>
@@ -114,10 +114,21 @@ export function StoreBufferItemComponent({
     stringRepresentation: hexPadEven(item.address),
   };
 
+  const address: ParsedArgument = {
+    register: null,
+    valid: item.address !== -1,
+    origArg: {
+      name: 'address',
+      constantValue: addressContainer,
+      stringValue: '',
+      registerValue: null,
+    },
+  };
+
   return (
     <div className='grid grid-cols-subgrid col-span-3'>
       <InstructionField instructionId={item.simCodeModel} />
-      <ArgumentTableCell item={addressContainer} valid={item.address !== -1} />
+      <ArgumentTableCell arg={address} />
       <RegisterReference registerId={item.sourceRegister} />
     </div>
   );

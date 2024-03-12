@@ -62,8 +62,18 @@ export default function CacheBlock() {
     <Block
       title='Cache'
       stats={
-        <div className='flex'>
+        <div className='badge-container'>
           <DividedBadge>
+            <div>Lane Size</div>
+            <div>{cache.lineSize}B</div>
+          </DividedBadge>
+          <DividedBadge>
+            <div>Address</div>
+            <div>{cache.indexBits} index bits</div>
+            <div>{cache.offsetBits} offset bits</div>
+          </DividedBadge>
+          <DividedBadge>
+            <div>Eviction Policy</div>
             <div>{policy}</div>
           </DividedBadge>
         </div>

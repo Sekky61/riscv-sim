@@ -157,6 +157,8 @@ export interface Cache {
   replacementPolicy: ReplacementPolicyModel;
   memory?: SimulatedMemory;
   statistics: Reference;
+  offsetBits: number;
+  indexBits: number;
 }
 export interface CacheLineModel {
   line: string; // base64 encoded

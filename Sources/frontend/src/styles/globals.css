@@ -803,4 +803,9 @@
   .instruction-list-container > *:not(:first-child) {
     @apply pt-1;
   }
+
+  /* Container for tags, pills, badges */
+  .badge-container {
+    @apply flex gap-2 flex-wrap;
+  }
 }

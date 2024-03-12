@@ -66,7 +66,7 @@ export default function FetchBlock() {
 
   const fetchStats = (
     <>
-      <div className='flex gap-2 flex-wrap'>
+      <div className='badge-container'>
         <DividedBadge>
           <div>PC</div>
           <div>{hexPadEven(fetchObject.pc)}</div>

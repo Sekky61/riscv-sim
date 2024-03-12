@@ -33,6 +33,7 @@ package com.gradle.superscalarsim.blocks.loadstore;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.blocks.AbstractBlock;
 import com.gradle.superscalarsim.cpu.SimulationStatistics;
@@ -313,6 +314,7 @@ public class Cache implements AbstractBlock, MemoryBlock
   /**
    * @return Number of bits needed to index the contents of a cache line.
    */
+  @JsonProperty
   public int getOffsetBits()
   {
     // Basically a log2
@@ -322,6 +324,7 @@ public class Cache implements AbstractBlock, MemoryBlock
   /**
    * @return Number of bits needed to index the associativity sets.
    */
+  @JsonProperty
   public int getIndexBits()
   {
     // Basically a log2
@@ -359,8 +362,7 @@ public class Cache implements AbstractBlock, MemoryBlock
           // Load new line into cache
           Triplet<Long, Integer, Integer> split = splitAddress(transaction.address());
           long                            tag   = split.getFirst();
-          CacheLineModel                  line  = pickLineToUse(transaction.address(), cycle,
-                                                                transaction.getInstructionId());
+          CacheLineModel line = pickLineToUse(transaction.address(), cycle, transaction.getInstructionId());
           // The replacement policy was updated when the line was picked
           line.setLineData(transaction.data());
           line.setValid(true);

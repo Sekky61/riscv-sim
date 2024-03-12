@@ -138,7 +138,7 @@ export default function IssueWindow({ type }: IssueWindowProps) {
         columns={3}
         instructions={issue.issuedInstructions}
         legend={
-          <div className='grid grid-cols-subgrid col-span-3'>
+          <div className='grid grid-cols-subgrid col-span-3 sticky top-0 bg-inherit'>
             <div>Instruction</div>
             <div>Arg 1</div>
             <div>Arg 2</div>
@@ -207,7 +207,7 @@ export function ArgumentTableCell({ arg }: ArgumentTableCellProps) {
   const idToHighlight = arg?.register?.name || arg?.origArg.constantValue?.bits;
 
   const item = arg && getValue(arg);
-  const registerName = arg?.register?.name || arg?.origArg.stringValue;
+  const registerName = arg?.register?.name;
   const valid = arg?.valid;
 
   const item1Style = clsx(
@@ -220,7 +220,7 @@ export function ArgumentTableCell({ arg }: ArgumentTableCellProps) {
     if (arg.valid) {
       text = item.stringRepresentation;
     } else {
-      text = registerName || '-';
+      text = registerName || arg?.origArg.stringValue || '-';
     }
   }
 

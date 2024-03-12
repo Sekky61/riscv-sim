@@ -29,7 +29,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { selectLoadBuffer } from '@/lib/redux/cpustateSlice';
+import { ParsedArgument, selectLoadBuffer } from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
 import { LoadBufferItem, RegisterDataContainer } from '@/lib/types/cpuApi';
 import { hexPadEven } from '@/lib/utils';
@@ -75,7 +75,7 @@ export default function LoadBuffer() {
         totalSize={loadBuffer.bufferSize}
         columns={4}
         legend={
-          <div className='grid grid-cols-subgrid col-span-4'>
+          <div className='grid grid-cols-subgrid col-span-4 sticky top-0 bg-inherit'>
             <div>Instruction</div>
             <div>Address</div>
             <div>Data</div>
@@ -117,10 +117,21 @@ export function LoadBufferItemComponent({
     stringRepresentation: hexPadEven(item.address),
   };
 
+  const address: ParsedArgument = {
+    register: null,
+    valid: item.address !== -1,
+    origArg: {
+      name: 'address',
+      constantValue: addressContainer,
+      stringValue: '',
+      registerValue: null,
+    },
+  };
+
   return (
     <div className='grid grid-cols-subgrid col-span-4'>
       <InstructionField instructionId={item.simCodeModel} />
-      <ArgumentTableCell item={addressContainer} valid={item.address !== -1} />
+      <ArgumentTableCell arg={address} />
       <RegisterReference registerId={item.destinationRegister} />
       <div className='instruction-bubble h-full flex justify-center items-center'>
         {item.hasBypassed ? 'True' : 'False'}
