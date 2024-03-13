@@ -49,6 +49,7 @@ import {
 import { PredictorIcon } from '@/components/prediction/PredictorIcon';
 import Block from '@/components/simulation/Block';
 import type { GlobalHistoryRegister } from '@/lib/types/cpuApi';
+import { useBlockDescriptions } from '@/components/BlockDescriptionContext';
 
 export default function PredictionBlock() {
   const ghr = useAppSelector(selectGlobalHistoryRegister);
@@ -104,6 +105,7 @@ export function BranchDetailDialog() {
   const pht = useAppSelector(selectPatternHistoryTable);
   const fetch = useAppSelector(selectFetch);
   const gshare = useAppSelector(selectGShare);
+  const descriptions = useBlockDescriptions();
 
   if (!btb || !ghr || !pht || !fetch || !gshare) return null;
 
@@ -119,9 +121,9 @@ export function BranchDetailDialog() {
   return (
     <DialogContent>
       <DialogHeader>
-        <DialogTitle>Branch Prediction</DialogTitle>
+        <DialogTitle>{descriptions.branchPredictor?.name}</DialogTitle>
         <DialogDescription>
-          Detailed view of the branch predictor
+          {descriptions.branchPredictor?.shortDescription}
         </DialogDescription>
       </DialogHeader>
       <div>

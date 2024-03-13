@@ -220,7 +220,7 @@ const HexDump = memo(function HexDump({
     bytes[index] = (
       <div
         key={index}
-        className='relative bg-gray-200 -m-1 p-1 rounded hover:bg-red-500 hover:rounded-l-none duration-150 group'
+        className='relative bg-secondary-80 -m-1 p-1 rounded hover:bg-red-500 hover:rounded-l-none duration-150 group'
       >
         <div className='absolute top-0 right-full h-full p-1 rounded-l bg-red-500 invisible opacity-0 group-hover:visible group-hover:opacity-100 duration-150 translate-x-6 group-hover:translate-x-0'>
           {label.name}

@@ -1,7 +1,7 @@
 {
   "fetch": {
     "name": "Fetch",
-    "shortDescription": "The Fetch unit loads instructions from memory and predicts branches.",
+    "shortDescription": "The Fetch unit loads instructions from memory and predicts branches. Branch instructions are accompanied by a graph of the relevant predictor, with highlighted state and outline indicating the result of the prediction.",
     "longDescription": ""
   },
   "decode": {
@@ -11,37 +11,42 @@
   },
   "rob": {
     "name": "Reorder Buffer",
-    "shortDescription": "The Reorder Buffer is a queue that holds instructions in program order. Computed instructions are written back from the head of the queue.",
+    "shortDescription": "The Reorder Buffer is a queue that holds instructions in program order. Computed instructions are written back from the head of the queue. The ROB holds additional information: if the instruction is speculative, busy, or has thrown an exception.",
     "longDescription": ""
   },
   "issue": {
     "name": "Issue Window",
-    "shortDescription": "The Issue Window is a buffer that holds instructions of the same type. Once an instruction has all of its operands ready, it is issued to the functional units.",
+    "shortDescription": "The Issue Window is a buffer that holds instructions of the same type. Once an instruction has all of its operands ready, it is issued to the functional units. The operands values are displayed in the columns. The operands are highlighted green when they are ready.",
     "longDescription": ""
   },
   "storeBuffer": {
     "name": "Store Buffer",
-    "shortDescription": "The Store Buffer holds store instructions. It is used to ensure that speculative stores do not leak to memory until they are committed.",
+    "shortDescription": "The Store Buffer holds store instructions. It is used to ensure that the speculative stores do not leak to memory until they are committed. The address and the data to be stored are shown in the columns.",
     "longDescription": ""
   },
   "loadBuffer": {
     "name": "Load Buffer",
-    "shortDescription": "The Load Buffer holds load instructions. It ensures that speculative loads do not work with stale data.",
+    "shortDescription": "The Load Buffer holds load instructions. It ensures that speculative loads do not work with stale data. The 'bypass' flag indicates that the load has been bypassed from a store in the store buffer.",
     "longDescription": ""
   },
   "mainMemory": {
     "name": "Main Memory",
-    "shortDescription": "The Main Memory is an addressable array of bytes. It is used to store both instructions and data.",
+    "shortDescription": "The Main Memory is an addressable array of bytes. It is used to store both instructions and data. Labels are highlighted.",
     "longDescription": ""
   },
   "cache": {
     "name": "Cache",
-    "shortDescription": "The Cache is a small, fast memory that holds recently accessed data. It is used to speed up memory access.",
+    "shortDescription": "The Cache is a small, fast memory that holds recently accessed data. It is used to speed up memory access. Tags of valid lines are highlighted green.",
     "longDescription": ""
   },
   "registerFile": {
     "name": "Register File",
-    "shortDescription": "The Register File is a small, fast memory that holds the values of the processor's registers.",
+    "shortDescription": "The Register File is a small, fast memory that holds the values of the processor's registers. The visualisation shows each register, the value it currently holds and the last rename (tag).",
+    "longDescription": ""
+  },
+  "branchPredictor": {
+    "name": "Branch Predictor",
+    "shortDescription": "The Branch Predictor is a unit that predicts the outcome of branches. The visualisation shows all predictors in a grid. A predictor is indexed using the PC and optionally the branch history (GHR).",
     "longDescription": ""
   }
 }
