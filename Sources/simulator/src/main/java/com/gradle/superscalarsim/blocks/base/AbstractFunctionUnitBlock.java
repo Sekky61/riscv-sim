@@ -288,8 +288,9 @@ public abstract class AbstractFunctionUnitBlock implements AbstractBlock
    */
   private int getDelayBasedOnCapability()
   {
-    String expr = this.simCodeModel.getInstructionFunctionModel().getInterpretableAs();
-    FunctionalUnitDescription.CapabilityName capabilityName = FunctionalUnitDescription.classifyOperation(expr);
+    String                                   expr           = this.simCodeModel.getInstructionFunctionModel()
+            .getInterpretableAs();
+    FunctionalUnitDescription.CapabilityName capabilityName = FunctionalUnitDescription.classifyExpression(expr);
     for (FunctionalUnitDescription.Capability capability : this.description.operations)
     {
       if (capability.name == capabilityName)
@@ -298,6 +299,11 @@ public abstract class AbstractFunctionUnitBlock implements AbstractBlock
       }
     }
     throw new RuntimeException("Unknown operation: " + expr);
+  }
+  
+  protected FunctionalUnitDescription getDescription()
+  {
+    return this.description;
   }
   
   /**

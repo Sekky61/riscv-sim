@@ -125,7 +125,7 @@ public class FunctionalUnitDescription
    *
    * @param expr Expression to classify (e.g. "\rs1 \rs2 * \rs3 + \rd =")
    */
-  public static CapabilityName classifyOperation(String expr)
+  public static CapabilityName classifyExpression(String expr)
   {
     for (String op : Expression.specialOperators)
     {

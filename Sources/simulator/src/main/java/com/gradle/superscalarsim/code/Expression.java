@@ -134,9 +134,11 @@ public class Expression
     decimalPattern     = Pattern.compile("-?\\d+(\\.\\d+)?[fd]?");
     hexadecimalPattern = Pattern.compile("0x\\p{XDigit}+");
     
-    allOperators = new String[unaryOperators.length + binaryOperators.length];
+    allOperators = new String[unaryOperators.length + binaryOperators.length + ternaryOperators.length];
     System.arraycopy(unaryOperators, 0, allOperators, 0, unaryOperators.length);
     System.arraycopy(binaryOperators, 0, allOperators, unaryOperators.length, binaryOperators.length);
+    System.arraycopy(ternaryOperators, 0, allOperators, unaryOperators.length + binaryOperators.length,
+                     ternaryOperators.length);
   }
   
   /**

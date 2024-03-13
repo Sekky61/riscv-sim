@@ -48,7 +48,6 @@ import com.gradle.superscalarsim.models.register.RegisterModel;
 import com.gradle.superscalarsim.models.util.Result;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -106,26 +105,19 @@ public class ArithmeticFunctionUnitBlock extends AbstractFunctionUnitBlock
       return false;
     }
     
-    // Check if the expression uses allowed operators
-    List<String> requiredOperators = new ArrayList<>();
-    for (String token : model.getInterpretableAs().split(" "))
-    {
-      // Compare it with all operators
-      if (Arrays.asList(Expression.allOperators).contains(token))
-      {
-        requiredOperators.add(token);
-      }
-    }
+    FunctionalUnitDescription.CapabilityName capabilityName = FunctionalUnitDescription.classifyExpression(
+            model.getInterpretableAs());
     
-    // Check if all required operators are supported by FU
-    for (String requiredOperator : requiredOperators)
+    // Compare capability
+    for (FunctionalUnitDescription.Capability cap : getDescription().operations)
     {
-      if (!allowedOperators.contains(requiredOperator))
+      if (cap.name == capabilityName)
       {
-        return false;
+        return true;
       }
     }
-    return true;
+    // Not found
+    return false;
   }
   //----------------------------------------------------------------------
   
