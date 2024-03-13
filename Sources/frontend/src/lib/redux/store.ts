@@ -46,7 +46,7 @@ import hardSet from 'redux-persist/lib/stateReconciler/hardSet';
 import storage from 'redux-persist/lib/storage';
 
 import compilerReducer, { CompilerReducer } from '@/lib/redux/compilerSlice';
-import cpuReducer, { cpuInitialState } from '@/lib/redux/cpustateSlice';
+import cpuReducer from '@/lib/redux/cpustateSlice';
 import isaReducer, { IsaReducer } from '@/lib/redux/isaSlice';
 import shortcutsReducer from '@/lib/redux/shortcutsSlice';
 import simConfigReducer, { SimConfigReducer } from '@/lib/redux/simConfigSlice';
@@ -94,6 +94,14 @@ const migrations = {
     // Changed MemoryLocation
     return undefined;
   },
+  14: (state: PersistedState) => {
+    // Changed MemoryLocation
+    return undefined;
+  },
+  15: (state: PersistedState) => {
+    // Changed MemoryLocation
+    return undefined;
+  },
 };
 
 // Persistance config
@@ -103,7 +111,7 @@ const persistIsaConfig = {
   // The key in localStorage
   key: 'isa',
   // Change the version when changing the schema
-  version: 14,
+  version: 15,
   storage,
   stateReconciler: hardSet,
   // This migration is used when the version number is increased
@@ -112,7 +120,7 @@ const persistIsaConfig = {
 
 const persistSimConfig = {
   key: 'simConfig',
-  version: 3,
+  version: 4,
   storage,
   stateReconciler: hardSet,
   migrate: createMigrate(migrations),

@@ -29,7 +29,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { defaultAsmCode } from '@/constant/defaults';
+import { defaultAsmCode, defaultCpuConfig } from '@/constant/defaults';
 import { isPowerOfTwo } from '@/lib/utils';
 import { ZodIssueCode, z } from 'zod';
 
@@ -225,7 +225,6 @@ export const isaFormSchema = z
     cacheClockFrequency: z.number().min(1),
   })
   .superRefine((data, ctx) => {
-    console.log('Validating ISA form', data);
     // Check the predictor
     const predictorDefault = data.predictorDefaultState;
     const predictorType = data.predictorType;
@@ -290,115 +289,6 @@ export const simulationConfig = z.object({
   entryPoint: z.union([z.string(), z.number()]),
 });
 export type SimulationConfig = z.infer<typeof simulationConfig>;
-
-/**
- * Default configuration
- */
-export const defaultCpuConfig: CpuConfig = {
-  name: 'Default',
-  robSize: 256,
-  fetchWidth: 3,
-  branchFollowLimit: 1,
-  commitWidth: 4,
-  flushPenalty: 1,
-  btbSize: 1024,
-  phtSize: 10,
-  predictorType: 'TWO_BIT_PREDICTOR',
-  predictorDefaultState: 2,
-  useGlobalHistory: false,
-  fUnits: [
-    {
-      id: 0,
-      name: 'FX Universal',
-      fuType: 'FX',
-      latency: 2,
-      operations: [
-        {
-          name: 'bitwise',
-          latency: 1,
-        },
-        {
-          name: 'addition',
-          latency: 1,
-        },
-        {
-          name: 'multiplication',
-          latency: 2,
-        },
-        {
-          name: 'division',
-          latency: 10,
-        },
-        {
-          name: 'special',
-          latency: 2,
-        },
-      ],
-    },
-    {
-      id: 1,
-      name: 'FP',
-      fuType: 'FP',
-      latency: 2,
-      operations: [
-        {
-          name: 'bitwise',
-          latency: 1,
-        },
-        {
-          name: 'addition',
-          latency: 1,
-        },
-        {
-          name: 'multiplication',
-          latency: 2,
-        },
-        {
-          name: 'division',
-          latency: 10,
-        },
-        {
-          name: 'special',
-          latency: 2,
-        },
-      ],
-    },
-    {
-      id: 2,
-      name: 'L_S',
-      fuType: 'L_S',
-      latency: 1,
-    },
-    {
-      id: 3,
-      name: 'Branch',
-      fuType: 'Branch',
-      latency: 2,
-    },
-    {
-      id: 4,
-      name: 'Memory',
-      fuType: 'Memory',
-      latency: 1,
-    },
-  ],
-  useCache: true,
-  cacheLines: 16,
-  cacheLineSize: 32,
-  cacheAssoc: 2,
-  cacheReplacement: 'LRU',
-  storeBehavior: 'write-back',
-  cacheAccessDelay: 1,
-  storeLatency: 1,
-  loadLatency: 1,
-  laneReplacementDelay: 10,
-  lbSize: 64,
-  sbSize: 64,
-  callStackSize: 512,
-  speculativeRegisters: 320,
-  coreClockFrequency: 100000000,
-  cacheClockFrequency: 100000000,
-};
 
 export const defaultSimulationConfig: SimulationConfig = {
   cpuConfig: defaultCpuConfig,

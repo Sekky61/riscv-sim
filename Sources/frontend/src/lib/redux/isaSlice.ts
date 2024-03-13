@@ -38,9 +38,13 @@ import {
   CpuConfig,
   MemoryLocationApi,
   SimulationConfig,
-  defaultCpuConfig,
   defaultSimulationConfig,
-} from '../forms/Isa';
+} from '@/lib/forms/Isa';
+import {
+  defaultCpuConfig,
+  educationalSimulationConfig,
+  floatSimulationConfig,
+} from '@/constant/defaults';
 
 /**
  * The slice state type
@@ -61,7 +65,11 @@ interface IsaState {
  * One ISA is always present, called "Default". It is selected.
  */
 const initialState: IsaState = {
-  isas: [defaultSimulationConfig],
+  isas: [
+    defaultSimulationConfig,
+    educationalSimulationConfig,
+    floatSimulationConfig,
+  ],
   activeIsaName: defaultSimulationConfig.cpuConfig.name,
 };
 
@@ -107,7 +115,7 @@ export const isaSlice = createSlice({
       state,
       action: PayloadAction<{ oldName: string; isa: CpuConfig }>,
     ) => {
-      if (action.payload.oldName === 'Default') {
+      if (action.payload.oldName === defaultCpuConfig.name) {
         throw new Error('Cannot edit the default ISA');
       }
       // Update the ISA

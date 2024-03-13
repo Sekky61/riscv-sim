@@ -37,7 +37,7 @@ import { useEffect, useState } from 'react';
 import React from 'react';
 import { useForm } from 'react-hook-form';
 
-import { CpuConfig, defaultCpuConfig, isaFormSchema } from '@/lib/forms/Isa';
+import { CpuConfig, isaFormSchema } from '@/lib/forms/Isa';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import {
   createIsa,
@@ -73,6 +73,7 @@ import IsaSettingsForm from '@/components/form/IsaSettingsForm';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { DividedBadge } from '@/components/DividedBadge';
+import { defaultCpuConfig } from '@/constant/defaults';
 
 // TODO: delete configuration
 // TODO: prevent from leaving the page with unsaved changes
@@ -85,7 +86,7 @@ export default function Page() {
   const [switchingName, setSwitchingName] = useState('');
 
   // If the active ISA is the default, we cannot edit it
-  const blockEditing = activeIsa.cpuConfig.name === 'Default';
+  const blockEditing = activeIsa.cpuConfig.name === defaultCpuConfig.name;
   const [savesOpen, setSavesOpen] = useState(false);
 
   // Lifted state of form
