@@ -51,54 +51,6 @@ import Block from '@/components/simulation/Block';
 import type { GlobalHistoryRegister } from '@/lib/types/cpuApi';
 import { useBlockDescriptions } from '@/components/BlockDescriptionContext';
 
-export default function PredictionBlock() {
-  const ghr = useAppSelector(selectGlobalHistoryRegister);
-  const gshare = useAppSelector(selectGShare);
-
-  if (!ghr || !gshare) return null;
-
-  return (
-    <Block
-      title='Prediction Block'
-      className='w-block'
-      detailDialog={<BranchDetailDialog />}
-    >
-      {gshare.useGlobalHistory && <GhrVector ghr={ghr} />}
-    </Block>
-  );
-}
-
-type GhrVectorProps = {
-  ghr: GlobalHistoryRegister;
-};
-
-function GhrVector({ ghr }: GhrVectorProps) {
-  const latest = ghr.shiftRegisters[ghr.shiftRegisters.length - 1];
-
-  if (!latest) {
-    throw new Error('GHR error state');
-  }
-
-  // Take the last size bits
-  const vector = latest.shiftRegister
-    .toString(2)
-    .padStart(ghr.size, '0')
-    .split('');
-
-  return (
-    <div className='flex gap-2'>
-      <span>GHR</span>
-      <div className='flex items-center border font-mono text-xs divide-x justify-start rounded-sm'>
-        {vector.map((bit, i) => (
-          <span key={i} className='py-0.5 px-1 text-center'>
-            {bit}
-          </span>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 export function BranchDetailDialog() {
   const btb = useAppSelector(selectBranchTargetBuffer);
   const ghr = useAppSelector(selectGlobalHistoryRegister);
@@ -127,6 +79,9 @@ export function BranchDetailDialog() {
         </DialogDescription>
       </DialogHeader>
       <div>
+        <div className='flex pb-8'>
+          <GhrVector ghr={ghr} used={gshare.useGlobalHistory} />
+        </div>
         <div
           className='grid gap-4'
           style={{
@@ -135,6 +90,7 @@ export function BranchDetailDialog() {
         >
           {predictors.map((predictor, i) => (
             <div key={i}>
+              <div className='flex justify-center'>{i}</div>
               <PredictorIcon
                 state={predictor.state}
                 width={predictor.bitWidth}
@@ -144,5 +100,39 @@ export function BranchDetailDialog() {
         </div>
       </div>
     </DialogContent>
+  );
+}
+
+type GhrVectorProps = {
+  ghr: GlobalHistoryRegister;
+  used: boolean;
+};
+
+function GhrVector({ ghr, used }: GhrVectorProps) {
+  const latest = ghr.shiftRegisters[ghr.shiftRegisters.length - 1];
+
+  if (!latest) {
+    throw new Error('GHR error state');
+  }
+
+  // Take the last size bits
+  const vector = latest.shiftRegister
+    .toString(2)
+    .padStart(ghr.size, '0')
+    .split('');
+
+  return (
+    <div className='flex gap-2'>
+      <span>
+        GHR - {used ? 'Used in prediction' : 'Not used in prediction'}
+      </span>
+      <div className='flex items-center border font-mono text-xs divide-x justify-start rounded-sm'>
+        {vector.map((bit, i) => (
+          <span key={i} className='py-0.5 px-1 text-center'>
+            {bit}
+          </span>
+        ))}
+      </div>
+    </div>
   );
 }

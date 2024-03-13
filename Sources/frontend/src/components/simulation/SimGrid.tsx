@@ -71,17 +71,19 @@ export function SimGrid() {
           </div>
         </div>
         <div className='bottom-grid pb-8'>
-          <StoreBuffer />
-          <LoadBuffer />
-          <div className='block-stack'>
-            <FunctionUnitGroup type='ls' />
-            <FunctionUnitGroup type='memory' />
-            <MainMemory />
+          <div className='bottom-grid-mem'>
+            <StoreBuffer />
+            <LoadBuffer />
+            <div className='block-stack'>
+              <FunctionUnitGroup type='ls' />
+              <FunctionUnitGroup type='memory' />
+              <MainMemory />
+            </div>
+            <div className=' col-span-3 flex'>
+              <RegisterBlock />
+            </div>
           </div>
           <CacheBlock />
-        </div>
-        <div className='flex'>
-          <RegisterBlock />
         </div>
       </div>
     </HighlightProvider>

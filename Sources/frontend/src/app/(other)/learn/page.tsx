@@ -41,22 +41,33 @@ export default async function Page() {
   return (
     <div className='flex flex-col gap-10 pb-16'>
       <section>
-        <h1 className='text-4xl'>Superscalar Architecture</h1>
+        <h1>Superscalar Architecture</h1>
         <p>Learn about the architecture and the individual units.</p>
       </section>
       <section>
-        <h2 className='text-2xl'>Superscalar Execution</h2>
+        <h2>Superscalar Execution</h2>
         <p>
-          Superscalar architecture is a type of CPU design that allows more than
-          one instruction to be executed at the same time. It is a common
-          feature of high-performance microprocessor designs.
+          Multiple instructions can be executed simultaneously in a CPU thanks
+          to the superscalar architecture. It is a common feature of designs for
+          high-performance processors.
         </p>
         <p>
-          The first part of the pipeline is called front-end. It operates in
-          order, fetching and decoding instructions. The second part is called
-          back-end. It operates out of order, executing instructions and writing
-          results back to the register file. The instructions leave the pipeline
-          in order again.
+          Front-end refers to the beginning of the pipeline. It retrieves and
+          decodes a set of instructions in the program order.
+        </p>
+
+        <p>
+          The rest of the pipeline is referred to as the <b>back-end</b>. It
+          executes instruction <b>out of order</b>, writing the outcomes back to
+          the register file after completing instructions. The instructions
+          leave the pipeline in order again.
+        </p>
+        <p>
+          Superscalar CPUs execute instructions in <b>parallel</b> by using
+          several execution units in the backend. The CPU dynamically analyzes
+          the dependencies between instructions and determines the optimal order
+          in which to execute them to maximize parallelism while preserving
+          program correctness.
         </p>
       </section>
       {Object.values(descriptions).map((blockDescription) => (
@@ -74,9 +85,7 @@ function BlockSection({
 }: { blockDescription: BlockDescription }) {
   return (
     <section>
-      <h2 className='text-2xl' id={blockDescription.name}>
-        {blockDescription.name}
-      </h2>
+      <h2 id={blockDescription.name}>{blockDescription.name}</h2>
       <p>{blockDescription.shortDescription}</p>
     </section>
   );

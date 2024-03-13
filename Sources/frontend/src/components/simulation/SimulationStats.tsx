@@ -168,35 +168,19 @@ function InstructionStatsCard({
   commitCount,
 }: InstructionStatsProps) {
   const codeOrder = useAppSelector(selectProgramWithLabels);
-  const [stat, setStat] = useState<'cacheMisses' | 'committedCount'>(
-    'cacheMisses',
-  );
+  const [stat, setStat] = useState<'cacheHits' | 'committedCount'>('cacheHits');
 
   if (!codeOrder) {
     return null;
   }
 
-  // Find the maximum number of cache misses (to normalize the heatmap)
-  let maxMissCount = 0;
-  for (const instruction of codeOrder) {
-    if (typeof instruction === 'string') {
+  let maxFrac = 0.01;
+  for (const st of instructionStats) {
+    if (!st || commitCount === 0) {
       continue;
     }
-    const st = instructionStats[instruction];
-    if (!st) {
-      continue;
-    }
-    const missCount = st.cacheMisses;
-    maxMissCount = Math.max(maxMissCount, missCount);
-  }
-  let max = 0;
-  if (stat === 'cacheMisses') {
-    max = maxMissCount;
-  } else {
-    max = commitCount;
-  }
-  if (max === 0) {
-    max = 1;
+    const heatCoef = st[stat] / commitCount;
+    maxFrac = Math.max(maxFrac, heatCoef);
   }
 
   return (
@@ -207,7 +191,7 @@ function InstructionStatsCard({
       </CardHeader>
       <CardContent>
         <RadioInput
-          choices={['cacheMisses', 'committedCount'] as const}
+          choices={['cacheHits', 'committedCount'] as const}
           texts={['Cache Hits', 'Committed']}
           value={stat}
           onNewValue={(v) => setStat(v)}
@@ -228,11 +212,9 @@ function InstructionStatsCard({
             if (!st) {
               return null;
             }
-            let instructionStat = st[stat];
-            if (stat === 'cacheMisses') {
-              instructionStat = st.committedCount - instructionStat;
-              // TODO hide stat for non-memory instructions
-            }
+            const instructionStat = st[stat];
+
+            const max = stat === 'cacheHits' ? st.memoryAccesses : commitCount;
             const heatCoef = instructionStat / max;
             const percentage = formatFracPercentage(instructionStat, max);
             return (
@@ -240,7 +222,7 @@ function InstructionStatsCard({
                 className='flex'
                 style={
                   {
-                    '--heat': getHeatMapColor(heatCoef),
+                    '--heat': getHeatMapColor(heatCoef / maxFrac),
                     backgroundColor: 'rgba(var(--heat), 0.2)',
                   } as React.CSSProperties
                 }

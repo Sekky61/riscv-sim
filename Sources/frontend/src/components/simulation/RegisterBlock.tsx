@@ -36,6 +36,7 @@ import {
   selectRegisterMap,
   selectRenameMap,
   selectSpecRegisterCount,
+  selectSpecRegisters,
 } from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
 
@@ -68,10 +69,14 @@ export default function RegisterBlock() {
   const renameBlock = useAppSelector(selectRenameMap);
   const descriptions = useBlockDescriptions();
   const specCount = useAppSelector(selectSpecRegisterCount);
+  const specRegs = useAppSelector(selectSpecRegisters);
 
-  if (!registers || !renameBlock) return null;
+  if (!registers || !renameBlock || !specRegs) return null;
 
   // first dimension is the index, second is the associativity
+
+  // TODO: sorts badly
+  const specRegsSorted = Object.values(specRegs).sort();
 
   return (
     <Block
@@ -94,6 +99,15 @@ export default function RegisterBlock() {
               {descriptions.registerFile?.shortDescription}
             </DialogDescription>
           </DialogHeader>
+          <div className='grid grid-cols-5'>
+            {Object.values(specRegsSorted).map((tag) => {
+              const reg = registers[tag];
+              if (!reg) {
+                throw new Error(`Register ${tag} not found`);
+              }
+              return <Register key={tag} register={reg} />;
+            })}
+          </div>
         </DialogContent>
       }
     >

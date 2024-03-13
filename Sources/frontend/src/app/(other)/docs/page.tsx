@@ -36,14 +36,24 @@ export default function Page() {
   // also: https://riscv.org/wp-content/uploads/2015/01/riscv-calling.pdf
 
   return (
-    <div className='pb-20'>
-      <h1>RISC-V quick reference</h1>
+    <div className='pb-20 grid gap-6'>
+      <h1>RISC-V Quick Reference</h1>
       <section>
-        <h2 className='mt-4 text-xl'>The basics</h2>
-        <p>RISC-V has a little-endian memory system.</p>
+        <h2>Introduction</h2>
+        <p>
+          RISC-V is a small, simple, open source Instruction Set Architecture.
+          There is the base instruction set and a number of extensions. This
+          simulator supports the base (RV32I) and the integer multiplication and
+          division (M) extensions.
+        </p>
+        <p>
+          The memory system is <b>little-endian</b>. There are <b>32 integer</b>{' '}
+          registers (<code>x0-x31</code>) and <b>32 floating point</b> registers
+          (<code>f0-f31</code>).
+        </p>
       </section>
       <section>
-        <h2 className='mt-4 text-xl'>C Datatypes</h2>
+        <h2>C Datatypes</h2>
         <ul className='list-disc'>
           <li>
             <code>int</code> is 32 bits
@@ -58,8 +68,11 @@ export default function Page() {
         </ul>
       </section>
       <section id='riscv-calling-convention'>
-        <h2 className='mt-4 text-xl'>RISC-V Calling Convention</h2>
-        <p>Registers have two names: (1) register name and (2) ABI name.</p>
+        <h2>RISC-V Calling Convention</h2>
+        <p>
+          Registers actually have two names: (1) <b>register name</b> and (2){' '}
+          <b>ABI name</b>.
+        </p>
         <p>
           The <i>saver</i> attribute of a register describes who is responsible
           for keeping the value in the register unchanged. If the <i>caller</i>{' '}
@@ -165,7 +178,7 @@ export default function Page() {
         {/* todo table for floats */}
       </section>
       <section>
-        <h2 className='mt-4 text-xl'>Resources</h2>
+        <h2>Resources</h2>
         <ul className='list-decimal'>
           <li>
             RISC-V specification on the official website:{' '}

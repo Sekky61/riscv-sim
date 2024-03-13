@@ -394,6 +394,9 @@ export const selectProgramWithLabels = createSelector(
 export const selectAllRegisters = (state: RootState) =>
   state.cpu.state?.managerRegistry.registerModelManager;
 
+export const selectSpecRegisters = (state: RootState) =>
+  state.cpu.state?.unifiedRegisterFileBlock.speculativeRegisterFile.registers;
+
 export const selectRegisterIdMap = (state: RootState) =>
   state.cpu.state?.unifiedRegisterFileBlock.registerMap;
 

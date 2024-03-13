@@ -740,8 +740,14 @@
   }
 
   .bottom-grid {
+    @apply grid gap-4;
+    grid-template-columns: max-content max-content;
+  }
+
+  .bottom-grid-mem {
     @apply grid gap-4 pr-8;
-    grid-template-columns: repeat(2, 1fr) max-content max-content;
+    grid-template-rows: max-content max-content;
+    grid-template-columns: repeat(2, 1fr) max-content;
   }
 
   /* make space every 4 bytes */
