@@ -179,6 +179,7 @@ public final class MemoryTransaction
   public void setHandledBy(String handledBy)
   {
     this.handledBy = handledBy;
+    this.isHit     = !handledBy.equals(CACHE_WITH_MISS);
   }
   
   public boolean isCancelled()

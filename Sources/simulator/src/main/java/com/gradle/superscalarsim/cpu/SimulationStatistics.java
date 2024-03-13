@@ -591,11 +591,15 @@ public class SimulationStatistics
      */
     public int correctlyPredicted;
     /**
-     * Cache misses of this instruction. Zero for all non-memory instructions.
-     * Cache hits of this instruction can be calculated as (committedCount - cacheMisses).
+     * Cache hits of this instruction. Zero for all non-memory instructions.
+     * Cache misses of this instruction can be calculated as (memoryAccesses - cacheHits).
      * Misaligned access that causes to load 2 cache lines counts as a single miss.
      */
-    public int cacheMisses;
+    public int cacheHits;
+    /**
+     * Memory Access count
+     */
+    public int memoryAccesses;
     
     /**
      * Constructor
@@ -631,9 +635,21 @@ public class SimulationStatistics
     /**
      * @brief Increments number of cache misses
      */
-    public void incrementCacheMisses()
+    public void incrementMemoryAccesses(boolean isHit)
     {
-      this.cacheMisses++;
+      this.memoryAccesses++;
+      if (isHit)
+      {
+        this.cacheHits++;
+      }
+    }
+    
+    /**
+     * @return Cache misses
+     */
+    public int getCacheMisses()
+    {
+      return memoryAccesses - cacheHits;
     }
   }
 }

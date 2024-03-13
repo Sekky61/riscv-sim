@@ -170,11 +170,11 @@ public class StatisticsTests
     cpu.execute(false);
     
     // Assert
-    Assert.assertEquals(0, cpu.cpuState.statistics.instructionStats.get(0).cacheMisses);
-    Assert.assertEquals(0, cpu.cpuState.statistics.instructionStats.get(1).cacheMisses);
-    Assert.assertEquals(1, cpu.cpuState.statistics.instructionStats.get(2).cacheMisses);
-    Assert.assertEquals(1, cpu.cpuState.statistics.instructionStats.get(3).cacheMisses);
-    Assert.assertEquals(0, cpu.cpuState.statistics.instructionStats.get(4).cacheMisses);
+    Assert.assertEquals(0, cpu.cpuState.statistics.instructionStats.get(0).getCacheMisses());
+    Assert.assertEquals(0, cpu.cpuState.statistics.instructionStats.get(1).getCacheMisses());
+    Assert.assertEquals(1, cpu.cpuState.statistics.instructionStats.get(2).getCacheMisses());
+    Assert.assertEquals(1, cpu.cpuState.statistics.instructionStats.get(3).getCacheMisses());
+    Assert.assertEquals(0, cpu.cpuState.statistics.instructionStats.get(4).getCacheMisses());
   }
   
   @Test
@@ -193,6 +193,6 @@ public class StatisticsTests
     // 2 lines are loaded
     Assert.assertEquals(2 * 16, cpu.cpuState.statistics.mainMemoryLoadedBytes);
     // 1 cache miss
-    Assert.assertEquals(1, cpu.cpuState.statistics.instructionStats.get(3).cacheMisses);
+    Assert.assertEquals(1, cpu.cpuState.statistics.instructionStats.get(3).getCacheMisses());
   }
 }

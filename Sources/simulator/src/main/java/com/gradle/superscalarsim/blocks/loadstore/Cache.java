@@ -352,12 +352,6 @@ public class Cache implements AbstractBlock, MemoryBlock
       {
         // Main memory transaction finished
         memory.finishTransaction(transaction.id());
-        int simCodeId = transaction.getInstructionId();
-        if (simCodeId >= 0)
-        {
-          // Do not touch statistic in case the cache transaction is not related to any instruction (tests)
-          statistics.instructionStats.get(simCodeId).incrementCacheMisses();
-        }
         toRemove.add(transaction);
         if (!transaction.isStore())
         {

@@ -257,6 +257,14 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
       this.storeBufferBlock.setMemoryAccessFinished(simCodeId);
     }
     
+    // stats
+    int instrIndex = simCodeModel.getCodeId();
+    if (instrIndex >= 0)
+    {
+      // Do not touch statistic in case the cache transaction is not related to any instruction (tests)
+      statistics.instructionStats.get(instrIndex).incrementMemoryAccesses(transaction.isHit());
+    }
+    
     this.simCodeModel = null;
     this.transaction  = null;
     this.setDelay(0);
