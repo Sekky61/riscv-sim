@@ -138,8 +138,11 @@ export interface InstructionStats {
   committedCount: number;
   decoded: number;
   correctlyPredicted: number;
-  cacheHits: number;
-  memoryAccesses: number;
+  /**
+   * NULL for non-load/store instructions
+   */
+  cacheHits: number | null;
+  memoryAccesses: number | null;
 }
 
 export interface Cache {

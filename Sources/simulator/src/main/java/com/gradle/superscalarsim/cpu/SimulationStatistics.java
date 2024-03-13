@@ -594,12 +594,13 @@ public class SimulationStatistics
      * Cache hits of this instruction. Zero for all non-memory instructions.
      * Cache misses of this instruction can be calculated as (memoryAccesses - cacheHits).
      * Misaligned access that causes to load 2 cache lines counts as a single miss.
+     * Null if the instruction is not a memory instruction.
      */
-    public int cacheHits;
+    public Integer cacheHits;
     /**
-     * Memory Access count
+     * Memory Access count. Null for non-memory instructions.
      */
-    public int memoryAccesses;
+    public Integer memoryAccesses;
     
     /**
      * Constructor
@@ -637,6 +638,16 @@ public class SimulationStatistics
      */
     public void incrementMemoryAccesses(boolean isHit)
     {
+      // Init
+      if (memoryAccesses == null)
+      {
+        memoryAccesses = 0;
+      }
+      if (cacheHits == null)
+      {
+        cacheHits = 0;
+      }
+      
       this.memoryAccesses++;
       if (isHit)
       {
@@ -647,8 +658,12 @@ public class SimulationStatistics
     /**
      * @return Cache misses
      */
-    public int getCacheMisses()
+    public Integer getCacheMisses()
     {
+      if (memoryAccesses == null || cacheHits == null)
+      {
+        return null;
+      }
       return memoryAccesses - cacheHits;
     }
   }

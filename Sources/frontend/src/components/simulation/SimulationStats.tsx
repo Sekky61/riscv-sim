@@ -179,7 +179,7 @@ function InstructionStatsCard({
     if (!st || commitCount === 0) {
       continue;
     }
-    const heatCoef = st[stat] / commitCount;
+    const heatCoef = (st[stat] ?? 0) / commitCount;
     maxFrac = Math.max(maxFrac, heatCoef);
   }
 
@@ -214,23 +214,38 @@ function InstructionStatsCard({
             }
             const instructionStat = st[stat];
 
-            const max = stat === 'cacheHits' ? st.memoryAccesses : commitCount;
-            const heatCoef = instructionStat / max;
-            const percentage = formatFracPercentage(instructionStat, max);
-            return (
-              <div
-                className='flex'
-                style={
-                  {
-                    '--heat': getHeatMapColor(heatCoef / maxFrac),
-                    backgroundColor: 'rgba(var(--heat), 0.2)',
-                  } as React.CSSProperties
-                }
-                key={`ins-${instructionOrLabel}`}
-              >
+            let style: React.CSSProperties | undefined = undefined;
+            let percentageDiv = null;
+            if (instructionStat !== null) {
+              const max =
+                stat === 'cacheHits' ? st.memoryAccesses : commitCount;
+
+              if (max === null) {
+                throw new Error('max is null');
+              }
+
+              const heatCoef = instructionStat / max;
+              const percentage = formatFracPercentage(instructionStat, max);
+
+              style = {
+                '--heat': getHeatMapColor(heatCoef / maxFrac),
+                backgroundColor: 'rgba(var(--heat), 0.2)',
+              } as React.CSSProperties;
+
+              percentageDiv = (
                 <div className='font-mono text-sm text-gray-800 w-14 mr-2'>
                   {percentage}
                 </div>
+              );
+            }
+
+            return (
+              <div
+                className='flex'
+                style={style}
+                key={`ins-${instructionOrLabel}`}
+              >
+                {percentageDiv}
                 <ProgramInstruction
                   key={`ins-${instructionOrLabel}`}
                   instructionId={instructionOrLabel}
