@@ -310,7 +310,7 @@ function DetailedSimulationStats({ stats }: DetailedStatsProps) {
                 stat = stat.toFixed(2);
               }
               return (
-                <TableRow>
+                <TableRow key={name}>
                   <TableCell className='font-medium'>{displayName}</TableCell>
                   <TableCell>{stat}</TableCell>
                 </TableRow>
@@ -351,7 +351,7 @@ function CacheStatistics({ stats }: DetailedStatsProps) {
           <TableBody>
             {Object.entries(cacheStatNames).map(([name, displayName]) => {
               return (
-                <TableRow>
+                <TableRow key={name}>
                   <TableCell className='font-medium'>{displayName}</TableCell>
                   <TableCell>{stats.cache[name as CacheStatName]}</TableCell>
                 </TableRow>
@@ -392,7 +392,7 @@ function FuStatsDash({ stats, totalCycles }: FuStatsProps) {
           <TableBody>
             {Object.entries(stats).map(([name, stat]) => {
               return (
-                <TableRow>
+                <TableRow key={name}>
                   <TableCell className='font-medium'>{name}</TableCell>
                   <TableCell>{stat.busyCycles}</TableCell>
                   <TableCell>

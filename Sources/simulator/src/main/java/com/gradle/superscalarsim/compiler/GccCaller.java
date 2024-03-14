@@ -45,42 +45,57 @@ import java.util.logging.Logger;
  */
 public class GccCaller
 {
+  /**
+   * Map of optimization flags. TODO: check that only one is used
+   */
+  public static Map<String, String> optimizeFlags = Map.of("O0", "-O0", "O2", "-O2", "O3", "-O3", "Os", "-Os");
+  /**
+   * <a href="https://gcc.gnu.org/onlinedocs/gcc/Code-Gen-Options.html">GCC options</a>
+   * <ul>
+   * <li><strong>-xc:</strong> Translation of the C language (cannot be deduced from the file extension)</li>
+   * <li><strong>-march=rv32imfd:</strong> Architecture and M, F, D extensions definition</li>
+   * <li><strong>-mabi=ilp32d:</strong> Generating functions with ABI passing arguments through registers</li>
+   * <li><strong>-o /dev/stdout:</strong> Output to standard output</li>
+   * <li><strong>-S:</strong> Output in assembler format</li>
+   * <li><strong>-fcf-protection=none:</strong> Turn off control flow protection</li>
+   * <li><strong>-fno-stack-protector:</strong> Turn off buffer overflow protection</li>
+   * <li><strong>-fno-asynchronous-unwind-tables:</strong> Turn off generating exception handling data</li>
+   * <li><strong>-mno-explicit-relocs:</strong> Turn off symbolic address relocation (operators %hi() and %lo())</li>
+   * <li><strong>-ffunction-sections:</strong> Create a separate section for each function</li>
+   * <li><strong>-fdata-sections:</strong> Create a separate section for each data object</li>
+   * <li><strong>-fno-dwarf2-cfi-asm:</strong> Reduce noise in generated code</li>
+   * <li><strong>-finhibit-size-directive:</strong> Reduce noise in generated code</li>
+   * <li><strong>-mstrict-align:</strong> Prevent generation of unaligned memory accesses</li>
+   * <li><strong>-nostdlib:</strong> Disallow use of the standard C library</li>
+   * <li><strong>-fdiagnostics-format=json:</strong> Output errors in JSON format</li>
+   * <li><strong>-fPIE:</strong> Generate position-independent code</li>
+   * <li><strong>-fno-plt:</strong> Disallow generating indirect jumps using PLT (Procedure Linkage Table)</li>
+   * </ul>
+   *
+   * <p>
+   * <p>
+   *  If there are ever problems, try:
+   *  - "-fvisibility=default"
+   */
+  public static List<String> gccFlags = List.of("-xc", "-march=rv32imfd", "-mabi=ilp32d", "-o", "/dev/stdout", "-S",
+                                                "-fcf-protection=none", "-fno-stack-protector",
+                                                "-fno-asynchronous-unwind-tables", "-mno-explicit-relocs",
+                                                "-ffunction-sections", "-fdata-sections", "-fno-dwarf2-cfi-asm",
+                                                "-finhibit-size-directive", "-mstrict-align", "-nostdlib",
+                                                "-fdiagnostics-format=json", "-fPIE", "-fno-plt", "-");
   static Logger logger = MyLogger.initializeLogger("GCC", Level.INFO);
-  
   private static String compilerPath = ConfigLoader.gccPath;
-  
-  public static void setCompilerPath(String path)
-  {
-    logger.info("Setting GCC path to " + path);
-    compilerPath = path;
-  }
   
   public static String getCompilerPath()
   {
     return compilerPath;
   }
   
-  /**
-   * Map of optimization flags. TODO: check that only one is used
-   */
-  public static Map<String, String> optimizeFlags = Map.of("O0", "-O0", "O2", "-O2", "O3", "-O3", "Os", "-Os");
-  
-  /**
-   * <a href="https://gcc.gnu.org/onlinedocs/gcc/Code-Gen-Options.html">GCC options</a>
-   * <ul>
-   *   <li>`-mno-explicit-relocs` - disable symbolic address splitting (%hi/%lo) for RISC-V</li>
-   *   <li>`-ffunction-sections`  - put each function in its own section</li>
-   *   <li>`-mstrict-align`       - Generate aligned memory accesses</li>
-   *   <li>`-fPIE`                - Generate position independent code (gets rid of PLT)</li>
-   *  </ul>
-   */
-  public static List<String> gccFlags = List.of("-xc", "-march=rv32imfd", "-mabi=ilp32d", "-o", "/dev/stdout", "-S",
-                                                "-g", "-fverbose-asm", "-fcf-protection=none", "-fno-stack-protector",
-                                                "-fno-asynchronous-unwind-tables", "-mno-explicit-relocs",
-                                                "-ffunction-sections", "-fdata-sections", "-fno-dwarf2-cfi-asm",
-                                                "-finhibit-size-directive", "-mstrict-align", "-nostdlib",
-                                                "-fdiagnostics-format=json", "-fPIE", "-fno-plt",
-                                                "-fvisibility=default", "-xc", "-");
+  public static void setCompilerPath(String path)
+  {
+    logger.info("Setting GCC path to " + path);
+    compilerPath = path;
+  }
   
   public static CompileResult compile(String code, List<String> optimizeFlags)
   {
