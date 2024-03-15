@@ -32,16 +32,17 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { ReactNode } from 'react';
 
 import { IconButton } from '@/components/IconButton';
 import clsx from 'clsx';
+import { useHotkeys } from 'react-hotkeys-hook';
 
 export type SideMenuButtonProps = {
   Icon: ReactNode;
   href: string;
-  shortcut?: string;
+  shortcut: string;
   hoverText: string;
 };
 
@@ -56,6 +57,7 @@ export default function SideMenuButton({
 }: SideMenuButtonProps) {
   const path = usePathname();
   const isActive = path === href;
+  const router = useRouter();
 
   const cls = clsx(
     'sidemenu-button h-12 flex items-center rounded-full',
@@ -63,11 +65,17 @@ export default function SideMenuButton({
     !isActive && 'surface-variant hover:bg-neutral-20/[0.08]',
   );
 
+  useHotkeys(
+    shortcut,
+    () => {
+      // redirect to the page
+      router.push(href);
+    }
+  );
+
   return (
     <Link href={href} className={cls}>
-      <IconButton shortCut={shortcut} description={hoverText} className=''>
-        {Icon}
-      </IconButton>
+      {Icon}
       <div className='nav-text text-nowrap ml-[8px]'>{hoverText}</div>
     </Link>
   );

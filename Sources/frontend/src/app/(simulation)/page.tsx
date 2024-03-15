@@ -47,7 +47,7 @@ export default async function HomePage() {
           <div className='absolute top-3 left-1/2'>
             <Timeline />
           </div>
-          <div className='absolute top-3 left-4'>
+          <div className='absolute top-3 right-48'>
             <AutoPlay />
           </div>
         </div>

@@ -35,7 +35,6 @@ import { IconButton } from '@/components/IconButton';
 import {
   selectAutoplay,
   selectAutoplayInterval,
-  selectSimulationStatus,
   setAutoplay,
   setAutoplayInterval,
   simStepForward,

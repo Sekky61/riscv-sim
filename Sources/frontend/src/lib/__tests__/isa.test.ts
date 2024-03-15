@@ -31,11 +31,12 @@
 
 import {
   MemoryLocationApi,
-  defaultCpuConfig,
   isaFormSchema,
   memoryLocationDefaultValue,
   memoryLocationSchema,
 } from '@/lib/forms/Isa';
+
+import { defaultCpuConfig } from '@/constant/defaults';
 
 describe('The Default ISA configuration', () => {
   it('Should pass the validation', () => {

@@ -96,7 +96,7 @@ export const memoryLocationSchema = z
     data: z.discriminatedUnion('kind', [
       z.object({
         kind: z.literal('data'),
-        data: z.array(z.string()).min(1),
+        data: z.array(z.string()),
       }),
       z.object({
         kind: z.literal('constant'),
@@ -296,3 +296,6 @@ export const defaultSimulationConfig: SimulationConfig = {
   memoryLocations: [],
   entryPoint: 0,
 };
+
+export { defaultCpuConfig };
+
