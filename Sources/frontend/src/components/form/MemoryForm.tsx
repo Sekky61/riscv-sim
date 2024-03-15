@@ -78,6 +78,7 @@ import {
   pluralize,
 } from '@/lib/utils';
 import { zodResolver } from '@hookform/resolvers/zod';
+import clsx from 'clsx';
 import { Upload } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import {
@@ -410,22 +411,6 @@ function DataTextArea({ memoryLocationName, ...props }: DataTextAreaProps) {
 
   return (
     <div>
-      <Input
-        title='File'
-        id='fileId'
-        type='file'
-        className='hidden'
-        accept='.csv'
-        onChange={(e) => {
-          const file = getFileFromFileList(e.target.files);
-          if (file && file instanceof File) {
-            setFile(file);
-            readFromFile(file).then((data) => {
-              field.onChange(data);
-            });
-          }
-        }}
-      />
       <Label htmlFor='message-2'>Values</Label>
       <Textarea
         onChange={(e) => {
@@ -445,8 +430,24 @@ function DataTextArea({ memoryLocationName, ...props }: DataTextAreaProps) {
       />
       <Label
         htmlFor='fileId'
-        className={buttonVariants({ variant: 'secondary' })}
+        className={clsx('relative focus-within:bg-secondary/80', buttonVariants({ variant: 'secondary' }))}
       >
+        <Input
+          title='File'
+          id='fileId'
+          type='file'
+          className='absolute inset-0 opacity-0'
+          accept='.csv'
+          onChange={(e) => {
+            const file = getFileFromFileList(e.target.files);
+            if (file && file instanceof File) {
+              setFile(file);
+              readFromFile(file).then((data) => {
+                field.onChange(data);
+              });
+            }
+          }}
+        />
         {file?.name ? (
           `${file.name} ✓`
         ) : (
