@@ -166,6 +166,18 @@ public class FunctionalUnitDescription
     return CapabilityName.addition;
   }
   
+  public boolean canExecute(CapabilityName capability)
+  {
+    for (Capability c : operations)
+    {
+      if (c.name == capability)
+      {
+        return true;
+      }
+    }
+    return false;
+  }
+  
   /**
    * @return List of operations that this FUnit can perform based on its capabilities
    * {@link Expression}

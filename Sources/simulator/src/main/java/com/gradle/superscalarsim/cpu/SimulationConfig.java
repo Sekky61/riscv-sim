@@ -30,6 +30,8 @@ package com.gradle.superscalarsim.cpu;
 import com.gradle.superscalarsim.code.CodeParser;
 import com.gradle.superscalarsim.factories.InputCodeModelFactory;
 import com.gradle.superscalarsim.loader.StaticDataProvider;
+import com.gradle.superscalarsim.models.FunctionalUnitDescription;
+import com.gradle.superscalarsim.models.instruction.InputCodeModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -171,6 +173,26 @@ public class SimulationConfig
     else
     {
       errorMessages.add(new ConfigError("Entry point must be a label string or an address integer", "entryPoint"));
+    }
+    
+    // Check if every instruction has a FU that can execute it
+    for (InputCodeModel instruction : codeParser.getInstructions())
+    {
+      String interpretableAs = instruction.getInstructionFunctionModel().getInterpretableAs();
+      FunctionalUnitDescription.CapabilityName capabilityName = FunctionalUnitDescription.classifyExpression(
+              interpretableAs);
+      
+      for (var cap : cpuConfig.fUnits)
+      {
+        if (cap.canExecute(capabilityName))
+        {
+          break;
+        }
+      }
+      
+      errorMessages.add(new ConfigError(
+              "No eligible FU found for instruction: " + instruction.getInstructionFunctionModel().getName(), "code"));
+      break;
     }
     
     if (errorMessages.isEmpty() && configValidator.isValid())
