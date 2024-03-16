@@ -73,7 +73,7 @@ export default function Block({
           <Dialog>
             <DialogTrigger>
               <Tooltip>
-                <TooltipTrigger>
+                <TooltipTrigger asChild>
                   <div className='iconHighlight h-8 w-8 p-1 rounded-full text-primary'>
                     <MoreVertical strokeWidth={1.5} />
                   </div>

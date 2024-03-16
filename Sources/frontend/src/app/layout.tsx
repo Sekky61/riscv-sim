@@ -90,7 +90,7 @@ export default async function RootLayout({
             <PersistedStoreProvider>
               <TooltipProvider delayDuration={700} skipDelayDuration={0}>
                 <div className='flex h-screen'>{children}</div>
-                <Toaster position='top-right' />
+                <Toaster position='top-right' closeButton />
               </TooltipProvider>
             </PersistedStoreProvider>
           </BlockDescriptionProvider>

@@ -57,7 +57,6 @@ public class ConfigLoader
   {
     String profile = System.getProperty("config.profile", "dev");
     logger.info("Loading configuration for profile: " + profile);
-    logger.info("All properties: " + System.getProperties());
     String configFileName = "/config_" + profile + ".properties";
     // This is a path to a resource file, not an ordinary file
     try (InputStream input = ConfigLoader.class.getResourceAsStream(configFileName))

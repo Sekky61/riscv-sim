@@ -262,7 +262,8 @@ export const cpuSlice = createSlice({
      * Set the autoplay interval
      */
     setAutoplayInterval: (state, action: PayloadAction<number>) => {
-      state.autoplayIntervalMs = action.payload;
+      // Cap between 200 and 10000
+      state.autoplayIntervalMs = Math.min(10000, Math.max(200, action.payload));
     },
   },
   extraReducers: (builder) => {

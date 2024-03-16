@@ -118,7 +118,16 @@ export const callCompiler = createAsyncThunk<CompileResponse>(
           toast.success('Compilation successful');
         } else {
           // Show the short error message
-          toast.error(`Compilation failed: ${res.error}`, {
+          console.log(res);
+          let message = res.error;
+          if (res.asmErrors && res.asmErrors.length > 0) {
+            let msg = res.asmErrors[0]?.message;
+            if (!msg) {
+              msg = 'Unknown error';
+            }
+            message = msg;
+          }
+          toast.error(`Compilation failed: ${message}`, {
             dismissible: true,
             duration: 0,
           });
