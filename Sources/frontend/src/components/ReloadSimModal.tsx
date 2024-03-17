@@ -51,10 +51,10 @@ export function ReloadSimModal() {
     <Dialog open={openModal} onOpenChange={setOpenModal}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Config not up to date</DialogTitle>
+          <DialogTitle>The Configuration Has Changed</DialogTitle>
           <DialogDescription>
-            The code or the configuration of the simulation has changed. Do you
-            want to reload the simulation with the new configuration and code?
+            The code, memory, or the CPU configuration has changed. Do you
+            wish to <b>apply the changes</b>?
           </DialogDescription>
         </DialogHeader>
         <div className='flex gap-4'>
@@ -70,8 +70,9 @@ export function ReloadSimModal() {
             onClick={() => {
               setOpenModal(false);
             }}
+            variant='ghost'
           >
-            No, keep current simulation
+            No, keep the old simulation
           </Button>
         </div>
       </DialogContent>

@@ -99,6 +99,10 @@ interface CpuSlice {
    * Interval of the autoplay in milliseconds
    */
   autoplayIntervalMs: number;
+  /**
+   * Error message from the server, if any. To be displayed in a popup and middle of the simgrid.
+   */
+  errorMessage?: string;
 }
 
 /**
@@ -216,7 +220,7 @@ export const simStepEnd = (): ThunkAction<
  */
 export const callSimulation = createAsyncThunk<SimulateResponse, number | null>(
   'cpu/callSimulation',
-  async (arg, { getState }) => {
+  async (arg, { getState, dispatch }) => {
     // @ts-ignore
     const state: RootState = getState();
     const request = {
@@ -241,6 +245,7 @@ export const callSimulation = createAsyncThunk<SimulateResponse, number | null>(
       } else if (err instanceof Error) {
         message = err.message;
       }
+      dispatch(setErrorMessage(message));
       toast.error(`Simulation failed: ${message}`);
       throw err;
     }
@@ -265,6 +270,12 @@ export const cpuSlice = createSlice({
       // Cap between 200 and 10000
       state.autoplayIntervalMs = Math.min(10000, Math.max(200, action.payload));
     },
+    /**
+     * Set the error message
+     */
+    setErrorMessage: (state, action: PayloadAction<string>) => {
+      state.errorMessage = action.payload;
+    }
   },
   extraReducers: (builder) => {
     builder
@@ -293,7 +304,7 @@ export const cpuSlice = createSlice({
   },
 });
 
-export const { setAutoplay, setAutoplayInterval } = cpuSlice.actions;
+export const { setAutoplay, setAutoplayInterval, setErrorMessage } = cpuSlice.actions;
 
 //
 // Selectors
@@ -308,6 +319,9 @@ export const selectSimulationStatus = (state: RootState) =>
 export const selectAutoplay = (state: RootState) => state.cpu.autoplay;
 export const selectAutoplayInterval = (state: RootState) =>
   state.cpu.autoplayIntervalMs;
+
+export const selectErrorMessage = (state: RootState) => state.cpu.errorMessage;
+export const selectStateOk = (state: RootState) => state.cpu.state !== null;
 
 export const selectAllInstructionFunctionModels = (state: RootState) =>
   state.cpu.instructionFunctionModels;

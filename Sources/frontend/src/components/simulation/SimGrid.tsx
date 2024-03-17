@@ -45,6 +45,7 @@ import ReorderBuffer from '@/components/simulation/ReorderBuffer';
 import StoreBuffer from '@/components/simulation/StoreBuffer';
 
 export function SimGrid() {
+
   return (
     <HighlightProvider>
       <div className='global-grid'>

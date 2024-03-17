@@ -79,7 +79,7 @@ export default function Program() {
   // A thin red line
   const pcPointer = (
     <div ref={pcRef} className='relative w-full flex items-center'>
-      <div className='absolute w-full h-0.5 bg-tertiary rounded-full' />
+      <div className='absolute w-24 h-0.5 bg-tertiary rounded-full' />
       <div className='absolute -left-6 bg-tertiary text-xs rectangle h-4 pl-1'>
         <div className='relative rectangle text-onTertiary pt-[1px]'>PC</div>
       </div>
@@ -90,6 +90,8 @@ export default function Program() {
   if (typeof entryPoint === 'number') {
     entryPointPretty = hexPadEven(entryPoint);
   }
+
+  const maxPc = codeOrder.length - 1 * 4;
 
   return (
     <Block
@@ -106,8 +108,8 @@ export default function Program() {
     >
       <div className='flex-1 relative surface-container-lowest rounded-[8px]'>
         <div
-          className='absolute inset-x-0 top-0 max-h-full grid gap-y-1 gap-x-7 overflow-y-auto p-[4px] pt-4 font-mono'
-          style={{ gridTemplateColumns: 'auto auto' }}
+          className='absolute inset-x-0 top-0 max-h-full grid gap-y-1 gap-x-7 overflow-y-auto p-[4px] py-4 font-mono'
+          style={{ gridTemplateColumns: 'max-content auto' }}
           ref={containerRef}
         >
           {codeOrder.map((instructionOrLabel) => {
@@ -132,6 +134,12 @@ export default function Program() {
               </ProgramInstruction>
             );
           })}
+          <div className='grid grid-cols-subgrid col-span-2'>
+            <div></div>
+          {pc > maxPc && (
+            pcPointer
+          )}
+          </div>
         </div>
       </div>
     </Block>

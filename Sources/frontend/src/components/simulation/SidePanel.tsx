@@ -62,10 +62,10 @@ export function SidePanel() {
   );
 
   return (
-    <div className='h-screen p-2 relative flex flex-col gap-2 shadow'>
+    <div className='absolute right-0 inset-y-0 surface rounded-l-3xl p-2 flex flex-col gap-2 shadow'>
       <button
         type='button'
-        className='w-full h-[40px] secondary-container rounded-[12px] flex justify-center items-center'
+        className='w-full h-[40px] secondary-container rounded-[14px] flex justify-center items-center'
         onClick={() => setIsExpanded(!isExpanded)}
       >
         <ChevronLeft className={clsx(isExpanded && 'rotate-180')} />
@@ -125,7 +125,7 @@ function DebugLog() {
   // the key can be the cycle, because at most one entry is added per cycle
   return (
     <div
-      className='w-0 min-w-full h-0 min-h-full overflow-x-clip overflow-y-scroll surface-container-highest rounded-md border p-2 text-nowrap font-mono text-sm grid content-start'
+      className='w-0 min-w-full h-0 min-h-full overflow-x-clip overflow-y-scroll surface-container-high rounded-md rounded-bl-[16px] border p-2 text-nowrap font-mono text-sm grid content-start'
       style={{
         gridTemplateColumns: 'max-content 1fr',
       }}

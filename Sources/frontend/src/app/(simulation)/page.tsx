@@ -29,30 +29,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { AutoPlay } from '@/app/(simulation)/AutoPlay';
-import CanvasWindow from '@/components/CanvasWindow';
 import { ReloadSimModal } from '@/components/ReloadSimModal';
 import { SidePanel } from '@/components/simulation/SidePanel';
-import { SimGrid } from '@/components/simulation/SimGrid';
-import Timeline from '@/components/simulation/Timeline';
+import { Main } from './Main';
 
 export default async function HomePage() {
+
   return (
     <div className='flex'>
       <div className='flex-grow h-screen'>
         <div className='relative w-full h-full shadow-inner'>
-          <CanvasWindow>
-            <SimGrid />
-          </CanvasWindow>
-          <div className='absolute top-3 left-1/2'>
-            <Timeline />
-          </div>
-          <div className='absolute top-3 right-48'>
-            <AutoPlay />
-          </div>
+          <Main />
         </div>
       </div>
-      <SidePanel />
       <ReloadSimModal />
     </div>
   );
