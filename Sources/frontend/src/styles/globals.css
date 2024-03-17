@@ -665,6 +665,13 @@
     gap: var(--gap);
   }
 
+  /* Resizer tab for the resizable blocks */
+  ::-webkit-resizer {
+    @apply border-transparent border-b-primary border-r-primary rounded-br-[12px];
+    border-width: 8px;
+    border-style: solid;
+  }
+
   .w-block {
     @apply w-64;
   }
