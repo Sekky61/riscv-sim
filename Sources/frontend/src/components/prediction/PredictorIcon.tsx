@@ -61,43 +61,40 @@ function TwoBitIcon({ state }: IconProps) {
     <svg
       viewBox='0 0 100 100'
       xmlns='http://www.w3.org/2000/svg'
-      className='pointer-events-none'
+      className='pointer-events-none predictor-graph'
     >
       <title>Predictor state {state}</title>
-      <line x1='30' y1='18' x2='70' y2='18' stroke='black' strokeWidth='5' />
+      <line x1='30' y1='18' x2='70' y2='18' strokeWidth='5' />
       <circle
         cx='18'
         cy='18'
         r='15'
-        fill={fill(0, state)}
-        stroke='black'
+        data-active={active(0, state)}
+
         strokeWidth='5'
       />
-      <line x1='72' y1='28' x2='28' y2='72' stroke='black' strokeWidth='5' />
+      <line x1='72' y1='28' x2='28' y2='72' strokeWidth='5' />
       <circle
         cx='82'
         cy='18'
         r='15'
-        fill={fill(1, state)}
-        stroke='black'
+        data-active={active(1, state)}
         strokeWidth='5'
       />
 
-      <line x1='30' y1='82' x2='70' y2='82' stroke='black' strokeWidth='5' />
+      <line x1='30' y1='82' x2='70' y2='82' strokeWidth='5' />
       <circle
         cx='18'
         cy='82'
         r='15'
-        fill={fill(2, state)}
-        stroke='black'
+        data-active={active(2, state)}
         strokeWidth='5'
       />
       <circle
         cx='82'
         cy='82'
         r='15'
-        fill={fill(3, state)}
-        stroke='black'
+        data-active={active(3, state)}
         strokeWidth='5'
       />
     </svg>
@@ -109,33 +106,28 @@ function OneBitIcon({ state }: IconProps) {
     <svg
       viewBox='0 0 100 100'
       xmlns='http://www.w3.org/2000/svg'
-      className='pointer-events-none'
+      className='pointer-events-none predictor-graph'
     >
       <title>Predictor state {state}</title>
-      <line x1='30' y1='50' x2='70' y2='50' stroke='black' strokeWidth='5' />
+      <line x1='30' y1='50' x2='70' y2='50' strokeWidth='5' />
       <circle
         cx='18'
         cy='50'
         r='15'
-        fill={fill(0, state)}
-        stroke='black'
+        data-active={active(0, state)}
         strokeWidth='5'
       />
       <circle
         cx='82'
         cy='50'
         r='15'
-        fill={fill(1, state)}
-        stroke='black'
+        data-active={active(1, state)}
         strokeWidth='5'
       />
     </svg>
   );
 }
 
-function fill(i: number, active: number) {
-  if (i === active) {
-    return '#9EEFFD'; // primary fixed
-  }
-  return 'transparent';
+function active(i: number, active: number): boolean {
+  return i === active;
 }

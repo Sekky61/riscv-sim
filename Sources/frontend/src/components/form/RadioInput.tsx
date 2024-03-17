@@ -76,7 +76,7 @@ export function RadioInput<T extends string>({
   return (
     <RadioGroup.Root
       className={cn(
-        'radio-field flex h-10 items-center justify-evenly rounded-lg bg-surface border p-1 text-onSurface',
+        'radio-field flex h-10 items-center justify-evenly rounded-lg surface border p-1',
       )}
       value={value}
       onValueChange={onNewValue}

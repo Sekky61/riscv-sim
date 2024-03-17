@@ -563,7 +563,7 @@ function FunctionalUnitInput({
                       <div
                         key={op.name}
                         title={meta.name}
-                        className='rounded accent-bg px-1 py-0.5 whitespace-nowrap snap-always snap-start'
+                        className='rounded tertiary-container px-1 py-0.5 whitespace-nowrap snap-always snap-start'
                       >
                         {capabilitiesMetadata[op.name as Operations].name} (
                         {op.latency})

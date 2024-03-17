@@ -34,21 +34,17 @@
 @tailwind components;
 @tailwind utilities;
 
- 
 @layer base {
 
   /* Default border color */
   * {
-    @apply border-outlineVariant list-inside;
+    @apply border-outlineVariant dark:border-dark-outlineVariant list-inside;
   }
 
   body {
     @apply surface-container;
     font-family: 'Open Sans', sans-serif;
   }
-}
-
-@layer base {
 
   /* main pane is for the page main content body */
   /* above other definitions so it has less power */
@@ -58,53 +54,64 @@
 
   /* Also use text-onSurfaceVariant for lower emphasis text */
   .surface {
-    @apply bg-surface text-onSurface;
+    @apply bg-surface surface-text dark:bg-dark-surface;
   }
-  
+
   .surface-container-lowest {
-    @apply bg-surfaceContainerLowest text-onSurface;
+    @apply bg-surfaceContainerLowest surface-text dark:bg-dark-surfaceContainerLowest;
   }
-  
+
   .surface-container-low {
-    @apply bg-surfaceContainerLow text-onSurface;
+    @apply bg-surfaceContainerLow surface-text dark:bg-dark-surfaceContainerLow;
   }
 
   .surface-container {
-    @apply bg-surfaceContainer text-onSurface;
+    @apply bg-surfaceContainer surface-text dark:bg-dark-surfaceContainer;
   }
 
   .surface-container-high {
-    @apply bg-surfaceContainerHigh text-onSurface;
+    @apply bg-surfaceContainerHigh surface-text dark:bg-dark-surfaceContainerHigh;
   }
 
   .surface-container-highest {
-    @apply bg-surfaceContainerHighest text-onSurface;
+    @apply bg-surfaceContainerHighest surface-text dark:bg-dark-surfaceContainerHighest;
   }
 
   .primary-container {
-    @apply bg-primaryContainer text-onPrimaryContainer;
+    @apply bg-primaryContainer text-onPrimaryContainer dark:bg-dark-primaryContainer dark:text-dark-onPrimaryContainer;
   }
 
   .secondary-container {
-    @apply bg-secondaryContainer text-onSecondaryContainer;
+    @apply bg-secondaryContainer text-onSecondaryContainer dark:bg-dark-secondaryContainer dark:text-dark-onSecondaryContainer;
   }
 
   .tertiary-container {
-    @apply bg-tertiaryContainer text-onTertiaryContainer;
+    @apply bg-tertiaryContainer text-onTertiaryContainer dark:bg-dark-tertiaryContainer dark:text-dark-onTertiaryContainer;
   }
 
   .error {
-    @apply bg-error text-onError;
+    @apply bg-error text-onError dark:bg-dark-error dark:text-dark-onError;
   }
 
   .error-container {
-    @apply bg-errorContainer text-onErrorContainer;
+    @apply bg-errorContainer text-onErrorContainer dark:bg-dark-errorContainer dark:text-dark-onErrorContainer;
   }
 
+  .inverse-surface {
+    @apply bg-inverseSurface text-inverseOnSurface dark:bg-dark-inverseSurface dark:text-dark-inverseOnSurface;
+  }
+
+  .surface-text {
+    @apply text-onSurface dark:text-dark-onSurface;
+  }
+
+  .surface-variant-text {
+    @apply text-onSurfaceVariant dark:text-dark-onSurfaceVariant;
+  }
 
   /* border colors */
   .decorative-border {
-    @apply border-outlineVariant;
+    @apply border-outlineVariant dark:border-dark-outlineVariant;
   }
 
   .sim-shadow {
@@ -118,7 +125,7 @@
   /* apply text colors for all descendants */
 
   .primary-text-desc * {
-    @apply text-onPrimary;
+    @apply text-onPrimary dark:text-dark-onPrimary;
   }
 
   /* Page main title. Use h1 once in a page for the most important heading. */
@@ -164,7 +171,7 @@
   }
 
   thead {
-    @apply bg-primary-80 text-primary-10; 
+    @apply bg-primary-80 text-primary-10 dark:bg-primary-60 dark:text-primary-20;
   }
 
   tbody {
@@ -187,7 +194,7 @@
     @apply text-primary-20 dark:text-primary-70;
   }
 
-  
+
   .button-interactions {
     @apply bg-gray-100 duration-100 hover:cursor-pointer hover:bg-gray-200 active:button-active;
   }
@@ -223,6 +230,22 @@
     unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
       U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212,
       U+2215, U+FEFF, U+FFFD;
+  }
+
+  /* elevation
+   * https://material-components.github.io/material-components-web-catalog/#/component/elevation
+   * */
+
+  .elevation-1 {
+    box-shadow: rgba(0, 0, 0, 0.2) 0px 2px 1px -1px, rgba(0, 0, 0, 0.14) 0px 1px 1px 0px, rgba(0, 0, 0, 0.12) 0px 1px 3px 0px;
+  }
+
+  .elevation-2 {
+    box-shadow: rgba(0, 0, 0, 0.2) 0px 3px 1px -2px, rgba(0, 0, 0, 0.14) 0px 2px 2px 0px, rgba(0, 0, 0, 0.12) 0px 1px 5px 0px;
+  }
+
+  .elevation-3 {
+    box-shadow: rgba(0, 0, 0, 0.2) 0px 3px 3px -2px, rgba(0, 0, 0, 0.14) 0px 3px 4px 0px, rgba(0, 0, 0, 0.12) 0px 1px 8px 0px;
   }
 
   /* #region  /**=========== Typography =========== */
@@ -270,6 +293,10 @@
   .cm-line.code_highlight_pink {
     --line-highlight-color: 255, 100, 233;
   }
+
+  #editor .cm-gutters {
+    @apply secondary-container;
+  }
 }
 
 @layer utilities {
@@ -291,7 +318,7 @@
 
   ::-webkit-scrollbar-thumb:hover {
     @apply bg-neutral-70 dark:bg-neutral-30;
-  } 
+  }
 
   ::-webkit-scrollbar-corner {
     background-color: transparent;
@@ -304,7 +331,7 @@
 
   /* Scrollbar for code editor */
   .editor-container *::-webkit-scrollbar-track {
-    background-color: #f5f5f5;
+    @apply bg-secondaryContainer dark:bg-dark-secondaryContainer;
   }
 
   /* Navbar */
@@ -320,7 +347,7 @@
   *:has(> .navbar) {
     container: navbarslot / inline-size;
   }
- 
+
   .navbar {
     @apply w-12 h-full;
   }
@@ -341,8 +368,8 @@
     @apply h-12 pl-3 ml-2 mr-3;
   }
 
-  
-  
+
+
   /* Style for popup navbar */
   @container navbarslot (max-width: 17rem) {
     .navbar:hover .navbar-inner {
@@ -357,12 +384,12 @@
     .navbar:not(:hover) .sidemenu-button {
       @apply w-12 mx-1 justify-center;
     }
-  
+
     .navbar:hover .sidemenu-button {
       @apply item-expanded;
     }
-  } 
-  
+  }
+
   /* Style for always-visible navbar */
   @container navbarslot (min-width: 17rem) {
 
@@ -426,12 +453,8 @@
     @apply hidden;
   }
 
-  input:checked ~ .foldable-content {
+  input:checked~.foldable-content {
     @apply block;
-  }
-
-  .radio-selected {
-    @apply bg-background text-foreground shadow-sm cursor-default;
   }
 
   /* schemaLine */
@@ -451,7 +474,7 @@
     @apply flex flex-col divide-y;
   }
 
-  .instruction-tooltip > * {
+  .instruction-tooltip>* {
     @apply p-2;
   }
 
@@ -517,10 +540,10 @@
     z-index: 0;
   }
 
-  .reset > div {
+  .reset>div {
     transition: opacity 200ms 200ms;
   }
-  
+
   /* In calc() to express 0, you must use 0px ! */
   .timeline-grid[data-state='0'] .reset {
     transform: rotate(180deg) scale(0.6);
@@ -557,6 +580,7 @@
     0% {
       transform: translateX(120%);
     }
+
     100% {
       transform: translateX(-120%);
     }
@@ -565,7 +589,7 @@
   .loading-border {
     overflow: hidden;
   }
-    
+
   .loading-border::before {
     @apply bg-primary;
     content: '';
@@ -581,7 +605,7 @@
     animation: rotate 4s linear infinite;
     border-radius: 4px;
   }
-    
+
   .loading-border::after {
     background-color: inherit;
     content: '';
@@ -591,14 +615,14 @@
     margin: 3px;
     border-radius: 13px;
   }
-  
+
 
   /* Icon highlight */
 
   .iconHighlight {
     @apply duration-100;
   }
-  
+
   .iconHighlight:focus,
   .iconHighlight:hover {
     @apply bg-primary/15;
@@ -614,8 +638,8 @@
     @apply bg-primary/20;
   }
 
-  .iconHighlight:active:not([data-active='true']) > *,
-  .iconHighlight[data-clicked] > * {
+  .iconHighlight:active:not([data-active='true'])>*,
+  .iconHighlight[data-clicked]>* {
     transform: translateY(2px);
   }
 
@@ -653,7 +677,7 @@
     @apply w-[28rem];
   }
 
-  .global-grid > div {
+  .global-grid>div {
     gap: var(--gap);
   }
 
@@ -692,7 +716,7 @@
   .memory-grid div[data-value='0'] {
     @apply text-gray-500;
   }
-  
+
   /* cache subgrid */
   .cache-grid {
     @apply grid justify-center;
@@ -724,16 +748,16 @@
   }
 
   /* Valid line - highlight the tag */
-  .valid-line > .line-tag {
+  .valid-line>.line-tag {
     @apply bg-green-300;
   }
 
-  .cache-line-bytes > *:nth-child(4n) {
+  .cache-line-bytes>*:nth-child(4n) {
     @apply pr-2;
   }
 
   /* Heatmap statistic transition */
-  .heatmap-transition  * {
+  .heatmap-transition * {
     @apply transition-colors ease-in duration-200;
   }
 
@@ -752,17 +776,30 @@
   }
 
   /* add padding to elements. Used for divide-x */
-  .divide-pad > *:not(:first-child) {
+  .divide-pad>*:not(:first-child) {
     @apply pl-1;
   }
 
   /* Container for lists of instructions */
-  .instruction-list-container > *:not(:first-child) {
+  .instruction-list-container>*:not(:first-child) {
     @apply pt-1;
   }
 
   /* Container for tags, pills, badges */
   .badge-container {
     @apply flex gap-2 flex-wrap;
+  }
+
+  /* predictor graph */
+  .predictor-graph {
+    @apply stroke-onSurface dark:stroke-dark-onSurface;
+  }
+
+  circle[data-active='false'] {
+    @apply fill-transparent;
+  }
+
+  circle[data-active='true'] {
+    @apply fill-primary-70 dark:fill-primary-60;
   }
 }

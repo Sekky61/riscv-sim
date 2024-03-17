@@ -81,6 +81,7 @@ import {
 import { selectAllInstructionFunctionModels } from '@/lib/redux/cpustateSlice';
 import clsx from 'clsx';
 import { Play } from 'lucide-react';
+import { useTheme } from 'next-themes';
 
 /**
  * The base theme for the editor.
@@ -92,9 +93,6 @@ const baseTheme = EditorView.baseTheme({
   },
   '&.cm-focused': {
     outlineStyle: 'none',
-  },
-  '.cm-gutters': {
-    width: '2.2rem',
   },
   '.cm-lineNumbers': {
     flexGrow: 1,
@@ -114,6 +112,11 @@ export function AsmDisplay() {
   const dirty = useAppSelector(selectDirty);
   const asmErrors = useAppSelector(selectAsmCodeMirrorErrors);
   const functionModels = useAppSelector(selectAllInstructionFunctionModels);
+  const { resolvedTheme  } = useTheme();
+
+  if(resolvedTheme !== 'light' && resolvedTheme !== 'dark') {
+    throw new Error('Theme not supported');
+  }
   const { setHoveredCLine } = useLineHighlight();
 
   const editor = useRef<HTMLDivElement>(null);
@@ -123,7 +126,7 @@ export function AsmDisplay() {
     height: '100%',
     width: '100%',
     extensions: [lineDecor(), wordHoverFactory(functionModels)],
-    theme: baseTheme,
+    theme: resolvedTheme,
     onChange: (value, _viewUpdate) => {
       // Keep state in sync
       dispatch(asmFieldTyping(value));

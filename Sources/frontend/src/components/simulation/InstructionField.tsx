@@ -151,12 +151,12 @@ export function InstructionDetailPopup({
   }
 
   return (
-    <DialogContent className='max-w-6xl max-h-screen bg-surfaceBright'>
+    <DialogContent className='max-w-6xl max-h-screen'>
       <DialogHeader>
         <DialogTitle className='text-4xl'>
           <InstructionSyntax functionModel={functionModel} args={args} />
         </DialogTitle>
-        <DialogDescription className='text-onSurfaceVariant'>
+        <DialogDescription className='surface-variant'>
           Detailed view of instruction #{simCodeModel.id}
         </DialogDescription>
       </DialogHeader>
