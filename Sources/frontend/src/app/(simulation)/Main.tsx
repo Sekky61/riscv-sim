@@ -36,7 +36,7 @@ import { SimGrid } from "@/components/simulation/SimGrid";
 import Timeline from "@/components/simulation/Timeline";
 import { AutoPlay } from "./AutoPlay";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectErrorMessage, selectStateOk } from "@/lib/redux/cpustateSlice";
+import { selectErrorMessage, selectSimulationStatus, selectStateOk } from "@/lib/redux/cpustateSlice";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/base/ui/card";
 import { SidePanel } from "@/components/simulation/SidePanel";
 
@@ -47,8 +47,10 @@ export function Main() {
 
   const stateOk = useAppSelector(selectStateOk);
   const errorMessage = useAppSelector(selectErrorMessage);
+  const simulationStatus = useAppSelector(selectSimulationStatus);
 
-  if (!stateOk) {
+  // Show error if not loading - prevents a flash of the error message when the simulation is loading
+  if (!stateOk && !(simulationStatus === 'loading')) {
     return (
       <div className='flex justify-center items-center h-full'>
         <Card className='max-w-lg error-container'>
