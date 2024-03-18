@@ -44,7 +44,13 @@
   {
     "name": "Matrix transpose",
     "type": "c",
-    "code": "// 1) Define your own matrix in memory tab \nextern int matrix[];\n// 2) Change the dimensions \n#define rows 30\n#define cols 30\nint result[rows*cols] = {0};\n\n// Function to transpose a matrix\nvoid transpose(int *dst, int *src) {\n    for (int i = 0; i < rows; i++) {\n        for (int j = 0; j < cols; j++) {\n            dst[j * rows + i] = src[i * cols + j];\n        }\n    }\n}\n\nint main() {\n  transpose(result, matrix);\n}\n",
+    "code": "// 1) Define your own matrix in memory tab \nextern int matrix[];\n// 2) Change the dimensions \n#define rows_c 30\n#define cols_c 30\nint result[rows_c*cols_c] = {0};\n\n// Function to transpose a matrix\nvoid transpose(int *dst, int *src, int rows, int cols) {\n    for (int i = 0; i < rows; i++) {\n        for (int j = 0; j < cols; j++) {\n            dst[j * rows + i] = src[i * cols + j];\n        }\n    }\n}\n\nint main() {\n  transpose(result, matrix, rows_c, cols_c);\n}\n",
     "entryPoint": "main"
+  },
+  {
+    "name": "Odd/even",
+    "type": "c",
+    "code": "int arr[128] = {0};\n            \n// Notice that iterations are independent\nint evenElements()\n{\n  int acc = 0;\n  for (int i = 0; i < 128; ++i) {\n    if(i%2 == 0) {\n      acc += arr[i];\n    }\n  }\n  return acc;\n}\n",
+    "entryPoint": "evenElements"
   }
 ]
