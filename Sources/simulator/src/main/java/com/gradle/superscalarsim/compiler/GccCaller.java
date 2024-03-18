@@ -77,7 +77,7 @@ public class GccCaller
    *  If there are ever problems, try:
    *  - "-fvisibility=default"
    */
-  public static List<String> gccFlags = List.of("-xc", "-march=rv32imfd", "-mabi=ilp32d", "-o", "/dev/stdout", "-S",
+  public static List<String> gccFlags = List.of("-xc", "-std=c99", "-march=rv32imfd", "-mabi=ilp32d", "-o", "/dev/stdout", "-S",
                                                 "-fcf-protection=none", "-fno-stack-protector",
                                                 "-fno-asynchronous-unwind-tables", "-mno-explicit-relocs",
                                                 "-ffunction-sections", "-fdata-sections", "-fno-dwarf2-cfi-asm",

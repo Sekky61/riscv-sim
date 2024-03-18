@@ -200,6 +200,11 @@ public class AsmParser
     return cleanProgram;
   }
   
+  /**
+   * @param program The program to look for labels in
+   *
+   * @return Set of labels in the program
+   */
   private static Set<String> collectUsedLabels(List<String> program)
   {
     Set<String> labels     = collectLabels(program);
@@ -207,7 +212,8 @@ public class AsmParser
     
     for (String line : program)
     {
-      String[] parts = line.split("[ ,()]+");
+      // extract labels from the line. A label can be an expression like ptr+1000
+      String[] parts = line.split("[ ,()+\\-*/]+");
       // Do not regard the line if it is a directive
       // But do regard it if it is a ".type label, @function"
       if (line.startsWith(".") && !line.contains("@function") && !line.contains(".word"))
