@@ -40,5 +40,11 @@
     "type": "c",
     "code": "// Remember to define the arrays in /memory page!\nextern float a[];\nextern float b[];\nconst float c = 10;\n\nvoid main(){\n  for (int i = 0; i < 100; i++) { \n     a[i] += b[i]*c;\n  }\n}\n",
     "entryPoint": "main"
+  },
+  {
+    "name": "Matrix transpose",
+    "type": "c",
+    "code": "// 1) Define your own matrix in memory tab \nextern int matrix[];\n// 2) Change the dimensions \n#define rows 30\n#define cols 30\nint result[rows*cols] = {0};\n\n// Function to transpose a matrix\nvoid transpose(int *dst, int *src) {\n    for (int i = 0; i < rows; i++) {\n        for (int j = 0; j < cols; j++) {\n            dst[j * rows + i] = src[i * cols + j];\n        }\n    }\n}\n\nint main() {\n  transpose(result, matrix);\n}\n",
+    "entryPoint": "main"
   }
 ]

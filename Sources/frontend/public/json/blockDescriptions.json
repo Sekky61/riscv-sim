@@ -36,12 +36,12 @@
   },
   "cache": {
     "name": "Cache",
-    "shortDescription": "The Cache is a small, fast memory that holds recently accessed data. It is used to speed up memory access. Tags of valid lines are highlighted green.",
+    "shortDescription": "The Cache is a small, fast memory that holds recently accessed data. It transparently speeds up access to the main memory. Tags of valid lines are highlighted green.",
     "longDescription": ""
   },
   "registerFile": {
     "name": "Register File",
-    "shortDescription": "The Register File is a small, fast memory that holds the values of the processor's registers. The visualisation shows each register, the value it currently holds and the last rename (tag).",
+    "shortDescription": "The Register File is a small, fast memory that holds the processor's registers. It is a scratch space explicitly controled by the program. Speculative registers hold unconfirmed values of the architectural registers. The visualisation shows each register, the value it currently holds and the last rename (tag).",
     "longDescription": ""
   },
   "branchPredictor": {
