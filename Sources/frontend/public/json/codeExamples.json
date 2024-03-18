@@ -52,5 +52,11 @@
     "type": "c",
     "code": "int arr[128] = {0};\n            \n// Notice that iterations are independent\nint evenElements()\n{\n  int acc = 0;\n  for (int i = 0; i < 128; ++i) {\n    if(i%2 == 0) {\n      acc += arr[i];\n    }\n  }\n  return acc;\n}\n",
     "entryPoint": "evenElements"
+  },
+  {
+    "name": "Load/Store conflict",
+    "type": "c",
+    "code": "volatile int x = 42;\n            \n// Notice that iterations are independent\nvoid lsCollision()\n{\n  for (int i = 0; i < 32; ++i) {\n    x = x * 2 - 10;\n  }\n}\n",
+    "entryPoint": "lsCollision"
   }
 ]
