@@ -53,6 +53,7 @@ public class GccCaller
    * <a href="https://gcc.gnu.org/onlinedocs/gcc/Code-Gen-Options.html">GCC options</a>
    * <ul>
    * <li><strong>-xc:</strong> Translation of the C language (cannot be deduced from the file extension)</li>
+   * <li><strong>-g:</strong> Generate debugging information (C line mappings)</li>
    * <li><strong>-march=rv32imfd:</strong> Architecture and M, F, D extensions definition</li>
    * <li><strong>-mabi=ilp32d:</strong> Generating functions with ABI passing arguments through registers</li>
    * <li><strong>-o /dev/stdout:</strong> Output to standard output</li>
@@ -77,8 +78,8 @@ public class GccCaller
    *  If there are ever problems, try:
    *  - "-fvisibility=default"
    */
-  public static List<String> gccFlags = List.of("-xc", "-std=c99", "-march=rv32imfd", "-mabi=ilp32d", "-o", "/dev/stdout", "-S",
-                                                "-fcf-protection=none", "-fno-stack-protector",
+  public static List<String> gccFlags = List.of("-xc", "-g", "-std=c99", "-march=rv32imfd", "-mabi=ilp32d", "-o",
+                                                "/dev/stdout", "-S", "-fcf-protection=none", "-fno-stack-protector",
                                                 "-fno-asynchronous-unwind-tables", "-mno-explicit-relocs",
                                                 "-ffunction-sections", "-fdata-sections", "-fno-dwarf2-cfi-asm",
                                                 "-finhibit-size-directive", "-mstrict-align", "-nostdlib",
