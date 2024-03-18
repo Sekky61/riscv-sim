@@ -52,4 +52,65 @@ public class AsmFilterTests
     }
     Assert.assertTrue(found);
   }
+  
+  @Test
+  public void test_mapCLines()
+  {
+    // Orig C code
+    //
+    //    int arr[128] = {0};
+    //
+    //    // Notice that iterations are independent
+    //    int evenElements()
+    //    {
+    //      int acc = 42;
+    //      for (int i = 0; i < 128; ++i) {
+    //        if(i%2 == 0) {
+    //          acc += arr[i];
+    //        }
+    //      }
+    //      return acc;
+    //    }
+    
+    String asmCode = """
+              .section	.text.evenElements,"ax",@progbits
+            	.align	2
+            	.globl	evenElements
+            	.type	evenElements, @function
+            evenElements:
+            .LFB0:
+            	.file 1 "<stdin>"
+            	.loc 1 5 1
+            	.loc 1 6 3
+            .LVL0:
+            	.loc 1 7 3
+            .LBB2:
+            	.loc 1 7 8
+            	.loc 1 7 21
+            	lla	a4,arr
+            	.loc 1 7 12 is_stmt 0
+            	li	a5,0
+            .LBE2:
+            	.loc 1 6 7
+            	li	a0,42
+            .LBB3:
+            	.loc 1 7 21
+            	li	a3,128""";
+    
+    // Exercise
+    CompiledProgram program = AsmParser.parse(asmCode);
+    
+    // The .loc directive should be parsed into mappings
+    
+    String  firstAsmLine        = program.program.get(0);
+    Integer firstAsmLineMapping = program.asmToC.get(0);
+    Assert.assertEquals("evenElements:", firstAsmLine);
+    Assert.assertEquals(0, firstAsmLineMapping.intValue());
+    
+    // Index 3 is the 42 instruction. It should be mapped to line 6
+    String  fortyTwoInstruction = program.program.get(3);
+    Integer fortyTwoMapping     = program.asmToC.get(3);
+    Assert.assertTrue(fortyTwoInstruction.contains("42"));
+    Assert.assertEquals(6, fortyTwoMapping.intValue());
+  }
 }

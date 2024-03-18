@@ -39,7 +39,8 @@ public class CompiledProgram
   
   /**
    * Mapping from ASM lines to C lines.
-   * The length of this list is the same as the length of the program
+   * The length of this list is the same as the length of the program.
+   * The indexing is one-based.
    */
   public List<Integer> asmToC;
   

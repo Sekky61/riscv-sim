@@ -309,7 +309,8 @@ public class AsmParser
   /**
    * @return The line number
    * @brief Extracts the line number from a mapping line
-   * Assumes the line is a ".loc" assembly line
+   * Assumes the line is a ".loc" assembly line.
+   * The .loc is 1-based
    */
   private static int parseMappingLine(String line)
   {

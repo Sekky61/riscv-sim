@@ -53,6 +53,7 @@ public class CompileResponse
    * Mapping from ASM lines to C lines.
    * The length of this list is the same as the length of the program.
    * Can be null if the compilation failed.
+   * The indexing is one-based.
    */
   @JsonProperty(required = true)
   public Integer[] asmToC;
