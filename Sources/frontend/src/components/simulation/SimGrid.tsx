@@ -31,6 +31,7 @@
 
 'use client';
 
+import { Trace } from '@/app/(simulation)/Trace';
 import { HighlightProvider } from '@/components/HighlightProvider';
 import CacheBlock from '@/components/simulation/CacheBlock';
 import DecodeBlock from '@/components/simulation/DecodeBlock';
@@ -52,22 +53,49 @@ export function SimGrid() {
         <div className='top-grid'>
           <Program />
           <div className='block-stack'>
-            <FetchBlock />
-            <DecodeBlock />
+            <div className='relative'>
+              <Trace top='1.5rem' right='100%' />
+              <FetchBlock />
+            </div>
+            <div className='relative'>
+              <Trace bottom='100%' left='50%' vertical />
+              <Trace top='50%' left='100%' />
+              <DecodeBlock />
+            </div>
+          </div>
+          <div className='w-[1px] relative'>
+            <Trace top='-2.5rem' left='0' length='calc(100% + 2.5rem)' vertical />
           </div>
           <div className='w-block h-full relative'>
+            <Trace bottom='100%' left='50%' vertical />
+            <Trace top='-2.5rem' left='-2.5rem' length='calc(100% + 2.5rem)' />
             <ReorderBuffer />
           </div>
-          <div className='issue'>
-            <IssueWindow type='alu' />
+          <div className='issue relative'>
+            <Trace top='-2.5rem' left='-2.5rem' length='calc(100% + 2.5rem)' />
+            <div className='relative'>
+              <IssueWindow type='alu' />
+              <Trace bottom='100%' left='50%' vertical />
+              <Trace top='100%' left='50%' vertical />
+            </div>
             <FunctionUnitGroup type='alu' />
           </div>
-          <div className='issue'>
-            <IssueWindow type='fp' />
+          <div className='issue relative'>
+            <Trace top='-2.5rem' left='-2.5rem' length='calc(100% + 2.5rem)' />
+            <div className='relative'>
+              <IssueWindow type='fp' />
+              <Trace bottom='100%' left='50%' vertical />
+              <Trace top='100%' left='50%' vertical />
+            </div>
             <FunctionUnitGroup type='fp' />
           </div>
-          <div className='issue'>
-            <IssueWindow type='branch' />
+          <div className='issue relative'>
+            <Trace top='-2.5rem' left='-2.5rem' length='calc(50% + 2.5rem)' />
+            <div className='relative'>
+              <IssueWindow type='branch' />
+              <Trace bottom='100%' left='50%' vertical />
+              <Trace top='100%' left='50%' vertical />
+            </div>
             <FunctionUnitGroup type='branch' />
           </div>
         </div>

@@ -700,7 +700,7 @@
 
   .top-grid {
     @apply grid gap-4 pr-8;
-    grid-template-columns: repeat(3, max-content) repeat(3, max-content);
+    grid-template-columns: repeat(4, max-content) repeat(3, max-content);
   }
 
   .bottom-grid {
