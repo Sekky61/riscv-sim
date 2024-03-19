@@ -687,6 +687,10 @@
   .global-grid>div {
     gap: var(--gap);
   }
+  
+  .grid-gap {
+    gap: var(--gap);
+  }
 
   .issue {
     @apply flex flex-col items-center;

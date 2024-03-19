@@ -29,9 +29,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { type ParsedArgument, selectStoreBuffer } from '@/lib/redux/cpustateSlice';
+import {
+  type ParsedArgument,
+  selectStoreBuffer,
+} from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
-import type { RegisterDataContainer, StoreBufferItem } from '@/lib/types/cpuApi';
+import type {
+  RegisterDataContainer,
+  StoreBufferItem,
+} from '@/lib/types/cpuApi';
 import { hexPadEven } from '@/lib/utils';
 
 import { useBlockDescriptions } from '@/components/BlockDescriptionContext';

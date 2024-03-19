@@ -45,7 +45,7 @@ import { useAppSelector } from '@/lib/redux/hooks';
 import { DividedBadge } from '@/components/DividedBadge';
 import Block from '@/components/simulation/Block';
 import InstructionField from '@/components/simulation/InstructionField';
-import {
+import type {
   AbstractFunctionUnitBlock,
   MemoryAccessUnit,
 } from '@/lib/types/cpuApi';
@@ -54,12 +54,16 @@ type FUType = 'alu' | 'fp' | 'branch' | 'ls' | 'memory';
 
 export type FunctionUnitGroupProps = {
   type: FUType;
+  children?: React.ReactNode;
 };
 
 /**
  * A component for displaying all functional units of a given type.
  */
-export default function FunctionUnitGroup({ type }: FunctionUnitGroupProps) {
+export default function FunctionUnitGroup({
+  type,
+  children,
+}: FunctionUnitGroupProps) {
   const fus = useAppSelector(selectors[type]);
   if (!fus) return null;
 
@@ -67,7 +71,11 @@ export default function FunctionUnitGroup({ type }: FunctionUnitGroupProps) {
   return (
     <>
       {fus.map((fu) => {
-        return <FU fu={fu} key={fu.functionUnitId} type={type} />;
+        return (
+          <FU fu={fu} key={fu.functionUnitId} type={type}>
+            {children}
+          </FU>
+        );
       })}
     </>
   );
@@ -76,35 +84,39 @@ export default function FunctionUnitGroup({ type }: FunctionUnitGroupProps) {
 type FUProps = {
   type: FUType;
   fu: AbstractFunctionUnitBlock;
+  children?: React.ReactNode;
 };
 
-function FU({ type, fu }: FUProps) {
+function FU({ type, fu, children }: FUProps) {
   const { name, className } = fuInfo[type];
 
   const handledBy = (fu as MemoryAccessUnit)?.transaction?.handledBy;
 
   return (
-    <Block
-      title={fu.description.name || name}
-      className={clsx(className, 'w-issue')}
-    >
-      <div className='flex gap-4 items-center'>
-        <div className='flex gap-2 items-center'>
-          <DividedBadge>
-            <div>Cycle</div>
-            <div>{`${fu.counter}/${fu.delay}`}</div>
-          </DividedBadge>
-          {handledBy && (
+    <div className='relative'>
+      {children}
+      <Block
+        title={fu.description.name || name}
+        className={clsx(className, 'w-issue relative')}
+      >
+        <div className='flex gap-4 items-center'>
+          <div className='flex gap-2 items-center'>
             <DividedBadge>
-              <div className='whitespace-nowrap'>
-                {handledPretty[handledBy]}
-              </div>
+              <div>Cycle</div>
+              <div>{`${fu.counter}/${fu.delay}`}</div>
             </DividedBadge>
-          )}
+            {handledBy && (
+              <DividedBadge>
+                <div className='whitespace-nowrap'>
+                  {handledPretty[handledBy]}
+                </div>
+              </DividedBadge>
+            )}
+          </div>
+          <InstructionField instructionId={fu.simCodeModel} />
         </div>
-        <InstructionField instructionId={fu.simCodeModel} />
-      </div>
-    </Block>
+      </Block>
+    </div>
   );
 }
 

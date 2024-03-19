@@ -63,12 +63,7 @@ export function SimGrid() {
             </div>
           </div>
           <div className='w-[1px] relative'>
-            <Trace
-              top='-2.5rem'
-              left='0'
-              length='calc(100% + 5rem)'
-              vertical
-            />
+            <Trace top='-2.5rem' left='0' length='calc(100% + 5rem)' vertical />
           </div>
           <div className='w-block h-full relative'>
             <Trace bottom='100%' left='50%' vertical />
@@ -80,9 +75,10 @@ export function SimGrid() {
             <div className='relative'>
               <IssueWindow type='alu' />
               <Trace bottom='100%' left='50%' vertical />
-              <Trace top='100%' left='50%' vertical />
             </div>
-            <FunctionUnitGroup type='alu' />
+            <FunctionUnitGroup type='alu'>
+              <Trace bottom='100%' left='50%' vertical />
+            </FunctionUnitGroup>
           </div>
           <div className='issue relative'>
             <Trace top='-2.5rem' left='-2.5rem' length='calc(100% + 2.5rem)' />
@@ -109,7 +105,7 @@ export function SimGrid() {
             <div className='relative'>
               <Trace top='-2.5rem' left='50%' length='50%' />
               <Trace bottom='100%' left='50%' vertical />
-            
+
               <StoreBuffer />
             </div>
             <div className='relative'>
@@ -118,15 +114,19 @@ export function SimGrid() {
               <LoadBuffer />
             </div>
             <div className='block-stack'>
-              <div className='relative'>
-                <Trace top='50%' right='100%' length='10rem' />
-                <FunctionUnitGroup type='ls' />
+              <div className='grid-gap flex flex-col'>
+                <FunctionUnitGroup type='ls'>
+                  <Trace top='50%' right='100%' length='10rem' />
+                </FunctionUnitGroup>
               </div>
               <div className='relative'>
                 <Trace top='100%' left='50%' vertical />
-                <Trace top='50%' left='100%' />
-                <Trace top='50%' right='100%' length='10rem' />
-                <FunctionUnitGroup type='memory' />
+                <div className='grid-gap flex flex-col'>
+                  <FunctionUnitGroup type='memory'>
+                    <Trace top='50%' left='100%' />
+                    <Trace top='50%' right='100%' length='10rem' />
+                  </FunctionUnitGroup>
+                </div>
               </div>
               <MainMemory />
             </div>
