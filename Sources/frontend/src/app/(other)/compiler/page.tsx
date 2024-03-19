@@ -47,7 +47,10 @@ export default function Page() {
       </Head>
       <h1>Code Editor</h1>
       <div className='flex-grow flex h-full flex-col'>
-        <div id='editor' className='editor-container grid min-h-0 h-full flex-grow grid-cols-[160px_minmax(350px,2fr)_minmax(350px,1fr)] gap-4'>
+        <div
+          id='editor'
+          className='editor-container grid min-h-0 h-full flex-grow grid-cols-[160px_minmax(350px,2fr)_minmax(350px,1fr)] gap-4'
+        >
           <CompileOptions />
           <LineHighlightProvider>
             <CCodeInput />

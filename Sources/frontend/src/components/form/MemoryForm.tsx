@@ -430,7 +430,10 @@ function DataTextArea({ memoryLocationName, ...props }: DataTextAreaProps) {
       />
       <Label
         htmlFor='fileId'
-        className={clsx('relative focus-within:bg-secondary/80', buttonVariants({ variant: 'secondary' }))}
+        className={clsx(
+          'relative focus-within:bg-secondary/80',
+          buttonVariants({ variant: 'secondary' }),
+        )}
       >
         <Input
           title='File'

@@ -70,7 +70,6 @@ function TwoBitIcon({ state }: IconProps) {
         cy='18'
         r='15'
         data-active={active(0, state)}
-
         strokeWidth='5'
       />
       <line x1='72' y1='28' x2='28' y2='72' strokeWidth='5' />

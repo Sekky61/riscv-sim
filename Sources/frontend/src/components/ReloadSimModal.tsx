@@ -53,8 +53,8 @@ export function ReloadSimModal() {
         <DialogHeader>
           <DialogTitle>The Configuration Has Changed</DialogTitle>
           <DialogDescription>
-            The code, memory, or the CPU configuration has changed. Do you
-            wish to <b>apply the changes</b>?
+            The code, memory, or the CPU configuration has changed. Do you wish
+            to <b>apply the changes</b>?
           </DialogDescription>
         </DialogHeader>
         <div className='flex gap-4'>

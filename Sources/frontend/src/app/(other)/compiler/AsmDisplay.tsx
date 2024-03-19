@@ -112,9 +112,9 @@ export function AsmDisplay() {
   const dirty = useAppSelector(selectDirty);
   const asmErrors = useAppSelector(selectAsmCodeMirrorErrors);
   const functionModels = useAppSelector(selectAllInstructionFunctionModels);
-  const { resolvedTheme  } = useTheme();
+  const { resolvedTheme } = useTheme();
 
-  if(resolvedTheme !== 'light' && resolvedTheme !== 'dark') {
+  if (resolvedTheme !== 'light' && resolvedTheme !== 'dark') {
     throw new Error('Theme not supported');
   }
   const { setHoveredCLine } = useLineHighlight();

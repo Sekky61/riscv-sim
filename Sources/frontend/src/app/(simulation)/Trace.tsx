@@ -1,4 +1,3 @@
-
 /**
  * @file    Trace.tsx
  *
@@ -39,33 +38,41 @@ type TraceProps = {
   /** The length of the trace */
   length?: string;
   vertical?: boolean;
-}
+};
 
 /**
  * A visual element of a trace between two blocks.
  * It must be positioned relative to the parent (absolute positioning).
  * The gap between the blocks is 2.5rem
  */
-export function Trace({ top, bottom, left, right, length = '2.5rem', vertical = false }: TraceProps) {
-
+export function Trace({
+  top,
+  bottom,
+  left,
+  right,
+  length = '2.5rem',
+  vertical = false,
+}: TraceProps) {
   // Calculate the line endpoints based on the direction of the trace
   const x2 = vertical ? '0' : '100%';
   const y2 = vertical ? '100%' : '0';
 
   return (
-    <svg style={{
-      top: top,
-      bottom: bottom,
-      left: left,
-      right: right,
-      width: length,
-      height: length,
-    }} className='absolute -z-10'
-      width='100' height='100' 
+    <svg
+      style={{
+        top: top,
+        bottom: bottom,
+        left: left,
+        right: right,
+        width: length,
+        height: length,
+      }}
+      className='absolute -z-10'
+      width='100'
+      height='100'
     >
       <title>Trace</title>
       <line x1='0' y1='0' x2={x2} y2={y2} stroke='#000' strokeWidth='1' />
     </svg>
   );
 }
-

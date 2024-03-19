@@ -35,16 +35,16 @@ import { PayloadAction, createSelector, createSlice } from '@reduxjs/toolkit';
 import type { RootState } from '@/lib/redux/store';
 
 import {
+  defaultCpuConfig,
+  educationalSimulationConfig,
+  floatSimulationConfig,
+} from '@/constant/defaults';
+import {
   CpuConfig,
   MemoryLocationApi,
   SimulationConfig,
   defaultSimulationConfig,
 } from '@/lib/forms/Isa';
-import {
-  defaultCpuConfig,
-  educationalSimulationConfig,
-  floatSimulationConfig,
-} from '@/constant/defaults';
 
 /**
  * The slice state type

@@ -42,13 +42,13 @@ import {
 } from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
 
+import { DividedBadge } from '@/components/DividedBadge';
 import Block from '@/components/simulation/Block';
 import InstructionField from '@/components/simulation/InstructionField';
 import {
   AbstractFunctionUnitBlock,
   MemoryAccessUnit,
 } from '@/lib/types/cpuApi';
-import { DividedBadge } from '@/components/DividedBadge';
 
 type FUType = 'alu' | 'fp' | 'branch' | 'ls' | 'memory';
 

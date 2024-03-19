@@ -65,13 +65,10 @@ export default function SideMenuButton({
     !isActive && 'surface-variant hover:bg-neutral-20/[0.08]',
   );
 
-  useHotkeys(
-    shortcut,
-    () => {
-      // redirect to the page
-      router.push(href);
-    }
-  );
+  useHotkeys(shortcut, () => {
+    // redirect to the page
+    router.push(href);
+  });
 
   return (
     <Link href={href} className={cls}>

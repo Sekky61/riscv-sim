@@ -48,9 +48,9 @@ import {
 } from '@/lib/types/cpuApi';
 import { hexPadEven, inputCodeAddress } from '@/lib/utils';
 
+import { DividedBadge } from '@/components/DividedBadge';
 import Block from '@/components/simulation/Block';
 import { selectEntryPoint } from '@/lib/redux/compilerSlice';
-import { DividedBadge } from '@/components/DividedBadge';
 
 /**
  * A block displaying the program instructions.
@@ -136,9 +136,7 @@ export default function Program() {
           })}
           <div className='grid grid-cols-subgrid col-span-2'>
             <div></div>
-          {pc > maxPc && (
-            pcPointer
-          )}
+            {pc > maxPc && pcPointer}
           </div>
         </div>
       </div>

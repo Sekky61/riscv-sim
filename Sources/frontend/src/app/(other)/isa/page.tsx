@@ -48,6 +48,7 @@ import {
 } from '@/lib/redux/isaSlice';
 import { cn, loadFile, pluralize, saveAsJsonFile } from '@/lib/utils';
 
+import { DividedBadge } from '@/components/DividedBadge';
 import { Button } from '@/components/base/ui/button';
 import {
   Command,
@@ -70,10 +71,9 @@ import {
   PopoverTrigger,
 } from '@/components/base/ui/popover';
 import IsaSettingsForm from '@/components/form/IsaSettingsForm';
+import { defaultCpuConfig } from '@/constant/defaults';
 import Link from 'next/link';
 import { toast } from 'sonner';
-import { DividedBadge } from '@/components/DividedBadge';
-import { defaultCpuConfig } from '@/constant/defaults';
 
 // TODO: delete configuration
 // TODO: prevent from leaving the page with unsaved changes

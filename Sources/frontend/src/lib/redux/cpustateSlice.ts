@@ -275,7 +275,7 @@ export const cpuSlice = createSlice({
      */
     setErrorMessage: (state, action: PayloadAction<string>) => {
       state.errorMessage = action.payload;
-    }
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -304,7 +304,8 @@ export const cpuSlice = createSlice({
   },
 });
 
-export const { setAutoplay, setAutoplayInterval, setErrorMessage } = cpuSlice.actions;
+export const { setAutoplay, setAutoplayInterval, setErrorMessage } =
+  cpuSlice.actions;
 
 //
 // Selectors

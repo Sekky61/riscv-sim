@@ -29,9 +29,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { promises as fs } from 'fs';
-import path from 'path';
-import { BlockDescription, CodeExample } from '@/lib/types/codeExamples';
+import { promises as fs } from 'node:fs';
+import path from 'node:path';
+import type { BlockDescription, CodeExample } from '@/lib/types/codeExamples';
 
 /**
  * Load a JSON file from the "public/json" directory. Can only be done server-side.

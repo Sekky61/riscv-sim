@@ -40,6 +40,7 @@ import {
 } from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
 
+import { useBlockDescriptions } from '@/components/BlockDescriptionContext';
 import {
   DialogContent,
   DialogDescription,
@@ -49,7 +50,6 @@ import {
 import { PredictorIcon } from '@/components/prediction/PredictorIcon';
 import Block from '@/components/simulation/Block';
 import type { GlobalHistoryRegister } from '@/lib/types/cpuApi';
-import { useBlockDescriptions } from '@/components/BlockDescriptionContext';
 
 export function BranchDetailDialog() {
   const btb = useAppSelector(selectBranchTargetBuffer);

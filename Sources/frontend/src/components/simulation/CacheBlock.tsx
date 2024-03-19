@@ -33,6 +33,7 @@ import { DecodedCacheLine, selectCache } from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
 
 import { useBlockDescriptions } from '@/components/BlockDescriptionContext';
+import { DividedBadge } from '@/components/DividedBadge';
 import {
   DialogContent,
   DialogDescription,
@@ -42,7 +43,6 @@ import {
 import Block from '@/components/simulation/Block';
 import { hexPadEven } from '@/lib/utils';
 import clsx from 'clsx';
-import { DividedBadge } from '@/components/DividedBadge';
 
 /**
  * Display the cache, lines are grouped by the index.

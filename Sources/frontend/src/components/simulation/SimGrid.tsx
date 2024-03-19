@@ -46,7 +46,6 @@ import ReorderBuffer from '@/components/simulation/ReorderBuffer';
 import StoreBuffer from '@/components/simulation/StoreBuffer';
 
 export function SimGrid() {
-
   return (
     <HighlightProvider>
       <div className='global-grid'>
@@ -64,7 +63,12 @@ export function SimGrid() {
             </div>
           </div>
           <div className='w-[1px] relative'>
-            <Trace top='-2.5rem' left='0' length='calc(100% + 2.5rem)' vertical />
+            <Trace
+              top='-2.5rem'
+              left='0'
+              length='calc(100% + 2.5rem)'
+              vertical
+            />
           </div>
           <div className='w-block h-full relative'>
             <Trace bottom='100%' left='50%' vertical />

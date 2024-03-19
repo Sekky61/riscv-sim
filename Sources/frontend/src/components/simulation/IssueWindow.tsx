@@ -46,6 +46,8 @@ import { useAppSelector } from '@/lib/redux/hooks';
 import { Reference, RegisterDataContainer } from '@/lib/types/cpuApi';
 
 import { useBlockDescriptions } from '@/components/BlockDescriptionContext';
+import { DividedBadge } from '@/components/DividedBadge';
+import { useHighlight } from '@/components/HighlightProvider';
 import {
   DialogContent,
   DialogDescription,
@@ -61,8 +63,6 @@ import Block from '@/components/simulation/Block';
 import InstructionField from '@/components/simulation/InstructionField';
 import { InstructionListDisplay } from '@/components/simulation/InstructionListDisplay';
 import { ShortValueInformation } from '@/components/simulation/ValueTooltip';
-import { DividedBadge } from '@/components/DividedBadge';
-import { useHighlight } from '@/components/HighlightProvider';
 import { A } from '@svgdotjs/svg.js';
 
 type IssueType = 'alu' | 'fp' | 'branch' | 'ls';

@@ -44,8 +44,8 @@ import {
 import Block from '@/components/simulation/Block';
 import InstructionField from '@/components/simulation/InstructionField';
 import { InstructionListDisplay } from '@/components/simulation/InstructionListDisplay';
-import RegisterReference from '@/components/simulation/RegisterReference';
 import { ArgumentTableCell } from '@/components/simulation/IssueWindow';
+import RegisterReference from '@/components/simulation/RegisterReference';
 
 export default function LoadBuffer() {
   const loadBuffer = useAppSelector(selectLoadBuffer);

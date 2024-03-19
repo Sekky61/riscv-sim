@@ -35,6 +35,7 @@ import { selectFetch } from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
 
 import { useBlockDescriptions } from '@/components/BlockDescriptionContext';
+import { DividedBadge } from '@/components/DividedBadge';
 import { Badge } from '@/components/base/ui/badge';
 import {
   Dialog,
@@ -49,11 +50,10 @@ import Block from '@/components/simulation/Block';
 import InstructionField from '@/components/simulation/InstructionField';
 import { InstructionListDisplay } from '@/components/simulation/InstructionListDisplay';
 import InstructionTable from '@/components/simulation/InstructionTable';
-import { hexPadEven } from '@/lib/utils';
-import { Fragment } from 'react';
-import { DividedBadge } from '@/components/DividedBadge';
 import { BranchDetailDialog } from '@/components/simulation/PredictionBlock';
+import { hexPadEven } from '@/lib/utils';
 import { Expand } from 'lucide-react';
+import { Fragment } from 'react';
 
 /**
  * A component for displaying the Fetch block.

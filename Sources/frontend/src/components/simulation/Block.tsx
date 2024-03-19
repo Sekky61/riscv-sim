@@ -35,13 +35,13 @@
 import clsx from 'clsx';
 import { MoreVertical } from 'lucide-react';
 
-import { ReactChildren, ReactClassName } from '@/lib/types/reactTypes';
-import { Dialog, DialogTrigger } from '@radix-ui/react-dialog';
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@/components/base/ui/tooltip';
+import { ReactChildren, ReactClassName } from '@/lib/types/reactTypes';
+import { Dialog, DialogTrigger } from '@radix-ui/react-dialog';
 
 export type BlockProps = {
   title: string;
@@ -60,7 +60,6 @@ export default function Block({
   stats,
   detailDialog,
 }: BlockProps) {
-  
   // Allow to be expanded
   const classes = clsx(
     className,

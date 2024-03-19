@@ -96,12 +96,12 @@ export function CCodeInput() {
   const mappedCLines = useAppSelector(selectCCodeMappings); // todo optimize
   const cErrors = useAppSelector(selectCCodeMirrorErrors);
   const { setHoveredCLine } = useLineHighlight();
-  const { resolvedTheme  } = useTheme();
+  const { resolvedTheme } = useTheme();
 
-  if(resolvedTheme !== 'light' && resolvedTheme !== 'dark') {
+  if (resolvedTheme !== 'light' && resolvedTheme !== 'dark') {
     throw new Error('Theme not supported');
   }
-  
+
   const editor = useRef<HTMLDivElement>(null);
   const { setContainer, view, state } = useCodeMirror({
     value: code,
@@ -153,13 +153,13 @@ export function CCodeInput() {
 
   const enterLine: MouseEventHandler<HTMLDivElement> &
     FocusEventHandler<HTMLDivElement> = (e) => {
-      if (e.target instanceof HTMLElement) {
-        const targetIsLine = e.target.classList.contains('cm-line');
-        if (targetIsLine) {
-          setHoveredCLine(Number(e.target.getAttribute('data-c-line')));
-        }
+    if (e.target instanceof HTMLElement) {
+      const targetIsLine = e.target.classList.contains('cm-line');
+      if (targetIsLine) {
+        setHoveredCLine(Number(e.target.getAttribute('data-c-line')));
       }
-    };
+    }
+  };
 
   // The ref is on an inner div so that the gray background is always after the editor
   return (

@@ -298,4 +298,3 @@ export const defaultSimulationConfig: SimulationConfig = {
 };
 
 export { defaultCpuConfig };
-

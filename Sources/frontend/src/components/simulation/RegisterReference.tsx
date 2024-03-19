@@ -32,8 +32,8 @@
 import { ParsedArgument, selectRegisterById } from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
 
-import { isValidRegisterValue } from '@/lib/utils';
 import { ArgumentTableCell } from '@/components/simulation/IssueWindow';
+import { isValidRegisterValue } from '@/lib/utils';
 
 export type RegisterReferenceProps = {
   registerId: string;

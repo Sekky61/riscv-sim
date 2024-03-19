@@ -31,20 +31,28 @@
 
 'use client';
 
-import CanvasWindow from "@/components/CanvasWindow";
-import { SimGrid } from "@/components/simulation/SimGrid";
-import Timeline from "@/components/simulation/Timeline";
-import { AutoPlay } from "./AutoPlay";
-import { useAppSelector } from "@/lib/redux/hooks";
-import { selectErrorMessage, selectSimulationStatus, selectStateOk } from "@/lib/redux/cpustateSlice";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/base/ui/card";
-import { SidePanel } from "@/components/simulation/SidePanel";
+import CanvasWindow from '@/components/CanvasWindow';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/components/base/ui/card';
+import { SidePanel } from '@/components/simulation/SidePanel';
+import { SimGrid } from '@/components/simulation/SimGrid';
+import Timeline from '@/components/simulation/Timeline';
+import {
+  selectErrorMessage,
+  selectSimulationStatus,
+  selectStateOk,
+} from '@/lib/redux/cpustateSlice';
+import { useAppSelector } from '@/lib/redux/hooks';
+import { AutoPlay } from './AutoPlay';
 
 /**
  * Show either the simulation or an error message.
  */
 export function Main() {
-
   const stateOk = useAppSelector(selectStateOk);
   const errorMessage = useAppSelector(selectErrorMessage);
   const simulationStatus = useAppSelector(selectSimulationStatus);
@@ -58,9 +66,7 @@ export function Main() {
             <CardTitle>Error</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-lg" >
-            {errorMessage}
-            </div>
+            <div className='text-lg'>{errorMessage}</div>
           </CardContent>
         </Card>
       </div>

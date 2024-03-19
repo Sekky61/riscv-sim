@@ -34,7 +34,6 @@ import { SidePanel } from '@/components/simulation/SidePanel';
 import { Main } from './Main';
 
 export default async function HomePage() {
-
   return (
     <div className='flex'>
       <div className='flex-grow h-screen'>
