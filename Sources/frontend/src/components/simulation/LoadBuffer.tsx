@@ -29,9 +29,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { ParsedArgument, selectLoadBuffer } from '@/lib/redux/cpustateSlice';
+import { type ParsedArgument, selectLoadBuffer } from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
-import { LoadBufferItem, RegisterDataContainer } from '@/lib/types/cpuApi';
+import type { LoadBufferItem, RegisterDataContainer } from '@/lib/types/cpuApi';
 import { hexPadEven } from '@/lib/utils';
 
 import { useBlockDescriptions } from '@/components/BlockDescriptionContext';
@@ -53,12 +53,10 @@ export default function LoadBuffer() {
 
   if (!loadBuffer) return null;
 
-  const limit = Math.min(16, loadBuffer.bufferSize);
-
   return (
     <Block
       title='Load Buffer'
-      className='loadBuffer w-ls h-96'
+      className='loadBuffer w-ls h-[600px]'
       detailDialog={
         <DialogContent>
           <DialogHeader>

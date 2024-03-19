@@ -170,13 +170,13 @@ export function AsmDisplay() {
 
   const enterLine: MouseEventHandler<HTMLDivElement> &
     FocusEventHandler<HTMLDivElement> = (e) => {
-    if (e.target instanceof HTMLElement) {
-      const targetIsLine = e.target.classList.contains('cm-line');
-      if (targetIsLine) {
-        setHoveredCLine(Number(e.target.getAttribute('data-c-line')));
+      if (e.target instanceof HTMLElement) {
+        const targetIsLine = e.target.classList.contains('cm-line');
+        if (targetIsLine) {
+          setHoveredCLine(Number(e.target.getAttribute('data-c-line')));
+        }
       }
-    }
-  };
+    };
 
   // The ref is on an inner div so that the gray background is always after the editor
   return (
@@ -222,11 +222,11 @@ const AsmCheckButton = () => {
     'flex items-center px-2 rounded py-0.5 my-0.5 h-6 text-black bg-gray-200 hover:bg-gray-300',
     dirty && 'button-interactions',
     hasErrors &&
-      !dirty &&
-      'bg-red-500/20 hover:bg-red-500/30 active:bg-red-500/40',
+    !dirty &&
+    'bg-red-500/20 hover:bg-red-500/30 active:bg-red-500/40',
     !hasErrors &&
-      !dirty &&
-      'bg-green-500/20 hover:bg-green-500/30 active:bg-green-500/40',
+    !dirty &&
+    'bg-green-500/20 hover:bg-green-500/30 active:bg-green-500/40',
   );
 
   let iconType: 'circle' | 'tick' | 'x';

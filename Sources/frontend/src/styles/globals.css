@@ -704,12 +704,13 @@
   }
 
   .bottom-grid {
-    @apply grid gap-4;
+    @apply grid;
     grid-template-columns: max-content max-content;
   }
 
   .bottom-grid-mem {
-    @apply grid gap-4 pr-8;
+    @apply grid;
+    gap: var(--gap);
     grid-template-rows: max-content max-content;
     grid-template-columns: repeat(2, 1fr) max-content;
   }

@@ -53,7 +53,7 @@ export function SimGrid() {
           <Program />
           <div className='block-stack'>
             <div className='relative'>
-              <Trace top='1.5rem' right='100%' />
+              <Trace top='50%' right='100%' />
               <FetchBlock />
             </div>
             <div className='relative'>
@@ -66,7 +66,7 @@ export function SimGrid() {
             <Trace
               top='-2.5rem'
               left='0'
-              length='calc(100% + 2.5rem)'
+              length='calc(100% + 5rem)'
               vertical
             />
           </div>
@@ -103,16 +103,34 @@ export function SimGrid() {
             <FunctionUnitGroup type='branch' />
           </div>
         </div>
+        <div />
         <div className='bottom-grid pb-8'>
           <div className='bottom-grid-mem'>
-            <StoreBuffer />
-            <LoadBuffer />
+            <div className='relative'>
+              <Trace top='-2.5rem' left='50%' length='50%' />
+              <Trace bottom='100%' left='50%' vertical />
+            
+              <StoreBuffer />
+            </div>
+            <div className='relative'>
+              <Trace top='-2.5rem' left='-2.5rem' length='calc(50% + 2.5rem)' />
+              <Trace bottom='100%' left='50%' vertical />
+              <LoadBuffer />
+            </div>
             <div className='block-stack'>
-              <FunctionUnitGroup type='ls' />
-              <FunctionUnitGroup type='memory' />
+              <div className='relative'>
+                <Trace top='50%' right='100%' length='10rem' />
+                <FunctionUnitGroup type='ls' />
+              </div>
+              <div className='relative'>
+                <Trace top='100%' left='50%' vertical />
+                <Trace top='50%' left='100%' />
+                <Trace top='50%' right='100%' length='10rem' />
+                <FunctionUnitGroup type='memory' />
+              </div>
               <MainMemory />
             </div>
-            <div className=' col-span-3 flex'>
+            <div className=' col-span-2 flex'>
               <RegisterBlock />
             </div>
           </div>
