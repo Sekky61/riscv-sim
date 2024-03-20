@@ -68,7 +68,7 @@ const FormInput = React.forwardRef<HTMLInputElement, FormInputProps>(
               <Label htmlFor={name}>{title}&nbsp;&#9432;</Label>
             </TooltipTrigger>
             <TooltipContent>
-              <p className='max-w-64'>{hint}</p>
+              <p className='max-w-64 p-2'>{hint}</p>
             </TooltipContent>
           </Tooltip>
         ) : (

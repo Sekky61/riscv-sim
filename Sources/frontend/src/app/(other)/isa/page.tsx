@@ -69,6 +69,7 @@ export default function Page() {
   });
 
   const hasUnsavedChanges = form.formState.isDirty;
+  const hasErrors = !form.formState.isValid;
 
   // When the active ISA changes, set the form values
   useEffect(() => {
@@ -110,7 +111,10 @@ export default function Page() {
             saveChanges={saveChanges}
             hasUnsavedChanges={hasUnsavedChanges}
           />
-          <Button onClick={persistIsaChanges} disabled={!hasUnsavedChanges}>
+          <Button
+            onClick={persistIsaChanges}
+            disabled={!hasUnsavedChanges || hasErrors}
+          >
             Save Changes
           </Button>
           <Button onClick={doExport} disabled={hasUnsavedChanges}>
@@ -125,4 +129,3 @@ export default function Page() {
     </div>
   );
 }
-

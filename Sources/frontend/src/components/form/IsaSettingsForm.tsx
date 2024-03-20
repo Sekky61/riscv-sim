@@ -258,9 +258,11 @@ export default function IsaSettingsForm({
   const cacheClockFrequency = watch('cacheClockFrequency');
 
   // When predictorType changes, set a new predictorDefault
-  useEffect(() => {
+  // TODO: small bug with the form.formState.isValid
+  // biome-ignore lint/correctness/useExhaustiveDependencies: This is a valid use case
+    useEffect(() => {
     setValue('predictorDefaultState', 0);
-  }, [setValue]);
+  }, [setValue, watchPredictorType]);
 
   // This function is valid for regular fields, but not arrays
   const simpleRegister = (

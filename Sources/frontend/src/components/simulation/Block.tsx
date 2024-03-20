@@ -40,15 +40,15 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/base/ui/tooltip';
-import { ReactChildren, ReactClassName } from '@/lib/types/reactTypes';
 import { Dialog, DialogTrigger } from '@radix-ui/react-dialog';
 
 export type BlockProps = {
   title: string;
-  stats?: ReactChildren;
-  children: ReactChildren;
-  detailDialog?: ReactChildren; // a DialogContent component to be displayed in a modal after clicking on the More button
-} & ReactClassName;
+  stats?: React.ReactNode;
+  children: React.ReactNode;
+  detailDialog?: React.ReactNode; // a DialogContent component to be displayed in a modal after clicking on the More button
+  className?: string;
+};
 
 /**
  * If you want to use a fixed width, specify it outside of the component
@@ -69,7 +69,7 @@ export default function Block({
   return (
     <div className={classes}>
       <div className='flex justify-between items-center pl-2'>
-        <span className='font-bold '>{title}</span>
+        <span className='font-bold'>{title}</span>
         {detailDialog && (
           <Dialog>
             <DialogTrigger>
@@ -79,7 +79,9 @@ export default function Block({
                     <MoreVertical strokeWidth={1.5} />
                   </div>
                 </TooltipTrigger>
-                <TooltipContent side='bottom'>See details</TooltipContent>
+                <TooltipContent side='bottom' className='p-2'>
+                  See details
+                </TooltipContent>
               </Tooltip>
             </DialogTrigger>
             {detailDialog}

@@ -245,7 +245,7 @@ export default function MemoryForm({
                 <Label htmlFor='dataType'>Data Type&nbsp;&#9432;</Label>
               </TooltipTrigger>
               <TooltipContent>
-                <p className='max-w-64'>
+                <p className='max-w-64 p-2'>
                   Data type dictates the interpretation of provided values. For
                   example, choosing Integer will allocate 4 bytes for each
                   value.
