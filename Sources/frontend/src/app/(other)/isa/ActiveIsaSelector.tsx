@@ -68,6 +68,7 @@ import {
   CommandItem,
   CommandSeparator,
 } from '@/components/base/ui/command';
+import { isIsaConfig } from '@/lib/forms/validators';
 
 type ActiveIsaSelectorProps = {
   hasUnsavedChanges: boolean;
@@ -118,7 +119,17 @@ export function ActiveIsaSelector({
   const doImport = () => {
     loadFile((json_string) => {
       // TODO: resolve issue with extra fields on the form
-      const newConfig = JSON.parse(json_string) as CpuConfig;
+      let newConfig: unknown;
+      try {
+        newConfig = JSON.parse(json_string);
+      } catch (e) {
+        toast.error('Invalid JSON');
+        return;
+      }
+      if (!isIsaConfig(newConfig)) {
+        toast.error('Invalid ISA configuration');
+        return;
+      }
       // Fill a name if not present
       if (!newConfig.name) {
         newConfig.name = generateIsaName();

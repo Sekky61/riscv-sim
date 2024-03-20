@@ -140,6 +140,12 @@ export const memoryLocationDefaultValue: MemoryLocationApi = {
   },
 };
 
+/**
+ * A collection of Memory Locations
+ */
+export const memoryLocationsSchema = z.array(memoryLocationSchema);
+export type MemoryLocations = z.infer<typeof memoryLocationsSchema>;
+
 export const arithmeticUnits = ['FX', 'FP'] as const;
 export const otherUnits = ['L_S', 'Branch', 'Memory'] as const;
 export const fuTypes = [...arithmeticUnits, ...otherUnits] as const;
@@ -282,7 +288,7 @@ export const simulationConfig = z.object({
   /**
    * Memory locations to be allocated.
    */
-  memoryLocations: z.array(memoryLocationSchema),
+  memoryLocations: memoryLocationsSchema,
   /**
    * Entry point of the program. A label or address.
    */

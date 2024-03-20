@@ -35,7 +35,8 @@
 
 import { Button } from '@/components/base/ui/button';
 import MemoryForm from '@/components/form/MemoryForm';
-import { MemoryLocationApi } from '@/lib/forms/Isa';
+import type { MemoryLocationApi } from '@/lib/forms/Isa';
+import { isMemoryLocations } from '@/lib/forms/validators';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import {
   removeMemoryLocation,
@@ -46,6 +47,7 @@ import { loadFile, saveAsJsonFile } from '@/lib/utils';
 import clsx from 'clsx';
 import Head from 'next/head';
 import { useState } from 'react';
+import { toast } from 'sonner';
 
 /**
  * This is the main page for the memory editor.
@@ -68,10 +70,20 @@ export default function HomePage() {
   const doImport = () => {
     loadFile((json_string) => {
       // TODO: resolve issue with extra fields on the form
-      const newMemoryLocations = JSON.parse(
-        json_string,
-      ) as Array<MemoryLocationApi>;
+      let newMemoryLocations: unknown;
+      try {
+        newMemoryLocations = JSON.parse(json_string);
+      } catch (e) {
+        toast.error('Invalid JSON. Nothing got imported.');
+        return;
+      }
+      if (!isMemoryLocations(newMemoryLocations)) {
+        toast.error('Invalid memory locations. Nothing got imported.');
+        return;
+      }
+      // they could be added, but a check for existing names would be needed
       dispatch(setMemoryLocations(newMemoryLocations));
+      toast.success(`Imported ${newMemoryLocations.length} memory locations`);
     });
   };
 

@@ -37,7 +37,7 @@ import { useAppDispatch } from '@/lib/redux/hooks';
 import { Button } from '@/components/base/ui/button';
 import { loadFile } from '@/lib/utils';
 import { Download, Upload } from 'lucide-react';
-import React from 'react';
+import type React from 'react';
 
 type EditorBarProps = {
   mode: 'c' | 'asm';
@@ -63,6 +63,7 @@ export default function EditorBar({
   // Load file and set it as C/ASM code
   const handleLoadFile = () => {
     loadFile((contents) => {
+      // No validation, just open a file
       dispatch(openFile({ code: contents, type: mode }));
     });
   };
