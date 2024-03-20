@@ -32,8 +32,8 @@
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
-import { MemoryLocationApi, dataTypes, dataTypesText } from '@/lib/forms/Isa';
-import {
+import { type MemoryLocationApi, dataTypes, dataTypesText } from '@/lib/forms/Isa';
+import type {
   DataTypeEnum,
   InputCodeModel,
   Reference,

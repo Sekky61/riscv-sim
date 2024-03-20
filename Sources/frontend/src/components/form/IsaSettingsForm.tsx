@@ -33,21 +33,21 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { X } from 'lucide-react';
-import { MouseEventHandler, useEffect } from 'react';
+import { type MouseEventHandler, useEffect } from 'react';
 import React from 'react';
 import {
-  Control,
-  FieldError,
-  RegisterOptions,
-  UseFormReturn,
+  type Control,
+  type FieldError,
+  type RegisterOptions,
+  type UseFormReturn,
   useController,
   useForm,
 } from 'react-hook-form';
 
 import {
-  CpuConfig,
-  FUnitConfig,
-  Operations,
+  type CpuConfig,
+  type FUnitConfig,
+  type Operations,
   cacheReplacementTypes,
   fUnitSchema,
   fuTypes,
