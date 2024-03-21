@@ -33,9 +33,8 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { ReactNode } from 'react';
+import type { ReactNode } from 'react';
 
-import { IconButton } from '@/components/IconButton';
 import clsx from 'clsx';
 import { useHotkeys } from 'react-hotkeys-hook';
 
@@ -71,7 +70,7 @@ export default function SideMenuButton({
   });
 
   return (
-    <Link href={href} className={cls}>
+    <Link href={href} className={cls} aria-label={hoverText}>
       {Icon}
       <div className='nav-text text-nowrap ml-[8px]'>{hoverText}</div>
     </Link>

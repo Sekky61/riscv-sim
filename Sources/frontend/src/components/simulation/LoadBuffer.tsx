@@ -56,7 +56,7 @@ export default function LoadBuffer() {
 
   if (!loadBuffer) return null;
 
-  return (
+ return (
     <Block
       title='Load Buffer'
       className='loadBuffer w-ls h-[600px]'

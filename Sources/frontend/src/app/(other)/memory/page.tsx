@@ -35,7 +35,6 @@
 
 import { Button } from '@/components/base/ui/button';
 import MemoryForm from '@/components/form/MemoryForm';
-import type { MemoryLocationApi } from '@/lib/forms/Isa';
 import { isMemoryLocations } from '@/lib/forms/validators';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import {
@@ -137,6 +136,7 @@ export default function HomePage() {
                   variant='text'
                   className={style}
                   onClick={() => setActiveMemoryLocation(memoryLocation.name)}
+                  key={memoryLocation.name}
                 >
                   {memoryLocation.name}
                 </Button>

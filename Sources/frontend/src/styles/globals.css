@@ -39,6 +39,8 @@
   /* Default border color */
   * {
     @apply border-outlineVariant dark:border-dark-outlineVariant list-inside;
+    /* used ar hsl(var(--name)) */
+    --ring: 0, 0%, 0%;
   }
 
   body {

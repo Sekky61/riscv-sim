@@ -242,7 +242,9 @@ export default function MemoryForm({
           <div>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Label htmlFor='dataType'>Data Type&nbsp;&#9432;</Label>
+                <Label id='dataType-label' htmlFor='dataType'>
+                  Data Type&nbsp;&#9432;
+                </Label>
               </TooltipTrigger>
               <TooltipContent>
                 <p className='max-w-64 p-2'>
@@ -473,13 +475,17 @@ function SelectInput(props: UseControllerProps<MemoryLocationApi>) {
 
   return (
     <Select onValueChange={field.onChange} value={field.value as string}>
-      <SelectTrigger className='w-[180px]'>
-        <SelectValue placeholder='Select a Type' id={field.name} />
+      <SelectTrigger
+        className='w-[180px]'
+        id={field.name}
+        aria-labelledby={`${field.name}-label`}
+      >
+        <SelectValue placeholder='Select a Type' />
       </SelectTrigger>
       <SelectContent>
         {dataTypes.map((dt, i) => {
           const name = dataTypesText[i];
-          return <SelectItem value={dt}>{name}</SelectItem>;
+          return <SelectItem value={dt} key={dt}>{name}</SelectItem>;
         })}
       </SelectContent>
     </Select>
