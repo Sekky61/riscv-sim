@@ -33,7 +33,6 @@ import clsx from 'clsx';
 
 import {
   type ParsedArgument,
-  getValue,
   selectSimCodeModel,
   selectStatistics,
 } from '@/lib/redux/cpustateSlice';
@@ -66,6 +65,7 @@ import {
   instructionTypeName,
   isValidRegisterValue,
 } from '@/lib/utils';
+import { DialogPortal } from '@radix-ui/react-dialog';
 
 export type InstructionFieldProps = {
   instructionId: Reference | null;
@@ -81,14 +81,12 @@ export default function InstructionField({
 }: InstructionFieldProps) {
   const { setHighlightedInstruction } = useHighlight();
   const q = useAppSelector((state) => selectSimCodeModel(state, simCodeId));
-  const statistics = useAppSelector(selectStatistics);
-  if (!q || simCodeId === null || statistics === undefined) {
+  if (!q || simCodeId === null) {
     // Empty field
-    // aria-disabled is set to true to prevent the button from being focused and to suppress the contrast warning
     return <EmptyInstructionField />;
   }
 
-  const { args, inputCodeModel, functionModel } = q;
+  const { argsMap, inputCodeModel, functionModel } = q;
 
   const handleMouseEnter = () => {
     setHighlightedInstruction({
@@ -112,10 +110,12 @@ export default function InstructionField({
           onMouseLeave={handleMouseLeave}
           data-instruction-id={simCodeId}
         >
-          <InstructionSyntax functionModel={functionModel} args={args} />
+          <InstructionSyntax functionModel={functionModel} args={argsMap} />
         </button>
       </DialogTrigger>
-      <InstructionDetailPopup simCodeId={simCodeId} />
+      <DialogPortal>
+        <InstructionDetailPopup simCodeId={simCodeId} />
+      </DialogPortal>
     </Dialog>
   );
 }
@@ -125,6 +125,7 @@ export default function InstructionField({
  * Displays a disabled button with the text 'empty'.
  */
 export function EmptyInstructionField() {
+  // aria-disabled is set to true to prevent the button from being focused and to suppress the contrast warning
   return (
     <button
       type='button'
@@ -153,7 +154,7 @@ export function InstructionDetailPopup({
     );
   }
 
-  const { simCodeModel, args, inputCodeModel, functionModel } = q;
+  const { simCodeModel, inputCodeModel, functionModel, argsMap } = q;
   const isBranch = functionModel.instructionType === 'kJumpbranch';
   const pc = inputCodeModel.codeId * 4;
 
@@ -168,7 +169,7 @@ export function InstructionDetailPopup({
     <DialogContent className='max-w-6xl max-h-screen'>
       <DialogHeader>
         <DialogTitle className='text-4xl'>
-          <InstructionSyntax functionModel={functionModel} args={args} />
+          <InstructionSyntax functionModel={functionModel} args={argsMap} />
         </DialogTitle>
         <DialogDescription className='surface-variant'>
           Detailed view of instruction #{simCodeModel.id}
@@ -180,8 +181,8 @@ export function InstructionDetailPopup({
         <div>
           <h2>Operands</h2>
           <ul className='flex flex-col gap-4'>
-            {args.map((operand) => {
-              const value = getValue(operand);
+            {Object.values(argsMap).map((operand) => {
+              const value = operand.value;
               const valid = operand.register
                 ? isValidRegisterValue(operand.register)
                 : true;
@@ -329,7 +330,6 @@ export interface InstructionArgumentProps {
  */
 function InstructionArgument({ arg }: InstructionArgumentProps) {
   const { setHighlightedRegister } = useHighlight();
-  const value = getValue(arg);
   const idToHighlight = arg.register?.name ?? arg.origArg.stringValue;
 
   const handleMouseEnter = () => {
@@ -354,13 +354,13 @@ function InstructionArgument({ arg }: InstructionArgumentProps) {
         </span>
       </TooltipTrigger>
       <TooltipPortal>
-      <TooltipContent>
-        <ShortValueInformation
-          value={value}
-          valid={arg.valid}
-          register={arg.register}
-        />
-      </TooltipContent>
+        <TooltipContent>
+          <ShortValueInformation
+            value={arg.value}
+            valid={arg.valid}
+            register={arg.register}
+          />
+        </TooltipContent>
       </TooltipPortal>
     </Tooltip>
   );
@@ -386,22 +386,28 @@ function InstructionSyntax({
   args,
 }: {
   functionModel: InstructionFunctionModel;
-  args: ParsedArgument[];
+  args: Record<string, ParsedArgument>;
 }) {
   // syntaxTemplate is an array of strings. Some of them are arguments, some are not. Example: ['addi ', 'rd', ', ', 'rs1', ', ', 'imm'].
-  const formatSplit = functionModel.syntaxTemplate;
-  // if a part matches an argument, wrap it in a tooltip
-  return formatSplit.map((part, i) => {
-    const arg = args.find((a) => a.origArg.name === part);
-    const key = `${part}-${i}`;
+  const formatSplit = [...functionModel.syntaxTemplate] as (
+    | string
+    | React.ReactNode
+  )[];
+
+  for (let i = 1; i < formatSplit.length; i++) {
+    const form: string = formatSplit[i] as string;
+    const arg = args[form];
     if (arg) {
-      return <InstructionArgument arg={arg} key={key} />;
+      // Replace the argument name with the actual argument
+      formatSplit[i] = <InstructionArgument arg={arg} key={i} />;
+    } else {
+      formatSplit[i] = (
+        <span className='relative z-10' key={i}>
+          {form}
+        </span>
+      );
     }
-    // Add z-index to make the argument highlight below the parentheses etc.
-    return (
-      <span className='relative z-10' key={key}>
-        {part}
-      </span>
-    );
-  });
+  }
+
+  return <>{formatSplit}</>;
 }

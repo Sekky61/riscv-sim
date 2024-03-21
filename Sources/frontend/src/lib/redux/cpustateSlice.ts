@@ -352,8 +352,6 @@ export const selectMemoryBytes = createSelector([selectMemory], (memory) => {
     return null;
   }
   const arr = Base64.toUint8Array(memory.memoryBase64 ?? '');
-  console.log('from base64', memory.memoryBase64);
-  console.log('created array', arr);
   return arr;
 });
 
@@ -463,35 +461,20 @@ export type ParsedArgument = {
    */
   valid: boolean;
   origArg: InputCodeArgument;
+  value: RegisterDataContainer;
 };
-
-/**
- * Extract the value of an argument.
- * TODO: move to utils
- */
-export function getValue(arg: ParsedArgument): RegisterDataContainer {
-  if (arg.origArg.constantValue !== null) {
-    return arg.origArg.constantValue;
-  }
-
-  // Must be a register
-  if (!arg.register) {
-    throw new Error(`Argument ${arg.origArg.name} has no value`);
-  }
-
-  return arg.register.value;
-}
 
 type DetailedSimCodeModel = {
   simCodeModel: SimCodeModel;
   inputCodeModel: InputCodeModel;
   functionModel: InstructionFunctionModel;
-  args: Array<ParsedArgument>;
+  argsMap: Record<string, ParsedArgument>;
 };
 
 /**
- * Select simcodemodel, inputcodemodel and instructionfunctionmodel for a given simcode id.
+ * Rejoin the references of instruction and its description, args.
  * Resolves references to registers.
+ * Should be called once per new simulation state.
  */
 const selectDetailedSimCodeModels = createSelector(
   [
@@ -517,54 +500,50 @@ const selectDetailedSimCodeModels = createSelector(
 
     // Create a lookup table with entry for each simcode
     const lookup: Record<Reference, DetailedSimCodeModel> = {};
-    for (const [id, simCodeModel] of Object.entries(simCodeModels)) {
-      const reference = parseInt(id, 10);
-      if (Number.isNaN(reference)) {
-        throw new Error(`Invalid simcode id: ${id}`);
-      }
+    for (const id in simCodeModels) {
+      const simCodeModel = simCodeModels[id] as SimCodeModel;
       const inputCodeModel = inputCodeModels[simCodeModel.inputCodeModel];
       if (!inputCodeModel) {
-        throw new Error(`Invalid simcode id: ${id}`);
+        throw new Error(`Invalid inputcode id: ${simCodeModel.inputCodeModel}`);
       }
       const functionModel =
         instructionFunctionModels[inputCodeModel.instructionFunctionModel];
       if (!functionModel || !inputCodeModel || !simCodeModel) {
-        throw new Error(`Invalid simcode id: ${id}`);
+        throw new Error(`Invalid simcode id: ${simCodeModel.id}`);
       }
       const detail: DetailedSimCodeModel = {
         simCodeModel,
         inputCodeModel,
         functionModel,
-        args: [],
+        argsMap: {},
       };
-      for (const renamedArg of simCodeModel.renamedArguments) {
+
+      for (const origArg of simCodeModel.renamedArguments) {
+        const regName = origArg.registerValue;
+        //@ts-ignore indexing with null is ok - it would return undefined
+        const register = registers[regName] ?? null;
         const arg: ParsedArgument = {
-          register: null,
-          valid: false,
-          origArg: renamedArg,
+          register,
+          origArg,
+          valid: register === null || isValidRegisterValue(register.value),
+          value: register?.value ?? origArg.constantValue,
         };
-        const regName = renamedArg.registerValue;
-        if (regName !== null) {
-          const arch = registers[regName];
-          if (arch === undefined) {
-            console.warn(`Register ${regName} not found ()`);
-            throw new Error(`Register ${regName} not found`);
-          }
-          arg.register = arch;
-        }
-        arg.valid = arg.register === null || isValidRegisterValue(arg.register);
-        detail.args.push(arg);
+        detail.argsMap[origArg.name] = arg;
       }
-      lookup[reference] = detail;
+      lookup[simCodeModel.id] = detail;
     }
     return lookup;
   },
 );
 
-export const selectSimCodeModel = (state: RootState, id: Reference | null) => {
-  if (!isValidReference(id)) {
-    return null;
-  }
+/**
+ * Retrieve the detailed model of a simcode from the index.
+ */
+export const selectSimCodeModel = (
+  state: RootState,
+  id: Reference | null,
+): DetailedSimCodeModel | undefined => {
+  // @ts-ignore indexing with null is ok - it would return undefined
   return selectDetailedSimCodeModels(state)?.[id];
 };
 

@@ -35,7 +35,6 @@ import clsx from 'clsx';
 
 import {
   type ParsedArgument,
-  getValue,
   selectAluIssueWindowBlock,
   selectBranchIssueWindowBlock,
   selectFpIssueWindowBlock,
@@ -169,31 +168,22 @@ export function IssueWindowItem({ simCodeId }: IssueWindowItemProps) {
     );
   }
 
-  const { args } = q;
-
-  let arg1 = null;
-  let arg2 = null;
-  // TODO fmadd has 3 arguments, what to do though?
-  for (const arg of args) {
-    if (arg.origArg.name !== 'rd') {
-      if (arg1 === null) {
-        arg1 = arg;
-      } else {
-        arg2 = arg;
-      }
-    }
-  }
+  const { argsMap } = q;
 
   return (
     <div className='flex gap-1'>
       <InstructionField instructionId={simCodeId} />
-      <div className='min-w-[40px] flex justify-center items-center'>
-        <ArgumentTableCell arg={arg1} />
-      </div>
-
-      <div className='min-w-[40px] flex justify-center items-center'>
-        <ArgumentTableCell arg={arg2} />
-      </div>
+      {Object.entries(argsMap).map(([argName, arg]) => {
+        if (argName === 'rd') return null;
+        return (
+          <div
+            key={argName}
+            className='min-w-[40px] flex justify-center items-center'
+          >
+            <ArgumentTableCell arg={arg} />
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -211,7 +201,7 @@ export function ArgumentTableCell({ arg }: ArgumentTableCellProps) {
   const { setHighlightedRegister } = useHighlight();
   const idToHighlight = arg?.register?.name || arg?.origArg.constantValue?.bits;
 
-  const item = arg && getValue(arg);
+  const item = arg?.value;
   const registerName = arg?.register?.name;
   const valid = arg?.valid;
 

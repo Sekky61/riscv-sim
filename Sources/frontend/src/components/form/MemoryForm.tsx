@@ -233,6 +233,7 @@ export default function MemoryForm({
     <form onSubmit={handleSubmit(onSubmit)}>
       <div className='flex flex-col gap-4 justify-start'>
         <FormInput
+          autoComplete='off'
           title='Pointer Name'
           hint='Name of the memory location. Will be used as the pointer name in C/assembler.'
           {...register('name')}
@@ -413,8 +414,9 @@ function DataTextArea({ memoryLocationName, ...props }: DataTextAreaProps) {
 
   return (
     <div>
-      <Label htmlFor='message-2'>Values</Label>
+      <Label htmlFor='data-textarea'>Values</Label>
       <Textarea
+        id='data-textarea'
         onChange={(e) => {
           // Convert the string to an array of strings
           const data = e.target.value.split(',');
@@ -485,7 +487,11 @@ function SelectInput(props: UseControllerProps<MemoryLocationApi>) {
       <SelectContent>
         {dataTypes.map((dt, i) => {
           const name = dataTypesText[i];
-          return <SelectItem value={dt} key={dt}>{name}</SelectItem>;
+          return (
+            <SelectItem value={dt} key={dt}>
+              {name}
+            </SelectItem>
+          );
         })}
       </SelectContent>
     </Select>
