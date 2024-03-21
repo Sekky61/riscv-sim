@@ -32,13 +32,13 @@
 import clsx from 'clsx';
 
 import {
-  ParsedArgument,
+  type ParsedArgument,
   getValue,
   selectSimCodeModel,
   selectStatistics,
 } from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
-import { InstructionFunctionModel, Reference } from '@/lib/types/cpuApi';
+import type { InstructionFunctionModel, Reference } from '@/lib/types/cpuApi';
 
 import { useHighlight } from '@/components/HighlightProvider';
 import {
@@ -83,17 +83,11 @@ export default function InstructionField({
   const statistics = useAppSelector(selectStatistics);
   if (!q || simCodeId === null || statistics === undefined) {
     // Empty field
-    return (
-      <button
-        type='button'
-        className='pointer-events-none group instruction rounded-[6px] h-8 w-full font-mono px-2 text-left whitespace-nowrap overflow-hidden'
-      >
-        <span className='text-gray-400'>empty</span>
-      </button>
-    );
+    // aria-disabled is set to true to prevent the button from being focused and to suppress the contrast warning
+    return <EmptyInstructionField />;
   }
 
-  const { simCodeModel, args, inputCodeModel, functionModel } = q;
+  const { args, inputCodeModel, functionModel } = q;
 
   const handleMouseEnter = () => {
     setHighlightedInstruction({
@@ -125,6 +119,23 @@ export default function InstructionField({
   );
 }
 
+/**
+ * A reusable element for empty instruction field.
+ * Displays a disabled button with the text 'empty'.
+ */
+export function EmptyInstructionField() {
+  return (
+    <button
+      type='button'
+      className='pointer-events-none group instruction rounded-[6px] h-8 w-full font-mono px-2 text-left whitespace-nowrap overflow-hidden'
+      aria-disabled='true'
+      tabIndex={-1}
+    >
+      <span className='text-gray-500'>empty</span>
+    </button>
+  );
+}
+
 export function InstructionDetailPopup({
   simCodeId,
 }: { simCodeId: Reference | null }) {
@@ -134,7 +145,9 @@ export function InstructionDetailPopup({
     // Empty field
     return (
       <div className='instruction-bubble flex justify-center items-center px-2 font-mono'>
-        <span className='text-gray-400'>empty</span>
+        <span className='text-gray-400' aria-disabled='true'>
+          empty
+        </span>
       </div>
     );
   }

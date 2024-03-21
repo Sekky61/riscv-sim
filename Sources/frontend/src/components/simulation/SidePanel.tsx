@@ -66,6 +66,7 @@ export function SidePanel() {
       <button
         type='button'
         className='w-full h-[40px] secondary-container rounded-[14px] flex justify-center items-center'
+        aria-label='Expand side panel'
         onClick={() => setIsExpanded(!isExpanded)}
       >
         <ChevronLeft className={clsx(isExpanded && 'rotate-180')} />

@@ -81,15 +81,18 @@ export function AutoPlay() {
           )}
         </IconButton>
       </div>
-      <div className='autoplay-ms rounded-[16px] px-2 h-full box-content tertiary-container flex justify-center items-center'>
+      <div className='autoplay-ms rounded-[16px] px-2 h-full box-content tertiary-container flex justify-center items-center gap-0.5'>
         <input
           type='number'
           className='w-full rounded-[8px] border px-1 py-0.5 bg-white/50'
           value={ms}
+          step={500}
+          placeholder='Autoplay interval in ms'
           onChange={(e) =>
             dispatch(setAutoplayInterval(e.target.valueAsNumber))
           }
         />
+        <div className='text-xs'>ms</div>
       </div>
     </div>
   );

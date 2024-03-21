@@ -571,7 +571,7 @@
   .autoplay-ms {
     @apply absolute top-0;
     left: calc(var(--cell-size) + var(--cell-gap));
-    width: calc(2*var(--cell-size));
+    width: calc(2*var(--cell-size) + var(--cell-gap));
   }
 
   /* Timeline loading spin
@@ -728,7 +728,7 @@
 
   /* gray out 0s */
   .memory-grid div[data-value='0'] {
-    @apply text-gray-500;
+    @apply text-gray-600;
   }
 
   /* cache subgrid */

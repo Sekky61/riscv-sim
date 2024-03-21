@@ -29,7 +29,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { DecodedCacheLine, selectCache } from '@/lib/redux/cpustateSlice';
+import { type DecodedCacheLine, selectCache } from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
 
 import { useBlockDescriptions } from '@/components/BlockDescriptionContext';
@@ -132,7 +132,7 @@ function CacheLane({
       {lanes.map((lane, index) => {
         const cls = clsx('cache-lines-content', lane.valid && 'valid-line');
         return (
-          <div key={index} className={cls}>
+          <div key={index} className={cls} aria-disabled={!lane.valid}>
             <div className='line-tag border-r border-b p-1'>
               {hexPadEven(lane.tag)}
             </div>

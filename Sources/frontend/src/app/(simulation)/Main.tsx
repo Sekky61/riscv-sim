@@ -82,7 +82,7 @@ export function Main() {
       <div className='absolute top-3 left-1/2'>
         <Timeline />
       </div>
-      <div className='absolute top-3 right-[250px]'>
+      <div className='absolute top-3 right-[280px]'>
         <AutoPlay />
       </div>
       <SidePanel />

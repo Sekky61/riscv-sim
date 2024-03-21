@@ -45,7 +45,9 @@ import {
   DialogTitle,
 } from '@/components/base/ui/dialog';
 import Block from '@/components/simulation/Block';
-import InstructionField from '@/components/simulation/InstructionField';
+import InstructionField, {
+  EmptyInstructionField,
+} from '@/components/simulation/InstructionField';
 import { InstructionListDisplay } from '@/components/simulation/InstructionListDisplay';
 import { ArgumentTableCell } from '@/components/simulation/IssueWindow';
 import RegisterReference from '@/components/simulation/RegisterReference';
@@ -56,7 +58,7 @@ export default function LoadBuffer() {
 
   if (!loadBuffer) return null;
 
- return (
+  return (
     <Block
       title='Load Buffer'
       className='loadBuffer w-ls h-[600px]'
@@ -104,9 +106,7 @@ export function LoadBufferItemComponent({
   if (!item) {
     return (
       <div className='col-span-4 pointer-events-none w-full font-mono px-2 text-left whitespace-nowrap'>
-        <button type='button' className='text-gray-400 h-8'>
-          empty
-        </button>
+        <EmptyInstructionField />
       </div>
     );
   }

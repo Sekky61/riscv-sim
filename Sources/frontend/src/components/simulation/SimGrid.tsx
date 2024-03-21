@@ -48,7 +48,7 @@ import StoreBuffer from '@/components/simulation/StoreBuffer';
 export function SimGrid() {
   return (
     <HighlightProvider>
-      <div className='global-grid'>
+      <main className='global-grid'>
         <div className='top-grid'>
           <Program />
           <div className='block-stack'>
@@ -137,7 +137,7 @@ export function SimGrid() {
           </div>
           <CacheBlock />
         </div>
-      </div>
+      </main>
     </HighlightProvider>
   );
 }

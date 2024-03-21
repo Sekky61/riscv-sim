@@ -42,9 +42,9 @@ import {
   DialogTitle,
 } from '@/components/base/ui/dialog';
 import Block from '@/components/simulation/Block';
-import { Label } from '@/lib/types/cpuApi';
+import type { Label } from '@/lib/types/cpuApi';
 import clsx from 'clsx';
-import { memo, useEffect, useMemo, useRef } from 'react';
+import { memo, useEffect, useRef } from 'react';
 
 function memoryCompare(a: Uint8Array | null, b: Uint8Array | null) {
   if (a === null || b === null || a.length !== b.length) {

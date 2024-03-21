@@ -212,7 +212,7 @@ export function ArgumentTableCell({ arg }: ArgumentTableCellProps) {
 
   const item1Style = clsx(
     'register rounded flex px-2 h-full flex justify-center items-center',
-    valid && 'text-green-500',
+    valid && 'text-green-700',
   );
 
   let text = '-';

@@ -66,6 +66,8 @@ export default function Block({
     'p-2 flex gap-2 flex-col surface-container rounded-[12px] border sim-shadow resize overflow-auto min-w-64 min-h-12',
   );
 
+  const seeMoreMessage = `See details about ${title}`;
+
   return (
     <div className={classes}>
       <div className='flex justify-between items-center pl-2'>
@@ -74,13 +76,13 @@ export default function Block({
           <Dialog>
             <DialogTrigger>
               <Tooltip>
-                <TooltipTrigger asChild>
+                <TooltipTrigger asChild aria-label={seeMoreMessage}>
                   <div className='iconHighlight h-8 w-8 p-1 rounded-full text-primary'>
                     <MoreVertical strokeWidth={1.5} />
                   </div>
                 </TooltipTrigger>
                 <TooltipContent side='bottom' className='p-2'>
-                  See details
+                  {seeMoreMessage}
                 </TooltipContent>
               </Tooltip>
             </DialogTrigger>
