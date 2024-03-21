@@ -79,9 +79,10 @@ export function SettingsForm() {
   };
 
   return (
-    <div className='flex flex-col gap-8'>
-      <div>
-        <Card>
+    <div>
+      <section className='pb-10'>
+        <h2>Storage</h2>
+        <Card className='mb-8'>
           <CardHeader>
             <CardTitle>Local Storage</CardTitle>
             <CardDescription>
@@ -94,8 +95,6 @@ export function SettingsForm() {
             <Button onClick={clearLocalMemory}>Clear local memory</Button>
           </CardContent>
         </Card>
-      </div>
-      <div>
         <Card>
           <CardHeader>
             <CardTitle>Export Current Configuration</CardTitle>
@@ -113,8 +112,9 @@ export function SettingsForm() {
             </div>
           </CardContent>
         </Card>
-      </div>
-      <div>
+      </section>
+      <section className='pb-10'>
+        <h2>Appearance</h2>
         <Card>
           <CardHeader>
             <CardTitle>Light/Dark Mode</CardTitle>
@@ -123,10 +123,12 @@ export function SettingsForm() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <ModeToggle />
+            <div className='flex'>
+              <ModeToggle />
+            </div>
           </CardContent>
         </Card>
-      </div>
+      </section>
     </div>
   );
 }

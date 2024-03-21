@@ -37,9 +37,8 @@
 // - a simple `value` and `onNewValue` props
 
 import React from 'react';
-import { Control, FieldValues, Path, useController } from 'react-hook-form';
+import { type Control, type FieldValues, type Path, useController } from 'react-hook-form';
 
-import { ReactClassName } from '@/lib/types/reactTypes';
 import { cn } from '@/lib/utils';
 
 import { Label } from '@/components/base/ui/label';
@@ -54,9 +53,10 @@ import * as RadioGroup from '@radix-ui/react-radio-group';
  * Uses radix ui for accessibility
  */
 
-interface RadioInputBaseProps<T extends string> extends ReactClassName {
+interface RadioInputBaseProps<T extends string> {
   choices: readonly T[];
   texts?: readonly string[];
+  className?: string;
 }
 
 type RadioInputProps<T extends string> = RadioInputBaseProps<T> & {

@@ -30,7 +30,7 @@
  */
 
 import { Inter as FontSans } from 'next/font/google';
-import { type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 
 import '@/styles/globals.css';
 
@@ -68,10 +68,7 @@ export default async function RootLayout({
   return (
     <html lang='en'>
       <head>
-        <meta
-          name='viewport'
-          content='width=device-width, initial-scale=1.0'
-        />
+        <meta name='viewport' content='width=device-width, initial-scale=1.0' />
         <title>RISC-V Simulator</title>
       </head>
       <body
