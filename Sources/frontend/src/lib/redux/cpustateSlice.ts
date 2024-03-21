@@ -32,14 +32,14 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
 import {
-  Action,
-  PayloadAction,
-  ThunkAction,
+  type Action,
+  type PayloadAction,
+  type ThunkAction,
   createAsyncThunk,
   createSelector,
   createSlice,
 } from '@reduxjs/toolkit';
-import { toByteArray } from 'base64-js';
+import { Base64 } from 'js-base64';
 
 import { selectAsmCode, selectEntryPoint } from '@/lib/redux/compilerSlice';
 import { selectActiveConfig } from '@/lib/redux/isaSlice';
@@ -64,7 +64,7 @@ import type {
   SimCodeModel,
   StopReason,
 } from '@/lib/types/cpuApi';
-import {
+import type {
   InstructionDescriptionResponse,
   SimulateResponse,
 } from '@/lib/types/simulatorApi';
@@ -351,7 +351,9 @@ export const selectMemoryBytes = createSelector([selectMemory], (memory) => {
   if (!memory) {
     return null;
   }
-  const arr = toByteArray(memory.memoryBase64 ?? '');
+  const arr = Base64.toUint8Array(memory.memoryBase64 ?? '');
+  console.log('from base64', memory.memoryBase64);
+  console.log('created array', arr);
   return arr;
 });
 
@@ -676,7 +678,7 @@ export const selectCache = createSelector(
     // decode the base64 string in each cache line
     for (const isl of copy.cache) {
       for (const line of isl) {
-        const ba = toByteArray(line.line ?? '');
+        const ba = Base64.toUint8Array(line.line ?? '');
         line.decodedLine = Array.from(ba);
       }
     }
