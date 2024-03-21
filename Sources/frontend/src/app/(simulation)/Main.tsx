@@ -53,6 +53,25 @@ import { AutoPlay } from './AutoPlay';
  * Show either the simulation or an error message.
  */
 export function Main() {
+  // All is OK, show the simulation
+  return (
+    <>
+      <ErrorMessage />
+      <CanvasWindow>
+        <SimGrid />
+      </CanvasWindow>
+      <div className='absolute top-3 left-1/2'>
+        <Timeline />
+      </div>
+      <div className='absolute top-3 right-[280px]'>
+        <AutoPlay />
+      </div>
+      <SidePanel />
+    </>
+  );
+}
+
+function ErrorMessage() {
   const stateOk = useAppSelector(selectStateOk);
   const errorMessage = useAppSelector(selectErrorMessage);
   const simulationStatus = useAppSelector(selectSimulationStatus);
@@ -72,20 +91,4 @@ export function Main() {
       </div>
     );
   }
-
-  // All is OK, show the simulation
-  return (
-    <>
-      <CanvasWindow>
-        <SimGrid />
-      </CanvasWindow>
-      <div className='absolute top-3 left-1/2'>
-        <Timeline />
-      </div>
-      <div className='absolute top-3 right-[280px]'>
-        <AutoPlay />
-      </div>
-      <SidePanel />
-    </>
-  );
 }
