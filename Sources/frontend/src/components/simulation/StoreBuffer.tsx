@@ -81,8 +81,8 @@ export default function StoreBuffer() {
         totalSize={storeBuffer.bufferSize}
         columns={3}
         legend={
-          <div className='grid grid-cols-subgrid col-span-3 sticky top-0 bg-inherit'>
-            <div>Instruction</div>
+          <div className='flex gap-1 items-center'>
+            <div className='flex-grow'>Instruction</div>
             <div>Address</div>
             <div>Data</div>
           </div>

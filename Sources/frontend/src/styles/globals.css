@@ -796,8 +796,8 @@
   }
 
   /* Container for lists of instructions */
-  .instruction-list-container>*:not(:first-child) {
-    @apply pt-1;
+  .instruction-list-container>div>*:not(:first-child) {
+    @apply border-t;
   }
 
   /* Container for tags, pills, badges */

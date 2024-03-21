@@ -138,8 +138,8 @@ export default function IssueWindow({ type }: IssueWindowProps) {
         columns={3}
         instructions={issue.issuedInstructions}
         legend={
-          <div className='grid grid-cols-subgrid col-span-3 sticky top-0 bg-inherit'>
-            <div>Instruction</div>
+          <div className='flex gap-1 items-center'>
+            <div className='flex-grow'>Instruction</div>
             <div>Arg 1</div>
             <div>Arg 2</div>
           </div>

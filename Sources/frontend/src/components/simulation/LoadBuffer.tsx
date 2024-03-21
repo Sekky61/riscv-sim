@@ -78,8 +78,8 @@ export default function LoadBuffer() {
         totalSize={loadBuffer.bufferSize}
         columns={4}
         legend={
-          <div className='grid grid-cols-subgrid col-span-4 sticky top-0 bg-inherit'>
-            <div>Instruction</div>
+          <div className='flex gap-1 items-center'>
+            <div className='flex-grow'>Instruction</div>
             <div>Address</div>
             <div>Data</div>
             <div>Bypass</div>

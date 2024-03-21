@@ -71,16 +71,19 @@ export function InstructionListDisplay<T>({
   );
 
   return (
-    <div ref={ref} className='h-full w-full'>
-      <FixedSizeList
-        width={dimensions.width}
-        height={dimensions.height}
-        itemCount={displayCount}
-        itemSize={32}
-        className='instruction-list-container surface-container-low rounded-[8px]'
-      >
-        {Row}
-      </FixedSizeList>
+    <div className='h-full w-full flex flex-col surface-container-low rounded-[8px]'>
+      {legend}
+      <div ref={ref} className='flex-grow'>
+        <FixedSizeList
+          width={dimensions.width}
+          height={dimensions.height}
+          itemCount={displayCount}
+          itemSize={32}
+          className='instruction-list-container'
+        >
+          {Row}
+        </FixedSizeList>
+      </div>
     </div>
   );
 }
