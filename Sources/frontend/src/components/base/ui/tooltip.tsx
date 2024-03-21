@@ -27,4 +27,9 @@ const TooltipContent = React.forwardRef<
 ));
 TooltipContent.displayName = TooltipPrimitive.Content.displayName;
 
-export { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger };
+/**
+ * Attaches a tooltip to body to avoid overflow issues.
+  */ 
+const TooltipPortal = TooltipPrimitive.Portal;
+
+export { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger, TooltipPortal };

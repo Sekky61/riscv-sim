@@ -93,10 +93,7 @@ export default function ReorderBuffer() {
         columns={2}
         instructionRenderer={(simCodeModel, i) => {
           return (
-            <div
-              className='grid grid-cols-subgrid col-span-2'
-              key={`item_${i}`}
-            >
+            <div className='flex items-center gap-1' key={`item_${i}`}>
               <InstructionField instructionId={simCodeModel} />
               <RobInfo instructionId={simCodeModel} />
             </div>

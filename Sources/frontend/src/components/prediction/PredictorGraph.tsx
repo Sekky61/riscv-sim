@@ -41,11 +41,12 @@ import clsx from 'clsx';
 import {
   Tooltip,
   TooltipContent,
+  TooltipPortal,
   TooltipTrigger,
 } from '@/components/base/ui/tooltip';
 import { BranchTable } from '@/components/prediction/BranchTable';
 import { PredictorIcon } from '@/components/prediction/PredictorIcon';
-import { BranchInfo } from '@/lib/types/cpuApi';
+import type { BranchInfo } from '@/lib/types/cpuApi';
 
 type PredictorGraphProps = {
   branchInfo: BranchInfo;
@@ -71,7 +72,7 @@ export function PredictorGraph({ branchInfo }: PredictorGraphProps) {
       <TooltipTrigger asChild>
         <div
           className={clsx(
-            'w-8 rounded-lg p-1 ring-2 ring-inset',
+            'w-7 h-7 rounded-lg m-1 ring-2 ring-offset-2',
             verdict && 'ring-teal-500',
             !verdict && 'ring-rose-500',
           )}
@@ -79,9 +80,11 @@ export function PredictorGraph({ branchInfo }: PredictorGraphProps) {
           <PredictorIcon state={state} width={predictorStateWidth} />
         </div>
       </TooltipTrigger>
-      <TooltipContent>
-        <BranchTable branchInfo={branchInfo} />
-      </TooltipContent>
+      <TooltipPortal>
+        <TooltipContent>
+          <BranchTable branchInfo={branchInfo} />
+        </TooltipContent>
+      </TooltipPortal>
     </Tooltip>
   );
 }

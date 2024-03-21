@@ -34,7 +34,7 @@
 import clsx from 'clsx';
 
 import {
-  ParsedArgument,
+  type ParsedArgument,
   getValue,
   selectAluIssueWindowBlock,
   selectBranchIssueWindowBlock,
@@ -43,7 +43,7 @@ import {
   selectSimCodeModel,
 } from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
-import { Reference, RegisterDataContainer } from '@/lib/types/cpuApi';
+import type { Reference } from '@/lib/types/cpuApi';
 
 import { useBlockDescriptions } from '@/components/BlockDescriptionContext';
 import { DividedBadge } from '@/components/DividedBadge';
@@ -57,13 +57,13 @@ import {
 import {
   Tooltip,
   TooltipContent,
+  TooltipPortal,
   TooltipTrigger,
 } from '@/components/base/ui/tooltip';
 import Block from '@/components/simulation/Block';
 import InstructionField from '@/components/simulation/InstructionField';
 import { InstructionListDisplay } from '@/components/simulation/InstructionListDisplay';
 import { ShortValueInformation } from '@/components/simulation/ValueTooltip';
-import { A } from '@svgdotjs/svg.js';
 
 type IssueType = 'alu' | 'fp' | 'branch' | 'ls';
 
@@ -185,10 +185,15 @@ export function IssueWindowItem({ simCodeId }: IssueWindowItemProps) {
   }
 
   return (
-    <div className='grid grid-cols-subgrid col-span-3'>
+    <div className='flex gap-1'>
       <InstructionField instructionId={simCodeId} />
-      <ArgumentTableCell arg={arg1} />
-      <ArgumentTableCell arg={arg2} />
+      <div className='min-w-[40px] flex justify-center items-center'>
+        <ArgumentTableCell arg={arg1} />
+      </div>
+
+      <div className='min-w-[40px] flex justify-center items-center'>
+        <ArgumentTableCell arg={arg2} />
+      </div>
     </div>
   );
 }
@@ -210,8 +215,8 @@ export function ArgumentTableCell({ arg }: ArgumentTableCellProps) {
   const registerName = arg?.register?.name;
   const valid = arg?.valid;
 
-  const item1Style = clsx(
-    'register rounded flex px-2 h-full flex justify-center items-center',
+  const itemStyle = clsx(
+    'register rounded flex px-2 h-full flex justify-center items-center min-w-[40px]',
     valid && 'text-green-700',
   );
 
@@ -238,7 +243,7 @@ export function ArgumentTableCell({ arg }: ArgumentTableCellProps) {
     <Tooltip>
       <TooltipTrigger>
         <div
-          className={item1Style}
+          className={itemStyle}
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
           data-register-id={idToHighlight}
@@ -246,17 +251,19 @@ export function ArgumentTableCell({ arg }: ArgumentTableCellProps) {
           {text}
         </div>
       </TooltipTrigger>
-      <TooltipContent>
-        {item ? (
-          <ShortValueInformation
-            value={item}
-            valid={arg.valid}
-            register={arg.register}
-          />
-        ) : (
-          <div className='text-gray-400'>No value</div>
-        )}
-      </TooltipContent>
+      <TooltipPortal>
+        <TooltipContent>
+          {item ? (
+            <ShortValueInformation
+              value={item}
+              valid={arg.valid}
+              register={arg.register}
+            />
+          ) : (
+            <div className='text-gray-400'>No value</div>
+          )}
+        </TooltipContent>
+      </TooltipPortal>
     </Tooltip>
   );
 }

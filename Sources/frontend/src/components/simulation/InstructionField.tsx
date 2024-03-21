@@ -52,6 +52,7 @@ import {
 import {
   Tooltip,
   TooltipContent,
+  TooltipPortal,
   TooltipTrigger,
 } from '@/components/base/ui/tooltip';
 import { BranchTable } from '@/components/prediction/BranchTable';
@@ -352,6 +353,7 @@ function InstructionArgument({ arg }: InstructionArgumentProps) {
           {arg.origArg.stringValue}
         </span>
       </TooltipTrigger>
+      <TooltipPortal>
       <TooltipContent>
         <ShortValueInformation
           value={value}
@@ -359,6 +361,7 @@ function InstructionArgument({ arg }: InstructionArgumentProps) {
           register={arg.register}
         />
       </TooltipContent>
+      </TooltipPortal>
     </Tooltip>
   );
 }

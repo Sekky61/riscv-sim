@@ -36,7 +36,6 @@ import { useAppSelector } from '@/lib/redux/hooks';
 
 import { useBlockDescriptions } from '@/components/BlockDescriptionContext';
 import { DividedBadge } from '@/components/DividedBadge';
-import { Badge } from '@/components/base/ui/badge';
 import {
   Dialog,
   DialogContent,
@@ -53,7 +52,6 @@ import InstructionTable from '@/components/simulation/InstructionTable';
 import { BranchDetailDialog } from '@/components/simulation/PredictionBlock';
 import { hexPadEven } from '@/lib/utils';
 import { Expand } from 'lucide-react';
-import { Fragment } from 'react';
 
 /**
  * A component for displaying the Fetch block.
@@ -89,7 +87,7 @@ export default function FetchBlock() {
     <Block
       title='Fetch Block'
       stats={fetchStats}
-      className='fetch-position w-block'
+      className='fetch-position w-block h-[250px]'
       detailDialog={
         <DialogContent>
           <DialogHeader>
@@ -121,20 +119,19 @@ export default function FetchBlock() {
         </DialogContent>
       }
     >
-      <InstructionListDisplay
-        instructions={fetchObject.fetchedCode}
-        totalSize={fetchObject.numberOfWays}
-        columns={2}
-        instructionRenderer={(codeModel, i) => (
-          <div
-            className='grid grid-cols-subgrid col-span-2'
-            key={`instr_${codeModel}_${i}`}
-          >
-            <InstructionField instructionId={codeModel} />
-            <PredictorGraphFromCodeId simCodeId={codeModel} />
-          </div>
-        )}
-      />
+      <div className='flex-grow'>
+        <InstructionListDisplay
+          instructions={fetchObject.fetchedCode}
+          totalSize={fetchObject.numberOfWays}
+          columns={2}
+          instructionRenderer={(codeModel, i) => (
+            <div className='flex gap-1' key={`instr_${codeModel}_${i}`}>
+              <InstructionField instructionId={codeModel} />
+              <PredictorGraphFromCodeId simCodeId={codeModel} />
+            </div>
+          )}
+        />
+      </div>
     </Block>
   );
 }

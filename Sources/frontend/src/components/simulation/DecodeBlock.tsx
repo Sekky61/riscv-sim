@@ -70,7 +70,7 @@ export default function DecodeBlock() {
           </DialogHeader>
         </DialogContent>
       }
-      className='decode w-block'
+      className='decode w-block h-[250px]'
     >
       <InstructionListDisplay
         instructions={decode.codeBuffer}

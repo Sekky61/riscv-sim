@@ -132,7 +132,7 @@ export function StoreBufferItemComponent({
   };
 
   return (
-    <div className='grid grid-cols-subgrid col-span-3'>
+    <div className='flex gap-1 justify-center items-center'>
       <InstructionField instructionId={item.simCodeModel} />
       <ArgumentTableCell arg={address} />
       <RegisterReference registerId={item.sourceRegister} />

@@ -46,6 +46,7 @@
   body {
     @apply surface-container;
     font-family: 'Open Sans', sans-serif;
+    --hover-highlight-color: #D9E2FF;
   }
 
   /* main pane is for the page main content body */

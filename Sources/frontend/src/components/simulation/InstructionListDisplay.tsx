@@ -29,7 +29,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import type { ReactElement } from 'react';
+import { useRefDimensions } from '@/lib/hooks/useRefDimensions';
+import { useRef, type ReactElement } from 'react';
+import { FixedSizeList } from 'react-window';
 
 export type InstructionListDisplayProps<T> = {
   instructions: Array<T>;
@@ -57,26 +59,28 @@ export function InstructionListDisplay<T>({
   legend,
   columns = 1,
 }: InstructionListDisplayProps<T>) {
+  const ref = useRef(null);
+  const dimensions = useRefDimensions(ref);
   const displayCount = totalSize ?? (instructions.length || 1);
-  const emptyCount = displayCount - instructions.length;
 
-  let templateColumns = 'minmax(8rem, 1fr)';
-  if (columns > 1) {
-    templateColumns = `minmax(8rem, 1fr) repeat(${columns - 1}, max-content)`;
-  }
+  // A react-window cell renderer for InstructionListDisplay.
+  const Row = ({ index, style }) => (
+    <div style={style}>
+      {instructionRenderer(instructions[index] ?? null, index)}
+    </div>
+  );
 
   return (
-    <div
-      className='grid gap-1 gap-x-2 p-1 overflow-y-auto w-full divide-y instruction-list-container surface-container-low rounded-[8px]'
-      style={{
-        gridTemplateColumns: templateColumns,
-      }}
-    >
-      {legend}
-      {instructions.map((inst, id) => instructionRenderer(inst, id))}
-      {Array.from({ length: emptyCount }).map((_, id) =>
-        instructionRenderer(null, id + instructions.length),
-      )}
+    <div ref={ref} className='h-full w-full'>
+      <FixedSizeList
+        width={dimensions.width}
+        height={dimensions.height}
+        itemCount={displayCount}
+        itemSize={32}
+        className='instruction-list-container surface-container-low rounded-[8px]'
+      >
+        {Row}
+      </FixedSizeList>
     </div>
   );
 }
