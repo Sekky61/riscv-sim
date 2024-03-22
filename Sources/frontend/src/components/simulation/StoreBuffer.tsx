@@ -129,6 +129,7 @@ export function StoreBufferItemComponent({
       stringValue: '',
       registerValue: null,
     },
+    value: addressContainer
   };
 
   return (

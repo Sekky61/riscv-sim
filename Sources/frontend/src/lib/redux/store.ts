@@ -6,7 +6,7 @@
  *          Brno University of Technology
  *          xmajer21@stud.fit.vutbr.cz
  *
- * @brief   Redux store
+ * @brief   Redux store - global state
  *
  * @date    19 September 2023, 22:00 (created)
  *
@@ -54,6 +54,7 @@ import simConfigReducer, { SimConfigReducer } from '@/lib/redux/simConfigSlice';
 /**
  * This is the root of the global state.
  * It is a combination of all the reducers defined in this directory.
+ * I recommend the official docs: https://redux.js.org/introduction/getting-started
  *
  * The configuration is persisted in the local storage.
  * If the schema changes, the version number _must be increased_, otherwise the wrong data will be loaded and the app will not work.

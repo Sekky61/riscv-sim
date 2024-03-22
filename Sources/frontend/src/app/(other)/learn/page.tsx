@@ -30,7 +30,7 @@
  */
 
 import { loadBlockDescriptions } from '@/lib/staticLoaders';
-import { BlockDescription } from '@/lib/types/codeExamples';
+import type { BlockDescription } from '@/lib/types/codeExamples';
 
 /**
  * Educational page about the blocks of the processor.

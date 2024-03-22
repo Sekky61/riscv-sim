@@ -29,6 +29,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { CodeSnippet } from '@/components/CodeSnippet';
 import ExternalLink from '@/components/ExternalLink';
 
 export default function Page() {
@@ -42,6 +43,7 @@ export default function Page() {
         <h2>Introduction</h2>
         <p>
           RISC-V is a small, simple, open source Instruction Set Architecture.
+          The popularity of RISC-V is growing, especially in the academic world.
           There is the base instruction set and a number of extensions. This
           simulator supports the base (RV32I) and the integer multiplication and
           division (M) extensions.
@@ -49,11 +51,39 @@ export default function Page() {
         <p>
           The memory system is <b>little-endian</b>. There are <b>32 integer</b>{' '}
           registers (<code>x0-x31</code>) and <b>32 floating point</b> registers
-          (<code>f0-f31</code>).
+          (<code>f0-f31</code>). Note that the register <code>x0</code>{' '}
+          hard-wired to zero and cannot be changed.
+        </p>
+        <p>
+        Note that only a subset of the RISC-V ISA is implemented in this simulator.
         </p>
       </section>
       <section>
+        <h2>Syntax</h2>
+        <p>
+          RISC-V assembly syntax comprises of a mnemonic followed by operands,
+          like in
+        </p>
+        <CodeSnippet language='c'>add x1, x2, x3</CodeSnippet>
+        <p>
+          where "add" adds the values of x2 and x3, storing the result in x1.
+        </p>
+        <p>
+          Labels are denoted by a colon ":" after the label name. It marks a
+          specific locations in the code. You can use it to jump to the
+          location. For example:
+        </p>
+        <CodeSnippet language='c'>
+          {`loop: add x1, x2, x3
+      j loop # jump back to the loop`}
+        </CodeSnippet>
+      </section>
+      <section>
         <h2>C Datatypes</h2>
+        <p>
+          RISC-V supports common C data types. The sizes of the data types are
+          as follows:
+        </p>
         <ul className='list-disc'>
           <li>
             <code>int</code> is 32 bits
@@ -70,20 +100,19 @@ export default function Page() {
       <section id='riscv-calling-convention'>
         <h2>RISC-V Calling Convention</h2>
         <p>
+          The RISC-V calling convention (aka. RVG convention) uses registers to
+          pass arguments to functions. The first 8 arguments are passed in
+          registers a0-a7. The rest of the arguments are passed on the stack.
+        </p>
+        <p>
           Registers actually have two names: (1) <b>register name</b> and (2){' '}
           <b>ABI name</b>.
         </p>
         <p>
-          The <i>saver</i> attribute of a register describes who is responsible
-          for keeping the value in the register unchanged. If the <i>caller</i>{' '}
-          is responsible, the register can be overwritten by the callee. If the{' '}
-          <i>callee</i> is responsible, the register must not be overwritten by
-          the callee.
-        </p>
-        <p>
-          The RISC-V calling convention (aka. RVG convention) uses registers to
-          pass arguments to functions. The first 8 arguments are passed in
-          registers a0-a7.
+          The convention distinguishes between caller-saved and callee-saved
+          registers, dictating whether the caller or the callee is responsible
+          for preserving register values. This is described by the <i>saver</i>{' '}
+          attribute in the table below.
         </p>
         <table className='mx-auto'>
           <caption>RISC-V Calling Convention</caption>

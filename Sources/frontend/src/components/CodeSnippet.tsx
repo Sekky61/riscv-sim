@@ -30,18 +30,20 @@
  */
 
 type CodeSnippetProps = {
-  code: string;
+  code?: string;
   language: string;
+  children?: React.ReactNode;
 };
 
 /**
  * Read-only code snippet. For use in the help page.
  * TODO: ability to highlight a portion of the code
  */
-export function CodeSnippet({ code, language }: CodeSnippetProps) {
+export function CodeSnippet({ code, language, children }: CodeSnippetProps) {
+  const toDisplay = children || code;
   return (
     <pre className='border p-4 rounded-md m-4'>
-      <code className={`language-${language}`}>{code}</code>
+      <code className={`language-${language}`}>{toDisplay}</code>
     </pre>
   );
 }

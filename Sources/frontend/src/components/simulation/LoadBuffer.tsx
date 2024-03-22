@@ -127,6 +127,7 @@ export function LoadBufferItemComponent({
       stringValue: '',
       registerValue: null,
     },
+    value: addressContainer,
   };
 
   return (

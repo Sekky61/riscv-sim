@@ -60,7 +60,7 @@ import {
 import { ErrorDisplay, FormInput } from '@/components/form/FormInput';
 import { parseCsv } from '@/lib/csv';
 import {
-  MemoryLocationApi,
+  type MemoryLocationApi,
   dataTypes,
   dataTypesText,
   memoryLocationDefaultValue,
@@ -82,10 +82,10 @@ import clsx from 'clsx';
 import { Upload } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import {
-  FieldError,
-  FieldErrors,
-  Resolver,
-  UseControllerProps,
+  type FieldError,
+  type FieldErrors,
+  type Resolver,
+  type UseControllerProps,
   useController,
   useForm,
 } from 'react-hook-form';

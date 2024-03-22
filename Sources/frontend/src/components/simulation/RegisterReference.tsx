@@ -29,7 +29,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { ParsedArgument, selectRegisterById } from '@/lib/redux/cpustateSlice';
+import {
+  type ParsedArgument,
+  selectRegisterById,
+} from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
 
 import { ArgumentTableCell } from '@/components/simulation/IssueWindow';
@@ -64,6 +67,7 @@ export default function RegisterReference({
       stringValue: displayValue,
       registerValue: register.name,
     },
+    value: register.value
   };
 
   return <ArgumentTableCell arg={arg} />;
