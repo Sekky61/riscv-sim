@@ -42,6 +42,43 @@ export function CodingHelp() {
     <>
       <p>I want to…</p>
       <Accordion type='single' collapsible>
+        <AccordionItem value='item-0'>
+          <AccordionTrigger>…define data in assembler.</AccordionTrigger>
+          <AccordionContent>
+            <p>
+              The compiler implements these{' '}
+              <a href='https://ftp.gnu.org/old-gnu/Manuals/gas-2.9.1/html_chapter/as_7.html'>
+                GCC Assembler directives
+              </a>
+              : .byte, .hword, .word, .align, .ascii, .asciiz, .string, .skip
+              and .zero. Note that the implementation may have slight
+              differences. Now to examples:
+            </p>
+            <CodeSnippet language='asm'>
+              N:{'                '}# N has the address pointing to the 4 byte
+              constant '42'
+              <br />
+              {'  '}.word 42
+            </CodeSnippet>
+            <CodeSnippet language='asm'>
+              Array:{'            '}# Array has the address pointing to the 8
+              integers
+              <br />
+              {'  '}.word 0, 1, 2, 3, 4, 5, 6, 7
+              <br />
+              {'  '}.zero 8{'         '}# You can even put multiple directives
+              after each other.
+            </CodeSnippet>
+            <CodeSnippet language='asm'>
+              {'  '}.align 4
+              <br />
+              Glob:{'             '}# Glob points to the byte. It is aligned to
+              2^4=16B boundary.
+              <br />
+              {'  '}.byte 1
+            </CodeSnippet>
+          </AccordionContent>
+        </AccordionItem>
         <AccordionItem value='item-1'>
           <AccordionTrigger>
             …make reference to an array specified in the Memory tab.
