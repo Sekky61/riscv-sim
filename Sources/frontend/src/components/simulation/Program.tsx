@@ -41,7 +41,7 @@ import {
   selectProgramWithLabels,
 } from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
-import {
+import type {
   InputCodeArgument,
   InstructionFunctionModel,
   Reference,
@@ -54,7 +54,8 @@ import { selectEntryPoint } from '@/lib/redux/compilerSlice';
 
 /**
  * A block displaying the program instructions.
- * Labels are displayed more prominently. PC is rendered as a red line pointing before the instruction.
+ * Labels are displayed more prominently. PC is rendered as a line pointing before the instruction.
+ * If the PC is out of bounds, it is rendered at the end.
  */
 export default function Program() {
   const pcRef = React.useRef<HTMLDivElement>(null);
@@ -76,7 +77,7 @@ export default function Program() {
 
   const pc = fetch.pc / 4;
 
-  // A thin red line
+  // A thin line
   const pcPointer = (
     <div ref={pcRef} className='relative w-full flex items-center'>
       <div className='absolute w-24 h-0.5 bg-tertiary rounded-full' />
@@ -86,12 +87,13 @@ export default function Program() {
     </div>
   );
 
+  // Entry point can be a number or a label
   let entryPointPretty = entryPoint;
   if (typeof entryPoint === 'number') {
     entryPointPretty = hexPadEven(entryPoint);
   }
 
-  const maxPc = codeOrder.length - 1 * 4;
+  const maxIndex = program.code.length - 1;
 
   return (
     <Block
@@ -135,8 +137,8 @@ export default function Program() {
             );
           })}
           <div className='grid grid-cols-subgrid col-span-2'>
-            <div></div>
-            {pc > maxPc && pcPointer}
+            <div />
+            {pc > maxIndex && pcPointer}
           </div>
         </div>
       </div>
@@ -145,13 +147,24 @@ export default function Program() {
 }
 
 type ProgramInstructionProps = {
+  /**
+   * The instruction id.
+   */
   instructionId: Reference;
+  /**
+   * Whether to show the address of the instruction.
+   */
   showAddress?: boolean;
+  /**
+   * Children to render before the instruction.
+   * Used for the PC pointer.
+   */
   children?: React.ReactNode;
 };
 
 /**
- * Used here in program block and in stats
+ * A single instruction in the program block.
+ * Used here in program block and in stats.
  */
 export function ProgramInstruction({
   instructionId,
@@ -194,7 +207,7 @@ export function ProgramInstruction({
 
 /**
  * Renders the syntax of an instruction.
- * Bit of code duplication, but ok.
+ * Different from the InstructionSyntax from InstuctionField - handles args differently.
  */
 function InstructionSyntax({
   functionModel,
@@ -213,3 +226,4 @@ function InstructionSyntax({
     return <span key={key}>{token}</span>;
   });
 }
+

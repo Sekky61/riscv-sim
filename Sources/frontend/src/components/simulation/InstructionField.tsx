@@ -381,7 +381,7 @@ const renderFlag = (flag: boolean) => (flag ? 'Yes' : 'No');
  * Render the instruction syntax.
  * Wraps the arguments in a tooltip and makes them highlightable.
  */
-function InstructionSyntax({
+export function InstructionSyntax({
   functionModel,
   args,
 }: {

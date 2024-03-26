@@ -160,6 +160,7 @@ public class MemoryInitializer
   
   /**
    * @return a pointer. After jumping on this pointer, the program will halt.
+   * TODO look into this. Isn't this supposed to be another value?
    */
   public long getExitPointer()
   {
