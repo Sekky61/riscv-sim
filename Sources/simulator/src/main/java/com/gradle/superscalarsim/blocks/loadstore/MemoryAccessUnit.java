@@ -140,63 +140,6 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
     }
   }// end of simulate
   
-  private void handleInstruction(int cycle)
-  {
-    if (this.simCodeModel.hasFailed())
-    {
-      // Instruction has failed, remove it from MAU
-      this.simCodeModel.setFunctionUnitId(this.functionUnitId);
-      this.simCodeModel = null;
-      // In case this clock tick is the last one of the instruction, take result from mem/cache
-      if (hasDelayPassed())
-      {
-        memoryModel.finishTransaction(transaction.id());
-      }
-      
-      // Mark the transaction as canceled
-      if (transaction != null)
-      {
-        transaction.setCanceled();
-        transaction = null;
-      }
-      
-      zeroTheCounter();
-      setDelay(baseDelay);
-      return;
-    }
-    
-    if (hasTimerStartedThisTick())
-    {
-      // First tick of work, leave your ID in store and load buffers
-      if (simCodeModel.isLoad())
-      {
-        this.loadBufferBlock.getLoadBufferItem(simCodeModel.getIntegerId()).setMemoryAccessId(this.functionUnitId);
-      }
-      else if (simCodeModel.isStore())
-      {
-        this.storeBufferBlock.getStoreBufferItem(simCodeModel.getIntegerId()).setMemoryAccessId(this.functionUnitId);
-      }
-      else
-      {
-        throw new RuntimeException("Instruction is not load or store");
-      }
-      
-      // Start execution
-      memoryDelay = startExecution(cycle);
-      this.setDelay(memoryDelay);
-    }
-    
-    // hasDelayPassed increments counter, checks if work (waiting) is done
-    tickCounter();
-    if (hasDelayPassed())
-    {
-      incrementBusyCycles();
-      finishExecution();
-    }
-    
-  }
-  //----------------------------------------------------------------------
-  
   /**
    * @return Delay of this access and id of the transaction
    * @brief starts execution of instruction
@@ -269,6 +212,59 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
     this.transaction  = null;
     this.setDelay(0);
     zeroTheCounter();
+  }
+  
+  /**
+   * @brief Action that should take place when an instruction failed.
+   * Remove the instruction, reset counter, cancel memory transaction.
+   */
+  @Override
+  protected void handleFailedInstruction()
+  {
+    // Instruction has failed, remove it from MAU
+    this.simCodeModel.setFunctionUnitId(this.functionUnitId);
+    this.simCodeModel = null;
+    // In case this clock tick is the last one of the instruction, take result from mem/cache
+    if (hasDelayPassed())
+    {
+      memoryModel.finishTransaction(transaction.id());
+    }
+    
+    // Mark the transaction as canceled
+    if (transaction != null)
+    {
+      transaction.setCanceled();
+      transaction = null;
+    }
+    
+    zeroTheCounter();
+    setDelay(baseDelay);
+  }
+  
+  /**
+   * @brief Action that should take place when an instruction starts executing.
+   * Calculate the delay, start memory transaction.
+   */
+  @Override
+  protected void handleStartExecution(int cycle)
+  {
+    // First tick of work, leave your ID in store and load buffers
+    if (simCodeModel.isLoad())
+    {
+      this.loadBufferBlock.getLoadBufferItem(simCodeModel.getIntegerId()).setMemoryAccessId(this.functionUnitId);
+    }
+    else if (simCodeModel.isStore())
+    {
+      this.storeBufferBlock.getStoreBufferItem(simCodeModel.getIntegerId()).setMemoryAccessId(this.functionUnitId);
+    }
+    else
+    {
+      throw new RuntimeException("Instruction is not load or store");
+    }
+    
+    // Start execution
+    memoryDelay = startExecution(cycle);
+    this.setDelay(memoryDelay);
   }
   
   /**

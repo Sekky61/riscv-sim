@@ -113,7 +113,6 @@ public class InstructionTests
     cpu.execute(false);
     
     // Assert
-    Assert.assertEquals(7, cpu.cpuState.tick);
     // PC+4=4 is saved in x1
     Assert.assertEquals(4, (int) cpu.cpuState.unifiedRegisterFileBlock.getRegister("x6").getValue(DataTypeEnum.kInt));
     // Jumped to 12

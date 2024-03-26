@@ -47,7 +47,6 @@ import com.gradle.superscalarsim.models.instruction.SimCodeModel;
 import com.gradle.superscalarsim.models.register.RegisterModel;
 import com.gradle.superscalarsim.models.util.Result;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -57,11 +56,6 @@ import java.util.List;
 public class ArithmeticFunctionUnitBlock extends AbstractFunctionUnitBlock
 {
   /**
-   * Array of all supported operators by this FU.
-   */
-  private final List<String> allowedOperators;
-  
-  /**
    * Interpreter for interpreting executing instructions
    */
   @JsonIdentityReference(alwaysAsId = true)
@@ -70,7 +64,6 @@ public class ArithmeticFunctionUnitBlock extends AbstractFunctionUnitBlock
   public ArithmeticFunctionUnitBlock()
   {
     // Empty
-    this.allowedOperators = new ArrayList<>();
   }
   
   /**
@@ -87,39 +80,7 @@ public class ArithmeticFunctionUnitBlock extends AbstractFunctionUnitBlock
                                      SimulationStatistics statistics)
   {
     super(description, issueWindowBlock, statistics);
-    this.allowedOperators = allowedOperators;
   }// end of Constructor
-  
-  /**
-   * @param simCodeModel Instruction to be executed
-   *
-   * @return True if the function unit can execute the instruction, false otherwise. Does not check if the function unit is busy.
-   */
-  @Override
-  public boolean canExecuteInstruction(SimCodeModel simCodeModel)
-  {
-    // Check if the instruction is arithmetic
-    InstructionFunctionModel model = simCodeModel.getInstructionFunctionModel();
-    if (model.getInstructionType() != InstructionTypeEnum.kIntArithmetic && model.getInstructionType() != InstructionTypeEnum.kFloatArithmetic)
-    {
-      return false;
-    }
-    
-    FunctionalUnitDescription.CapabilityName capabilityName = FunctionalUnitDescription.classifyExpression(
-            model.getInterpretableAs());
-    
-    // Compare capability
-    for (FunctionalUnitDescription.Capability cap : getDescription().operations)
-    {
-      if (cap.name == capabilityName)
-      {
-        return true;
-      }
-    }
-    // Not found
-    return false;
-  }
-  //----------------------------------------------------------------------
   
   /**
    * @param arithmeticInterpreter Arithmetic interpreter object
@@ -140,7 +101,7 @@ public class ArithmeticFunctionUnitBlock extends AbstractFunctionUnitBlock
   {
     if (!isFunctionUnitEmpty())
     {
-      handleInstruction();
+      handleInstruction(cycle);
     }
     
     // The state may have changed during the handling of the instruction
@@ -149,35 +110,6 @@ public class ArithmeticFunctionUnitBlock extends AbstractFunctionUnitBlock
       this.functionUnitId += this.functionUnitCount;
     }
   }// end of simulate
-  
-  /**
-   * Assumes that there is an instruction in the function unit
-   *
-   * @brief Handle the instruction inside FU
-   */
-  private void handleInstruction()
-  {
-    if (this.simCodeModel.hasFailed())
-    {
-      this.simCodeModel.setFunctionUnitId(this.functionUnitId);
-      this.simCodeModel = null;
-      this.zeroTheCounter();
-      return;
-    }
-    if (hasTimerStartedThisTick())
-    {
-      this.simCodeModel.setFunctionUnitId(this.functionUnitId);
-    }
-    
-    tickCounter();
-    if (!hasDelayPassed())
-    {
-      incrementBusyCycles();
-      return;
-    }
-    
-    finishExecution();
-  }
   //----------------------------------------------------------------------
   
   /**
@@ -208,16 +140,57 @@ public class ArithmeticFunctionUnitBlock extends AbstractFunctionUnitBlock
     this.setDelay(0);
     this.zeroTheCounter();
   }
-  
-  /**
-   * @return List of allowed operators
-   * @brief Get all allowed operators by this FU
-   */
-  public List<String> getAllowedOperators()
-  {
-    return allowedOperators;
-  }// end of getAllowedOperators
   //----------------------------------------------------------------------
   
+  /**
+   * @brief Action that should take place when an instruction failed.
+   * Remove the instruction, reset counter, cancel memory transaction.
+   */
+  @Override
+  protected void handleFailedInstruction()
+  {
+    this.simCodeModel.setFunctionUnitId(this.functionUnitId);
+    this.simCodeModel = null;
+    this.zeroTheCounter();
+  }
   
+  /**
+   * @brief Action that should take place when an instruction starts executing.
+   * Calculate the delay, start memory transaction.
+   */
+  @Override
+  protected void handleStartExecution(int cycle)
+  {
+    this.simCodeModel.setFunctionUnitId(this.functionUnitId);
+  }
+  
+  /**
+   * @param simCodeModel Instruction to be executed
+   *
+   * @return True if the function unit can execute the instruction, false otherwise. Does not check if the function unit is busy.
+   */
+  @Override
+  public boolean canExecuteInstruction(SimCodeModel simCodeModel)
+  {
+    // Check if the instruction is arithmetic
+    InstructionFunctionModel model = simCodeModel.getInstructionFunctionModel();
+    if (model.getInstructionType() != InstructionTypeEnum.kIntArithmetic && model.getInstructionType() != InstructionTypeEnum.kFloatArithmetic)
+    {
+      return false;
+    }
+    
+    FunctionalUnitDescription.CapabilityName capabilityName = FunctionalUnitDescription.classifyExpression(
+            model.getInterpretableAs());
+    
+    // Compare capability
+    for (FunctionalUnitDescription.Capability cap : getDescription().operations)
+    {
+      if (cap.name == capabilityName)
+      {
+        return true;
+      }
+    }
+    // Not found
+    return false;
+  }
 }

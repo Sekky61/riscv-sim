@@ -75,6 +75,46 @@ public class LoadStoreFunctionUnit extends AbstractFunctionUnitBlock
   }
   
   /**
+   * @param description          Description of the function unit
+   * @param issueWindowBlock     Issue window block for comparing instruction and data types
+   * @param loadBufferBlock      Load buffer with all load instruction entries
+   * @param storeBufferBlock     Store buffer with all store instruction entries
+   * @param loadStoreInterpreter Interpreter for processing load store instructions
+   * @param statistics           Statistics for reporting FU usage
+   *
+   * @brief Constructor
+   */
+  public LoadStoreFunctionUnit(FunctionalUnitDescription description,
+                               IssueWindowBlock issueWindowBlock,
+                               LoadBufferBlock loadBufferBlock,
+                               StoreBufferBlock storeBufferBlock,
+                               CodeLoadStoreInterpreter loadStoreInterpreter,
+                               SimulationStatistics statistics)
+  {
+    super(description, issueWindowBlock, statistics);
+    this.loadBufferBlock      = loadBufferBlock;
+    this.storeBufferBlock     = storeBufferBlock;
+    this.loadStoreInterpreter = loadStoreInterpreter;
+  }// end of Constructor
+  
+  /**
+   * @brief Simulates execution of an instruction
+   */
+  @Override
+  public void simulate(int cycle)
+  {
+    if (!isFunctionUnitEmpty())
+    {
+      handleInstruction(cycle);
+    }
+    
+    if (isFunctionUnitEmpty())
+    {
+      this.functionUnitId += this.functionUnitCount;
+    }
+  }// end of simulate
+  
+  /**
    * @brief Finishes execution of the instruction
    */
   @Override
@@ -109,27 +149,31 @@ public class LoadStoreFunctionUnit extends AbstractFunctionUnitBlock
   }
   
   /**
-   * @param description          Description of the function unit
-   * @param issueWindowBlock     Issue window block for comparing instruction and data types
-   * @param loadBufferBlock      Load buffer with all load instruction entries
-   * @param storeBufferBlock     Store buffer with all store instruction entries
-   * @param loadStoreInterpreter Interpreter for processing load store instructions
-   * @param statistics           Statistics for reporting FU usage
-   *
-   * @brief Constructor
+   * @brief Action that should take place when an instruction failed.
+   * Remove the instruction, reset counter, cancel memory transaction.
    */
-  public LoadStoreFunctionUnit(FunctionalUnitDescription description,
-                               IssueWindowBlock issueWindowBlock,
-                               LoadBufferBlock loadBufferBlock,
-                               StoreBufferBlock storeBufferBlock,
-                               CodeLoadStoreInterpreter loadStoreInterpreter,
-                               SimulationStatistics statistics)
+  @Override
+  protected void handleFailedInstruction()
   {
-    super(description, issueWindowBlock, statistics);
-    this.loadBufferBlock      = loadBufferBlock;
-    this.storeBufferBlock     = storeBufferBlock;
-    this.loadStoreInterpreter = loadStoreInterpreter;
-  }// end of Constructor
+    this.simCodeModel.setFunctionUnitId(this.functionUnitId);
+    this.simCodeModel = null;
+    this.zeroTheCounter();
+    this.setDelay(0);
+  }
+  //----------------------------------------------------------------------
+  
+  /**
+   * @param cycle
+   *
+   * @brief Action that should take place when an instruction starts executing.
+   * Calculate the delay, start memory transaction.
+   */
+  @Override
+  protected void handleStartExecution(int cycle)
+  {
+    this.simCodeModel.setFunctionUnitId(this.functionUnitId);
+    this.setDelay(this.delay);
+  }
   
   /**
    * @param simCodeModel Instruction to be executed
@@ -140,56 +184,6 @@ public class LoadStoreFunctionUnit extends AbstractFunctionUnitBlock
   public boolean canExecuteInstruction(SimCodeModel simCodeModel)
   {
     return simCodeModel.getInstructionFunctionModel().getInstructionType() == InstructionTypeEnum.kLoadstore;
-  }
-  //----------------------------------------------------------------------
-  
-  /**
-   * @brief Simulates execution of an instruction
-   */
-  @Override
-  public void simulate(int cycle)
-  {
-    if (!isFunctionUnitEmpty())
-    {
-      handleInstruction();
-    }
-    
-    if (isFunctionUnitEmpty())
-    {
-      this.functionUnitId += this.functionUnitCount;
-    }
-  }// end of simulate
-  
-  /**
-   * Assumes there is an active instruction in the function unit.
-   *
-   * @brief Handles instruction in the function unit (Computes address).
-   */
-  private void handleInstruction()
-  {
-    if (this.simCodeModel.hasFailed())
-    {
-      this.simCodeModel.setFunctionUnitId(this.functionUnitId);
-      this.simCodeModel = null;
-      this.zeroTheCounter();
-      this.setDelay(0);
-      return;
-    }
-    
-    if (hasTimerStartedThisTick())
-    {
-      this.simCodeModel.setFunctionUnitId(this.functionUnitId);
-      this.setDelay(this.delay);
-    }
-    
-    tickCounter();
-    if (!hasDelayPassed())
-    {
-      incrementBusyCycles();
-      return;
-    }
-    
-    finishExecution();
   }
   //----------------------------------------------------------------------
 }

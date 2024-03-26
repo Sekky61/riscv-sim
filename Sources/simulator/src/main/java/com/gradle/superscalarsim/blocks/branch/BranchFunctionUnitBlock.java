@@ -108,6 +108,32 @@ public class BranchFunctionUnitBlock extends AbstractFunctionUnitBlock
   }
   
   /**
+   * @brief Action that should take place when an instruction failed.
+   * Remove the instruction, reset counter, cancel memory transaction.
+   */
+  @Override
+  protected void handleFailedInstruction()
+  {
+    this.simCodeModel.setFunctionUnitId(this.functionUnitId);
+    this.simCodeModel = null;
+    this.zeroTheCounter();
+    this.setDelay(0);
+  }
+  
+  /**
+   * @param cycle
+   *
+   * @brief Action that should take place when an instruction starts executing.
+   * Calculate the delay, start memory transaction.
+   */
+  @Override
+  protected void handleStartExecution(int cycle)
+  {
+    this.simCodeModel.setFunctionUnitId(this.functionUnitId);
+    this.setDelay(this.delay);
+  }
+  
+  /**
    * @param simCodeModel Instruction to be executed
    *
    * @return True if the function unit can execute the instruction, false otherwise.
@@ -127,7 +153,7 @@ public class BranchFunctionUnitBlock extends AbstractFunctionUnitBlock
   {
     if (!isFunctionUnitEmpty())
     {
-      handleInstruction();
+      handleInstruction(cycle);
     }
     
     if (isFunctionUnitEmpty())
@@ -139,31 +165,27 @@ public class BranchFunctionUnitBlock extends AbstractFunctionUnitBlock
   /**
    * @brief Processes instruction
    */
-  public void handleInstruction()
+  public void handleInstruction(int cycle)
   {
     if (this.simCodeModel.hasFailed())
     {
-      this.simCodeModel.setFunctionUnitId(this.functionUnitId);
-      this.simCodeModel = null;
-      this.zeroTheCounter();
-      this.setDelay(0);
+      handleFailedInstruction();
       return;
     }
     
     if (hasTimerStartedThisTick())
     {
-      this.simCodeModel.setFunctionUnitId(this.functionUnitId);
-      this.setDelay(this.delay);
+      handleStartExecution(cycle);
     }
-    
-    tickCounter();
-    if (!hasDelayPassed())
-    {
-      incrementBusyCycles();
-      return;
-    }
-    
-    finishExecution();
+    //
+    //    tickCounter();
+    //    if (!hasDelayPassed())
+    //    {
+    //      incrementBusyCycles();
+    //      return;
+    //    }
+    //
+    //    finishExecution();
   }
   
   //----------------------------------------------------------------------

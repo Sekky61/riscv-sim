@@ -53,7 +53,7 @@ public class ForwardSimulationTest
   private IssueWindowBlock fpIssueWindowBlock;
   private ArithmeticFunctionUnitBlock faddFunctionBlock;
   private ArithmeticFunctionUnitBlock faddSecondFunctionBlock;
-  private ArithmeticFunctionUnitBlock fsubFunctionBlock;
+  private ArithmeticFunctionUnitBlock fmulFunctionBlock;
   
   private IssueWindowBlock branchIssueWindowBlock;
   private BranchFunctionUnitBlock branchFunctionUnitBlock1;
@@ -147,7 +147,7 @@ public class ForwardSimulationTest
                                                   FunctionalUnitDescription.CapabilityName.addition, 2)), "FP"),
                                   new FunctionalUnitDescription(5, FunctionalUnitDescription.Type.FP, Arrays.asList(
                                           new FunctionalUnitDescription.Capability(
-                                                  FunctionalUnitDescription.CapabilityName.addition, 2)), "FP"),
+                                                  FunctionalUnitDescription.CapabilityName.multiplication, 2)), "FP"),
                                   new FunctionalUnitDescription(6, FunctionalUnitDescription.Type.L_S, 1, "L/S"),
                                   new FunctionalUnitDescription(7, FunctionalUnitDescription.Type.Branch, 3, "Branch"),
                                   new FunctionalUnitDescription(8, FunctionalUnitDescription.Type.Branch, 3, "Branch"),
@@ -190,18 +190,14 @@ public class ForwardSimulationTest
     // FU
     this.addFunctionBlock = cpuState.arithmeticFunctionUnitBlocks.get(0);
     // Remove subtract
-    addFunctionBlock.getAllowedOperators().remove("-");
     this.addSecondFunctionBlock = cpuState.arithmeticFunctionUnitBlocks.get(1);
     // Remove subtract
-    addSecondFunctionBlock.getAllowedOperators().remove("-");
     this.subFunctionBlock  = cpuState.arithmeticFunctionUnitBlocks.get(2);
     this.faddFunctionBlock = cpuState.fpFunctionUnitBlocks.get(0);
     // Remove subtract
-    faddFunctionBlock.getAllowedOperators().remove("-");
     this.faddSecondFunctionBlock = cpuState.fpFunctionUnitBlocks.get(1);
     // Remove subtract
-    faddSecondFunctionBlock.getAllowedOperators().remove("-");
-    this.fsubFunctionBlock        = cpuState.fpFunctionUnitBlocks.get(2);
+    this.fmulFunctionBlock        = cpuState.fpFunctionUnitBlocks.get(2);
     this.loadStoreFunctionUnit    = cpuState.loadStoreFunctionUnits.get(0);
     this.memoryAccessUnit         = cpuState.memoryAccessUnits.get(0);
     this.branchFunctionUnitBlock1 = cpuState.branchFunctionUnitBlocks.get(0);
@@ -759,7 +755,7 @@ public class ForwardSimulationTest
   {
     CodeParser codeParser = new CodeParser(staticDataProvider);
     codeParser.parseCode("""
-                                 fsub.s f5,f4,f5
+                                 fmul.s f5,f4,f5
                                  fadd.s f2,f3,f4
                                  fadd.s f1,f2,f3
                                  fadd.s f4,f4,f3
@@ -767,7 +763,7 @@ public class ForwardSimulationTest
     instructionMemoryBlock.setCode(codeParser.getInstructions());
     
     this.cpu.step();
-    Assert.assertEquals("fsub.s", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
+    Assert.assertEquals("fmul.s", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
     Assert.assertEquals("fadd.s", this.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
     Assert.assertEquals("fadd.s", this.instructionFetchBlock.getFetchedCode().get(2).getInstructionName());
     Assert.assertEquals(RegisterReadinessEnum.kFree, this.unifiedRegisterFileBlock.getRegister("tg3").getReadiness());
@@ -777,7 +773,7 @@ public class ForwardSimulationTest
     
     this.cpu.step();
     Assert.assertEquals("fadd.s", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
-    Assert.assertEquals("fsub.s tg0,f4,f5", this.decodeAndDispatchBlock.getCodeBuffer().get(0).getRenamedCodeLine());
+    Assert.assertEquals("fmul.s tg0,f4,f5", this.decodeAndDispatchBlock.getCodeBuffer().get(0).getRenamedCodeLine());
     Assert.assertEquals("fadd.s tg1,f3,f4", this.decodeAndDispatchBlock.getCodeBuffer().get(1).getRenamedCodeLine());
     Assert.assertEquals("fadd.s tg2,tg1,f3", this.decodeAndDispatchBlock.getCodeBuffer().get(2).getRenamedCodeLine());
     Assert.assertEquals(RegisterReadinessEnum.kFree, this.unifiedRegisterFileBlock.getRegister("tg3").getReadiness());
@@ -791,7 +787,7 @@ public class ForwardSimulationTest
     this.cpu.step();
     Assert.assertEquals(3, this.reorderBufferBlock.getReorderQueueSize());
     Assert.assertEquals("fadd.s tg3,f4,f3", this.decodeAndDispatchBlock.getCodeBuffer().get(0).getRenamedCodeLine());
-    Assert.assertEquals("fsub.s tg0,f4,f5",
+    Assert.assertEquals("fmul.s tg0,f4,f5",
                         this.fpIssueWindowBlock.getIssuedInstructions().get(0).getRenamedCodeLine());
     Assert.assertEquals("fadd.s tg1,f3,f4",
                         this.fpIssueWindowBlock.getIssuedInstructions().get(1).getRenamedCodeLine());
@@ -807,12 +803,13 @@ public class ForwardSimulationTest
                         this.unifiedRegisterFileBlock.getRegister("tg0").getReadiness());
     
     this.cpu.step();
+    // 2 left in issue, 2 executing
     Assert.assertEquals(4, this.reorderBufferBlock.getReorderQueueSize());
     Assert.assertEquals("fadd.s tg2,tg1,f3",
                         this.fpIssueWindowBlock.getIssuedInstructions().get(0).getRenamedCodeLine());
     Assert.assertEquals("fadd.s tg3,f4,f3",
                         this.fpIssueWindowBlock.getIssuedInstructions().get(1).getRenamedCodeLine());
-    Assert.assertEquals("fsub.s tg0,f4,f5", this.fsubFunctionBlock.getSimCodeModel().getRenamedCodeLine());
+    Assert.assertEquals("fmul.s tg0,f4,f5", this.fmulFunctionBlock.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("fadd.s tg1,f3,f4", this.faddFunctionBlock.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals(RegisterReadinessEnum.kAllocated,
                         this.unifiedRegisterFileBlock.getRegister("tg3").getReadiness());
@@ -824,10 +821,11 @@ public class ForwardSimulationTest
                         this.unifiedRegisterFileBlock.getRegister("tg0").getReadiness());
     
     this.cpu.step();
+    // second clock of execution. Last started also, only tg2 is waiting
     Assert.assertEquals("fadd.s tg2,tg1,f3",
                         this.fpIssueWindowBlock.getIssuedInstructions().get(0).getRenamedCodeLine());
     Assert.assertEquals("fadd.s tg3,f4,f3", this.faddSecondFunctionBlock.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertEquals("fsub.s tg0,f4,f5", this.fsubFunctionBlock.getSimCodeModel().getRenamedCodeLine());
+    Assert.assertEquals("fmul.s tg0,f4,f5", this.fmulFunctionBlock.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("fadd.s tg1,f3,f4", this.faddFunctionBlock.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals(RegisterReadinessEnum.kAllocated,
                         this.unifiedRegisterFileBlock.getRegister("tg3").getReadiness());
@@ -839,6 +837,7 @@ public class ForwardSimulationTest
                         this.unifiedRegisterFileBlock.getRegister("tg0").getReadiness());
     
     this.cpu.step();
+    // 0, 1 ready, 2 can be executed, 3 executing
     Assert.assertEquals(4, this.reorderBufferBlock.getReorderQueueSize());
     Assert.assertTrue(this.reorderBufferBlock.getRobItem(0).isReadyToBeCommitted());
     Assert.assertTrue(this.reorderBufferBlock.getRobItem(1).isReadyToBeCommitted());

@@ -418,6 +418,12 @@ public class CpuState implements Serializable
     }
     // rob
     reorderBufferBlock.simulate(tick);
+    // Empty all FUs
+    arithmeticFunctionUnitBlocks.forEach(arithmeticFunctionUnitBlock -> arithmeticFunctionUnitBlock.emptyIfDone());
+    fpFunctionUnitBlocks.forEach(arithmeticFunctionUnitBlock -> arithmeticFunctionUnitBlock.emptyIfDone());
+    loadStoreFunctionUnits.forEach(loadStoreFunctionUnit -> loadStoreFunctionUnit.emptyIfDone());
+    memoryAccessUnits.forEach(memoryAccessUnit -> memoryAccessUnit.emptyIfDone());
+    branchFunctionUnitBlocks.forEach(branchFunctionUnitBlock -> branchFunctionUnitBlock.emptyIfDone());
     // run all AbstractIssueWindowBlock blocks
     aluIssueWindowBlock.simulate(tick);
     fpIssueWindowBlock.simulate(tick);

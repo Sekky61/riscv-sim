@@ -100,9 +100,16 @@ public class GShareUnit
   }// end of getPredictor
   //----------------------------------------------------------------------
   
+  /**
+   * Ignores two lowest bits of the instruction as they are always 0.
+   *
+   * @param programCounter Address of the branch instruction
+   *
+   * @return Index of the required predictor
+   */
   public int getPredictorIndex(int programCounter)
   {
-    int index = programCounter % size;
+    int index = (programCounter >> 2) % size;
     if (useGlobalHistory)
     {
       index ^= globalHistoryRegister.getRegisterValue();

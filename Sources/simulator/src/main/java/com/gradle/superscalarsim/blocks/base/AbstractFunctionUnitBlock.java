@@ -43,10 +43,14 @@ import com.gradle.superscalarsim.models.instruction.SimCodeModel;
 /**
  * @class AbstractFunctionUnitBlock
  * @brief Abstract class containing interface and shared logic for all function units
+ * @details The clock starts at 1, so after the first cycle in the GUI 1/X is visible.
+ * The flow of execution is defined here, the specifics are implemented in the derived classes.
  */
 @JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
 public abstract class AbstractFunctionUnitBlock implements AbstractBlock
 {
+  final static int counterStart = 1;
+  
   /**
    * ID specifying when instruction passed specified FU.
    * Must be unique.
@@ -147,23 +151,36 @@ public abstract class AbstractFunctionUnitBlock implements AbstractBlock
   //----------------------------------------------------------------------
   
   /**
-   * @brief Sets the counter to zero (needs to be used before setting the new instruction)
-   */
-  public void resetCounter()
-  {
-    this.counter = 0;
-  }// end of resetCounter
-  //----------------------------------------------------------------------
-  
-  /**
    * @return True if delay has passed, false otherwise
    * @brief Moves to counter up and checks if delay has passed
    */
   protected boolean hasDelayPassed()
   {
-    return this.counter == (this.delay + 1);
+    return this.counter == (this.delay + counterStart);
   }// end of hasDelayPassed
   //----------------------------------------------------------------------
+  
+  /**
+   * If the instruction is done executing, empty the function unit.
+   * Ticks the counter.
+   */
+  public void emptyIfDone()
+  {
+    if (simCodeModel == null)
+    {
+      return;
+    }
+    if (this.simCodeModel.hasFailed())
+    {
+      handleFailedInstruction();
+      return;
+    }
+    tickCounter();
+    if (hasDelayPassed())
+    {
+      finishExecution();
+    }
+  }
   
   /**
    * @brief tick the counter one step
@@ -178,7 +195,7 @@ public abstract class AbstractFunctionUnitBlock implements AbstractBlock
    */
   public boolean hasTimerStartedThisTick()
   {
-    return this.counter == 0;
+    return this.counter == counterStart;
   }
   
   /**
@@ -196,7 +213,7 @@ public abstract class AbstractFunctionUnitBlock implements AbstractBlock
    */
   public boolean isBusy()
   {
-    if (counter == delay)
+    if (counter == delay + counterStart)
     {
       return false;
     }
@@ -215,19 +232,48 @@ public abstract class AbstractFunctionUnitBlock implements AbstractBlock
       assert this.counter == this.delay;
       finishExecution();
     }
-    this.counter      = 0;
+    this.counter      = counterStart;
     this.simCodeModel = simCodeModel;
     this.simCodeModel.setFunctionUnitId(this.functionUnitId);
-    // The cycle the instruction was issued counts as the first cycle
-    //    this.counter = 1;
   }// end of setDecodeCodeModel
   
-  //----------------------------------------------------------------------
+  /**
+   * The second part of FU cycle. Instruction can start work. Finishing is done in emptyIfDone.
+   *
+   * @param cycle Current cycle
+   */
+  protected void handleInstruction(int cycle)
+  {
+    if (this.simCodeModel.hasFailed())
+    {
+      handleFailedInstruction();
+      return;
+    }
+    
+    if (hasTimerStartedThisTick())
+    {
+      handleStartExecution(cycle);
+    }
+    
+    incrementBusyCycles();
+  }
   
   /**
    * @brief Finishes execution of the instruction
    */
   protected abstract void finishExecution();
+  
+  /**
+   * @brief Action that should take place when an instruction failed.
+   * Remove the instruction, reset counter, cancel memory transaction.
+   */
+  protected abstract void handleFailedInstruction();
+  
+  /**
+   * @brief Action that should take place when an instruction starts executing.
+   * Calculate the delay, start memory transaction.
+   */
+  protected abstract void handleStartExecution(int cycle);
   
   /**
    * @return True if function unit is idle, false if busy
