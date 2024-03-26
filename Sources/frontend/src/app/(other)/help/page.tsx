@@ -31,13 +31,37 @@
 
 import { CodingHelp } from '@/app/(other)/help/CodingHelp';
 import { ShortcutsHelp } from '@/app/(other)/help/ShortcutsHelp';
+import Link from 'next/link';
 
+/**
+ * The help page of the application
+ * Shows coding tips and shortcuts
+ */
 export default function Page() {
   return (
     <div className='flex flex-col gap-10 pb-16'>
       <section>
         <h1 className='text-4xl'>Help</h1>
-        <p>This is the help page.</p>
+        <p>How to operate this simulator?!</p>
+        <p>Here is the overview of the most important features.</p>
+        <ul>
+          <li>
+            Step through the simulation in the <Link href='/'>simulation</Link>{' '}
+            tab. The initial configuration is set for you.
+          </li>
+          <li>
+            Change the configuration in the{' '}
+            <Link href='/isa'>configuration</Link> tab.
+          </li>
+          <li>
+            Write your own programs or try other examples in the{' '}
+            <Link href='/compiler'>Code Editor</Link>.
+          </li>
+          <li>
+            Need to simulate on large data? Look at the{' '}
+            <Link href='/memory'>Memory</Link> tab.
+          </li>
+        </ul>
       </section>
       <section>
         <h2 id='code' className='text-2xl'>

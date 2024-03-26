@@ -185,6 +185,14 @@
     @apply px-4 py-2;
   }
 
+  ol {
+    @apply list-decimal list-inside;
+  }
+
+  ul {
+    @apply list-disc list-inside;
+  }
+
   .small-container {
     @apply mx-auto w-full xl:w-[1200px];
   }
@@ -327,8 +335,8 @@
     background-color: transparent;
   }
 
-  /* Link underline */
-  .link {
+  /* Link underline in a text */
+  .link, section a {
     @apply underline decoration-2 decoration-gray-300 hover:decoration-gray-400;
   }
 

@@ -100,8 +100,8 @@ la a4,ptr`}
             <p>
               To prevent the compiler from optimizing a variable away, try the{' '}
               <code>volatile</code> keyword.
-              <CodeSnippet code={'volatile int a;'} language='c' />
             </p>
+            <CodeSnippet code={'volatile int a;'} language='c' />
           </AccordionContent>
         </AccordionItem>
       </Accordion>

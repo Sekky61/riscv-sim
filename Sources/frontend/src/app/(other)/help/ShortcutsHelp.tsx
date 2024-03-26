@@ -31,9 +31,13 @@
 
 import { Fragment } from 'react';
 
+/**
+ * The shortcuts section of the help page
+ * Contains a list of shortcuts and their descriptions. Must be kept up manually.
+ */
 export function ShortcutsHelp() {
   return (
-    <div className='flex flex-col gap-6'>
+    <div className='grid grid-cols-2 gap-6'>
       {shortcutCategories.map((category) => (
         <div key={category.title}>
           <h3 className='text-xl'>{category.title}</h3>
@@ -55,6 +59,7 @@ export function ShortcutsHelp() {
 
 /**
  * A single row in the list of shortcuts
+ * Displays the description and the keys of the shortcut
  */
 export function ShortcutEntry({ shortcut }: { shortcut: Shortcut }) {
   // Interleave the keys with the plus sign
@@ -78,6 +83,10 @@ type Shortcut = {
   keys: string[];
 };
 
+/**
+ * The list of all shortcuts in the app
+ * Only for display, does not affect the app's behavior.
+ */
 const shortcuts = {
   simulationTab: {
     description: 'Show Simulation tab',
@@ -146,6 +155,9 @@ type ShortcutCategory = {
   shortcuts: readonly (keyof typeof shortcuts)[];
 };
 
+/**
+ * Puts the shortcuts in categories for display
+    */
 const shortcutCategories = [
   {
     title: 'Navigation Shortcuts',
