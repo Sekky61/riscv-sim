@@ -29,7 +29,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { FieldError } from 'react-hook-form';
+import type { FieldError } from 'react-hook-form';
 
 import { Label } from '@/components/base/ui/label';
 import {
@@ -80,7 +80,7 @@ const FormInput = React.forwardRef<HTMLInputElement, FormInputProps>(
           name={name}
           id={name}
           className={cn(
-            'flex h-10 w-full rounded-md border border-input bg-inherit px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
+            'input',
             isError && 'form-input-error',
             !isError && 'focus-visible:ring-ring',
           )}

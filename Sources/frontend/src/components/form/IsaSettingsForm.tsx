@@ -75,6 +75,7 @@ import {
 import { formatNumberWithUnit } from '@/lib/utils';
 import { FormInput } from './FormInput';
 import { ControlRadioInput, RadioInputWithTitle } from './RadioInput';
+import { DividedBadge } from '../DividedBadge';
 
 type IsaArrayFields = 'fUnits' | 'memoryLocations';
 type IsaSimpleFields = keyof Omit<CpuConfig, IsaArrayFields>;
@@ -89,7 +90,7 @@ type IsaFormMetadata = {
 
 /**
  * Metadata for ISA form fields
- * Displayed as title above the input and an icon with hint on hover
+ * Displayed as title above the input and an icon (i) with the hint on hover
  */
 const isaFormMetadata: IsaFormMetadata = {
   name: {
@@ -102,7 +103,7 @@ const isaFormMetadata: IsaFormMetadata = {
   },
   branchFollowLimit: {
     title: 'Branch follow limit',
-    hint: 'Number of branch instructions that can be evaluated in a single fetch.',
+    hint: 'Number of branch (jump) instructions that can be evaluated in a single fetch.',
   },
   lbSize: {
     title: 'Load buffer size',
@@ -114,11 +115,11 @@ const isaFormMetadata: IsaFormMetadata = {
   },
   fetchWidth: {
     title: 'Fetched instructions per cycle',
-    hint: 'The maximum number of instructions loaded from memory in a single clock.',
+    hint: 'The maximum number of instructions loaded from memory to the fetch unit in a single clock.',
   },
   commitWidth: {
     title: 'Commited instructions per cycle',
-    hint: 'The maximum number of instructions commited in a single clock.',
+    hint: 'The maximum number of instructions commited from ROB in a single clock.',
   },
   btbSize: {
     title: 'Branch target buffer size',
@@ -132,7 +133,8 @@ const isaFormMetadata: IsaFormMetadata = {
     title: 'Predictor type in PHT',
   },
   predictorDefaultState: {
-    title: 'Predictor default value',
+    title: 'Predictor default state',
+    hint: 'All predictors start with this state.',
   },
   cacheLines: {
     title: 'Cache lines',
@@ -140,17 +142,18 @@ const isaFormMetadata: IsaFormMetadata = {
   },
   cacheLineSize: {
     title: 'Cache line size (B)',
-    hint: 'Size of a cache line in bytes.',
+    hint: 'Size of a cache line in bytes. Has to be a power of 2.',
   },
   cacheAssoc: {
     title: 'Cache associativity',
-    hint: 'Number of cache lines per set.',
+    hint: 'Number of cache lines per set. Must divide the number of lines evenly.',
   },
   cacheReplacement: {
     title: 'Cache replacement policy',
   },
   storeBehavior: {
     title: 'Store behavior',
+    hint: 'write-through means the data is always immediately written to both main memory and the cache. write-back means the data is only written to the cache and is written to main memory later.',
   },
   storeLatency: {
     title: 'Store latency',
@@ -192,6 +195,7 @@ const isaFormMetadata: IsaFormMetadata = {
   },
   speculativeRegisters: {
     title: 'Number of speculative registers',
+    hint: 'The size of the speculative register file.',
   },
   coreClockFrequency: {
     title: 'Core clock frequency (Hz)',
@@ -203,6 +207,10 @@ const isaFormMetadata: IsaFormMetadata = {
   },
 };
 
+/**
+ * Metadata for functional unit capabilities.
+ * Options for picking capabilities of arithmetic units.
+ */
 const capabilitiesMetadata: {
   [key in Operations]: { name: string; additional: string };
 } = {
@@ -228,6 +236,9 @@ const capabilitiesMetadata: {
   },
 };
 
+/**
+ * Texts for the predictor types'
+ */
 const twoStatePredictor = ['Not Taken', 'Taken'] as const;
 const fourStatePredictor = [
   'Strongly Not Taken',
@@ -241,6 +252,11 @@ export type IsaSettingsFormProps = {
   form: UseFormReturn<CpuConfig>;
 };
 
+/**
+ * Form for ISA settings
+ * @param form - useForm hook
+ * @param disabled - disable the form (read-only)
+ */
 export default function IsaSettingsForm({
   form,
   disabled = false,
@@ -260,10 +276,11 @@ export default function IsaSettingsForm({
   // When predictorType changes, set a new predictorDefault
   // TODO: small bug with the form.formState.isValid
   // biome-ignore lint/correctness/useExhaustiveDependencies: This is a valid use case
-    useEffect(() => {
+  useEffect(() => {
     setValue('predictorDefaultState', 0);
   }, [setValue, watchPredictorType]);
 
+  // Makes the binding of the form fields easier
   // This function is valid for regular fields, but not arrays
   const simpleRegister = (
     name: IsaSimpleFields,
@@ -278,6 +295,7 @@ export default function IsaSettingsForm({
     };
   };
 
+  // The same but for radio inputs
   const radioRegister = (name: IsaSimpleFields) => {
     return {
       name,
@@ -506,18 +524,6 @@ export default function IsaSettingsForm({
   );
 }
 
-type OpMetadata = {
-  name: string;
-};
-
-const opsMetadata: { [op in Operations]: OpMetadata } = {
-  addition: { name: 'Addition' },
-  bitwise: { name: 'Bitwise' },
-  division: { name: 'Division' },
-  multiplication: { name: 'Multiplication' },
-  special: { name: 'Special' },
-};
-
 interface FunctionalUnitInputProps {
   disabled?: boolean;
   control: Control<CpuConfig>;
@@ -550,28 +556,31 @@ function FunctionalUnitInput({
         <fieldset disabled={disabled}>
           <div className='fu-grid'>
             <div className='contents font-bold'>
-              <div>Name</div>
-              <div>Base Latency</div>
+              <div>Unit</div>
+              <div>Latency</div>
               <div>Operations</div>
               <div />
             </div>
             <div className='contents'>
               {funits.map((fu, i) => {
-                let third = null;
+                let third = (
+                  <div className='h-10 text-onSurfaceVariant'>N/A</div>
+                );
                 if (isArithmeticUnitConfig(fu)) {
-                  third = fu.operations.map((op) => {
-                    const meta = opsMetadata[op.name];
-                    return (
-                      <div
-                        key={op.name}
-                        title={meta.name}
-                        className='rounded tertiary-container px-1 py-0.5 whitespace-nowrap snap-always snap-start'
-                      >
-                        {capabilitiesMetadata[op.name as Operations].name} (
-                        {op.latency})
-                      </div>
-                    );
-                  });
+                  third = (
+                    <div className='h-9 thin-scrollbar flex flex-grow gap-1 items-center text-sm overflow-x-scroll snap-x'>
+                      {fu.operations.map((op) => {
+                        return (
+                          <DividedBadge key={op.name}>
+                            <div>
+                              {capabilitiesMetadata[op.name as Operations].name}
+                            </div>
+                            <div>{op.latency}</div>
+                          </DividedBadge>
+                        );
+                      })}
+                    </div>
+                  );
                 }
                 return (
                   <div className='contents' key={fu.id}>
@@ -579,16 +588,14 @@ function FunctionalUnitInput({
                       {fu.name || fu.fuType}
                     </div>
                     <div>{fu.latency}</div>
-                    <div className='flex flex-grow gap-1 items-center text-sm overflow-x-scroll snap-x'>
-                      {third}
-                    </div>
+                    {third}
                     <div>
                       <button
                         type='button'
                         onClick={() => removeUnit(i)}
                         className='shrink-0 px-1'
                       >
-                        <X className='rounded-full stroke-red-400 duration-100 hover:bg-red-500/60 hover:stroke-red-600' />
+                        <X className='rounded-full stroke-error dark:stroke-dark-error duration-100 hover:error-container' />
                       </button>
                     </div>
                   </div>
@@ -652,7 +659,7 @@ function FUAdder({ control }: { control: Control<CpuConfig> }) {
 
   const addFU: MouseEventHandler = (_e) => {
     // generate integer ID
-    const id = Math.floor(Math.random() * 1000000);
+    const id = Math.floor(Math.random() * 10000000);
     setValue('id', id);
     const data = getValues();
     if (data.fuType === 'FX' || data.fuType === 'FP') {
@@ -670,7 +677,7 @@ function FUAdder({ control }: { control: Control<CpuConfig> }) {
 
   return (
     <div>
-      <h3 className='mb-4'>Add a Unit</h3>
+      <h3 className='mb-4 text-xl'>Add a Unit</h3>
       <div className=''>
         <ControlRadioInput
           control={subControl}
@@ -694,12 +701,17 @@ function FUAdder({ control }: { control: Control<CpuConfig> }) {
           />
         </div>
         <div className={enableOps ? '' : 'hidden'}>
-          <Label className='text text-lg'>Supported operations</Label>
-          <div>
+          <div className='text text-lg mb-4'>This unit can perform:</div>
+          <div
+            className='grid gap-2 items-center w-80'
+            style={{
+              gridTemplateColumns: 'max-content auto max-content',
+            }}
+          >
             {Object.entries(capabilities).map(([op, cap]) => {
               const id = `chkbx-${op}`;
               return (
-                <div key={op} className='flex items-center'>
+                <div key={op} className='grid grid-cols-subgrid col-span-3'>
                   <Checkbox
                     className='m-2'
                     id={id}
@@ -712,11 +724,15 @@ function FUAdder({ control }: { control: Control<CpuConfig> }) {
                       });
                     }}
                   />
-                  <Label htmlFor={id} className='flex-grow'>
-                    {capabilitiesMetadata[op as Operations].additional}
-                  </Label>
-                  <FormInput
+                  <div className='flex items-center'>
+                    <Label htmlFor={id}>
+                      {capabilitiesMetadata[op as Operations].additional}
+                    </Label>
+                  </div>
+                  <input
+                    className='input w-20 h-8'
                     value={cap.latency}
+                    min={0}
                     onChange={(e) => {
                       setCapabilities({
                         ...capabilities,
@@ -729,7 +745,6 @@ function FUAdder({ control }: { control: Control<CpuConfig> }) {
                     name={`latency-${op}`}
                     type='number'
                     title='Latency'
-                    error={errors.latency}
                     disabled={!cap.picked}
                   />
                 </div>
@@ -738,7 +753,7 @@ function FUAdder({ control }: { control: Control<CpuConfig> }) {
           </div>
         </div>
       </div>
-      <Button type='button' onClick={addFU}>
+      <Button type='button' onClick={addFU} className='mt-4'>
         Add Unit
       </Button>
     </div>

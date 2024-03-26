@@ -37,7 +37,12 @@
 // - a simple `value` and `onNewValue` props
 
 import React from 'react';
-import { type Control, type FieldValues, type Path, useController } from 'react-hook-form';
+import {
+  type Control,
+  type FieldValues,
+  type Path,
+  useController,
+} from 'react-hook-form';
 
 import { cn } from '@/lib/utils';
 
@@ -164,7 +169,7 @@ export function RadioInputWithTitle<T extends FieldValues>({
               <Label htmlFor={name}>{title}&nbsp;&#9432;</Label>
             </TooltipTrigger>
             <TooltipContent>
-              <p>{hint}</p>
+              <p className='max-w-64 p-2'>{hint}</p>
             </TooltipContent>
           </Tooltip>
         ) : (

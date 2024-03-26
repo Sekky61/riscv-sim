@@ -50,11 +50,11 @@ export default function Page() {
             tab. The initial configuration is set for you.
           </li>
           <li>
-            Change the configuration in the{' '}
+            Change the cpu parameters in the{' '}
             <Link href='/isa'>configuration</Link> tab.
           </li>
           <li>
-            Write your own programs or try other examples in the{' '}
+            Write your own programs or try other <b>examples</b> the{' '}
             <Link href='/compiler'>Code Editor</Link>.
           </li>
           <li>

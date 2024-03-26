@@ -268,6 +268,15 @@ export const isaFormSchema = z
       });
     }
 
+    // cacheLineSize must be a power of two
+    if (!isPowerOfTwo(data.cacheLineSize)) {
+      ctx.addIssue({
+        code: ZodIssueCode.custom,
+        path: ['cacheLineSize'],
+        message: 'Cache line size must be a power of two',
+      });
+    }
+
     // Config is correct
     return true;
   });
