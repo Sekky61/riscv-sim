@@ -63,10 +63,10 @@ public class InputCodeModelBuilder
     InstructionFunctionModel model;
     if (this.loader != null)
     {
-      model = this.loader.getInstructionFunctionModel(instructionFunctionModel.getName());
+      model = this.loader.getInstructionFunctionModel(instructionFunctionModel.name());
       if (model == null)
       {
-        throw new RuntimeException("Instruction " + instructionFunctionModel.getName() + ": model not found");
+        throw new RuntimeException("Instruction " + instructionFunctionModel.name() + ": model not found");
       }
     }
     else
@@ -75,7 +75,7 @@ public class InputCodeModelBuilder
     }
     
     // Patch: add argument to labels called labelName
-    if (model.getName().equals("label"))
+    if (model.name().equals("label"))
     {
       ArrayList<InputCodeArgument> temp = new ArrayList<>();
       // Copy all

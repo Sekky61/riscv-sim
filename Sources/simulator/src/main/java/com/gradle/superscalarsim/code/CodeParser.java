@@ -447,8 +447,9 @@ public class CodeParser
       argloop:
       for (InputCodeArgument argument : instruction.arguments())
       {
-        InstructionArgument argModel = instruction.instructionFunctionModel().getArgumentByName(argument.getName());
-        String argumentToken = argument.getValue();
+        InstructionArgument argModel      = instruction.instructionFunctionModel()
+                .getArgumentByName(argument.getName());
+        String              argumentToken = argument.getValue();
         if (argModel.isImmediate())
         {
           String[] tokens = ExpressionEvaluator.tokenize(argumentToken);
@@ -686,7 +687,7 @@ public class CodeParser
     int collectedArgsIndex = 0;
     boolean useDefaultArgs = numArguments < instructionModel.getAsmArguments()
             .size() && instructionModel.hasDefaultArguments();
-    for (InstructionArgument argument : instructionModel.getArguments())
+    for (InstructionArgument argument : instructionModel.arguments())
     {
       boolean   hasDefault = argument.defaultValue() != null;
       CodeToken argumentToken;

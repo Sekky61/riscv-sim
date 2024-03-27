@@ -275,7 +275,7 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
   @Override
   public boolean canExecuteInstruction(SimCodeModel simCodeModel)
   {
-    return simCodeModel.instructionFunctionModel().getInstructionType() == InstructionTypeEnum.kLoadstore;
+    return simCodeModel.instructionFunctionModel().instructionType() == InstructionTypeEnum.kLoadstore;
   }
   
   /**

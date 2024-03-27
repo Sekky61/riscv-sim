@@ -179,7 +179,7 @@ public class SimulationConfig
     outer:
     for (InputCodeModel instruction : codeParser.getInstructions())
     {
-      String interpretableAs = instruction.instructionFunctionModel().getInterpretableAs();
+      String interpretableAs = instruction.instructionFunctionModel().interpretableAs();
       FunctionalUnitDescription.CapabilityName capabilityName = FunctionalUnitDescription.classifyExpression(
               interpretableAs);
       
@@ -191,8 +191,9 @@ public class SimulationConfig
         }
       }
       
-      errorMessages.add(new ConfigError(
-              "No eligible FU found for instruction: " + instruction.instructionFunctionModel().getName(), "config"));
+      errorMessages.add(
+              new ConfigError("No eligible FU found for instruction: " + instruction.instructionFunctionModel().name(),
+                              "config"));
       break;
     }
     

@@ -55,6 +55,8 @@ import java.util.List;
  */
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "codeId")
 public record InputCodeModel(
+        @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "name")
+        // Needed here, not on the record
         @JsonIdentityReference(alwaysAsId = true) InstructionFunctionModel instructionFunctionModel,
         List<InputCodeArgument> arguments, int codeId, DebugInfo debugInfo) implements Identifiable, IInputCodeModel
 {
@@ -74,7 +76,7 @@ public record InputCodeModel(
   @Override
   public String toString()
   {
-    StringBuilder genericLine = new StringBuilder(instructionFunctionModel.getName());
+    StringBuilder genericLine = new StringBuilder(instructionFunctionModel.name());
     for (int i = 0; i < arguments().size(); i++)
     {
       genericLine.append(" ").append(arguments().get(i).getValue());
@@ -89,7 +91,7 @@ public record InputCodeModel(
   @Override
   public String getInstructionName()
   {
-    return instructionFunctionModel.getName();
+    return instructionFunctionModel.name();
   }
   
   /**
@@ -119,7 +121,7 @@ public record InputCodeModel(
    */
   public InstructionTypeEnum getInstructionTypeEnum()
   {
-    return instructionFunctionModel.getInstructionType();
+    return instructionFunctionModel.instructionType();
   }// end of getInstructionTypeEnum
   
   /**
@@ -153,7 +155,7 @@ public record InputCodeModel(
   public boolean isConditionalBranch()
   {
     // ! Depends on naming convention !
-    return getInstructionTypeEnum() == InstructionTypeEnum.kJumpbranch && instructionFunctionModel.getName()
+    return getInstructionTypeEnum() == InstructionTypeEnum.kJumpbranch && instructionFunctionModel.name()
             .startsWith("b");
   }
   

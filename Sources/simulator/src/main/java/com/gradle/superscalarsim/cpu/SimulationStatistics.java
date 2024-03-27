@@ -207,7 +207,7 @@ public class SimulationStatistics
   public void reportCommittedInstruction(SimCodeModel codeModel)
   {
     this.committedInstructions++;
-    this.dynamicInstructionMix.increment(codeModel.instructionFunctionModel().getInstructionType());
+    this.dynamicInstructionMix.increment(codeModel.instructionFunctionModel().instructionType());
     
     boolean isBranch = codeModel.getInstructionTypeEnum() == InstructionTypeEnum.kJumpbranch;
     if (isBranch)

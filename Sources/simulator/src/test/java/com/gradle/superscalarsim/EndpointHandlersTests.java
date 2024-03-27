@@ -206,7 +206,7 @@ public class EndpointHandlersTests
     Assert.assertNotNull(response);
     Assert.assertNotNull(response.models);
     Assert.assertFalse(response.models.isEmpty());
-    Assert.assertTrue(response.models.get("addi").getName().contains("addi"));
+    Assert.assertTrue(response.models.get("addi").name().contains("addi"));
   }
   
   @Test

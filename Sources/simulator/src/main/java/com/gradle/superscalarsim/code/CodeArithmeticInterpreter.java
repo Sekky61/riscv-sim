@@ -72,7 +72,7 @@ public class CodeArithmeticInterpreter
     }
     
     // Evaluate expression
-    String                      expression = instruction.getInterpretableAs();
+    String                      expression = instruction.interpretableAs();
     List<Expression.Variable>   variables  = simCodeModel.getVariables();
     Result<Expression.Variable> result     = Expression.interpret(expression, variables);
     

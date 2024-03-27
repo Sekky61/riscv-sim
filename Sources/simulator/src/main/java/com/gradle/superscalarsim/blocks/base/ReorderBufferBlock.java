@@ -342,7 +342,7 @@ public class ReorderBufferBlock implements AbstractBlock
     }
     
     // Store registers to arch. register file
-    List<InstructionArgument> arguments = codeModel.instructionFunctionModel().getArguments();
+    List<InstructionArgument> arguments = codeModel.instructionFunctionModel().arguments();
     for (InstructionArgument argument : arguments)
     {
       if (!argument.writeBack())

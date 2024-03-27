@@ -174,13 +174,13 @@ public class ArithmeticFunctionUnitBlock extends AbstractFunctionUnitBlock
   {
     // Check if the instruction is arithmetic
     InstructionFunctionModel model = simCodeModel.instructionFunctionModel();
-    if (model.getInstructionType() != InstructionTypeEnum.kIntArithmetic && model.getInstructionType() != InstructionTypeEnum.kFloatArithmetic)
+    if (model.instructionType() != InstructionTypeEnum.kIntArithmetic && model.instructionType() != InstructionTypeEnum.kFloatArithmetic)
     {
       return false;
     }
     
     FunctionalUnitDescription.CapabilityName capabilityName = FunctionalUnitDescription.classifyExpression(
-            model.getInterpretableAs());
+            model.interpretableAs());
     
     // Compare capability
     for (FunctionalUnitDescription.Capability cap : getDescription().operations)

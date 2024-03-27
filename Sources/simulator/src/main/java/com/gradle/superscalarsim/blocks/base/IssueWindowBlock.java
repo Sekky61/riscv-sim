@@ -92,7 +92,7 @@ public class IssueWindowBlock implements AbstractBlock
    */
   public boolean canHold(InstructionFunctionModel instruction)
   {
-    return instruction.getInstructionType() == this.instructionType;
+    return instruction.instructionType() == this.instructionType;
   }
   
   /**
@@ -157,7 +157,7 @@ public class IssueWindowBlock implements AbstractBlock
       if (!eligibleFound)
       {
         throw new IllegalStateException(
-                "No eligible FU found for instruction: " + currentModel.instructionFunctionModel().getName());
+                "No eligible FU found for instruction: " + currentModel.instructionFunctionModel().name());
       }
     }
     

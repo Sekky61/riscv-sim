@@ -459,7 +459,7 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
   @Override
   public String getInstructionName()
   {
-    return instructionFunctionModel().getName();
+    return instructionFunctionModel().name();
   }
   
   /**
@@ -565,7 +565,7 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
       return false;
     }
     InstructionFunctionModel instruction = instructionFunctionModel();
-    return instruction != null && instruction.getInterpretableAs().startsWith("load");
+    return instruction != null && instruction.interpretableAs().startsWith("load");
   }// end of isInstructionLoad
   
   /**
@@ -579,7 +579,7 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
       return false;
     }
     InstructionFunctionModel instruction = instructionFunctionModel();
-    return instruction != null && instruction.getInterpretableAs().startsWith("store");
+    return instruction != null && instruction.interpretableAs().startsWith("store");
   }// end of isInstructionStore
   
   /**

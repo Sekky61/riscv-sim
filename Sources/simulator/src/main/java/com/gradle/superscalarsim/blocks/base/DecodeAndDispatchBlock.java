@@ -233,7 +233,7 @@ public class DecodeAndDispatchBlock implements AbstractBlock
   private void renameSourceRegisters(SimCodeModel simCodeModel)
   {
     InstructionFunctionModel functionModel = simCodeModel.instructionFunctionModel();
-    for (InstructionArgument argDesc : functionModel.getArguments())
+    for (InstructionArgument argDesc : functionModel.arguments())
     {
       boolean shouldRename = !argDesc.writeBack() && argDesc.isRegister();
       if (shouldRename)
@@ -261,7 +261,7 @@ public class DecodeAndDispatchBlock implements AbstractBlock
   private boolean renameDestinationRegister(SimCodeModel simCodeModel)
   {
     // Rename all arguments that will be written back
-    for (InstructionArgument argument : simCodeModel.instructionFunctionModel().getArguments())
+    for (InstructionArgument argument : simCodeModel.instructionFunctionModel().arguments())
     {
       if (argument.writeBack())
       {
@@ -344,7 +344,7 @@ public class DecodeAndDispatchBlock implements AbstractBlock
   {
     boolean                  canCalculateAddress = true;
     InstructionFunctionModel instruction         = codeModel.instructionFunctionModel();
-    for (InstructionArgument argument : instruction.getArguments())
+    for (InstructionArgument argument : instruction.arguments())
     {
       if (argument.isRegister() && !argument.writeBack())
       {

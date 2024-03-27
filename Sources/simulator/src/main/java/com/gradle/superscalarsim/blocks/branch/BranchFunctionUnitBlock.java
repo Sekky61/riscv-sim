@@ -141,7 +141,7 @@ public class BranchFunctionUnitBlock extends AbstractFunctionUnitBlock
   @Override
   public boolean canExecuteInstruction(SimCodeModel simCodeModel)
   {
-    return simCodeModel.instructionFunctionModel().getInstructionType() == InstructionTypeEnum.kJumpbranch;
+    return simCodeModel.instructionFunctionModel().instructionType() == InstructionTypeEnum.kJumpbranch;
   }
   //----------------------------------------------------------------------
   

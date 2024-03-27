@@ -78,7 +78,7 @@ public class CodeLoadStoreInterpreter
       throw new IllegalStateException("Instruction is null");
     }
     
-    String[] interpretableAsParams = instruction.getInterpretableAs().split(":");
+    String[] interpretableAsParams = instruction.interpretableAs().split(":");
     
     if (interpretableAsParams.length != 3 && interpretableAsParams.length != 4)
     {
@@ -133,7 +133,7 @@ public class CodeLoadStoreInterpreter
       throw new IllegalStateException("Instruction is null");
     }
     
-    String[] interpretableAsParams = instruction.getInterpretableAs().split(":");
+    String[] interpretableAsParams = instruction.interpretableAs().split(":");
     if (interpretableAsParams.length < 3)
     {
       throw new IllegalStateException("Unexpected number of parameters: " + interpretableAsParams.length);

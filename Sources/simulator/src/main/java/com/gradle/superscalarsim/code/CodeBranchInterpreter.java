@@ -74,7 +74,7 @@ public class CodeBranchInterpreter
     final InstructionFunctionModel instruction = codeModel.instructionFunctionModel();
     assert instruction != null;
     
-    String[] splitInterpretableAs = instruction.getInterpretableAs().split(":");
+    String[] splitInterpretableAs = instruction.interpretableAs().split(":");
     assert splitInterpretableAs.length == 2;
     String                    targetExpr    = splitInterpretableAs[0];
     String                    conditionExpr = splitInterpretableAs[1];
