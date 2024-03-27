@@ -101,16 +101,17 @@ public class IssueWindowSuperBlock implements AbstractBlock
     this.reorderBufferBlock    // formatter trick
             .getReorderQueue() // ROB
             .filter(codeModel -> codeModel.issueWindowId == -1) // Only instructions not in an issue window
-            .forEach(this::selectCorrectIssueWindow);
+            .forEach(simCodeModel -> selectCorrectIssueWindow(simCodeModel, cycle));
   }// end of simulate
   //----------------------------------------------------------------------
   
   /**
    * @param codeModel Instruction to be dispatched
+   * @param cycle     Current cycle
    *
    * @brief Selects issue window based on instruction type and dispatches the instruction
    */
-  public void selectCorrectIssueWindow(SimCodeModel codeModel)
+  public void selectCorrectIssueWindow(SimCodeModel codeModel, int cycle)
   {
     IssueWindowBlock selectedIssue = switch (codeModel.instructionFunctionModel().instructionType())
     {
@@ -119,7 +120,7 @@ public class IssueWindowSuperBlock implements AbstractBlock
       case kLoadstore -> loadStoreIssueWindowBlock;
       case kJumpbranch -> branchIssueWindowBlock;
     };
-    selectedIssue.dispatchInstruction(codeModel);
+    selectedIssue.dispatchInstruction(codeModel, cycle);
   }// end of selectCorrectIssueWindow
   //----------------------------------------------------------------------
 }

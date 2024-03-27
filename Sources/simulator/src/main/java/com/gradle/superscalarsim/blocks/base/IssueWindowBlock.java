@@ -43,22 +43,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @class AbstractIssueWindowBlock
- * @brief Abstract class, containing interface and shared logic for all Issuing windows.
- * TODO: Where should the conversion instructions execute (float to int, eg.)?
+ * @class IssueWindowBlock
+ * @brief Shared logic for all Issuing windows. Instructions get here from {@link IssueWindowSuperBlock}.
+ * @details TODO: Where should the conversion instructions execute (float to int, eg.)?
  */
 @JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
 public class IssueWindowBlock implements AbstractBlock
 {
   /**
-   * List of all instructions dispatched to this window, with their arguments.
+   * List of all instructions dispatched to this window.
    */
   @JsonIdentityReference(alwaysAsId = true)
   private final List<SimCodeModel> issuedInstructions;
-  /**
-   * ID counter specifying which issue window did the instruction took
-   */
-  protected int windowId;
   /**
    * List of all function units associated with this window
    */
@@ -70,22 +66,22 @@ public class IssueWindowBlock implements AbstractBlock
   private final InstructionTypeEnum instructionType;
   
   /**
-   * @param registerFileBlock Class containing all registers, that simulator uses
+   * @param instructionType       Type of the instructions this window can hold
+   * @param functionUnitBlockList List of all function units associated with this window
    *
    * @brief Constructor
    */
-  public IssueWindowBlock(InstructionTypeEnum instructionType)
+  public IssueWindowBlock(InstructionTypeEnum instructionType, List<AbstractFunctionUnitBlock> functionUnitBlockList)
   {
     this.issuedInstructions    = new ArrayList<>();
-    this.functionUnitBlockList = new ArrayList<>();
-    
-    this.instructionType = instructionType;
+    this.functionUnitBlockList = functionUnitBlockList;
+    this.instructionType       = instructionType;
   }// end of Constructor
   //----------------------------------------------------------------------
   
   /**
    * @return Issue Instruction list
-   * @brief Gets Issued Instruction list
+   * @brief Gets Issued Instruction list. Used for debugging
    */
   public List<SimCodeModel> getIssuedInstructions()
   {
@@ -93,8 +89,8 @@ public class IssueWindowBlock implements AbstractBlock
   }// end of getIssuedInstructions
   
   /**
-   * @brief Simulates issuing instructions to FUs
-   * Shared behavior for all issue windows
+   * @brief Simulates issuing instructions to FUs.
+   * Shared behavior for all issue windows.
    */
   @Override
   public void simulate(int cycle)
@@ -148,8 +144,6 @@ public class IssueWindowBlock implements AbstractBlock
                 "No eligible FU found for instruction: " + currentModel.instructionFunctionModel().name());
       }
     }
-    
-    this.windowId = cycle;
   }
   
   /**
@@ -172,23 +166,14 @@ public class IssueWindowBlock implements AbstractBlock
   
   /**
    * @param codeModel Instruction to be added
+   * @param cycle     Current cycle
    *
    * @brief Adds new instruction to window list
    */
-  public void dispatchInstruction(SimCodeModel codeModel)
+  public void dispatchInstruction(SimCodeModel codeModel, int cycle)
   {
     this.issuedInstructions.add(codeModel);
-    codeModel.setIssueWindowId(this.windowId);
+    codeModel.setIssueWindowId(cycle);
   }// end of dispatchInstruction
   //----------------------------------------------------------------------
-  
-  /**
-   * @param functionUnitBlock Function unit to be added
-   *
-   * @brief Adds new function unit to the list
-   */
-  public void addFunctionUnit(AbstractFunctionUnitBlock functionUnitBlock)
-  {
-    this.functionUnitBlockList.add(functionUnitBlock);
-  }
 }

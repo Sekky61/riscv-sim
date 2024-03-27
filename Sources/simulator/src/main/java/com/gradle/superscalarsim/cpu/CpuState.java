@@ -52,6 +52,7 @@ import com.gradle.superscalarsim.serialization.Serialization;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -290,22 +291,12 @@ public class CpuState implements Serializable
     this.storeBufferBlock = new StoreBufferBlock(config.cpuConfig.sbSize);
     this.loadBufferBlock  = new LoadBufferBlock(config.cpuConfig.lbSize, storeBufferBlock);
     
-    // FUs
-    this.aluIssueWindowBlock       = new IssueWindowBlock(InstructionTypeEnum.kIntArithmetic);
-    this.branchIssueWindowBlock    = new IssueWindowBlock(InstructionTypeEnum.kJumpbranch);
-    this.fpIssueWindowBlock        = new IssueWindowBlock(InstructionTypeEnum.kFloatArithmetic);
-    this.loadStoreIssueWindowBlock = new IssueWindowBlock(InstructionTypeEnum.kLoadstore);
-    
-    
     // ROB
     this.reorderBufferBlock = new ReorderBufferBlock(config.cpuConfig.robSize, config.cpuConfig.commitWidth,
                                                      renameMapTableBlock, decodeAndDispatchBlock, storeBufferBlock,
                                                      loadBufferBlock, gShareUnit, branchTargetBuffer,
                                                      instructionFetchBlock, statistics,
                                                      memoryInitializer.getExitPointer(), debugLog);
-    
-    this.issueWindowSuperBlock = new IssueWindowSuperBlock(reorderBufferBlock, aluIssueWindowBlock, fpIssueWindowBlock,
-                                                           branchIssueWindowBlock, loadStoreIssueWindowBlock);
     
     this.arithmeticFunctionUnitBlocks = new ArrayList<>();
     this.fpFunctionUnitBlocks         = new ArrayList<>();
@@ -322,7 +313,6 @@ public class CpuState implements Serializable
           ArithmeticFunctionUnitBlock functionBlock = new ArithmeticFunctionUnitBlock(fu, fpIssueWindowBlock,
                                                                                       allowedOperators, statistics);
           functionBlock.addArithmeticInterpreter(arithmeticInterpreter);
-          this.aluIssueWindowBlock.addFunctionUnit(functionBlock);
           this.arithmeticFunctionUnitBlocks.add(functionBlock);
         }
         case FP ->
@@ -331,7 +321,6 @@ public class CpuState implements Serializable
           ArithmeticFunctionUnitBlock functionBlock = new ArithmeticFunctionUnitBlock(fu, fpIssueWindowBlock,
                                                                                       allowedOperators, statistics);
           functionBlock.addArithmeticInterpreter(arithmeticInterpreter);
-          this.fpIssueWindowBlock.addFunctionUnit(functionBlock);
           this.fpFunctionUnitBlocks.add(functionBlock);
         }
         case L_S ->
@@ -339,14 +328,12 @@ public class CpuState implements Serializable
           LoadStoreFunctionUnit loadStoreFunctionUnit = new LoadStoreFunctionUnit(fu, loadStoreIssueWindowBlock,
                                                                                   loadBufferBlock, storeBufferBlock,
                                                                                   loadStoreInterpreter, statistics);
-          this.loadStoreIssueWindowBlock.addFunctionUnit(loadStoreFunctionUnit);
           this.loadStoreFunctionUnits.add(loadStoreFunctionUnit);
         }
         case Branch ->
         {
           BranchFunctionUnitBlock branchFunctionUnitBlock = new BranchFunctionUnitBlock(fu, branchIssueWindowBlock,
                                                                                         branchInterpreter, statistics);
-          this.branchIssueWindowBlock.addFunctionUnit(branchFunctionUnitBlock);
           this.branchFunctionUnitBlocks.add(branchFunctionUnitBlock);
         }
         case Memory ->
@@ -360,6 +347,21 @@ public class CpuState implements Serializable
         }
         default -> throw new IllegalStateException("Unexpected FU type: " + fu.fuType);
       }
+      
+      // Issues
+      // The lists must be unmodifiable because of upcasting
+      this.aluIssueWindowBlock       = new IssueWindowBlock(InstructionTypeEnum.kIntArithmetic,
+                                                            Collections.unmodifiableList(arithmeticFunctionUnitBlocks));
+      this.branchIssueWindowBlock    = new IssueWindowBlock(InstructionTypeEnum.kJumpbranch,
+                                                            Collections.unmodifiableList(branchFunctionUnitBlocks));
+      this.fpIssueWindowBlock        = new IssueWindowBlock(InstructionTypeEnum.kFloatArithmetic,
+                                                            Collections.unmodifiableList(fpFunctionUnitBlocks));
+      this.loadStoreIssueWindowBlock = new IssueWindowBlock(InstructionTypeEnum.kLoadstore,
+                                                            Collections.unmodifiableList(loadStoreFunctionUnits));
+      
+      this.issueWindowSuperBlock = new IssueWindowSuperBlock(reorderBufferBlock, aluIssueWindowBlock,
+                                                             fpIssueWindowBlock, branchIssueWindowBlock,
+                                                             loadStoreIssueWindowBlock);
     }
   }
   
