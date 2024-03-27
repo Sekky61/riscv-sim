@@ -113,7 +113,7 @@ public class CodeLoadStoreInterpreter
     }
     else
     {
-      boolean isSigned = instruction.getArgumentByName("rd").type().isSigned();
+      boolean isSigned = instruction.getOutputType().isSigned();
       res = MemoryAccess.load(address.value(), sizeBytes, isSigned);
     }
     return new Result<>(res);

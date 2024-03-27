@@ -297,7 +297,7 @@ public class DecodeAndDispatchBlock implements AbstractBlock
     InstructionFunctionModel instruction = codeModel.instructionFunctionModel();
     
     int     instructionPosition = codeModel.getSavedPc();
-    boolean unconditional       = instruction.isUnconditionalJump();
+    boolean unconditional       = !codeModel.isConditionalBranch();
     boolean prediction          = codeModel.isBranchPredicted();
     // -1 means that entry was not predicted
     // TODO: this line is sus

@@ -35,8 +35,7 @@ package com.gradle.superscalarsim.blocks.branch;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.models.BranchTargetEntryModel;
-import com.gradle.superscalarsim.models.instruction.IInputCodeModel;
-import com.gradle.superscalarsim.models.instruction.InstructionFunctionModel;
+import com.gradle.superscalarsim.models.instruction.SimCodeModel;
 
 import java.util.Map;
 import java.util.TreeMap;
@@ -81,11 +80,10 @@ public class BranchTargetBuffer
    *
    * @brief Sets entry to BTB
    */
-  public void setEntry(int programCounter, IInputCodeModel codeModel, int target)
+  public void setEntry(int programCounter, SimCodeModel codeModel, int target)
   {
     assert codeModel != null;
-    InstructionFunctionModel instruction = codeModel.instructionFunctionModel();
-    BranchTargetEntryModel entryModel = new BranchTargetEntryModel(programCounter, !instruction.isUnconditionalJump(),
+    BranchTargetEntryModel entryModel = new BranchTargetEntryModel(programCounter, codeModel.isConditionalBranch(),
                                                                    target);
     
     this.buffer.put(programCounter % this.size, entryModel);

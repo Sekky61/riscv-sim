@@ -190,7 +190,7 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
       InputCodeArgument destinationArgument = simCodeModel.getArgumentByName("rd");
       RegisterModel     destRegister        = destinationArgument.getRegisterValue();
       long              savedResult         = transaction.dataAsLong();
-      destRegister.setValue(savedResult, simCodeModel.instructionFunctionModel().getArgumentByName("rd").type());
+      destRegister.setValue(savedResult, simCodeModel.instructionFunctionModel().getOutputType());
       destRegister.setReadiness(RegisterReadinessEnum.kExecuted);
       this.loadBufferBlock.setDestinationAvailable(simCodeId);
       this.loadBufferBlock.setMemoryAccessFinished(simCodeId);

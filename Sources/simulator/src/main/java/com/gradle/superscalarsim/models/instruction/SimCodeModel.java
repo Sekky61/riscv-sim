@@ -86,6 +86,7 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
   private int functionUnitId;
   /**
    * ID marking when was result ready
+   * TODO: not set ever
    */
   private int readyId;
   /**
@@ -289,18 +290,6 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
   {
     this.functionUnitId = functionUnitId;
   }// end of setFunctionUnitId
-  //------------------------------------------------------
-  
-  public int getReadyId()
-  {
-    return readyId;
-  }
-  //------------------------------------------------------
-  
-  public int getCommitId()
-  {
-    return commitId;
-  }
   //------------------------------------------------------
   
   /**

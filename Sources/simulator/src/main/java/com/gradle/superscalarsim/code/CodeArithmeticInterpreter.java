@@ -86,7 +86,7 @@ public class CodeArithmeticInterpreter
     
     if (rd != null)
     {
-      DataTypeEnum resultType = instruction.getArgumentByName("rd").type();
+      DataTypeEnum resultType = instruction.getOutputType();
       rd.value.setCurrentType(resultType);
     }
     return new Result<>(rd);

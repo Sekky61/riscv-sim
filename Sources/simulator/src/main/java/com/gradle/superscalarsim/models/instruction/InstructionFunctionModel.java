@@ -34,6 +34,7 @@ package com.gradle.superscalarsim.models.instruction;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.models.Identifiable;
 
@@ -56,7 +57,6 @@ public record InstructionFunctionModel(String name, InstructionTypeEnum instruct
                                        List<InstructionArgument> arguments,
                                        String interpretableAs) implements Identifiable
 {
-  
   /**
    * @return True if the instruction is a NOP
    */
@@ -86,6 +86,14 @@ public record InstructionFunctionModel(String name, InstructionTypeEnum instruct
   }
   
   /**
+   * @return The type of value this instruction produces
+   */
+  public DataTypeEnum getOutputType()
+  {
+    return getArgumentByName("rd").type();
+  }
+  
+  /**
    * @return True if the instruction can have default arguments (arguments with default values).
    */
   public boolean hasDefaultArguments()
@@ -94,11 +102,11 @@ public record InstructionFunctionModel(String name, InstructionTypeEnum instruct
   }
   
   /**
-   * @return True if instruction is an unconditional jump
+   * @return True if instruction is a conditional jump. Assumes that the instruction is a jump.
    */
-  public boolean isUnconditionalJump()
+  public boolean isConditionalJump()
   {
-    return interpretableAs.endsWith("true");
+    return !interpretableAs.endsWith("true");
   }// end of isUnconditionalJump
   //------------------------------------------------------
   

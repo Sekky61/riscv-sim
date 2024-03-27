@@ -154,9 +154,7 @@ public record InputCodeModel(
    */
   public boolean isConditionalBranch()
   {
-    // ! Depends on naming convention !
-    return getInstructionTypeEnum() == InstructionTypeEnum.kJumpbranch && instructionFunctionModel.name()
-            .startsWith("b");
+    return instructionFunctionModel.isConditionalJump();
   }
   
   /**
