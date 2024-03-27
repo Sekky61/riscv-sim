@@ -37,7 +37,6 @@ import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.blocks.AbstractBlock;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
-import com.gradle.superscalarsim.models.instruction.InstructionFunctionModel;
 import com.gradle.superscalarsim.models.instruction.SimCodeModel;
 
 import java.util.ArrayList;
@@ -45,7 +44,8 @@ import java.util.List;
 
 /**
  * @class AbstractIssueWindowBlock
- * @brief Abstract class, containing interface and shared logic for all Issuing windows
+ * @brief Abstract class, containing interface and shared logic for all Issuing windows.
+ * TODO: Where should the conversion instructions execute (float to int, eg.)?
  */
 @JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
 public class IssueWindowBlock implements AbstractBlock
@@ -62,12 +62,12 @@ public class IssueWindowBlock implements AbstractBlock
   /**
    * List of all function units associated with this window
    */
-  private List<AbstractFunctionUnitBlock> functionUnitBlockList;
+  private final List<AbstractFunctionUnitBlock> functionUnitBlockList;
   /**
    * Type of the instructions this window can hold.
    * Arithmetic is further differentiated into int and float.
    */
-  private InstructionTypeEnum instructionType;
+  private final InstructionTypeEnum instructionType;
   
   /**
    * @param registerFileBlock Class containing all registers, that simulator uses
@@ -82,18 +82,6 @@ public class IssueWindowBlock implements AbstractBlock
     this.instructionType = instructionType;
   }// end of Constructor
   //----------------------------------------------------------------------
-  
-  /**
-   * @param instruction Instruction description
-   *
-   * @return True if compatible, false otherwise.
-   * @brief Checks if provided instruction is compatible with this window.
-   * TODO: Where should the conversion instructions execute (float to int, eg.)?
-   */
-  public boolean canHold(InstructionFunctionModel instruction)
-  {
-    return instruction.instructionType() == this.instructionType;
-  }
   
   /**
    * @return Issue Instruction list

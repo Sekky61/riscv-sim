@@ -134,10 +134,6 @@ public class ReorderBufferBlock implements AbstractBlock
    */
   @JsonIdentityReference(alwaysAsId = true)
   private StoreBufferBlock storeBufferBlock;
-  /**
-   * Issues instructions to individual issue windows
-   */
-  private IssueWindowSuperBlock issueWindowSuperBlock;
   
   public ReorderBufferBlock()
   {
@@ -154,6 +150,8 @@ public class ReorderBufferBlock implements AbstractBlock
    * @param branchTargetBuffer     Buffer holding information about branch instructions targets
    * @param instructionFetchBlock  Class that fetches code from CodeParser
    * @param statisticsCounter      Class for statistics gathering
+   * @param haltTarget             the jump target address triggering the halt
+   * @param debugLog               Debug log
    *
    * @brief Constructor
    */
@@ -163,7 +161,6 @@ public class ReorderBufferBlock implements AbstractBlock
                             DecodeAndDispatchBlock decodeAndDispatchBlock,
                             StoreBufferBlock storeBufferBlock,
                             LoadBufferBlock loadBufferBlock,
-                            IssueWindowSuperBlock issueWindowSuperBlock,
                             GShareUnit gShareUnit,
                             BranchTargetBuffer branchTargetBuffer,
                             InstructionFetchBlock instructionFetchBlock,
@@ -175,7 +172,6 @@ public class ReorderBufferBlock implements AbstractBlock
     this.decodeAndDispatchBlock = decodeAndDispatchBlock;
     this.storeBufferBlock       = storeBufferBlock;
     this.loadBufferBlock        = loadBufferBlock;
-    this.issueWindowSuperBlock  = issueWindowSuperBlock;
     
     this.gShareUnit            = gShareUnit;
     this.branchTargetBuffer    = branchTargetBuffer;
@@ -561,19 +557,4 @@ public class ReorderBufferBlock implements AbstractBlock
   {
     return this.reorderQueue.stream();
   }// end of getReorderQueue
-  
-  /**
-   *
-   */
-  public void simulate_issue(int tick)
-  {
-    // Issue instruction without a IssueWindowId
-    for (SimCodeModel codeModel : this.reorderQueue)
-    {
-      if (codeModel.issueWindowId == -1)
-      {
-        issueWindowSuperBlock.selectCorrectIssueWindow(codeModel.instructionFunctionModel(), codeModel);
-      }
-    }
-  }
 }

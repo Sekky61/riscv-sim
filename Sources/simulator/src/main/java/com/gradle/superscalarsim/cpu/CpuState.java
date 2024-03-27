@@ -296,16 +296,16 @@ public class CpuState implements Serializable
     this.fpIssueWindowBlock        = new IssueWindowBlock(InstructionTypeEnum.kFloatArithmetic);
     this.loadStoreIssueWindowBlock = new IssueWindowBlock(InstructionTypeEnum.kLoadstore);
     
-    this.issueWindowSuperBlock = new IssueWindowSuperBlock(decodeAndDispatchBlock,
-                                                           List.of(aluIssueWindowBlock, fpIssueWindowBlock,
-                                                                   branchIssueWindowBlock, loadStoreIssueWindowBlock));
     
     // ROB
     this.reorderBufferBlock = new ReorderBufferBlock(config.cpuConfig.robSize, config.cpuConfig.commitWidth,
                                                      renameMapTableBlock, decodeAndDispatchBlock, storeBufferBlock,
-                                                     loadBufferBlock, issueWindowSuperBlock, gShareUnit,
-                                                     branchTargetBuffer, instructionFetchBlock, statistics,
+                                                     loadBufferBlock, gShareUnit, branchTargetBuffer,
+                                                     instructionFetchBlock, statistics,
                                                      memoryInitializer.getExitPointer(), debugLog);
+    
+    this.issueWindowSuperBlock = new IssueWindowSuperBlock(reorderBufferBlock, aluIssueWindowBlock, fpIssueWindowBlock,
+                                                           branchIssueWindowBlock, loadStoreIssueWindowBlock);
     
     this.arithmeticFunctionUnitBlocks = new ArrayList<>();
     this.fpFunctionUnitBlocks         = new ArrayList<>();
@@ -448,8 +448,8 @@ public class CpuState implements Serializable
     loadStoreFunctionUnits.forEach(loadStoreFunctionUnit -> loadStoreFunctionUnit.simulate(tick));
     memoryAccessUnits.forEach(memoryAccessUnit -> memoryAccessUnit.simulate(tick));
     branchFunctionUnitBlocks.forEach(branchFunctionUnitBlock -> branchFunctionUnitBlock.simulate(tick));
-    //    issueWindowSuperBlock.simulate(tick);
-    reorderBufferBlock.simulate_issue(tick);
+    
+    issueWindowSuperBlock.simulate(tick); // put instructions into issue windows
     decodeAndDispatchBlock.simulate(tick);
     instructionFetchBlock.simulate(tick);
     // Stats
@@ -484,7 +484,8 @@ public class CpuState implements Serializable
     boolean pcEnd         = instructionFetchBlock.getPc() >= instructionMemoryBlock.getCode().size() * 4;
     boolean renameEmpty   = decodeAndDispatchBlock.getCodeBuffer().isEmpty();
     boolean fetchNotEmpty = !instructionFetchBlock.getFetchedCode().isEmpty();
-    boolean nop = fetchNotEmpty && instructionFetchBlock.getFetchedCode().get(0).getInstructionName().equals("nop");
+    boolean nop           = fetchNotEmpty && instructionFetchBlock.getFetchedCode().get(0).getInstructionName()
+            .equals("nop");
     if (robEmpty && pcEnd && renameEmpty && nop)
     {
       return StopReason.kEndOfCode;
