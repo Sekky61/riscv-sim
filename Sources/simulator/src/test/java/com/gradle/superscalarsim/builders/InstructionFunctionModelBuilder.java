@@ -2,6 +2,7 @@ package com.gradle.superscalarsim.builders;
 
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
+import com.gradle.superscalarsim.models.instruction.InstructionArgument;
 import com.gradle.superscalarsim.models.instruction.InstructionFunctionModel;
 
 import java.util.List;
@@ -12,7 +13,7 @@ public class InstructionFunctionModelBuilder
   private InstructionTypeEnum instructionType;
   private DataTypeEnum inputDataType;
   private DataTypeEnum outputDataType;
-  private List<InstructionFunctionModel.Argument> arguments;
+  private List<InstructionArgument> arguments;
   private String interpretableAs;
   
   public InstructionFunctionModelBuilder()
@@ -49,7 +50,7 @@ public class InstructionFunctionModelBuilder
     return this;
   }
   
-  public InstructionFunctionModelBuilder hasArguments(List<InstructionFunctionModel.Argument> arguments)
+  public InstructionFunctionModelBuilder hasArguments(List<InstructionArgument> arguments)
   {
     this.arguments = arguments;
     return this;

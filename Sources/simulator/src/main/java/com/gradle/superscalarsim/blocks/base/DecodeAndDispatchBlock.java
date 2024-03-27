@@ -41,6 +41,7 @@ import com.gradle.superscalarsim.code.CodeBranchInterpreter;
 import com.gradle.superscalarsim.cpu.SimulationStatistics;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.models.instruction.InputCodeArgument;
+import com.gradle.superscalarsim.models.instruction.InstructionArgument;
 import com.gradle.superscalarsim.models.instruction.InstructionFunctionModel;
 import com.gradle.superscalarsim.models.instruction.SimCodeModel;
 import com.gradle.superscalarsim.models.register.RegisterModel;
@@ -232,7 +233,7 @@ public class DecodeAndDispatchBlock implements AbstractBlock
   private void renameSourceRegisters(SimCodeModel simCodeModel)
   {
     InstructionFunctionModel functionModel = simCodeModel.instructionFunctionModel();
-    for (InstructionFunctionModel.Argument argDesc : functionModel.getArguments())
+    for (InstructionArgument argDesc : functionModel.getArguments())
     {
       boolean shouldRename = !argDesc.writeBack() && argDesc.isRegister();
       if (shouldRename)
@@ -260,7 +261,7 @@ public class DecodeAndDispatchBlock implements AbstractBlock
   private boolean renameDestinationRegister(SimCodeModel simCodeModel)
   {
     // Rename all arguments that will be written back
-    for (InstructionFunctionModel.Argument argument : simCodeModel.instructionFunctionModel().getArguments())
+    for (InstructionArgument argument : simCodeModel.instructionFunctionModel().getArguments())
     {
       if (argument.writeBack())
       {
@@ -343,7 +344,7 @@ public class DecodeAndDispatchBlock implements AbstractBlock
   {
     boolean                  canCalculateAddress = true;
     InstructionFunctionModel instruction         = codeModel.instructionFunctionModel();
-    for (InstructionFunctionModel.Argument argument : instruction.getArguments())
+    for (InstructionArgument argument : instruction.getArguments())
     {
       if (argument.isRegister() && !argument.writeBack())
       {

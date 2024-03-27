@@ -31,10 +31,7 @@ import com.gradle.superscalarsim.cpu.MemoryLocation;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.factories.InputCodeModelFactory;
 import com.gradle.superscalarsim.loader.IDataProvider;
-import com.gradle.superscalarsim.models.instruction.DebugInfo;
-import com.gradle.superscalarsim.models.instruction.InputCodeArgument;
-import com.gradle.superscalarsim.models.instruction.InputCodeModel;
-import com.gradle.superscalarsim.models.instruction.InstructionFunctionModel;
+import com.gradle.superscalarsim.models.instruction.*;
 import com.gradle.superscalarsim.models.register.RegisterDataContainer;
 import com.gradle.superscalarsim.models.register.RegisterModel;
 
@@ -450,8 +447,7 @@ public class CodeParser
       argloop:
       for (InputCodeArgument argument : instruction.arguments())
       {
-        InstructionFunctionModel.Argument argModel = instruction.instructionFunctionModel()
-                .getArgumentByName(argument.getName());
+        InstructionArgument argModel = instruction.instructionFunctionModel().getArgumentByName(argument.getName());
         String argumentToken = argument.getValue();
         if (argModel.isImmediate())
         {
@@ -690,7 +686,7 @@ public class CodeParser
     int collectedArgsIndex = 0;
     boolean useDefaultArgs = numArguments < instructionModel.getAsmArguments()
             .size() && instructionModel.hasDefaultArguments();
-    for (InstructionFunctionModel.Argument argument : instructionModel.getArguments())
+    for (InstructionArgument argument : instructionModel.getArguments())
     {
       boolean   hasDefault = argument.defaultValue() != null;
       CodeToken argumentToken;

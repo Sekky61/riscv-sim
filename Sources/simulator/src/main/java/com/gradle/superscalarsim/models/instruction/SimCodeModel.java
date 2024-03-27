@@ -526,9 +526,9 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
     
     for (InputCodeArgument var : arguments())
     {
-      InstructionFunctionModel.Argument argument   = instructionFunctionModel.getArgumentByName(var.getName());
-      RegisterDataContainer             val        = var.getConstantValue();
-      boolean                           isConstant = false;
+      InstructionArgument   argument   = instructionFunctionModel.getArgumentByName(var.getName());
+      RegisterDataContainer val        = var.getConstantValue();
+      boolean               isConstant = false;
       if (val == null)
       {
         // Try register

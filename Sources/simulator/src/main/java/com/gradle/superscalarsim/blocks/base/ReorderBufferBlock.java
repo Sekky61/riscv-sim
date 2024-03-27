@@ -46,7 +46,7 @@ import com.gradle.superscalarsim.cpu.StopReason;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.models.instruction.DebugInfo;
 import com.gradle.superscalarsim.models.instruction.InputCodeArgument;
-import com.gradle.superscalarsim.models.instruction.InstructionFunctionModel;
+import com.gradle.superscalarsim.models.instruction.InstructionArgument;
 import com.gradle.superscalarsim.models.instruction.SimCodeModel;
 import com.gradle.superscalarsim.models.memory.LoadBufferItem;
 import com.gradle.superscalarsim.models.memory.StoreBufferItem;
@@ -342,8 +342,8 @@ public class ReorderBufferBlock implements AbstractBlock
     }
     
     // Store registers to arch. register file
-    List<InstructionFunctionModel.Argument> arguments = codeModel.instructionFunctionModel().getArguments();
-    for (InstructionFunctionModel.Argument argument : arguments)
+    List<InstructionArgument> arguments = codeModel.instructionFunctionModel().getArguments();
+    for (InstructionArgument argument : arguments)
     {
       if (!argument.writeBack())
       {

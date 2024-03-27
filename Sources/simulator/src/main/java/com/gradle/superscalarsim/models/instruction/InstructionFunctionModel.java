@@ -33,10 +33,8 @@
 package com.gradle.superscalarsim.models.instruction;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
-import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.models.Identifiable;
 
@@ -67,7 +65,7 @@ public class InstructionFunctionModel implements Identifiable
   /**
    * Definition of instruction arguments for parsing and validation.
    */
-  private final List<Argument> arguments;
+  private final List<InstructionArgument> arguments;
   
   /**
    * @brief Codified interpretation of instruction
@@ -92,7 +90,7 @@ public class InstructionFunctionModel implements Identifiable
    */
   public InstructionFunctionModel(String name,
                                   InstructionTypeEnum instructionType,
-                                  List<Argument> arguments,
+                                  List<InstructionArgument> arguments,
                                   String interpretableAs)
   {
     this.name            = name;
@@ -144,7 +142,7 @@ public class InstructionFunctionModel implements Identifiable
    * @return Instruction arguments
    * @brief Get instruction arguments, used for parsing and validation
    */
-  public List<Argument> getArguments()
+  public List<InstructionArgument> getArguments()
   {
     return arguments;
   }// end of getArguments
@@ -153,14 +151,14 @@ public class InstructionFunctionModel implements Identifiable
   /**
    * @return Argument with given name
    */
-  public Argument getArgumentByName(String name)
+  public InstructionArgument getArgumentByName(String name)
   {
-    return arguments.stream().filter(argument -> argument.name.equals(name)).findFirst().orElse(null);
+    return arguments.stream().filter(argument -> argument.name().equals(name)).findFirst().orElse(null);
   }
   
   public boolean hasDefaultArguments()
   {
-    return arguments.stream().anyMatch(argument -> argument.defaultValue != null);
+    return arguments.stream().anyMatch(argument -> argument.defaultValue() != null);
   }
   
   /**
@@ -203,8 +201,8 @@ public class InstructionFunctionModel implements Identifiable
   {
     List<String> syntaxTemplate = new ArrayList<>();
     syntaxTemplate.add(name + " ");
-    boolean        isLoadStore = instructionType == InstructionTypeEnum.kLoadstore;
-    List<Argument> args        = getAsmArguments();
+    boolean                   isLoadStore = instructionType == InstructionTypeEnum.kLoadstore;
+    List<InstructionArgument> args        = getAsmArguments();
     for (int i = 0; i < args.size(); i++)
     {
       boolean wrapInParens = isLoadStore && i == args.size() - 1;
@@ -219,8 +217,8 @@ public class InstructionFunctionModel implements Identifiable
           syntaxTemplate.add(",");
         }
       }
-      InstructionFunctionModel.Argument arg = args.get(i);
-      syntaxTemplate.add(arg.name);
+      InstructionArgument arg = args.get(i);
+      syntaxTemplate.add(arg.name());
     }
     if (isLoadStore)
     {
@@ -232,12 +230,12 @@ public class InstructionFunctionModel implements Identifiable
   /**
    * @return List of arguments, which are not silent
    */
-  public List<Argument> getAsmArguments()
+  public List<InstructionArgument> getAsmArguments()
   {
-    List<Argument> asmArguments = new ArrayList<>();
-    for (Argument argument : arguments)
+    List<InstructionArgument> asmArguments = new ArrayList<>();
+    for (InstructionArgument argument : arguments)
     {
-      if (!argument.silent)
+      if (!argument.silent())
       {
         asmArguments.add(argument);
       }
@@ -245,114 +243,4 @@ public class InstructionFunctionModel implements Identifiable
     return asmArguments;
   }
   
-  /**
-   * @param name         Name of the argument (example: "rd")
-   * @param type         Data type of the argument (example: "kInt")
-   * @param defaultValue Default value of the argument (example: "0" or null)
-   * @param writeBack    True if the argument should be written back to register file on commit
-   *
-   * @brief Could be a record, but is not because of serialization issues. Name convention: "r" for register, "i" for immediate.
-   * TODO: is serialized redundantly.
-   */
-  public static class Argument
-  {
-    @JsonProperty
-    private String name;
-    @JsonProperty
-    private DataTypeEnum type;
-    @JsonProperty
-    private String defaultValue;
-    @JsonProperty
-    private boolean writeBack;
-    
-    /**
-     * @brief If true, count this argument as data dependency, but is not allowed to be used in ASM code.
-     */
-    @JsonProperty
-    private boolean silent;
-    /**
-     * @brief True if the argument is an offset.
-     * By default, false. Used by offset instructions.
-     */
-    @JsonProperty
-    private boolean isOffset;
-    
-    /**
-     * @brief Default Constructor for deserialization
-     */
-    Argument()
-    {
-    }
-    
-    public Argument(String name, DataTypeEnum type, String defaultValue)
-    {
-      this.name         = name;
-      this.type         = type;
-      this.defaultValue = defaultValue;
-      this.writeBack    = false;
-      this.silent       = false;
-    }
-    
-    public Argument(String name, DataTypeEnum type, String defaultValue, boolean writeBack)
-    {
-      this.name         = name;
-      this.type         = type;
-      this.defaultValue = defaultValue;
-      this.writeBack    = writeBack;
-      this.silent       = false;
-    }
-    
-    @JsonIgnore
-    public boolean isOffset()
-    {
-      return isOffset;
-    }
-    
-    public String name()
-    {
-      return name;
-    }
-    
-    public DataTypeEnum type()
-    {
-      return type;
-    }
-    
-    public String defaultValue()
-    {
-      return defaultValue;
-    }
-    
-    public boolean writeBack()
-    {
-      return writeBack;
-    }
-    
-    public boolean silent()
-    {
-      return silent;
-    }
-    
-    @Override
-    public String toString()
-    {
-      return name + ":" + type + (defaultValue != null ? ":" + defaultValue : "");
-    }
-    
-    /**
-     * @return True if the argument is a register
-     */
-    public boolean isRegister()
-    {
-      return name.startsWith("r");
-    }
-    
-    /**
-     * @return True if the argument is an immediate
-     */
-    public boolean isImmediate()
-    {
-      return name.startsWith("i");
-    }
-  }
 }
