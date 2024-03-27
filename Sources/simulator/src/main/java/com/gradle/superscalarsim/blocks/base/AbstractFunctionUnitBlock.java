@@ -324,7 +324,7 @@ public abstract class AbstractFunctionUnitBlock implements AbstractBlock
    */
   public void setDelayBasedOnInstruction()
   {
-    int delay = switch (this.simCodeModel.getInstructionFunctionModel().getInstructionType())
+    int delay = switch (this.simCodeModel.instructionFunctionModel().getInstructionType())
     {
       case kIntArithmetic, kFloatArithmetic -> getDelayBasedOnCapability();
       case kLoadstore, kJumpbranch -> this.description.latency;
@@ -337,7 +337,8 @@ public abstract class AbstractFunctionUnitBlock implements AbstractBlock
    */
   private int getDelayBasedOnCapability()
   {
-    String expr = this.simCodeModel.getInstructionFunctionModel().getInterpretableAs();
+    String                                   expr           = this.simCodeModel.instructionFunctionModel()
+            .getInterpretableAs();
     FunctionalUnitDescription.CapabilityName capabilityName = FunctionalUnitDescription.classifyExpression(expr);
     for (FunctionalUnitDescription.Capability capability : this.description.operations)
     {

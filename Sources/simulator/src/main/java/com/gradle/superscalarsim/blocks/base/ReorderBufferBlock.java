@@ -342,7 +342,7 @@ public class ReorderBufferBlock implements AbstractBlock
     }
     
     // Store registers to arch. register file
-    List<InstructionFunctionModel.Argument> arguments = codeModel.getInstructionFunctionModel().getArguments();
+    List<InstructionFunctionModel.Argument> arguments = codeModel.instructionFunctionModel().getArguments();
     for (InstructionFunctionModel.Argument argument : arguments)
     {
       if (!argument.writeBack())
@@ -378,7 +378,7 @@ public class ReorderBufferBlock implements AbstractBlock
   private void removeInstruction(SimCodeModel simCodeModel)
   {
     // Reduce references to speculative registers
-    for (InputCodeArgument argument : simCodeModel.getArguments())
+    for (InputCodeArgument argument : simCodeModel.arguments())
     {
       if (!argument.isRegister())
       {
@@ -513,16 +513,16 @@ public class ReorderBufferBlock implements AbstractBlock
     }
     
     this.decodeAndDispatchBlock.getCodeBuffer().forEach(
-            simCodeModel -> simCodeModel.getArguments().stream().filter(InputCodeArgument::isRegister)
-                    .forEach(argument ->
-                             {
-                               RegisterModel register = argument.getRegisterValue();
-                               if (!register.isSpeculative())
-                               {
-                                 return;
-                               }
-                               renameMapTableBlock.reduceReference(argument.getRegisterValue());
-                             }));
+            simCodeModel -> simCodeModel.arguments().stream().filter(InputCodeArgument::isRegister).forEach(argument ->
+                                                                                                            {
+                                                                                                              RegisterModel register = argument.getRegisterValue();
+                                                                                                              if (!register.isSpeculative())
+                                                                                                              {
+                                                                                                                return;
+                                                                                                              }
+                                                                                                              renameMapTableBlock.reduceReference(
+                                                                                                                      argument.getRegisterValue());
+                                                                                                            }));
     // clear what you can
     this.decodeAndDispatchBlock.flush();
     this.instructionFetchBlock.flush();
@@ -572,7 +572,7 @@ public class ReorderBufferBlock implements AbstractBlock
     {
       if (codeModel.issueWindowId == -1)
       {
-        issueWindowSuperBlock.selectCorrectIssueWindow(codeModel.getInstructionFunctionModel(), codeModel);
+        issueWindowSuperBlock.selectCorrectIssueWindow(codeModel.instructionFunctionModel(), codeModel);
       }
     }
   }

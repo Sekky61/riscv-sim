@@ -102,6 +102,14 @@ public class InstructionFunctionModel implements Identifiable
   }// end of Constructor
   
   /**
+   * @return True if the instruction is a NOP
+   */
+  public boolean isNop()
+  {
+    return name.equals("nop");
+  }// end of isNop
+  
+  /**
    * @return String representation of the object
    * @brief Overrides toString method with custom formatting
    */
@@ -143,22 +151,6 @@ public class InstructionFunctionModel implements Identifiable
   //------------------------------------------------------
   
   /**
-   * @return List of arguments, which are not silent
-   */
-  public List<Argument> getAsmArguments()
-  {
-    List<Argument> asmArguments = new ArrayList<>();
-    for (Argument argument : arguments)
-    {
-      if (!argument.silent)
-      {
-        asmArguments.add(argument);
-      }
-    }
-    return asmArguments;
-  }
-  
-  /**
    * @return Argument with given name
    */
   public Argument getArgumentByName(String name)
@@ -179,7 +171,6 @@ public class InstructionFunctionModel implements Identifiable
   {
     return interpretableAs;
   }// end of getInterpretableAs
-  //------------------------------------------------------
   
   /**
    * @return True if instruction is an unconditional jump
@@ -188,6 +179,7 @@ public class InstructionFunctionModel implements Identifiable
   {
     return interpretableAs.endsWith("true");
   }// end of isUnconditionalJump
+  //------------------------------------------------------
   
   /**
    * @return Unique identifier of the object
@@ -236,6 +228,22 @@ public class InstructionFunctionModel implements Identifiable
     }
     return syntaxTemplate;
   }// end of getRenamedCodeLine
+  
+  /**
+   * @return List of arguments, which are not silent
+   */
+  public List<Argument> getAsmArguments()
+  {
+    List<Argument> asmArguments = new ArrayList<>();
+    for (Argument argument : arguments)
+    {
+      if (!argument.silent)
+      {
+        asmArguments.add(argument);
+      }
+    }
+    return asmArguments;
+  }
   
   /**
    * @param name         Name of the argument (example: "rd")

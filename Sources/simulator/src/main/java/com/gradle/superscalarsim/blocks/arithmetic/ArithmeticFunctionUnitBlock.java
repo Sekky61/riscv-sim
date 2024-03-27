@@ -173,7 +173,7 @@ public class ArithmeticFunctionUnitBlock extends AbstractFunctionUnitBlock
   public boolean canExecuteInstruction(SimCodeModel simCodeModel)
   {
     // Check if the instruction is arithmetic
-    InstructionFunctionModel model = simCodeModel.getInstructionFunctionModel();
+    InstructionFunctionModel model = simCodeModel.instructionFunctionModel();
     if (model.getInstructionType() != InstructionTypeEnum.kIntArithmetic && model.getInstructionType() != InstructionTypeEnum.kFloatArithmetic)
     {
       return false;

@@ -65,7 +65,7 @@ public class CodeArithmeticInterpreter
    */
   public Result<Expression.Variable> interpretInstruction(final SimCodeModel simCodeModel)
   {
-    final InstructionFunctionModel instruction = simCodeModel.getInstructionFunctionModel();
+    final InstructionFunctionModel instruction = simCodeModel.instructionFunctionModel();
     if (instruction == null)
     {
       throw new IllegalArgumentException("Instruction is null");

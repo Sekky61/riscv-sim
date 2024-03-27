@@ -28,6 +28,7 @@
 package com.gradle.superscalarsim.factories;
 
 import com.gradle.superscalarsim.managers.InstanceManager;
+import com.gradle.superscalarsim.models.instruction.DebugInfo;
 import com.gradle.superscalarsim.models.instruction.InputCodeArgument;
 import com.gradle.superscalarsim.models.instruction.InputCodeModel;
 import com.gradle.superscalarsim.models.instruction.InstructionFunctionModel;
@@ -67,9 +68,10 @@ public class InputCodeModelFactory
    */
   public InputCodeModel createInstance(InstructionFunctionModel instructionFunctionModel,
                                        final List<InputCodeArgument> arguments,
-                                       int codeId)
+                                       int codeId,
+                                       DebugInfo debugInfo)
   {
-    InputCodeModel instance = new InputCodeModel(instructionFunctionModel, arguments, codeId);
+    InputCodeModel instance = new InputCodeModel(instructionFunctionModel, arguments, codeId, debugInfo);
     if (manager == null)
     {
       // System.err.println("InputCodeModelFactory: manager is null");

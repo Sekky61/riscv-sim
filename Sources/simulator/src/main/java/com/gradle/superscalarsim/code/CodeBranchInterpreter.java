@@ -71,7 +71,7 @@ public class CodeBranchInterpreter
    */
   public Result<BranchResult> interpretInstruction(final SimCodeModel codeModel)
   {
-    final InstructionFunctionModel instruction = codeModel.getInstructionFunctionModel();
+    final InstructionFunctionModel instruction = codeModel.instructionFunctionModel();
     assert instruction != null;
     
     String[] splitInterpretableAs = instruction.getInterpretableAs().split(":");

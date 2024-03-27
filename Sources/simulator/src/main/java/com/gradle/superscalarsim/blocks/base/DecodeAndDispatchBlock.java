@@ -231,7 +231,7 @@ public class DecodeAndDispatchBlock implements AbstractBlock
    */
   private void renameSourceRegisters(SimCodeModel simCodeModel)
   {
-    InstructionFunctionModel functionModel = simCodeModel.getInstructionFunctionModel();
+    InstructionFunctionModel functionModel = simCodeModel.instructionFunctionModel();
     for (InstructionFunctionModel.Argument argDesc : functionModel.getArguments())
     {
       boolean shouldRename = !argDesc.writeBack() && argDesc.isRegister();
@@ -260,7 +260,7 @@ public class DecodeAndDispatchBlock implements AbstractBlock
   private boolean renameDestinationRegister(SimCodeModel simCodeModel)
   {
     // Rename all arguments that will be written back
-    for (InstructionFunctionModel.Argument argument : simCodeModel.getInstructionFunctionModel().getArguments())
+    for (InstructionFunctionModel.Argument argument : simCodeModel.instructionFunctionModel().getArguments())
     {
       if (argument.writeBack())
       {
@@ -293,7 +293,7 @@ public class DecodeAndDispatchBlock implements AbstractBlock
   private boolean processBranchInstruction(final SimCodeModel codeModel)
   {
     boolean                  flush       = false;
-    InstructionFunctionModel instruction = codeModel.getInstructionFunctionModel();
+    InstructionFunctionModel instruction = codeModel.instructionFunctionModel();
     
     int     instructionPosition = codeModel.getSavedPc();
     boolean unconditional       = instruction.isUnconditionalJump();
@@ -342,7 +342,7 @@ public class DecodeAndDispatchBlock implements AbstractBlock
   private OptionalInt calculateRealBranchAddress(final SimCodeModel codeModel)
   {
     boolean                  canCalculateAddress = true;
-    InstructionFunctionModel instruction         = codeModel.getInstructionFunctionModel();
+    InstructionFunctionModel instruction         = codeModel.instructionFunctionModel();
     for (InstructionFunctionModel.Argument argument : instruction.getArguments())
     {
       if (argument.isRegister() && !argument.writeBack())

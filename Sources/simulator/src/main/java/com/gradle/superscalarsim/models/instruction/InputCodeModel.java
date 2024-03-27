@@ -38,106 +38,33 @@ import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.models.Identifiable;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * @param codeId                   ID - the index of the instruction in the code.
+ *                                 codeId*4 = PC of the instruction.
+ * @param arguments                Arguments of the instruction
+ *                                 The order of arguments is the same as in the original code line and tests depend on this order.
+ *                                 Labels use `labelName` as argument to store the name of the label.
+ * @param instructionFunctionModel Description of the instruction opcode
+ * @param debugInfo                Debug info attached to the instruction
+ *
  * @class InputCodeModel
  * @brief Represents a processed line of code
  * Should be used only for reading (referencing), not for writing
  */
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "codeId")
-public class InputCodeModel implements IInputCodeModel, Identifiable
+public record InputCodeModel(
+        @JsonIdentityReference(alwaysAsId = true) InstructionFunctionModel instructionFunctionModel,
+        List<InputCodeArgument> arguments, int codeId, DebugInfo debugInfo) implements Identifiable, IInputCodeModel
 {
-  /**
-   * ID - the index of the instruction in the code.
-   * codeId*4 = PC of the instruction.
-   */
-  private final int codeId;
-  
-  /**
-   * Name of the parsed instruction, matches name from InstructionFunctionLoader
-   * Example: "addi"
-   */
-  private final String instructionName;
-  
-  /**
-   * Arguments of the instruction
-   * The order of arguments is the same as in the original code line and tests depend on this order.
-   * Labels use `labelName` as argument to store the name of the label.
-   */
-  private final List<InputCodeArgument> arguments;
-  
-  /**
-   * Type of the instruction
-   */
-  private final InstructionTypeEnum instructionTypeEnum;
-  
-  /**
-   * @brief Instruction function model
-   * Contains information about the instruction
-   */
-  @JsonIdentityReference(alwaysAsId = true)
-  private final InstructionFunctionModel instructionFunctionModel;
-  /**
-   * Debug info attached to the instruction
-   */
-  private DebugInfo debugInfo;
-  
-  /**
-   * @param instructionFunctionModel Instruction function model
-   * @param arguments                Arguments of the instruction
-   * @param codeId                   ID of the instruction (index in the code)
-   *
-   * @brief Constructor
-   */
-  public InputCodeModel(InstructionFunctionModel instructionFunctionModel,
-                        final List<InputCodeArgument> arguments,
-                        int codeId)
-  {
-    // TODO: delete fields that are duplicate of instructionFunctionModel
-    this.instructionFunctionModel = instructionFunctionModel;
-    this.codeId                   = codeId;
-    this.instructionName          = instructionFunctionModel.getName();
-    this.arguments                = arguments == null ? new ArrayList<>() : arguments;
-    this.instructionTypeEnum      = instructionFunctionModel.getInstructionType();
-  }// end of Constructor
-  
-  /**
-   * @param instructionName     Name of the parsed instruction
-   * @param codeLine            Unparsed line of code
-   * @param arguments           Arguments of the instruction
-   * @param instructionTypeEnum Type of the instruction
-   * @param resultDataType      Data type of the output
-   * @param id                  ID of the instruction (index in the code)
-   *
-   * @brief Constructor used in tests
-   */
-  public InputCodeModel(InstructionFunctionModel instructionFunctionModel,
-                        final String instructionName,
-                        final List<InputCodeArgument> arguments,
-                        final InstructionTypeEnum instructionTypeEnum,
-                        int codeId)
-  {
-    this.instructionFunctionModel = instructionFunctionModel;
-    this.codeId                   = codeId;
-    this.instructionName          = instructionName;
-    this.arguments                = arguments == null ? new ArrayList<>() : arguments;
-    this.instructionTypeEnum      = instructionTypeEnum;
-  }// end of Constructor
-  
   /**
    * @return The debug info attached to the instruction. Null if none present.
    */
-  public DebugInfo getDebugInfo()
+  @Override
+  public DebugInfo debugInfo()
   {
     return debugInfo;
-  }
-  //------------------------------------------------------
-  
-  public void setDebugInfo(DebugInfo debugInfo)
-  {
-    this.debugInfo = debugInfo;
   }
   //------------------------------------------------------
   
@@ -147,32 +74,30 @@ public class InputCodeModel implements IInputCodeModel, Identifiable
   @Override
   public String toString()
   {
-    StringBuilder genericLine = new StringBuilder(getInstructionName());
-    for (int i = 0; i < getArguments().size(); i++)
+    StringBuilder genericLine = new StringBuilder(instructionFunctionModel.getName());
+    for (int i = 0; i < arguments().size(); i++)
     {
-      genericLine.append(" ").append(getArguments().get(i).getValue());
+      genericLine.append(" ").append(arguments().get(i).getValue());
     }
     return genericLine.toString();
   }
   //------------------------------------------------------
   
   /**
-   * @return Name of instruction
-   * @brief Get name of instruction
+   * @return Name of the instruction (e.g. addi)
    */
   @Override
   public String getInstructionName()
   {
-    return instructionName;
-  }// end of getInstructionName
-  //------------------------------------------------------
+    return instructionFunctionModel.getName();
+  }
   
   /**
    * @return Instruction arguments
    * @brief Get instruction arguments
    */
   @Override
-  public List<InputCodeArgument> getArguments()
+  public List<InputCodeArgument> arguments()
   {
     return arguments;
   }// end of getArguments
@@ -182,7 +107,6 @@ public class InputCodeModel implements IInputCodeModel, Identifiable
    *
    * @return An argument by its name
    */
-  @Override
   public InputCodeArgument getArgumentByName(String name)
   {
     return arguments.stream().filter(argument -> argument.getName().equals(name)).findFirst().orElse(null);
@@ -193,23 +117,22 @@ public class InputCodeModel implements IInputCodeModel, Identifiable
    * @return Enum value of instruction type
    * @brief Get instruction type
    */
-  @Override
   public InstructionTypeEnum getInstructionTypeEnum()
   {
-    return instructionTypeEnum;
+    return instructionFunctionModel.getInstructionType();
   }// end of getInstructionTypeEnum
   
   /**
    * @return ID of the instruction (index in the code)
    */
   @Override
-  public int getCodeId()
+  public int codeId()
   {
     return codeId;
   }
   
   @Override
-  public InstructionFunctionModel getInstructionFunctionModel()
+  public InstructionFunctionModel instructionFunctionModel()
   {
     return instructionFunctionModel;
   }
@@ -230,7 +153,8 @@ public class InputCodeModel implements IInputCodeModel, Identifiable
   public boolean isConditionalBranch()
   {
     // ! Depends on naming convention !
-    return instructionTypeEnum == InstructionTypeEnum.kJumpbranch && instructionName.startsWith("b");
+    return getInstructionTypeEnum() == InstructionTypeEnum.kJumpbranch && instructionFunctionModel.getName()
+            .startsWith("b");
   }
   
   /**

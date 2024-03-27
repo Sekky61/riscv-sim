@@ -157,7 +157,7 @@ public class IssueWindowBlock implements AbstractBlock
       if (!eligibleFound)
       {
         throw new IllegalStateException(
-                "No eligible FU found for instruction: " + currentModel.getInstructionFunctionModel().getName());
+                "No eligible FU found for instruction: " + currentModel.instructionFunctionModel().getName());
       }
     }
     

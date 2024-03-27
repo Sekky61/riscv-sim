@@ -448,9 +448,9 @@ public class CodeParser
     for (InputCodeModel instruction : instructions)
     {
       argloop:
-      for (InputCodeArgument argument : instruction.getArguments())
+      for (InputCodeArgument argument : instruction.arguments())
       {
-        InstructionFunctionModel.Argument argModel = instruction.getInstructionFunctionModel()
+        InstructionFunctionModel.Argument argModel = instruction.instructionFunctionModel()
                 .getArgumentByName(argument.getName());
         String argumentToken = argument.getValue();
         if (argModel.isImmediate())
@@ -742,10 +742,8 @@ public class CodeParser
       return;
     }
     
-    InputCodeModel inputCodeModel = inputCodeModelFactory.createInstance(instructionModel, codeArguments,
-                                                                         instructions.size());
-    
     // Optional debug info
+    DebugInfo debugInfo = null;
     if (lexer.currentToken().type().equals(CodeToken.Type.COMMENT))
     {
       boolean isDebugInfo = lexer.currentToken().text().startsWith("DEBUG\"") && lexer.currentToken().text()
@@ -753,11 +751,13 @@ public class CodeParser
       if (isDebugInfo)
       {
         // Filter out the meat
-        String debugInfo = lexer.currentToken().text().substring(6, lexer.currentToken().text().length() - 1);
-        inputCodeModel.setDebugInfo(new DebugInfo(debugInfo));
+        String debugInfoStr = lexer.currentToken().text().substring(6, lexer.currentToken().text().length() - 1);
+        debugInfo = new DebugInfo(debugInfoStr);
       }
       nextToken();
     }
+    InputCodeModel inputCodeModel = inputCodeModelFactory.createInstance(instructionModel, codeArguments,
+                                                                         instructions.size(), debugInfo);
     
     instructions.add(inputCodeModel);
   }

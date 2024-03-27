@@ -166,8 +166,8 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
     }
     
     
-    transaction = new MemoryTransaction(-1, functionUnitId, simCodeModel.getCodeId(), cycle, address, data,
-                                        numberOfBytes, access.isStore(), access.isSigned());
+    transaction = new MemoryTransaction(-1, functionUnitId, simCodeModel.codeId(), cycle, address, data, numberOfBytes,
+                                        access.isStore(), access.isSigned());
     // return memory delay
     return memoryModel.execute(transaction);
   }
@@ -190,7 +190,7 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
       InputCodeArgument destinationArgument = simCodeModel.getArgumentByName("rd");
       RegisterModel     destRegister        = destinationArgument.getRegisterValue();
       long              savedResult         = transaction.dataAsLong();
-      destRegister.setValue(savedResult, simCodeModel.getInstructionFunctionModel().getArgumentByName("rd").type());
+      destRegister.setValue(savedResult, simCodeModel.instructionFunctionModel().getArgumentByName("rd").type());
       destRegister.setReadiness(RegisterReadinessEnum.kExecuted);
       this.loadBufferBlock.setDestinationAvailable(simCodeId);
       this.loadBufferBlock.setMemoryAccessFinished(simCodeId);
@@ -201,7 +201,7 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
     }
     
     // stats
-    int instrIndex = simCodeModel.getCodeId();
+    int instrIndex = simCodeModel.codeId();
     if (instrIndex >= 0)
     {
       // Do not touch statistic in case the cache transaction is not related to any instruction (tests)
@@ -275,7 +275,7 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
   @Override
   public boolean canExecuteInstruction(SimCodeModel simCodeModel)
   {
-    return simCodeModel.getInstructionFunctionModel().getInstructionType() == InstructionTypeEnum.kLoadstore;
+    return simCodeModel.instructionFunctionModel().getInstructionType() == InstructionTypeEnum.kLoadstore;
   }
   
   /**

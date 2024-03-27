@@ -155,7 +155,7 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
     
     // Copy arguments
     this.renamedArguments = new ArrayList<>();
-    for (InputCodeArgument argument : inputCodeModel.getArguments())
+    for (InputCodeArgument argument : inputCodeModel.arguments())
     {
       this.renamedArguments.add(new InputCodeArgument(argument));
     }
@@ -439,7 +439,7 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
    */
   public String getRenamedCodeLine()
   {
-    List<String>  template    = getInstructionFunctionModel().getSyntaxTemplate();
+    List<String>  template    = instructionFunctionModel().getSyntaxTemplate();
     StringBuilder genericLine = new StringBuilder();
     for (String token : template)
     {
@@ -459,7 +459,7 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
   @Override
   public String getInstructionName()
   {
-    return inputCodeModel.getInstructionName();
+    return instructionFunctionModel().getName();
   }
   
   /**
@@ -467,7 +467,7 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
    * @brief Gets arguments of the instruction, copied, so they are rewritable
    */
   @Override
-  public List<InputCodeArgument> getArguments()
+  public List<InputCodeArgument> arguments()
   {
     return renamedArguments;
   }
@@ -493,15 +493,15 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
    * @return ID of the instruction (index in the code)
    */
   @Override
-  public int getCodeId()
+  public int codeId()
   {
-    return inputCodeModel.getCodeId();
+    return inputCodeModel.codeId();
   }// end of getId
   
   @Override
-  public InstructionFunctionModel getInstructionFunctionModel()
+  public InstructionFunctionModel instructionFunctionModel()
   {
-    return inputCodeModel.getInstructionFunctionModel();
+    return inputCodeModel.instructionFunctionModel();
   }
   
   /**
@@ -519,12 +519,12 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
   public List<Expression.Variable> getVariables()
   {
     List<Expression.Variable> variables                = new ArrayList<>();
-    InstructionFunctionModel  instructionFunctionModel = getInstructionFunctionModel();
+    InstructionFunctionModel  instructionFunctionModel = instructionFunctionModel();
     
     variables.add(
             new Expression.Variable("pc", DataTypeEnum.kInt, RegisterDataContainer.fromValue(getSavedPc()), true));
     
-    for (InputCodeArgument var : getArguments())
+    for (InputCodeArgument var : arguments())
     {
       InstructionFunctionModel.Argument argument   = instructionFunctionModel.getArgumentByName(var.getName());
       RegisterDataContainer             val        = var.getConstantValue();
@@ -564,7 +564,7 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
     {
       return false;
     }
-    InstructionFunctionModel instruction = getInstructionFunctionModel();
+    InstructionFunctionModel instruction = instructionFunctionModel();
     return instruction != null && instruction.getInterpretableAs().startsWith("load");
   }// end of isInstructionLoad
   
@@ -578,7 +578,7 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
     {
       return false;
     }
-    InstructionFunctionModel instruction = getInstructionFunctionModel();
+    InstructionFunctionModel instruction = instructionFunctionModel();
     return instruction != null && instruction.getInterpretableAs().startsWith("store");
   }// end of isInstructionStore
   
@@ -587,7 +587,7 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
    */
   public boolean isReadyToExecute()
   {
-    for (InputCodeArgument argument : getArguments())
+    for (InputCodeArgument argument : arguments())
     {
       if (!argument.getName().startsWith("rs"))
       {
@@ -617,7 +617,7 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
    */
   public DebugInfo getDebugInfo()
   {
-    return inputCodeModel.getDebugInfo();
+    return inputCodeModel.debugInfo();
   }
   
   /**

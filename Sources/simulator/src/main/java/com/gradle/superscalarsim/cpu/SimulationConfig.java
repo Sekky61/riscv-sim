@@ -176,9 +176,10 @@ public class SimulationConfig
     }
     
     // Check if every instruction has a FU that can execute it
-outer: for (InputCodeModel instruction : codeParser.getInstructions())
+    outer:
+    for (InputCodeModel instruction : codeParser.getInstructions())
     {
-      String interpretableAs = instruction.getInstructionFunctionModel().getInterpretableAs();
+      String interpretableAs = instruction.instructionFunctionModel().getInterpretableAs();
       FunctionalUnitDescription.CapabilityName capabilityName = FunctionalUnitDescription.classifyExpression(
               interpretableAs);
       
@@ -191,7 +192,7 @@ outer: for (InputCodeModel instruction : codeParser.getInstructions())
       }
       
       errorMessages.add(new ConfigError(
-              "No eligible FU found for instruction: " + instruction.getInstructionFunctionModel().getName(), "config"));
+              "No eligible FU found for instruction: " + instruction.instructionFunctionModel().getName(), "config"));
       break;
     }
     

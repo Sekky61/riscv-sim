@@ -72,7 +72,7 @@ public class CodeLoadStoreInterpreter
    */
   public Result<MemoryAccess> interpretInstruction(final SimCodeModel codeModel)
   {
-    final InstructionFunctionModel instruction = codeModel.getInstructionFunctionModel();
+    final InstructionFunctionModel instruction = codeModel.instructionFunctionModel();
     if (instruction == null)
     {
       throw new IllegalStateException("Instruction is null");
@@ -127,7 +127,7 @@ public class CodeLoadStoreInterpreter
    */
   public Result<Long> interpretAddress(final SimCodeModel codeModel)
   {
-    final InstructionFunctionModel instruction = codeModel.getInstructionFunctionModel();
+    final InstructionFunctionModel instruction = codeModel.instructionFunctionModel();
     if (instruction == null)
     {
       throw new IllegalStateException("Instruction is null");

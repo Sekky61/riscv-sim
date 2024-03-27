@@ -183,7 +183,7 @@ public class LoadStoreFunctionUnit extends AbstractFunctionUnitBlock
   @Override
   public boolean canExecuteInstruction(SimCodeModel simCodeModel)
   {
-    return simCodeModel.getInstructionFunctionModel().getInstructionType() == InstructionTypeEnum.kLoadstore;
+    return simCodeModel.instructionFunctionModel().getInstructionType() == InstructionTypeEnum.kLoadstore;
   }
   //----------------------------------------------------------------------
 }

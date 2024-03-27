@@ -197,7 +197,7 @@ public class SimulationStatistics
    */
   public void reportDecodedInstruction(SimCodeModel codeModel)
   {
-    InstructionStats statObj = instructionStats.get(codeModel.getCodeId());
+    InstructionStats statObj = instructionStats.get(codeModel.codeId());
     statObj.incrementDecoded();
   }
   
@@ -207,7 +207,7 @@ public class SimulationStatistics
   public void reportCommittedInstruction(SimCodeModel codeModel)
   {
     this.committedInstructions++;
-    this.dynamicInstructionMix.increment(codeModel.getInstructionFunctionModel().getInstructionType());
+    this.dynamicInstructionMix.increment(codeModel.instructionFunctionModel().getInstructionType());
     
     boolean isBranch = codeModel.getInstructionTypeEnum() == InstructionTypeEnum.kJumpbranch;
     if (isBranch)
@@ -229,7 +229,7 @@ public class SimulationStatistics
     }
     
     // Per instruction statistics
-    InstructionStats statObj = instructionStats.get(codeModel.getCodeId());
+    InstructionStats statObj = instructionStats.get(codeModel.codeId());
     statObj.incrementCommittedCycles();
     if (isBranch && codeModel.isConditionalBranch())
     {

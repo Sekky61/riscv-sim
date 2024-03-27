@@ -63,9 +63,9 @@ public class DebugPrintTests
     // Assert
     // #DEBUG is parsed
     Assert.assertEquals("Hello World",
-                        cpu.cpuState.instructionMemoryBlock.getInstructionAt(4).getDebugInfo().formatString());
+                        cpu.cpuState.instructionMemoryBlock.getInstructionAt(4).debugInfo().formatString());
     // Other comments are ignored
-    Assert.assertNull(cpu.cpuState.instructionMemoryBlock.getInstructionAt(8).getDebugInfo());
+    Assert.assertNull(cpu.cpuState.instructionMemoryBlock.getInstructionAt(8).debugInfo());
   }
   
   @Test
@@ -73,7 +73,8 @@ public class DebugPrintTests
   {
     // Setup
     Map<String, RegisterModel> registerMap = new StaticDataProvider().getRegisterFile().getRegisterMap(true);
-    DebugLog debugLog = new DebugLog(new UnifiedRegisterFileBlock(registerMap, 1, new RegisterModelFactory()));
+    DebugLog                   debugLog    = new DebugLog(
+            new UnifiedRegisterFileBlock(registerMap, 1, new RegisterModelFactory()));
     // Exercise
     debugLog.add(new DebugInfo(" ${}  $"), 0);
     debugLog.add(new DebugInfo("  $}  ${}{ "), 0);
@@ -90,9 +91,9 @@ public class DebugPrintTests
   public void testFormatter()
   {
     // Setup + exercise
-    Map<String, RegisterModel> registerMap = new StaticDataProvider().getRegisterFile().getRegisterMap(true);
-    UnifiedRegisterFileBlock registerFile = new UnifiedRegisterFileBlock(registerMap, 1, new RegisterModelFactory());
-    DebugLog debugLog = new DebugLog(registerFile);
+    Map<String, RegisterModel> registerMap  = new StaticDataProvider().getRegisterFile().getRegisterMap(true);
+    UnifiedRegisterFileBlock   registerFile = new UnifiedRegisterFileBlock(registerMap, 1, new RegisterModelFactory());
+    DebugLog                   debugLog     = new DebugLog(registerFile);
     
     debugLog.add(new DebugInfo("Hello World"), 0);
     debugLog.add(new DebugInfo("x5 = ${x5}, x6 = ${x6}"), 5);
@@ -106,9 +107,9 @@ public class DebugPrintTests
   public void testBadFormatString()
   {
     // Setup + exercise
-    Map<String, RegisterModel> registerMap = new StaticDataProvider().getRegisterFile().getRegisterMap(true);
-    UnifiedRegisterFileBlock registerFile = new UnifiedRegisterFileBlock(registerMap, 1, new RegisterModelFactory());
-    DebugLog debugLog = new DebugLog(registerFile);
+    Map<String, RegisterModel> registerMap  = new StaticDataProvider().getRegisterFile().getRegisterMap(true);
+    UnifiedRegisterFileBlock   registerFile = new UnifiedRegisterFileBlock(registerMap, 1, new RegisterModelFactory());
+    DebugLog                   debugLog     = new DebugLog(registerFile);
     
     debugLog.add(new DebugInfo("Hello ${abcd}"), 0);
     

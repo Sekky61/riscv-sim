@@ -84,7 +84,7 @@ public class BranchTargetBuffer
   public void setEntry(int programCounter, IInputCodeModel codeModel, int target)
   {
     assert codeModel != null;
-    InstructionFunctionModel instruction = codeModel.getInstructionFunctionModel();
+    InstructionFunctionModel instruction = codeModel.instructionFunctionModel();
     BranchTargetEntryModel entryModel = new BranchTargetEntryModel(programCounter, !instruction.isUnconditionalJump(),
                                                                    target);
     
