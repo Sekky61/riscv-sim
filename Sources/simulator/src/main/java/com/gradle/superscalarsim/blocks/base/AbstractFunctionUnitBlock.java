@@ -43,12 +43,15 @@ import com.gradle.superscalarsim.models.instruction.SimCodeModel;
 /**
  * @class AbstractFunctionUnitBlock
  * @brief Abstract class containing interface and shared logic for all function units
- * @details The clock starts at 1, so after the first cycle in the GUI 1/X is visible.
+ * @details An empty FU has the counter/delay at 0/0. The clock starts at 1, so after the first cycle in the GUI 1/X is visible.
  * The flow of execution is defined here, the specifics are implemented in the derived classes.
  */
 @JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
 public abstract class AbstractFunctionUnitBlock implements AbstractBlock
 {
+  /**
+   * Counter value when the execution starts
+   */
   final static int counterStart = 1;
   
   /**
@@ -334,8 +337,7 @@ public abstract class AbstractFunctionUnitBlock implements AbstractBlock
    */
   private int getDelayBasedOnCapability()
   {
-    String                                   expr           = this.simCodeModel.getInstructionFunctionModel()
-            .getInterpretableAs();
+    String expr = this.simCodeModel.getInstructionFunctionModel().getInterpretableAs();
     FunctionalUnitDescription.CapabilityName capabilityName = FunctionalUnitDescription.classifyExpression(expr);
     for (FunctionalUnitDescription.Capability capability : this.description.operations)
     {

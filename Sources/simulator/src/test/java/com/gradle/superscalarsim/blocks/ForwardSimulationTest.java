@@ -48,7 +48,7 @@ public class ForwardSimulationTest
   private IssueWindowBlock aluIssueWindowBlock;
   private ArithmeticFunctionUnitBlock addFunctionBlock;
   private ArithmeticFunctionUnitBlock addSecondFunctionBlock;
-  private ArithmeticFunctionUnitBlock subFunctionBlock;
+  private ArithmeticFunctionUnitBlock mulFunctionBlock;
   
   private IssueWindowBlock fpIssueWindowBlock;
   private ArithmeticFunctionUnitBlock faddFunctionBlock;
@@ -127,7 +127,7 @@ public class ForwardSimulationTest
     cpuCfg.speculativeRegisters = 320;
     cpuCfg.callStackSize        = 512;
     // 3 FX: +, +, - (delay 2)
-    // 3 FP: +, +, - (delay 2)
+    // 3 FP: +, +, * (delay 2)
     // 1 L/S: (delay 1)
     // 2 branch: (delay 3)
     // 1 mem: (delay 1)
@@ -138,7 +138,7 @@ public class ForwardSimulationTest
                                                   FunctionalUnitDescription.CapabilityName.addition, 2)), "FX"),
                                   new FunctionalUnitDescription(2, FunctionalUnitDescription.Type.FX, Arrays.asList(
                                           new FunctionalUnitDescription.Capability(
-                                                  FunctionalUnitDescription.CapabilityName.addition, 2)), "FX"),
+                                                  FunctionalUnitDescription.CapabilityName.multiplication, 2)), "FX"),
                                   new FunctionalUnitDescription(3, FunctionalUnitDescription.Type.FP, Arrays.asList(
                                           new FunctionalUnitDescription.Capability(
                                                   FunctionalUnitDescription.CapabilityName.addition, 2)), "FP"),
@@ -188,16 +188,14 @@ public class ForwardSimulationTest
     this.cache                     = cpuState.cache;
     
     // FU
-    this.addFunctionBlock = cpuState.arithmeticFunctionUnitBlocks.get(0);
-    // Remove subtract
+    this.addFunctionBlock       = cpuState.arithmeticFunctionUnitBlocks.get(0);
     this.addSecondFunctionBlock = cpuState.arithmeticFunctionUnitBlocks.get(1);
-    // Remove subtract
-    this.subFunctionBlock  = cpuState.arithmeticFunctionUnitBlocks.get(2);
-    this.faddFunctionBlock = cpuState.fpFunctionUnitBlocks.get(0);
-    // Remove subtract
+    this.mulFunctionBlock       = cpuState.arithmeticFunctionUnitBlocks.get(2);
+    
+    this.faddFunctionBlock       = cpuState.fpFunctionUnitBlocks.get(0);
     this.faddSecondFunctionBlock = cpuState.fpFunctionUnitBlocks.get(1);
-    // Remove subtract
-    this.fmulFunctionBlock        = cpuState.fpFunctionUnitBlocks.get(2);
+    this.fmulFunctionBlock       = cpuState.fpFunctionUnitBlocks.get(2);
+    
     this.loadStoreFunctionUnit    = cpuState.loadStoreFunctionUnits.get(0);
     this.memoryAccessUnit         = cpuState.memoryAccessUnits.get(0);
     this.branchFunctionUnitBlock1 = cpuState.branchFunctionUnitBlocks.get(0);
@@ -423,7 +421,7 @@ public class ForwardSimulationTest
   {
     CodeParser codeParser = new CodeParser(staticDataProvider);
     codeParser.parseCode("""
-                                 sub x5,x4,x5
+                                 mul x5,x4,x5
                                  add x2,x3,x4
                                  add x1,x2,x3
                                  add x4,x4,x3
@@ -432,7 +430,7 @@ public class ForwardSimulationTest
     
     // Fetch 3
     this.cpu.step();
-    Assert.assertEquals("sub", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
+    Assert.assertEquals("mul", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
     Assert.assertEquals("add", this.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
     Assert.assertEquals("add", this.instructionFetchBlock.getFetchedCode().get(2).getInstructionName());
     Assert.assertEquals(RegisterReadinessEnum.kFree, this.unifiedRegisterFileBlock.getRegister("tg3").getReadiness());
@@ -443,7 +441,7 @@ public class ForwardSimulationTest
     // Fetch last, rename 3
     this.cpu.step();
     Assert.assertEquals("add", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
-    Assert.assertEquals("sub tg0,x4,x5", this.decodeAndDispatchBlock.getCodeBuffer().get(0).getRenamedCodeLine());
+    Assert.assertEquals("mul tg0,x4,x5", this.decodeAndDispatchBlock.getCodeBuffer().get(0).getRenamedCodeLine());
     Assert.assertEquals("add tg1,x3,x4", this.decodeAndDispatchBlock.getCodeBuffer().get(1).getRenamedCodeLine());
     Assert.assertEquals("add tg2,tg1,x3", this.decodeAndDispatchBlock.getCodeBuffer().get(2).getRenamedCodeLine());
     Assert.assertEquals(RegisterReadinessEnum.kFree, this.unifiedRegisterFileBlock.getRegister("tg3").getReadiness());
@@ -458,7 +456,7 @@ public class ForwardSimulationTest
     this.cpu.step();
     Assert.assertEquals(3, this.reorderBufferBlock.getReorderQueueSize());
     Assert.assertEquals("add tg3,x4,x3", this.decodeAndDispatchBlock.getCodeBuffer().get(0).getRenamedCodeLine());
-    Assert.assertEquals("sub tg0,x4,x5", this.aluIssueWindowBlock.getIssuedInstructions().get(0).getRenamedCodeLine());
+    Assert.assertEquals("mul tg0,x4,x5", this.aluIssueWindowBlock.getIssuedInstructions().get(0).getRenamedCodeLine());
     Assert.assertEquals("add tg1,x3,x4", this.aluIssueWindowBlock.getIssuedInstructions().get(1).getRenamedCodeLine());
     Assert.assertEquals("add tg2,tg1,x3", this.aluIssueWindowBlock.getIssuedInstructions().get(2).getRenamedCodeLine());
     
@@ -469,7 +467,7 @@ public class ForwardSimulationTest
     Assert.assertEquals("add tg2,tg1,x3", this.aluIssueWindowBlock.getIssuedInstructions().get(0).getRenamedCodeLine());
     Assert.assertEquals("add tg3,x4,x3", this.aluIssueWindowBlock.getIssuedInstructions().get(1).getRenamedCodeLine());
     // 2 FUs busy, last adder did not have anything to work on
-    Assert.assertEquals("sub tg0,x4,x5", this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
+    Assert.assertEquals("mul tg0,x4,x5", this.mulFunctionBlock.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("add tg1,x3,x4", this.addFunctionBlock.getSimCodeModel().getRenamedCodeLine());
     
     // The last instruction is executed by addSecondFunctionBlock
@@ -478,7 +476,7 @@ public class ForwardSimulationTest
     Assert.assertEquals("add tg2,tg1,x3", this.aluIssueWindowBlock.getIssuedInstructions().get(0).getRenamedCodeLine());
     // 3 FUs busy
     Assert.assertEquals("add tg3,x4,x3", this.addSecondFunctionBlock.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertEquals("sub tg0,x4,x5", this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
+    Assert.assertEquals("mul tg0,x4,x5", this.mulFunctionBlock.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("add tg1,x3,x4", this.addFunctionBlock.getSimCodeModel().getRenamedCodeLine());
     
     // First two computed
@@ -507,7 +505,7 @@ public class ForwardSimulationTest
     Assert.assertTrue(this.reorderBufferBlock.getRobItem(3).isReadyToBeCommitted());
     Assert.assertEquals("add tg2,tg1,x3", this.addFunctionBlock.getSimCodeModel().getRenamedCodeLine());
     // Registers
-    Assert.assertEquals(-2, (int) this.unifiedRegisterFileBlock.getRegister("x5").getValue(DataTypeEnum.kInt), 0.01);
+    Assert.assertEquals(0, (int) this.unifiedRegisterFileBlock.getRegister("x5").getValue(DataTypeEnum.kInt), 0.01);
     Assert.assertEquals(4, (int) this.unifiedRegisterFileBlock.getRegister("x2").getValue(DataTypeEnum.kInt), 0.01);
     Assert.assertEquals(RegisterReadinessEnum.kFree, this.unifiedRegisterFileBlock.getRegister("tg0").getReadiness());
     
@@ -858,7 +856,7 @@ public class ForwardSimulationTest
     Assert.assertEquals(2, this.reorderBufferBlock.getReorderQueueSize());
     Assert.assertTrue(this.reorderBufferBlock.getRobItem(3).isReadyToBeCommitted());
     Assert.assertEquals("fadd.s tg2,tg1,f3", this.faddFunctionBlock.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertEquals(12.24, (float) this.unifiedRegisterFileBlock.getRegister("f5").getValue(DataTypeEnum.kFloat),
+    Assert.assertEquals(0.1224, (float) this.unifiedRegisterFileBlock.getRegister("f5").getValue(DataTypeEnum.kFloat),
                         0.001);
     Assert.assertEquals(15.375, (float) this.unifiedRegisterFileBlock.getRegister("f2").getValue(DataTypeEnum.kFloat),
                         0.001);
@@ -1076,7 +1074,7 @@ public class ForwardSimulationTest
     Assert.assertEquals("jal tg1,loop",
                         this.branchIssueWindowBlock.getIssuedInstructions().get(0).getRenamedCodeLine());
     Assert.assertEquals("beq x3,x0,loopEnd", this.branchFunctionUnitBlock1.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertEquals("subi tg0,x3,1", this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
+    Assert.assertEquals("subi tg0,x3,1", this.addFunctionBlock.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals(0, (int) this.unifiedRegisterFileBlock.getRegister("x0").getValue(DataTypeEnum.kInt), 0.01);
     
     this.cpu.step();
@@ -1089,7 +1087,7 @@ public class ForwardSimulationTest
     Assert.assertEquals("subi tg2,tg0,1", this.aluIssueWindowBlock.getIssuedInstructions().get(0).getRenamedCodeLine());
     Assert.assertEquals("jal tg1,loop", this.branchFunctionUnitBlock2.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("beq x3,x0,loopEnd", this.branchFunctionUnitBlock1.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertEquals("subi tg0,x3,1", this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
+    Assert.assertEquals("subi tg0,x3,1", this.addFunctionBlock.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals(0, (int) this.unifiedRegisterFileBlock.getRegister("x0").getValue(DataTypeEnum.kInt), 0.01);
     
     this.cpu.step();
@@ -1105,7 +1103,7 @@ public class ForwardSimulationTest
     Assert.assertEquals("jal tg1,loop", this.branchFunctionUnitBlock2.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("beq x3,x0,loopEnd", this.branchFunctionUnitBlock1.getSimCodeModel().getRenamedCodeLine());
     // There is a new instruction in the function block
-    Assert.assertEquals("subi tg2,tg0,1", this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
+    Assert.assertEquals("subi tg2,tg0,1", this.addFunctionBlock.getSimCodeModel().getRenamedCodeLine());
     Assert.assertFalse(this.reorderBufferBlock.getRobItem(1).isReadyToBeCommitted());
     Assert.assertEquals(0, (int) this.unifiedRegisterFileBlock.getRegister("x0").getValue(DataTypeEnum.kInt), 0.01);
     
@@ -1115,7 +1113,7 @@ public class ForwardSimulationTest
     Assert.assertEquals("nop", this.instructionFetchBlock.getFetchedCode().get(2).getInstructionName());
     Assert.assertEquals("jal tg1,loop", this.branchFunctionUnitBlock2.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("beq tg0,x0,loopEnd", this.branchFunctionUnitBlock1.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertEquals("subi tg2,tg0,1", this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
+    Assert.assertEquals("subi tg2,tg0,1", this.addFunctionBlock.getSimCodeModel().getRenamedCodeLine());
     // beq (id 1), subi (id 2) and jal (id 3) are ready
     Assert.assertTrue(this.reorderBufferBlock.getRobItem(0).isReadyToBeCommitted());
     Assert.assertFalse(this.reorderBufferBlock.getRobItem(1).isReadyToBeCommitted());
@@ -1128,7 +1126,7 @@ public class ForwardSimulationTest
     Assert.assertEquals("nop", this.instructionFetchBlock.getFetchedCode().get(2).getInstructionName());
     Assert.assertEquals("jal tg3,loop", this.branchFunctionUnitBlock2.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("beq tg0,x0,loopEnd", this.branchFunctionUnitBlock1.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertEquals("subi tg4,tg2,1", this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
+    Assert.assertEquals("subi tg4,tg2,1", this.addFunctionBlock.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals(0, (int) this.unifiedRegisterFileBlock.getRegister("x0").getValue(DataTypeEnum.kInt), 0.01);
     Assert.assertTrue(this.reorderBufferBlock.getRobItem(3).isReadyToBeCommitted());
     
@@ -1139,13 +1137,13 @@ public class ForwardSimulationTest
     Assert.assertEquals("jal tg3,loop", this.branchFunctionUnitBlock2.getSimCodeModel().getRenamedCodeLine());
     // beq is ID 6
     Assert.assertEquals("beq tg0,x0,loopEnd", this.branchFunctionUnitBlock1.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertEquals("subi tg4,tg2,1", this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
+    Assert.assertEquals("subi tg4,tg2,1", this.addFunctionBlock.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals(0, (int) this.unifiedRegisterFileBlock.getRegister("x0").getValue(DataTypeEnum.kInt), 0.01);
     
     this.cpu.step();
     Assert.assertEquals("jal tg3,loop", this.branchFunctionUnitBlock2.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("beq tg2,x0,loopEnd", this.branchFunctionUnitBlock1.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertEquals("subi tg6,tg4,1", this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
+    Assert.assertEquals("subi tg6,tg4,1", this.addFunctionBlock.getSimCodeModel().getRenamedCodeLine());
     Assert.assertTrue(this.reorderBufferBlock.getRobItem(6).isReadyToBeCommitted());
     Assert.assertFalse(this.reorderBufferBlock.getRobItem(7).isReadyToBeCommitted());
     Assert.assertFalse(this.reorderBufferBlock.getRobItem(9).isReadyToBeCommitted());
@@ -1153,96 +1151,96 @@ public class ForwardSimulationTest
     this.cpu.step();
     Assert.assertEquals("jal tg5,loop", this.branchFunctionUnitBlock2.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("beq tg2,x0,loopEnd", this.branchFunctionUnitBlock1.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertEquals("subi tg6,tg4,1", this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
+    Assert.assertEquals("subi tg6,tg4,1", this.addFunctionBlock.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals(0, (int) this.unifiedRegisterFileBlock.getRegister("x0").getValue(DataTypeEnum.kInt), 0.01);
     Assert.assertTrue(this.reorderBufferBlock.getRobItem(9).isReadyToBeCommitted());
     
     this.cpu.step();
     Assert.assertEquals("jal tg5,loop", this.branchFunctionUnitBlock2.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("beq tg2,x0,loopEnd", this.branchFunctionUnitBlock1.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertEquals("subi tg8,tg6,1", this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
+    Assert.assertEquals("subi tg7,tg6,1", this.addFunctionBlock.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals(0, (int) this.unifiedRegisterFileBlock.getRegister("x0").getValue(DataTypeEnum.kInt), 0.01);
     
     this.cpu.step();
     Assert.assertEquals("jal tg5,loop", this.branchFunctionUnitBlock2.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("beq tg4,x0,loopEnd", this.branchFunctionUnitBlock1.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertEquals("subi tg8,tg6,1", this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
+    Assert.assertEquals("subi tg7,tg6,1", this.addFunctionBlock.getSimCodeModel().getRenamedCodeLine());
     Assert.assertTrue(this.reorderBufferBlock.getRobItem(12).isReadyToBeCommitted());
     Assert.assertFalse(this.reorderBufferBlock.getRobItem(13).isReadyToBeCommitted());
     Assert.assertFalse(this.reorderBufferBlock.getRobItem(15).isReadyToBeCommitted());
     
     this.cpu.step();
-    Assert.assertEquals("jal tg7,loop", this.branchFunctionUnitBlock2.getSimCodeModel().getRenamedCodeLine());
+    Assert.assertEquals("jal tg1,loop", this.branchFunctionUnitBlock2.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("beq tg4,x0,loopEnd", this.branchFunctionUnitBlock1.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertEquals("subi tg10,tg8,1", this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
+    Assert.assertEquals("subi tg3,tg7,1", this.addFunctionBlock.getSimCodeModel().getRenamedCodeLine());
     Assert.assertTrue(this.reorderBufferBlock.getRobItem(15).isReadyToBeCommitted());
     
     this.cpu.step();
-    Assert.assertEquals("jal tg7,loop", this.branchFunctionUnitBlock2.getSimCodeModel().getRenamedCodeLine());
+    Assert.assertEquals("jal tg1,loop", this.branchFunctionUnitBlock2.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("beq tg4,x0,loopEnd", this.branchFunctionUnitBlock1.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertEquals("subi tg10,tg8,1", this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
+    Assert.assertEquals("subi tg3,tg7,1", this.addFunctionBlock.getSimCodeModel().getRenamedCodeLine());
     
     this.cpu.step();
-    Assert.assertEquals("jal tg7,loop", this.branchFunctionUnitBlock2.getSimCodeModel().getRenamedCodeLine());
+    Assert.assertEquals("jal tg1,loop", this.branchFunctionUnitBlock2.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("beq tg6,x0,loopEnd", this.branchFunctionUnitBlock1.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertEquals("subi tg12,tg10,1", this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
+    Assert.assertEquals("subi tg2,tg3,1", this.addFunctionBlock.getSimCodeModel().getRenamedCodeLine());
     Assert.assertTrue(this.reorderBufferBlock.getRobItem(18).isReadyToBeCommitted());
     Assert.assertFalse(this.reorderBufferBlock.getRobItem(19).isReadyToBeCommitted());
     Assert.assertFalse(this.reorderBufferBlock.getRobItem(21).isReadyToBeCommitted());
     
     this.cpu.step();
-    Assert.assertEquals("jal tg9,loop", this.branchFunctionUnitBlock2.getSimCodeModel().getRenamedCodeLine());
+    Assert.assertEquals("jal tg0,loop", this.branchFunctionUnitBlock2.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("beq tg6,x0,loopEnd", this.branchFunctionUnitBlock1.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertEquals("subi tg12,tg10,1", this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
+    Assert.assertEquals("subi tg2,tg3,1", this.addFunctionBlock.getSimCodeModel().getRenamedCodeLine());
     Assert.assertTrue(this.reorderBufferBlock.getRobItem(21).isReadyToBeCommitted());
     
     this.cpu.step();
-    Assert.assertEquals("jal tg9,loop", this.branchFunctionUnitBlock2.getSimCodeModel().getRenamedCodeLine());
+    Assert.assertEquals("jal tg0,loop", this.branchFunctionUnitBlock2.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("beq tg6,x0,loopEnd", this.branchFunctionUnitBlock1.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertEquals("subi tg14,tg12,1", this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
+    Assert.assertEquals("subi tg9,tg2,1", this.addFunctionBlock.getSimCodeModel().getRenamedCodeLine());
     
     this.cpu.step();
-    Assert.assertEquals("jal tg9,loop", this.branchFunctionUnitBlock2.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertEquals("beq tg8,x0,loopEnd", this.branchFunctionUnitBlock1.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertEquals("subi tg14,tg12,1", this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
+    Assert.assertEquals("jal tg0,loop", this.branchFunctionUnitBlock2.getSimCodeModel().getRenamedCodeLine());
+    Assert.assertEquals("beq tg7,x0,loopEnd", this.branchFunctionUnitBlock1.getSimCodeModel().getRenamedCodeLine());
+    Assert.assertEquals("subi tg9,tg2,1", this.addFunctionBlock.getSimCodeModel().getRenamedCodeLine());
     Assert.assertTrue(this.reorderBufferBlock.getRobItem(24).isReadyToBeCommitted());
     Assert.assertFalse(this.reorderBufferBlock.getRobItem(25).isReadyToBeCommitted());
     Assert.assertFalse(this.reorderBufferBlock.getRobItem(27).isReadyToBeCommitted());
     
     this.cpu.step();
-    Assert.assertEquals("jal tg11,loop", this.branchFunctionUnitBlock2.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertEquals("beq tg8,x0,loopEnd", this.branchFunctionUnitBlock1.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertEquals("subi tg16,tg14,1", this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
+    Assert.assertEquals("jal tg8,loop", this.branchFunctionUnitBlock2.getSimCodeModel().getRenamedCodeLine());
+    Assert.assertEquals("beq tg7,x0,loopEnd", this.branchFunctionUnitBlock1.getSimCodeModel().getRenamedCodeLine());
+    Assert.assertEquals("subi tg1,tg9,1", this.addFunctionBlock.getSimCodeModel().getRenamedCodeLine());
     Assert.assertTrue(this.reorderBufferBlock.getRobItem(27).isReadyToBeCommitted());
     
     this.cpu.step();
-    Assert.assertEquals("jal tg11,loop", this.branchFunctionUnitBlock2.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertEquals("beq tg8,x0,loopEnd", this.branchFunctionUnitBlock1.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertEquals("subi tg16,tg14,1", this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
+    Assert.assertEquals("jal tg8,loop", this.branchFunctionUnitBlock2.getSimCodeModel().getRenamedCodeLine());
+    Assert.assertEquals("beq tg7,x0,loopEnd", this.branchFunctionUnitBlock1.getSimCodeModel().getRenamedCodeLine());
+    Assert.assertEquals("subi tg1,tg9,1", this.addFunctionBlock.getSimCodeModel().getRenamedCodeLine());
     
     this.cpu.step();
-    Assert.assertEquals("jal tg11,loop", this.branchFunctionUnitBlock2.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertEquals("beq tg10,x0,loopEnd", this.branchFunctionUnitBlock1.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertEquals("subi tg18,tg16,1", this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
+    Assert.assertEquals("jal tg8,loop", this.branchFunctionUnitBlock2.getSimCodeModel().getRenamedCodeLine());
+    Assert.assertEquals("beq tg3,x0,loopEnd", this.branchFunctionUnitBlock1.getSimCodeModel().getRenamedCodeLine());
+    Assert.assertEquals("subi tg6,tg1,1", this.addFunctionBlock.getSimCodeModel().getRenamedCodeLine());
     Assert.assertTrue(this.reorderBufferBlock.getRobItem(30).isReadyToBeCommitted());
     Assert.assertFalse(this.reorderBufferBlock.getRobItem(31).isReadyToBeCommitted());
     Assert.assertFalse(this.reorderBufferBlock.getRobItem(33).isReadyToBeCommitted());
     
     this.cpu.step();
-    Assert.assertEquals("jal tg13,loop", this.branchFunctionUnitBlock2.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertEquals("beq tg10,x0,loopEnd", this.branchFunctionUnitBlock1.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertEquals("subi tg18,tg16,1", this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
+    Assert.assertEquals("jal tg5,loop", this.branchFunctionUnitBlock2.getSimCodeModel().getRenamedCodeLine());
+    Assert.assertEquals("beq tg3,x0,loopEnd", this.branchFunctionUnitBlock1.getSimCodeModel().getRenamedCodeLine());
+    Assert.assertEquals("subi tg6,tg1,1", this.addFunctionBlock.getSimCodeModel().getRenamedCodeLine());
     Assert.assertTrue(this.reorderBufferBlock.getRobItem(33).isReadyToBeCommitted());
     
     this.cpu.step();
-    Assert.assertEquals("jal tg13,loop", this.branchFunctionUnitBlock2.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertEquals("beq tg10,x0,loopEnd", this.branchFunctionUnitBlock1.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertEquals("subi tg20,tg18,1", this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
+    Assert.assertEquals("jal tg5,loop", this.branchFunctionUnitBlock2.getSimCodeModel().getRenamedCodeLine());
+    Assert.assertEquals("beq tg3,x0,loopEnd", this.branchFunctionUnitBlock1.getSimCodeModel().getRenamedCodeLine());
+    Assert.assertEquals("subi tg11,tg6,1", this.addFunctionBlock.getSimCodeModel().getRenamedCodeLine());
     
     this.cpu.step();
-    Assert.assertEquals("jal tg13,loop", this.branchFunctionUnitBlock2.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertEquals("beq tg12,x0,loopEnd", this.branchFunctionUnitBlock1.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertEquals("subi tg20,tg18,1", this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
+    Assert.assertEquals("jal tg5,loop", this.branchFunctionUnitBlock2.getSimCodeModel().getRenamedCodeLine());
+    Assert.assertEquals("beq tg2,x0,loopEnd", this.branchFunctionUnitBlock1.getSimCodeModel().getRenamedCodeLine());
+    Assert.assertEquals("subi tg11,tg6,1", this.addFunctionBlock.getSimCodeModel().getRenamedCodeLine());
     Assert.assertTrue(this.reorderBufferBlock.getRobItem(36).isReadyToBeCommitted());
     Assert.assertFalse(this.reorderBufferBlock.getRobItem(37).isReadyToBeCommitted());
     Assert.assertFalse(this.reorderBufferBlock.getRobItem(39).isReadyToBeCommitted());
@@ -1250,7 +1248,7 @@ public class ForwardSimulationTest
     this.cpu.step();
     Assert.assertNull(this.branchFunctionUnitBlock2.getSimCodeModel());
     Assert.assertNull(this.branchFunctionUnitBlock1.getSimCodeModel());
-    Assert.assertNull(this.subFunctionBlock.getSimCodeModel());
+    Assert.assertNull(this.addFunctionBlock.getSimCodeModel());
     Assert.assertEquals(0, this.reorderBufferBlock.getReorderQueueSize());
     Assert.assertEquals(0, this.aluIssueWindowBlock.getIssuedInstructions().size());
     Assert.assertEquals(0, this.branchIssueWindowBlock.getIssuedInstructions().size());
@@ -1263,7 +1261,7 @@ public class ForwardSimulationTest
     CodeParser codeParser = new CodeParser(staticDataProvider);
     codeParser.parseCode("""
                                   beq x5,x0,labelIf
-                                  subi x1,x1,10
+                                  mul x1,x1,x2
                                   jal x0,labelFin
                                  labelIf:
                                   addi x1,x1,10
@@ -1278,7 +1276,7 @@ public class ForwardSimulationTest
     this.cpu.step();
     Assert.assertEquals(8, this.instructionFetchBlock.getPc());
     Assert.assertEquals("beq", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
-    Assert.assertEquals("subi", this.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
+    Assert.assertEquals("mul", this.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
     // Third instruction is not fetched - it is a second branch
     Assert.assertEquals("nop", this.instructionFetchBlock.getFetchedCode().get(2).getInstructionName());
     Assert.assertEquals(0, this.globalHistoryRegister.getRegisterValue());
@@ -1292,7 +1290,7 @@ public class ForwardSimulationTest
     Assert.assertEquals("nop", this.instructionFetchBlock.getFetchedCode().get(2).getInstructionName());
     // Decode has the first 2 fetched (nop is filtered)
     Assert.assertEquals("beq x5,x0,labelIf", this.decodeAndDispatchBlock.getCodeBuffer().get(0).getRenamedCodeLine());
-    Assert.assertEquals("subi tg0,x1,10", this.decodeAndDispatchBlock.getCodeBuffer().get(1).getRenamedCodeLine());
+    Assert.assertEquals("mul tg0,x1,x2", this.decodeAndDispatchBlock.getCodeBuffer().get(1).getRenamedCodeLine());
     
     this.cpu.step();
     // So nothing is fetched
@@ -1300,10 +1298,10 @@ public class ForwardSimulationTest
     // Decode has just the jal, the addi was discarded
     Assert.assertEquals(1, this.decodeAndDispatchBlock.getCodeBuffer().size());
     Assert.assertEquals("jal tg1,labelFin", this.decodeAndDispatchBlock.getCodeBuffer().get(0).getRenamedCodeLine());
-    // beq and subi moved to their respective issue windows
+    // beq and mul moved to their respective issue windows
     Assert.assertEquals("beq x5,x0,labelIf",
                         this.branchIssueWindowBlock.getIssuedInstructions().get(0).getRenamedCodeLine());
-    Assert.assertEquals("subi tg0,x1,10", this.aluIssueWindowBlock.getIssuedInstructions().get(0).getRenamedCodeLine());
+    Assert.assertEquals("mul tg0,x1,x2", this.aluIssueWindowBlock.getIssuedInstructions().get(0).getRenamedCodeLine());
     
     this.cpu.step();
     // Last fetch was empty, so now decode is empty
@@ -1311,27 +1309,27 @@ public class ForwardSimulationTest
     Assert.assertEquals("jal tg1,labelFin",
                         this.branchIssueWindowBlock.getIssuedInstructions().get(0).getRenamedCodeLine());
     Assert.assertEquals("beq x5,x0,labelIf", this.branchFunctionUnitBlock1.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertEquals("subi tg0,x1,10", this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
+    Assert.assertEquals("mul tg0,x1,x2", this.mulFunctionBlock.getSimCodeModel().getRenamedCodeLine());
     
     this.cpu.step();
     Assert.assertEquals("jal tg1,labelFin", this.branchFunctionUnitBlock2.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("beq x5,x0,labelIf", this.branchFunctionUnitBlock1.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertEquals("subi tg0,x1,10", this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
+    Assert.assertEquals("mul tg0,x1,x2", this.mulFunctionBlock.getSimCodeModel().getRenamedCodeLine());
     
     this.cpu.step();
     Assert.assertEquals("jal tg1,labelFin", this.branchFunctionUnitBlock2.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("beq x5,x0,labelIf", this.branchFunctionUnitBlock1.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertNull(this.subFunctionBlock.getSimCodeModel());
+    Assert.assertNull(this.mulFunctionBlock.getSimCodeModel());
     
     this.cpu.step();
     Assert.assertEquals("jal tg1,labelFin", this.branchFunctionUnitBlock2.getSimCodeModel().getRenamedCodeLine());
     Assert.assertNull(this.branchFunctionUnitBlock1.getSimCodeModel());
-    Assert.assertNull(this.subFunctionBlock.getSimCodeModel());
+    Assert.assertNull(this.mulFunctionBlock.getSimCodeModel());
     // First instruction ready to be committed
     Assert.assertTrue(this.reorderBufferBlock.getRobItem(0).isReadyToBeCommitted());
     
     this.cpu.step();
-    Assert.assertNull(this.subFunctionBlock.getSimCodeModel());
+    Assert.assertNull(this.mulFunctionBlock.getSimCodeModel());
     Assert.assertNull(this.branchFunctionUnitBlock1.getSimCodeModel());
     Assert.assertNull(this.branchFunctionUnitBlock2.getSimCodeModel());
     Assert.assertEquals(0, this.reorderBufferBlock.getReorderQueueSize());
@@ -1341,16 +1339,16 @@ public class ForwardSimulationTest
     
     this.cpu.step();
     Assert.assertEquals(1, this.decodeAndDispatchBlock.getCodeBuffer().size());
-    Assert.assertEquals("addi tg2,x1,10", this.decodeAndDispatchBlock.getCodeBuffer().get(0).getRenamedCodeLine());
+    Assert.assertEquals("addi tg0,x1,10", this.decodeAndDispatchBlock.getCodeBuffer().get(0).getRenamedCodeLine());
     
     this.cpu.step();
-    Assert.assertEquals("addi tg2,x1,10", this.aluIssueWindowBlock.getIssuedInstructions().get(0).getRenamedCodeLine());
+    Assert.assertEquals("addi tg0,x1,10", this.aluIssueWindowBlock.getIssuedInstructions().get(0).getRenamedCodeLine());
     
     this.cpu.step();
-    Assert.assertEquals("addi tg2,x1,10", this.addFunctionBlock.getSimCodeModel().getRenamedCodeLine());
+    Assert.assertEquals("addi tg0,x1,10", this.addFunctionBlock.getSimCodeModel().getRenamedCodeLine());
     
     this.cpu.step();
-    Assert.assertEquals("addi tg2,x1,10", this.addFunctionBlock.getSimCodeModel().getRenamedCodeLine());
+    Assert.assertEquals("addi tg0,x1,10", this.addFunctionBlock.getSimCodeModel().getRenamedCodeLine());
     
     this.cpu.step();
     Assert.assertTrue(this.reorderBufferBlock.getRobItem(21).isReadyToBeCommitted());
@@ -1371,7 +1369,7 @@ public class ForwardSimulationTest
     CodeParser codeParser = new CodeParser(staticDataProvider);
     codeParser.parseCode("""
                                   beq x3, x0, labelIf
-                                  subi x1, x1, 10
+                                  mul x1, x3, x3
                                   jal x0, labelFin
                                  labelIf:
                                   addi x1, x1, 10
@@ -1383,7 +1381,7 @@ public class ForwardSimulationTest
     this.cpu.step();
     // 3 fetches, but it stops before second branch (fetch limitation)
     Assert.assertEquals("beq", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
-    Assert.assertEquals("subi", this.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
+    Assert.assertEquals("mul", this.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
     Assert.assertEquals("nop", this.instructionFetchBlock.getFetchedCode().get(2).getInstructionName());
     
     
@@ -1394,7 +1392,7 @@ public class ForwardSimulationTest
     Assert.assertEquals("addi", this.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
     Assert.assertEquals("nop", this.instructionFetchBlock.getFetchedCode().get(2).getInstructionName());
     Assert.assertEquals("beq x3,x0,labelIf", this.decodeAndDispatchBlock.getCodeBuffer().get(0).getRenamedCodeLine());
-    Assert.assertEquals("subi tg0,x1,10", this.decodeAndDispatchBlock.getCodeBuffer().get(1).getRenamedCodeLine());
+    Assert.assertEquals("mul tg0,x3,x3", this.decodeAndDispatchBlock.getCodeBuffer().get(1).getRenamedCodeLine());
     
     this.cpu.step();
     Assert.assertEquals("nop", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
@@ -1402,7 +1400,7 @@ public class ForwardSimulationTest
     Assert.assertEquals("jal tg1,labelFin", this.decodeAndDispatchBlock.getCodeBuffer().get(0).getRenamedCodeLine());
     Assert.assertEquals("beq x3,x0,labelIf",
                         this.branchIssueWindowBlock.getIssuedInstructions().get(0).getRenamedCodeLine());
-    Assert.assertEquals("subi tg0,x1,10", this.aluIssueWindowBlock.getIssuedInstructions().get(0).getRenamedCodeLine());
+    Assert.assertEquals("mul tg0,x3,x3", this.aluIssueWindowBlock.getIssuedInstructions().get(0).getRenamedCodeLine());
     
     this.cpu.step();
     // The addi does not get out of the decode buffer, because the jal is computed and followed
@@ -1411,28 +1409,28 @@ public class ForwardSimulationTest
     Assert.assertEquals("jal tg1,labelFin",
                         this.branchIssueWindowBlock.getIssuedInstructions().get(0).getRenamedCodeLine());
     Assert.assertEquals("beq x3,x0,labelIf", this.branchFunctionUnitBlock1.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertEquals("subi tg0,x1,10", this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
+    Assert.assertEquals("mul tg0,x3,x3", this.mulFunctionBlock.getSimCodeModel().getRenamedCodeLine());
     Assert.assertNull(this.branchFunctionUnitBlock2.getSimCodeModel());
     
     this.cpu.step();
     Assert.assertEquals("jal tg1,labelFin", this.branchFunctionUnitBlock2.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("beq x3,x0,labelIf", this.branchFunctionUnitBlock1.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertEquals("subi tg0,x1,10", this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
+    Assert.assertEquals("mul tg0,x3,x3", this.mulFunctionBlock.getSimCodeModel().getRenamedCodeLine());
     
     this.cpu.step();
     Assert.assertEquals("jal tg1,labelFin", this.branchFunctionUnitBlock2.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("beq x3,x0,labelIf", this.branchFunctionUnitBlock1.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertNull(this.subFunctionBlock.getSimCodeModel());
+    Assert.assertNull(this.mulFunctionBlock.getSimCodeModel());
     
     this.cpu.step();
-    Assert.assertNull(this.subFunctionBlock.getSimCodeModel());
+    Assert.assertNull(this.mulFunctionBlock.getSimCodeModel());
     Assert.assertNull(this.branchFunctionUnitBlock1.getSimCodeModel());
     Assert.assertEquals("jal tg1,labelFin", this.branchFunctionUnitBlock2.getSimCodeModel().getRenamedCodeLine());
     Assert.assertTrue(this.reorderBufferBlock.getRobItem(0).isReadyToBeCommitted());
     
     this.cpu.step();
     Assert.assertTrue(this.reorderBufferBlock.getRobItem(3).isReadyToBeCommitted());
-    Assert.assertEquals(-10, (int) this.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt));
+    Assert.assertEquals(36, (int) this.unifiedRegisterFileBlock.getRegister("x1").getValue(DataTypeEnum.kInt));
     
     this.cpu.step();
     // No conditional has been predicted
@@ -1563,7 +1561,7 @@ public class ForwardSimulationTest
   {
     CodeParser codeParser = new CodeParser(staticDataProvider);
     codeParser.parseCode("""
-                                 subi x4,x4,5
+                                 muli x4,x4,5
                                  sw x3,0(x2)
                                  lw x1,0(x2)
                                  """);
@@ -1573,7 +1571,7 @@ public class ForwardSimulationTest
     // Load will not touch memory.
     
     this.cpu.step();
-    Assert.assertEquals("subi", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
+    Assert.assertEquals("muli", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
     Assert.assertEquals("sw", this.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
     Assert.assertEquals("lw", this.instructionFetchBlock.getFetchedCode().get(2).getInstructionName());
     Assert.assertEquals(0, this.loadBufferBlock.getQueueSize());
@@ -1582,7 +1580,7 @@ public class ForwardSimulationTest
     this.cpu.step();
     Assert.assertEquals("nop", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
     Assert.assertEquals(3, this.decodeAndDispatchBlock.getCodeBuffer().size());
-    Assert.assertEquals("subi tg0,x4,5", this.decodeAndDispatchBlock.getCodeBuffer().get(0).getRenamedCodeLine());
+    Assert.assertEquals("muli tg0,x4,5", this.decodeAndDispatchBlock.getCodeBuffer().get(0).getRenamedCodeLine());
     Assert.assertEquals("sw x3,0(x2)", this.decodeAndDispatchBlock.getCodeBuffer().get(1).getRenamedCodeLine());
     Assert.assertEquals("lw tg1,0(x2)", this.decodeAndDispatchBlock.getCodeBuffer().get(2).getRenamedCodeLine());
     
@@ -1597,7 +1595,7 @@ public class ForwardSimulationTest
                         this.loadStoreIssueWindowBlock.getIssuedInstructions().get(1).getRenamedCodeLine());
     Assert.assertEquals("sw x3,0(x2)", this.storeBufferBlock.getStoreQueueFirst().getRenamedCodeLine());
     Assert.assertEquals("lw tg1,0(x2)", this.loadBufferBlock.getLoadQueueFirst().getRenamedCodeLine());
-    Assert.assertEquals("subi tg0,x4,5", this.aluIssueWindowBlock.getIssuedInstructions().get(0).getRenamedCodeLine());
+    Assert.assertEquals("muli tg0,x4,5", this.aluIssueWindowBlock.getIssuedInstructions().get(0).getRenamedCodeLine());
     
     this.cpu.step();
     Assert.assertEquals(1, this.loadBufferBlock.getQueueSize());
@@ -1607,7 +1605,7 @@ public class ForwardSimulationTest
     Assert.assertEquals("lw tg1,0(x2)",
                         this.loadStoreIssueWindowBlock.getIssuedInstructions().get(0).getRenamedCodeLine());
     Assert.assertEquals("sw x3,0(x2)", this.loadStoreFunctionUnit.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertEquals("subi tg0,x4,5", this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
+    Assert.assertEquals("muli tg0,x4,5", this.mulFunctionBlock.getSimCodeModel().getRenamedCodeLine());
     
     this.cpu.step();
     Assert.assertEquals(1, this.loadBufferBlock.getQueueSize());
@@ -1618,13 +1616,13 @@ public class ForwardSimulationTest
     Assert.assertTrue(this.storeBufferBlock.getStoreBufferItem(1).isSourceReady());
     Assert.assertEquals(25, this.storeBufferBlock.getStoreBufferItem(1).getAddress());
     Assert.assertFalse(this.reorderBufferBlock.getRobItem(1).isReadyToBeCommitted());
-    Assert.assertEquals("subi tg0,x4,5", this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
+    Assert.assertEquals("muli tg0,x4,5", this.mulFunctionBlock.getSimCodeModel().getRenamedCodeLine());
     // Store moved to MAU (as it is about to commit)
     Assert.assertEquals("sw x3,0(x2)", this.memoryAccessUnit.getSimCodeModel().getRenamedCodeLine());
     
     this.cpu.step();
     Assert.assertEquals("sw x3,0(x2)", this.memoryAccessUnit.getSimCodeModel().getRenamedCodeLine());
-    Assert.assertNull(this.subFunctionBlock.getSimCodeModel());
+    Assert.assertNull(this.mulFunctionBlock.getSimCodeModel());
     Assert.assertEquals(1, this.loadBufferBlock.getQueueSize());
     Assert.assertEquals(1, this.storeBufferBlock.getQueueSize());
     Assert.assertNull(this.loadStoreFunctionUnit.getSimCodeModel());
@@ -1651,12 +1649,12 @@ public class ForwardSimulationTest
   public void simulate_loadForwarding_FailsAndRerunsFromLoad()
   {
     // Code:
-    // subi x3 x3 5
+    // muli x3 x3 5
     // sw x3 x2 0 - store 6 to address x2 (25)
     // lw x1 x2 0 - load from address x2
     CodeParser codeParser = new CodeParser(staticDataProvider);
     codeParser.parseCode("""
-                                 subi x3, x3, 5
+                                 muli x3, x3, 5
                                  sw x3, 0(x2)
                                  lw x1, 0(x2)
                                  """);
@@ -1664,7 +1662,7 @@ public class ForwardSimulationTest
     
     this.cpu.step();
     // Fetch all three instructions
-    Assert.assertEquals("subi", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
+    Assert.assertEquals("muli", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
     Assert.assertEquals("sw", this.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
     Assert.assertEquals("lw", this.instructionFetchBlock.getFetchedCode().get(2).getInstructionName());
     Assert.assertEquals(0, this.loadBufferBlock.getQueueSize());
@@ -1673,7 +1671,7 @@ public class ForwardSimulationTest
     this.cpu.step();
     Assert.assertEquals("nop", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
     Assert.assertEquals(3, this.decodeAndDispatchBlock.getCodeBuffer().size());
-    Assert.assertEquals("subi tg0,x3,5", this.decodeAndDispatchBlock.getCodeBuffer().get(0).getRenamedCodeLine());
+    Assert.assertEquals("muli tg0,x3,5", this.decodeAndDispatchBlock.getCodeBuffer().get(0).getRenamedCodeLine());
     Assert.assertEquals("sw tg0,0(x2)", this.decodeAndDispatchBlock.getCodeBuffer().get(1).getRenamedCodeLine());
     Assert.assertEquals("lw tg1,0(x2)", this.decodeAndDispatchBlock.getCodeBuffer().get(2).getRenamedCodeLine());
     
@@ -1690,7 +1688,7 @@ public class ForwardSimulationTest
                         this.loadStoreIssueWindowBlock.getIssuedInstructions().get(1).getRenamedCodeLine());
     Assert.assertEquals("sw tg0,0(x2)", this.storeBufferBlock.getStoreQueueFirst().getRenamedCodeLine());
     Assert.assertEquals("lw tg1,0(x2)", this.loadBufferBlock.getLoadQueueFirst().getRenamedCodeLine());
-    Assert.assertEquals("subi tg0,x3,5", this.aluIssueWindowBlock.getIssuedInstructions().get(0).getRenamedCodeLine());
+    Assert.assertEquals("muli tg0,x3,5", this.aluIssueWindowBlock.getIssuedInstructions().get(0).getRenamedCodeLine());
     
     this.cpu.step();
     // Load got to EX
@@ -1698,23 +1696,23 @@ public class ForwardSimulationTest
     // Store stays in issue window
     Assert.assertEquals("sw tg0,0(x2)",
                         this.loadStoreIssueWindowBlock.getIssuedInstructions().get(0).getRenamedCodeLine());
-    Assert.assertEquals("subi tg0,x3,5", this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
+    Assert.assertEquals("muli tg0,x3,5", this.mulFunctionBlock.getSimCodeModel().getRenamedCodeLine());
     Assert.assertNull(this.memoryAccessUnit.getSimCodeModel());
     
     this.cpu.step();
-    // Load address is done computing. The store is not ready to be computed, subi is not done!
+    // Load address is done computing. The store is not ready to be computed, muli is not done!
     Assert.assertNull(this.loadStoreFunctionUnit.getSimCodeModel());
-    Assert.assertEquals("subi tg0,x3,5", this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
+    Assert.assertEquals("muli tg0,x3,5", this.mulFunctionBlock.getSimCodeModel().getRenamedCodeLine());
     // Load got to mem access. Cache line must be loaded (1 clock), cache will respond in 2 clocks total
     Assert.assertEquals("lw tg1,0(x2)", this.memoryAccessUnit.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals(1, this.loadBufferBlock.getQueueSize());
     Assert.assertEquals(1, this.storeBufferBlock.getQueueSize());
     Assert.assertEquals("sw tg0,0(x2)",
                         this.loadStoreIssueWindowBlock.getIssuedInstructions().get(0).getRenamedCodeLine());
-    Assert.assertEquals("subi tg0,x3,5", this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
+    Assert.assertEquals("muli tg0,x3,5", this.mulFunctionBlock.getSimCodeModel().getRenamedCodeLine());
     
     this.cpu.step();
-    // subi is done (leaves ROB), store can be computed
+    // muli is done (leaves ROB), store can be computed
     Assert.assertTrue(this.reorderBufferBlock.getRobItem(0).isReadyToBeCommitted());
     Assert.assertEquals("sw tg0,0(x2)", this.loadStoreFunctionUnit.getSimCodeModel().getRenamedCodeLine());
     this.cpu.step();
@@ -1783,12 +1781,12 @@ public class ForwardSimulationTest
   {
     // Program:
     //
-    // subi x3 x3 5 # x3: 6 -> 1
+    // muli x3 x3 5 # x3: 6 -> 1
     // sw x3 x2 0   # x3 (1) is stored to memory [25+0]
     // lw x1 x2 0   # x1: 0 -> 1
     CodeParser codeParser = new CodeParser(staticDataProvider);
     codeParser.parseCode("""
-                                  subi x3, x3, 5
+                                  muli x3, x3, 5
                                   sw x3, 0(x2)
                                   lw x1, 0(x2)
                                  """);
@@ -1805,7 +1803,7 @@ public class ForwardSimulationTest
     Assert.assertEquals(6, (int) this.unifiedRegisterFileBlock.getRegister("x3").getValue(DataTypeEnum.kInt), 0.01);
     
     this.cpu.step();
-    Assert.assertEquals("subi", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
+    Assert.assertEquals("muli", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
     Assert.assertEquals("sw", this.instructionFetchBlock.getFetchedCode().get(1).getInstructionName());
     Assert.assertEquals("lw", this.instructionFetchBlock.getFetchedCode().get(2).getInstructionName());
     Assert.assertEquals(0, this.loadBufferBlock.getQueueSize());
@@ -1814,7 +1812,7 @@ public class ForwardSimulationTest
     this.cpu.step();
     Assert.assertEquals("nop", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
     Assert.assertEquals(3, this.decodeAndDispatchBlock.getCodeBuffer().size());
-    Assert.assertEquals("subi tg0,x3,5", this.decodeAndDispatchBlock.getCodeBuffer().get(0).getRenamedCodeLine());
+    Assert.assertEquals("muli tg0,x3,5", this.decodeAndDispatchBlock.getCodeBuffer().get(0).getRenamedCodeLine());
     Assert.assertEquals("sw tg0,0(x2)", this.decodeAndDispatchBlock.getCodeBuffer().get(1).getRenamedCodeLine());
     Assert.assertEquals("lw tg1,0(x2)", this.decodeAndDispatchBlock.getCodeBuffer().get(2).getRenamedCodeLine());
     
@@ -1829,7 +1827,7 @@ public class ForwardSimulationTest
                         this.loadStoreIssueWindowBlock.getIssuedInstructions().get(1).getRenamedCodeLine());
     Assert.assertEquals("sw tg0,0(x2)", this.storeBufferBlock.getStoreQueueFirst().getRenamedCodeLine());
     Assert.assertEquals("lw tg1,0(x2)", this.loadBufferBlock.getLoadQueueFirst().getRenamedCodeLine());
-    Assert.assertEquals("subi tg0,x3,5", this.aluIssueWindowBlock.getIssuedInstructions().get(0).getRenamedCodeLine());
+    Assert.assertEquals("muli tg0,x3,5", this.aluIssueWindowBlock.getIssuedInstructions().get(0).getRenamedCodeLine());
     
     this.cpu.step();
     Assert.assertEquals(1, this.loadBufferBlock.getQueueSize());
@@ -1839,7 +1837,7 @@ public class ForwardSimulationTest
     Assert.assertEquals("lw tg1,0(x2)", this.loadStoreFunctionUnit.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("sw tg0,0(x2)",
                         this.loadStoreIssueWindowBlock.getIssuedInstructions().get(0).getRenamedCodeLine());
-    Assert.assertEquals("subi tg0,x3,5", this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
+    Assert.assertEquals("muli tg0,x3,5", this.mulFunctionBlock.getSimCodeModel().getRenamedCodeLine());
     
     this.cpu.step();
     Assert.assertEquals(1, this.loadBufferBlock.getQueueSize());
@@ -1849,11 +1847,11 @@ public class ForwardSimulationTest
     Assert.assertEquals("lw tg1,0(x2)", this.memoryAccessUnit.getSimCodeModel().getRenamedCodeLine());
     Assert.assertEquals("sw tg0,0(x2)",
                         this.loadStoreIssueWindowBlock.getIssuedInstructions().get(0).getRenamedCodeLine());
-    Assert.assertEquals("subi tg0,x3,5", this.subFunctionBlock.getSimCodeModel().getRenamedCodeLine());
+    Assert.assertEquals("muli tg0,x3,5", this.mulFunctionBlock.getSimCodeModel().getRenamedCodeLine());
     
     this.cpu.step();
-    // Sub is ready
-    Assert.assertNull(this.subFunctionBlock.getSimCodeModel());
+    // mul is ready
+    Assert.assertNull(this.mulFunctionBlock.getSimCodeModel());
     Assert.assertTrue(this.reorderBufferBlock.getRobItem(0).isReadyToBeCommitted());
     // Store can start computing address
     Assert.assertEquals("lw tg1,0(x2)", this.memoryAccessUnit.getSimCodeModel().getRenamedCodeLine());
