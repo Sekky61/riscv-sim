@@ -61,10 +61,10 @@ import java.util.logging.Logger;
  * @class CpuState
  * @brief The state of the CPU. Assumes the config is valid.
  * @details The order of the fields is important for serialization.
- * This class sets up the RISC-V execution environment interface (EEI), which is responsible for the ISA (supported instructions).
+ * This class sets up the execution environment.
  * This is a user-level, bare-metal interface simulator.
  * The simulation will stop when the program returns from the entry function, or once the PC runs past the code and all instructions are retired.
- * There is also timeout for cycles.
+ * There is also timeout for 1 million cycles (in case of infinite loops).
  */
 public class CpuState implements Serializable
 {
@@ -110,7 +110,6 @@ public class CpuState implements Serializable
   public List<MemoryAccessUnit> memoryAccessUnits;
   public SimulatedMemory simulatedMemory;
   public IssueWindowSuperBlock issueWindowSuperBlock;
-  // ROB "without the state"
   public ReorderBufferBlock reorderBufferBlock;
   /**
    * @brief Debug log for debugging/presentation purposes
@@ -309,18 +308,16 @@ public class CpuState implements Serializable
       {
         case FX ->
         {
-          List<String> allowedOperators = fu.getAllowedOperations();
           ArithmeticFunctionUnitBlock functionBlock = new ArithmeticFunctionUnitBlock(fu, fpIssueWindowBlock,
-                                                                                      allowedOperators, statistics);
-          functionBlock.addArithmeticInterpreter(arithmeticInterpreter);
+                                                                                      statistics,
+                                                                                      arithmeticInterpreter);
           this.arithmeticFunctionUnitBlocks.add(functionBlock);
         }
         case FP ->
         {
-          List<String> allowedOperators = fu.getAllowedOperations();
           ArithmeticFunctionUnitBlock functionBlock = new ArithmeticFunctionUnitBlock(fu, fpIssueWindowBlock,
-                                                                                      allowedOperators, statistics);
-          functionBlock.addArithmeticInterpreter(arithmeticInterpreter);
+                                                                                      statistics,
+                                                                                      arithmeticInterpreter);
           this.fpFunctionUnitBlocks.add(functionBlock);
         }
         case L_S ->
@@ -345,7 +342,6 @@ public class CpuState implements Serializable
           this.storeBufferBlock.addMemoryAccessUnit(memoryAccessUnit);
           this.memoryAccessUnits.add(memoryAccessUnit);
         }
-        default -> throw new IllegalStateException("Unexpected FU type: " + fu.fuType);
       }
       
       // Issues
@@ -406,9 +402,9 @@ public class CpuState implements Serializable
   }
   
   /**
-   * @brief Calls all blocks and tell them to update their values (triggered by GlobalTimer)
-   * Runs ROB at the end again
-   * Mutates the object - if you want to keep the state, use `deepCopy()` first.
+   * @brief Calls all blocks and tell them to update their values.
+   * Mutates the object - if you want to keep the state, create a copy of cpu first.
+   * @details Runs each block once in a specific order. FUs are run in two phases.
    */
   public void step()
   {
@@ -486,8 +482,7 @@ public class CpuState implements Serializable
     boolean pcEnd         = instructionFetchBlock.getPc() >= instructionMemoryBlock.getCode().size() * 4;
     boolean renameEmpty   = decodeAndDispatchBlock.getCodeBuffer().isEmpty();
     boolean fetchNotEmpty = !instructionFetchBlock.getFetchedCode().isEmpty();
-    boolean nop           = fetchNotEmpty && instructionFetchBlock.getFetchedCode().get(0).getInstructionName()
-            .equals("nop");
+    boolean nop = fetchNotEmpty && instructionFetchBlock.getFetchedCode().get(0).getInstructionName().equals("nop");
     if (robEmpty && pcEnd && renameEmpty && nop)
     {
       return StopReason.kEndOfCode;

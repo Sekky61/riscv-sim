@@ -108,7 +108,10 @@ public class MyRequestHandler<T, U> implements HttpHandler
     try
     {
       U response = resolver.resolve(request);
+      System.gc();
       resolver.serialize(response, outputStream);
+      //
+      logger.info("Request handled successfully: " + response.getClass().getSimpleName());
       exchange.endExchange();
     }
     catch (ServerException e)

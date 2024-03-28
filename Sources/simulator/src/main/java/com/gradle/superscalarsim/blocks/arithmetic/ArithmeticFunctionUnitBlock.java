@@ -47,8 +47,6 @@ import com.gradle.superscalarsim.models.instruction.SimCodeModel;
 import com.gradle.superscalarsim.models.register.RegisterModel;
 import com.gradle.superscalarsim.models.util.Result;
 
-import java.util.List;
-
 /**
  * @class ArithmeticFunctionUnitBlock
  * @brief Specific function unit class for executing arithmetic instructions
@@ -67,31 +65,21 @@ public class ArithmeticFunctionUnitBlock extends AbstractFunctionUnitBlock
   }
   
   /**
-   * @param description      Description of the function unit
-   * @param issueWindowBlock Issue window block for comparing instruction and data types
-   * @param allowedOperators Array of all supported operators by this FU
-   * @param statistics       Statistics for reporting FU usage
+   * @param description           Description of the function unit
+   * @param issueWindowBlock      Issue window block for comparing instruction and data types
+   * @param statistics            Statistics for reporting FU usage
+   * @param arithmeticInterpreter Interpreter for interpreting executing instructions
    *
    * @brief Constructor
    */
   public ArithmeticFunctionUnitBlock(FunctionalUnitDescription description,
                                      IssueWindowBlock issueWindowBlock,
-                                     List<String> allowedOperators,
-                                     SimulationStatistics statistics)
+                                     SimulationStatistics statistics,
+                                     CodeArithmeticInterpreter arithmeticInterpreter)
   {
     super(description, issueWindowBlock, statistics);
-  }// end of Constructor
-  
-  /**
-   * @param arithmeticInterpreter Arithmetic interpreter object
-   *
-   * @brief Injects Arithmetic interpreter to the FU
-   */
-  public void addArithmeticInterpreter(CodeArithmeticInterpreter arithmeticInterpreter)
-  {
     this.arithmeticInterpreter = arithmeticInterpreter;
-  }// end of addArithmeticInterpreter
-  //----------------------------------------------------------------------
+  }// end of Constructor
   
   /**
    * @brief Simulates execution of an instruction

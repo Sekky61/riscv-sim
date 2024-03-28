@@ -29,27 +29,25 @@ package com.gradle.superscalarsim.managers;
 
 import com.gradle.superscalarsim.models.Identifiable;
 
+import java.util.Collections;
+import java.util.Set;
 import java.util.WeakHashMap;
 
 /**
  * @param <T> Type of the instances
  *
- * @details The WeakHashMap has weak _keys_, not values. In this case, the values are null (the map is used as a set).
- * The references are weak, so they will be garbage collected when no other references exist.
+ * @details The references are weak, so they will be garbage collected when no other references exist.
  * The purpose of this is to serialize all instances together, in normalized form.
- * The managers should be per Cpu, so that the instances are not shared between Cpus.
+ * The managers should be per Cpu class, so that the instances are not shared between Cpus.
  * The manager is usually filled by a factory for the given type.
- * @brief A manager holding instances of objects of type T
+ * @brief A manager holding weak references to instances of objects of type T
  */
 public class InstanceManager<T extends Identifiable>
 {
   /**
-   * TODO: This should be a set, not a map
-   * TODO: In case of performance issues, consider this being an object pool
-   *
-   * @brief Instances of the object. The key is the instance, the value is null.
+   * @brief Instances of the object.
    */
-  WeakHashMap<T, Object> instances = new WeakHashMap<>();
+  Set<T> instances = Collections.newSetFromMap(new WeakHashMap<T, Boolean>());
   
   /**
    * @brief add all instances from the collection
@@ -69,14 +67,14 @@ public class InstanceManager<T extends Identifiable>
    */
   public void addInstance(T instance)
   {
-    instances.put(instance, null);
+    instances.add(instance);
   }
   
   /**
-   * @return WeakHashMap of instances
+   * @return Set of instances
    * @brief Get the instances
    */
-  public WeakHashMap<T, Object> getInstances()
+  public Set<T> getInstances()
   {
     return instances;
   }
