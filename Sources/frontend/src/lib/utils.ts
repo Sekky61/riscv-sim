@@ -36,6 +36,7 @@ import { type MemoryLocationApi, dataTypes, dataTypesText } from '@/lib/forms/Is
 import type {
   DataTypeEnum,
   InputCodeModel,
+  InstructionFunctionModel,
   Reference,
   RegisterModel,
   StopReason,
@@ -98,8 +99,8 @@ export function isValidRegisterValue(register: RegisterModel): boolean {
 /**
  * Return the name of the instruction type.
  */
-export function instructionTypeName(inputCodeModel: InputCodeModel): string {
-  switch (inputCodeModel.instructionTypeEnum) {
+export function instructionTypeName(instruction: InstructionFunctionModel): string {
+  switch (instruction.instructionType) {
     case 'kIntArithmetic':
       return 'Arithmetic (int)';
     case 'kFloatArithmetic':

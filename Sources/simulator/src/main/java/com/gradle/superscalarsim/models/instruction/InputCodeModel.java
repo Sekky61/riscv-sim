@@ -34,6 +34,7 @@ package com.gradle.superscalarsim.models.instruction;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.models.Identifiable;
@@ -152,6 +153,7 @@ public record InputCodeModel(
   /**
    * @return True if the instruction is a conditional branch
    */
+  @JsonIgnore
   public boolean isConditionalBranch()
   {
     return instructionFunctionModel.isConditionalJump();

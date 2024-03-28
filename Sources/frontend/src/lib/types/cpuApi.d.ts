@@ -286,11 +286,8 @@ export type RegisterTypeEnum = 'kInt' | 'kFloat';
 
 export interface InputCodeModel {
   codeId: number;
-  instructionName: string;
-  conditionalBranch: boolean;
-  arguments: InputCodeArgument[];
-  instructionTypeEnum: InstructionTypeEnum;
   instructionFunctionModel: Reference;
+  arguments: InputCodeArgument[];
   debugInfo: DebugInfo;
 }
 
@@ -308,7 +305,7 @@ export interface InputCodeArgument {
 export interface InstructionFunctionModel {
   name: string;
   instructionType: InstructionTypeEnum;
-  arguments: Argument[];
+  arguments: InstructionArgument[];
   interpretableAs: string;
   unconditionalJump: boolean;
   /**
@@ -317,7 +314,7 @@ export interface InstructionFunctionModel {
   syntaxTemplate: string[];
 }
 
-export interface Argument {
+export interface InstructionArgument {
   name: string;
   type: DataTypeEnum;
   defaultValue?: string;
@@ -345,10 +342,10 @@ export interface SimCodeModel {
   isSpeculative: boolean;
   exception: InstructionException | null;
   conditionalBranch: boolean;
+  store: boolean;
   load: boolean;
   readyToExecute: boolean;
   readyToBeCommitted: boolean;
-  store: boolean;
 }
 
 export interface BranchInfo {

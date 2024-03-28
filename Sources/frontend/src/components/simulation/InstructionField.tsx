@@ -204,9 +204,9 @@ export function InstructionDetailPopup({
           </ul>
         </div>
         <div className='flex flex-col gap-2'>
-          <ul>
+          <ul className='list-none'>
             <li>ID: {simCodeModel.id}</li>
-            <li>Type: {instructionTypeName(inputCodeModel)}</li>
+            <li>Type: {instructionTypeName(functionModel)}</li>
             <li>
               Address: {hexPadEven(pc)} ({pc})
             </li>

@@ -34,8 +34,8 @@
 import { useState } from 'react';
 
 import { selectSimCodeModel } from '@/lib/redux/cpustateSlice';
-import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
-import { Reference } from '@/lib/types/cpuApi';
+import { useAppSelector } from '@/lib/redux/hooks';
+import type { Reference } from '@/lib/types/cpuApi';
 
 import { Button } from '@/components/base/ui/button';
 import { Dialog, DialogTrigger } from '@/components/base/ui/dialog';
@@ -116,16 +116,16 @@ type InstructionRowProps = {
 function InstructionRow({ instructionId }: InstructionRowProps) {
   const q = useAppSelector((state) => selectSimCodeModel(state, instructionId));
   if (!q) throw new Error('Instruction not found');
-  const { simCodeModel, inputCodeModel } = q;
+  const { simCodeModel, inputCodeModel, functionModel } = q;
 
-  const instructionType = instructionTypeName(inputCodeModel);
+  const instructionType = instructionTypeName(functionModel);
 
   return (
     <Dialog>
       <DialogTrigger asChild>
         <div className='hover:bg-gray-200 hover:cursor-pointer grid grid-cols-subgrid col-span-4 odd:bg-slate-100'>
           <div>{simCodeModel.id}</div>
-          <div>{inputCodeModel.instructionName}</div>
+          <div>{functionModel.name}</div>
           <div>{instructionType}</div>
           <div>{inputCodeModel.codeId * 4}</div>
         </div>
