@@ -30,8 +30,8 @@
  */
 
 import { ReloadSimModal } from '@/components/ReloadSimModal';
-import { SidePanel } from '@/components/simulation/SidePanel';
 import { Main } from './Main';
+import { WelcomeMessage } from './WelcomeMessage';
 
 export default async function HomePage() {
   return (
@@ -42,6 +42,7 @@ export default async function HomePage() {
         </div>
       </div>
       <ReloadSimModal />
+      <WelcomeMessage />
     </div>
   );
 }

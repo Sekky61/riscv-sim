@@ -35,6 +35,7 @@
     "@react-hook/resize-observer": "^1.2.6",
     "@reduxjs/toolkit": "^2.1.0",
     "@svgdotjs/svg.js": "^3.2.0",
+    "@uidotdev/usehooks": "^2.4.1",
     "@uiw/codemirror-extensions-langs": "^4.21.21",
     "@uiw/react-codemirror": "^4.21.21",
     "class-variance-authority": "^0.7.0",
