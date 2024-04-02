@@ -30,9 +30,9 @@
  */
 
 import {
-  isaFormSchema,
   type CpuConfig,
   type MemoryLocations,
+  isaFormSchema,
   memoryLocationsSchema,
 } from './Isa';
 

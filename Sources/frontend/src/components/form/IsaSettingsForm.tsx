@@ -73,9 +73,9 @@ import {
 } from '@/components/base/ui/tabs';
 
 import { formatNumberWithUnit } from '@/lib/utils';
+import { DividedBadge } from '../DividedBadge';
 import { FormInput } from './FormInput';
 import { ControlRadioInput, RadioInputWithTitle } from './RadioInput';
-import { DividedBadge } from '../DividedBadge';
 
 type IsaArrayFields = 'fUnits' | 'memoryLocations';
 type IsaSimpleFields = keyof Omit<CpuConfig, IsaArrayFields>;

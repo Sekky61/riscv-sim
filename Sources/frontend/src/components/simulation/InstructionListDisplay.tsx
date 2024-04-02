@@ -30,7 +30,7 @@
  */
 
 import { useRefDimensions } from '@/lib/hooks/useRefDimensions';
-import { useRef, type ReactElement } from 'react';
+import { type ReactElement, useRef } from 'react';
 import { FixedSizeList, ListChildComponentProps } from 'react-window';
 
 export type InstructionListDisplayProps<T> = {
@@ -64,7 +64,7 @@ export function InstructionListDisplay<T>({
   const displayCount = totalSize ?? (instructions.length || 1);
 
   // A react-window cell renderer for InstructionListDisplay.
-  const Row = ({ index, style }:  ListChildComponentProps) => (
+  const Row = ({ index, style }: ListChildComponentProps) => (
     <div style={style}>
       {instructionRenderer(instructions[index] ?? null, index)}
     </div>

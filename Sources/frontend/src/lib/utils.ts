@@ -32,7 +32,11 @@
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
-import { type MemoryLocationApi, dataTypes, dataTypesText } from '@/lib/forms/Isa';
+import {
+  type MemoryLocationApi,
+  dataTypes,
+  dataTypesText,
+} from '@/lib/forms/Isa';
 import type {
   DataTypeEnum,
   InputCodeModel,
@@ -99,7 +103,9 @@ export function isValidRegisterValue(register: RegisterModel): boolean {
 /**
  * Return the name of the instruction type.
  */
-export function instructionTypeName(instruction: InstructionFunctionModel): string {
+export function instructionTypeName(
+  instruction: InstructionFunctionModel,
+): string {
   switch (instruction.instructionType) {
     case 'kIntArithmetic':
       return 'Arithmetic (int)';

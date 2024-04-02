@@ -38,17 +38,17 @@ import { useForm } from 'react-hook-form';
 
 import {
   type CpuConfig,
-  isaFormSchema,
   defaultCpuConfig,
+  isaFormSchema,
 } from '@/lib/forms/Isa';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import { selectActiveConfig, updateIsa } from '@/lib/redux/isaSlice';
 import { saveAsJsonFile } from '@/lib/utils';
 
 import { Button } from '@/components/base/ui/button';
+import IsaSettingsForm from '@/components/form/IsaSettingsForm';
 import { toast } from 'sonner';
 import { ActiveIsaSelector } from './ActiveIsaSelector';
-import IsaSettingsForm from '@/components/form/IsaSettingsForm';
 import { MemoryInfo } from './MemoryInfo';
 
 // TODO: delete configuration

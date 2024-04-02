@@ -109,8 +109,7 @@ export function SimGrid() {
               <StoreBuffer />
             </div>
             <div className='relative'>
-              <Trace 
-                top='-2.5rem' left='-2.5rem' length='calc(50% + 2.5rem)' />
+              <Trace top='-2.5rem' left='-2.5rem' length='calc(50% + 2.5rem)' />
               <Trace bottom='100%' left='50%' vertical />
               <LoadBuffer />
             </div>

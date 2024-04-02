@@ -226,4 +226,3 @@ function InstructionSyntax({
     return <span key={key}>{token}</span>;
   });
 }
-

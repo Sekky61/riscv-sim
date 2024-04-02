@@ -31,11 +31,11 @@
 
 'use client';
 
-import { DividedBadge } from "@/components/DividedBadge";
-import { useAppSelector } from "@/lib/redux/hooks";
-import { selectActiveConfig } from "@/lib/redux/isaSlice";
-import { pluralize } from "@/lib/utils";
-import Link from "next/link";
+import { DividedBadge } from '@/components/DividedBadge';
+import { useAppSelector } from '@/lib/redux/hooks';
+import { selectActiveConfig } from '@/lib/redux/isaSlice';
+import { pluralize } from '@/lib/utils';
+import Link from 'next/link';
 
 /**
  * Component to inform about memory locations

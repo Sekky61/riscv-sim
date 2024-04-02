@@ -67,7 +67,7 @@ export default function RegisterReference({
       stringValue: displayValue,
       registerValue: register.name,
     },
-    value: register.value
+    value: register.value,
   };
 
   return <ArgumentTableCell arg={arg} />;

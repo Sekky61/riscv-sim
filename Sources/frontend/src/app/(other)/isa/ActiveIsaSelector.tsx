@@ -49,17 +49,7 @@ import {
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/base/ui/dialog';
-import { cn, loadFile } from '@/lib/utils';
-import type { CpuConfig } from '@/lib/forms/Isa';
 import { Button } from '@/components/base/ui/button';
-import { Check, ChevronsUpDown } from 'lucide-react';
 import {
   Command,
   CommandEmpty,
@@ -68,7 +58,17 @@ import {
   CommandItem,
   CommandSeparator,
 } from '@/components/base/ui/command';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/base/ui/dialog';
+import type { CpuConfig } from '@/lib/forms/Isa';
 import { isIsaConfig } from '@/lib/forms/validators';
+import { cn, loadFile } from '@/lib/utils';
+import { Check, ChevronsUpDown } from 'lucide-react';
 
 type ActiveIsaSelectorProps = {
   hasUnsavedChanges: boolean;

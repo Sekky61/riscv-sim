@@ -42,10 +42,10 @@ import {
   DialogTitle,
 } from '@/components/base/ui/dialog';
 import Block from '@/components/simulation/Block';
+import { useRefDimensions } from '@/lib/hooks/useRefDimensions';
 import type { Label } from '@/lib/types/cpuApi';
 import { useEffect, useRef } from 'react';
 import { FixedSizeList, type ListChildComponentProps } from 'react-window';
-import { useRefDimensions } from '@/lib/hooks/useRefDimensions';
 
 /**
  * Display the memory like a hexdump.

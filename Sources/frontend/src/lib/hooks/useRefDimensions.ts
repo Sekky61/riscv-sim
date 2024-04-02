@@ -29,8 +29,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { type RefObject, useState, useLayoutEffect } from 'react';
 import useResizeObserver from '@react-hook/resize-observer';
+import { type RefObject, useLayoutEffect, useState } from 'react';
 
 /**
  * A hook for getting the dimensions of a ref (DOM element)

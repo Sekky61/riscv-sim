@@ -29,7 +29,13 @@ TooltipContent.displayName = TooltipPrimitive.Content.displayName;
 
 /**
  * Attaches a tooltip to body to avoid overflow issues.
-  */ 
+ */
 const TooltipPortal = TooltipPrimitive.Portal;
 
-export { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger, TooltipPortal };
+export {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+  TooltipPortal,
+};

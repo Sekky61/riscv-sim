@@ -55,7 +55,8 @@ export default function Page() {
           hard-wired to zero and cannot be changed.
         </p>
         <p>
-        Note that only a subset of the RISC-V ISA is implemented in this simulator.
+          Note that only a subset of the RISC-V ISA is implemented in this
+          simulator.
         </p>
       </section>
       <section>

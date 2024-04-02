@@ -157,7 +157,7 @@ type ShortcutCategory = {
 
 /**
  * Puts the shortcuts in categories for display
-    */
+ */
 const shortcutCategories = [
   {
     title: 'Navigation Shortcuts',
