@@ -29,40 +29,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { openFile, saveToFile } from '@/lib/redux/compilerSlice';
+import { openFile, saveCodeToFile } from '@/lib/redux/compilerSlice';
 import { useAppDispatch } from '@/lib/redux/hooks';
 
 import { Button } from '@/components/base/ui/button';
+import { loadFile } from '@/lib/utils';
 import React from 'react';
-
-/**
- * Show dialog and calls callback with file contents
- */
-function loadFile(callback: (contents: string) => void) {
-  // Show dialog
-  const input = document.createElement('input');
-  input.type = 'file';
-  input.onchange = () => {
-    if (!input.files) {
-      console.warn('No file selected');
-      return;
-    }
-    const file = input.files[0];
-    if (file === undefined) {
-      console.warn('No file selected');
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const contents = e.target?.result;
-      if (typeof contents === 'string') {
-        callback(contents);
-      }
-    };
-    reader.readAsText(file);
-  };
-  input.click();
-}
 
 type EditorBarProps = {
   mode: 'c' | 'asm';
@@ -70,6 +42,13 @@ type EditorBarProps = {
   entryPointSlot?: React.ReactNode;
 };
 
+/**
+ * Top bar of both code editors.
+ * Save and Load buttons allow to save and load code from file.
+ * The assembler files can be used in the simulator CLI.
+ *
+ * Slots are used to add additional buttons.
+ */
 export default function EditorBar({
   mode,
   checkSlot,
@@ -86,7 +65,7 @@ export default function EditorBar({
   };
 
   const handleSaveFile = () => {
-    dispatch(saveToFile());
+    dispatch(saveCodeToFile(mode));
   };
 
   return (

@@ -40,7 +40,7 @@ import com.gradle.superscalarsim.enums.cache.ReplacementPoliciesEnum;
 import com.gradle.superscalarsim.factories.InputCodeModelFactory;
 import com.gradle.superscalarsim.factories.RegisterModelFactory;
 import com.gradle.superscalarsim.factories.SimCodeModelFactory;
-import com.gradle.superscalarsim.loader.InitLoader;
+import com.gradle.superscalarsim.loader.IDataProvider;
 import com.gradle.superscalarsim.managers.ManagerRegistry;
 import com.gradle.superscalarsim.models.FunctionalUnitDescription;
 import com.gradle.superscalarsim.models.instruction.InputCodeModel;
@@ -126,22 +126,22 @@ public class CpuState implements Serializable
   /**
    * @brief Debug log for debugging/presentation purposes
    */
-  DebugLog debugLog;
+  public DebugLog debugLog;
   
   public CpuState()
   {
     // Empty constructor for serialization
   }
   
-  public CpuState(SimulationConfig config, InitLoader initLoader)
+  public CpuState(SimulationConfig config, IDataProvider staticDataProvider)
   {
-    this.initState(config, initLoader);
+    this.initState(config, staticDataProvider);
   }
   
   /**
    * @brief Initialize the CPU state - given the configuration.
    */
-  public void initState(SimulationConfig config, InitLoader initLoader)
+  public void initState(SimulationConfig config, IDataProvider staticDataProvider)
   {
     this.tick            = 0;
     this.managerRegistry = new ManagerRegistry();
@@ -152,9 +152,7 @@ public class CpuState implements Serializable
     RegisterModelFactory  registerModelFactory  = new RegisterModelFactory(managerRegistry.registerModelManager);
     
     // Hack to load all function models and registers to manager
-    initLoader.getInstructionFunctionModels()
-            .forEach((name, model) -> managerRegistry.instructionFunctionManager.addInstance(model));
-    initLoader.getRegisterFile().getRegisterMap(false)
+    staticDataProvider.getRegisterFile().getRegisterMap(false)
             .forEach((name, model) -> managerRegistry.registerModelManager.addInstance(model));
     
     this.statistics      = new SimulationStatistics(-1, config.cpuConfig.coreClockFrequency, config.cpuConfig.fUnits);
@@ -164,8 +162,9 @@ public class CpuState implements Serializable
     // Parse code and allocate memory locations
     //
     
-    CodeParser codeParser = new CodeParser(initLoader.getInstructionFunctionModels(), initLoader.getRegisterFile(),
-                                           inputCodeModelFactory, config.memoryLocations);
+    CodeParser codeParser = new CodeParser(staticDataProvider.getInstructionFunctionModels(),
+                                           staticDataProvider.getRegisterFile(), inputCodeModelFactory,
+                                           config.memoryLocations);
     codeParser.parseCode(config.code, false); // false to avoid duplicate work
     if (!codeParser.success())
     {
@@ -190,13 +189,14 @@ public class CpuState implements Serializable
     codeParser.getInstructions()
             .forEach(ins -> statistics.staticInstructionMix.increment(ins.getInstructionTypeEnum()));
     
-    InstructionFunctionModel nopFM = initLoader.getInstructionFunctionModel("nop");
+    InstructionFunctionModel nopFM = staticDataProvider.getInstructionFunctionModel("nop");
     InputCodeModel nop = inputCodeModelFactory.createInstance(nopFM, new ArrayList<>(),
                                                               codeParser.getInstructions().size());
     this.instructionMemoryBlock = new InstructionMemoryBlock(codeParser.getInstructions(), codeParser.getLabels(), nop);
     
     // Create memory
-    this.unifiedRegisterFileBlock = new UnifiedRegisterFileBlock(initLoader, config.cpuConfig.speculativeRegisters,
+    this.unifiedRegisterFileBlock = new UnifiedRegisterFileBlock(staticDataProvider,
+                                                                 config.cpuConfig.speculativeRegisters,
                                                                  registerModelFactory);
     this.debugLog                 = new DebugLog(unifiedRegisterFileBlock);
     // Set the sp to the end of the stack

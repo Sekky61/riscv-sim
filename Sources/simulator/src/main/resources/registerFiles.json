@@ -1,0 +1,524 @@
+[
+  {
+    "name": "Integer physical register",
+    "dataType": "kInt",
+    "registerList": [
+      {
+        "name": "x0",
+        "isConstant": true,
+        "value": {
+          "bits": 0
+        },
+        "type": "kInt"
+      },
+      {
+        "name": "x1",
+        "isConstant": false,
+        "value": {
+          "bits": 0
+        },
+        "type": "kInt"
+      },
+      {
+        "name": "x2",
+        "isConstant": false,
+        "value": {
+          "bits": 0
+        },
+        "type": "kInt"
+      },
+      {
+        "name": "x3",
+        "isConstant": false,
+        "value": {
+          "bits": 0
+        },
+        "type": "kInt"
+      },
+      {
+        "name": "x4",
+        "isConstant": false,
+        "value": {
+          "bits": 0
+        },
+        "type": "kInt"
+      },
+      {
+        "name": "x5",
+        "isConstant": false,
+        "value": {
+          "bits": 0
+        },
+        "type": "kInt"
+      },
+      {
+        "name": "x6",
+        "isConstant": false,
+        "value": {
+          "bits": 0
+        },
+        "type": "kInt"
+      },
+      {
+        "name": "x7",
+        "isConstant": false,
+        "value": {
+          "bits": 0
+        },
+        "type": "kInt"
+      },
+      {
+        "name": "x8",
+        "isConstant": false,
+        "value": {
+          "bits": 0
+        },
+        "type": "kInt"
+      },
+      {
+        "name": "x9",
+        "isConstant": false,
+        "value": {
+          "bits": 0
+        },
+        "type": "kInt"
+      },
+      {
+        "name": "x10",
+        "isConstant": false,
+        "value": {
+          "bits": 0
+        },
+        "type": "kInt"
+      },
+      {
+        "name": "x11",
+        "isConstant": false,
+        "value": {
+          "bits": 0
+        },
+        "type": "kInt"
+      },
+      {
+        "name": "x12",
+        "isConstant": false,
+        "value": {
+          "bits": 0
+        },
+        "type": "kInt"
+      },
+      {
+        "name": "x13",
+        "isConstant": false,
+        "value": {
+          "bits": 0
+        },
+        "type": "kInt"
+      },
+      {
+        "name": "x14",
+        "isConstant": false,
+        "value": {
+          "bits": 0
+        },
+        "type": "kInt"
+      },
+      {
+        "name": "x15",
+        "isConstant": false,
+        "value": {
+          "bits": 0
+        },
+        "type": "kInt"
+      },
+      {
+        "name": "x16",
+        "isConstant": false,
+        "value": {
+          "bits": 0
+        },
+        "type": "kInt"
+      },
+      {
+        "name": "x17",
+        "isConstant": false,
+        "value": {
+          "bits": 0
+        },
+        "type": "kInt"
+      },
+      {
+        "name": "x18",
+        "isConstant": false,
+        "value": {
+          "bits": 0
+        },
+        "type": "kInt"
+      },
+      {
+        "name": "x19",
+        "isConstant": false,
+        "value": {
+          "bits": 0
+        },
+        "type": "kInt"
+      },
+      {
+        "name": "x20",
+        "isConstant": false,
+        "value": {
+          "bits": 0
+        },
+        "type": "kInt"
+      },
+      {
+        "name": "x21",
+        "isConstant": false,
+        "value": {
+          "bits": 0
+        },
+        "type": "kInt"
+      },
+      {
+        "name": "x22",
+        "isConstant": false,
+        "value": {
+          "bits": 0
+        },
+        "type": "kInt"
+      },
+      {
+        "name": "x23",
+        "isConstant": false,
+        "value": {
+          "bits": 0
+        },
+        "type": "kInt"
+      },
+      {
+        "name": "x24",
+        "isConstant": false,
+        "value": {
+          "bits": 0
+        },
+        "type": "kInt"
+      },
+      {
+        "name": "x25",
+        "isConstant": false,
+        "value": {
+          "bits": 0
+        },
+        "type": "kInt"
+      },
+      {
+        "name": "x26",
+        "isConstant": false,
+        "value": {
+          "bits": 0
+        },
+        "type": "kInt"
+      },
+      {
+        "name": "x27",
+        "isConstant": false,
+        "value": {
+          "bits": 0
+        },
+        "type": "kInt"
+      },
+      {
+        "name": "x28",
+        "isConstant": false,
+        "value": {
+          "bits": 0
+        },
+        "type": "kInt"
+      },
+      {
+        "name": "x29",
+        "isConstant": false,
+        "value": {
+          "bits": 0
+        },
+        "type": "kInt"
+      },
+      {
+        "name": "x30",
+        "isConstant": false,
+        "value": {
+          "bits": 0
+        },
+        "type": "kInt"
+      },
+      {
+        "name": "x31",
+        "isConstant": false,
+        "value": {
+          "bits": 0
+        }
+      }
+    ]
+  },
+  {
+    "name": "Floating point physical register",
+    "dataType": "kFloat",
+    "registerList": [
+      {
+        "name": "f0",
+        "isConstant": false,
+        "value": {
+          "bits": 0
+        },
+        "type": "kFloat"
+      },
+      {
+        "name": "f1",
+        "isConstant": false,
+        "value": {
+          "bits": 0
+        },
+        "type": "kFloat"
+      },
+      {
+        "name": "f2",
+        "isConstant": false,
+        "value": {
+          "bits": 0
+        },
+        "type": "kFloat"
+      },
+      {
+        "name": "f3",
+        "isConstant": false,
+        "value": {
+          "bits": 0
+        },
+        "type": "kFloat"
+      },
+      {
+        "name": "f4",
+        "isConstant": false,
+        "value": {
+          "bits": 0
+        },
+        "type": "kFloat"
+      },
+      {
+        "name": "f5",
+        "isConstant": false,
+        "value": {
+          "bits": 0
+        },
+        "type": "kFloat"
+      },
+      {
+        "name": "f6",
+        "isConstant": false,
+        "value": {
+          "bits": 0
+        },
+        "type": "kFloat"
+      },
+      {
+        "name": "f7",
+        "isConstant": false,
+        "value": {
+          "bits": 0
+        },
+        "type": "kFloat"
+      },
+      {
+        "name": "f8",
+        "isConstant": false,
+        "value": {
+          "bits": 0
+        },
+        "type": "kFloat"
+      },
+      {
+        "name": "f9",
+        "isConstant": false,
+        "value": {
+          "bits": 0
+        },
+        "type": "kFloat"
+      },
+      {
+        "name": "f10",
+        "isConstant": false,
+        "value": {
+          "bits": 0
+        },
+        "type": "kFloat"
+      },
+      {
+        "name": "f11",
+        "isConstant": false,
+        "value": {
+          "bits": 0
+        },
+        "type": "kFloat"
+      },
+      {
+        "name": "f12",
+        "isConstant": false,
+        "value": {
+          "bits": 0
+        },
+        "type": "kFloat"
+      },
+      {
+        "name": "f13",
+        "isConstant": false,
+        "value": {
+          "bits": 0
+        },
+        "type": "kFloat"
+      },
+      {
+        "name": "f14",
+        "isConstant": false,
+        "value": {
+          "bits": 0
+        },
+        "type": "kFloat"
+      },
+      {
+        "name": "f15",
+        "isConstant": false,
+        "value": {
+          "bits": 0
+        },
+        "type": "kFloat"
+      },
+      {
+        "name": "f16",
+        "isConstant": false,
+        "value": {
+          "bits": 0
+        },
+        "type": "kFloat"
+      },
+      {
+        "name": "f17",
+        "isConstant": false,
+        "value": {
+          "bits": 0
+        },
+        "type": "kFloat"
+      },
+      {
+        "name": "f18",
+        "isConstant": false,
+        "value": {
+          "bits": 0
+        },
+        "type": "kFloat"
+      },
+      {
+        "name": "f19",
+        "isConstant": false,
+        "value": {
+          "bits": 0
+        },
+        "type": "kFloat"
+      },
+      {
+        "name": "f20",
+        "isConstant": false,
+        "value": {
+          "bits": 0
+        },
+        "type": "kFloat"
+      },
+      {
+        "name": "f21",
+        "isConstant": false,
+        "value": {
+          "bits": 0
+        },
+        "type": "kFloat"
+      },
+      {
+        "name": "f22",
+        "isConstant": false,
+        "value": {
+          "bits": 0
+        },
+        "type": "kFloat"
+      },
+      {
+        "name": "f23",
+        "isConstant": false,
+        "value": {
+          "bits": 0
+        },
+        "type": "kFloat"
+      },
+      {
+        "name": "f24",
+        "isConstant": false,
+        "value": {
+          "bits": 0
+        },
+        "type": "kFloat"
+      },
+      {
+        "name": "f25",
+        "isConstant": false,
+        "value": {
+          "bits": 0
+        },
+        "type": "kFloat"
+      },
+      {
+        "name": "f26",
+        "isConstant": false,
+        "value": {
+          "bits": 0
+        },
+        "type": "kFloat"
+      },
+      {
+        "name": "f27",
+        "isConstant": false,
+        "value": {
+          "bits": 0
+        },
+        "type": "kFloat"
+      },
+      {
+        "name": "f28",
+        "isConstant": false,
+        "value": {
+          "bits": 0
+        },
+        "type": "kFloat"
+      },
+      {
+        "name": "f29",
+        "isConstant": false,
+        "value": {
+          "bits": 0
+        },
+        "type": "kFloat"
+      },
+      {
+        "name": "f30",
+        "isConstant": false,
+        "value": {
+          "bits": 0
+        },
+        "type": "kFloat"
+      },
+      {
+        "name": "f31",
+        "isConstant": false,
+        "value": {
+          "bits": 0
+        }
+      }
+    ]
+  }
+]

@@ -29,8 +29,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import path from 'path';
 import { promises as fs } from 'fs';
+import path from 'path';
 
 export async function GET() {
   // Find the absolute path of the "json" directory

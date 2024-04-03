@@ -1,0 +1,15 @@
+[
+  {
+    "name": "Valid-data-numbers",
+    "alignment": 8,
+    "dataType": "kInt",
+    "data": {
+      "kind": "data",
+      "data": [
+        0,
+        1,
+        2
+      ]
+    }
+  }
+]

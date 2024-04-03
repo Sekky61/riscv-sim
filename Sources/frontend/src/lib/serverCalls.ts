@@ -35,12 +35,14 @@ import {
   CompileRequest,
   CompileResponse,
   EndpointName,
+  InstructionDescriptionResponse,
   ParseAsmRequest,
   ParseAsmResponse,
   SimulateRequest,
   SimulateResponse,
 } from '@/lib/types/simulatorApi';
 
+import { apiBaseUrl, apiServerHost } from '@/constant/env';
 import { CompilerOptions } from './redux/compilerSlice';
 
 export async function callCompilerImpl(
@@ -76,8 +78,16 @@ export async function callSimulationImpl(
   return await callApi('simulate' as const, body);
 }
 
+export async function callInstructionDescriptionImpl(): Promise<InstructionDescriptionResponse> {
+  return await callApi('instructionDescription' as const, {});
+}
+
 /**
  * Call the simulator server API. Parse the response as JSON.
+ * Throws an error if the response is not ok, it should be caught by the caller.
+ *
+ * Next.js proxies the backend simulator. Set the NEXT_PUBLIC_SIMSERVER_PORT and NEXT_PUBLIC_SIMSERVER_HOST env variables (see .env.example, Dockerfile).
+ * The default is the same host as the app is running on, but on port 8000.
  */
 async function callApi<T extends EndpointName>(
   ...args: Parameters<AsyncEndpointFunction<T>>
@@ -85,26 +95,33 @@ async function callApi<T extends EndpointName>(
   const endpoint = args[0];
   const request = args[1];
 
-  const serverUrl = getSimulatorServerUrl();
+  let apiUrl: string;
+  if (typeof window === 'undefined') {
+    // Running on server
+    const host = apiBaseUrl || 'localhost:3000';
+    apiUrl = `${host}/`;
+  } else {
+    // Running in browser
+    apiUrl = '/api/sim/';
+  }
 
-  const response = await fetch(`${serverUrl}/${endpoint}`, {
+  const url = `${apiUrl}${endpoint}`;
+
+  console.info(`Calling API: ${url}`);
+
+  // In browser, the absolute path works (origin is defined), but on server (node.js) it needs a full URL.
+  // The only way to know the url at build time is to use an environment variable.
+  const response = await fetch(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(request),
   });
-  return response.json();
-}
 
-/**
- * The default is the same host as the app is running on, but on port 8000.
- * Can be overridden by setting the NEXT_PUBLIC_SIMSERVER_PORT and NEXT_PUBLIC_SIMSERVER_HOST env variables (see .env.example, Dockerfile).
- * @returns The URL of the simulator server
- */
-export function getSimulatorServerUrl(): string {
-  const hostName =
-    process.env.NEXT_PUBLIC_SIMSERVER_HOST ?? window.location.hostname;
-  const port = process.env.NEXT_PUBLIC_SIMSERVER_PORT ?? '8000';
-  return `http://${hostName}:${port}`;
+  if (!response.ok) {
+    throw new Error(`Network response was not ok: ${response.status}`);
+  }
+
+  return response.json();
 }

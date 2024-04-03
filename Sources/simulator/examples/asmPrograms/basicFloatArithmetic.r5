@@ -1,0 +1,14 @@
+addi x1, x0, 5
+addi x2, x0, -10
+addi x3, x0, 20
+
+fcvt.s.w f1, x1
+fcvt.s.w f2, x2
+fcvt.s.w f3, x3
+fcvt.s.w f4, x1
+fcvt.s.w f5, x2
+
+fsub.s f5, f4, f5
+fadd.s f2, f3, f4
+fadd.s f1, f2, f3
+fadd.s f4, f4, f3

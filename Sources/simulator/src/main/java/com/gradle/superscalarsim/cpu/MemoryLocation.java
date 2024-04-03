@@ -29,85 +29,108 @@
 package com.gradle.superscalarsim.cpu;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
+import com.gradle.superscalarsim.serialization.MemoryLocationDeserializer;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Result of parsing directives in assembly code.
- * Can have multiple sequences of values of different data types.
- * The client includes extra fields, they are ignored during deserialization.
+ * Result of parsing directives in assembly code and JSON definitions from CLI or API.
+ * Used in the phase of building the memory, not in the simulation itself.
+ * It is optimized for defining arrays, but structs and constants can be expressed as well.
+ * <p>
+ * The JSONs can include extra fields, they are ignored during deserialization.
+ * One named memory location may have multiple data types. A C struct is an example:
+ * <code>
+ * Array:
+ * .byte   1
+ * .word   42
+ * </code>.
+ * This would result in two data chunks: byte and int.
+ * <p>
+ * In some cases, the value can be a label, for compatibility with GCC.
  *
  * @brief Describes one named memory location (constant, array, struct).
+ * See {@link MemoryLocationDeserializer} for alternative JSON representation.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
+@JsonDeserialize(using = MemoryLocationDeserializer.class)
 public class MemoryLocation
 {
   /**
-   * Name of the memory location
-   * Derived from the label in the assembly code
+   * Names of the memory locations. The first name is the primary one.
+   * Derived from the label in the assembly code.
+   * When multiple labels point to the same memory location, they are all stored here.
+   * This is a list because GCC sometimes generates such code, but it is not allowed to use in manually written code.
    */
-  public String name;
+  public List<String> names;
   
   /**
-   * Alternative names of the memory location. Used when two labels point to the same memory location.
-   * Can be null.
-   */
-  public List<String> aliases;
-  
-  /**
-   * Alignment of the memory location in bytes
+   * Alignment of the memory location in bytes.
+   * Warning: This aligns with the .align directive in the assembly code, which is in log2.
+   * So alignment value 3 means 2^3 = 8 bytes. Alignment of 0 means no alignment (2^0 = 1 byte).
    */
   public int alignment;
-  
   /**
-   * Chunks of data.
-   * They lie next to each other in memory.
-   * One named memory location may have multiple data types. A C struct is an example.
-   * <p>
-   * <code>
-   * Array:
-   * .byte   1
-   * .word   42
-   * </code>
-   * </p>
-   * This would result in two data chunks: byte and int.
+   * Either a dataType for the whole memory location or a list of data types for each data chunk.
+   * Must be sorted in ascending order of the start offset.
+   * Example: [{0, int}] means that the whole memory location is an int.
+   * Example: [{0, int}, {7, byte}] means that the first 7 items (data[0-6], not bytes) are int, the rest are bytes.
    */
-  List<DataChunk> dataChunks;
-  
+  public List<SpanType> dataTypes;
   /**
-   * @brief Constructor for deserialization
+   * Memory elements. Not bytes, but elements. They lie next to each other in memory.
+   * The data type of each item is defined using the dataTypes list.
+   * Example: ["1", "2", "3.7"].
    */
-  public MemoryLocation()
-  {
-  }
+  public List<String> data;
   
   /**
-   * @brief Constructor with initial value. For testing purposes.
+   * @brief Constructor with initial value. Useful for testing purposes.
    */
   public MemoryLocation(String name, int alignment, DataTypeEnum dataType, List<String> values)
   {
-    this(name, alignment);
-    this.dataChunks.add(new DataChunk(dataType));
-    this.dataChunks.get(0).values = values;
+    assert alignment > 0;
+    this.names = new ArrayList<>();
+    this.names.add(name);
+    
+    this.alignment = alignment;
+    this.data      = values;
+    this.dataTypes = new ArrayList<>();
+    this.dataTypes.add(new SpanType(0, dataType));
   }
   
   /**
-   * @brief Constructor
+   * @param names     Names of the memory location
+   * @param alignment Alignment of the memory location
+   * @param dataTypes Data types of the memory location
+   * @param data      Data of the memory location
+   *
+   * @brief Constructor for custom deserialization.
    */
-  public MemoryLocation(String name, int alignment)
+  public MemoryLocation(List<String> names, int alignment, List<SpanType> dataTypes, List<String> data)
   {
-    assert alignment > 0;
-    this.name       = name;
-    this.alignment  = alignment;
-    this.dataChunks = new ArrayList<>();
-    this.aliases    = new ArrayList<>();
+    this.names     = names;
+    this.alignment = alignment;
+    this.data      = data;
+    this.dataTypes = dataTypes;
+    
+    assert alignment >= 0;
   }
   
-  public List<DataChunk> getDataChunks()
+  /**
+   * @brief Constructor. Used when building the memory location from the assembly code.
+   */
+  public MemoryLocation()
   {
-    return dataChunks;
+    this(new ArrayList<>(), 0, new ArrayList<>(), new ArrayList<>());
+  }
+  
+  public List<SpanType> getDataTypes()
+  {
+    return dataTypes;
   }
   
   /**
@@ -115,15 +138,19 @@ public class MemoryLocation
    */
   public void addValue(String value)
   {
-    dataChunks.get(dataChunks.size() - 1).values.add(value);
+    data.add(value);
   }
   
   /**
    * Add a new alias
    */
-  public void addAlias(String alias)
+  public void addName(String alias)
   {
-    aliases.add(alias);
+    if (names == null)
+    {
+      names = new ArrayList<>();
+    }
+    names.add(alias);
   }
   
   /**
@@ -132,23 +159,52 @@ public class MemoryLocation
   @Override
   public String toString()
   {
-    StringBuilder result = new StringBuilder(name + " ");
-    for (DataChunk dataChunk : dataChunks)
+    StringBuilder sb   = new StringBuilder();
+    String        name = getName();
+    sb.append(name == null ? "unnamed" : name);
+    sb.append(" [");
+    for (SpanType spanType : dataTypes)
     {
-      result.append(dataChunk.toString()).append(" ");
+      sb.append(spanType.dataType).append(" ");
     }
-    return result.toString();
+    sb.append(";");
+    int length = data.size();
+    sb.append(length).append("]");
+    return sb.toString();
+  }
+  
+  public String getName()
+  {
+    if (names == null || names.isEmpty())
+    {
+      return null;
+    }
+    return names.get(0);
   }
   
   /**
    * @return Bytes of the memory location
    */
-  public List<Byte> getBytes()
+  public byte[] getBytes()
   {
-    List<Byte> bytes = new ArrayList<>();
-    for (DataChunk dataChunk : dataChunks)
+    byte[]       bytes                 = new byte[getByteSize()];
+    DataTypeEnum currentDataType       = null;
+    int          currentDataTypesIndex = 0;
+    int          nextDataTypeIndex     = 0;
+    int          currentByteIndex      = 0;
+    for (int currentDataIndex = 0; currentDataIndex < data.size(); currentDataIndex++)
     {
-      bytes.addAll(dataChunk.getBytes());
+      if (currentDataIndex == nextDataTypeIndex)
+      {
+        currentDataType = dataTypes.get(currentDataTypesIndex).dataType;
+        currentDataTypesIndex++;
+        nextDataTypeIndex = currentDataTypesIndex < dataTypes.size() ? dataTypes.get(
+                currentDataTypesIndex).startOffset : data.size();
+      }
+      byte[] b = currentDataType.getBytes(data.get(currentDataIndex));
+      // copy
+      System.arraycopy(b, 0, bytes, currentByteIndex, b.length);
+      currentByteIndex += b.length;
     }
     return bytes;
   }
@@ -158,105 +214,35 @@ public class MemoryLocation
    */
   public int getByteSize()
   {
-    int size = 0;
-    for (DataChunk dataChunk : dataChunks)
+    int      size         = 0;
+    SpanType lastSpanType = dataTypes.get(0);
+    for (int i = 1; i < dataTypes.size(); i++)
     {
-      size += dataChunk.getByteSize();
+      SpanType spanType = dataTypes.get(i);
+      int      items    = spanType.startOffset - lastSpanType.startOffset;
+      size += items * lastSpanType.dataType.getSize();
+      lastSpanType = spanType;
     }
+    size += (data.size() - lastSpanType.startOffset) * lastSpanType.dataType.getSize();
     return size;
   }
   
   /**
-   * @brief Add a new data chunk
+   * @brief Mark a new data type at the current size of data.
    */
   public void addDataChunk(DataTypeEnum dataType)
   {
-    dataChunks.add(new DataChunk(dataType));
+    int startOffset = data.size();
+    dataTypes.add(new SpanType(startOffset, dataType));
   }
   
   /**
+   * @param startOffset Offset into the list of values
+   * @param dataType    Type of the data
    *
+   * @brief Record for the start of a new data type in the list of values.
    */
-  public static class DataChunk
+  public record SpanType(int startOffset, DataTypeEnum dataType)
   {
-    /**
-     * Data type of the memory location
-     */
-    public DataTypeEnum dataType;
-    
-    /**
-     * Value of the memory location.
-     * This is the semantic value of a memory location. If the data type is int, each of
-     * these values will occupy 4 bytes.
-     */
-    public List<String> values;
-    
-    /**
-     * @brief Constructor for deserialization
-     */
-    public DataChunk()
-    {
-    }
-    
-    /**
-     * @brief Constructor
-     */
-    public DataChunk(DataTypeEnum dataType)
-    {
-      this.dataType = dataType;
-      this.values   = new ArrayList<>();
-    }
-    
-    /**
-     * @brief String representation of the memory chunk
-     */
-    @Override
-    public String toString()
-    {
-      boolean isArray = getByteSize() > dataType.getSize();
-      try
-      {
-        
-        if (isArray)
-        {
-          return dataType + "[" + getByteSize() / dataType.getSize() + "]";
-        }
-        else
-        {
-          return dataType + " " + getBytes().get(0);
-        }
-      }
-      catch (Exception e)
-      {
-        return values.toString();
-      }
-    }
-    
-    /**
-     * @return Size of the memory location in bytes
-     */
-    public int getByteSize()
-    {
-      return dataType.getSize() * values.size();
-    }
-    
-    /**
-     * Interpret the values according to the data type
-     *
-     * @return List of bytes
-     */
-    public List<Byte> getBytes()
-    {
-      List<Byte> bytes = new ArrayList<>();
-      for (Object o : values)
-      {
-        byte[] b = dataType.getBytes(o.toString());
-        for (byte value : b)
-        {
-          bytes.add(value);
-        }
-      }
-      return bytes;
-    }
   }
 }

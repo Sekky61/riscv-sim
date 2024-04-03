@@ -4,6 +4,7 @@
     <option name="LINE_SEPARATOR" value="&#10;" />
     <option name="SOFT_MARGINS" value="80,120" />
     <JavaCodeStyleSettings>
+      <option name="ALIGN_MULTILINE_ANNOTATION_PARAMETERS" value="true" />
       <option name="JD_ADD_BLANK_AFTER_PARM_COMMENTS" value="true" />
     </JavaCodeStyleSettings>
     <codeStyleSettings language="JAVA">

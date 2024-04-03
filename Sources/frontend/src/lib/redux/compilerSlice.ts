@@ -41,14 +41,15 @@ import { transformErrors } from '@/lib/editor/transformErrors';
 import { selectActiveConfig } from '@/lib/redux/isaSlice';
 import type { RootState } from '@/lib/redux/store';
 import { callCompilerImpl, callParseAsmImpl } from '@/lib/serverCalls';
+import { CodeExample } from '@/lib/types/codeExamples';
 import {
   CompileResponse,
   ComplexErrorItem,
   ParseAsmResponse,
   SimpleParseError,
 } from '@/lib/types/simulatorApi';
+import { saveAsFile } from '@/lib/utils';
 import { toast } from 'sonner';
-import { CodeExample } from '@/lib/types/codeExamples';
 
 export type OptimizeOption =
   | 'O2'
@@ -181,27 +182,20 @@ export const openExampleAndCompile = createAsyncThunk<void, CodeExample>(
 );
 
 /**
- * Save the active code to a file. A dialog is shown to the user, they can choose the file name.
+ * Save the code to a file. A dialog is shown to the user, they can choose the file name.
  *
- * Example: dispatch(saveToFile());
+ * Example: dispatch(saveToFile('c'));
  */
-export const saveToFile = createAsyncThunk<void>(
-  'compiler/saveToFile',
-  async (arg, { getState }) => {
-    // @ts-ignore
-    const state: RootState = getState();
-    const code = selectActiveCode(state);
-    const suggestedFileName =
-      selectEditorMode(state) === 'c' ? 'code.c' : 'code.asm';
-
-    const blob = new Blob([code], { type: 'text/plain;charset=utf-8' });
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = suggestedFileName;
-    link.click();
-  },
-);
+export const saveCodeToFile = createAsyncThunk<
+  void,
+  CompilerState['editorMode']
+>('compiler/saveToFile', async (mode, { getState }) => {
+  // @ts-ignore
+  const state: RootState = getState();
+  const suggestedFileName = mode === 'c' ? 'code.c' : 'code.asm';
+  const code = mode === 'c' ? state.compiler.cCode : state.compiler.asmCode;
+  saveAsFile(code, suggestedFileName);
+});
 
 export const compilerSlice = createSlice({
   name: 'compiler',
@@ -289,7 +283,7 @@ export const compilerSlice = createSlice({
         state.asmDirty = false;
         if (!action.payload.success) {
           state.compileStatus = 'failed';
-          state.cErrors = action.payload.compilerError;
+          state.cErrors = action.payload.compilerError ?? [];
           // Delete mapping
           state.asmToC = [];
           state.asmCode = '';
@@ -317,7 +311,7 @@ export const compilerSlice = createSlice({
       .addCase(callParseAsm.fulfilled, (state, action) => {
         state.asmDirty = false;
         if (!action.payload.success) {
-          state.asmErrors = action.payload.errors;
+          state.asmErrors = action.payload.errors || [];
           return;
         }
         state.asmErrors = [];

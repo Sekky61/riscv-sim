@@ -1,5 +1,5 @@
 /**
- * @file SimulationResponse.java
+ * @file SimulateResponse.java
  * @author Michal Majer
  * Faculty of Information Technology
  * Brno University of Technology
@@ -51,5 +51,14 @@ public class SimulateResponse
     this.executedSteps = executed_steps;
     this.state         = state;
     this.stopReason    = stopReason;
+  }
+  
+  /**
+   * Convert the response to a short response
+   */
+  public SimulateShortResponse toShortResponse()
+  {
+    return new SimulateShortResponse(state.debugLog, state.statistics, stopReason,
+                                     state.unifiedRegisterFileBlock.getArchitecturalRegisterValues());
   }
 }

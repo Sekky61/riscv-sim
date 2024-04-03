@@ -42,7 +42,7 @@ import {
 } from '@/components/base/ui/dialog';
 import Block from '@/components/simulation/Block';
 import { Label } from '@/lib/types/cpuApi';
-import React, { memo, useDeferredValue } from 'react';
+import React, { useDeferredValue } from 'react';
 
 /**
  * Get the indexes of the memory that are different
@@ -79,6 +79,7 @@ export default function MainMemory() {
     return null;
   }
 
+  // TODO filter out program labels
   const labelTable = [];
   for (const label of Object.values(program.labels)) {
     labelTable.push(
@@ -110,11 +111,10 @@ export default function MainMemory() {
             </thead>
             <tbody>{labelTable}</tbody>
           </table>
-          <div className='py-1'>
-            Memory Inspector - shows the memory up to the highest touched
-            address
+          <div className='py-1 text-md'>
+            Memory Inspector shows the memory up to the highest touched address
           </div>
-          <div className='max-h-64 flex'>
+          <div className='max-h-64 overflow-scroll rounded-md border p-2 shadow-inner'>
             <HexDump
               memory={memory}
               labels={program.labels}

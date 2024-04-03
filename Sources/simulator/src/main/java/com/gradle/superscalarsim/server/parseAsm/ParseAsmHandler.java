@@ -30,7 +30,7 @@ package com.gradle.superscalarsim.server.parseAsm;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gradle.superscalarsim.code.CodeParser;
 import com.gradle.superscalarsim.code.ParseError;
-import com.gradle.superscalarsim.loader.InitLoader;
+import com.gradle.superscalarsim.loader.StaticDataProvider;
 import com.gradle.superscalarsim.serialization.Serialization;
 import com.gradle.superscalarsim.server.IRequestDeserializer;
 import com.gradle.superscalarsim.server.IRequestResolver;
@@ -60,8 +60,8 @@ public class ParseAsmHandler implements IRequestResolver<ParseAsmRequest, ParseA
     else
     {
       // Parse the code
-      InitLoader loader = new InitLoader();
-      CodeParser parser = new CodeParser(loader, request.config.memoryLocations);
+      StaticDataProvider loader = new StaticDataProvider();
+      CodeParser         parser = new CodeParser(loader, request.config.memoryLocations);
       
       parser.parseCode(request.code);
       

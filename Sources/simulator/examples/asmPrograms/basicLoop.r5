@@ -1,0 +1,6 @@
+addi x3, x0, 5
+loop:
+beq x3, x0, loopEnd
+subi x3, x3, 1 #DEBUG"Value of x3 is now ${x3}"
+jal x0, loop
+loopEnd:

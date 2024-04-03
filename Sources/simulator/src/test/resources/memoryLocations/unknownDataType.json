@@ -1,0 +1,16 @@
+[
+  {
+    "names": [
+      "Array"
+    ],
+    "alignment": 8,
+    "dataType": "bůlien",
+    "data": {
+      "kind": "data",
+      "data": [
+        "0",
+        "1"
+      ]
+    }
+  }
+]

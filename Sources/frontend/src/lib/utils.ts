@@ -33,6 +33,7 @@ import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
 import {
+  DataTypeEnum,
   InputCodeModel,
   Reference,
   RegisterModel,
@@ -168,4 +169,89 @@ export function stopReasonToShortString(stopReason: StopReason): string {
 
 function unreachable(): never {
   throw new Error('Unreachable');
+}
+
+/**
+ * Save the string as a file.
+ */
+export function saveAsFile(content: string, filename: string): void {
+  const blob = new Blob([content], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+/**
+ * Save the passed object as a JSON file.
+ */
+// biome-ignore lint: any object can be serialized to JSON
+export function saveAsJsonFile(object: any, filename: string): void {
+  const content = JSON.stringify(object, null, 2);
+  saveAsFile(content, filename);
+}
+
+/**
+ * Show dialog to pick a file and calls the callback with file text contents once the file is picked.
+ * TODO: Use this function in other places where file is loaded (config import), move to utils, generalize?
+ */
+export function loadFile(callback: (contents: string) => void) {
+  // Show dialog
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.onchange = () => {
+    if (!input.files) {
+      console.warn('No file selected');
+      return;
+    }
+    const file = input.files[0];
+    if (file === undefined) {
+      console.warn('No file selected');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const contents = e.target?.result;
+      if (typeof contents === 'string') {
+        callback(contents);
+      }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
+
+/**
+ * Convert the data type to byte size.
+ */
+export function dataTypeToSize(dataType: DataTypeEnum): number {
+  switch (dataType) {
+    case 'kBool':
+    case 'kChar':
+    case 'kByte':
+      return 1;
+    case 'kShort':
+      return 2;
+    case 'kUInt':
+    case 'kInt':
+    case 'kFloat':
+      return 4;
+    case 'kDouble':
+    case 'kULong':
+    case 'kLong':
+      return 8;
+    default:
+      return unreachable();
+  }
+}
+
+/**
+ * Return the word in the plural form if the number is not 1
+ */
+export function pluralize(word: string, number: number): string {
+  return number === 1 ? word : `${word}s`;
 }

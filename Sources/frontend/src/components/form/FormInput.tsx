@@ -44,7 +44,7 @@ type InputProps = React.InputHTMLAttributes<HTMLInputElement>;
 
 export type FormInputProps = {
   name: string;
-  title: string;
+  title?: string;
   type?: string;
   error?: FieldError;
   hint?: string;
@@ -68,7 +68,7 @@ const FormInput = React.forwardRef<HTMLInputElement, FormInputProps>(
               <Label htmlFor={name}>{title}&nbsp;&#9432;</Label>
             </TooltipTrigger>
             <TooltipContent>
-              <p>{hint}</p>
+              <p className='max-w-64'>{hint}</p>
             </TooltipContent>
           </Tooltip>
         ) : (
@@ -86,16 +86,22 @@ const FormInput = React.forwardRef<HTMLInputElement, FormInputProps>(
           )}
           ref={ref}
         />
-        <div className='h-6'>
-          {error?.message && (
-            <span className='mt-1 text-sm text-red-600'>{error?.message}</span>
-          )}
-        </div>
+        <ErrorDisplay error={error} />
       </div>
     );
   },
 );
 
 FormInput.displayName = 'FormInput';
+
+export function ErrorDisplay({ error }: { error?: FieldError }) {
+  return (
+    <div className='h-6'>
+      {error?.message && (
+        <span className='mt-1 text-sm text-red-600'>{error?.message}</span>
+      )}
+    </div>
+  );
+}
 
 export { FormInput };

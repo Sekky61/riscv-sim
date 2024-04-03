@@ -53,7 +53,6 @@ import {
   fuTypes,
   isArithmeticUnitConfig,
   predictorDefaults,
-  predictorStates,
   predictorTypes,
   storeBehaviorTypes,
 } from '@/lib/forms/Isa';
@@ -320,7 +319,7 @@ export default function IsaSettingsForm({
                     />
                     <p>
                       {coreClockFrequency &&
-                        formatNumberWithUnit(coreClockFrequency)}
+                        `= ${formatNumberWithUnit(coreClockFrequency)}`}
                     </p>
                     <FormInput
                       {...simpleRegister('cacheClockFrequency', {
@@ -329,7 +328,7 @@ export default function IsaSettingsForm({
                     />
                     <p>
                       {cacheClockFrequency &&
-                        formatNumberWithUnit(cacheClockFrequency)}
+                        `= ${formatNumberWithUnit(cacheClockFrequency)}`}
                     </p>
                   </div>
                 </fieldset>

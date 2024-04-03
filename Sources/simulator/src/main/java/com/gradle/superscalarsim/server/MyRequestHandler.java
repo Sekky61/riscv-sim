@@ -86,6 +86,8 @@ public class MyRequestHandler<T, U> implements HttpHandler
       return;
     }
     
+    // At this point, the request is in the worker thread
+    
     // TODO: If the request times out, it continues to run in the background.
     // this means it will eat resources, until it finishes (which may be never).
     exchange.startBlocking();

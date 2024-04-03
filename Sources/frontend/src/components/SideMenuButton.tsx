@@ -62,7 +62,7 @@ export default function SideMenuButton({
   return (
     <Link
       href={href}
-      className='flex gap-4 items-center rounded-full hover:bg-gray-200 hover:underline'
+      className='flex gap-4 items-center rounded-full hover:bg-accent'
     >
       <IconButton
         active={isActive}

@@ -1,0 +1,19 @@
+f:
+    addi sp,sp,-16 #DEBUG"Enter f"
+    sw a0,12(sp)
+    lw a5,12(sp)
+    slli a5,a5,1
+    mv a0,a5
+    addi sp,sp,16
+    jr ra
+main: # The program should start here. Specify the entry point in GUI or by `--entry` option.
+    addi sp,sp,-32
+    sw ra,28(sp)
+    li a0,4
+    call f #DEBUG"Call f"
+    sw a0,12(sp)
+    li a5,0
+    mv a0,a5
+    lw ra,28(sp)
+    addi sp,sp,32
+    jr ra

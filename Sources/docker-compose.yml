@@ -6,13 +6,15 @@ services:
       context: ./frontend
       target: runner
       args:
-        NEXT_PUBLIC_SIMSERVER_URL: http://localhost:8120
         DOCKER_BUILDKIT: 1
     environment:
       - NODE_ENV=production
-      - NEXT_PUBLIC_SIMSERVER_URL=http://localhost:8120
     ports:
       - 3120:3000
+    depends_on:
+      - riscvsim-server
+    links:
+      - riscvsim-server # The web server uses port 8000 to communicate with the server, 8120 is exposed to the host
   riscvsim-server:
     container_name: riscvsim-server
     build:

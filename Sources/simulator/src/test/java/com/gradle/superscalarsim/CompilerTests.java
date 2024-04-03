@@ -7,7 +7,7 @@ import com.gradle.superscalarsim.compiler.CompiledProgram;
 import com.gradle.superscalarsim.compiler.GccCaller;
 import com.gradle.superscalarsim.cpu.Cpu;
 import com.gradle.superscalarsim.cpu.SimulationConfig;
-import com.gradle.superscalarsim.loader.InitLoader;
+import com.gradle.superscalarsim.loader.StaticDataProvider;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -80,9 +80,9 @@ public class CompilerTests
   public void test_simpleCProgram_produces_valid_riscv_asm()
   {
     // Setup
-    String     cCode  = "int f(int a) { int x = a*2; return x+1; }";
-    InitLoader loader = new InitLoader();
-    CodeParser parser = new CodeParser(loader);
+    String             cCode  = "int f(int a) { int x = a*2; return x+1; }";
+    StaticDataProvider loader = new StaticDataProvider();
+    CodeParser         parser = new CodeParser(loader);
     
     // Exercise
     GccCaller.CompileResult compileResult = GccCaller.compile(cCode, List.of());
@@ -118,8 +118,8 @@ public class CompilerTests
                 
                 return num * num;
             }""";
-    InitLoader loader = new InitLoader();
-    CodeParser parser = new CodeParser(loader);
+    StaticDataProvider loader = new StaticDataProvider();
+    CodeParser         parser = new CodeParser(loader);
     
     // Exercise
     GccCaller.CompileResult compileResult = GccCaller.compile(cCode, List.of("O2"));
@@ -162,8 +162,8 @@ public class CompilerTests
                 }
                 return sum;
             }""";
-    InitLoader loader = new InitLoader();
-    CodeParser parser = new CodeParser(loader);
+    StaticDataProvider loader = new StaticDataProvider();
+    CodeParser         parser = new CodeParser(loader);
     
     // Exercise
     GccCaller.CompileResult compileResult = GccCaller.compile(cCode, List.of("O2"));
@@ -190,8 +190,8 @@ public class CompilerTests
               return str[x] + str2[x];
             }
             """;
-    InitLoader loader = new InitLoader();
-    CodeParser parser = new CodeParser(loader);
+    StaticDataProvider loader = new StaticDataProvider();
+    CodeParser         parser = new CodeParser(loader);
     
     // Exercise
     GccCaller.CompileResult compileResult = GccCaller.compile(cCode, List.of("O2"));

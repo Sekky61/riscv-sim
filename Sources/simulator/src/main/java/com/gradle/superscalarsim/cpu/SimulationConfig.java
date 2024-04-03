@@ -30,7 +30,7 @@ package com.gradle.superscalarsim.cpu;
 import com.gradle.superscalarsim.code.CodeParser;
 import com.gradle.superscalarsim.code.Label;
 import com.gradle.superscalarsim.code.ParseError;
-import com.gradle.superscalarsim.loader.InitLoader;
+import com.gradle.superscalarsim.loader.StaticDataProvider;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -79,12 +79,12 @@ public class SimulationConfig
   /**
    * Constructor
    */
-  public SimulationConfig(String code, List<MemoryLocation> memoryLocations, CpuConfig cpuConfig)
+  public SimulationConfig(String code, List<MemoryLocation> memoryLocations, CpuConfig cpuConfig, Object entryPoint)
   {
     this.code            = code;
     this.memoryLocations = memoryLocations;
     this.cpuConfig       = cpuConfig;
-    entryPoint           = 0;
+    this.entryPoint      = entryPoint;
   }
   
   /**
@@ -115,11 +115,12 @@ public class SimulationConfig
     }
     
     // Parse code
-    CodeParser codeParser = new CodeParser(new InitLoader(), memoryLocations);
+    CodeParser codeParser = new CodeParser(new StaticDataProvider(), memoryLocations);
     codeParser.parseCode(code);
     
     if (!codeParser.success())
     {
+      codeParser.getErrorMessages().forEach(e -> errorMessages.add(new CpuConfigValidator.Error(e.message, "code")));
       errorMessages.add(new CpuConfigValidator.Error("Code contains errors", "code"));
       codeErrors = codeParser.getErrorMessages();
     }
@@ -142,7 +143,7 @@ public class SimulationConfig
         {
           errorMessages.add(new CpuConfigValidator.Error("Memory location bytes must not be null", "memoryLocations"));
         }
-        if (memoryLocation.name == null || memoryLocation.name.isEmpty())
+        if (memoryLocation.getName() == null || memoryLocation.getName().isEmpty())
         {
           errorMessages.add(
                   new CpuConfigValidator.Error("Memory location name must not be null or empty", "memoryLocations"));
@@ -204,7 +205,7 @@ public class SimulationConfig
     Map<String, Label> names = new HashMap<>();
     for (MemoryLocation memoryLocation : memoryLocations)
     {
-      names.put(memoryLocation.name, new Label(memoryLocation.name, -1));
+      names.put(memoryLocation.getName(), new Label(memoryLocation.getName(), -1));
     }
     return names;
   }

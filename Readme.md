@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This repository extends the superscalar simulator created by Jakub Horky and Jan Vavra. The goal is to add a WEB and CLI interface.
+This repository extends the superscalar simulator created by Jakub Horky and Jan Vavra. The goal is to add a **web** and a **CLI** interface.
 
 ## Repository structure
 
@@ -14,16 +14,17 @@ This repository extends the superscalar simulator created by Jakub Horky and Jan
     +--Misc       - Other auxiliary materials.
     Readme.md     - Read me file
 
-
 ## Build instructions
 
 You can either build the project locally or use docker.
 First the manual build is described, then the docker build.
+
 If anything is unclear, you can refer to the Dockerfiles, which contain all the necessary steps.
+The `Sources/frontend` and `Sources/simulator` contain their own, more detailed instructions.
 
 ### Build frontend web app
 
-The app was developed using npm `9.3.1` and node.js `v18.4.0`.
+The app was developed using npm `10.2.3` and node.js `v21.2.0`.
 You need to have these installed to build the frontend app (later versions should work as well).
 
 To build the production version of the app, start by navigating to `Sources/frontend` and installing dependencies:
@@ -49,25 +50,28 @@ To develop the app, see `Sources/frontend/Readme.md`.
 
 ### Build backend server
 
-The backend server is written in Java using version `17.0.6`. Gradle is bundled with the project.
+The backend server is written in Java using version `17.0.6`. Gradle is bundled with the project, so you don't need to install it.
 
 To build the backend server, navigate to `Sources/simulator` and run:
 
 ```bash
-./run.sh server
+./install.sh
 ```
-(see `--help` for more options).
+
+To use the app (either CLI or server), run `./run.sh help` to see the available options.
 
 ### Docker
 
-There is docker compose file in the `Sources`. It builds the frontend and backend and runs them together.
+There is docker compose file located at `Sources/`. It builds the frontend and backend and runs them together.
 There is a prepared script `Sources/run_container.sh` and `Sources/stop_container.sh` to run and stop the container.
+Note that sudo might be required to run the docker commands.
 
-Developed using Docker `24.0.7`.
+Developed using Docker `24.0.7` and `20.10.2` (version on `sc-gpu1` server).
+There is a difference between these versions, so in case of problems, look into `docker compose` vs `docker-compose` commands.
 
 ## Author information
 
  * Name: Michal Majer
  * Email: xmajer21@stud.fit.vutbr.cz, misa@majer.cz
- * Data: 2023/2024
+ * Date: 2023/2024
  * Phone: +420 773 959 458

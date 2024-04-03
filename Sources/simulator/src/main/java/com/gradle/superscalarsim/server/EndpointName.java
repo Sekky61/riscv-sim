@@ -34,7 +34,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public enum EndpointName
 {
-  compile("compile"), parseAsm("parseAsm"), checkConfig("checkConfig"), simulate("simulate"), schema("schema");
+  compile("compile"), //
+  parseAsm("parseAsm"), //
+  checkConfig("checkConfig"), //
+  simulate("simulate"), //
+  schema("schema"), //
+  instructionDescription("instructionDescription");
   
   private final String pathName;
   

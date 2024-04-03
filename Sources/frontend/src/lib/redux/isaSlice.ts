@@ -36,7 +36,7 @@ import type { RootState } from '@/lib/redux/store';
 
 import {
   CpuConfig,
-  MemoryLocationIsa,
+  MemoryLocationApi,
   SimulationConfig,
   defaultCpuConfig,
   defaultSimulationConfig,
@@ -117,10 +117,15 @@ export const isaSlice = createSlice({
         }
       }
     },
+    setMemoryLocations: (state, action: PayloadAction<MemoryLocationApi[]>) => {
+      const activeIsa = findIsaByName(state.isas, state.activeIsaName);
+      if (activeIsa === undefined) throw new Error('Active ISA not found');
+      activeIsa.memoryLocations = action.payload;
+    },
     /**
      * Enforces unique memory location names
      */
-    addMemoryLocation: (state, action: PayloadAction<MemoryLocationIsa>) => {
+    addMemoryLocation: (state, action: PayloadAction<MemoryLocationApi>) => {
       const activeIsa = findIsaByName(state.isas, state.activeIsaName);
       if (activeIsa === undefined) throw new Error('Active ISA not found');
       // Check if the name is unique
@@ -140,7 +145,7 @@ export const isaSlice = createSlice({
       state,
       action: PayloadAction<{
         oldName: string;
-        memoryLocation: MemoryLocationIsa;
+        memoryLocation: MemoryLocationApi;
       }>,
     ) => {
       const activeIsa = findIsaByName(state.isas, state.activeIsaName);
@@ -190,6 +195,7 @@ export const {
   createIsa,
   updateIsa,
   removeIsa,
+  setMemoryLocations,
   addMemoryLocation,
   removeMemoryLocation,
   updateMemoryLocation,

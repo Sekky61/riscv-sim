@@ -55,6 +55,9 @@ import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import EditorBar from '@/components/codeEditor/EditorBar';
 import { StatusIcon } from '@/components/codeEditor/StatusIcon';
 
+/**
+ * The base theme for the editor.
+ */
 const baseTheme = EditorView.baseTheme({
   '.cm-activeLine': {
     backgroundColor: 'rgba(var(--line-highlight-color), 0.25)',
@@ -74,11 +77,13 @@ const baseTheme = EditorView.baseTheme({
   },
 });
 
-// cm-line must be in the code for the css minimizer not to remove it
+// cm-line must be mentioned in the code for the css minimizer not to remove it
 const _ = 'cm-line cm-focused';
 
-export type CodeInputProps = React.HTMLAttributes<HTMLDivElement>;
-
+/**
+ * The C code editor.
+ * Communicates with the compilerSlice.
+ */
 export default function CCodeInput() {
   const dispatch = useAppDispatch();
   const mode = useAppSelector(selectEditorMode);
@@ -154,6 +159,7 @@ export default function CCodeInput() {
 }
 
 /**
+ * A checkmark/cross icon that indicates if the code has errors (or is dirty).
  * A fixed width element
  */
 const CErrorsDisplay = () => {

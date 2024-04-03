@@ -1,0 +1,23 @@
+[
+  {
+    "name": "Array",
+    "alignment": 8,
+    "dataTypes": [
+      {
+        "startOffset": 0,
+        "dataType": "kInt"
+      }
+    ],
+    "data": {
+      "kind": "data",
+      "data": [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5"
+      ]
+    }
+  }
+]

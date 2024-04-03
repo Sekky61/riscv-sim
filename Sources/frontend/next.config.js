@@ -1,3 +1,5 @@
+const { apiBaseUrl } = require('./src/constant/env');
+
 const withBundleAnalyzer = require('@next/bundle-analyzer')({
   enabled: process.env.ANALYZE === 'true',
 });
@@ -14,6 +16,17 @@ const nextConfig = withBundleAnalyzer({
   //     'res.cloudinary.com',
   //   ],
   // },
+
+  // Proxy simulation requests to Java backend API.
+  // The destination is on the same server (localhost).
+  async rewrites() {
+    return [
+      {
+        source: '/api/sim/:slug',
+        destination: `${apiBaseUrl}/:slug`,
+      },
+    ];
+  },
 
   webpack(config) {
     // Grab the existing rule that handles SVG imports

@@ -35,13 +35,23 @@
 
 import { Button } from '@/components/base/ui/button';
 import MemoryForm from '@/components/form/MemoryForm';
+import { MemoryLocationApi } from '@/lib/forms/Isa';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
-import { removeMemoryLocation, selectActiveConfig } from '@/lib/redux/isaSlice';
+import {
+  removeMemoryLocation,
+  selectActiveConfig,
+  setMemoryLocations,
+} from '@/lib/redux/isaSlice';
+import { loadFile, saveAsJsonFile } from '@/lib/utils';
 import clsx from 'clsx';
 import Head from 'next/head';
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
 
+/**
+ * This is the main page for the memory editor.
+ * It allows the user to create, edit, and delete memory locations.
+ * It also allows the user to import and export memory locations.
+ */
 export default function HomePage() {
   // Load the active ISA
   const dispatch = useAppDispatch();
@@ -55,15 +65,50 @@ export default function HomePage() {
     setActiveMemoryLocation('new');
   };
 
+  const doImport = () => {
+    loadFile((json_string) => {
+      // TODO: resolve issue with extra fields on the form
+      const newMemoryLocations = JSON.parse(
+        json_string,
+      ) as Array<MemoryLocationApi>;
+      dispatch(setMemoryLocations(newMemoryLocations));
+    });
+  };
+
+  const doExport = () => {
+    saveAsJsonFile(memoryLocations, 'memory.json');
+  };
+
   return (
     <main className='h-full'>
       <Head>
         <title>Memory</title>
       </Head>
       <h1 className='m-2 mb-6 text-2xl'>Memory Editor</h1>
-      <div className='flex h-full flex-col'>
-        <div className='flex divide-x'>
-          <div className='w-48 p-4 flex flex-col gap-4'>
+      <div className='flex divide-x'>
+        <div className='w-48 p-4 flex flex-col gap-4 divide-y'>
+          <Button
+            variant='ghost'
+            className={clsx(
+              'new' === activeMemoryLocation && 'bg-accent',
+              'w-full',
+            )}
+            onClick={() => setActiveMemoryLocation('new')}
+          >
+            New Object
+          </Button>
+          <div className='pt-4 flex justify-around'>
+            <Button onClick={doImport} variant='ghost'>
+              Import
+            </Button>
+            <Button onClick={doExport} variant='ghost'>
+              Export
+            </Button>
+          </div>
+          <div>
+            <h2 className='text-lg mt-4 font-semibold text-center'>
+              Memory Objects
+            </h2>
             {memoryLocations?.length === 0 && (
               <div className='text-gray-400 text-sm text-center'>
                 No memory locations
@@ -71,7 +116,7 @@ export default function HomePage() {
             )}
             {memoryLocations.map((memoryLocation) => {
               const isActive = memoryLocation.name === activeMemoryLocation;
-              const style = clsx(isActive ? 'bg-gray-100' : '');
+              const style = clsx(isActive && 'bg-accent', 'w-full mt-4');
               return (
                 <Button
                   variant='ghost'
@@ -82,26 +127,14 @@ export default function HomePage() {
                 </Button>
               );
             })}
-            <div className='mt-4 pt-4 border-t'>
-              <Button
-                variant='ghost'
-                className={clsx(
-                  'new' === activeMemoryLocation ? 'bg-gray-100' : '',
-                  'w-full',
-                )}
-                onClick={() => setActiveMemoryLocation('new')}
-              >
-                New
-              </Button>
-            </div>
           </div>
-          <div className='p-4 flex-grow'>
-            <MemoryForm
-              existing={activeMemoryLocation !== 'new'}
-              memoryLocationName={activeMemoryLocation}
-              deleteCallback={handleDelete}
-            />
-          </div>
+        </div>
+        <div className='p-4'>
+          <MemoryForm
+            existing={activeMemoryLocation !== 'new'}
+            memoryLocationName={activeMemoryLocation}
+            deleteCallback={handleDelete}
+          />
         </div>
       </div>
     </main>

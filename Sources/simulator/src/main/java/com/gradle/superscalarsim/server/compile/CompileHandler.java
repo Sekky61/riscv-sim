@@ -38,6 +38,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 
 /**
  * @class CompileHandler
@@ -54,7 +55,7 @@ public class CompileHandler implements IRequestResolver<CompileRequest, CompileR
     if (request == null || request.code == null)
     {
       // Send error
-      response = CompileResponse.failure("Wrong request format. Expected JSON with 'code' object field", null);
+      response = CompileResponse.failure("Wrong request format. Expected JSON with 'code' object field", List.of());
     }
     else
     {
@@ -62,8 +63,8 @@ public class CompileHandler implements IRequestResolver<CompileRequest, CompileR
       GccCaller.CompileResult res = GccCaller.compile(request.code, request.optimizeFlags);
       if (!res.success)
       {
-        System.err.println("Failed to compile code");
-        response = CompileResponse.failure("GCC returned an error", res.compilerErrors);
+        System.err.println("Failed to compile code: " + res.error);
+        response = CompileResponse.failure(res.error, res.compilerErrors);
       }
       else
       {

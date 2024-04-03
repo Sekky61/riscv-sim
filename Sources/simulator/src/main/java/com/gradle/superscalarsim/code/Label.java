@@ -64,4 +64,13 @@ public class Label
   {
     return (long) address.getValue(DataTypeEnum.kLong);
   }
+  
+  /**
+   * String representation of the label.
+   */
+  @Override
+  public String toString()
+  {
+    return "name='" + name + ": " + address.toString();
+  }
 }

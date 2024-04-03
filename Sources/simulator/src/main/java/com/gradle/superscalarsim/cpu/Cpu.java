@@ -27,7 +27,8 @@
 
 package com.gradle.superscalarsim.cpu;
 
-import com.gradle.superscalarsim.loader.InitLoader;
+import com.gradle.superscalarsim.loader.IDataProvider;
+import com.gradle.superscalarsim.loader.StaticDataProvider;
 
 import java.io.Serializable;
 import java.util.Objects;
@@ -51,7 +52,7 @@ public class Cpu implements Serializable
   /**
    * Loader for initial values - registers, instruction descriptions
    */
-  public InitLoader initLoader;
+  public IDataProvider staticDataProvider;
   
   /**
    * Status of the simulation (running or not) and reason why it stopped.
@@ -65,13 +66,13 @@ public class Cpu implements Serializable
    * @param cpuState   CPU state to use - can be null
    * @param initLoader registers and instruction definitions - can be null
    */
-  public Cpu(SimulationConfig simConfig, CpuState cpuState, InitLoader initLoader)
+  public Cpu(SimulationConfig simConfig, CpuState cpuState, IDataProvider staticDataProvider)
   {
-    this.configuration = simConfig;
-    this.initLoader    = Objects.requireNonNullElseGet(initLoader, InitLoader::new);
-    this.cpuState      = Objects.requireNonNullElseGet(cpuState,
-                                                       () -> new CpuState(this.configuration, this.initLoader));
-    this.stopReason    = StopReason.kNotStopped;
+    this.configuration      = simConfig;
+    this.staticDataProvider = Objects.requireNonNullElseGet(staticDataProvider, StaticDataProvider::new);
+    this.cpuState           = Objects.requireNonNullElseGet(cpuState, () -> new CpuState(this.configuration,
+                                                                                         this.staticDataProvider));
+    this.stopReason         = StopReason.kNotStopped;
   }
   
   /**
@@ -81,10 +82,10 @@ public class Cpu implements Serializable
    */
   public Cpu(SimulationConfig simConfig)
   {
-    this.configuration = simConfig;
-    this.initLoader    = new InitLoader();
-    this.cpuState      = new CpuState(this.configuration, this.initLoader);
-    this.stopReason    = StopReason.kNotStopped;
+    this.configuration      = simConfig;
+    this.staticDataProvider = new StaticDataProvider();
+    this.cpuState           = new CpuState(this.configuration, this.staticDataProvider);
+    this.stopReason         = StopReason.kNotStopped;
   }
   
   /**
@@ -92,10 +93,10 @@ public class Cpu implements Serializable
    */
   public Cpu()
   {
-    this.configuration = SimulationConfig.getDefaultConfiguration();
-    this.initLoader    = new InitLoader();
-    this.cpuState      = new CpuState(this.configuration, this.initLoader);
-    this.stopReason    = StopReason.kNotStopped;
+    this.configuration      = SimulationConfig.getDefaultConfiguration();
+    this.staticDataProvider = new StaticDataProvider();
+    this.cpuState           = new CpuState(this.configuration, this.staticDataProvider);
+    this.stopReason         = StopReason.kNotStopped;
   }
   
   /**
@@ -104,7 +105,7 @@ public class Cpu implements Serializable
   public void setCode(String code)
   {
     this.configuration.code = code;
-    this.cpuState           = new CpuState(this.configuration, this.initLoader);
+    this.cpuState           = new CpuState(this.configuration, this.staticDataProvider);
   }
   
   public void stepBack()
@@ -133,7 +134,7 @@ public class Cpu implements Serializable
     else
     {
       // Backward
-      this.cpuState = new CpuState(this.configuration, this.initLoader);
+      this.cpuState = new CpuState(this.configuration, this.staticDataProvider);
       while (!simEnded() && this.cpuState.tick < targetTick)
       {
         step();

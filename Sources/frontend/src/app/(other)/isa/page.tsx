@@ -46,7 +46,7 @@ import {
   selectIsas,
   updateIsa,
 } from '@/lib/redux/isaSlice';
-import { cn } from '@/lib/utils';
+import { cn, loadFile, saveAsJsonFile } from '@/lib/utils';
 
 import { Button } from '@/components/base/ui/button';
 import {
@@ -172,6 +172,24 @@ export default function Page() {
     }
   };
 
+  const doImport = () => {
+    loadFile((json_string) => {
+      // TODO: resolve issue with extra fields on the form
+      const newConfig = JSON.parse(json_string) as CpuConfig;
+      // Fill a name if not present
+      if (!newConfig.name) {
+        newConfig.name = generateIsaName();
+      }
+      dispatch(createIsa(newConfig));
+      setSavesOpen(false);
+      toast.success(`Imported ISA: ${newConfig.name}`);
+    });
+  };
+
+  const doExport = () => {
+    saveAsJsonFile(activeIsa.cpuConfig, 'cpuConfig.json');
+  };
+
   return (
     <div>
       <h1 className='mb-8 text-2xl'>ISA Configuration</h1>
@@ -219,14 +237,18 @@ export default function Page() {
                 <CommandSeparator />
                 <CommandGroup>
                   <CommandItem onSelect={createNewIsa}>
-                    Create new ISA
+                    Create New Config
                   </CommandItem>
+                  <CommandItem onSelect={doImport}>Import Config</CommandItem>
                 </CommandGroup>
               </Command>
             </PopoverContent>
           </Popover>
           <Button onClick={persistIsaChanges} disabled={!hasUnsavedChanges}>
             Save Changes
+          </Button>
+          <Button onClick={doExport} disabled={hasUnsavedChanges}>
+            Export
           </Button>
         </div>
         <MemoryInfo />

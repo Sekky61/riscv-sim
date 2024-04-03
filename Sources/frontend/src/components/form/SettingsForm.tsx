@@ -32,8 +32,29 @@
 'use client';
 
 import { Button } from '@/components/base/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/base/ui/card';
+import { apiBaseUrl } from '@/constant/env';
+import { useAppSelector } from '@/lib/redux/hooks';
+import { selectActiveConfig } from '@/lib/redux/isaSlice';
+import { saveAsFile, saveAsJsonFile } from '@/lib/utils';
 
+/**
+ * Global settings
+ */
 export function SettingsForm() {
+  const activeConfig = useAppSelector(selectActiveConfig);
+
+  // Log to console the address of API server
+  console.info(
+    `API server address (that Next.js backend proxies): ${apiBaseUrl}`,
+  );
+
   const clearLocalMemory = () => {
     // confirm
     const doit = confirm('Are you sure you want to clear local memory?');
@@ -44,10 +65,54 @@ export function SettingsForm() {
     // window.location.reload();
   };
 
+  const saveCpuConfig = () => {
+    saveAsJsonFile(activeConfig.cpuConfig, 'cpu-config.json');
+  };
+
+  const saveCode = () => {
+    saveAsFile(activeConfig.code, 'code.r5');
+  };
+
+  const saveMemory = () => {
+    saveAsJsonFile(activeConfig.memoryLocations, 'memory.json');
+  };
+
   return (
-    <div>
-      <Button onClick={clearLocalMemory}>Clear local memory</Button>
-      <p>Reload the page after clearing local memory</p>
+    <div className='flex flex-col gap-8'>
+      <div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Local Storage</CardTitle>
+            <CardDescription>
+              You can empty the local storage as a first step in troubleshooting
+              in the event of an issue. Make sure you refresh the page
+              afterwards.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button onClick={clearLocalMemory}>Clear local memory</Button>
+          </CardContent>
+        </Card>
+      </div>
+      <div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Export Current Configuration</CardTitle>
+            <CardDescription>
+              The current settings can be exported to a file. This is useful for
+              utilizing the simulator's CLI version, backing up data, and
+              sharing the settings with others.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className='flex gap-4'>
+              <Button onClick={saveCpuConfig}>Export CPU Configuration</Button>
+              <Button onClick={saveCode}>Export Program in Assembly</Button>
+              <Button onClick={saveMemory}>Export Memory Objects</Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

@@ -37,11 +37,6 @@ package com.gradle.superscalarsim.managers;
 public class ManagerRegistry
 {
   /**
-   * Instruction function model manager
-   */
-  public InstructionFunctionModelManager instructionFunctionManager;
-  
-  /**
    * Input code model manager
    */
   public InputCodeModelManager inputCodeManager;
@@ -58,9 +53,8 @@ public class ManagerRegistry
   
   public ManagerRegistry()
   {
-    instructionFunctionManager = new InstructionFunctionModelManager();
-    inputCodeManager           = new InputCodeModelManager();
-    simCodeManager             = new SimCodeModelManager();
-    registerModelManager       = new RegisterModelManager();
+    inputCodeManager     = new InputCodeModelManager();
+    simCodeManager       = new SimCodeModelManager();
+    registerModelManager = new RegisterModelManager();
   }
 }

@@ -92,7 +92,7 @@ public class MemoryInitializer
       memoryPtr = (memoryPtr + alignment - 1) / alignment * alignment;
     }
     
-    Label label = dataLabels.get(location.name);
+    Label label = dataLabels.get(location.getName());
     label.getAddressContainer().setValue(memoryPtr, DataTypeEnum.kLong);
     
     memoryPtr += location.getByteSize();
@@ -128,32 +128,25 @@ public class MemoryInitializer
     // Second step - fill the memory values
     for (MemoryLocation memoryLocation : locations)
     {
-      // The data may be a label or a value
-      for (MemoryLocation.DataChunk dataChunk : memoryLocation.dataChunks)
+      // Replace labels with addresses
+      for (int i = 0; i < memoryLocation.data.size(); i++)
       {
-        for (int i = 0; i < dataChunk.values.size(); i++)
+        String value = memoryLocation.data.get(i);
+        if (dataLabels.containsKey(value))
         {
-          String value = dataChunk.values.get(i);
-          if (dataLabels.containsKey(value))
-          {
-            // This solves the labels linking to other labels
-            // Save label address
-            dataChunk.values.set(i, String.valueOf(dataLabels.get(value).getAddress()));
-          }
+          // This solves the labels linking to other labels
+          // Save label address
+          memoryLocation.data.set(i, String.valueOf(dataLabels.get(value).getAddress()));
         }
-        
-        byte[] data = new byte[memoryLocation.getByteSize()];
-        for (int i = 0; i < memoryLocation.getByteSize(); i++)
-        {
-          data[i] = memoryLocation.getBytes().get(i);
-        }
-        
-        Label label   = dataLabels.get(memoryLocation.name);
-        long  address = (long) label.getAddress();
-        
-        // Insert data into memory
-        memory.insertIntoMemory(address, data);
       }
+      
+      // It is now safe to convert the data to bytes
+      
+      Label  label   = dataLabels.get(memoryLocation.getName());
+      long   address = label.getAddress();
+      byte[] data    = memoryLocation.getBytes();
+      // Insert data into memory
+      memory.insertIntoMemory(address, data);
     }
   }
   

@@ -80,7 +80,7 @@ export function transformErrors(
     }
     const charIndex = lineStart + span.caret['display-column'] - 1;
 
-    let charIndexEnd;
+    let charIndexEnd: number;
     if (span.finish) {
       charIndexEnd =
         charIndex +

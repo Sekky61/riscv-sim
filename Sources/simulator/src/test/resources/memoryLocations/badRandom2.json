@@ -1,0 +1,17 @@
+[
+  {
+    "name": "max-lower",
+    "alignment": 8,
+    "dataTypes": [
+      {
+        "startOffset": 0,
+        "dataType": "kByte"
+      }
+    ],
+    "data": {
+      "min": "7",
+      "max": "6",
+      "size": 8
+    }
+  }
+]

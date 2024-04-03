@@ -31,7 +31,11 @@
 
 import { useEffect } from 'react';
 
-import { reloadSimulation, selectCpu } from '@/lib/redux/cpustateSlice';
+import {
+  loadFunctionModels,
+  reloadSimulation,
+  selectCpu,
+} from '@/lib/redux/cpustateSlice';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 
 import { selectAsmCode, selectEntryPoint } from '@/lib/redux/compilerSlice';
@@ -49,17 +53,18 @@ export const useReloadSim = () => {
   // biome-ignore lint: supposed to run only once after page load
   useEffect(() => {
     if (cpu === null) {
-      reload();
+      cleanReload();
     }
   }, []);
 
-  const reload = () => {
+  const cleanReload = () => {
     dispatch(pullSimConfig());
+    dispatch(loadFunctionModels());
     dispatch(reloadSimulation());
     toast.success('Simulation reloaded');
   };
 
-  return { same, reload };
+  return { same, cleanReload };
 };
 
 /**

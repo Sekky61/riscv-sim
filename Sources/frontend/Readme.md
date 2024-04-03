@@ -1,5 +1,7 @@
 # Next.js frontend
 
+Readme focused on development and build instructions.
+
 Technology stack:
 
 - [Next.js](https://nextjs.org/)
@@ -15,9 +17,9 @@ Technology stack:
 ./src
   +--__tests__  - Tests
   +--app        - Pages of the application.
-  +--components - Units of UI.
-  +--constant   - Data (examples, descriptions of instructions)
-  +--lib        - Non-UI modules (Global state, API, etc.)
+  +--components - Composable units of UI.
+  +--constant   - Data
+  +--lib        - Non-UI modules (Global state, API, types, etc.)
     +--__tests__- Tests
   +--styles     - Global styles
 Readme.md       - Read me file
@@ -25,7 +27,9 @@ Readme.md       - Read me file
 
 ### Install steps
 
-To install the dependencies, run this command:
+The app was developed using npm `10.2.3` and node.js `v21.2.0`.
+Package dependencies are defined in `package.json`.
+They can be installed the usual way, by running this command:
 
 ```bash
 npm install
@@ -34,9 +38,10 @@ npm install
 ### Define environment variables
 
 The variables do have default values, but you can override them.
+Dockerfile sets these variables.
 
-`NEXT_PUBLIC_SIMSERVER_PORT`
-`NEXT_PUBLIC_SIMSERVER_HOST`
+- `NEXT_PUBLIC_SIMSERVER_PORT`
+- `NEXT_PUBLIC_SIMSERVER_HOST`
 
 ### Run the development server
 
@@ -46,8 +51,11 @@ You can start the server using this command:
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-Other commands, like lint are defined in `package.json`.
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the app.
+Other commands, like lint and typecheck are defined in `package.json`.
+
+Notes:
+- Changing the environment variables requires a server restart.
 
 ### Inspect bundle size
 
@@ -62,5 +70,4 @@ Inspired by [this article](https://blog.logrocket.com/how-analyze-next-js-app-bu
 - [Redux](https://redux.js.org/) - Global state management
 - [lucide-react](https://lucide.dev/guide/packages/lucide-react) - Icons
 - [react-hotkeys-hook](https://www.npmjs.com/package/react-hotkeys-hook) - Keyboard shortcuts
-- [react-modal](https://www.npmjs.com/package/react-modal) - Modal
-- [reapop](https://www.npmjs.com/package/reapop) - Notifications
+- [shadcn/ui](https://ui.shadcn.com/) - UI components

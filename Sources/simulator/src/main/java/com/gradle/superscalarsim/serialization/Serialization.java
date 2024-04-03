@@ -69,6 +69,22 @@ public class Serialization
   }
   
   /**
+   * @param pretty Whether to pretty print the JSON
+   *
+   * @return ObjectMapper for serialization
+   */
+  public static ObjectMapper getSerializer(boolean pretty)
+  {
+    ObjectMapper mapper = createObjectMapper();
+    if (pretty)
+    {
+      mapper.enable(SerializationFeature.INDENT_OUTPUT);
+    }
+    return mapper;
+    
+  }
+  
+  /**
    * @return ObjectMapper for deserialization
    */
   public static ObjectMapper getDeserializer()

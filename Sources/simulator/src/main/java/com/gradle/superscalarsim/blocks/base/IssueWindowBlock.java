@@ -55,17 +55,14 @@ public class IssueWindowBlock implements AbstractBlock
    */
   @JsonIdentityReference(alwaysAsId = true)
   private final List<SimCodeModel> issuedInstructions;
-  
-  /**
-   * List of all function units associated with this window
-   */
-  private List<AbstractFunctionUnitBlock> functionUnitBlockList;
-  
   /**
    * ID counter specifying which issue window did the instruction took
    */
   protected int windowId;
-  
+  /**
+   * List of all function units associated with this window
+   */
+  private List<AbstractFunctionUnitBlock> functionUnitBlockList;
   /**
    * Type of the instructions this window can hold.
    * Arithmetic is further differentiated into int and float.
@@ -116,23 +113,32 @@ public class IssueWindowBlock implements AbstractBlock
   {
     removeFailedInstructions();
     
-    // Iterate the function units
-    for (AbstractFunctionUnitBlock functionUnitBlock : functionUnitBlockList)
+    // If there are any issues with skipping, this is the place to fix it - simCodes are removed form iterated list
+    outer:
+    for (int i = 0; i < this.issuedInstructions.size(); i++)
     {
-      // Check if the function unit is free
-      if (functionUnitBlock.getSimCodeModel() != null)
+      SimCodeModel currentModel = this.issuedInstructions.get(i);
+      if (!currentModel.isReadyToExecute())
       {
         continue;
       }
       
-      // If there are any issues with skipping, this is the place to fix it - simCodes are removed form iterated list
-      for (SimCodeModel currentModel : this.issuedInstructions)
+      // Iterate the function units
+      boolean eligibleFound = false;
+      for (AbstractFunctionUnitBlock functionUnitBlock : functionUnitBlockList)
       {
+        
         boolean isMatch = functionUnitBlock.canExecuteInstruction(currentModel);
-        boolean isReady = currentModel.isReadyToExecute();
         // Can instruction be issued?
-        if (!isMatch || !isReady)
+        if (!isMatch)
         {
+          continue;
+        }
+        eligibleFound = true;
+        
+        if (functionUnitBlock.getSimCodeModel() != null)
+        {
+          // FU is taken
           continue;
         }
         
@@ -141,10 +147,21 @@ public class IssueWindowBlock implements AbstractBlock
         functionUnitBlock.setSimCodeModel(currentModel);
         functionUnitBlock.setDelayBasedOnInstruction();
         // Remove the instruction from the list
-        this.issuedInstructions.remove(currentModel);
+        this.issuedInstructions.remove(i);
+        i--;
         // This FU is taken
-        break;
+        continue outer;
       }
+      
+      // If the instruction got here, it is ready to execute, but there is no free FU
+      // A wrong configuration for the given code
+      if (!eligibleFound)
+      {
+        
+        throw new IllegalStateException(
+                "No eligible FU found for instruction: " + currentModel.getInstructionFunctionModel().getName());
+      }
+      
     }
     
     this.windowId = cycle;

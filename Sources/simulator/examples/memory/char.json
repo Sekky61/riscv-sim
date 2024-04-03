@@ -1,0 +1,13 @@
+[
+  {
+    "name": "char",
+    "alignment": 0,
+    "dataType": "kByte",
+    "data": {
+      "kind": "data",
+      "data": [
+        "65"
+      ]
+    }
+  }
+]

@@ -30,7 +30,7 @@
  */
 
 import { defaultAsmCode } from '@/constant/defaults';
-import { z } from 'zod';
+import { ZodIssueCode, z } from 'zod';
 
 export const predictorDefaults = {
   '0bit': ['Taken', 'Not Taken'],
@@ -76,8 +76,6 @@ export const dataTypes = [
   'kDouble',
   'kBool',
   'kChar',
-  'kByte',
-  'kShort',
 ] as const;
 export const dataTypesText = [
   'Byte',
@@ -90,42 +88,73 @@ export const dataTypesText = [
   'Double',
   'Boolean',
   'Char',
-  'Byte',
-  'Short',
 ] as const;
 
 /**
  * Definition of memory location, as the API expects it
  */
-
-export const dataChunk = z.object({
+const spanTypeSchema = z.object({
+  startOffset: z.number(),
   dataType: z.enum(dataTypes),
-  values: z.array(z.string()),
 });
-export type DataChunk = z.infer<typeof dataChunk>;
+export type SpanType = z.infer<typeof spanTypeSchema>;
 
-export const memoryLocation = z.object({
-  name: z.string().min(1),
-  alignment: z.number().min(1).max(16),
-  dataChunks: z.array(dataChunk),
-});
-export type MemoryLocationApi = z.infer<typeof memoryLocation>;
+/**
+ * This schema disallows some of the accepted forms, but it is made so
+ * that the web interface is simpler.
+ * Form more info, check out the API documentation.
+ */
+export const memoryLocationSchema = z
+  .object({
+    name: z.string().min(1),
+    alignment: z.number().min(0).max(16),
+    dataType: z.enum(dataTypes),
+    data: z.discriminatedUnion('kind', [
+      z.object({
+        kind: z.literal('data'),
+        data: z.array(z.string()).min(1),
+      }),
+      z.object({
+        kind: z.literal('constant'),
+        constant: z.string(),
+        size: z.number().min(1),
+      }),
+      z.object({
+        kind: z.literal('random'),
+        min: z.number(),
+        max: z.number(),
+        size: z.number().min(1),
+      }),
+    ]),
+  })
+  .superRefine((val, ctx) => {
+    // Runs just for the one discriminated variant. If no kind is present, it's not run.
+
+    // Random
+    if (val.data.kind === 'random') {
+      if (val.data.min > val.data.max) {
+        ctx.addIssue({
+          code: ZodIssueCode.too_small,
+          path: ['data', 'max'],
+          type: 'number',
+          minimum: val.data.min,
+          inclusive: true,
+          exact: false,
+        });
+      }
+    }
+  });
+export type MemoryLocationApi = z.infer<typeof memoryLocationSchema>;
 
 export const memoryLocationDefaultValue: MemoryLocationApi = {
   name: 'Array',
   alignment: 4,
-  dataChunks: [],
+  dataType: 'kInt',
+  data: {
+    kind: 'data',
+    data: ['1', '2', '3', '4'],
+  },
 };
-
-/**
- * This is the memory location with additional fields for the form.
- * These extra fields are kept in the app, but not sent to the backend.
- */
-export const memoryLocationIsa = memoryLocation.extend({
-  dataType: z.enum(dataTypes),
-  dataSource: z.enum(['constant', 'random', 'file']),
-});
-export type MemoryLocationIsa = z.infer<typeof memoryLocationIsa>;
 
 export const arithmeticUnits = ['FX', 'FP'] as const;
 export const otherUnits = ['L_S', 'Branch', 'Memory'] as const;
@@ -250,7 +279,7 @@ export const simulationConfig = z.object({
   /**
    * Memory locations to be allocated.
    */
-  memoryLocations: z.array(memoryLocationIsa),
+  memoryLocations: z.array(memoryLocationSchema),
   /**
    * Entry point of the program. A label or address.
    */

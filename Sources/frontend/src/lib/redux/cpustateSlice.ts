@@ -45,7 +45,10 @@ import { selectAsmCode, selectEntryPoint } from '@/lib/redux/compilerSlice';
 import { selectActiveConfig } from '@/lib/redux/isaSlice';
 import { selectRunningConfig } from '@/lib/redux/simConfigSlice';
 import type { RootState } from '@/lib/redux/store';
-import { callSimulationImpl } from '@/lib/serverCalls';
+import {
+  callInstructionDescriptionImpl,
+  callSimulationImpl,
+} from '@/lib/serverCalls';
 import type {
   Cache,
   CacheLineModel,
@@ -60,7 +63,10 @@ import type {
   SimCodeModel,
   StopReason,
 } from '@/lib/types/cpuApi';
-import { SimulateResponse } from '@/lib/types/simulatorApi';
+import {
+  InstructionDescriptionResponse,
+  SimulateResponse,
+} from '@/lib/types/simulatorApi';
 import { isValidReference, isValidRegisterValue } from '@/lib/utils';
 import { toast } from 'sonner';
 
@@ -90,18 +96,54 @@ interface CpuSlice {
    * Reason for stopping the simulation. Enumeration of possible reasons, like exception, end of program, etc.
    */
   stopReason: StopReason;
+  /**
+   * Descriptions of all instructions in the program. Loaded from the server separately, as a static resource.
+   */
+  instructionFunctionModels: Record<Reference, InstructionFunctionModel>;
 }
 
 /**
  * The initial state
  */
-const initialState: CpuSlice = {
+export const cpuInitialState: CpuSlice = {
   state: null,
   highlightedInputCode: null,
   highlightedSimCode: null,
   highlightedRegister: null,
   stopReason: 'kNotStopped',
+  instructionFunctionModels: {},
 };
+
+/**
+ * Load the instruction descriptions from the server
+ */
+export const loadFunctionModels =
+  createAsyncThunk<InstructionDescriptionResponse>(
+    'cpu/loadFunctionModels',
+    async (arg) => {
+      // @ts-ignore
+      try {
+        const response = await callInstructionDescriptionImpl();
+        return response;
+      } catch (err) {
+        // Log error and show simple error message to the user
+        console.warn(
+          'Try clearing the local storage (application tab) and reloading the page',
+        );
+        let message = 'See the console for more details';
+        if (err instanceof SyntaxError) {
+          // Unexpected token < in JSON
+          message = 'Invalid response from the server';
+        } else if (err instanceof TypeError) {
+          message = 'Server not reachable';
+        } else if (err instanceof Error) {
+          message = err.message;
+        }
+        toast.error(`Loading assets failed: ${message}`);
+        throw err;
+      }
+    },
+  );
 
 /**
  * Reload the simulation (reset it to the step 0)
@@ -184,7 +226,6 @@ export const callSimulation = createAsyncThunk<SimulateResponse, number | null>(
       return response;
     } catch (err) {
       // Log error and show simple error message to the user
-      console.error(err);
       console.warn(
         'Try clearing the local storage (application tab) and reloading the page',
       );
@@ -206,7 +247,7 @@ export const callSimulation = createAsyncThunk<SimulateResponse, number | null>(
 export const cpuSlice = createSlice({
   name: 'cpu',
   // `createSlice` will infer the state type from the `initialState` argument
-  initialState,
+  initialState: cpuInitialState,
   reducers: {
     highlightSimCode: (state, action: PayloadAction<Reference | null>) => {
       if (action.payload === null) {
@@ -248,6 +289,15 @@ export const cpuSlice = createSlice({
       })
       .addCase(callSimulation.pending, (_state, _action) => {
         // nothing
+      })
+      .addCase(loadFunctionModels.fulfilled, (state, action) => {
+        state.instructionFunctionModels = action.payload.models;
+      })
+      .addCase(loadFunctionModels.rejected, (state, _action) => {
+        // nothing
+      })
+      .addCase(loadFunctionModels.pending, (_state, _action) => {
+        // nothing
       });
   },
 });
@@ -268,11 +318,11 @@ export const selectTick = (state: RootState) => state.cpu.state?.tick ?? 0;
 export const selectStopReason = (state: RootState) => state.cpu.stopReason;
 
 export const selectAllInstructionFunctionModels = (state: RootState) =>
-  state.cpu.state?.managerRegistry.instructionFunctionManager;
+  state.cpu.instructionFunctionModels;
 export const selectInstructionFunctionModelById = (
   state: RootState,
   id: Reference,
-) => state.cpu.state?.managerRegistry.instructionFunctionManager[id];
+) => state.cpu.instructionFunctionModels[id];
 
 export const selectAllInputCodeModels = (state: RootState) =>
   state.cpu.state?.managerRegistry.inputCodeManager;

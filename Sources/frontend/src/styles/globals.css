@@ -303,13 +303,6 @@
     container: navbarslot / inline-size;
   }
  
-  /* Show texts if the container is big (large screens) */
-  @container navbarslot (min-width: 15rem) {
-    .nav-text {
-      @apply block;
-    }
-  }
-
   .navbar {
     @apply w-12 h-full;
   }
@@ -318,16 +311,31 @@
     @apply bg-background w-12 h-full p-2;
   }
 
-  .navbar:hover .navbar-inner {
-    @apply w-64 drop-shadow;
-  }
-  
   .nav-text {
     @apply hidden;
   }
 
   .navbar:hover .nav-text {
     @apply block;
+  } 
+  
+  /* Style for popup navbar */
+  @container navbarslot (max-width: 15rem) {
+    .navbar:hover .navbar-inner {
+      @apply w-64 drop-shadow;
+    }
+  } 
+  
+  /* Style for always-visible navbar */
+  @container navbarslot (min-width: 15rem) {
+
+    .nav-text {
+      @apply block;
+    }
+
+    .navbar-inner {
+      @apply w-64;
+    }
   }
 
   /* Instruction table */
@@ -633,5 +641,19 @@
 
   .expand-area:hover .expand-arrow-down {
     transform: translateY(-10%) rotateZ(-20deg);
+  }
+
+  /* Memory form */
+
+  /* 3 columns of max-content */
+  .memory-form-types {
+    @apply grid gap-2;
+    grid-template-columns: repeat(4, max-content);
+  }
+
+  /* A row - subgrid */
+  .memory-form-row {
+    @apply grid gap-2 col-span-4;
+    grid-template-columns: subgrid;
   }
 }

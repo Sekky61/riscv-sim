@@ -39,7 +39,7 @@ import {
   changeHighlightEffect,
   lineDecor,
 } from '@/lib/editor/lineDecorExtension';
-import { wordHover } from '@/lib/editor/wordHover';
+import { wordHoverFactory } from '@/lib/editor/wordHover';
 import {
   asmFieldTyping,
   callParseAsm,
@@ -59,7 +59,12 @@ import { Button } from '@/components/base/ui/button';
 import EditorBar from '@/components/codeEditor/EditorBar';
 import { StatusIcon } from '@/components/codeEditor/StatusIcon';
 import clsx from 'clsx';
+import { selectAllInstructionFunctionModels } from '@/lib/redux/cpustateSlice';
 
+/**
+ * The base theme for the editor.
+ * Uses --line-highlight-color which is used for color mapping C lines to assembly lines.
+ */
 const baseTheme = EditorView.baseTheme({
   '.cm-activeLine': {
     backgroundColor: 'rgba(var(--line-highlight-color), 0.25)',
@@ -81,6 +86,12 @@ const baseTheme = EditorView.baseTheme({
 
 export type AsmDisplayProps = React.HTMLAttributes<HTMLDivElement>;
 
+/**
+ * Component to display the assembly code editor.
+ * Reads and updates compilerSlice state as the code is typed.
+ *
+ * TODO: debounce typing
+ */
 export default function AsmDisplay() {
   const dispatch = useAppDispatch();
   const asm = useAppSelector(selectAsmCode);
@@ -88,16 +99,18 @@ export default function AsmDisplay() {
   const dirty = useAppSelector(selectDirty);
   const mode = useAppSelector(selectEditorMode);
   const asmErrors = useAppSelector(selectAsmCodeMirrorErrors);
+  const functionModels = useAppSelector(selectAllInstructionFunctionModels);
 
   const isEnabled = mode === 'asm';
 
   const editor = useRef<HTMLDivElement>(null);
+  // todo: function models are loaded only from the sim page. Visiting the compiler page directly will result in an empty list.
   const { setContainer, view, state } = useCodeMirror({
     value: asm,
     height: '100%',
     width: '100%',
     readOnly: !isEnabled,
-    extensions: [lineDecor(), wordHover],
+    extensions: [lineDecor(), wordHoverFactory(functionModels)],
     theme: baseTheme,
     onChange: (value, _viewUpdate) => {
       // Keep state in sync
@@ -153,6 +166,10 @@ export default function AsmDisplay() {
   );
 }
 
+/**
+ * Button to check the assembly code with the backend.
+ * Green if no errors, red if errors, gray if not checked yet (dirty).
+ */
 const AsmErrorsDisplay = () => {
   const dispatch = useAppDispatch();
   const errors = useAppSelector(selectAsmErrors);

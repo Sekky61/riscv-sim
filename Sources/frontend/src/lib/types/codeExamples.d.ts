@@ -30,7 +30,7 @@
  */
 
 /**
- * Example code. Describes the JSON structure in @/constant/codeExamples.json
+ * Example code. Describes the JSON structure in /public/json/codeExamples.json which is also served through the API.
  */
 export type CodeExample = {
   name: string;

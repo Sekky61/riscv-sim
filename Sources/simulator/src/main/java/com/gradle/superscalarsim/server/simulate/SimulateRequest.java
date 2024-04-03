@@ -1,5 +1,5 @@
 /**
- * @file SimulationRequest.java
+ * @file SimulateRequest.java
  * @author Michal Majer
  * Faculty of Information Technology
  * Brno University of Technology
@@ -49,4 +49,14 @@ public class SimulateRequest
    */
   @JsonProperty(required = true)
   SimulationConfig config;
+  
+  public SimulateRequest()
+  {
+  }
+  
+  public SimulateRequest(SimulationConfig config)
+  {
+    this.config = config;
+    this.tick   = Optional.empty();
+  }
 }
