@@ -85,7 +85,7 @@ export function AutoPlay() {
         <input
           id='autoplay-interval'
           type='number'
-          className='w-full rounded-[8px] border px-1 py-0.5 bg-white/50'
+          className='w-full rounded-[8px] border px-1 py-0.5 bg-white/50 dark:bg-black/50'
           value={ms}
           step={500}
           placeholder='Autoplay interval in ms'
