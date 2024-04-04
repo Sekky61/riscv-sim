@@ -1,4 +1,6 @@
 #!/bin/bash
+# Must be run from the root directory of the project
+
 # For every example shell script in examples/simulations, run it. It should exit with status 0 and output JSON containing the word "statitics".
 # Run the tests from the root directory of the simulator (Sources/simulator)
 
@@ -19,3 +21,4 @@ for exampleScript in $exampleScripts; do
   fi
   echo "Success"
 done
+
