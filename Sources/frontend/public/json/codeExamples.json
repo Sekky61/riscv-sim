@@ -14,14 +14,14 @@
   {
     "name": "Bubble sort",
     "type": "c",
-    "code": "int array [16] = {5, 6, 7, 1, 2, 1, 8, 4,\n                  8, 4, 3, 9, 5, 5, 6, 7};\n\nint main()\n{\n  int n = 16;\n  int temp;\n  for (int i = 0; i < n - 1; i = i+1) {\n    for (int j = 0; j < n - i - 1; j = j+1) { \n      if (array[j] > array[j + 1]){\n        temp = array[j];\n        array[j] = array[j + 1];\n        array[j + 1] = temp;\n      }\n    }\n  }\n}\n\n",
+    "code": "int array [16] = {5, 6, 7, 1, 2, 1, 8, 4,\n                  8, 4, 3, 9, 5, 5, 6, 7};\n\nint main()\n{\n  int n = 16;\n  int temp;\n  for (int i = 0; i < n - 1; i = i+1) {\n    for (int j = 0; j < n - i - 1; j = j+1) { \n      if (array[j] > array[j + 1]){\n        temp = array[j];\n        array[j] = array[j + 1];\n        array[j + 1] = temp;\n      }\n    }\n  }\n}\n",
     "entryPoint": "main"
   },
   {
     "name": "Loop unrolling",
     "type": "c",
-    "code": "// Notice that iterations are independent\nint f(int *dest, int *src, int N)\n{\n  #pragma GCC unroll 4\n  for (int i = 0; i < N; ++i) {\n    dest[i] = 5;\n  }\n}\n",
-    "entryPoint": "f"
+    "code": "// Notice that iterations are independent\nint f(int *dest, int N)\n{\n  #pragma GCC unroll 4\n  for (int i = 0; i < N; ++i) {\n    dest[i] = 5;\n  }\n}\n\nint arr[1000] = {0};\n\nvoid main() { // Do not forget to set entry point to main!\n  f(arr, 1000);\n}\n",
+    "entryPoint": "main"
   },
   {
     "name": "Store to array",
@@ -32,13 +32,13 @@
   {
     "name": "Divide by zero",
     "type": "c",
-    "code": "int main() {\n  int a = 1;\n  int b = 0;\n  int c = a / b;\n}\n",
+    "code": "int main() { // Turn optimizations off\n  int c = 1 / 0;\n}\n",
     "entryPoint": "main"
   },
   {
     "name": "AXPY",
     "type": "c",
-    "code": "// Remember to define the arrays in /memory page!\nextern float a[];\nextern float b[];\nconst float c = 10;\n\nvoid main(){\n  for (int i = 0; i < 100; i++) { \n     a[i] += b[i]*c;\n  }\n}\n",
+    "code": "// Remember to define the arrays a and b in /memory settings page!\nextern float a[];\nextern float b[];\nconst float c = 10;\n\nvoid main(){\n  for (int i = 0; i < 100; i++) { \n     a[i] += b[i]*c;\n  }\n}\n",
     "entryPoint": "main"
   },
   {
@@ -48,15 +48,15 @@
     "entryPoint": "main"
   },
   {
-    "name": "Odd/even",
+    "name": "Count even elements",
     "type": "c",
-    "code": "int arr[128] = {0};\n            \n// Notice that iterations are independent\nint evenElements()\n{\n  int acc = 0;\n  for (int i = 0; i < 128; ++i) {\n    if(i%2 == 0) {\n      acc += arr[i];\n    }\n  }\n  return acc;\n}\n",
-    "entryPoint": "evenElements"
+    "code": "int arr[] = { // There are 20 even numbers\n        12, 45, 78, 23, 56, 90, 34, 67, 89, 10,\n        43, 76, 19, 52, 85, 28, 61, 94, 37, 70,\n        3,  36, 69, 2,  35, 68, 1,  24, 57, 91,\n        14, 47, 80, 13, 46, 79, 22, 55, 88, 31};\nint length = sizeof(arr)/sizeof(arr[0]);\n\nint countEven()\n{\n  int acc = 0;\n  for (int i = 0; i < length; ++i) {\n    if(i%2 == 0) {\n      acc++;\n    }\n  }\n  return acc;\n}\n",
+    "entryPoint": "countEven"
   },
   {
     "name": "Load/Store conflict",
     "type": "c",
-    "code": "volatile int x = 42;\n            \n// Notice that iterations are independent\nvoid lsCollision()\n{\n  for (int i = 0; i < 32; ++i) {\n    x = x * 2 - 10;\n  }\n}\n",
+    "code": "// x always goes through memory, never stays in register\nvolatile int x = 42;\n\nvoid lsCollision()\n{\n  for (int i = 0; i < 32; ++i) {\n    x = x * 2 - 10;\n  }\n}\n",
     "entryPoint": "lsCollision"
   }
 ]
