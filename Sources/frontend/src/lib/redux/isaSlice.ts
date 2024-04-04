@@ -36,7 +36,7 @@ import type { RootState } from '@/lib/redux/store';
 
 import {
   defaultCpuConfig,
-  educationalSimulationConfig,
+  realisticSimulationConfig,
   floatSimulationConfig,
 } from '@/constant/defaults';
 import {
@@ -67,7 +67,7 @@ interface IsaState {
 const initialState: IsaState = {
   isas: [
     defaultSimulationConfig,
-    educationalSimulationConfig,
+    realisticSimulationConfig,
     floatSimulationConfig,
   ],
   activeIsaName: defaultSimulationConfig.cpuConfig.name,

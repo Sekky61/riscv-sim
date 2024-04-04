@@ -9,7 +9,7 @@ export const defaultAsmCode: string =
 /**
  * Default configuration
  */
-export const defaultCpuConfig: CpuConfig = {
+export const realisticCpuConfig: CpuConfig = {
   name: 'Realistic',
   robSize: 256,
   fetchWidth: 4,
@@ -131,7 +131,7 @@ export const defaultCpuConfig: CpuConfig = {
  * A configuration with smaller buffers, one bit predictor.
  * Simpler to see the work of the cpu.
  */
-export const educationalCpuConfig: CpuConfig = {
+export const defaultCpuConfig: CpuConfig = {
   name: 'Educational',
   robSize: 32,
   fetchWidth: 3,
@@ -274,8 +274,8 @@ export const floatSimulationConfig: SimulationConfig = {
 /**
  * Educational config
  */
-export const educationalSimulationConfig: SimulationConfig = {
-  cpuConfig: educationalCpuConfig,
+export const realisticSimulationConfig: SimulationConfig = {
+  cpuConfig: realisticCpuConfig,
   code: defaultAsmCode,
   memoryLocations: [],
   entryPoint: 0,
