@@ -33,9 +33,9 @@
 
 import clsx from 'clsx';
 import { useHotkeys } from 'react-hotkeys-hook';
-import { OptionsOrDependencyArray } from 'react-hotkeys-hook/dist/types';
+import type { OptionsOrDependencyArray } from 'react-hotkeys-hook/dist/types';
 
-import { ReactChildren } from '@/lib/types/reactTypes';
+import type { ReactChildren } from '@/lib/types/reactTypes';
 import { useRef } from 'react';
 
 export type IconButtonProps = {
@@ -91,8 +91,8 @@ export const IconButton = ({
       ref={buttonRef}
       type='button'
       className={clsx(
-        'h-8 w-8 rounded-full p-1',
         className,
+        'h-8 w-8 rounded-full p-1',
         animate && 'iconHighlight',
       )}
       onClick={onClick}

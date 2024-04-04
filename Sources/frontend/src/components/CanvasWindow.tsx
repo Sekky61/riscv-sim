@@ -32,7 +32,7 @@
 'use client';
 
 import { IconButton } from '@/components/IconButton';
-import { ReactChildren } from '@/lib/types/reactTypes';
+import type { ReactChildren } from '@/lib/types/reactTypes';
 import clsx from 'clsx';
 import { ZoomIn, ZoomOut } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
@@ -94,8 +94,8 @@ export default function CanvasWindow({ children }: CanvasWindowProps) {
     const right = contentRef.current.style.right || '0';
     const top = contentRef.current.style.bottom || '0';
 
-    const newOffsetRight = parseInt(right);
-    const newOffsetBottom = parseInt(top);
+    const newOffsetRight = Number.parseInt(right);
+    const newOffsetBottom = Number.parseInt(top);
 
     const offsetRight = newOffsetRight - dx;
     const offsetBottom = newOffsetBottom - dy;
@@ -148,16 +148,17 @@ export type ScaleButtonsProps = {
  */
 const ScaleButtons = ({ scaleUp, scaleDown }: ScaleButtonsProps) => {
   useHotkeys(
-    'ctrl-+',
+    // Add is the numeric plus key
+    ['+', '+', 'Add'],
     () => {
       scaleUp();
     },
-    { combinationKey: '-', preventDefault: true },
+    { combinationKey: '-' },
     [scaleUp],
   );
 
   useHotkeys(
-    'ctrl+-',
+    ['-', 'Subtract'],
     () => {
       scaleDown();
     },
@@ -167,26 +168,16 @@ const ScaleButtons = ({ scaleUp, scaleDown }: ScaleButtonsProps) => {
 
   return (
     <div className='absolute bottom-0 right-[100px] flex flex-col gap-4 p-6'>
-      <IconButton
-        shortCut='ctrl-+'
-        shortCutOptions={{ combinationKey: '-', preventDefault: true }}
-        clickCallback={scaleUp}
-        className='secondary-container rounded-[9px] drop-shadow'
-        description='Zoom in'
-        animate
-      >
-        <ZoomIn strokeWidth={1.5} />
-      </IconButton>
-      <IconButton
-        shortCut='ctrl+-'
-        shortCutOptions={{ preventDefault: true }}
-        clickCallback={scaleDown}
-        className='secondary-container rounded-[9px] drop-shadow'
-        description='Zoom out'
-        animate
-      >
-        <ZoomOut strokeWidth={1.5} />
-      </IconButton>
+      <div className='secondary-container rounded-[9px] drop-shadow w-8 h-8'>
+        <IconButton clickCallback={scaleUp} description='Zoom in' animate>
+          <ZoomIn strokeWidth={1.5} />
+        </IconButton>
+      </div>
+      <div className='secondary-container rounded-[9px] drop-shadow w-8 h-8'>
+        <IconButton clickCallback={scaleDown} description='Zoom out' animate>
+          <ZoomOut strokeWidth={1.5} />
+        </IconButton>
+      </div>
     </div>
   );
 };

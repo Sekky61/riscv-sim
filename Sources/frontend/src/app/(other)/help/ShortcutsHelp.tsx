@@ -142,11 +142,11 @@ const shortcuts = {
   },
   zoomIn: {
     description: 'Zoom in',
-    keys: ['Ctrl', '+'],
+    keys: [ '+'],
   },
   zoomOut: {
     description: 'Zoom out',
-    keys: ['Ctrl', '-'],
+    keys: ['-'],
   },
 } satisfies Record<string, Shortcut>;
 
