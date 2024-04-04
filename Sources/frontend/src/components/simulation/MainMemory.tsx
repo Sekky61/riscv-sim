@@ -94,7 +94,7 @@ export default function MainMemory() {
   return (
     <Block
       title='Main Memory'
-      className='w-issue h-80'
+      className='w-block h-80'
       detailDialog={
         <DialogContent>
           <DialogHeader>
@@ -195,11 +195,10 @@ function HexDump({
   const Row = ({ index, style }: ListChildComponentProps) => {
     const baseAddress = index * bytesInRow;
     const bytes = [];
-    for (let i = baseAddress; i < baseAddress + bytesInRow; i++) {
-      const addr = baseAddress + i;
-      const byte = memory[i] ?? 0;
+    for (let addr = baseAddress; addr < baseAddress + bytesInRow; addr++) {
+      const byte = memory[addr] ?? 0;
       const label = labelsLookup.get(addr);
-      const changed = Object.hasOwn(memoryChanges, i);
+      const changed = Object.hasOwn(memoryChanges, addr);
       const style = `${changed ? 'bg-red-200' : ''} ${
         byte === 0 ? 'text-gray-700' : ''
       }`;
@@ -237,7 +236,7 @@ function HexDump({
   };
 
   return (
-    <div ref={ref} className='w-full h-full font-mono'>
+    <div ref={ref} className='h-full font-mono'>
       <FixedSizeList
         width={dimensions.width}
         height={dimensions.height}
