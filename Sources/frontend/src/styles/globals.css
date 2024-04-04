@@ -787,7 +787,7 @@
 
   /* Valid line - highlight the tag */
   .valid-line>.line-tag {
-    @apply bg-green-300;
+    @apply bg-green-300 dark:bg-green-700 dark:text-white;
   }
 
   .cache-line-bytes>*:nth-child(4n) {
