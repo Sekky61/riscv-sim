@@ -70,7 +70,7 @@ export default function ReorderBuffer() {
     <Block
       title='Reorder Buffer'
       stats={robStats}
-      className='rob w-block absolute inset-0'
+      className='w-block h-[500px]'
       detailDialog={
         <DialogContent>
           <DialogHeader>

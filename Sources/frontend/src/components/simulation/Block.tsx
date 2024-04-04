@@ -61,9 +61,10 @@ export default function Block({
   detailDialog,
 }: BlockProps) {
   // Allow to be expanded
+  // At minimum shows title and stats (cannot be shrunk more)
   const classes = clsx(
     className,
-    'p-2 flex gap-2 flex-col surface-container rounded-[12px] border sim-shadow resize overflow-auto min-w-64 min-h-12',
+    'p-2 flex gap-2 flex-col surface-container rounded-[12px] border sim-shadow resize overflow-hidden min-w-64 min-h-20',
   );
 
   const seeMoreMessage = `See details about ${title}`;

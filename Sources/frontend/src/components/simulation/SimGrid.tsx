@@ -65,7 +65,7 @@ export function SimGrid() {
           <div className='w-[1px] relative'>
             <Trace top='-2.5rem' left='0' length='calc(100% + 5rem)' vertical />
           </div>
-          <div className='w-block h-full relative'>
+          <div className='relative'>
             <Trace bottom='100%' left='50%' vertical />
             <Trace top='-2.5rem' left='-2.5rem' length='calc(100% + 2.5rem)' />
             <ReorderBuffer />
