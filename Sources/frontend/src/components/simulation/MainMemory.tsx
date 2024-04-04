@@ -44,7 +44,7 @@ import {
 import Block from '@/components/simulation/Block';
 import { useRefDimensions } from '@/lib/hooks/useRefDimensions';
 import type { Label } from '@/lib/types/cpuApi';
-import { useEffect, useRef } from 'react';
+import {  useRef } from 'react';
 import { FixedSizeList, type ListChildComponentProps } from 'react-window';
 
 /**
@@ -59,37 +59,12 @@ export default function MainMemory() {
   const memory = useAppSelector(selectMemoryBytes) ?? new Uint8Array(0);
   const oldMemory = usePrevious(memory);
 
-  // Memoize labels. They do not change and trigger re-renders.
-  const labelArray = useRef<Label[] | null>(null);
-  useEffect(() => {
-    if (!program?.labels) {
-      return;
-    }
-    const currentLabels = Object.values(program.labels);
-    // Compare the labels
-    let changed = false;
-    if (labelArray.current === null) {
-      changed = true;
-    } else if (currentLabels.length !== labelArray.current.length) {
-      changed = true;
-    } else {
-      for (let i = 0; i < currentLabels.length; i++) {
-        if (currentLabels[i]?.name !== labelArray.current[i]?.name) {
-          changed = true;
-          break;
-        }
-      }
-    }
-    if (changed) {
-      labelArray.current = Object.values(program.labels);
-    }
-  }, [program]);
-
   if (!program) {
     return null;
   }
 
   // TODO Memoize labels, memory
+  const labels = Object.values(program.labels);
 
   return (
     <Block
@@ -111,7 +86,7 @@ export default function MainMemory() {
               </tr>
             </thead>
             <tbody>
-              {labelArray.current?.map((label) => {
+              {labels.map((label) => {
                 return (
                   <tr key={label.name}>
                     <td>{label.name}</td>
@@ -128,7 +103,7 @@ export default function MainMemory() {
             <HexDump
               memory={memory}
               oldMemory={oldMemory}
-              labels={labelArray.current ?? []}
+              labels={labels}
               bytesInRow={16}
               showAscii
             />
@@ -140,7 +115,7 @@ export default function MainMemory() {
         <HexDump
           memory={memory}
           oldMemory={oldMemory}
-          labels={labelArray.current ?? []}
+          labels={labels}
           bytesInRow={8}
         />
       </div>
@@ -200,7 +175,7 @@ function HexDump({
       const label = labelsLookup.get(addr);
       const changed = Object.hasOwn(memoryChanges, addr);
       const style = `${changed ? 'bg-red-200' : ''} ${
-        byte === 0 ? 'text-gray-700' : ''
+        byte !== 0 ? 'text-black dark:text-white' : ''
       }`;
       let cell = (
         <div key={addr} data-value={byte} className={style}>
@@ -212,7 +187,7 @@ function HexDump({
           <div
             key={addr}
             data-value={byte}
-            className='relative bg-secondary-80 -m-1 p-1 rounded hover:bg-red-500 hover:rounded-l-none duration-150 group'
+            className='relative bg-secondary-80 dark:bg-secondary-20 -m-1 p-1 rounded hover:bg-red-500 hover:rounded-l-none duration-150 group'
           >
             <div className='absolute top-0 right-full h-full p-1 rounded-l bg-red-500 invisible opacity-0 group-hover:visible group-hover:opacity-100 duration-150 translate-x-6 group-hover:translate-x-0'>
               {label}
@@ -226,7 +201,9 @@ function HexDump({
 
     return (
       <div style={style} className='flex gap-2'>
-        <div>{`0x${baseAddress.toString(16).padStart(4, '0')}`}</div>
+        <div className='surface-text'>{`0x${baseAddress
+          .toString(16)
+          .padStart(4, '0')}`}</div>
         <div className='flex gap-0.5 items-center'>{bytes}</div>
         {showAscii && (
           <Ascii memory={memory} base={baseAddress} bytesInRow={bytesInRow} />
@@ -236,7 +213,7 @@ function HexDump({
   };
 
   return (
-    <div ref={ref} className='h-full font-mono'>
+    <div ref={ref} className='h-full font-mono surface-variant-text'>
       <FixedSizeList
         width={dimensions.width}
         height={dimensions.height}
