@@ -106,7 +106,11 @@ export interface CompileRequest {
   memoryLocations: MemoryLocationApi[];
 }
 
-export type CompileResponse =
+export type CompileResponse = {
+  // common fields
+  status: 'success' | 'c' | 'asm' | 'warning' | 'internal' | null;
+  message: string;
+} & (
   | {
       success: true;
       program: string;
@@ -114,10 +118,10 @@ export type CompileResponse =
     }
   | {
       success: false;
-      error: string;
       compilerError: ComplexErrorItem[] | null;
       asmErrors: SimpleParseError[] | null;
-    };
+    }
+);
 
 export type ComplexErrorItem = {
   kind: 'error' | 'warning';

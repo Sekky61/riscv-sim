@@ -114,12 +114,16 @@ export const callCompiler = createAsyncThunk<CompileResponse>(
     };
     const response = await callCompilerImpl(request)
       .then((res) => {
-        if (res.success) {
-          toast.success('Compilation successful');
+        if(res.success) {
+        if (res.status === 'success') {
+          toast.success(res.message);
+        } else if (res.status === 'warning') {
+          toast.warning(res.message);
+          }
         } else {
           // Show the short error message
-          let message = res.error;
-          if (res.asmErrors && res.asmErrors.length > 0) {
+          let message = res.message;
+          if (res.asmErrors && res.asmErrors?.length > 0) {
             let msg = res.asmErrors[0]?.message;
             if (!msg) {
               msg = 'Unknown error';

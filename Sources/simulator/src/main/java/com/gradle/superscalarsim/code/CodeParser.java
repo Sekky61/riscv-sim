@@ -91,7 +91,7 @@ public class CodeParser
   /**
    * Error messages from parsing ASM code.
    *
-   * @brief List of error messages
+   * @brief List of error messages. Contains warnings and errors. Warnings do not fail the compilation.
    */
   List<ParseError> errorMessages;
   
@@ -117,7 +117,10 @@ public class CodeParser
     this.registers             = registers;
     this.inputCodeModelFactory = manager;
     this.memoryLocations       = new ArrayList<>();
-    this.memoryLocations.addAll(memoryLocations);
+    if (memoryLocations != null)
+    {
+      this.memoryLocations.addAll(memoryLocations);
+    }
     
     this.lexer         = null;
     this.errorMessages = new ArrayList<>();
@@ -188,7 +191,7 @@ public class CodeParser
     }
     
     // Delete code if errors
-    if (!this.errorMessages.isEmpty())
+    if (containsErrors())
     {
       this.instructions = new ArrayList<>();
       this.labels       = new HashMap<>();
@@ -447,9 +450,8 @@ public class CodeParser
       argloop:
       for (InputCodeArgument argument : instruction.arguments())
       {
-        InstructionArgument argModel      = instruction.instructionFunctionModel()
-                .getArgumentByName(argument.getName());
-        String              argumentToken = argument.getValue();
+        InstructionArgument argModel = instruction.instructionFunctionModel().getArgumentByName(argument.getName());
+        String argumentToken = argument.getValue();
         if (argModel.isImmediate())
         {
           String[] tokens = ExpressionEvaluator.tokenize(argumentToken);
@@ -464,8 +466,8 @@ public class CodeParser
             Label label = labels.get(token);
             if (label == null)
             {
-              addError(new CodeToken(0, 0, argumentToken, CodeToken.Type.EOF),
-                       "Label '" + argumentToken + "' is not defined");
+              addWarning(new CodeToken(0, 0, argumentToken, CodeToken.Type.EOF),
+                         "Label '" + argumentToken + "' is not defined");
               continue argloop;
             }
             // Replace label with its address
@@ -574,6 +576,17 @@ public class CodeParser
   }
   
   /**
+   * @param token   Token where the error occurred
+   * @param message Error message
+   *
+   * @brief Adds a single-line warning message to the list of errors. Warnings do not fail the compilation.
+   */
+  private void addWarning(CodeToken token, String message)
+  {
+    this.errorMessages.add(new ParseError("warning", message, token.line(), token.columnStart(), token.columnEnd()));
+  }
+  
+  /**
    * @brief Parse label. Current token is the label name, colon is removed by lexer.
    * The label must already be defined in the labels map, here it is only assigned an address.
    */
@@ -646,6 +659,21 @@ public class CodeParser
     }
     return true;
   }// end of checkImmediateArgument
+  
+  /**
+   * @return True if there are any errors in the code. Warning messages are not considered errors.
+   */
+  public boolean containsErrors()
+  {
+    for (ParseError error : errorMessages)
+    {
+      if (error.kind.equals("error"))
+      {
+        return true;
+      }
+    }
+    return false;
+  }
   
   /**
    * @brief Parse instruction. Current token is a symbol with the name of the instruction.
@@ -893,6 +921,14 @@ public class CodeParser
   public boolean success()
   {
     return this.errorMessages.isEmpty();
+  }
+  
+  /**
+   * @return True if there are errors
+   */
+  public boolean hasErrors()
+  {
+    return !errorMessages.isEmpty();
   }
   
   public List<InputCodeModel> getInstructions()

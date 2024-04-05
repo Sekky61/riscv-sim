@@ -71,13 +71,11 @@ public class CompileHandler implements IRequestResolver<CompileRequest, CompileR
       throw new ServerException("optimizeFlags", "Missing optimizeFlags");
     }
     
-    CompileResponse response;
-    
     // Compile
     GccCaller.CompileResult res = GccCaller.compile(request.code, request.optimizeFlags);
     if (!res.success)
     {
-      return CompileResponse.failure(res.error, res.compilerErrors, null);
+      return new CompileResponse("c", res.error, null, null, res.compilerErrors, null);
     }
     
     CompiledProgram program             = AsmParser.parse(res.code);
@@ -93,10 +91,19 @@ public class CompileHandler implements IRequestResolver<CompileRequest, CompileR
     
     if (!parser.success())
     {
-      return CompileResponse.failure("ASM check failed", null, parser.getErrorMessages());
+      if (parser.containsErrors())
+      {
+        return new CompileResponse("asm", "ASM contains errors", null, null, null, parser.getErrorMessages());
+      }
+      else
+      {
+        // Warnings
+        return new CompileResponse("warning", "ASM contains warnings", concatenatedProgram, program.asmToC, null,
+                                   parser.getErrorMessages());
+      }
     }
     
-    return CompileResponse.success(concatenatedProgram, program.asmToC);
+    return new CompileResponse("success", "Compilation successful", concatenatedProgram, program.asmToC, null, null);
   }
   
   @Override

@@ -74,6 +74,7 @@ public class ParseAsmHandler implements IRequestResolver<ParseAsmRequest, ParseA
                                        request.memoryLocations);
     parser.parseCode(request.code);
     
+    // todo success() or hasErrors()?
     return new ParseAsmResponse(parser.success(), parser.getErrorMessages());
   }
   

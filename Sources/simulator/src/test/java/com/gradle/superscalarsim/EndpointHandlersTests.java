@@ -124,11 +124,10 @@ public class EndpointHandlersTests
     
     // Assert - successful, so mapping must be there
     Assert.assertNotNull(response);
-    Assert.assertTrue(response.success);
+    Assert.assertTrue(response.success());
     Assert.assertNotNull(response.program);
     Assert.assertNotNull(response.asmToC);
     Assert.assertNull(response.compilerError);
-    Assert.assertNull(response.error);
   }
   
   @Test
@@ -164,11 +163,10 @@ public class EndpointHandlersTests
     
     // Assert - successful, so mapping must be there
     Assert.assertNotNull(response);
-    Assert.assertTrue(response.success);
+    Assert.assertTrue(response.success());
     Assert.assertNotNull(response.program);
     Assert.assertNotNull(response.asmToC);
     Assert.assertNull(response.compilerError);
-    Assert.assertNull(response.error);
     Assert.assertNull(response.asmErrors);
   }
   
@@ -186,12 +184,12 @@ public class EndpointHandlersTests
     
     // Assert - there is an error
     Assert.assertNotNull(response);
-    Assert.assertFalse(response.success);
+    Assert.assertFalse(response.success());
     Assert.assertNull(response.program);
     Assert.assertNull(response.asmToC);
     
     Assert.assertNull(response.compilerError);
-    Assert.assertNotNull(response.error);
+    Assert.assertNotNull(response.message);
     Assert.assertNotNull(response.asmErrors);
   }
   

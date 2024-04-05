@@ -130,7 +130,7 @@ public class SimulationConfig
                                            memoryLocations);
     codeParser.parseCode(code);
     
-    if (!codeParser.success())
+    if (codeParser.hasErrors())
     {
       codeParser.getErrorMessages().forEach(e -> errorMessages.add(new ConfigError(e.message, "code")));
     }
