@@ -30,7 +30,7 @@
  */
 
 import {
-  PayloadAction,
+  type PayloadAction,
   createAsyncThunk,
   createSelector,
   createSlice,
@@ -45,8 +45,8 @@ import {
   callCompilerImpl,
   callParseAsmImpl,
 } from '@/lib/serverCalls';
-import { CodeExample } from '@/lib/types/codeExamples';
-import {
+import type { CodeExample } from '@/lib/types/codeExamples';
+import type {
   CompileResponse,
   ComplexErrorItem,
   ParseAsmResponse,
@@ -258,6 +258,9 @@ export const compilerSlice = createSlice({
       state.asmToC = [];
       state.cDirty = false;
       state.asmDirty = false;
+      state.asmErrors = [];
+      state.cErrors = [];
+      state.asmManuallyEdited = false;
       state.entryPoint = action.payload.entryPoint ?? 0;
     },
     openFile: (

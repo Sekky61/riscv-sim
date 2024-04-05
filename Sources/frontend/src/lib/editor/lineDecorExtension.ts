@@ -30,17 +30,17 @@
  */
 
 import {
-  Extension,
+  type Extension,
   RangeSetBuilder,
   StateEffect,
   StateField,
 } from '@codemirror/state';
 import {
   Decoration,
-  DecorationSet,
-  EditorView,
+  type DecorationSet,
+  type EditorView,
   ViewPlugin,
-  ViewUpdate,
+  type ViewUpdate,
 } from '@codemirror/view';
 
 import { cLineToColor } from './lineColoring';

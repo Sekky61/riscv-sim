@@ -64,6 +64,9 @@ export function MemorySummary() {
       <DropdownMenuContent side='right'>
         <DropdownMenuLabel>Memory Locations</DropdownMenuLabel>
         <DropdownMenuSeparator />
+        {memoryLocations.length === 0 && (
+          <DropdownMenuItem className='text-gray-400'>No memory locations defined</DropdownMenuItem>
+        )}
         {memoryLocations.map((loc) => {
           const elements = memoryLocationSizeInElements(loc);
           // Wrapped in two divs, to not lose hover when the mouse moves over
