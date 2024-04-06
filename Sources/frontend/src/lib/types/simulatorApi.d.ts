@@ -108,18 +108,19 @@ export interface CompileRequest {
 
 export type CompileResponse = {
   // common fields
-  status: 'success' | 'c' | 'asm' | 'warning' | 'internal' | null;
   message: string;
+  compilerError: ComplexErrorItem[] | null;
+  asmErrors: SimpleParseError[] | null;
 } & (
   | {
       success: true;
+      status: 'success' | 'warning' | null;
       program: string;
       asmToC: number[];
     }
   | {
       success: false;
-      compilerError: ComplexErrorItem[] | null;
-      asmErrors: SimpleParseError[] | null;
+      status: 'c' | 'asm' | 'internal';
     }
 );
 

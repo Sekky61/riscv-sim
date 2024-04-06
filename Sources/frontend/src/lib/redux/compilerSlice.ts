@@ -114,11 +114,11 @@ export const callCompiler = createAsyncThunk<CompileResponse>(
     };
     const response = await callCompilerImpl(request)
       .then((res) => {
-        if(res.success) {
-        if (res.status === 'success') {
-          toast.success(res.message);
-        } else if (res.status === 'warning') {
-          toast.warning(res.message);
+        if (res.success) {
+          if (res.status === 'success') {
+            toast.success(res.message);
+          } else if (res.status === 'warning') {
+            toast.warning(res.message);
           }
         } else {
           // Show the short error message
@@ -290,10 +290,11 @@ export const compilerSlice = createSlice({
       .addCase(callCompiler.fulfilled, (state, action) => {
         state.cDirty = false;
         state.asmDirty = false;
+
+        state.cErrors = action.payload.compilerError ?? [];
+        state.asmErrors = action.payload.asmErrors ?? [];
         if (!action.payload.success) {
           state.compileStatus = 'failed';
-          state.cErrors = action.payload.compilerError ?? [];
-          state.asmErrors = action.payload.asmErrors ?? [];
           // Delete mapping
           state.asmToC = [];
           state.asmCode = '';
@@ -413,7 +414,9 @@ export const selectCCodeMirrorErrors = createSelector(
   },
 );
 
-// Provides errors in the form expected by code mirror
+/**
+ * Provides errors in the form expected by code mirror
+ */
 export const selectAsmCodeMirrorErrors = createSelector(
   [selectAsmErrors, selectAsmCode, selectAsmDirty],
   (errors, asmCode, dirty) => {
