@@ -164,6 +164,7 @@ public class EndpointHandlersTests
     // Assert - successful, so mapping must be there
     Assert.assertNotNull(response);
     Assert.assertTrue(response.success());
+    Assert.assertEquals("success", response.status);
     Assert.assertNotNull(response.program);
     Assert.assertNotNull(response.asmToC);
     Assert.assertNull(response.compilerError);
@@ -171,7 +172,7 @@ public class EndpointHandlersTests
   }
   
   @Test
-  public void testCompileEndpointMemoryError() throws ServerException
+  public void testCompileEndpointMemoryWarning() throws ServerException
   {
     CompileRequest request = new CompileRequest("""
                                                         extern int arr[];
@@ -184,9 +185,10 @@ public class EndpointHandlersTests
     
     // Assert - there is an error
     Assert.assertNotNull(response);
-    Assert.assertFalse(response.success());
-    Assert.assertNull(response.program);
-    Assert.assertNull(response.asmToC);
+    Assert.assertTrue(response.success());
+    Assert.assertEquals("warning", response.status);
+    Assert.assertNotNull(response.program);
+    Assert.assertNotNull(response.asmToC);
     
     Assert.assertNull(response.compilerError);
     Assert.assertNotNull(response.message);

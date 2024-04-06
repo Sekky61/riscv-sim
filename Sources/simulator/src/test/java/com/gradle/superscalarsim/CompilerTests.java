@@ -265,9 +265,9 @@ public class CompilerTests
     Assert.assertTrue(parser.success());
     
     // There should be 3 memory locations, each of them 16*4 bytes
-    Assert.assertEquals(3, parser.getMemoryLocations().size());
-    Assert.assertEquals(16 * 4, parser.getMemoryLocations().get(0).getBytes().length);
-    Assert.assertEquals(16 * 4, parser.getMemoryLocations().get(1).getBytes().length);
-    Assert.assertEquals(16 * 4, parser.getMemoryLocations().get(2).getBytes().length);
+    Map<String, Symbol> symbolTable = parser.getSymbolTable();
+    Assert.assertEquals(16 * 4, symbolTable.get("resultMatrix").getMemoryLocation().getBytes().length);
+    Assert.assertEquals(16 * 4, symbolTable.get("matrix1").getMemoryLocation().getBytes().length);
+    Assert.assertEquals(16 * 4, symbolTable.get("matrix2").getMemoryLocation().getBytes().length);
   }
 }

@@ -72,6 +72,7 @@ public class ParseAsmHandler implements IRequestResolver<ParseAsmRequest, ParseA
     CodeParser parser = new CodeParser(provider.getInstructionFunctionModels(),
                                        provider.getRegisterFile().getRegisterMap(true), new InputCodeModelFactory(),
                                        request.memoryLocations);
+    // The memory locations will not have address assigned (fill is not called), but it is not needed for checking
     parser.parseCode(request.code);
     
     // todo success() or hasErrors()?

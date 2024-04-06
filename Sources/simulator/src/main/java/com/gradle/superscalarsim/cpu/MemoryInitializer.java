@@ -52,18 +52,18 @@ public class MemoryInitializer
    */
   public int stackSize;
   /**
-   * State of the memory allocator
-   * Pointer to the next free memory location
-   */
-  private long memoryPtr;
-  /**
    * Label name to name + address object mapping
    */
-  Map<String, Symbol> dataLabels;
+  Map<String, Symbol> symbolTable;
   /**
    * Locations of memory data
    */
   List<MemoryLocation> locations;
+  /**
+   * State of the memory allocator
+   * Pointer to the next free memory location
+   */
+  private long memoryPtr;
   
   /**
    * Constructor
@@ -73,7 +73,7 @@ public class MemoryInitializer
     this.freeMemoryStart = freeMemoryStart;
     this.stackSize       = stackSize;
     this.memoryPtr       = freeMemoryStart + stackSize;
-    this.dataLabels      = null; // this warns about not loading labels from the code parser
+    this.symbolTable     = null; // this warns about not loading labels from the code parser
     this.locations       = new ArrayList<>();
   }// end of Constructor
   
@@ -82,8 +82,9 @@ public class MemoryInitializer
    *
    * @param location Location to assign address to (mutates the object)
    */
-  public void addLocation(MemoryLocation location)
+  public void assignAddress(Symbol symbol)
   {
+    MemoryLocation location = symbol.getMemoryLocation();
     // Align it (ceil to the next multiple of alignment)
     if (location.alignment > 1)
     {
@@ -91,29 +92,16 @@ public class MemoryInitializer
       int alignment = 1 << location.alignment;
       memoryPtr = (memoryPtr + alignment - 1) / alignment * alignment;
     }
-    
-    Symbol label = dataLabels.get(location.getName());
-    label.setValue(RegisterDataContainer.fromValue(memoryPtr));
-    
+    symbol.setValue(RegisterDataContainer.fromValue(memoryPtr));
     memoryPtr += location.getByteSize();
-    
-    locations.add(location);
-  }
-  
-  public void addLocations(List<MemoryLocation> locations)
-  {
-    for (MemoryLocation location : locations)
-    {
-      addLocation(location);
-    }
   }
   
   /**
    * Supply labels from the code parser. Changing these will change the instruction argument values.
    */
-  public void setLabels(Map<String, Symbol> labels)
+  public void setSymbolTable(Map<String, Symbol> table)
   {
-    dataLabels = labels;
+    symbolTable = table;
   }
   
   /**
@@ -126,23 +114,29 @@ public class MemoryInitializer
   public void initializeMemory(SimulatedMemory memory)
   {
     // Second step - fill the memory values
-    for (MemoryLocation memoryLocation : locations)
+    for (Symbol symbol : symbolTable.values())
     {
+      MemoryLocation memoryLocation = symbol.getMemoryLocation();
+      if (memoryLocation == null)
+      {
+        continue;
+      }
+      assignAddress(symbol);
       // Replace labels with addresses
       for (int i = 0; i < memoryLocation.data.size(); i++)
       {
         String value = memoryLocation.data.get(i);
-        if (dataLabels.containsKey(value))
+        if (symbolTable.containsKey(value))
         {
           // This solves the labels linking to other labels
           // Save label address
-          memoryLocation.data.set(i, String.valueOf(dataLabels.get(value).getAddress()));
+          memoryLocation.data.set(i, String.valueOf(symbolTable.get(value).getAddress()));
         }
       }
       
       // It is now safe to convert the data to bytes
       
-      Symbol label   = dataLabels.get(memoryLocation.getName());
+      Symbol label   = symbolTable.get(memoryLocation.getName());
       long   address = label.getAddress();
       byte[] data    = memoryLocation.getBytes();
       // Insert data into memory

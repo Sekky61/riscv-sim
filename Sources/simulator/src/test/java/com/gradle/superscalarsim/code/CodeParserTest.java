@@ -185,7 +185,7 @@ public class CodeParserTest
     codeParser.parseCode(code);
     
     Assert.assertFalse(codeParser.success());
-    Assert.assertEquals(0, codeParser.getInstructions().size());
+    Assert.assertEquals(4, codeParser.getInstructions().size()); // only warnings
     Assert.assertEquals(1, codeParser.getErrorMessages().size());
     ParseError firstError = codeParser.getErrorMessages().get(0);
     //    Assert.assertEquals(4, firstError.line);
@@ -351,7 +351,7 @@ public class CodeParserTest
     codeParser.parseCode(code);
     
     Assert.assertFalse(codeParser.success());
-    Assert.assertEquals(0, codeParser.getInstructions().size());
+    Assert.assertEquals(3, codeParser.getInstructions().size());
     Assert.assertEquals(1, codeParser.getErrorMessages().size());
   }
   
@@ -470,8 +470,8 @@ public class CodeParserTest
     codeParser.parseCode(code);
     
     Assert.assertTrue(codeParser.success());
-    Assert.assertEquals(1, codeParser.getMemoryLocations().size());
-    MemoryLocation n = codeParser.getMemoryLocations().get(0);
+    Assert.assertEquals(1, codeParser.getSymbolTable().size());
+    MemoryLocation n = codeParser.getSymbolTable().get("N").getMemoryLocation();
     Assert.assertEquals("N", n.getName());
     Assert.assertEquals(1, n.getByteSize());
     Assert.assertEquals((byte) 25, n.getBytes()[0]);
@@ -487,8 +487,8 @@ public class CodeParserTest
     codeParser.parseCode(code);
     
     Assert.assertTrue(codeParser.success());
-    Assert.assertEquals(1, codeParser.getMemoryLocations().size());
-    MemoryLocation n = codeParser.getMemoryLocations().get(0);
+    Assert.assertEquals(1, codeParser.getSymbolTable().size());
+    MemoryLocation n = codeParser.getSymbolTable().get("N").getMemoryLocation();
     Assert.assertEquals("N", n.getName());
     Assert.assertEquals(2, n.getByteSize());
     Assert.assertEquals((byte) 0x34, n.getBytes()[0]);
@@ -506,8 +506,8 @@ public class CodeParserTest
     codeParser.parseCode(code);
     
     Assert.assertTrue(codeParser.success());
-    Assert.assertEquals(1, codeParser.getMemoryLocations().size());
-    MemoryLocation n = codeParser.getMemoryLocations().get(0);
+    Assert.assertEquals(1, codeParser.getSymbolTable().size());
+    MemoryLocation n = codeParser.getSymbolTable().get("N").getMemoryLocation();
     Assert.assertEquals("N", n.getName());
     Assert.assertEquals(DataTypeEnum.kInt, n.getDataTypes().get(0).dataType());
     
@@ -528,8 +528,8 @@ public class CodeParserTest
     codeParser.parseCode(code);
     
     Assert.assertTrue(codeParser.success());
-    Assert.assertEquals(1, codeParser.getMemoryLocations().size());
-    MemoryLocation hello = codeParser.getMemoryLocations().get(0);
+    Assert.assertEquals(1, codeParser.getSymbolTable().size());
+    MemoryLocation hello = codeParser.getSymbolTable().get("hello").getMemoryLocation();
     Assert.assertEquals("hello", hello.getName());
     Assert.assertEquals(DataTypeEnum.kChar, hello.getDataTypes().get(0).dataType());
     
@@ -594,8 +594,8 @@ public class CodeParserTest
     codeParser.parseCode(code);
     
     Assert.assertTrue(codeParser.success());
-    Assert.assertEquals(1, codeParser.getMemoryLocations().size());
-    MemoryLocation hello = codeParser.getMemoryLocations().get(0);
+    Assert.assertEquals(1, codeParser.getSymbolTable().size());
+    MemoryLocation hello = codeParser.getSymbolTable().get("hello").getMemoryLocation();
     Assert.assertEquals("hello", hello.getName());
     Assert.assertEquals(DataTypeEnum.kChar, hello.getDataTypes().get(0).dataType());
     
@@ -618,8 +618,8 @@ public class CodeParserTest
     codeParser.parseCode(code);
     
     Assert.assertTrue(codeParser.success());
-    Assert.assertEquals(1, codeParser.getMemoryLocations().size());
-    MemoryLocation hello = codeParser.getMemoryLocations().get(0);
+    Assert.assertEquals(1, codeParser.getSymbolTable().size());
+    MemoryLocation hello = codeParser.getSymbolTable().get("hello").getMemoryLocation();
     Assert.assertEquals("hello", hello.getName());
     Assert.assertEquals(DataTypeEnum.kChar, hello.getDataTypes().get(0).dataType());
     
@@ -640,8 +640,8 @@ public class CodeParserTest
     codeParser.parseCode(code);
     
     Assert.assertTrue(codeParser.success());
-    Assert.assertEquals(1, codeParser.getMemoryLocations().size());
-    MemoryLocation hello = codeParser.getMemoryLocations().get(0);
+    Assert.assertEquals(1, codeParser.getSymbolTable().size());
+    MemoryLocation hello = codeParser.getSymbolTable().get("hello").getMemoryLocation();
     Assert.assertEquals("hello", hello.getName());
     Assert.assertEquals(DataTypeEnum.kChar, hello.getDataTypes().get(0).dataType());
     
@@ -664,8 +664,8 @@ public class CodeParserTest
     codeParser.parseCode(code);
     
     Assert.assertTrue(codeParser.success());
-    Assert.assertEquals(1, codeParser.getMemoryLocations().size());
-    MemoryLocation n = codeParser.getMemoryLocations().get(0);
+    Assert.assertEquals(1, codeParser.getSymbolTable().size());
+    MemoryLocation n = codeParser.getSymbolTable().get("N").getMemoryLocation();
     Assert.assertEquals("N", n.getName());
     Assert.assertEquals(DataTypeEnum.kInt, n.getDataTypes().get(0).dataType());
     
@@ -686,8 +686,8 @@ public class CodeParserTest
     codeParser.parseCode(code);
     
     Assert.assertTrue(codeParser.success());
-    Assert.assertEquals(1, codeParser.getMemoryLocations().size());
-    MemoryLocation n = codeParser.getMemoryLocations().get(0);
+    Assert.assertEquals(1, codeParser.getSymbolTable().size());
+    MemoryLocation n = codeParser.getSymbolTable().get("N").getMemoryLocation();
     Assert.assertEquals("N", n.getName());
     Assert.assertEquals(DataTypeEnum.kByte, n.getDataTypes().get(0).dataType());
     Assert.assertEquals(2, n.getByteSize());
@@ -706,8 +706,8 @@ public class CodeParserTest
     codeParser.parseCode(code);
     
     Assert.assertTrue(codeParser.success());
-    Assert.assertEquals(1, codeParser.getMemoryLocations().size());
-    MemoryLocation n = codeParser.getMemoryLocations().get(0);
+    Assert.assertEquals(1, codeParser.getSymbolTable().size());
+    MemoryLocation n = codeParser.getSymbolTable().get("N").getMemoryLocation();
     Assert.assertEquals(3, n.alignment);
   }
   
@@ -724,8 +724,8 @@ public class CodeParserTest
     codeParser.parseCode(code);
     
     Assert.assertTrue(codeParser.success());
-    Assert.assertEquals(2, codeParser.getMemoryLocations().size());
-    MemoryLocation m = codeParser.getMemoryLocations().get(1);
+    Assert.assertEquals(2, codeParser.getSymbolTable().size());
+    MemoryLocation m = codeParser.getSymbolTable().get("M").getMemoryLocation();
     // Alignment should be reset after the label
     Assert.assertEquals(0, m.alignment);
   }
@@ -740,8 +740,8 @@ public class CodeParserTest
     codeParser.parseCode(code);
     
     Assert.assertTrue(codeParser.success());
-    Assert.assertEquals(1, codeParser.getMemoryLocations().size());
-    MemoryLocation n = codeParser.getMemoryLocations().get(0);
+    Assert.assertEquals(1, codeParser.getSymbolTable().size());
+    MemoryLocation n = codeParser.getSymbolTable().get("N").getMemoryLocation();
     Assert.assertEquals("N", n.getName());
     Assert.assertEquals(DataTypeEnum.kByte, n.getDataTypes().get(0).dataType());
     Assert.assertEquals(8, n.getByteSize());
@@ -761,8 +761,8 @@ public class CodeParserTest
     codeParser.parseCode(code);
     
     Assert.assertTrue(codeParser.success());
-    Assert.assertEquals(1, codeParser.getMemoryLocations().size());
-    MemoryLocation n = codeParser.getMemoryLocations().get(0);
+    Assert.assertEquals(1, codeParser.getSymbolTable().size());
+    MemoryLocation n = codeParser.getSymbolTable().get("N").getMemoryLocation();
     Assert.assertEquals("N", n.getName());
     Assert.assertEquals(DataTypeEnum.kByte, n.getDataTypes().get(0).dataType());
     Assert.assertEquals(5, n.getByteSize());
@@ -782,12 +782,11 @@ public class CodeParserTest
     codeParser.parseCode(code);
     
     Assert.assertTrue(codeParser.success());
-    Assert.assertEquals(1, codeParser.getMemoryLocations().size());
+    Assert.assertEquals(1, codeParser.getSymbolTable().size());
     
     SimulatedMemory   memory            = new SimulatedMemory(0, 0, new SimulationStatistics(1, 1));
     MemoryInitializer memoryInitializer = new MemoryInitializer(0, 0);
-    memoryInitializer.setLabels(codeParser.getSymbolTable());
-    memoryInitializer.addLocations(codeParser.getMemoryLocations());
+    memoryInitializer.setSymbolTable(codeParser.getSymbolTable());
     memoryInitializer.initializeMemory(memory);
     
     Assert.assertEquals((byte) 25, memory.getFromMemory(0L));
@@ -803,12 +802,11 @@ public class CodeParserTest
     codeParser.parseCode(code);
     
     Assert.assertTrue(codeParser.success());
-    Assert.assertEquals(1, codeParser.getMemoryLocations().size());
+    Assert.assertEquals(1, codeParser.getSymbolTable().size());
     
     SimulatedMemory   memory            = new SimulatedMemory(0, 0, new SimulationStatistics(1, 1));
     MemoryInitializer memoryInitializer = new MemoryInitializer(0, 0);
-    memoryInitializer.setLabels(codeParser.getSymbolTable());
-    memoryInitializer.addLocations(codeParser.getMemoryLocations());
+    memoryInitializer.setSymbolTable(codeParser.getSymbolTable());
     memoryInitializer.initializeMemory(memory);
     
     Assert.assertEquals((byte) 0x34, memory.getFromMemory(0L));
@@ -829,12 +827,11 @@ public class CodeParserTest
     codeParser.parseCode(code);
     
     Assert.assertTrue(codeParser.success());
-    Assert.assertEquals(1, codeParser.getMemoryLocations().size());
+    Assert.assertEquals(1, codeParser.getSymbolTable().size());
     
     SimulatedMemory   memory            = new SimulatedMemory(0, 0, new SimulationStatistics(1, 1));
     MemoryInitializer memoryInitializer = new MemoryInitializer(0, 0);
-    memoryInitializer.setLabels(codeParser.getSymbolTable());
-    memoryInitializer.addLocations(codeParser.getMemoryLocations());
+    memoryInitializer.setSymbolTable(codeParser.getSymbolTable());
     memoryInitializer.initializeMemory(memory);
     
     long address = codeParser.symbolTable.get("N").getAddress();
@@ -848,7 +845,7 @@ public class CodeParserTest
   }
   
   @Test
-  public void memoryInitializer_do_not_pick_up_code_labels()
+  public void parseCode_mark_code_labels_as_label()
   {
     String code = """
             l1:
@@ -859,7 +856,11 @@ public class CodeParserTest
     codeParser.parseCode(code);
     
     Assert.assertTrue(codeParser.success());
-    Assert.assertEquals(0, codeParser.getMemoryLocations().size());
+    Assert.assertEquals(2, codeParser.getSymbolTable().size());
+    for (Symbol symbol : codeParser.getSymbolTable().values())
+    {
+      Assert.assertEquals(Symbol.SymbolType.LABEL, symbol.type);
+    }
   }
   
   @Test
@@ -873,12 +874,14 @@ public class CodeParserTest
     codeParser.parseCode(code);
     
     Assert.assertTrue(codeParser.success());
-    // One memory location
-    Assert.assertEquals(1, codeParser.getMemoryLocations().size());
-    // but two labels
     Assert.assertEquals(2, codeParser.getSymbolTable().size());
-    Assert.assertEquals(0, codeParser.getSymbolTable().get("a").getAddress());
-    Assert.assertEquals(0, codeParser.getSymbolTable().get("b").getAddress());
+    // One memory location
+    // but two labels
+    Symbol a = codeParser.getSymbolTable().get("a");
+    Symbol b = codeParser.getSymbolTable().get("b");
+    Assert.assertEquals(0, a.getAddress());
+    Assert.assertEquals(0, b.getAddress());
+    Assert.assertEquals(a, b);
   }
   
   @Test
@@ -913,7 +916,6 @@ public class CodeParserTest
     codeParser.parseCode(code);
     
     Assert.assertTrue(codeParser.success());
-    Assert.assertEquals(0, codeParser.getMemoryLocations().size());
     Assert.assertEquals(3, codeParser.getSymbolTable().size());
   }
   
@@ -937,7 +939,6 @@ public class CodeParserTest
     codeParser.parseCode(code);
     
     Assert.assertTrue(codeParser.success());
-    Assert.assertEquals(0, codeParser.getMemoryLocations().size());
     Assert.assertEquals(2, codeParser.getSymbolTable().size());
     
     Assert.assertEquals(0, codeParser.getSymbolTable().get("add").getAddress());

@@ -47,8 +47,11 @@ public record CodeToken(int line, int columnStart, String text, Type type)
     return "[" + line + ":" + columnStart + ":" + this.columnEnd() + "] " + text + " (" + type + ")";
   }
   
+  /**
+   * Symbol is an instruction ("addi", "lw", ...)
+   */
   public enum Type
   {
-    SYMBOL, L_PAREN, R_PAREN, COLON, COMMA, NEWLINE, COMMENT, EOF, STRING, NUMBER, LABEL
+    L_PAREN, R_PAREN, COLON, COMMA, NEWLINE, COMMENT, EOF, STRING, LABEL, DIRECTIVE, SYMBOL
   }
 }

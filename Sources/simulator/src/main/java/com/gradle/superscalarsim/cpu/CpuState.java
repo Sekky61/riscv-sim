@@ -170,8 +170,7 @@ public class CpuState implements Serializable
     
     // Initialize memory. This is linked to the values of labels in code, so relocating the labels changes the values in code
     MemoryInitializer memoryInitializer = new MemoryInitializer(128, config.cpuConfig.callStackSize);
-    memoryInitializer.setLabels(codeParser.getSymbolTable());
-    memoryInitializer.addLocations(codeParser.getMemoryLocations());
+    memoryInitializer.setSymbolTable(codeParser.getSymbolTable());
     memoryInitializer.initializeMemory(simulatedMemory);
     
     codeParser.fillImmediateValues();

@@ -28,6 +28,7 @@
 
 package com.gradle.superscalarsim.code;
 
+import com.gradle.superscalarsim.cpu.MemoryLocation;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.models.register.RegisterDataContainer;
 
@@ -51,22 +52,29 @@ public class Symbol
   private RegisterDataContainer value;
   
   /**
+   * Memory location. Null for types other than data.
+   */
+  private MemoryLocation memoryLocation;
+  
+  /**
    * Type of the symbol
    */
   public SymbolType type;
   
   /**
-   * @param name  Name of the symbol
-   * @param value Value of the symbol. Can be null.
-   * @param type  Type of the symbol
+   * @param name           Name of the symbol
+   * @param type           Type of the symbol
+   * @param value          Value of the symbol. Can be null.
+   * @param memoryLocation Memory location. Null for types other than data.
    *
    * @brief Constructor
    */
-  public Symbol(String name, RegisterDataContainer value, SymbolType type)
+  public Symbol(String name, SymbolType type, RegisterDataContainer value, MemoryLocation memoryLocation)
   {
-    this.name  = name;
-    this.value = value;
-    this.type  = type;
+    this.name           = name;
+    this.value          = value;
+    this.type           = type;
+    this.memoryLocation = memoryLocation;
   }
   
   public RegisterDataContainer getValue()
@@ -84,13 +92,23 @@ public class Symbol
     return (long) value.getValue(DataTypeEnum.kLong);
   }
   
+  public MemoryLocation getMemoryLocation()
+  {
+    return memoryLocation;
+  }
+  
+  public void setMemoryLocation(MemoryLocation memoryLocation)
+  {
+    this.memoryLocation = memoryLocation;
+  }
+  
   /**
    * String representation of the label.
    */
   @Override
   public String toString()
   {
-    return "name='" + name + ": " + value.toString();
+    return "name='" + name + ": " + (value == null ? "null" : value.toString());
   }
   
   /**
