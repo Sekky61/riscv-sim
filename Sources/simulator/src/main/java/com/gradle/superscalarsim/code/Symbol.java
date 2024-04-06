@@ -1,10 +1,10 @@
 /**
- * @file Label.java
+ * @file Symbol.java
  * @author Michal Majer
  * Faculty of Information Technology
  * Brno University of Technology
  * xmajer21@stud.fit.vutbr.cz
- * @brief Class for label in the code
+ * @brief Class for a symbol (label) in the code
  * @date 27 Nov  2023 17:00 (created)
  * @section Licence
  * This file is part of the Superscalar simulator app
@@ -32,37 +32,56 @@ import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.models.register.RegisterDataContainer;
 
 /**
- * @brief Represents a label in the code.
+ * @brief Represents a symbol in the code.
  * Used for jumps, data pointers.
  */
-public class Label
+public class Symbol
 {
   /**
-   * Name of the label
+   * Name of the symbol
    */
   public String name;
   
   /**
-   * Position of the label in the code (in bytes).
+   * Value of the symbol. An instruction address, or a data address.
    * This same object is also referenced by {@link com.gradle.superscalarsim.models.instruction.InputCodeArgument} in the instruction.
    * So changing this value will change the value in the instruction.
+   * Can be null if the symbol is not yet resolved.
    */
-  private RegisterDataContainer address;
+  private RegisterDataContainer value;
   
-  public Label(String name, int address)
+  /**
+   * Type of the symbol
+   */
+  public SymbolType type;
+  
+  /**
+   * @param name  Name of the symbol
+   * @param value Value of the symbol. Can be null.
+   * @param type  Type of the symbol
+   *
+   * @brief Constructor
+   */
+  public Symbol(String name, RegisterDataContainer value, SymbolType type)
   {
-    this.name    = name;
-    this.address = RegisterDataContainer.fromValue(address);
+    this.name  = name;
+    this.value = value;
+    this.type  = type;
   }
   
-  public RegisterDataContainer getAddressContainer()
+  public RegisterDataContainer getValue()
   {
-    return address;
+    return value;
+  }
+  
+  public void setValue(RegisterDataContainer value)
+  {
+    this.value = value;
   }
   
   public long getAddress()
   {
-    return (long) address.getValue(DataTypeEnum.kLong);
+    return (long) value.getValue(DataTypeEnum.kLong);
   }
   
   /**
@@ -71,6 +90,21 @@ public class Label
   @Override
   public String toString()
   {
-    return "name='" + name + ": " + address.toString();
+    return "name='" + name + ": " + value.toString();
+  }
+  
+  /**
+   * Type of the symbol
+   */
+  public enum SymbolType
+  {
+    /**
+     * Symbol is a label
+     */
+    LABEL,
+    /**
+     * Symbol is a data pointer
+     */
+    DATA
   }
 }

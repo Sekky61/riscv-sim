@@ -14,7 +14,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -72,15 +71,6 @@ public class CodeBranchInterpreterTest
             .hasInstructionName("mul").hasArguments(Arrays.asList(argumentMul1, argumentMul2, argumentMul3)).build();
     
     return Arrays.asList(inputCodeModelAdd, inputCodeModelSub, inputCodeModelMul);
-  }
-  
-  private Map<String, Label> setUpLabels()
-  {
-    Map<String, Label> labels = new HashMap<>();
-    labels.put("one", new Label("one", 0));
-    labels.put("two", new Label("two", 4));
-    labels.put("three", new Label("three", 8));
-    return labels;
   }
   
   @Test

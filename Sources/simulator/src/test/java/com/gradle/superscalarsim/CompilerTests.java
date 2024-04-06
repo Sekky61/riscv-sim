@@ -1,7 +1,7 @@
 package com.gradle.superscalarsim;
 
 import com.gradle.superscalarsim.code.CodeParser;
-import com.gradle.superscalarsim.code.Label;
+import com.gradle.superscalarsim.code.Symbol;
 import com.gradle.superscalarsim.compiler.AsmParser;
 import com.gradle.superscalarsim.compiler.CompiledProgram;
 import com.gradle.superscalarsim.compiler.GccCaller;
@@ -135,7 +135,7 @@ public class CompilerTests
       Assert.assertFalse(parser.getInstructions().isEmpty());
       
       // There is a square label
-      Assert.assertNotNull(parser.getLabels().get("square"));
+      Assert.assertNotNull(parser.getSymbolTable().get("square"));
     }
     catch (AssertionError e)
     {
@@ -176,7 +176,7 @@ public class CompilerTests
     Assert.assertTrue(parser.success());
     Assert.assertFalse(parser.getInstructions().isEmpty());
     // There is a sum label
-    Assert.assertNotNull(parser.getLabels().get("sum"));
+    Assert.assertNotNull(parser.getSymbolTable().get("sum"));
   }
   
   @Test
@@ -204,10 +204,10 @@ public class CompilerTests
     Assert.assertTrue(parser.success());
     Assert.assertFalse(parser.getInstructions().isEmpty());
     // There is a add label
-    Assert.assertNotNull(parser.getLabels().get("add"));
+    Assert.assertNotNull(parser.getSymbolTable().get("add"));
     
     // There is a string label
-    Label str = parser.getLabels().get("str");
+    Symbol str = parser.getSymbolTable().get("str");
     Assert.assertNotNull(str);
     Assert.assertNotEquals(0, str.getAddress());
     
@@ -217,7 +217,7 @@ public class CompilerTests
     cpuConfig.code = asm;
     Cpu cpu = new Cpu(cpuConfig);
     
-    Map<String, Label> labels = cpu.cpuState.instructionMemoryBlock.getLabels();
+    Map<String, Symbol> labels = cpu.cpuState.instructionMemoryBlock.getLabels();
     Assert.assertNotNull(labels.get("str"));
     Assert.assertEquals("str", labels.get("str").name);
   }

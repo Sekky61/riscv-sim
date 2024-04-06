@@ -170,7 +170,7 @@ public class CpuState implements Serializable
     
     // Initialize memory. This is linked to the values of labels in code, so relocating the labels changes the values in code
     MemoryInitializer memoryInitializer = new MemoryInitializer(128, config.cpuConfig.callStackSize);
-    memoryInitializer.setLabels(codeParser.getLabels());
+    memoryInitializer.setLabels(codeParser.getSymbolTable());
     memoryInitializer.addLocations(codeParser.getMemoryLocations());
     memoryInitializer.initializeMemory(simulatedMemory);
     
@@ -188,7 +188,8 @@ public class CpuState implements Serializable
     InstructionFunctionModel nopFM = functionModels.get("nop");
     InputCodeModel nop = inputCodeModelFactory.createInstance(nopFM, new ArrayList<>(),
                                                               codeParser.getInstructions().size(), null);
-    this.instructionMemoryBlock = new InstructionMemoryBlock(codeParser.getInstructions(), codeParser.getLabels(), nop);
+    this.instructionMemoryBlock = new InstructionMemoryBlock(codeParser.getInstructions(), codeParser.getSymbolTable(),
+                                                             nop);
     
     // Create memory
     this.unifiedRegisterFileBlock = new UnifiedRegisterFileBlock(registerMap, config.cpuConfig.speculativeRegisters,
@@ -259,7 +260,7 @@ public class CpuState implements Serializable
     int entryPoint;
     if (config.entryPoint instanceof String)
     {
-      Label label = instructionMemoryBlock.getLabels().get((String) config.entryPoint);
+      Symbol label = instructionMemoryBlock.getLabels().get((String) config.entryPoint);
       if (label == null)
       {
         throw new IllegalArgumentException("Label " + config.entryPoint + " not found");
@@ -482,8 +483,7 @@ public class CpuState implements Serializable
     boolean pcEnd         = instructionFetchBlock.getPc() >= instructionMemoryBlock.getCode().size() * 4;
     boolean renameEmpty   = decodeAndDispatchBlock.getCodeBuffer().isEmpty();
     boolean fetchNotEmpty = !instructionFetchBlock.getFetchedCode().isEmpty();
-    boolean nop           = fetchNotEmpty && instructionFetchBlock.getFetchedCode().get(0).getInstructionName()
-            .equals("nop");
+    boolean nop = fetchNotEmpty && instructionFetchBlock.getFetchedCode().get(0).getInstructionName().equals("nop");
     if (robEmpty && pcEnd && renameEmpty && nop)
     {
       return StopReason.kEndOfCode;

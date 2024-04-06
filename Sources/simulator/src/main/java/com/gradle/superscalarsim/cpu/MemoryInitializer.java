@@ -29,8 +29,8 @@
 package com.gradle.superscalarsim.cpu;
 
 import com.gradle.superscalarsim.blocks.loadstore.SimulatedMemory;
-import com.gradle.superscalarsim.code.Label;
-import com.gradle.superscalarsim.enums.DataTypeEnum;
+import com.gradle.superscalarsim.code.Symbol;
+import com.gradle.superscalarsim.models.register.RegisterDataContainer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -59,7 +59,7 @@ public class MemoryInitializer
   /**
    * Label name to name + address object mapping
    */
-  Map<String, Label> dataLabels;
+  Map<String, Symbol> dataLabels;
   /**
    * Locations of memory data
    */
@@ -92,8 +92,8 @@ public class MemoryInitializer
       memoryPtr = (memoryPtr + alignment - 1) / alignment * alignment;
     }
     
-    Label label = dataLabels.get(location.getName());
-    label.getAddressContainer().setValue(memoryPtr, DataTypeEnum.kLong);
+    Symbol label = dataLabels.get(location.getName());
+    label.setValue(RegisterDataContainer.fromValue(memoryPtr));
     
     memoryPtr += location.getByteSize();
     
@@ -111,7 +111,7 @@ public class MemoryInitializer
   /**
    * Supply labels from the code parser. Changing these will change the instruction argument values.
    */
-  public void setLabels(Map<String, Label> labels)
+  public void setLabels(Map<String, Symbol> labels)
   {
     dataLabels = labels;
   }
@@ -142,7 +142,7 @@ public class MemoryInitializer
       
       // It is now safe to convert the data to bytes
       
-      Label  label   = dataLabels.get(memoryLocation.getName());
+      Symbol label   = dataLabels.get(memoryLocation.getName());
       long   address = label.getAddress();
       byte[] data    = memoryLocation.getBytes();
       // Insert data into memory

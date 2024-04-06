@@ -147,7 +147,7 @@ public class SimulationConfig
     if (entryPoint instanceof String)
     {
       // Check if label exists
-      if (!codeParser.getLabels().containsKey(entryPoint))
+      if (!codeParser.getSymbolTable().containsKey(entryPoint))
       {
         errorMessages.add(new ConfigError("Entry point label does not exist", "entryPoint"));
       }

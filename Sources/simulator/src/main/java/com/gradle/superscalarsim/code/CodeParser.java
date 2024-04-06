@@ -84,10 +84,11 @@ public class CodeParser
    */
   List<InputCodeModel> instructions;
   /**
-   * Result of the parsing - list of labels.
+   * Result of the parsing - list of labels (to code or data).
    * Some keys may point to the same label object.
+   * Handles forward references. Is checked after parsing for errors.
    */
-  Map<String, Label> labels;
+  Map<String, Symbol> symbolTable;
   /**
    * Error messages from parsing ASM code.
    *
@@ -124,7 +125,7 @@ public class CodeParser
     
     this.lexer         = null;
     this.errorMessages = new ArrayList<>();
-    this.labels        = new HashMap<>();
+    this.symbolTable   = new HashMap<>();
   }
   
   /**
@@ -164,17 +165,17 @@ public class CodeParser
     
     this.lexer = new Lexer(filteredCode);
     // Collect labels before parsing instructions
-    collectCodeLabels();
+    // collectCodeLabels();
     // Memory location names must also be known as labels
     for (MemoryLocation mem : memoryLocations)
     {
       // Address not yet known
-      Label label = new Label(mem.getName(), -1);
+      Symbol symbol = new Symbol(mem.getName(), null, Symbol.SymbolType.DATA);
       if (mem.names != null)
       {
         for (String alias : mem.names)
         {
-          this.labels.put(alias, label);
+          this.symbolTable.put(alias, symbol);
         }
       }
     }
@@ -194,7 +195,7 @@ public class CodeParser
     if (containsErrors())
     {
       this.instructions = new ArrayList<>();
-      this.labels       = new HashMap<>();
+      this.symbolTable  = new HashMap<>();
     }
   }
   
@@ -369,27 +370,6 @@ public class CodeParser
     return builder.toString();
   }
   
-  private void collectCodeLabels()
-  {
-    List<CodeToken> tokens = lexer.getTokens();
-    for (CodeToken token : tokens)
-    {
-      if (token.type().equals(CodeToken.Type.LABEL))
-      {
-        String labelName = token.text();
-        if (labels.containsKey(labelName))
-        {
-          addError(token, "Label '" + labelName + "' already defined");
-          continue;
-        }
-        // todo multiple labels pointing to the same address/instruction - alias in the map
-        // Add label, this is in "bytes"
-        Label lab = new Label(labelName, -1);
-        labels.put(labelName, lab);
-      }
-    }
-  }
-  
   /**
    * Creates list of instructions, labels, errors (mutates the state of the parser).
    *
@@ -450,8 +430,9 @@ public class CodeParser
       argloop:
       for (InputCodeArgument argument : instruction.arguments())
       {
-        InstructionArgument argModel = instruction.instructionFunctionModel().getArgumentByName(argument.getName());
-        String argumentToken = argument.getValue();
+        InstructionArgument argModel      = instruction.instructionFunctionModel()
+                .getArgumentByName(argument.getName());
+        String              argumentToken = argument.getValue();
         if (argModel.isImmediate())
         {
           String[] tokens = ExpressionEvaluator.tokenize(argumentToken);
@@ -463,7 +444,7 @@ public class CodeParser
             {
               continue;
             }
-            Label label = labels.get(token);
+            Symbol label = symbolTable.get(token);
             if (label == null)
             {
               addWarning(new CodeToken(0, 0, argumentToken, CodeToken.Type.EOF),
@@ -471,7 +452,7 @@ public class CodeParser
               continue argloop;
             }
             // Replace label with its address
-            assert label.getAddress() != -1; // code addresses must be known
+            assert label.getValue() != null; // code addresses must be known
             long address;
             if (argModel.isOffset())
             {
@@ -485,7 +466,7 @@ public class CodeParser
             {
               // If label is not defined, it will be caught later
               // This links the constant and the label through the shared reference
-              argument.setConstantValue(label.getAddressContainer());
+              argument.setConstantValue(label.getValue());
               address = label.getAddress();
             }
             tokens[i] = String.valueOf(address);
@@ -602,9 +583,25 @@ public class CodeParser
       addError(lexer.currentToken(), "Invalid label name '" + labelName + "'");
     }
     
-    assert labels.containsKey(labelName);
-    
-    labels.get(labelName).getAddressContainer().setValue(instructions.size() * 4);
+    if (symbolTable.containsKey(labelName))
+    {
+      if (symbolTable.get(labelName).getValue() == null)
+      {
+        // Label was used before definition
+        // Assign the address to the label
+        symbolTable.get(labelName).setValue(RegisterDataContainer.fromValue(instructions.size() * 4));
+      }
+      else
+      {
+        // second definition (wrong)
+        addError(lexer.currentToken(), "Label '" + labelName + "' already defined");
+      }
+    }
+    else
+    {
+      symbolTable.put(labelName, new Symbol(labelName, RegisterDataContainer.fromValue(instructions.size() * 4),
+                                            Symbol.SymbolType.LABEL));
+    }
     
     // Consume label token
     nextToken();
@@ -936,9 +933,9 @@ public class CodeParser
     return instructions;
   }
   
-  public Map<String, Label> getLabels()
+  public Map<String, Symbol> getSymbolTable()
   {
-    return labels;
+    return symbolTable;
   }
   
   public List<ParseError> getErrorMessages()

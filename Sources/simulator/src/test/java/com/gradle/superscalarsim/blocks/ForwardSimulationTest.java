@@ -902,7 +902,7 @@ public class ForwardSimulationTest
                                  labFinal:
                                  """);
     instructionMemoryBlock.setCode(codeParser.getInstructions());
-    instructionMemoryBlock.setLabels(codeParser.getLabels());
+    instructionMemoryBlock.setLabels(codeParser.getSymbolTable());
     
     this.cpu.step();
     Assert.assertEquals("jal", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
@@ -1022,7 +1022,7 @@ public class ForwardSimulationTest
                                   loopEnd:
                                  """);
     instructionMemoryBlock.setCode(codeParser.getInstructions());
-    instructionMemoryBlock.setLabels(codeParser.getLabels());
+    instructionMemoryBlock.setLabels(codeParser.getSymbolTable());
     // What should happen:
     // The first iteration beq cannot be taken (no target)
     // The predictor is weakly taken, so the second iteration it will be weakly not taken
@@ -1268,7 +1268,7 @@ public class ForwardSimulationTest
                                  labelFin:
                                  """);
     instructionMemoryBlock.setCode(codeParser.getInstructions());
-    instructionMemoryBlock.setLabels(codeParser.getLabels());
+    instructionMemoryBlock.setLabels(codeParser.getSymbolTable());
     
     // x5 id zero in the beginning, so the first conditional is taken
     
@@ -1376,7 +1376,7 @@ public class ForwardSimulationTest
                                  labelFin:
                                  """);
     instructionMemoryBlock.setCode(codeParser.getInstructions());
-    instructionMemoryBlock.setLabels(codeParser.getLabels());
+    instructionMemoryBlock.setLabels(codeParser.getSymbolTable());
     
     this.cpu.step();
     // 3 fetches, but it stops before second branch (fetch limitation)
@@ -1445,7 +1445,7 @@ public class ForwardSimulationTest
                                   sw x3,0(x2)
                                  """);
     instructionMemoryBlock.setCode(codeParser.getInstructions());
-    instructionMemoryBlock.setLabels(codeParser.getLabels());
+    instructionMemoryBlock.setLabels(codeParser.getSymbolTable());
     
     this.cpu.step();
     Assert.assertEquals("sw", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
@@ -1502,7 +1502,7 @@ public class ForwardSimulationTest
                                  lw x1,0(x2)
                                  """);
     instructionMemoryBlock.setCode(codeParser.getInstructions());
-    instructionMemoryBlock.setLabels(codeParser.getLabels());
+    instructionMemoryBlock.setLabels(codeParser.getSymbolTable());
     
     this.cpu.step();
     Assert.assertEquals("lw", this.instructionFetchBlock.getFetchedCode().get(0).getInstructionName());
@@ -1566,7 +1566,7 @@ public class ForwardSimulationTest
                                  lw x1,0(x2)
                                  """);
     instructionMemoryBlock.setCode(codeParser.getInstructions());
-    instructionMemoryBlock.setLabels(codeParser.getLabels());
+    instructionMemoryBlock.setLabels(codeParser.getSymbolTable());
     // The store will execute first, load will take the value from the store buffer
     // Load will not touch memory.
     
@@ -1791,7 +1791,7 @@ public class ForwardSimulationTest
                                   lw x1, 0(x2)
                                  """);
     instructionMemoryBlock.setCode(codeParser.getInstructions());
-    instructionMemoryBlock.setLabels(codeParser.getLabels());
+    instructionMemoryBlock.setLabels(codeParser.getSymbolTable());
     // Load will be ready to execute first. It will go to MAU, because the store address will not be computed yet.
     // Store will finish later. The load will be flushed and re-executed.
     

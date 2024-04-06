@@ -104,9 +104,9 @@ public class CodeParserTest
     Assert.assertEquals("fadd.s", codeParser.getInstructions().get(3).getInstructionName());
     
     // Parser does not deal in bytes, but index offsets
-    Assert.assertEquals(0, codeParser.getLabels().get("one").getAddress());
-    Assert.assertEquals(4, codeParser.getLabels().get("two").getAddress());
-    Assert.assertEquals(12, codeParser.getLabels().get("three").getAddress());
+    Assert.assertEquals(0, codeParser.getSymbolTable().get("one").getAddress());
+    Assert.assertEquals(4, codeParser.getSymbolTable().get("two").getAddress());
+    Assert.assertEquals(12, codeParser.getSymbolTable().get("three").getAddress());
   }
   
   @Test
@@ -130,9 +130,9 @@ public class CodeParserTest
     Assert.assertEquals("fcvt.w.s", codeParser.getInstructions().get(1).getInstructionName());
     Assert.assertEquals("fadd.s", codeParser.getInstructions().get(2).getInstructionName());
     
-    Assert.assertEquals(0, codeParser.getLabels().get("one").getAddress());
-    Assert.assertEquals(4, codeParser.getLabels().get("two").getAddress());
-    Assert.assertEquals(8, codeParser.getLabels().get("three").getAddress());
+    Assert.assertEquals(0, codeParser.getSymbolTable().get("one").getAddress());
+    Assert.assertEquals(4, codeParser.getSymbolTable().get("two").getAddress());
+    Assert.assertEquals(8, codeParser.getSymbolTable().get("three").getAddress());
   }
   
   @Test
@@ -204,9 +204,9 @@ public class CodeParserTest
     
     Assert.assertTrue(codeParser.success());
     Assert.assertEquals(1, codeParser.getInstructions().size());
-    Assert.assertEquals(0, codeParser.getLabels().get("one").getAddress());
-    Assert.assertEquals(0, codeParser.getLabels().get("two").getAddress());
-    Assert.assertEquals(0, codeParser.getLabels().get("three").getAddress());
+    Assert.assertEquals(0, codeParser.getSymbolTable().get("one").getAddress());
+    Assert.assertEquals(0, codeParser.getSymbolTable().get("two").getAddress());
+    Assert.assertEquals(0, codeParser.getSymbolTable().get("three").getAddress());
   }
   
   @Test
@@ -335,9 +335,9 @@ public class CodeParserTest
     Assert.assertTrue(codeParser.success());
     Assert.assertEquals(1, codeParser.getInstructions().size());
     
-    Assert.assertEquals(2, codeParser.labels.size());
-    Assert.assertEquals(0, codeParser.labels.get("one").getAddress());
-    Assert.assertEquals(0, codeParser.labels.get("two").getAddress());
+    Assert.assertEquals(2, codeParser.symbolTable.size());
+    Assert.assertEquals(0, codeParser.symbolTable.get("one").getAddress());
+    Assert.assertEquals(0, codeParser.symbolTable.get("two").getAddress());
   }
   
   @Test
@@ -786,7 +786,7 @@ public class CodeParserTest
     
     SimulatedMemory   memory            = new SimulatedMemory(0, 0, new SimulationStatistics(1, 1));
     MemoryInitializer memoryInitializer = new MemoryInitializer(0, 0);
-    memoryInitializer.setLabels(codeParser.getLabels());
+    memoryInitializer.setLabels(codeParser.getSymbolTable());
     memoryInitializer.addLocations(codeParser.getMemoryLocations());
     memoryInitializer.initializeMemory(memory);
     
@@ -807,7 +807,7 @@ public class CodeParserTest
     
     SimulatedMemory   memory            = new SimulatedMemory(0, 0, new SimulationStatistics(1, 1));
     MemoryInitializer memoryInitializer = new MemoryInitializer(0, 0);
-    memoryInitializer.setLabels(codeParser.getLabels());
+    memoryInitializer.setLabels(codeParser.getSymbolTable());
     memoryInitializer.addLocations(codeParser.getMemoryLocations());
     memoryInitializer.initializeMemory(memory);
     
@@ -833,11 +833,11 @@ public class CodeParserTest
     
     SimulatedMemory   memory            = new SimulatedMemory(0, 0, new SimulationStatistics(1, 1));
     MemoryInitializer memoryInitializer = new MemoryInitializer(0, 0);
-    memoryInitializer.setLabels(codeParser.getLabels());
+    memoryInitializer.setLabels(codeParser.getSymbolTable());
     memoryInitializer.addLocations(codeParser.getMemoryLocations());
     memoryInitializer.initializeMemory(memory);
     
-    long address = codeParser.labels.get("N").getAddress();
+    long address = codeParser.symbolTable.get("N").getAddress();
     
     Assert.assertEquals(0, address % 8);
     
@@ -876,9 +876,9 @@ public class CodeParserTest
     // One memory location
     Assert.assertEquals(1, codeParser.getMemoryLocations().size());
     // but two labels
-    Assert.assertEquals(2, codeParser.getLabels().size());
-    Assert.assertEquals(0, codeParser.getLabels().get("a").getAddress());
-    Assert.assertEquals(0, codeParser.getLabels().get("b").getAddress());
+    Assert.assertEquals(2, codeParser.getSymbolTable().size());
+    Assert.assertEquals(0, codeParser.getSymbolTable().get("a").getAddress());
+    Assert.assertEquals(0, codeParser.getSymbolTable().get("b").getAddress());
   }
   
   @Test
@@ -914,7 +914,7 @@ public class CodeParserTest
     
     Assert.assertTrue(codeParser.success());
     Assert.assertEquals(0, codeParser.getMemoryLocations().size());
-    Assert.assertEquals(3, codeParser.getLabels().size());
+    Assert.assertEquals(3, codeParser.getSymbolTable().size());
   }
   
   /**
@@ -938,10 +938,10 @@ public class CodeParserTest
     
     Assert.assertTrue(codeParser.success());
     Assert.assertEquals(0, codeParser.getMemoryLocations().size());
-    Assert.assertEquals(2, codeParser.getLabels().size());
+    Assert.assertEquals(2, codeParser.getSymbolTable().size());
     
-    Assert.assertEquals(0, codeParser.getLabels().get("add").getAddress());
-    Assert.assertEquals(12, codeParser.getLabels().get(".L2").getAddress());
+    Assert.assertEquals(0, codeParser.getSymbolTable().get("add").getAddress());
+    Assert.assertEquals(12, codeParser.getSymbolTable().get(".L2").getAddress());
     
     // 'j' is a relative offset jump, so should have -1
     Assert.assertEquals(-12, (int) codeParser.getInstructions().get(6).getArgumentByName("imm").getConstantValue()
