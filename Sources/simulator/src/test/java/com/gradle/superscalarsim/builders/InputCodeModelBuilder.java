@@ -1,5 +1,6 @@
 package com.gradle.superscalarsim.builders;
 
+import com.gradle.superscalarsim.code.CodeToken;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.loader.IDataProvider;
 import com.gradle.superscalarsim.models.instruction.InputCodeArgument;
@@ -83,7 +84,7 @@ public class InputCodeModelBuilder
       {
         temp.add(new InputCodeArgument(argument));
       }
-      temp.add(new InputCodeArgument("labelName", this.codeLine));
+      temp.add(new InputCodeArgument("labelName", new CodeToken(0, 0, this.codeLine, CodeToken.Type.SYMBOL)));
       this.arguments = temp;
     }
     return new InputCodeModel(model, this.arguments, this.id, null);

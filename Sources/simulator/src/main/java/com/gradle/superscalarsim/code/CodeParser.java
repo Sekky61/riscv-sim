@@ -253,7 +253,7 @@ public class CodeParser
   
   /**
    * @brief Fills the missing constantValue field of immediate arguments based on the string representation of the value.
-   * Missing should be only arithmetic expressions like "label1+4".
+   * Missing should be only arithmetic expressions like "ptr+4".
    */
   public void fillImmediateValues()
   {
@@ -268,8 +268,9 @@ public class CodeParser
           // Not constant or already filled
           continue;
         }
-        String   argumentToken = argument.getValue();
-        String[] tokens        = ExpressionEvaluator.tokenize(argumentToken);
+        CodeToken valueToken    = argument.getValueToken();
+        String    argumentToken = valueToken.text();
+        String[]  tokens        = ExpressionEvaluator.tokenize(argumentToken);
         // Replace labels with numbers
         for (int i = 0; i < tokens.length; i++)
         {
@@ -281,8 +282,7 @@ public class CodeParser
           Symbol symbol = symbolTable.get(token);
           if (symbol == null || symbol.getValue() == null)
           {
-            addWarning(new CodeToken(0, 0, argumentToken, CodeToken.Type.EOF),
-                       "Symbol '" + argumentToken + "' is not defined");
+            addWarning(valueToken, "Symbol '" + argumentToken + "' is not defined");
             continue argloop;
           }
           // Replace label with its address
@@ -452,7 +452,7 @@ public class CodeParser
       
       String            argumentName      = argument.name();
       boolean           isValid           = true;
-      InputCodeArgument inputCodeArgument = new InputCodeArgument(argumentName, argumentToken.text());
+      InputCodeArgument inputCodeArgument = new InputCodeArgument(argumentName, argumentToken);
       if (argument.isRegister())
       {
         // Try to find the register. Its existence ic checked in the next step

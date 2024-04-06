@@ -1,6 +1,7 @@
 package com.gradle.superscalarsim.builders;
 
 import com.gradle.superscalarsim.blocks.base.UnifiedRegisterFileBlock;
+import com.gradle.superscalarsim.code.CodeToken;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.models.instruction.InputCodeArgument;
 import com.gradle.superscalarsim.models.register.RegisterDataContainer;
@@ -69,7 +70,7 @@ public class InputCodeArgumentBuilder
     }
     else
     {
-      return new InputCodeArgument(this.name, this.value);
+      return new InputCodeArgument(this.name, new CodeToken(0, 0, this.value, CodeToken.Type.SYMBOL));
     }
   }
 }
