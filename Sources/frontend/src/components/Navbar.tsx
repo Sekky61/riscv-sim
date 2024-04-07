@@ -93,15 +93,15 @@ export default function Navbar() {
             shortcut='Digit7'
           />
           <SideMenuButton
-            Icon={<Settings strokeWidth={1.5} />}
-            href='/settings'
-            hoverText='App Settings'
-            shortcut='Digit8'
-          />
-          <SideMenuButton
             Icon={<Info strokeWidth={1.5} />}
             href='/help'
             hoverText='Help'
+            shortcut='Digit8'
+          />
+          <SideMenuButton
+            Icon={<Settings strokeWidth={1.5} />}
+            href='/settings'
+            hoverText='App Settings'
             shortcut='Digit9'
           />
         </div>

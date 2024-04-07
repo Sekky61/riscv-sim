@@ -116,12 +116,12 @@ const shortcuts = {
     description: 'Show RISC-V documentation tab',
     keys: ['7'],
   },
-  settingsTab: {
-    description: 'Show Settings tab',
-    keys: ['8'],
-  },
   helpTab: {
     description: 'Show Help tab',
+    keys: ['8'],
+  },
+  settingsTab: {
+    description: 'Show Settings tab',
     keys: ['9'],
   },
   stepForward: {
@@ -142,7 +142,7 @@ const shortcuts = {
   },
   zoomIn: {
     description: 'Zoom in',
-    keys: [ '+'],
+    keys: ['+'],
   },
   zoomOut: {
     description: 'Zoom out',
@@ -169,8 +169,8 @@ const shortcutCategories = [
       'statisticsTab',
       'learnTab',
       'riscVDocTab',
-      'settingsTab',
       'helpTab',
+      'settingsTab',
     ] as const,
   },
   {

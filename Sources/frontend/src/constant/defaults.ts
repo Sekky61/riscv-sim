@@ -4,7 +4,7 @@ import type { CpuConfig, SimulationConfig } from '@/lib/forms/Isa';
  * The default assembly code. Shown in the editor when the page is first loaded.
  */
 export const defaultAsmCode: string =
-  '  addi x3, x0, 3\nloop:\n  beq  x3,x0,loopEnd\n  subi x3,x3,1\n  jal  x0,loop\nloopEnd:';
+  'addi x1,x0,10\naddi x2,x0,10\n\naddi x3,x0,20\nsw x1,0(x3)\nsw x2,0(x3)\n\naddi x4,x0,20\nlw x5,0(x4)\nlw x6,0(x4)';
 
 /**
  * Default configuration

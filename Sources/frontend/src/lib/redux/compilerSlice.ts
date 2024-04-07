@@ -79,12 +79,9 @@ interface CompilerState extends CompilerOptions {
 
 // Define the initial state using that type
 const initialState: CompilerState = {
-  cCode:
-    'int add(int a, int b) {\n  int d = 2*a + 2;\n  int x = d + b;\n  for(int i = 0; i < a; i++) {\n    x += b;\n  }\n  return x;\n} ',
+  cCode: '',
   asmCode: defaultAsmCode,
   asmToC: [
-    0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 5, 5, 5, 5, 4, 4, 4, 4,
-    4, 4, 4, 7, 8, 8, 8, 8,
   ],
   cDirty: false,
   asmDirty: false,

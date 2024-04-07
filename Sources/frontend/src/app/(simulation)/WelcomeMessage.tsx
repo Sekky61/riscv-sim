@@ -35,8 +35,6 @@ import { Dialog, DialogContent } from '@/components/base/ui/dialog';
 import { useLocalStorage } from '@uidotdev/usehooks';
 import Link from 'next/link';
 
-const feedbackEmail = 'misa@majer.cz';
-
 /**
  * The welcome message dialog.
  * Shows the welcome message to the user on the first visit.
@@ -54,20 +52,22 @@ export function WelcomeMessage() {
             Welcome to the RISC-V Superscalar simulator!
           </h1>
           <p className='mt-2'>
-            This simulator allows you to simulate the execution of a superscalar
+            This app allows you to simulate the execution of a superscalar
             processor step by step.
           </p>
           <p className='mt-2'>
             To get started, navigate to the{' '}
-            <Link href='/compiler'>code editor</Link> and write your RISC-V
-            assembly code or load a sample program.
+            <Link href='/compiler' className='link'>
+              code editor
+            </Link>{' '}
+            and load an example program.
           </p>
           <p className='mt-2'>
-            If you have any questions or feedback, feel free to reach out to us
-            at{' '}
-            <a href={`emailto:${feedbackEmail}`} className='text-blue-500'>
-              {feedbackEmail}
-            </a>
+            You can find more information about the app in the{' '}
+            <Link href='/help' className='link'>
+              help section
+            </Link>
+            .
           </p>
         </div>
       </DialogContent>

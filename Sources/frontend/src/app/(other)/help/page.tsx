@@ -33,6 +33,8 @@ import { CodingHelp } from '@/app/(other)/help/CodingHelp';
 import { ShortcutsHelp } from '@/app/(other)/help/ShortcutsHelp';
 import Link from 'next/link';
 
+const feedbackEmail = 'misa@majer.cz';
+
 /**
  * The help page of the application
  * Shows coding tips and shortcuts
@@ -72,6 +74,19 @@ export default function Page() {
       <section>
         <h2 className='text-2xl'>Shortcuts</h2>
         <ShortcutsHelp />
+      </section>
+      <section>
+        <p className='mt-2'>
+          If you have any questions or feedback, feel free to reach out to me at{' '}
+          <a
+            href={`mailto:${feedbackEmail}`}
+            target='_blank'
+            rel='noopener noreferrer'
+            className='text-blue-500'
+          >
+            {feedbackEmail}
+          </a>
+        </p>
       </section>
     </div>
   );
