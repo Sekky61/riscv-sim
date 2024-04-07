@@ -427,19 +427,8 @@ public class CpuState implements Serializable
     fpIssueWindowBlock.simulate(tick);
     branchIssueWindowBlock.simulate(tick);
     loadStoreIssueWindowBlock.simulate(tick);
-    // Check which buffer contains older instruction at the top
-    // Null check first, if any is empty, the order does not matter
-    if (loadBufferBlock.getQueueSize() == 0 || storeBufferBlock.getQueueSize() == 0 || loadBufferBlock.getLoadQueueFirst()
-            .getIntegerId() < storeBufferBlock.getStoreQueueFirst().getIntegerId())
-    {
-      loadBufferBlock.simulate(tick);
-      storeBufferBlock.simulate(tick);
-    }
-    else
-    {
-      storeBufferBlock.simulate(tick);
-      loadBufferBlock.simulate(tick);
-    }
+    storeBufferBlock.simulate(tick);
+    loadBufferBlock.simulate(tick);
     // Run all FUs
     arithmeticFunctionUnitBlocks.forEach(arithmeticFunctionUnitBlock -> arithmeticFunctionUnitBlock.simulate(tick));
     fpFunctionUnitBlocks.forEach(arithmeticFunctionUnitBlock -> arithmeticFunctionUnitBlock.simulate(tick));

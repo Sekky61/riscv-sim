@@ -81,6 +81,7 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
   
   /**
    * Delay added to the memory access by this unit.
+   * TODO delete
    */
   private int baseDelay;
   
@@ -141,7 +142,7 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
   }// end of simulate
   
   /**
-   * @return Delay of this access and id of the transaction
+   * @return Delay of this access
    * @brief starts execution of instruction
    */
   private int startExecution(int cycle)

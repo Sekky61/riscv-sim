@@ -261,7 +261,12 @@ public class LoadBufferBlock implements AbstractBlock
     {
       boolean addressesMatch = bufferItem.getAddress() == address;
       boolean isAfterStore   = bufferItem.getSimCodeModel().getIntegerId() > cycle;
-      // There used to be a bypassed check here, but it was removed
+      if (bufferItem.hasBypassed())
+      {
+        // Bypassed means there is a address match and the value was forwarded.
+        // TODO: hasBypassed is not enough, we need to check if the store is actually the one that bypassed the load
+        continue;
+      }
       // TODO: what if the load is not yet in MA/executed?
       if (addressesMatch && isAfterStore)
       {
