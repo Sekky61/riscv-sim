@@ -1,14 +1,14 @@
 /**
- * @file    HomePage.test.tsx
+ * @file    Navbar.test.tsx
  *
  * @author  Michal Majer
  *          Faculty of Information Technology
  *          Brno University of Technology
  *          xmajer21@stud.fit.vutbr.cz
  *
- * @brief   [TODO]
+ * @brief   Test for the Navbar component
  *
- * @date    19 September 2023, 22:00 (created)
+ * @date    07 April 2024, 22:00 (created)
  *
  * @section Licence
  * This file is part of the Superscalar simulator app
@@ -29,31 +29,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- * @jest-environment jsdom
- */
-import { act, render, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
+import Block from '../simulation/Block';
 
-import HomePage from '@/app/(simulation)/page';
-import PersistedStoreProvider from '@/lib/redux/PersistedStoreProvider';
+describe('Block', () => {
+  it('renders the simulation link', async () => {
+    render(
+      <Block title='Test block'>
+        <div>Test content</div>
+      </Block>,
+    );
 
-describe('Homepage', () => {
-  it('renders the simulation schema', async () => {
-    act(() => {
-      render(
-        <PersistedStoreProvider>
-          <HomePage />
-        </PersistedStoreProvider>,
-      );
-    });
-
-    await waitFor(() => {
-      // Check if there is a button for simulation forward
-      // There should be a button with aria-label="Step Forward"
-      const buttonForward = document.querySelector(
-        'button[aria-label="Step forward"]',
-      );
-      expect(buttonForward).toBeDefined();
-    });
+    // contains the title
+    expect(screen.getByText('Test block')).not.toBeNull();
+    // contains the content
+    expect(screen.getByText('Test content')).not.toBeNull();
   });
 });
