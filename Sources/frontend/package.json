@@ -11,10 +11,10 @@
     "lint:fix-unsafe": "biome check --apply-unsafe ./src",
     "typecheck": "tsc --noEmit --incremental false",
     "test": "vitest",
-    "test:watch": "jest --watch",
     "format": "npx @biomejs/biome format src/ --write",
     "format:check": "npx @biomejs/biome format ./src",
-    "postbuild": "next-sitemap --config next-sitemap.config.js"
+    "postbuild": "next-sitemap --config next-sitemap.config.js",
+    "dependencies": "npx npm-check-updates --interactive"
   },
   "dependencies": {
     "@codemirror/lint": "^6.5.0",
@@ -70,8 +70,6 @@
     "@types/react-window": "^1.8.8",
     "@vitejs/plugin-react": "^4.2.1",
     "autoprefixer": "^10.4.17",
-    "jest": "^29.7.0",
-    "jest-environment-jsdom": "^29.7.0",
     "jsdom": "^24.0.0",
     "next-router-mock": "^0.9.11",
     "next-sitemap": "^4.2.3",
