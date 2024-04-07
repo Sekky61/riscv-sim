@@ -29,7 +29,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import React, { createContext, useContext, useMemo, useState } from 'react';
+import type React from 'react';
+import { createContext, useContext, useMemo, useState } from 'react';
 
 /**
  * The value itself is not provided, only the setter.
@@ -86,6 +87,18 @@ export const HighlightProvider: React.FC<Props> = ({ children }) => {
 
     .register[data-register-id="${highlightedRegister}"] {
       background-color: var(--hover-highlight-color);
+    }
+
+    .dark .instruction[data-instruction-id="${highlightedCodeId?.simcode}"] {
+      background-color: var(--hover-highlight-color-dark);
+    }
+
+    .dark .inputcodemodel[data-inputcode-id="${highlightedCodeId?.inputcode}"] {
+      background-color: var(--hover-highlight-color-dark);
+    }
+
+    .dark .register[data-register-id="${highlightedRegister}"] {
+      background-color: var(--hover-highlight-color-dark);
     }
   `;
 

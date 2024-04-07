@@ -47,6 +47,7 @@
     @apply surface-container;
     font-family: 'Open Sans', sans-serif;
     --hover-highlight-color: #D9E2FF;
+    --hover-highlight-color-dark: #2D3748;
   }
 
   /* main pane is for the page main content body */
