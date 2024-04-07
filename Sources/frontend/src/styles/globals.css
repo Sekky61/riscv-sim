@@ -841,4 +841,8 @@
   circle[data-active='true'] {
     @apply fill-primary-70 dark:fill-primary-60;
   }
+
+  .disable-children * {
+    @apply pointer-events-none;
+  }
 }

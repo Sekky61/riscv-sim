@@ -76,6 +76,7 @@ import { formatNumberWithUnit } from '@/lib/utils';
 import { DividedBadge } from '../DividedBadge';
 import { FormInput } from './FormInput';
 import { ControlRadioInput, RadioInputWithTitle } from './RadioInput';
+import { toast } from 'sonner';
 
 type IsaArrayFields = 'fUnits' | 'memoryLocations';
 type IsaSimpleFields = keyof Omit<CpuConfig, IsaArrayFields>;
@@ -316,12 +317,20 @@ export default function IsaSettingsForm({
           <TabsTrigger value='memory'>Memory</TabsTrigger>
           <TabsTrigger value='branch'>Branch</TabsTrigger>
         </TabsList>
+        {/* biome-ignore lint/a11y/useKeyWithClickEvents: just a UI nudge */}
         <div
           className={
             disabled
-              ? 'pointer-events-none opacity-60 hover:cursor-not-allowed'
+              ? 'disable-children opacity-60 cursor-not-allowed'
               : undefined
           }
+          onClick={() => {
+            if (disabled) {
+              toast.warning(
+                'You cannot edit built in configurations. Please create a new one.',
+              );
+            }
+          }}
         >
           <TabsContent value='name'>
             <Card>

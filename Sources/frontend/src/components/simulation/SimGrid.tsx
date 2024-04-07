@@ -134,7 +134,9 @@ export function SimGrid() {
               <RegisterBlock />
             </div>
           </div>
+          <div>
           <CacheBlock />
+          </div>
         </div>
       </main>
     </HighlightProvider>
