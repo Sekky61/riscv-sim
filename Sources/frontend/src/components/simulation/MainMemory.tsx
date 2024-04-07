@@ -43,8 +43,8 @@ import {
 } from '@/components/base/ui/dialog';
 import Block from '@/components/simulation/Block';
 import { useRefDimensions } from '@/lib/hooks/useRefDimensions';
-import type { Label } from '@/lib/types/cpuApi';
-import {  useRef } from 'react';
+import type { AsmSymbol} from '@/lib/types/cpuApi';
+import { useRef } from 'react';
 import { FixedSizeList, type ListChildComponentProps } from 'react-window';
 
 /**
@@ -90,7 +90,7 @@ export default function MainMemory() {
                 return (
                   <tr key={label.name}>
                     <td>{label.name}</td>
-                    <td>{label.address.stringRepresentation}</td>
+                    <td>{label.value.stringRepresentation}</td>
                   </tr>
                 );
               })}
@@ -126,7 +126,7 @@ export default function MainMemory() {
 export type HexDumpProps = {
   memory: Uint8Array;
   oldMemory: Uint8Array;
-  labels: Label[];
+  labels: AsmSymbol[];
   /**
    * Should be a multiple of 4
    */
@@ -155,7 +155,7 @@ function HexDump({
   // A lookup structure for labels. Key is the address
   const labelsLookup = new Map<number, string>();
   for (const label of labels) {
-    labelsLookup.set(label.address.bits, label.name);
+    labelsLookup.set(label.value.bits, label.name);
   }
 
   // A lookup structure for memory changes. Key is the address

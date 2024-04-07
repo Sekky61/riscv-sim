@@ -51,13 +51,13 @@ import {
   callSimulationImpl,
 } from '@/lib/serverCalls';
 import type {
+    AsmSymbol,
   Cache,
   CacheLineModel,
   CpuState,
   InputCodeArgument,
   InputCodeModel,
   InstructionFunctionModel,
-  Label,
   Reference,
   RegisterDataContainer,
   RegisterModel,
@@ -68,7 +68,7 @@ import type {
   InstructionDescriptionResponse,
   SimulateResponse,
 } from '@/lib/types/simulatorApi';
-import { isValidReference, isValidRegisterValue } from '@/lib/utils';
+import { isValidRegisterValue } from '@/lib/utils';
 import { toast } from 'sonner';
 
 /**
@@ -372,17 +372,17 @@ export const selectProgramWithLabels = createSelector(
     }
 
     // Collect labels that are not after the end of the program
-    const labels: Array<Label & { labelName: string }> = [];
+    const labels: Array<AsmSymbol & { labelName: string }> = [];
     for (const [labelName, label] of Object.entries(program.labels)) {
       // Do not insert labels that are well after the end of the program
-      if (label.address.bits >= (program.code.length + 1) * 4) {
+      if (label.value.bits >= (program.code.length + 1) * 4) {
         continue;
       }
       labels.push({ ...label, labelName });
     }
 
     // Sort labels by address, ascending
-    labels.sort((a, b) => a.address.bits - b.address.bits);
+    labels.sort((a, b) => a.value.bits - b.value.bits);
 
     // Upsert labels into the code
     let offset = 0;
@@ -391,7 +391,7 @@ export const selectProgramWithLabels = createSelector(
       const address = i * 4;
       // Insert labels before the instruction they point to
       let lab = labels[offset];
-      while (lab !== undefined && lab.address.bits === address) {
+      while (lab !== undefined && lab.value.bits === address) {
         codeOrder.push(lab.labelName);
         offset++;
         lab = labels[offset];

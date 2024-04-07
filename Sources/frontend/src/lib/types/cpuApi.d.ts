@@ -249,13 +249,15 @@ export interface InstructionMemoryBlock {
   nop: Reference;
   code: Reference[];
   labels: {
-    [k: string]: Label;
+    [k: string]: AsmSymbol;
   };
 }
 
-export interface Label {
+export interface AsmSymbol {
   name: string;
-  address: RegisterDataContainer;
+  value: RegisterDataContainer;
+  memoryLocation: MemoryLocation | null;
+  type: 'LABEL' | 'DATA';
 }
 
 export type InstructionTypeEnum =

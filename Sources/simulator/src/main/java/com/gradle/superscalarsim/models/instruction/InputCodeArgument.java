@@ -33,6 +33,8 @@
 package com.gradle.superscalarsim.models.instruction;
 
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gradle.superscalarsim.code.CodeToken;
 import com.gradle.superscalarsim.models.register.RegisterDataContainer;
 import com.gradle.superscalarsim.models.register.RegisterModel;
@@ -62,6 +64,7 @@ public class InputCodeArgument
    * Value of the argument.
    * Example: x5, 10, name of a label.
    */
+  @JsonIgnore
   private CodeToken stringValue;
   
   /**
@@ -145,6 +148,7 @@ public class InputCodeArgument
    * @return Argument value
    * @brief Get value of the argument
    */
+  @JsonProperty("stringValue")
   public String getValue()
   {
     return stringValue.text();
