@@ -53,7 +53,13 @@
   /* main pane is for the page main content body */
   /* above other definitions so it has less power */
   .main-pane {
-    @apply surface rounded-2xl p-10;
+    @apply surface rounded-2xl p-10 mx-auto;
+    /* screen - navbar - padding */
+    width: calc(100vw - 3rem - 50px);
+  }
+
+  div.main-pane {
+    @apply xl:w-[1200px];
   }
 
   /* Also use text-onSurfaceVariant for lower emphasis text */
@@ -367,7 +373,7 @@
      renders navbar above page content.
   */
   .navbar-slot {
-    @apply shrink min-w-12 w-12 2xl:w-[18rem] relative z-30;
+    @apply shrink min-w-14 w-14 2xl:w-[18rem] relative z-30;
   }
 
   /* Parent of .navbar */
@@ -376,7 +382,7 @@
   }
 
   .navbar {
-    @apply w-12 h-full;
+    @apply w-14 h-full;
   }
 
   .navbar * {

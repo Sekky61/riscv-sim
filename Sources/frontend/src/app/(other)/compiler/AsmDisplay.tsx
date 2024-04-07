@@ -49,18 +49,13 @@ import {
   selectEntryPoint,
   setEntryPoint,
 } from '@/lib/redux/compilerSlice';
-import {
-  loadFunctionModels,
-  reloadSimulation,
-  selectCpu,
-} from '@/lib/redux/cpustateSlice';
+import { loadFunctionModels } from '@/lib/redux/cpustateSlice';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import { setDiagnostics } from '@codemirror/lint';
-import { EditorView } from '@codemirror/view';
 import { useCodeMirror } from '@uiw/react-codemirror';
 import React, {
-  FocusEventHandler,
-  MouseEventHandler,
+  type FocusEventHandler,
+  type MouseEventHandler,
   useEffect,
   useRef,
 } from 'react';
@@ -82,22 +77,6 @@ import { selectAllInstructionFunctionModels } from '@/lib/redux/cpustateSlice';
 import clsx from 'clsx';
 import { Play } from 'lucide-react';
 import { useTheme } from 'next-themes';
-
-/**
- * The base theme for the editor.
- * Uses --line-highlight-color which is used for color mapping C lines to assembly lines.
- */
-const baseTheme = EditorView.baseTheme({
-  '.cm-content': {
-    borderTopWidth: '1px',
-  },
-  '&.cm-focused': {
-    outlineStyle: 'none',
-  },
-  '.cm-lineNumbers': {
-    flexGrow: 1,
-  },
-});
 
 /**
  * Component to display the assembly code editor.
@@ -219,14 +198,12 @@ const AsmCheckButton = () => {
   };
 
   const boxStyle = clsx(
-    'flex items-center px-2 rounded py-0.5 my-0.5 h-6 text-black bg-gray-200 hover:bg-gray-300',
+    'flex items-center px-2 rounded py-0.5 my-0.5 h-6',
     dirty && 'button-interactions',
     hasErrors &&
       !dirty &&
       'bg-red-500/20 hover:bg-red-500/30 active:bg-red-500/40',
-    !hasErrors &&
-      !dirty &&
-      'bg-green-500/20 hover:bg-green-500/30 active:bg-green-500/40',
+    !hasErrors && !dirty && 'hover:bg-green-200/50 active:bg-green-500/40',
   );
 
   let iconType: 'circle' | 'tick' | 'x';
@@ -239,7 +216,7 @@ const AsmCheckButton = () => {
   }
 
   return (
-    <Button className={boxStyle} onClick={checkAsm}>
+    <Button className={boxStyle} onClick={checkAsm} variant='outline'>
       <div className='mr-2'>
         <StatusIcon type={iconType} />
       </div>
@@ -282,7 +259,7 @@ function EntryPointSelector() {
   // TODO: solve problem with reseting the sim (tick)
   const handleEntryPointChange = (s: string) => {
     // try parsing a number
-    const num = parseInt(s);
+    const num = Number.parseInt(s);
     if (!Number.isNaN(num)) {
       dispatch(setEntryPoint(num));
       return;
@@ -294,10 +271,13 @@ function EntryPointSelector() {
     <div className='flex items-center'>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button className='flex items-center gap-2 px-2 rounded py-0.5 my-0.5 h-6 text-black bg-gray-200 hover:bg-gray-300'>
-            <Play size={16} strokeWidth={1.75} color='black' />
-            Entry Point:{' '}
-            <span className='font-semibold text-black'>{entryPoint}</span>
+          <Button
+            variant='outline'
+            className='items-center gap-2 px-2 rounded py-0.5 my-0.5 h-6'
+          >
+            <Play size={16} strokeWidth={1.75} />
+            <span className='break-keep'>Entry Point: </span>
+            <span className='font-semibold'>{entryPoint}</span>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className='w-56'>
@@ -320,7 +300,4 @@ function EntryPointSelector() {
       </DropdownMenu>
     </div>
   );
-}
-function setHoveredCLine(arg0: number) {
-  throw new Error('Function not implemented.');
 }
