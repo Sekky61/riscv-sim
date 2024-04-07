@@ -51,6 +51,7 @@ import InstructionField, {
 import { InstructionListDisplay } from '@/components/simulation/InstructionListDisplay';
 import { ArgumentTableCell } from '@/components/simulation/IssueWindow';
 import RegisterReference from '@/components/simulation/RegisterReference';
+import InstructionTable from './InstructionTable';
 
 export default function LoadBuffer() {
   const loadBuffer = useAppSelector(selectLoadBuffer);
@@ -70,6 +71,9 @@ export default function LoadBuffer() {
               {descriptions.loadBuffer?.shortDescription}
             </DialogDescription>
           </DialogHeader>
+          <InstructionTable
+            instructions={loadBuffer.loadQueue.map((item) => item.simCodeModel)}
+          />
         </DialogContent>
       }
     >

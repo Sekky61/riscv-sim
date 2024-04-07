@@ -43,6 +43,7 @@ import {
 import Block from '@/components/simulation/Block';
 import InstructionField from '@/components/simulation/InstructionField';
 import { InstructionListDisplay } from '@/components/simulation/InstructionListDisplay';
+import InstructionTable from './InstructionTable';
 
 export default function DecodeBlock() {
   const decode = useAppSelector(selectDecode);
@@ -68,6 +69,8 @@ export default function DecodeBlock() {
               {descriptions.decode?.shortDescription}
             </DialogDescription>
           </DialogHeader>
+                    <InstructionTable instructions={decode.codeBuffer} />
+
         </DialogContent>
       }
       className='decode w-block h-[250px]'

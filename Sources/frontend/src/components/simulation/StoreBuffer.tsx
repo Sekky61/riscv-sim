@@ -54,6 +54,7 @@ import InstructionField, {
 import { InstructionListDisplay } from '@/components/simulation/InstructionListDisplay';
 import { ArgumentTableCell } from '@/components/simulation/IssueWindow';
 import RegisterReference from '@/components/simulation/RegisterReference';
+import InstructionTable from './InstructionTable';
 
 export default function StoreBuffer() {
   const storeBuffer = useAppSelector(selectStoreBuffer);
@@ -73,6 +74,9 @@ export default function StoreBuffer() {
               {descriptions.storeBuffer?.shortDescription}
             </DialogDescription>
           </DialogHeader>
+          <InstructionTable
+            instructions={storeBuffer.storeQueue.map((item) => item.simCodeModel)}
+          />
         </DialogContent>
       }
     >

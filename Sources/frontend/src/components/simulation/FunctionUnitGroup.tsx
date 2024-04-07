@@ -49,6 +49,14 @@ import type {
   AbstractFunctionUnitBlock,
   MemoryAccessUnit,
 } from '@/lib/types/cpuApi';
+import {
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '../base/ui/dialog';
+import InstructionTable from './InstructionTable';
+import { useBlockDescriptions } from '../BlockDescriptionContext';
 
 type FUType = 'alu' | 'fp' | 'branch' | 'ls' | 'memory';
 
@@ -88,6 +96,7 @@ type FUProps = {
 };
 
 function FU({ type, fu, children }: FUProps) {
+  const descriptions = useBlockDescriptions();
   const { name, className } = fuInfo[type];
 
   const handledBy = (fu as MemoryAccessUnit)?.transaction?.handledBy;
@@ -98,6 +107,21 @@ function FU({ type, fu, children }: FUProps) {
       <Block
         title={fu.description.name || name}
         className={clsx(className, 'w-issue relative')}
+        detailDialog={
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>
+                Functional Unit {fu.description.name || name}
+              </DialogTitle>
+              <DialogDescription>
+                {descriptions.functionUnit?.shortDescription}
+              </DialogDescription>
+            </DialogHeader>
+            <InstructionTable
+              instructions={fu.simCodeModel !== null ? [fu.simCodeModel] : []}
+            />
+          </DialogContent>
+        }
       >
         <div className='flex gap-4 items-center'>
           <div className='flex gap-2 items-center'>

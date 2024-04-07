@@ -31,9 +31,10 @@
 
 'use client';
 
-import React, { createContext, useContext } from 'react';
+import type React from 'react';
+import { createContext, useContext } from 'react';
 
-import { BlockDescriptions } from '@/lib/types/codeExamples';
+import type { BlockDescriptions } from '@/lib/types/codeExamples';
 
 /**
  * A context for the block descriptions

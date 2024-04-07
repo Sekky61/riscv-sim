@@ -1,7 +1,7 @@
 {
   "fetch": {
     "name": "Fetch",
-    "shortDescription": "The Fetch unit loads instructions from memory and predicts branches. Branch instructions are accompanied by a graph of the relevant predictor, with highlighted state and outline indicating the result of the prediction.",
+    "shortDescription": "The Fetch unit loads instructions from memory and predicts branches. The instructions are loaded sequentially from address indicated by the Program Counter. Branch instructions are accompanied by a graph of the relevant predictor, with highlighted state of the predictor and outline indicating the result of the prediction.",
     "longDescription": ""
   },
   "decode": {
@@ -11,32 +11,37 @@
   },
   "rob": {
     "name": "Reorder Buffer",
-    "shortDescription": "The Reorder Buffer is a queue that holds instructions in program order. Computed instructions are written back from the head of the queue. The ROB holds additional information: if the instruction is speculative, busy, or has thrown an exception.",
+    "shortDescription": "The Reorder Buffer is a queue that holds instructions in program order. Computed instructions are written back from the head of the queue. The ROB holds additional information like whether an instruction is speculative, busy, or has thrown an exception.",
     "longDescription": ""
   },
   "issue": {
     "name": "Issue Window",
-    "shortDescription": "The Issue Window is a buffer that holds instructions of the same type. Once an instruction has all of its operands ready, it is issued to the functional units. The operands values are displayed in the columns. The operands are highlighted green when they are ready.",
+    "shortDescription": "The Issue Window is a buffer that holds instructions of the same type (for example Branch instructions). Once an instruction has all of its operands ready, it can be issued to the functional units. The operands values are displayed in the columns. The operands are highlighted green when they are ready.",
+    "longDescription": ""
+  },
+  "functionUnit": {
+    "name": "Functional Units",
+    "shortDescription": "The Functional Units are the actual hardware that performs the operations specified by the instructions. The visualisation shows the number of cycles needed to complete the operation.",
     "longDescription": ""
   },
   "storeBuffer": {
     "name": "Store Buffer",
-    "shortDescription": "The Store Buffer holds store instructions. It is used to ensure that the speculative stores do not leak to memory until they are committed. The address and the data to be stored are shown in the columns.",
+    "shortDescription": "The Store Buffer holds store instructions. It is used to ensure that the speculative stores do not leak to memory until they are committed. Finished loads also check this buffer for conflicts. The address and the data to be stored are shown in the columns.",
     "longDescription": ""
   },
   "loadBuffer": {
     "name": "Load Buffer",
-    "shortDescription": "The Load Buffer holds load instructions. It ensures that speculative loads do not work with stale data. The 'bypass' flag indicates that the load has been bypassed from a store in the store buffer.",
+    "shortDescription": "The Load Buffer holds load instructions. It ensures that speculative loads do not work with stale data. The 'bypass' flag indicates that the data has been loaded from the store buffer instead of cache.",
     "longDescription": ""
   },
   "mainMemory": {
     "name": "Main Memory",
-    "shortDescription": "The Main Memory is an addressable array of bytes. It is used to store both instructions and data. Labels are highlighted.",
+    "shortDescription": "The Main Memory is an addressable array of bytes. It is used to store both instructions and data. The CPU never works with Main Memory directly, only through the cache. Symbols are highlighted.",
     "longDescription": ""
   },
   "cache": {
     "name": "Cache",
-    "shortDescription": "The Cache is a small, fast memory that holds recently accessed data. It transparently speeds up access to the main memory. Tags of valid lines are highlighted green.",
+    "shortDescription": "The Cache is a small, fast memory that holds recently accessed data. It transparently speeds up access to the main memory. Memory is divided up into lines (for example of 64 bytes). A line can be mapped to exactly one index based on it's address. Tags of valid lines are highlighted green.",
     "longDescription": ""
   },
   "registerFile": {
@@ -46,7 +51,7 @@
   },
   "branchPredictor": {
     "name": "Branch Predictor",
-    "shortDescription": "The Branch Predictor is a unit that predicts the outcome of branches. The visualisation shows all predictors in a grid. A predictor is indexed using the PC and optionally the branch history (GHR).",
+    "shortDescription": "The Branch Predictor is a unit that predicts the outcome of branches. A predictor is picked for a branch based on its address. Each predictor has a state based on the branches history The visualisation shows all predictors in a grid. A predictor is indexed using the PC and optionally the branch history (GHR).",
     "longDescription": ""
   }
 }

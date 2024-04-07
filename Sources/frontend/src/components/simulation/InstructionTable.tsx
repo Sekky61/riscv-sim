@@ -75,7 +75,7 @@ export default function InstructionTable({
   return (
     <div className='flex flex-col'>
       <div className='grid grid-cols-4 gap-1 border instruction-table'>
-        <div className='grid grid-cols-subgrid col-span-4 bg-slate-200'>
+        <div className='grid grid-cols-subgrid col-span-4 surface-container-highest'>
           <div>ID</div>
           <div>Mnemonic</div>
           <div>Type</div>
@@ -123,7 +123,7 @@ function InstructionRow({ instructionId }: InstructionRowProps) {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <div className='hover:bg-gray-200 hover:cursor-pointer grid grid-cols-subgrid col-span-4 odd:bg-slate-100'>
+        <div className='hover:surface-container-high hover:cursor-pointer grid grid-cols-subgrid col-span-4 odd:surface-container-low'>
           <div>{simCodeModel.id}</div>
           <div>{functionModel.name}</div>
           <div>{instructionType}</div>
