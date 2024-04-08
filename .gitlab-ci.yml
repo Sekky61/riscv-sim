@@ -37,7 +37,8 @@ deploy_development:
   stage: deploy
   script:
     - cd Sources
-    - docker-compose -f "docker-compose.yml" up -d --build # Runner uses older Docker
+    - ./build_container.sh
+    - ./run_container.sh
   environment:
     name: development-env
     url: https://sc-gpu1.fit.vutbr.cz:3120/
@@ -54,7 +55,8 @@ deploy_review:
   stage: deploy
   script:
     - cd Sources
-    - docker-compose -f "docker-compose.yml" up -d --build # Runner uses older Docker
+    - ./build_container.sh
+    - ./run_container.sh
   environment:
     name: review/$CI_COMMIT_REF_SLUG
     url: https://sc-gpu1.fit.vutbr.cz:3120/
@@ -71,7 +73,7 @@ stop_review:
     - echo "Remove review app"
     - '[ -n "$END_EARLY" ] && echo "Environment variable is set. Exiting." && exit 1'
     - cd Sources
-    - docker-compose -f "docker-compose.yml" down && true # Runner always succeeds
+    - ./stop_container.sh
   environment:
     name: review/$CI_COMMIT_REF_SLUG
     action: stop

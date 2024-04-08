@@ -1,7 +1,8 @@
+name: riscvsim
+
 version: "2.3"
 services:
-  riscvsim-web:
-    container_name: riscvsim-web
+  web:
     build:
       context: ./frontend
       target: runner
@@ -17,11 +18,10 @@ services:
         max-size: "10m"
         max-file: "3"
     depends_on:
-      - riscvsim-server
+      - simserver
     links:
-      - riscvsim-server # The web server uses port 8000 to communicate with the server, 8120 is exposed to the host
-  riscvsim-server:
-    container_name: riscvsim-server
+      - simserver # The web server uses port 8000 to communicate with the server, 8120 is exposed to the host
+  simserver:
     build:
       context: ./simulator
       target: runner
