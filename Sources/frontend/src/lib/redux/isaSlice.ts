@@ -89,6 +89,7 @@ export const isaSlice = createSlice({
   initialState,
   reducers: {
     newActiveIsa: (state, action: PayloadAction<string>) => {
+      console.log('newActiveIsa', action.payload);
       if (findIsaByName(state.isas, action.payload) === undefined)
         throw new Error('ISA not found');
       state.activeIsaName = action.payload;

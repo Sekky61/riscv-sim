@@ -33,11 +33,6 @@
 // A function cannot pass this boundary
 //'use client';
 
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/base/ui/popover';
 import { defaultCpuConfig } from '@/constant/defaults';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import {
@@ -51,13 +46,15 @@ import { toast } from 'sonner';
 
 import { Button } from '@/components/base/ui/button';
 import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandSeparator,
-} from '@/components/base/ui/command';
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/base/ui/dropdown-menu';
 import {
   Dialog,
   DialogContent,
@@ -65,10 +62,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/base/ui/dialog';
-import type { CpuConfig } from '@/lib/forms/Isa';
 import { isIsaConfig } from '@/lib/forms/validators';
-import { cn, loadFile } from '@/lib/utils';
-import { Check, ChevronsUpDown } from 'lucide-react';
+import { loadFile } from '@/lib/utils';
+import { ChevronsUpDown } from 'lucide-react';
 
 type ActiveIsaSelectorProps = {
   hasUnsavedChanges: boolean;
@@ -162,8 +158,8 @@ export function ActiveIsaSelector({
   };
 
   return (
-    <Popover open={savesOpen} onOpenChange={(op) => setSavesOpen(op)}>
-      <PopoverTrigger asChild>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
         <Button
           variant='outline'
           role='combobox'
@@ -173,40 +169,31 @@ export function ActiveIsaSelector({
           {activeIsa.cpuConfig.name}
           <ChevronsUpDown className='ml-2 h-4 w-4 shrink-0 opacity-50' />
         </Button>
-      </PopoverTrigger>
-      <PopoverContent className='w-[200px] p-0'>
-        <Command>
-          <CommandInput placeholder='Search...' />
-          <CommandEmpty>No ISA found.</CommandEmpty>
-          <CommandGroup>
-            {isas.map((isa) => (
-              <CommandItem
-                key={isa.cpuConfig.name}
-                value={isa.cpuConfig.name}
-                onSelect={(_currentValue) => {
-                  // _currentValue converts to lowercase
-                  onChangeSelected(isa.cpuConfig.name);
-                }}
-              >
-                <Check
-                  className={cn(
-                    'mr-2 h-4 w-4',
-                    activeIsa.cpuConfig.name === isa.cpuConfig.name
-                      ? 'opacity-100'
-                      : 'opacity-0',
-                  )}
-                />
-                {isa.cpuConfig.name}
-              </CommandItem>
-            ))}
-          </CommandGroup>
-          <CommandSeparator />
-          <CommandGroup>
-            <CommandItem onSelect={createNewIsa}>Create New Config</CommandItem>
-            <CommandItem onSelect={doImport}>Import Config</CommandItem>
-          </CommandGroup>
-        </Command>
-      </PopoverContent>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className='w-56'>
+        <DropdownMenuLabel>Configurations</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuRadioGroup
+          value={activeIsa.cpuConfig.name}
+          onValueChange={onChangeSelected}
+        >
+          {isas.map((isa) => (
+            <DropdownMenuRadioItem
+              key={isa.cpuConfig.name}
+              value={isa.cpuConfig.name}
+            >
+              {isa.cpuConfig.name}
+            </DropdownMenuRadioItem>
+          ))}
+        </DropdownMenuRadioGroup>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onSelect={createNewIsa}>
+          Create new Configuration
+        </DropdownMenuItem>
+        <DropdownMenuItem onSelect={doImport}>
+          Import Configuration
+        </DropdownMenuItem>
+      </DropdownMenuContent>
       <Dialog open={saveModalOpen} onOpenChange={setSaveModalOpen}>
         <DialogContent>
           <DialogHeader>
@@ -236,6 +223,6 @@ export function ActiveIsaSelector({
           </div>
         </DialogContent>
       </Dialog>
-    </Popover>
+    </DropdownMenu>
   );
 }
