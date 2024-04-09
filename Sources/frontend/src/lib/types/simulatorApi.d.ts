@@ -131,13 +131,17 @@ export type ComplexErrorItem = {
 };
 
 /**
- * Finish is optional, meaning that the error is a single character
+ * Finish is optional. If not present, it means that the error is a single character
  */
 export type ErrorSpan = {
   caret: ErrorLocation;
   finish?: ErrorLocation;
 };
 
+/**
+ * Both line and column are 1-based
+ * https://gcc.gnu.org/onlinedocs/gcc/Diagnostic-Message-Formatting-Options.html#index-fdiagnostics-format
+ */
 export type ErrorLocation = {
   line: number;
   'display-column': number;

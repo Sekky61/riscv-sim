@@ -30,7 +30,7 @@
  */
 
 import {
-  MemoryLocationApi,
+  type MemoryLocationApi,
   isaFormSchema,
   memoryLocationDefaultValue,
   memoryLocationSchema,

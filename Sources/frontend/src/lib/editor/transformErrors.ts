@@ -31,11 +31,11 @@
 
 import type { Diagnostic } from '@codemirror/lint';
 
-import { ComplexErrorItem } from '@/lib/types/simulatorApi';
+import type { ComplexErrorItem } from '@/lib/types/simulatorApi';
 
 /**
  * Transforms errors from compiler API to codemirror diagnostics.
- * Most notably, it converts line and column to character index.
+ * Most notably, it converts line and column to 1D character index.
  *
  * @param errors  Array of errors from compiler API
  * @param code   Code to which the errors belong
@@ -50,7 +50,7 @@ export function transformErrors(
   const lineLengthsPrefixSum = [0];
   for (const lineLength of lineLengths) {
     // todo test this
-    const prev = lineLengthsPrefixSum[lineLengthsPrefixSum.length - 1];
+    const prev = lineLengthsPrefixSum.at(-1);
     if (prev === undefined) {
       throw new Error('Invalid line lengths');
     }
@@ -62,11 +62,17 @@ export function transformErrors(
     // We need to convert the line and column to a character index
     const span = error.locations[0];
     if (!span) {
-      throw new Error('Invalid error span (0 locations)');
+      console.error('Invalid error span from server', error);
+      return {
+        from: 0,
+        to: 0,
+        message: error.message,
+        severity: error.kind,
+      };
     }
     // 1-based line and column
     const line = span.caret.line;
-    const index = line - 1 < 0 ? 0 : line - 1;
+    const index = line <= 0 ? 0 : line - 1;
     const lineStart = lineLengthsPrefixSum[index];
     if (lineStart === undefined) {
       console.warn('Invalid line start', line, lineLengthsPrefixSum);
@@ -76,7 +82,6 @@ export function transformErrors(
         message: error.message,
         severity: error.kind,
       };
-      // throw new Error(`Invalid line start for line ${line}`);
     }
     const charIndex = lineStart + span.caret['display-column'] - 1;
 
