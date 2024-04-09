@@ -83,7 +83,6 @@ export default function StoreBuffer() {
       <InstructionListDisplay
         instructions={storeBuffer.storeQueue}
         totalSize={storeBuffer.bufferSize}
-        columns={3}
         legend={
           <div className='flex gap-1 items-center'>
             <div className='flex-grow'>Instruction</div>

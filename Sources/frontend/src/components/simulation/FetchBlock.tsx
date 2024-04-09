@@ -123,7 +123,6 @@ export default function FetchBlock() {
         <InstructionListDisplay
           instructions={fetchObject.fetchedCode}
           totalSize={fetchObject.numberOfWays}
-          columns={2}
           instructionRenderer={(codeModel, i) => (
             <div className='flex gap-1' key={`instr_${codeModel}_${i}`}>
               <InstructionField instructionId={codeModel} />

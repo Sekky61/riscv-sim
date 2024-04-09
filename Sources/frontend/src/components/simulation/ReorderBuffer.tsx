@@ -90,7 +90,6 @@ export default function ReorderBuffer() {
       <InstructionListDisplay
         instructions={rob.reorderQueue}
         totalSize={rob.bufferSize}
-        columns={2}
         instructionRenderer={(simCodeModel, i) => {
           return (
             <div className='flex items-center gap-1' key={`item_${i}`}>

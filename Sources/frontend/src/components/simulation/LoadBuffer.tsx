@@ -80,7 +80,6 @@ export default function LoadBuffer() {
       <InstructionListDisplay
         instructions={loadBuffer.loadQueue}
         totalSize={loadBuffer.bufferSize}
-        columns={4}
         legend={
           <div className='flex gap-1 items-center'>
             <div className='flex-grow'>Instruction</div>

@@ -137,7 +137,6 @@ export default function IssueWindow({ type }: IssueWindowProps) {
       }
     >
       <InstructionListDisplay
-        columns={3}
         instructions={issue.issuedInstructions}
         legend={
           <div className='flex gap-1 items-center'>
