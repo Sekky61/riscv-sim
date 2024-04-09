@@ -29,9 +29,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import type { Diagnostic } from '@codemirror/lint';
+import type { Action, Diagnostic } from '@codemirror/lint';
 
 import type { ComplexErrorItem } from '@/lib/types/simulatorApi';
+
+/**
+ * Code action to navigate to memory tab
+ */
+const jumpToMemoryAction: Action = {
+  name: 'Go to memory tab',
+  apply(view, from, to) {
+    window.location.href = '/memory';
+  },
+};
 
 /**
  * Transforms errors from compiler API to codemirror diagnostics.
@@ -95,11 +105,15 @@ export function transformErrors(
       charIndexEnd = charIndex;
     }
 
+    const undefSymbolMatch = error.message.match(/Symbol .* is not defined/);
+    const isUndefinedSymbol = undefSymbolMatch !== null;
+
     return {
       from: charIndex,
       to: charIndexEnd,
       message: error.message,
       severity: error.kind,
+      actions: isUndefinedSymbol ? [jumpToMemoryAction] : undefined,
     };
   });
 }
