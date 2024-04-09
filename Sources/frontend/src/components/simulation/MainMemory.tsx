@@ -43,7 +43,7 @@ import {
 } from '@/components/base/ui/dialog';
 import Block from '@/components/simulation/Block';
 import { useRefDimensions } from '@/lib/hooks/useRefDimensions';
-import type { AsmSymbol} from '@/lib/types/cpuApi';
+import type { AsmSymbol } from '@/lib/types/cpuApi';
 import { useRef } from 'react';
 import { FixedSizeList, type ListChildComponentProps } from 'react-window';
 
@@ -99,7 +99,11 @@ export default function MainMemory() {
           <div className='py-1 text-md'>
             Memory Inspector shows the memory up to the highest touched address
           </div>
-          <div className='h-64 overflow-scroll rounded-md border p-2 shadow-inner'>
+          <div
+            className='h-64 overflow-scroll rounded-md border p-2 shadow-inner'
+            onScroll={(e) => e.stopPropagation()}
+            onWheel={(e) => e.stopPropagation()}
+          >
             <HexDump
               memory={memory}
               oldMemory={oldMemory}
@@ -111,7 +115,11 @@ export default function MainMemory() {
         </DialogContent>
       }
     >
-      <div className='flex-grow justify-center text-sm gap-2 font-mono'>
+      <div className='flex-grow justify-center text-sm gap-2 font-mono'
+
+            onScroll={(e) => e.stopPropagation()}
+            onWheel={(e) => e.stopPropagation()}
+        >
         <HexDump
           memory={memory}
           oldMemory={oldMemory}

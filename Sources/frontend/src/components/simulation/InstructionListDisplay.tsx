@@ -31,7 +31,7 @@
 
 import { useRefDimensions } from '@/lib/hooks/useRefDimensions';
 import { type ReactElement, useRef } from 'react';
-import { FixedSizeList, ListChildComponentProps } from 'react-window';
+import { FixedSizeList, type ListChildComponentProps } from 'react-window';
 
 export type InstructionListDisplayProps<T> = {
   instructions: Array<T>;
@@ -42,7 +42,6 @@ export type InstructionListDisplayProps<T> = {
   ) => ReactElement<{ key: string }>;
   totalSize?: number;
   legend?: ReactElement;
-  columns?: number;
 };
 
 /**
@@ -57,7 +56,6 @@ export function InstructionListDisplay<T>({
   totalSize,
   instructionRenderer,
   legend,
-  columns = 1,
 }: InstructionListDisplayProps<T>) {
   const ref = useRef(null);
   const dimensions = useRefDimensions(ref);
@@ -71,7 +69,11 @@ export function InstructionListDisplay<T>({
   );
 
   return (
-    <div className='h-full w-full flex flex-col surface-container-low rounded-[8px]'>
+    <div
+      className='h-full w-full flex flex-col surface-container-low rounded-[8px]'
+      onScroll={(e) => e.stopPropagation()}
+      onWheel={(e) => e.stopPropagation()}
+    >
       {legend}
       <div ref={ref} className='flex-grow'>
         <FixedSizeList
