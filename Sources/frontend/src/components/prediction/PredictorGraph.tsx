@@ -72,9 +72,9 @@ export function PredictorGraph({ branchInfo }: PredictorGraphProps) {
       <TooltipTrigger asChild>
         <div
           className={clsx(
-            'w-7 h-7 rounded-lg m-1 ring-2 ring-offset-2',
-            verdict && 'ring-teal-500',
-            !verdict && 'ring-rose-500',
+            'shrink-0 w-[32px] h-[32px] rounded-lg p-px',
+            verdict && 'bg-teal-400/50 dark:bg-teal-600/50',
+            !verdict && 'bg-rose-500/50 dark:bg-rose-600/50',
           )}
         >
           <PredictorIcon state={state} width={predictorStateWidth} />
