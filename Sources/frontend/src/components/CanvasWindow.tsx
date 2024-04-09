@@ -35,7 +35,7 @@ import { IconButton } from '@/components/IconButton';
 import type { ReactChildren } from '@/lib/types/reactTypes';
 import clsx from 'clsx';
 import { ZoomIn, ZoomOut } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { WheelEventHandler, useEffect, useRef, useState } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 
 type CanvasWindowProps = {
@@ -91,19 +91,30 @@ export default function CanvasWindow({ children }: CanvasWindowProps) {
     const dy = ee.movementY;
 
     // get the current offset from attributes. The right and bottom should be defined as inline styles
-    const right = contentRef.current.style.right || '0';
-    const top = contentRef.current.style.bottom || '0';
+    const { right, bottom } = getOffsets(contentRef.current.style);
 
-    const newOffsetRight = Number.parseInt(right);
-    const newOffsetBottom = Number.parseInt(top);
-
-    const offsetRight = newOffsetRight - dx;
-    const offsetBottom = newOffsetBottom - dy;
+    const offsetRight = right - dx;
+    const offsetBottom = bottom - dy;
 
     // add offset to position of the element (right, bottom)
     contentRef.current.style.right = `${offsetRight}px`;
     contentRef.current.style.bottom = `${offsetBottom}px`;
   }
+
+  const onWheel: WheelEventHandler<HTMLDivElement> = (event) => {
+    if (!elRef.current || !contentRef.current) {
+      return;
+    }
+    // offset in the scroll direction
+    const { right, bottom } = getOffsets(contentRef.current.style);
+
+    // with shift, scroll horizontally
+    const horizontal = event.shiftKey ? event.deltaY : event.deltaX;
+    const vertical = event.shiftKey ? event.deltaX : event.deltaY;
+
+    contentRef.current.style.right = `${right + horizontal}px`;
+    contentRef.current.style.bottom = `${bottom + vertical}px`;
+  };
 
   // Register on component mount
   useEffect(() => {
@@ -122,7 +133,7 @@ export default function CanvasWindow({ children }: CanvasWindowProps) {
 
   // The w-6 h-6 trick to make the overflow not affect initial size of the component
   return (
-    <div className={cls} ref={elRef}>
+    <div className={cls} ref={elRef} onWheel={onWheel}>
       <div className='relative w-6 h-6'>
         <div
           style={{ transform: `scale(${scale})`, right: 0, bottom: 0 }}
@@ -181,3 +192,13 @@ const ScaleButtons = ({ scaleUp, scaleDown }: ScaleButtonsProps) => {
     </div>
   );
 };
+
+/**
+ * Get offsets from the style object
+ */
+function getOffsets(style: CSSStyleDeclaration) {
+  return {
+    right: Number.parseInt(style.right || '0'),
+    bottom: Number.parseInt(style.bottom || '0'),
+  };
+}
