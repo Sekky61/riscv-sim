@@ -48,6 +48,8 @@ import {
 } from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
 import { AutoPlay } from './AutoPlay';
+import { saveAsJsonFile } from '@/lib/utils';
+import { Button } from '@/components/base/ui/button';
 
 /**
  * Show either the simulation or an error message.
@@ -86,6 +88,20 @@ function ErrorMessage() {
           </CardHeader>
           <CardContent>
             <div className='text-lg'>{errorMessage}</div>
+            <Button
+              variant='destructive'
+              className='mt-4'
+              onClick={() => {
+                // dump localStorage to file
+                saveAsJsonFile(
+                  localStorage,
+                  `riscv-simulator-local-storage-${Date.now()}.json`,
+                );
+              }}
+            >
+              {' '}
+              Dump localStorage to file{' '}
+            </Button>
           </CardContent>
         </Card>
       </div>

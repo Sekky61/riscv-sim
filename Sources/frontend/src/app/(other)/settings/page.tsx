@@ -30,12 +30,20 @@
  */
 
 import { SettingsForm } from '@/components/form/SettingsForm';
+import { DevTools } from './DevTools';
 
 export default function Page() {
+
+  // Do not render in production
+  if (process.env.NODE_ENV === 'production') {
+    return null;
+  }
+
   return (
     <main>
       <h1>Settings</h1>
       <SettingsForm />
+      <DevTools />
     </main>
   );
 }
