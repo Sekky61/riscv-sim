@@ -201,7 +201,13 @@ public class MemoryLocation
         nextDataTypeIndex = currentDataTypesIndex < dataTypes.size() ? dataTypes.get(
                 currentDataTypesIndex).startOffset : data.size();
       }
-      byte[] b = currentDataType.getBytes(data.get(currentDataIndex));
+      String s = data.get(currentDataIndex);
+      if (s == null || s.isEmpty())
+      {
+        System.err.println("Empty value in memory location " + getName());
+        continue;
+      }
+      byte[] b = currentDataType.getBytes(s);
       // copy
       System.arraycopy(b, 0, bytes, currentByteIndex, b.length);
       currentByteIndex += b.length;

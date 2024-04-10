@@ -237,7 +237,7 @@ public class MemoryLocationDeserializer extends StdDeserializer<MemoryLocation>
     // questionable, but I wouldn't allow it
     if (data.isEmpty())
     {
-      throw new RuntimeException("No data found in the JSON file");
+      System.err.println("Empty data in memory location");
     }
     
     return new MemoryLocation(names, alignment, dataTypes, data);

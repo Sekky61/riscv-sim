@@ -35,9 +35,7 @@ import io.undertow.server.HttpServerExchange;
 import io.undertow.util.Headers;
 import io.undertow.util.HttpString;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -88,17 +86,24 @@ public class MyRequestHandler<T, U> implements HttpHandler
     exchange.startBlocking();
     
     // Deserialize
-    InputStream  requestJson  = exchange.getInputStream();
-    OutputStream outputStream = exchange.getOutputStream();
-    T            request      = null;
+    InputStream           requestJson  = exchange.getInputStream();
+    OutputStream          outputStream = exchange.getOutputStream();
+    T                     request      = null;
+    ByteArrayOutputStream baos         = new ByteArrayOutputStream();
+    requestJson.transferTo(baos);
+    InputStream firstClone  = new ByteArrayInputStream(baos.toByteArray());
+    InputStream secondClone = new ByteArrayInputStream(baos.toByteArray());
     try
     {
-      request = resolver.deserialize(requestJson);
+      request = resolver.deserialize(firstClone);
     }
     catch (Exception e)
     {
       // Log it
-      logger.info("Invalid request: " + e.getMessage());
+      logger.severe("Cannot parse request: " + e.getMessage());
+      // log the request string
+      String requestString = new String(secondClone.readAllBytes());
+      logger.info("Request: " + requestString);
       // Send back
       sendError(exchange, new ServerError("root", "Cannot parse request", e.getMessage()));
       return;
