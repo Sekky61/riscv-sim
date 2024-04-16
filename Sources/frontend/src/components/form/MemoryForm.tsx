@@ -268,7 +268,7 @@ export default function MemoryForm({
       </div>
       <h2 className='text-xl mb-4'>Values</h2>
       <Tabs
-        className='w-[600px]'
+        className='md:w-[600px]'
         onValueChange={(value) => {
           onTabChange(value as 'data' | 'constant' | 'random');
         }}

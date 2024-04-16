@@ -105,7 +105,7 @@ export default function Page() {
     <div>
       <h1>Architecture Settings</h1>
       <div className='border-b mb-4 pb-4 pt-6'>
-        <div className='flex justify-center items-center gap-4'>
+        <div className='flex justify-center items-center gap-4 flex-wrap'>
           <span className='font-bold'>Active configuration</span>
           <ActiveIsaSelector
             saveChanges={saveChanges}

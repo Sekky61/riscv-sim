@@ -105,7 +105,7 @@ export function SettingsForm() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className='flex gap-4'>
+            <div className='flex gap-4 flex-wrap'>
               <Button onClick={saveCpuConfig}>Export CPU Configuration</Button>
               <Button onClick={saveCode}>Export Program in Assembly</Button>
               <Button onClick={saveMemory}>Export Memory Objects</Button>

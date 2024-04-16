@@ -61,7 +61,7 @@ export function AutoPlay() {
   }, [autoplayRunning, ms, dispatch]);
 
   return (
-    <div className='timeline-grid drop-shadow'>
+    <div className='timeline-grid drop-shadow hidden sm:block'>
       <div
         className={clsx(
           'autoplay rounded-[16px] h-full box-content tertiary-container flex flex-row-reverse justify-end items-center',

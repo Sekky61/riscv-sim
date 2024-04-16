@@ -115,96 +115,99 @@ export default function Page() {
           for preserving register values. This is described by the <i>saver</i>{' '}
           attribute in the table below.
         </p>
-        <table className='mx-auto'>
-          <caption>RISC-V Calling Convention</caption>
-          <thead>
-            <tr>
-              <th scope='col'>Register</th>
-              <th scope='col'>ABI name</th>
-              <th scope='col'>Saver</th>
-              <th scope='col'>Description</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <th scope='row'>x0</th>
-              <td>zero</td>
-              <td>-</td>
-              <td>Hard-wired zero</td>
-            </tr>
-            <tr>
-              <th scope='row'>x1</th>
-              <td>ra</td>
-              <td>Caller</td>
-              <td>Return address</td>
-            </tr>
-            <tr>
-              <th scope='row'>x2</th>
-              <td>sp</td>
-              <td>Callee</td>
-              <td>Stack pointer</td>
-            </tr>
-            <tr>
-              <th scope='row'>x3</th>
-              <td>gp</td>
-              <td>-</td>
-              <td>Global pointer</td>
-            </tr>
-            <tr>
-              <th scope='row'>x4</th>
-              <td>tp</td>
-              <td>-</td>
-              <td>Thread pointer</td>
-            </tr>
-            <tr>
-              <th scope='row'>x5-7</th>
-              <td>t0-2</td>
-              <td>Caller</td>
-              <td>Temporaries</td>
-            </tr>
-            <tr>
-              <th scope='row'>x8</th>
-              <td>s0/fp</td>
-              <td>
-                <span>Callee</span>
-              </td>
-              <td>Saved register/frame pointer</td>
-            </tr>
-            <tr>
-              <th scope='row'>x9</th>
-              <td>s1</td>
-              <td>Callee</td>
-              <td>Saved register</td>
-            </tr>
-            <tr>
-              <th scope='row'>x10-x11</th>
-              <td>a0-a1</td>
-              <td>Caller</td>
-              <td>Function arguments/return values</td>
-            </tr>
-            <tr>
-              <th scope='row'>x12-17</th>
-              <td>a2-7</td>
-              <td>Caller</td>
-              <td>Function arguments</td>
-            </tr>
-            <tr>
-              <th scope='row'>x18-27</th>
-              <td>s2-11</td>
-              <td>
-                <span>Callee</span>
-              </td>
-              <td>Saved registers</td>
-            </tr>
-            <tr>
-              <th scope='row'>x28-31</th>
-              <td>t3-t6</td>
-              <td>Caller</td>
-              <td>Temporaries</td>
-            </tr>
-          </tbody>
-        </table>
-
+        <div className='grid w-full justify-center'>
+          <div className='overflow-x-auto'>
+            <table>
+              <caption>RISC-V Calling Convention</caption>
+              <thead>
+                <tr>
+                  <th scope='col'>Register</th>
+                  <th scope='col'>ABI name</th>
+                  <th scope='col'>Saver</th>
+                  <th scope='col'>Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th scope='row'>x0</th>
+                  <td>zero</td>
+                  <td>-</td>
+                  <td>Hard-wired zero</td>
+                </tr>
+                <tr>
+                  <th scope='row'>x1</th>
+                  <td>ra</td>
+                  <td>Caller</td>
+                  <td>Return address</td>
+                </tr>
+                <tr>
+                  <th scope='row'>x2</th>
+                  <td>sp</td>
+                  <td>Callee</td>
+                  <td>Stack pointer</td>
+                </tr>
+                <tr>
+                  <th scope='row'>x3</th>
+                  <td>gp</td>
+                  <td>-</td>
+                  <td>Global pointer</td>
+                </tr>
+                <tr>
+                  <th scope='row'>x4</th>
+                  <td>tp</td>
+                  <td>-</td>
+                  <td>Thread pointer</td>
+                </tr>
+                <tr>
+                  <th scope='row'>x5-7</th>
+                  <td>t0-2</td>
+                  <td>Caller</td>
+                  <td>Temporaries</td>
+                </tr>
+                <tr>
+                  <th scope='row'>x8</th>
+                  <td>s0/fp</td>
+                  <td>
+                    <span>Callee</span>
+                  </td>
+                  <td>Saved register/frame pointer</td>
+                </tr>
+                <tr>
+                  <th scope='row'>x9</th>
+                  <td>s1</td>
+                  <td>Callee</td>
+                  <td>Saved register</td>
+                </tr>
+                <tr>
+                  <th scope='row'>x10-x11</th>
+                  <td>a0-a1</td>
+                  <td>Caller</td>
+                  <td>Function arguments/return values</td>
+                </tr>
+                <tr>
+                  <th scope='row'>x12-17</th>
+                  <td>a2-7</td>
+                  <td>Caller</td>
+                  <td>Function arguments</td>
+                </tr>
+                <tr>
+                  <th scope='row'>x18-27</th>
+                  <td>s2-11</td>
+                  <td>
+                    <span>Callee</span>
+                  </td>
+                  <td>Saved registers</td>
+                </tr>
+                <tr>
+                  <th scope='row'>x28-31</th>
+                  <td>t3-t6</td>
+                  <td>Caller</td>
+                  <td>Temporaries</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
         {/* todo table for floats */}
       </section>
       <section>

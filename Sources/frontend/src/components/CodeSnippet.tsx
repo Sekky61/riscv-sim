@@ -42,8 +42,12 @@ type CodeSnippetProps = {
 export function CodeSnippet({ code, language, children }: CodeSnippetProps) {
   const toDisplay = children || code;
   return (
-    <pre className='border p-4 rounded-md m-4'>
-      <code className={`language-${language}`}>{toDisplay}</code>
-    </pre>
+    <div className='grid w-full'>
+      <div className='overflow-x-auto'>
+        <pre className='border p-2 md:p-4 rounded-md m-1 md:m-4 overflow-x-auto'>
+          <code className={`language-${language}`}>{toDisplay}</code>
+        </pre>
+      </div>
+    </div>
   );
 }

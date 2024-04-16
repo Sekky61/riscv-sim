@@ -53,9 +53,16 @@
   /* main pane is for the page main content body */
   /* above other definitions so it has less power */
   .main-pane {
-    @apply surface rounded-2xl p-10 mx-auto;
+    @apply surface rounded-2xl p-2 md:p-10 mx-auto;
     /* screen - navbar - padding */
-    width: calc(100vw - 3rem - 50px);
+    --pad: 50px;
+    width: calc(100vw - 3.5rem - var(--pad));
+  }
+
+  @media only screen and (max-width: 768px) {
+    .main-pane {
+      --pad: 30px;
+    }
   }
 
   div.main-pane {

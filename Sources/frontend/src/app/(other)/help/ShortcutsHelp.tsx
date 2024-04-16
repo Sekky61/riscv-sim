@@ -37,7 +37,7 @@ import { Fragment } from 'react';
  */
 export function ShortcutsHelp() {
   return (
-    <div className='grid grid-cols-2 gap-6'>
+    <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
       {shortcutCategories.map((category) => (
         <div key={category.title}>
           <h3 className='text-xl'>{category.title}</h3>

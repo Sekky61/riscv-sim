@@ -49,7 +49,7 @@ export default function Page() {
       <div className='flex-grow flex h-full flex-col'>
         <div
           id='editor'
-          className='editor-container grid min-h-0 h-full flex-grow grid-cols-[160px_minmax(230px,5fr)_minmax(230px,3fr)] gap-4'
+          className='editor-container grid min-h-0 h-full flex-grow grid-cols-1 md:grid-cols-[160px_minmax(230px,5fr)_minmax(230px,3fr)] gap-4'
         >
           <CompileOptions />
           <LineHighlightProvider>

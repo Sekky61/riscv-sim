@@ -39,6 +39,11 @@ import { loadFile } from '@/lib/utils';
  * Menu with developer tools
  */
 export function DevTools() {
+    // Do not render in production
+  if (process.env.NODE_ENV === 'production') {
+    return null;
+  }
+
   // load a file picked by the user, set it as localStorage
   const handleFileLoad = async () => {
     loadFile(loadLocalStorage);

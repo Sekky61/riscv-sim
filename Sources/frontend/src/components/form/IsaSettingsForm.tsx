@@ -308,7 +308,7 @@ export default function IsaSettingsForm({
 
   return (
     <form>
-      <Tabs defaultValue='buffers' className='w-[600px]'>
+      <Tabs defaultValue='buffers' className='md:w-[600px]'>
         <TabsList className='w-full'>
           <TabsTrigger value='name'>Name</TabsTrigger>
           <TabsTrigger value='buffers'>Buffers</TabsTrigger>
@@ -457,7 +457,7 @@ export default function IsaSettingsForm({
                   <FormInput
                     {...simpleRegister('cacheAssoc', { valueAsNumber: true })}
                   />
-                  <div className='mb-6 flex justify-evenly'>
+                  <div className='mb-6 flex justify-evenly gap-4 flex-wrap'>
                     <RadioInputWithTitle
                       {...radioRegister('cacheReplacement')}
                       choices={cacheReplacementTypes}
