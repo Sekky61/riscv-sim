@@ -50,6 +50,7 @@ import { useAppSelector } from '@/lib/redux/hooks';
 import { AutoPlay } from './AutoPlay';
 import { saveAsJsonFile } from '@/lib/utils';
 import { Button } from '@/components/base/ui/button';
+import Link from 'next/link';
 
 /**
  * Show either the simulation or an error message.
@@ -78,6 +79,8 @@ function ErrorMessage() {
   const errorMessage = useAppSelector(selectErrorMessage);
   const simulationStatus = useAppSelector(selectSimulationStatus);
 
+  const isSymbolMissingError = errorMessage?.includes('is not defined');
+
   // Show error if not loading - prevents a flash of the error message when the simulation is loading
   if (!stateOk && !(simulationStatus === 'loading')) {
     return (
@@ -88,20 +91,26 @@ function ErrorMessage() {
           </CardHeader>
           <CardContent>
             <div className='text-lg'>{errorMessage}</div>
-            <Button
-              variant='destructive'
-              className='mt-4'
-              onClick={() => {
-                // dump localStorage to file
-                saveAsJsonFile(
-                  localStorage,
-                  `riscv-simulator-local-storage-${Date.now()}.json`,
-                );
-              }}
-            >
-              {' '}
-              Dump localStorage to file{' '}
-            </Button>
+            <div className='flex gap-2 flex-wrap mt-4'>
+              {isSymbolMissingError && (
+                <Link href='/memory'>
+                  <Button>Go to Memory page and define it</Button>
+                </Link>
+              )}
+              <Button
+                variant='destructive'
+                onClick={() => {
+                  // dump localStorage to file
+                  saveAsJsonFile(
+                    localStorage,
+                    `riscv-simulator-local-storage-${Date.now()}.json`,
+                  );
+                }}
+              >
+                {' '}
+                Dump localStorage to file{' '}
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>

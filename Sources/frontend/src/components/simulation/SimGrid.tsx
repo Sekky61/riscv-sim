@@ -135,7 +135,7 @@ export function SimGrid() {
             </div>
           </div>
           <div>
-          <CacheBlock />
+            <CacheBlock />
           </div>
         </div>
       </main>
