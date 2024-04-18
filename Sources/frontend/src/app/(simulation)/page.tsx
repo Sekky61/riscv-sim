@@ -33,7 +33,7 @@ import { ReloadSimModal } from '@/components/ReloadSimModal';
 import { Main } from './Main';
 import { WelcomeMessage } from './WelcomeMessage';
 
-export default async function HomePage() {
+export default function HomePage() {
   return (
     <div className='flex'>
       <div className='flex-grow h-screen'>

@@ -31,7 +31,10 @@
 
 'use client';
 
+import { ModeToggle } from '@/components/ModeToggle';
+import { Button } from '@/components/base/ui/button';
 import { Dialog, DialogContent } from '@/components/base/ui/dialog';
+import { useTour } from '@reactour/tour';
 import { useLocalStorage } from '@uidotdev/usehooks';
 import Link from 'next/link';
 
@@ -42,7 +45,13 @@ import Link from 'next/link';
  */
 export function WelcomeMessage() {
   const [visited, saveVisited] = useLocalStorage('visited', false);
+  const { setIsOpen } = useTour();
   const open = !visited;
+
+  function startTour() {
+    setIsOpen(true);
+    saveVisited(true);
+  }
 
   return (
     <Dialog open={open} onOpenChange={() => saveVisited(true)}>
@@ -70,6 +79,11 @@ export function WelcomeMessage() {
             .
           </p>
         </div>
+        <h3>Pick a theme</h3>
+        <div className='flex justify-center'>
+          <ModeToggle />
+        </div>
+        <Button onClick={startTour}>Start the tour!</Button>
       </DialogContent>
     </Dialog>
   );

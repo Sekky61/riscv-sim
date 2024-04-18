@@ -42,6 +42,7 @@ import { Toaster } from '@/components/base/ui/sonner';
 import { TooltipProvider } from '@/components/base/ui/tooltip';
 import PersistedStoreProvider from '@/lib/redux/PersistedStoreProvider';
 import { loadBlockDescriptions } from '@/lib/staticLoaders';
+import { WelcomeTour } from '@/components/WelcomeTour';
 
 /**
  * Font loading by next.js.
@@ -86,8 +87,10 @@ export default async function RootLayout({
           <BlockDescriptionProvider descriptions={descriptions}>
             <PersistedStoreProvider>
               <TooltipProvider delayDuration={700} skipDelayDuration={0}>
+                <WelcomeTour>
                 <div className='flex h-screen'>{children}</div>
                 <Toaster position='top-right' closeButton />
+                </WelcomeTour>
               </TooltipProvider>
             </PersistedStoreProvider>
           </BlockDescriptionProvider>

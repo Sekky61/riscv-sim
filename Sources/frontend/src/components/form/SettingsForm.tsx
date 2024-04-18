@@ -44,12 +44,16 @@ import { apiBaseUrl } from '@/constant/env';
 import { useAppSelector } from '@/lib/redux/hooks';
 import { selectActiveConfig } from '@/lib/redux/isaSlice';
 import { saveAsFile, saveAsJsonFile } from '@/lib/utils';
+import { useTour } from '@reactour/tour';
+import { useRouter } from 'next/navigation';
 
 /**
  * Global settings
  */
 export function SettingsForm() {
   const activeConfig = useAppSelector(selectActiveConfig);
+  const router = useRouter();
+  const tour = useTour();
 
   // Log to console the address of API server
   console.info(
@@ -78,56 +82,78 @@ export function SettingsForm() {
     saveAsJsonFile(activeConfig.memoryLocations, 'memory.json');
   };
 
+  const startTour = () => {
+    router.push('/');
+tour.setIsOpen(true)
+  };
+
   return (
     <div>
       <section className='pb-10'>
-        <h2>Storage</h2>
-        <Card className='mb-8'>
-          <CardHeader>
-            <CardTitle>Local Storage</CardTitle>
-            <CardDescription>
-              You can empty the local storage as a first step in troubleshooting
-              in the event of an issue. Make sure you refresh the page
-              afterwards.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button onClick={clearLocalMemory}>Clear local memory</Button>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Export Current Configuration</CardTitle>
-            <CardDescription>
-              The current settings can be exported to a file. This is useful for
-              utilizing the simulator's CLI version, backing up data, and
-              sharing the settings with others.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className='flex gap-4 flex-wrap'>
-              <Button onClick={saveCpuConfig}>Export CPU Configuration</Button>
-              <Button onClick={saveCode}>Export Program in Assembly</Button>
-              <Button onClick={saveMemory}>Export Memory Objects</Button>
-            </div>
-          </CardContent>
-        </Card>
+        <h2>General</h2>
+        <div className='flex justify-around gap-4'>
+          <Card className='flex-auto'>
+            <CardHeader>
+              <CardTitle>Light/Dark Mode</CardTitle>
+              <CardDescription>
+                You can toggle the light/dark mode of the application.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className='flex'>
+                <ModeToggle />
+              </div>
+            </CardContent>
+          </Card>
+          <Card className='flex-auto'>
+            <CardHeader>
+              <CardTitle>Retake the Tour</CardTitle>
+              <CardDescription>
+                Review the basics of how to operate the simulator.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button onClick={startTour}>Start the Tour</Button>
+            </CardContent>
+          </Card>
+        </div>
       </section>
       <section className='pb-10'>
-        <h2>Appearance</h2>
-        <Card>
-          <CardHeader>
-            <CardTitle>Light/Dark Mode</CardTitle>
-            <CardDescription>
-              You can toggle the light/dark mode of the application.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className='flex'>
-              <ModeToggle />
-            </div>
-          </CardContent>
-        </Card>
+        <h2>Storage</h2>
+        <div className='flex flex-wrap gap-4'>
+          <Card className='flex-auto'>
+            <CardHeader>
+              <CardTitle>Local Storage</CardTitle>
+              <CardDescription>
+                You can empty the local storage as a first step in
+                troubleshooting in the event of an issue. Make sure you refresh
+                the page afterwards.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button onClick={clearLocalMemory}>Clear Local Memory</Button>
+            </CardContent>
+          </Card>
+          <Card className='flex-auto'>
+            <CardHeader>
+              <CardTitle>Export Current Configuration</CardTitle>
+              <CardDescription>
+                The current settings can be exported to a file. This is useful
+                for utilizing the simulator's CLI version, backing up data, and
+                sharing the settings with others.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className='flex gap-4 flex-wrap'>
+                <Button onClick={saveCpuConfig}>
+                  Export CPU Configuration
+                </Button>
+                <Button onClick={saveCode}>Export Program in Assembly</Button>
+                <Button onClick={saveMemory}>Export Memory Objects</Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </section>
     </div>
   );

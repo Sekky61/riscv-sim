@@ -42,7 +42,7 @@ import {
 } from '@/components/base/ui/dropdown-menu';
 import { openExampleAndCompile } from '@/lib/redux/compilerSlice';
 import { useAppDispatch } from '@/lib/redux/hooks';
-import { CodeExample } from '@/lib/types/codeExamples';
+import type { CodeExample } from '@/lib/types/codeExamples';
 import { FileCode2 } from 'lucide-react';
 
 /**
@@ -61,7 +61,7 @@ export function ExamplesButton({ examples }: { examples: CodeExample[] }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant='outline' className='flex gap-2'>
+        <Button variant='outline' className='load-example-button flex gap-2'>
           <FileCode2 size={20} strokeWidth={1.75} />
           Load Example
         </Button>
@@ -74,6 +74,7 @@ export function ExamplesButton({ examples }: { examples: CodeExample[] }) {
           return (
             <DropdownMenuItem
               key={example.name}
+              data-example-name={example.name}
               onClick={() => {
                 dispatch(openExampleAndCompile(example));
               }}
