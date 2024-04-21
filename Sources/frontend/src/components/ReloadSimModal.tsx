@@ -63,6 +63,7 @@ export function ReloadSimModal() {
               cleanReload();
               setOpenModal(false);
             }}
+            id='reload-sim'
           >
             Yes, reload simulation
           </Button>

@@ -44,6 +44,7 @@ import { openExampleAndCompile } from '@/lib/redux/compilerSlice';
 import { useAppDispatch } from '@/lib/redux/hooks';
 import type { CodeExample } from '@/lib/types/codeExamples';
 import { FileCode2 } from 'lucide-react';
+import { useRef } from 'react';
 
 /**
  * The button to reveal available examples and load them into the editor.
@@ -53,15 +54,26 @@ import { FileCode2 } from 'lucide-react';
  */
 export function ExamplesButton({ examples }: { examples: CodeExample[] }) {
   const dispatch = useAppDispatch();
+  const ref = useRef<HTMLButtonElement>(null);
 
   if (!examples) {
     throw new Error('Examples not loaded');
   }
 
   return (
-    <DropdownMenu>
+    <DropdownMenu
+      onOpenChange={() => {
+        if (ref.current) {
+          ref.current.click();
+        }
+      }}
+    >
       <DropdownMenuTrigger asChild>
-        <Button variant='outline' className='load-example-button flex gap-2'>
+        <Button
+          ref={ref}
+          variant='outline'
+          className='load-example-button flex gap-2'
+        >
           <FileCode2 size={20} strokeWidth={1.75} />
           Load Example
         </Button>

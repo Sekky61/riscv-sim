@@ -50,7 +50,9 @@ export async function CompileOptions() {
         <OptimizeRadio />
       </div>
       <CompileButton />
-      <ExamplesButton examples={examples} />
+      <div className='load-example-wrapper'>
+        <ExamplesButton examples={examples} />
+      </div>
       <MemorySummary />
       <Link className='link' href='/help#code'>
         Tips for writing code

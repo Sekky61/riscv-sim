@@ -84,7 +84,8 @@ export function SettingsForm() {
 
   const startTour = () => {
     router.push('/');
-tour.setIsOpen(true)
+    tour.setCurrentStep(0);
+    tour.setIsOpen(true);
   };
 
   return (

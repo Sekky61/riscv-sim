@@ -80,7 +80,7 @@ import {
 import { zodResolver } from '@hookform/resolvers/zod';
 import clsx from 'clsx';
 import { Upload } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   type FieldError,
   type FieldErrors,
@@ -473,11 +473,23 @@ function DataTextArea({ memoryLocationName, ...props }: DataTextAreaProps) {
  * Can be used for any textual input, if generalized.
  */
 function SelectInput(props: UseControllerProps<MemoryLocationApi>) {
+  const ref = useRef<HTMLButtonElement>(null);
   const { field } = useController(props);
 
+  const onValueChange = (value: string) => {
+    field.onChange(value);
+  };
+
+  const onOpenChange = (open: boolean) => {
+    if (ref.current) {
+      ref.current.click();
+    }
+  };
+
   return (
-    <Select onValueChange={field.onChange} value={field.value as string}>
+    <Select onOpenChange={onOpenChange} onValueChange={onValueChange} value={field.value as string}>
       <SelectTrigger
+        ref={ref}
         className='w-[180px]'
         id={field.name}
         aria-labelledby={`${field.name}-label`}

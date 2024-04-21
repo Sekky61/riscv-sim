@@ -72,30 +72,30 @@ export default async function RootLayout({
         <meta name='viewport' content='width=device-width, initial-scale=1.0' />
         <title>RISC-V Simulator</title>
       </head>
-      <body
-        className={cn(
-          'min-h-screen font-sans antialiased overflow-hidden',
-          fontSans.variable,
-        )}
-      >
-        <ThemeProvider
-          attribute='class'
-          defaultTheme='system'
-          enableSystem
-          disableTransitionOnChange
+        <body
+          className={cn(
+            'min-h-screen font-sans antialiased overflow-hidden',
+            fontSans.variable,
+          )}
         >
-          <BlockDescriptionProvider descriptions={descriptions}>
-            <PersistedStoreProvider>
-              <TooltipProvider delayDuration={700} skipDelayDuration={0}>
-                <WelcomeTour>
-                <div className='flex h-screen'>{children}</div>
-                <Toaster position='top-right' closeButton />
-                </WelcomeTour>
-              </TooltipProvider>
-            </PersistedStoreProvider>
-          </BlockDescriptionProvider>
-        </ThemeProvider>
-      </body>
+        <WelcomeTour>
+          <ThemeProvider
+            attribute='class'
+            defaultTheme='system'
+            enableSystem
+            disableTransitionOnChange
+          >
+            <BlockDescriptionProvider descriptions={descriptions}>
+              <PersistedStoreProvider>
+                <TooltipProvider delayDuration={700} skipDelayDuration={0}>
+                  <div className='flex h-screen'>{children}</div>
+                  <Toaster position='top-right' closeButton />
+                </TooltipProvider>
+              </PersistedStoreProvider>
+            </BlockDescriptionProvider>
+          </ThemeProvider>
+        </WelcomeTour>
+        </body>
     </html>
   );
 }

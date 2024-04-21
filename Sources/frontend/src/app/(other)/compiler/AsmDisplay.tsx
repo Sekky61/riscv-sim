@@ -159,7 +159,7 @@ export function AsmDisplay() {
 
   // The ref is on an inner div so that the gray background is always after the editor
   return (
-    <div className='flex flex-col flex-grow overflow-y-scroll rounded border relative'>
+    <div className='asm-display flex flex-col flex-grow overflow-y-scroll rounded border relative'>
       <EditorBar
         mode='asm'
         checkSlot={null}

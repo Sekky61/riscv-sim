@@ -31,9 +31,9 @@
 
 'use client';
 
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { type StepType, TourProvider, useTour } from '@reactour/tour';
 import { useEffect } from 'react';
+import { toast } from 'sonner';
 
 type WelcomeTourProps = {
   children: React.ReactNode;
@@ -42,8 +42,21 @@ type WelcomeTourProps = {
 const simForwardSelector = '*[aria-label="Step forward"]';
 const fetchSelector = '.fetch-position';
 const compilerLinkSelector = '[href="/compiler"]';
-const loadExampleSelector = '.load-example-button';
+const loadExampleSelector = '.load-example-wrapper';
 const axpyExampleSelector = '[data-example-name="AXPY"]';
+const asmErrorSelector = '.asm-display';
+const memoryLinkSelector = '[href="/memory"]';
+
+const nameInputSelector = 'input[name="name"]';
+const dataTypeSelector = '#dataType';
+const secondTabSelector = 'button[data-radix-collection-item]:nth-child(2)';
+const itemSizeSelector = 'input[name="data.size"]';
+const itemConstantSelector = 'input[name="data.constant"]';
+const submitSelector = 'button[type="submit"]';
+const simulationLinkSelector = '[href="/"]';
+
+const reloadSimSelector = 'button#reload-sim';
+const skipToEndSelector = '[aria-label="Skip to the end of simulation"]';
 
 /**
  * Provide tour for first time users. Mount this near the root of the app.
@@ -71,12 +84,75 @@ export function WelcomeTour({ children }: WelcomeTourProps) {
       resizeObservables: [compilerLinkSelector],
     },
     {
+      selector: 'body',
+      content:
+        'This is the compiler. You can compile your own code or use one of the examples. Let me show you how.',
+    },
+    {
       selector: loadExampleSelector,
       content: "Pick example 'AXPY'",
     },
     {
       selector: axpyExampleSelector,
       content: "Pick example 'AXPY'",
+      resizeObservables: [axpyExampleSelector],
+    },
+    {
+      selector: asmErrorSelector,
+      content:
+        'The code compiled fine, but there is a warning. The memory address a and b are not defined.',
+    },
+    {
+      selector: memoryLinkSelector,
+      content: 'Go to the memory section.',
+      resizeObservables: [memoryLinkSelector],
+    },
+    {
+      selector: 'body',
+      content:
+        'This is the memory section. Here, you can define data to simulate on.',
+    },
+    {
+      selector: nameInputSelector,
+      content: 'Name the data. We need to define array "a".',
+    },
+    {
+      selector: dataTypeSelector,
+      content: 'Select the data type float.',
+    },
+    {
+      selector: 'body',
+      content: 'Select the data type float.',
+      position: 'left',
+    },
+    {
+      selector: secondTabSelector,
+      content: 'Select the second tab.',
+    },
+    {
+      selector: itemSizeSelector,
+      content: 'We need an array of 100 elements.',
+    },
+    {
+      selector: itemConstantSelector,
+      content: 'Pick any value here (if you are indecisive, pick 5).',
+    },
+    {
+      selector: submitSelector,
+      content: 'Save the array.',
+    },
+    {
+      selector: 'main',
+      content: 'Repeat the process for array "b".',
+    },
+    {
+      selector: 'body',
+      content: 'Now, we are ready to simulate the code.',
+    },
+    {
+      selector: 'body',
+      content:
+        "You're all set! Feel free to explore the simulator. If you need help, click on the help icon in the top right corner.",
     },
   ];
 
@@ -98,6 +174,12 @@ export function WelcomeTour({ children }: WelcomeTourProps) {
           };
         },
       }}
+      beforeClose={() => {
+        // pop a notification with the ability to start the tour again
+        toast.info(
+          'Tour is over. You can start it again from the settings menu.',
+        );
+      }}
       className='secondary-container rounded'
     >
       <StepActionInjector />
@@ -113,11 +195,17 @@ function StepActionInjector() {
     return {
       ...step,
       action: (elem) => {
-        console.log(elem);
+        // hack: do not add event listener for body
+        if (step.selector === 'body') {
+          return;
+        }
+        // Do not add event listeners for input fields
+        if (elem?.tagName === 'INPUT') {
+          return;
+        }
         elem?.addEventListener(
           'click',
           () => {
-            console.log('clicked');
             setCurrentStep(index + 1);
           },
           { once: true },
@@ -128,9 +216,11 @@ function StepActionInjector() {
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: one time effect
   useEffect(() => {
+    if (!setSteps) {
+      return;
+    }
     setSteps(newSteps);
   }, []);
 
-  console.log('steps from inj', newSteps);
   return null;
 }
