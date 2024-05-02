@@ -174,6 +174,7 @@ export function WelcomeTour({ children }: WelcomeTourProps) {
           };
         },
       }}
+      showDots={false}
       beforeClose={() => {
         // pop a notification with the ability to start the tour again
         toast.info(

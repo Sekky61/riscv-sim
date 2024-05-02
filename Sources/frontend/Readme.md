@@ -1,4 +1,4 @@
-# Next.js frontend
+# Next.js Frontend
 
 Readme focused on development and build instructions.
 
@@ -8,7 +8,7 @@ Technology stack:
 - [React](https://reactjs.org/)
 - [TypeScript](https://www.typescriptlang.org/)
 - [Tailwind CSS](https://tailwindcss.com/)
-- [Jest](https://jestjs.io/)
+- [Vitest]()
 - [biomejs](https://biomejs.dev/)
 
 ## Structure
@@ -23,13 +23,14 @@ Technology stack:
     +--__tests__- Tests
   +--styles     - Global styles
 Readme.md       - Read me file
+Many configuration files
 ```
 
 ### Install steps
 
 The app was developed using npm `10.2.3` and node.js `v21.2.0`.
 Package dependencies are defined in `package.json`.
-They can be installed the usual way, by running this command:
+They can be installed the usual way, by running this command in the frontend root (`Sources/frontend`):
 
 ```bash
 npm install
@@ -42,6 +43,8 @@ Dockerfile sets these variables.
 
 - `NEXT_PUBLIC_SIMSERVER_PORT`
 - `NEXT_PUBLIC_SIMSERVER_HOST`
+
+Also, you can use the `.env` file. See `.env.example` for inspiration.
 
 ### Run the development server
 

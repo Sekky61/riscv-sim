@@ -5,21 +5,23 @@ It operates in two modes: CLI and HTTP server.
 
 ## Installation
 
-Run the bash script `scripts/install.sh`.
+Simply run the bash script `scripts/install.sh`. In case of troubles, make sure you have Java 17 installed.
 
 ```bash
 ./scripts/install.sh
 ```
 
-This should create entry point `build/install/superscalar-simulator/bin/superscalar-simulator`.
-
-Alternatively, a `.zip` and a `.tar` file are also be created in `build/distributions`.
-It includes all dependencies and can be run on any machine with Java 17 installed.
-Unzip the file and run the executable in `bin`.
+The script should be runnable from any directory.
 
 ## Usage
 
-The app can be run directly (see installation) or using the bash script `scripts/run.sh`.
+The build should create entry point `build/install/superscalar-simulator/bin/superscalar-simulator`.
+
+Alternatively, a `.zip` and a `.tar` file are also created in `build/distributions`.
+It includes all dependencies and can be run on any machine with Java 17 installed.
+Unzip the file and run the executable inside `bin`.
+
+The app can be run directly (see above) or using the bash script `scripts/run.sh`.
 This script conveniently wraps the `superscalar-simulator` executable.
 
 The results are printed to the stdout.
@@ -40,13 +42,23 @@ To see all the available options, run:
 ### Running the server
 
 ```bash
-./scripts/run.sh server [options]
+./scripts/run.sh server
 ```
 
 To see all the available options, run:
 
 ```bash
 ./scripts/run.sh server help
+```
+
+### Examples
+
+Find example invocations and example data in the `examples` directory.
+
+Use of the simulator requires configuration and program (and optionally data, see `help`).
+
+```bash
+./scripts/run.sh cli --cpu=examples/cpuConfigurations/default.json --program=examples/asmPrograms/basicFloatArithmetic.r5 --pretty
 ```
 
 ## Structure
@@ -82,7 +94,7 @@ Readme.md       - Read me file
 Pre-requisites:
 
 1. Java 17
-2. IntelliJ IDEA
+2. IntelliJ IDEA (ideal for testing, formatting)
 
 Opening the project for the first time:
 
@@ -121,6 +133,7 @@ Run the task to generate the report.
 
 ## Using `jq` to inspect JSON
 
+The simulator outputs JSON.
 Automating the inspection of simulation results can be done using `jq` ([GitHub](https://github.com/jqlang/jq)).
 
 For example, to extract the number of cycles from the JSON output:
