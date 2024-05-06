@@ -90,8 +90,9 @@ type IsaFormMetadata = {
 };
 
 /**
- * Metadata for ISA form fields
- * Displayed as title above the input and an icon (i) with the hint on hover
+ * Metadata for ISA form fields.
+ * Displayed as title above the input and an icon (i) with the hint on hover.
+ * Missing hint means no hint for this field.
  */
 const isaFormMetadata: IsaFormMetadata = {
   name: {
@@ -200,11 +201,9 @@ const isaFormMetadata: IsaFormMetadata = {
   },
   coreClockFrequency: {
     title: 'Core clock frequency (Hz)',
-    hint: 'Core clock frequency in Hz.',
   },
   cacheClockFrequency: {
     title: 'Cache clock frequency (Hz)',
-    hint: 'Cache clock frequency in Hz.',
   },
 };
 
@@ -238,9 +237,12 @@ const capabilitiesMetadata: {
 };
 
 /**
- * Texts for the predictor types'
+ * Texts for the 0bit and 1bit predictor types
  */
 const twoStatePredictor = ['Not Taken', 'Taken'] as const;
+/**
+ * Texts for 2bit predictor type
+ */
 const fourStatePredictor = [
   'Strongly Not Taken',
   'Weakly Not Taken',
@@ -258,7 +260,7 @@ export type IsaSettingsFormProps = {
  * @param form - useForm hook
  * @param disabled - disable the form (read-only)
  */
-export default function IsaSettingsForm({
+export function IsaSettingsForm({
   form,
   disabled = false,
 }: IsaSettingsFormProps) {
@@ -538,7 +540,9 @@ interface FunctionalUnitInputProps {
   control: Control<CpuConfig>;
 }
 
-// Uses its own subform
+/**
+ * Functional unit subform. Adds and removes FUs.
+ */
 function FunctionalUnitInput({
   control,
   disabled = false,
@@ -629,8 +633,10 @@ type CapabilityPicker = {
   };
 };
 
-// Subform for adding a new FU
-// Controls the fUnits field
+/**
+ * Subform for adding a new FU.
+ * Controls the fUnits field.
+ */
 function FUAdder({ control }: { control: Control<CpuConfig> }) {
   const { field } = useController({
     control,

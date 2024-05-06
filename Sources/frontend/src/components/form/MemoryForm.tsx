@@ -398,7 +398,7 @@ type DataTextAreaProps = UseControllerProps<MemoryLocationApi> & {
 };
 
 /**
- * Text area for entering data. Can be filled from a CSV file.
+ * Text area for entering data manually. Can be filled from a CSV file.
  * Forgets the file when the tab is changed.
  */
 function DataTextArea({ memoryLocationName, ...props }: DataTextAreaProps) {
@@ -469,7 +469,7 @@ function DataTextArea({ memoryLocationName, ...props }: DataTextAreaProps) {
 }
 
 /**
- * A select input (dropdown). Used for choosing the data type.
+ * A select input (dropdown) for choosing the data type.
  * Can be used for any textual input, if generalized.
  */
 function SelectInput(props: UseControllerProps<MemoryLocationApi>) {
@@ -480,14 +480,18 @@ function SelectInput(props: UseControllerProps<MemoryLocationApi>) {
     field.onChange(value);
   };
 
-  const onOpenChange = (open: boolean) => {
+  const onOpenChange = () => {
     if (ref.current) {
       ref.current.click();
     }
   };
 
   return (
-    <Select onOpenChange={onOpenChange} onValueChange={onValueChange} value={field.value as string}>
+    <Select
+      onOpenChange={onOpenChange}
+      onValueChange={onValueChange}
+      value={field.value as string}
+    >
       <SelectTrigger
         ref={ref}
         className='w-[180px]'
@@ -511,7 +515,7 @@ function SelectInput(props: UseControllerProps<MemoryLocationApi>) {
 }
 
 /**
- * @param fileList File list is interface of object that is returned by input[type=file]
+ * @param fileList object that is returned by input[type=file]
  * @returns The first file, if it exists
  */
 function getFileFromFileList(fileList: unknown): File | undefined {
@@ -554,7 +558,9 @@ function getError(
   return current as FieldError;
 }
 
-// Custom resolver
+/**
+ * Custom resolver for the form. Adds more checks than those defined in schema.
+ */
 const resolver: Resolver<MemoryLocationApi> = async (
   values: MemoryLocationApi,
   ctx,

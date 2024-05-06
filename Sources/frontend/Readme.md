@@ -26,6 +26,8 @@ Readme.md       - Read me file
 Many configuration files
 ```
 
+Note: `src/components/base/ui` contains vendored code (shadcn/ui) that has only been modified, but not fully authored.
+
 ### Install steps
 
 The app was developed using npm `10.2.3` and node.js `v21.2.0`.

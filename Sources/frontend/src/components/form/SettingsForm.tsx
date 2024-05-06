@@ -48,7 +48,7 @@ import { useTour } from '@reactour/tour';
 import { useRouter } from 'next/navigation';
 
 /**
- * Global settings
+ * Global settings - clear localStorage, retake the tour, export configuration.
  */
 export function SettingsForm() {
   const activeConfig = useAppSelector(selectActiveConfig);

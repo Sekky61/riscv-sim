@@ -56,7 +56,7 @@ export type FormInputProps = {
  * It displays error message, title, hint.
  * See example of usage in {@link src/components/form/MemoryForm.tsx}
  */
-const FormInput = React.forwardRef<HTMLInputElement, FormInputProps>(
+export const FormInput = React.forwardRef<HTMLInputElement, FormInputProps>(
   ({ name, title, error, hint, ...inputProps }: FormInputProps, ref) => {
     const isError = error !== undefined;
 
@@ -94,6 +94,9 @@ const FormInput = React.forwardRef<HTMLInputElement, FormInputProps>(
 
 FormInput.displayName = 'FormInput';
 
+/**
+ * Displays a zod error
+ */
 export function ErrorDisplay({ error }: { error?: FieldError }) {
   return (
     <div className='h-6'>
@@ -103,5 +106,3 @@ export function ErrorDisplay({ error }: { error?: FieldError }) {
     </div>
   );
 }
-
-export { FormInput };

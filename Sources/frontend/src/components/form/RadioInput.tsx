@@ -70,7 +70,8 @@ type RadioInputProps<T extends string> = RadioInputBaseProps<T> & {
 };
 
 /**
- * Uncontrolled radio input
+ * Uncontrolled radio input.
+ * Calls onNewValue callback on value change.
  */
 export function RadioInput<T extends string>({
   choices,
