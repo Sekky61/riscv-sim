@@ -41,7 +41,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/base/ui/dialog';
-import Block from '@/components/simulation/Block';
+import { Block } from '@/components/simulation/Block';
 import { useRefDimensions } from '@/lib/hooks/useRefDimensions';
 import type { AsmSymbol } from '@/lib/types/cpuApi';
 import { useRef } from 'react';

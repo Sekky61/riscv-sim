@@ -30,7 +30,7 @@
  */
 
 import { render, screen } from '@testing-library/react';
-import Block from '../simulation/Block';
+import {Block} from '../simulation/Block';
 
 describe('Block', () => {
   it('renders the simulation link', async () => {

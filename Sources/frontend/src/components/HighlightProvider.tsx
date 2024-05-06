@@ -29,6 +29,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+"use client";
+
 import type React from 'react';
 import { createContext, useContext, useMemo, useState } from 'react';
 

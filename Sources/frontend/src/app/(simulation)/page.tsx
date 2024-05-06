@@ -30,15 +30,30 @@
  */
 
 import { ReloadSimModal } from '@/components/ReloadSimModal';
-import { Main } from './Main';
 import { WelcomeMessage } from './WelcomeMessage';
+import { CanvasWindow } from '@/components/CanvasWindow';
+import { SimGrid } from '@/components/simulation/SimGrid';
+import Timeline from '@/components/simulation/Timeline';
+import { AutoPlay } from './AutoPlay';
+import { SidePanel } from '@/components/simulation/SidePanel';
+import { ErrorMessage } from './ErrorMessage';
 
 export default function HomePage() {
   return (
     <div className='flex'>
       <div className='flex-grow h-screen'>
         <div className='relative w-full h-full shadow-inner'>
-          <Main />
+          <ErrorMessage />
+          <CanvasWindow>
+            <SimGrid />
+          </CanvasWindow>
+          <div className='absolute top-3 left-1/2'>
+            <Timeline />
+          </div>
+          <div className='absolute top-3 right-[280px]'>
+            <AutoPlay />
+          </div>
+          <SidePanel />
         </div>
       </div>
       <ReloadSimModal />

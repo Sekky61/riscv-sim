@@ -59,7 +59,7 @@ import {
   TooltipPortal,
   TooltipTrigger,
 } from '@/components/base/ui/tooltip';
-import Block from '@/components/simulation/Block';
+import { Block } from '@/components/simulation/Block';
 import InstructionField from '@/components/simulation/InstructionField';
 import { InstructionListDisplay } from '@/components/simulation/InstructionListDisplay';
 import { ShortValueInformation } from '@/components/simulation/ValueTooltip';

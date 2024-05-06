@@ -33,7 +33,7 @@
 
 import { selectPredictorWidth } from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
-import { BranchInfo } from '@/lib/types/cpuApi';
+import type { BranchInfo } from '@/lib/types/cpuApi';
 import { hexPadEven } from '@/lib/utils';
 
 type BranchTableProps = {

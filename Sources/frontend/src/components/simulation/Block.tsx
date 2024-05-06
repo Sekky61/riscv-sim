@@ -33,14 +33,7 @@
 // Provides design of the box, content is substituted in
 
 import clsx from 'clsx';
-import { MoreVertical } from 'lucide-react';
-
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/components/base/ui/tooltip';
-import { Dialog, DialogTrigger } from '@radix-ui/react-dialog';
+import { DialogProvider } from './DialogProvider';
 
 export type BlockProps = {
   title: string;
@@ -51,9 +44,12 @@ export type BlockProps = {
 };
 
 /**
- * If you want to use a fixed width, specify it outside of the component
+ * The box around a cpu block like fetch unit.
+ * Title, stats and children are slots in the layout.
+ * detailDialog is optional popup with more information about a block.
+ * If you want to use a fixed width, specify it outside of the component.
  */
-export default function Block({
+export function Block({
   children,
   className,
   title,
@@ -74,21 +70,10 @@ export default function Block({
       <div className='flex justify-between items-center pl-2'>
         <span className='font-bold'>{title}</span>
         {detailDialog && (
-          <Dialog>
-            <DialogTrigger>
-              <Tooltip>
-                <TooltipTrigger asChild aria-label={seeMoreMessage}>
-                  <div className='iconHighlight h-8 w-8 p-1 rounded-full text-primary'>
-                    <MoreVertical strokeWidth={1.5} />
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent side='bottom' className='p-2'>
-                  {seeMoreMessage}
-                </TooltipContent>
-              </Tooltip>
-            </DialogTrigger>
-            {detailDialog}
-          </Dialog>
+          <DialogProvider
+            detailDialog={detailDialog}
+            seeMoreMessage={seeMoreMessage}
+          />
         )}
       </div>
       {stats && <div className='text-sm'>{stats}</div>}

@@ -29,8 +29,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-'use client';
-
 import { Trace } from '@/app/(simulation)/Trace';
 import { HighlightProvider } from '@/components/HighlightProvider';
 import CacheBlock from '@/components/simulation/CacheBlock';

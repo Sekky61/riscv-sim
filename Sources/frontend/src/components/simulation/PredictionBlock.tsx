@@ -48,7 +48,6 @@ import {
   DialogTitle,
 } from '@/components/base/ui/dialog';
 import { PredictorIcon } from '@/components/prediction/PredictorIcon';
-import Block from '@/components/simulation/Block';
 import type { GlobalHistoryRegister } from '@/lib/types/cpuApi';
 
 export function BranchDetailDialog() {

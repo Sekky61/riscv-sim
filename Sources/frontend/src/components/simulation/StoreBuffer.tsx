@@ -29,6 +29,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+'use client';
+
 import {
   type ParsedArgument,
   selectStoreBuffer,
@@ -47,7 +49,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/base/ui/dialog';
-import Block from '@/components/simulation/Block';
+import { Block } from '@/components/simulation/Block';
 import InstructionField, {
   EmptyInstructionField,
 } from '@/components/simulation/InstructionField';
@@ -75,7 +77,9 @@ export default function StoreBuffer() {
             </DialogDescription>
           </DialogHeader>
           <InstructionTable
-            instructions={storeBuffer.storeQueue.map((item) => item.simCodeModel)}
+            instructions={storeBuffer.storeQueue.map(
+              (item) => item.simCodeModel,
+            )}
           />
         </DialogContent>
       }

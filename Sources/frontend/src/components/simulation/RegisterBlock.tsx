@@ -29,10 +29,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+'use client';
+
 import {
-  DecodedCacheLine,
-  selectAllRegisters,
-  selectCache,
   selectRegisterMap,
   selectRenameMap,
   selectSpecRegisterCount,
@@ -54,10 +53,9 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/base/ui/tooltip';
-import Block from '@/components/simulation/Block';
-import { RegisterModel } from '@/lib/types/cpuApi';
+import { Block } from '@/components/simulation/Block';
+import type { RegisterModel } from '@/lib/types/cpuApi';
 import { hexPadEven } from '@/lib/utils';
-import clsx from 'clsx';
 
 /**
  * Display the cache, lines are grouped by the index.

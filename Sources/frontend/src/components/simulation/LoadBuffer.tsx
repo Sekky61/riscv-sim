@@ -29,6 +29,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+'use client';
+
 import {
   type ParsedArgument,
   selectLoadBuffer,
@@ -44,7 +46,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/base/ui/dialog';
-import Block from '@/components/simulation/Block';
+import { Block } from '@/components/simulation/Block';
 import InstructionField, {
   EmptyInstructionField,
 } from '@/components/simulation/InstructionField';

@@ -49,7 +49,7 @@ import type {
 import { hexPadEven, inputCodeAddress } from '@/lib/utils';
 
 import { DividedBadge } from '@/components/DividedBadge';
-import Block from '@/components/simulation/Block';
+import { Block } from '@/components/simulation/Block';
 import { selectEntryPoint } from '@/lib/redux/compilerSlice';
 
 /**

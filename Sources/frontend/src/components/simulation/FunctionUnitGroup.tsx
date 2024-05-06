@@ -43,7 +43,7 @@ import {
 import { useAppSelector } from '@/lib/redux/hooks';
 
 import { DividedBadge } from '@/components/DividedBadge';
-import Block from '@/components/simulation/Block';
+import { Block } from '@/components/simulation/Block';
 import InstructionField from '@/components/simulation/InstructionField';
 import type {
   AbstractFunctionUnitBlock,

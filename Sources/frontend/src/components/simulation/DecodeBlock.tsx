@@ -29,6 +29,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+'use client';
+
 import { selectDecode } from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
 
@@ -40,7 +42,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/base/ui/dialog';
-import Block from '@/components/simulation/Block';
+import {Block} from '@/components/simulation/Block';
 import InstructionField from '@/components/simulation/InstructionField';
 import { InstructionListDisplay } from '@/components/simulation/InstructionListDisplay';
 import InstructionTable from './InstructionTable';
@@ -69,8 +71,7 @@ export default function DecodeBlock() {
               {descriptions.decode?.shortDescription}
             </DialogDescription>
           </DialogHeader>
-                    <InstructionTable instructions={decode.codeBuffer} />
-
+          <InstructionTable instructions={decode.codeBuffer} />
         </DialogContent>
       }
       className='decode w-block h-[250px]'

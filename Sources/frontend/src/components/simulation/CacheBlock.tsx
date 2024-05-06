@@ -29,6 +29,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+'use client';
+
 import { type DecodedCacheLine, selectCache } from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
 
@@ -40,7 +42,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/base/ui/dialog';
-import Block from '@/components/simulation/Block';
+import {Block} from '@/components/simulation/Block';
 import { hexPadEven } from '@/lib/utils';
 import clsx from 'clsx';
 

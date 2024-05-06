@@ -44,6 +44,10 @@ import clsx from 'clsx';
 import { Pause, Play } from 'lucide-react';
 import { useEffect } from 'react';
 
+/**
+ * Floating component that automatically steps the simulation.
+ * Trivial implementation, can break easily.
+ */
 export function AutoPlay() {
   const dispatch = useAppDispatch();
   const autoplayRunning = useAppSelector(selectAutoplay);

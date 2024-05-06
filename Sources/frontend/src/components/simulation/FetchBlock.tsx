@@ -45,7 +45,7 @@ import {
   DialogTrigger,
 } from '@/components/base/ui/dialog';
 import { PredictorGraphFromCodeId } from '@/components/prediction/PredictorGraph';
-import Block from '@/components/simulation/Block';
+import {Block} from '@/components/simulation/Block';
 import InstructionField from '@/components/simulation/InstructionField';
 import { InstructionListDisplay } from '@/components/simulation/InstructionListDisplay';
 import InstructionTable from '@/components/simulation/InstructionTable';
