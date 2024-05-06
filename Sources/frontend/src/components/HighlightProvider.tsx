@@ -54,6 +54,10 @@ export const useHighlight = () => useContext(HighlightContext);
 type Props = {
   children?: React.ReactNode;
 };
+
+/**
+ * Styles currently highlighted instruction/register.
+ */
 export const HighlightProvider: React.FC<Props> = ({ children }) => {
   const [highlightedCodeId, setHighlightedCodeId] = useState<{
     simcode: number;

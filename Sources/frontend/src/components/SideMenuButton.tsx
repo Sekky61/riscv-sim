@@ -39,17 +39,18 @@ import clsx from 'clsx';
 import { useHotkeys } from 'react-hotkeys-hook';
 
 export type SideMenuButtonProps = {
-  Icon: ReactNode;
+  icon: ReactNode;
   href: string;
   shortcut: string;
   hoverText: string;
 };
 
 /**
- * The Icon prop is expected to be 24px in size
+ * The Icon prop is expected to be 24px in size.
+ * Uses info from router to style itself.
  */
-export default function SideMenuButton({
-  Icon,
+export function SideMenuButton({
+  icon,
   href,
   shortcut,
   hoverText,
@@ -71,7 +72,7 @@ export default function SideMenuButton({
 
   return (
     <Link href={href} className={cls} aria-label={hoverText}>
-      {Icon}
+      {icon}
       <div className='nav-text text-nowrap ml-[8px]'>{hoverText}</div>
     </Link>
   );

@@ -35,7 +35,10 @@ export interface CenterLayoutProps {
   children: React.ReactNode;
 }
 
-export default function ExternalLink({
+/**
+ * Link with an arrow
+ */
+export function ExternalLink({
   href,
   children,
   openInNewTab = false,

@@ -464,35 +464,6 @@
     justify-content: space-between;
   }
 
-  /* Tooltip - behavior only */
-
-  .tooltip {
-    @apply relative;
-  }
-
-  /* styling the tooltip */
-  .tooltiptext {
-    @apply absolute z-10 min-w-max;
-  }
-
-  .show-tooltip-right {
-    @apply left-full top-0 ml-2;
-  }
-
-  .show-tooltip-bottom {
-    @apply top-full left-0 mt-2;
-  }
-
-  /* Tooltip text */
-  .tooltip .tooltiptext {
-    @apply invisible opacity-0 delay-300;
-  }
-
-  /* Show the tooltip text when you mouse over the tooltip container */
-  .tooltip:hover .tooltiptext {
-    @apply visible opacity-100;
-  }
-
   /* Form when in error state */
   .form-input-error {
     @apply border-red-500 bg-red-500/15 text-red-800 placeholder-red-700 focus-visible:ring-red-500;

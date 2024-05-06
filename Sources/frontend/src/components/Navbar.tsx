@@ -41,39 +41,43 @@ import {
   Settings,
 } from 'lucide-react';
 
-import SideMenuButton from '@/components/SideMenuButton';
+import { SideMenuButton } from '@/components/SideMenuButton';
 
-export default function Navbar() {
+/**
+ * Navbar with ~8 buttons. Numerical shortcuts are available.
+ * The menu can be expanded or not, see the navbar class in css.
+ */
+export function Navbar() {
   return (
     <nav className='navbar'>
       <div className='navbar-inner surface w-14 h-full flex flex-col justify-between py-12'>
         <div className='flex flex-col'>
           <SideMenuButton
-            Icon={<BrainCircuit strokeWidth={1.5} />}
+            icon={<BrainCircuit strokeWidth={1.5} />}
             href='/'
             hoverText='Simulation'
             shortcut='Digit1'
           />
           <SideMenuButton
-            Icon={<Code strokeWidth={1.5} />}
+            icon={<Code strokeWidth={1.5} />}
             href='/compiler'
             hoverText='Code Editor'
             shortcut='Digit2'
           />
           <SideMenuButton
-            Icon={<MemoryStick strokeWidth={1.5} />}
+            icon={<MemoryStick strokeWidth={1.5} />}
             href='/memory'
             hoverText='Memory Settings'
             shortcut='Digit3'
           />
           <SideMenuButton
-            Icon={<Cpu strokeWidth={1.5} />}
+            icon={<Cpu strokeWidth={1.5} />}
             href='/isa'
             hoverText='Architecture Settings'
             shortcut='Digit4'
           />
           <SideMenuButton
-            Icon={<BarChart3 strokeWidth={1.5} />}
+            icon={<BarChart3 strokeWidth={1.5} />}
             href='/stats'
             hoverText='Runtime Statistics'
             shortcut='Digit5'
@@ -81,25 +85,25 @@ export default function Navbar() {
         </div>
         <div className='flex flex-col'>
           <SideMenuButton
-            Icon={<GraduationCap strokeWidth={1.5} />}
+            icon={<GraduationCap strokeWidth={1.5} />}
             href='/learn'
             hoverText='Architecture Overview'
             shortcut='Digit6'
           />
           <SideMenuButton
-            Icon={<BookOpen strokeWidth={1.5} />}
+            icon={<BookOpen strokeWidth={1.5} />}
             href='/docs'
             hoverText='RISC-V Documentation'
             shortcut='Digit7'
           />
           <SideMenuButton
-            Icon={<Info strokeWidth={1.5} />}
+            icon={<Info strokeWidth={1.5} />}
             href='/help'
             hoverText='Help'
             shortcut='Digit8'
           />
           <SideMenuButton
-            Icon={<Settings strokeWidth={1.5} />}
+            icon={<Settings strokeWidth={1.5} />}
             href='/settings'
             hoverText='App Settings'
             shortcut='Digit9'

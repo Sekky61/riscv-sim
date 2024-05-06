@@ -43,6 +43,9 @@ import {
 } from '@/components/base/ui/dialog';
 import { useReloadSim } from '@/lib/hooks/useReloadSim';
 
+/**
+ * If the configuration changed, shows modal that offers a simulation reload.
+ */
 export function ReloadSimModal() {
   const { same, cleanReload } = useReloadSim();
   const [openModal, setOpenModal] = useState(!same);

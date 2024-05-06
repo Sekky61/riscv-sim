@@ -34,6 +34,9 @@ type DividedBadgeProps = {
   title?: string;
 };
 
+/**
+ * Pill-like badge
+ */
 export function DividedBadge({ children, title }: DividedBadgeProps) {
   return (
     <div

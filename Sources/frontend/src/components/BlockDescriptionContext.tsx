@@ -42,7 +42,8 @@ import type { BlockDescriptions } from '@/lib/types/codeExamples';
 export const BlockDescriptionContext = createContext<BlockDescriptions>({});
 
 /**
- * A provider for the block descriptions
+ * A provider for the block descriptions.
+ * Distributes data to components that need it.
  */
 export function BlockDescriptionProvider({
   children,

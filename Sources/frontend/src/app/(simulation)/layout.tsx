@@ -29,11 +29,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 
 import '@/styles/globals.css';
 
-import Navbar from '@/components/Navbar';
+import { Navbar } from '@/components/Navbar';
 
 /**
  * Layout of the simualtion page.

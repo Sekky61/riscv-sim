@@ -43,10 +43,13 @@ import { selectActiveConfig } from '@/lib/redux/isaSlice';
 import { pullSimConfig, selectRunningConfig } from '@/lib/redux/simConfigSlice';
 import { toast } from 'sonner';
 
+/**
+ * Provides function to call when reload of simulation with new configuration is requested
+ * The value same is a boolean: true means the config has not changed.
+ */
 export const useReloadSim = () => {
   const dispatch = useAppDispatch();
   const cpu = useAppSelector(selectCpu);
-
   const same = useAreSame();
 
   // On page load, check if the simulation config is up to date, show modal to warn and offer to reload

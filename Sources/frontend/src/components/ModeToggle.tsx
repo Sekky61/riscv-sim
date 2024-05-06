@@ -36,6 +36,9 @@ import * as React from 'react';
 
 import { RadioInput } from './form/RadioInput';
 
+/**
+ * UI element toggling between Light, Dark and System themes.
+ */
 export function ModeToggle() {
   const { setTheme, theme, themes } = useTheme();
 

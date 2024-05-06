@@ -31,7 +31,7 @@
 
 'use client';
 
-import CanvasWindow from '@/components/CanvasWindow';
+import {CanvasWindow} from '@/components/CanvasWindow';
 import {
   Card,
   CardContent,

@@ -50,10 +50,10 @@ type CanvasWindowProps = {
 
 /**
  * Canvas window component.
- * Scrollable, draggable with middle click.
+ * Scrollable, draggable with middle click, scrollable with touch.
  * Zoomable with scale prop.
  */
-export default function CanvasWindow({ children }: CanvasWindowProps) {
+export function CanvasWindow({ children }: CanvasWindowProps) {
   const elRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const [middleHeld, setMiddleHeld] = useState(false);
@@ -128,6 +128,7 @@ export default function CanvasWindow({ children }: CanvasWindowProps) {
   };
 
   // Register on component mount
+  // biome-ignore lint/correctness/useExhaustiveDependencies: hooks on mount, unhooks on unmount
   useEffect(() => {
     elRef.current?.addEventListener('pointerdown', onPointerUpDown);
     elRef.current?.addEventListener('pointerup', onPointerUpDown);
@@ -165,7 +166,6 @@ export default function CanvasWindow({ children }: CanvasWindowProps) {
     middleHeld ? 'cursor-grabbing' : 'cursor-grab',
   );
 
-  // The w-6 h-6 trick to make the overflow not affect initial size of the component
   return (
     <div
       className={cls}
@@ -203,7 +203,7 @@ export type ScaleButtonsProps = {
 const ScaleButtons = ({ scaleUp, scaleDown }: ScaleButtonsProps) => {
   useHotkeys(
     // Add is the numeric plus key
-    ['+', '+', 'Add'],
+    ['+', 'Add'],
     () => {
       scaleUp();
     },
@@ -237,7 +237,7 @@ const ScaleButtons = ({ scaleUp, scaleDown }: ScaleButtonsProps) => {
 };
 
 /**
- * Create the transform() string for the element
+ * Create the transform() css property string for the element
  */
 function getTransformString({
   x,
