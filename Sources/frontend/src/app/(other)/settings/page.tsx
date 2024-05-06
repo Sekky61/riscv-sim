@@ -29,11 +29,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { SettingsForm } from '@/components/form/SettingsForm';
 import { DevTools } from './DevTools';
+import { SettingsForm } from './SettingsForm';
 
 export default function Page() {
-
   return (
     <main>
       <h1>Settings</h1>

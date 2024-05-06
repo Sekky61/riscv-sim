@@ -111,7 +111,7 @@ interface MemoryFormProps {
  * Note: React-hook-form cannot handle the and/or from the zoo schema, so types have to be defined manually.
  * (https://github.com/react-hook-form/react-hook-form/issues/9287)
  */
-export default function MemoryForm({
+export function MemoryForm({
   existing,
   memoryLocationName,
   deleteCallback,

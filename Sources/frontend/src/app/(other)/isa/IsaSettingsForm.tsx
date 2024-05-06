@@ -73,10 +73,10 @@ import {
 } from '@/components/base/ui/tabs';
 
 import { formatNumberWithUnit } from '@/lib/utils';
-import { DividedBadge } from '../DividedBadge';
-import { FormInput } from './FormInput';
-import { ControlRadioInput, RadioInputWithTitle } from './RadioInput';
 import { toast } from 'sonner';
+import { FormInput } from '@/components/form/FormInput';
+import { ControlRadioInput, RadioInputWithTitle } from '@/components/form/RadioInput';
+import { DividedBadge } from '@/components/DividedBadge';
 
 type IsaArrayFields = 'fUnits' | 'memoryLocations';
 type IsaSimpleFields = keyof Omit<CpuConfig, IsaArrayFields>;

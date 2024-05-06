@@ -34,7 +34,6 @@
 'use client';
 
 import { Button } from '@/components/base/ui/button';
-import MemoryForm from '@/components/form/MemoryForm';
 import { isMemoryLocations } from '@/lib/forms/validators';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import {
@@ -47,6 +46,7 @@ import clsx from 'clsx';
 import Head from 'next/head';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { MemoryForm } from './MemoryForm';
 
 /**
  * This is the main page for the memory editor.

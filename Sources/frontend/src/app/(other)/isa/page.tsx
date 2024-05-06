@@ -46,10 +46,10 @@ import { selectActiveConfig, updateIsa } from '@/lib/redux/isaSlice';
 import { saveAsJsonFile } from '@/lib/utils';
 
 import { Button } from '@/components/base/ui/button';
-import {IsaSettingsForm} from '@/components/form/IsaSettingsForm';
 import { toast } from 'sonner';
 import { ActiveIsaSelector } from './ActiveIsaSelector';
 import { MemoryInfo } from './MemoryInfo';
+import { IsaSettingsForm } from './IsaSettingsForm';
 
 // TODO: delete configuration
 // TODO: prevent from leaving the page with unsaved changes
