@@ -81,8 +81,7 @@ interface CompilerState extends CompilerOptions {
 const initialState: CompilerState = {
   cCode: '',
   asmCode: defaultAsmCode,
-  asmToC: [
-  ],
+  asmToC: [],
   cDirty: false,
   asmDirty: false,
   compileStatus: 'idle',
@@ -100,7 +99,7 @@ const initialState: CompilerState = {
  */
 export const callCompiler = createAsyncThunk<CompileResponse>(
   'compiler/callCompiler',
-  async (arg, { getState, dispatch }) => {
+  async (_, { getState }) => {
     // @ts-ignore
     const state: RootState = getState();
     const activeIsa = selectActiveConfig(state);
@@ -154,7 +153,7 @@ export const callCompiler = createAsyncThunk<CompileResponse>(
  */
 export const callParseAsm = createAsyncThunk<ParseAsmResponse>(
   'compiler/callParseAsm',
-  async (arg, { getState }) => {
+  async (_, { getState }) => {
     // @ts-ignore
     const state: RootState = getState();
     const request = {

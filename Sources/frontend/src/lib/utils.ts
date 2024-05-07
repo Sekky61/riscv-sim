@@ -39,25 +39,16 @@ import {
 } from '@/lib/forms/Isa';
 import type {
   DataTypeEnum,
-  InputCodeModel,
   InstructionFunctionModel,
-  Reference,
   RegisterModel,
   StopReason,
 } from '@/lib/types/cpuApi';
 
+/**
+ * Utility function used mostly by shadcn/ui.
+ */
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
-}
-
-/**
- * Reference is valid if it is present and has non-negative value. A type guard.
- *
- * @param ref  Reference to check
- * @returns True if reference present and valid, false otherwise
- */
-export function isValidReference(ref: Reference | null): ref is Reference {
-  return typeof ref === 'number' && ref >= 0;
 }
 
 /**
@@ -180,7 +171,7 @@ function unreachable(): never {
 }
 
 /**
- * Save the string as a file.
+ * Save the string as a file. Prompts the user to pick a location.
  */
 export function saveAsFile(content: string, filename: string): void {
   const blob = new Blob([content], { type: 'text/plain' });
@@ -205,7 +196,6 @@ export function saveAsJsonFile(object: any, filename: string): void {
 
 /**
  * Show dialog to pick a file and calls the callback with file text contents once the file is picked.
- * TODO: Use this function in other places where file is loaded (config import), move to utils, generalize?
  */
 export function loadFile(callback: (contents: string) => void) {
   // Show dialog
@@ -234,7 +224,7 @@ export function loadFile(callback: (contents: string) => void) {
 }
 
 /**
- * Convert the data type to byte size.
+ * Return the size of the data type in bytes.
  */
 export function dataTypeToSize(dataType: DataTypeEnum): number {
   switch (dataType) {
@@ -266,7 +256,7 @@ export function dataTypeToText(dataType: DataTypeEnum): string {
 }
 
 /**
- * Get the size of a memory location in elements
+ * Get the size of a memory location in (number of elements).
  */
 export function memoryLocationSizeInElements(
   location: MemoryLocationApi,
@@ -286,6 +276,7 @@ export function memoryLocationSizeInElements(
 
 /**
  * Return the word in the plural form if the number is not 1
+ * Does not handle edge cases like "goose" -> "geese" :)
  */
 export function pluralize(word: string, number: number): string {
   return number === 1 ? word : `${word}s`;

@@ -29,7 +29,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { PayloadAction, createSelector, createSlice } from '@reduxjs/toolkit';
+import {
+  type PayloadAction,
+  createSelector,
+  createSlice,
+} from '@reduxjs/toolkit';
 
 // Import as type to avoid circular dependency
 import type { RootState } from '@/lib/redux/store';
@@ -40,9 +44,9 @@ import {
   floatSimulationConfig,
 } from '@/constant/defaults';
 import {
-  CpuConfig,
-  MemoryLocationApi,
-  SimulationConfig,
+  type CpuConfig,
+  type MemoryLocationApi,
+  type SimulationConfig,
   defaultSimulationConfig,
 } from '@/lib/forms/Isa';
 
@@ -89,7 +93,6 @@ export const isaSlice = createSlice({
   initialState,
   reducers: {
     newActiveIsa: (state, action: PayloadAction<string>) => {
-      console.log('newActiveIsa', action.payload);
       if (findIsaByName(state.isas, action.payload) === undefined)
         throw new Error('ISA not found');
       state.activeIsaName = action.payload;

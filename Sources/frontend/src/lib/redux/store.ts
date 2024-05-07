@@ -35,7 +35,7 @@ import {
   PAUSE,
   PERSIST,
   PURGE,
-  PersistedState,
+  type PersistedState,
   REGISTER,
   REHYDRATE,
   createMigrate,
@@ -45,11 +45,15 @@ import {
 import hardSet from 'redux-persist/lib/stateReconciler/hardSet';
 import storage from 'redux-persist/lib/storage';
 
-import compilerReducer, { CompilerReducer } from '@/lib/redux/compilerSlice';
+import compilerReducer, {
+  type CompilerReducer,
+} from '@/lib/redux/compilerSlice';
 import cpuReducer from '@/lib/redux/cpustateSlice';
-import isaReducer, { IsaReducer } from '@/lib/redux/isaSlice';
+import isaReducer, { type IsaReducer } from '@/lib/redux/isaSlice';
 import shortcutsReducer from '@/lib/redux/shortcutsSlice';
-import simConfigReducer, { SimConfigReducer } from '@/lib/redux/simConfigSlice';
+import simConfigReducer, {
+  type SimConfigReducer,
+} from '@/lib/redux/simConfigSlice';
 
 /**
  * This is the root of the global state.
@@ -74,32 +78,32 @@ import simConfigReducer, { SimConfigReducer } from '@/lib/redux/simConfigSlice';
  * https://github.com/rt2zz/redux-persist/blob/HEAD/docs/migrations.md
  */
 const migrations = {
-  2: (state: PersistedState) => {
+  2: () => {
     // Changed MemoryLocation, compile
     return undefined;
   },
-  3: (state: PersistedState) => {
+  3: () => {
     return undefined;
   },
   10: (state: PersistedState) => {
     return state;
   },
-  11: (state: PersistedState) => {
+  11: () => {
     return undefined;
   },
-  12: (state: PersistedState) => {
+  12: () => {
     // Added instructionFunctionModels
     return undefined;
   },
-  13: (state: PersistedState) => {
+  13: () => {
     // Changed MemoryLocation
     return undefined;
   },
-  14: (state: PersistedState) => {
+  14: () => {
     // Changed MemoryLocation
     return undefined;
   },
-  15: (state: PersistedState) => {
+  15: () => {
     // Changed MemoryLocation
     return undefined;
   },

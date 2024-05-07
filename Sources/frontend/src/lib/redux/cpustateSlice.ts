@@ -51,7 +51,7 @@ import {
   callSimulationImpl,
 } from '@/lib/serverCalls';
 import type {
-    AsmSymbol,
+  AsmSymbol,
   Cache,
   CacheLineModel,
   CpuState,
@@ -123,7 +123,8 @@ export const cpuInitialState: CpuSlice = {
 export const loadFunctionModels =
   createAsyncThunk<InstructionDescriptionResponse>(
     'cpu/loadFunctionModels',
-    async (arg) => {
+    async () => {
+      // If already loaded, do not load again, just return
       // @ts-ignore
       try {
         return callInstructionDescriptionImpl();
@@ -205,9 +206,7 @@ export const simStepEnd = (): ThunkAction<
   unknown,
   Action<string>
 > => {
-  return async (dispatch, getState) => {
-    const state: RootState = getState();
-    const config = selectRunningConfig(state);
+  return async (dispatch) => {
     dispatch(callSimulation(null));
   };
 };
@@ -295,7 +294,7 @@ export const cpuSlice = createSlice({
       .addCase(loadFunctionModels.fulfilled, (state, action) => {
         state.instructionFunctionModels = action.payload.models;
       })
-      .addCase(loadFunctionModels.rejected, (state, _action) => {
+      .addCase(loadFunctionModels.rejected, (_state, _action) => {
         // nothing
       })
       .addCase(loadFunctionModels.pending, (_state, _action) => {
