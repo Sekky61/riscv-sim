@@ -38,6 +38,11 @@ import { AutoPlay } from './AutoPlay';
 import { ErrorMessage } from './ErrorMessage';
 import { WelcomeMessage } from './WelcomeMessage';
 
+export const metadata = {
+  title: 'RISC-V simulator',
+  description: 'Interactive RISC-V superscalar simulator',
+};
+
 export default function HomePage() {
   return (
     <div className='flex'>

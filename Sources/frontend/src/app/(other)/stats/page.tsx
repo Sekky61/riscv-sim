@@ -29,6 +29,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+export const metadata = {
+  title: 'Simulation Statistics',
+  description: 'The statistics of the current simulation',
+};
+
 import { SimulationStats } from '@/components/simulation/SimulationStats';
 
 export default function Component() {

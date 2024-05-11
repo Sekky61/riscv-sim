@@ -32,6 +32,11 @@
 import { CodeSnippet } from '@/components/CodeSnippet';
 import { ExternalLink } from '@/components/ExternalLink';
 
+export const metadata = {
+  title: 'RISC-V Quick Reference',
+  description: 'A quick reference for the RISC-V ISA',
+};
+
 export default function Page() {
   // Source for Calling Convention: https://www.cl.cam.ac.uk/teaching/1617/ECAD+Arch/files/docs/RISCVGreenCardv8-20151013.pdf
   // also: https://riscv.org/wp-content/uploads/2015/01/riscv-calling.pdf

@@ -32,6 +32,11 @@
 import { DevTools } from './DevTools';
 import { SettingsForm } from './SettingsForm';
 
+export const metadata = {
+  title: 'Settings',
+  description: 'The settings page of the application',
+};
+
 export default function Page() {
   return (
     <main>

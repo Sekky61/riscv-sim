@@ -32,6 +32,11 @@
 import { loadBlockDescriptions } from '@/lib/staticLoaders';
 import type { BlockDescription } from '@/lib/types/codeExamples';
 
+export const metadata = {
+  title: 'Superscalar Architecture',
+  description: 'Learn about the architecture and the individual units',
+};
+
 /**
  * Educational page about the blocks of the processor.
  * First a general introduction and then a section for each block.

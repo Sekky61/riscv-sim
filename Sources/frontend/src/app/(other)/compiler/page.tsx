@@ -2,10 +2,8 @@
  * @file    page.tsx
  *
  * @author  Michal Majer
- *          Faculty of Information Technology 
-
- *          Brno University of Technology 
-
+ *          Faculty of Information Technology
+ *          Brno University of Technology
  *          xmajer21@stud.fit.vutbr.cz
  *
  * @brief   The compiler page root
@@ -31,20 +29,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Head from 'next/head';
-
 import { AsmDisplay } from '@/app/(other)/compiler/AsmDisplay';
 import { CCodeInput } from '@/app/(other)/compiler/CCodeInput';
 import { CompileOptions } from '@/app/(other)/compiler/CompileOptions';
 import { LineHighlightProvider } from '@/app/(other)/compiler/LineHighlightContext';
 
+export const metadata = {
+  title: 'Code Editor',
+  description: 'The code editor and compiler page',
+};
+
 export default function Page() {
   // Note: min-h-0 fixes overflow of the flex container
   return (
     <>
-      <Head>
-        <title>Code Editor</title>
-      </Head>
       <h1>Code Editor</h1>
       <div className='flex-grow flex h-full flex-col'>
         <div
