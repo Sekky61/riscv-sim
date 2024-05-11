@@ -88,6 +88,7 @@ export function BranchDetailDialog() {
           }}
         >
           {predictors.map((predictor, i) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: No identification key is provided
             <div key={i}>
               <div className='flex justify-center'>{i}</div>
               <PredictorIcon
@@ -127,6 +128,7 @@ function GhrVector({ ghr, used }: GhrVectorProps) {
       </span>
       <div className='flex items-center border font-mono text-xs divide-x justify-start rounded-sm'>
         {vector.map((bit, i) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: No identification key is provided
           <span key={i} className='py-0.5 px-1 text-center'>
             {bit}
           </span>

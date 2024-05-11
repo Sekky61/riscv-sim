@@ -64,7 +64,7 @@ function loadLocalStorage(content: string) {
   const data = JSON.parse(content);
   for (const key in data) {
     const value = data[key];
-    console.log('Loading key:', key, 'value:', value);
+    console.info('Loading key:', key, 'value:', value);
     // try to unescape the value (\\, \n, etc.)
     try {
       const interm = JSON.parse(value);
@@ -76,5 +76,5 @@ function loadLocalStorage(content: string) {
     localStorage.setItem(key, data[key]);
   }
 
-  console.log('Loading new localStorage:', data);
+  console.info('Loading new localStorage:', data);
 }

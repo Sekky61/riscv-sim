@@ -99,6 +99,7 @@ export default function CacheBlock() {
           <div>Line</div>
         </div>
         {cache.cache.map((row, index) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: Rows are defined by their order
           <CacheLane key={index} lanes={row} />
         ))}
       </div>
@@ -132,8 +133,10 @@ function CacheLane({
         {hexPadEven(lanes[0]?.index || 0)}
       </div>
       {lanes.map((lane, index) => {
+        // a line with tag and data
         const cls = clsx('cache-lines-content', lane.valid && 'valid-line');
         return (
+          // biome-ignore lint/suspicious/noArrayIndexKey: There is no identifier to use.
           <div key={index} className={cls} aria-disabled={!lane.valid}>
             <div className='line-tag border-r border-b p-1'>
               {hexPadEven(lane.tag)}
@@ -141,6 +144,7 @@ function CacheLane({
             <div className='flex gap-1 items-center border-b border-r p-1 cache-line-bytes'>
               {lane.decodedLine.map((byte, index) => {
                 return (
+                  // biome-ignore lint/suspicious/noArrayIndexKey: There is no identifier to use.
                   <span key={index}>{byte.toString(16).padStart(2, '0')}</span>
                 );
               })}

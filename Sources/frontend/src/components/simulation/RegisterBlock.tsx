@@ -111,21 +111,21 @@ export default function RegisterBlock() {
     >
       <div className='flex gap-12'>
         <div className='grid grid-cols-4 grid-rows-8 grid-flow-col'>
-          {architecturalIntRegisters.map((regName, index) => {
+          {architecturalIntRegisters.map((regName) => {
             const reg = registers[regName];
             if (!reg) {
               throw new Error(`Register ${regName} not found`);
             }
-            return <Register key={index} register={reg} />;
+            return <Register key={reg.name} register={reg} />;
           })}
         </div>
         <div className='grid grid-cols-4 grid-rows-8 grid-flow-col'>
-          {architecturalFloatRegisters.map((regName, index) => {
+          {architecturalFloatRegisters.map((regName) => {
             const reg = registers[regName];
             if (!reg) {
               throw new Error(`Register ${regName} not found`);
             }
-            return <Register key={index} register={reg} />;
+            return <Register key={reg.name} register={reg} />;
           })}
         </div>
       </div>
