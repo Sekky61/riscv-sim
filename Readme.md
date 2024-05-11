@@ -57,7 +57,7 @@ node .next/standalone/server.js
 ```
 Navigate to `http://localhost:3000` to see the app (or the address shown in the console).
 
-To develop the app, see `Sources/frontend/Readme.md`.
+For more detailed documentation and to develop the app, see `Sources/frontend/Readme.md`.
 
 ### Build and Run Simulation Server
 
@@ -74,6 +74,8 @@ To build the backend server, navigate to `Sources/simulator` and run:
 To use the app (either CLI or server), run `./scripts/run.sh help` to see the available options.
 
 To run the server, type `./scripts/run.sh server`.
+
+For more detailed documentation, see `Sources/simulator/Readme.md`.
 
 ### Docker
 

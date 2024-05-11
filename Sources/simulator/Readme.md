@@ -2,16 +2,27 @@
 
 This Java application provides a simulator for the RISC-V superscalar processor.
 It operates in two modes: CLI and HTTP server.
+Dockerfile is provided for easy deployment.
+
+## Pre-requisites
+
+1. Java 17
+
+See [the official Java website](https://www.java.com/en/) for installation instructions for your operating system.
+
+2. GCC for RISC-V (`gcc-riscv-none-elf`)
+
+GCC is only required for the server mode.
+See [RISC-V toolchain](https://github.com/riscv-collab/riscv-gnu-toolchain).
 
 ## Installation
 
-Simply run the bash script `scripts/install.sh`. In case of troubles, make sure you have Java 17 installed.
+Simply run the bash script `scripts/install.sh`.
+The script should be runnable from any directory.
 
 ```bash
 ./scripts/install.sh
 ```
-
-The script should be runnable from any directory.
 
 ## Usage
 
