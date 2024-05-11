@@ -40,8 +40,8 @@ import type { RootState } from '@/lib/redux/store';
 
 import {
   defaultCpuConfig,
-  realisticSimulationConfig,
   floatSimulationConfig,
+  realisticSimulationConfig,
 } from '@/constant/defaults';
 import {
   type CpuConfig,

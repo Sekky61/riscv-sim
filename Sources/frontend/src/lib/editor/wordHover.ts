@@ -33,7 +33,7 @@
 
 import { hoverTooltip } from '@codemirror/view';
 
-import { InstructionDescription } from '../types/instructionsDatabase';
+import type { InstructionDescription } from '../types/instructionsDatabase';
 
 /**
  * Create a tooltip (HTML element) for the given instruction

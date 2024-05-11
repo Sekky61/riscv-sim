@@ -31,6 +31,7 @@
 
 'use client';
 
+import { Button } from '@/components/base/ui/button';
 import {
   Card,
   CardContent,
@@ -44,7 +45,6 @@ import {
 } from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
 import { saveAsJsonFile } from '@/lib/utils';
-import { Button } from '@/components/base/ui/button';
 import Link from 'next/link';
 
 export function ErrorMessage() {

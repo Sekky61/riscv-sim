@@ -131,8 +131,7 @@ export default function IssueWindow({ type }: IssueWindowProps) {
               {descriptions.issue?.shortDescription}
             </DialogDescription>
           </DialogHeader>
-                    <InstructionTable instructions={issue.issuedInstructions} />
-
+          <InstructionTable instructions={issue.issuedInstructions} />
         </DialogContent>
       }
     >

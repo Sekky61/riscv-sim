@@ -29,7 +29,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { RegisterDataContainer, RegisterModel } from '@/lib/types/cpuApi';
+import type { RegisterDataContainer, RegisterModel } from '@/lib/types/cpuApi';
 import { binPad32, hexPad } from '@/lib/utils';
 
 export type ValueInformationProps = {

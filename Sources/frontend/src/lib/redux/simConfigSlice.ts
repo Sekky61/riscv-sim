@@ -29,7 +29,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { type SimulationConfig, defaultSimulationConfig } from '@/lib/forms/Isa';
+import {
+  type SimulationConfig,
+  defaultSimulationConfig,
+} from '@/lib/forms/Isa';
 import { selectAsmCode, selectEntryPoint } from '@/lib/redux/compilerSlice';
 import { selectActiveConfig } from '@/lib/redux/isaSlice';
 import type { RootState } from '@/lib/redux/store';

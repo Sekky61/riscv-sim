@@ -31,7 +31,8 @@
 
 'use client';
 
-import React, { createContext, useContext, useMemo, useState } from 'react';
+import type React from 'react';
+import { createContext, useContext, useMemo, useState } from 'react';
 
 /**
  * The value itself is not provided, only the setter.

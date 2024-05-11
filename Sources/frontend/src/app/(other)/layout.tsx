@@ -29,7 +29,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {Navbar} from '@/components/Navbar';
+import { Navbar } from '@/components/Navbar';
 
 /**
  * This layout is mused inside the root layout for the pages in this directory.

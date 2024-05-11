@@ -42,7 +42,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/base/ui/dialog';
-import {Block} from '@/components/simulation/Block';
+import { Block } from '@/components/simulation/Block';
 import InstructionField from '@/components/simulation/InstructionField';
 import { InstructionListDisplay } from '@/components/simulation/InstructionListDisplay';
 import InstructionTable from './InstructionTable';

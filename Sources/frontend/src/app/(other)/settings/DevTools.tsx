@@ -39,7 +39,7 @@ import { loadFile } from '@/lib/utils';
  * Menu with developer tools
  */
 export function DevTools() {
-    // Do not render in production
+  // Do not render in production
   if (process.env.NODE_ENV === 'production') {
     return null;
   }

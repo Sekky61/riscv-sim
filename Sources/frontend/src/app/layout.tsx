@@ -38,11 +38,11 @@ import { cn } from '@/lib/utils';
 
 import { BlockDescriptionProvider } from '@/components/BlockDescriptionContext';
 import { ThemeProvider } from '@/components/ThemeProvider';
+import { WelcomeTour } from '@/components/WelcomeTour';
 import { Toaster } from '@/components/base/ui/sonner';
 import { TooltipProvider } from '@/components/base/ui/tooltip';
 import PersistedStoreProvider from '@/lib/redux/PersistedStoreProvider';
 import { loadBlockDescriptions } from '@/lib/staticLoaders';
-import { WelcomeTour } from '@/components/WelcomeTour';
 
 /**
  * Font loading by next.js.
@@ -72,12 +72,12 @@ export default async function RootLayout({
         <meta name='viewport' content='width=device-width, initial-scale=1.0' />
         <title>RISC-V Simulator</title>
       </head>
-        <body
-          className={cn(
-            'min-h-screen font-sans antialiased overflow-hidden',
-            fontSans.variable,
-          )}
-        >
+      <body
+        className={cn(
+          'min-h-screen font-sans antialiased overflow-hidden',
+          fontSans.variable,
+        )}
+      >
         <WelcomeTour>
           <ThemeProvider
             attribute='class'
@@ -95,7 +95,7 @@ export default async function RootLayout({
             </BlockDescriptionProvider>
           </ThemeProvider>
         </WelcomeTour>
-        </body>
+      </body>
     </html>
   );
 }

@@ -49,6 +49,7 @@ import type {
   AbstractFunctionUnitBlock,
   MemoryAccessUnit,
 } from '@/lib/types/cpuApi';
+import { useBlockDescriptions } from '../BlockDescriptionContext';
 import {
   DialogContent,
   DialogDescription,
@@ -56,7 +57,6 @@ import {
   DialogTitle,
 } from '../base/ui/dialog';
 import InstructionTable from './InstructionTable';
-import { useBlockDescriptions } from '../BlockDescriptionContext';
 
 type FUType = 'alu' | 'fp' | 'branch' | 'ls' | 'memory';
 

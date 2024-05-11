@@ -48,8 +48,8 @@ import { saveAsJsonFile } from '@/lib/utils';
 import { Button } from '@/components/base/ui/button';
 import { toast } from 'sonner';
 import { ActiveIsaSelector } from './ActiveIsaSelector';
-import { MemoryInfo } from './MemoryInfo';
 import { IsaSettingsForm } from './IsaSettingsForm';
+import { MemoryInfo } from './MemoryInfo';
 
 // TODO: delete configuration
 // TODO: prevent from leaving the page with unsaved changes

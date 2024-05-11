@@ -37,8 +37,8 @@ import { setDiagnostics } from '@codemirror/lint';
 import { EditorView } from '@codemirror/view';
 import { useCodeMirror } from '@uiw/react-codemirror';
 import React, {
-  FocusEventHandler,
-  MouseEventHandler,
+  type FocusEventHandler,
+  type MouseEventHandler,
   useEffect,
   useRef,
 } from 'react';

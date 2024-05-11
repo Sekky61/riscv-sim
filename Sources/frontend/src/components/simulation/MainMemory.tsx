@@ -115,11 +115,11 @@ export default function MainMemory() {
         </DialogContent>
       }
     >
-      <div className='flex-grow justify-center text-sm gap-2 font-mono'
-
-            onScroll={(e) => e.stopPropagation()}
-            onWheel={(e) => e.stopPropagation()}
-        >
+      <div
+        className='flex-grow justify-center text-sm gap-2 font-mono'
+        onScroll={(e) => e.stopPropagation()}
+        onWheel={(e) => e.stopPropagation()}
+      >
         <HexDump
           memory={memory}
           oldMemory={oldMemory}

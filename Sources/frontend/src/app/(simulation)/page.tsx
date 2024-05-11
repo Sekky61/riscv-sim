@@ -29,14 +29,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { ReloadSimModal } from '@/components/ReloadSimModal';
-import { WelcomeMessage } from './WelcomeMessage';
 import { CanvasWindow } from '@/components/CanvasWindow';
+import { ReloadSimModal } from '@/components/ReloadSimModal';
+import { SidePanel } from '@/components/simulation/SidePanel';
 import { SimGrid } from '@/components/simulation/SimGrid';
 import Timeline from '@/components/simulation/Timeline';
 import { AutoPlay } from './AutoPlay';
-import { SidePanel } from '@/components/simulation/SidePanel';
 import { ErrorMessage } from './ErrorMessage';
+import { WelcomeMessage } from './WelcomeMessage';
 
 export default function HomePage() {
   return (

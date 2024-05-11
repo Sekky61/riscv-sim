@@ -72,11 +72,14 @@ import {
   TabsTrigger,
 } from '@/components/base/ui/tabs';
 
+import { DividedBadge } from '@/components/DividedBadge';
+import { FormInput } from '@/components/form/FormInput';
+import {
+  ControlRadioInput,
+  RadioInputWithTitle,
+} from '@/components/form/RadioInput';
 import { formatNumberWithUnit } from '@/lib/utils';
 import { toast } from 'sonner';
-import { FormInput } from '@/components/form/FormInput';
-import { ControlRadioInput, RadioInputWithTitle } from '@/components/form/RadioInput';
-import { DividedBadge } from '@/components/DividedBadge';
 
 type IsaArrayFields = 'fUnits' | 'memoryLocations';
 type IsaSimpleFields = keyof Omit<CpuConfig, IsaArrayFields>;

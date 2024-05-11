@@ -65,7 +65,9 @@ export function MemorySummary() {
         <DropdownMenuLabel>Memory Locations</DropdownMenuLabel>
         <DropdownMenuSeparator />
         {memoryLocations.length === 0 && (
-          <DropdownMenuItem className='text-gray-400'>No memory locations defined</DropdownMenuItem>
+          <DropdownMenuItem className='text-gray-400'>
+            No memory locations defined
+          </DropdownMenuItem>
         )}
         {memoryLocations.map((loc) => {
           const elements = memoryLocationSizeInElements(loc);

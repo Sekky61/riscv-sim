@@ -59,7 +59,7 @@ import {
   selectStatistics,
 } from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
-import {
+import type {
   FUStats,
   InstructionMix,
   InstructionStats,

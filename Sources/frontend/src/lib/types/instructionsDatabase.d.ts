@@ -29,7 +29,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { InstructionFunctionModel } from '@/lib/types/cpuApi';
+import type { InstructionFunctionModel } from '@/lib/types/cpuApi';
 
 // Mirroring the Java simulation types
 

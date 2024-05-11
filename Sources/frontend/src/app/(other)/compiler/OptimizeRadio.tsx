@@ -34,7 +34,7 @@
 import { Label } from '@/components/base/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/base/ui/radio-group';
 import {
-  OptimizeOption,
+  type OptimizeOption,
   selectOptimize,
   setOptimizeFlag,
 } from '@/lib/redux/compilerSlice';

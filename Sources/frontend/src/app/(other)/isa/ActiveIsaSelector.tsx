@@ -46,6 +46,13 @@ import { toast } from 'sonner';
 
 import { Button } from '@/components/base/ui/button';
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/base/ui/dialog';
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -55,13 +62,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/base/ui/dropdown-menu';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/base/ui/dialog';
 import { isIsaConfig } from '@/lib/forms/validators';
 import { loadFile } from '@/lib/utils';
 import { ChevronsUpDown } from 'lucide-react';

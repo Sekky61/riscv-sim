@@ -36,11 +36,11 @@ import type { ReactChildren } from '@/lib/types/reactTypes';
 import clsx from 'clsx';
 import { ZoomIn, ZoomOut } from 'lucide-react';
 import {
+  type TouchEventHandler,
   type WheelEventHandler,
   useEffect,
   useRef,
   useState,
-  type TouchEventHandler,
 } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 

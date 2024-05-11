@@ -30,7 +30,7 @@
  */
 
 import { CodeSnippet } from '@/components/CodeSnippet';
-import {ExternalLink} from '@/components/ExternalLink';
+import { ExternalLink } from '@/components/ExternalLink';
 
 export default function Page() {
   // Source for Calling Convention: https://www.cl.cam.ac.uk/teaching/1617/ECAD+Arch/files/docs/RISCVGreenCardv8-20151013.pdf
