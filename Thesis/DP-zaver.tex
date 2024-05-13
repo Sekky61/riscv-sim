@@ -1,0 +1,31 @@
+
+\chapter{Závěr}
+
+V~této práci byly prozkoumány některé známé metody efektivní implementace superskalárních procesorů.
+Detailněji byla probrána instrukční sada RISC-V, kterou simulátor využívá.
+Také byla uvedena teorie implementace webových aplikací s~přihlédnutím k~návrhu uživatelských rozhraní.
+
+Byla provedena důkladná analýza stávajícího simulátoru, zhodnocení jeho kladů i nedostatků.
+Na základě analýzy byla navržena mnohá zlepšení, jak z~pohledu implementace simulace, tak použitelnosti jeho rozhraní.
+
+Z~mého pohledu nejdůležitější změnou je samotné přenesení simulátoru na webovou platformu.
+Simulátor je nyní všem dostupný přímo z~prohlížeče.
+
+Do rozhraní simulátoru se podařilo přidat režim příkazové řádky a HTTP server.
+Důležitou součástí simulátoru je integrace s~překladačem GCC a nový parser assembleru, který umožňuje simulovat širokou škálu programů v~jazyce C.
+Společně s~množstvím před-připravených příkladů to uživatelům umožňuje rychle experimentovat se složitějšími programy, než jaké by mohli nebo chtěli psát ručně.
+Simulátor také sbírá běhové statistiky a je možné definovat data, nad kterými má program pracovat.
+
+Bylo také provedeno mnoho změn vnitřního fungování simulátoru.
+Projekt obsahuje množství testů, dokumentace a skriptů k~instalaci, spuštění a nasazení do provozu.
+Příloha \ref{prevzanaPrace} uvádí tabulku s~přehledem jednotlivých modulů aplikace a můj přínos.
+
+Aplikace je v~současné podobě dobře provozuschopná, o~čemž svědčí kladný ohlas z~uživatelského dotazníku.
+Na webové stránce je možné provozovat interaktivní simulaci, měnit konfiguraci, editovat kód a prohlížet statistiky o~simulaci.
+Grafické zpracování a provázání prvků v~simulátoru přináší studentům přehledný zdroj k~výuce fungování moderních procesorů.
+
+Přínos projektu pro výuku hardwaru vnímám velmi pozitivně.
+Doufám, že aplikace najde své využití nejen na FIT VUT v~Brně, ale i v~široké studentské komunitě.
+
+Budoucí práce se může zaměřit na další rozšíření instrukční sady, například na vektorové instrukce.
+Dalším zajímavým směrem může být možnost programovatelného přerušení simulace v~určitém bodě (\emph{breakpoint}).
