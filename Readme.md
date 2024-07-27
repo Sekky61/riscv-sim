@@ -94,10 +94,3 @@ cd Sources
 ./run_container.sh
 ```
 
-## Author information
-
- * Name: Michal Majer
- * Email: xmajer21@stud.fit.vutbr.cz, misa@majer.cz
- * Date: 2023/2024
- * Phone: +420 773 959 458
-
