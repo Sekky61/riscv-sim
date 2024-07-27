@@ -1,5 +1,7 @@
 # Web Based Simulator of Superscalar Processors
 
+![image](https://github.com/user-attachments/assets/c0d9b4ea-a7fc-4445-bf57-5ec339f674c6)
+
 ## Introduction
 
 This is a RISC-V Simulator Web App. The project builds on the superscalar simulator created by Jakub Horky and Jan Vavra. The goal is to add a **web** and a **CLI** interface.
