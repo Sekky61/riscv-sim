@@ -31,28 +31,31 @@
 
 'use client';
 
-import clsx from 'clsx';
-import React, { useEffect } from 'react';
+import React from 'react';
 
 import {
   selectFetch,
-  selectHighlightedInputCode,
   selectInputCodeModelById,
   selectInstructionFunctionModelById,
   selectProgram,
   selectProgramWithLabels,
 } from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
-import { Reference } from '@/lib/types/cpuApi';
-import { ReactClassName } from '@/lib/types/reactTypes';
+import type {
+  InputCodeArgument,
+  InstructionFunctionModel,
+  Reference,
+} from '@/lib/types/cpuApi';
 import { hexPadEven, inputCodeAddress } from '@/lib/utils';
 
-import Block from '@/components/simulation/Block';
+import { DividedBadge } from '@/components/DividedBadge';
+import { Block } from '@/components/simulation/Block';
 import { selectEntryPoint } from '@/lib/redux/compilerSlice';
 
 /**
  * A block displaying the program instructions.
- * Labels are displayed more prominently. PC is rendered as a red line pointing before the instruction.
+ * Labels are displayed more prominently. PC is rendered as a line pointing before the instruction.
+ * If the PC is out of bounds, it is rendered at the end.
  */
 export default function Program() {
   const pcRef = React.useRef<HTMLDivElement>(null);
@@ -60,93 +63,114 @@ export default function Program() {
   const program = useAppSelector(selectProgram);
   const fetch = useAppSelector(selectFetch);
   const codeOrder = useAppSelector(selectProgramWithLabels);
-  const highlightedInputCodeId = useAppSelector(selectHighlightedInputCode);
   const entryPoint = useAppSelector(selectEntryPoint);
 
   // Scroll to PC on every render using scrollTop, because scrollIntoView makes the whole page jump
-  useEffect(() => {
-    if (!pcRef.current || !containerRef.current) {
-      return;
-    }
+  if (pcRef.current && containerRef.current) {
     const pcTop = pcRef.current.offsetTop;
     const containerTop = containerRef.current.offsetTop;
     const containerHeight = containerRef.current.offsetHeight;
     containerRef.current.scrollTop = pcTop - containerTop - containerHeight / 2;
-  }, [pcRef, containerRef]);
+  }
 
   if (!program || !fetch || !codeOrder) return null;
 
   const pc = fetch.pc / 4;
 
-  // A thin red line
+  // A thin line
   const pcPointer = (
     <div ref={pcRef} className='relative w-full flex items-center'>
-      <div className='absolute w-full h-0.5 bg-red-500 rounded-full' />
-      <div
-        className='absolute -left-6 bg-red-500 text-white text-xs rectangle h-4 pl-1'
-        title={`PC: ${fetch.pc}`}
-      >
-        <div className='relative rectangle'>PC</div>
+      <div className='absolute w-24 h-0.5 bg-tertiary rounded-full' />
+      <div className='absolute -left-6 bg-tertiary text-xs rectangle h-4 pl-1'>
+        <div className='relative rectangle text-onTertiary pt-[1px]'>PC</div>
       </div>
     </div>
   );
 
+  // Entry point can be a number or a label
   let entryPointPretty = entryPoint;
   if (typeof entryPoint === 'number') {
     entryPointPretty = hexPadEven(entryPoint);
   }
 
+  const maxIndex = program.code.length - 1;
+
   return (
     <Block
       title='Program'
-      className='program justify-self-stretch self-stretch'
-      stats={<div>Entry Point: {entryPointPretty}</div>}
+      className='program justify-self-stretch self-stretch w-block h-full'
+      stats={
+        <div className='flex'>
+          <DividedBadge>
+            <div>Entry Point</div>
+            <div>{entryPointPretty}</div>
+          </DividedBadge>
+        </div>
+      }
     >
-      <div
-        className='max-h-96 grid gap-1 overflow-y-auto pt-4'
-        style={{ gridTemplateColumns: 'auto auto' }}
-        ref={containerRef}
-      >
-        {codeOrder.map((instructionOrLabel) => {
-          if (typeof instructionOrLabel === 'string') {
+      <div className='flex-1 relative surface-container-lowest rounded-[8px]'>
+        <div
+          className='absolute inset-x-0 top-0 max-h-full grid gap-y-1 gap-x-7 overflow-y-auto p-[4px] py-4 font-mono'
+          style={{ gridTemplateColumns: 'max-content auto' }}
+          ref={containerRef}
+        >
+          {codeOrder.map((instructionOrLabel) => {
+            if (typeof instructionOrLabel === 'string') {
+              return (
+                <div
+                  key={`lab-${instructionOrLabel}`}
+                  className='font-bold text-sm col-span-2'
+                >
+                  {instructionOrLabel}:
+                </div>
+              );
+            }
+            const isPointedTo = instructionOrLabel === pc;
+            // Instruction
             return (
-              <div
-                key={`lab-${instructionOrLabel}`}
-                className='font-bold text-sm col-span-2'
+              <ProgramInstruction
+                key={`ins-${instructionOrLabel}`}
+                instructionId={instructionOrLabel}
               >
-                {instructionOrLabel}:
-              </div>
+                {isPointedTo && pcPointer}
+              </ProgramInstruction>
             );
-          }
-          const isPointedTo = instructionOrLabel === pc;
-          const highlighted = instructionOrLabel === highlightedInputCodeId;
-          const cls = clsx('ml-6 rounded-sm', highlighted && 'bg-gray-200');
-          // Instruction
-          return (
-            <ProgramInstruction
-              key={`ins-${instructionOrLabel}`}
-              instructionId={instructionOrLabel}
-              className={cls}
-            >
-              {isPointedTo && pcPointer}
-            </ProgramInstruction>
-          );
-        })}
+          })}
+          <div className='grid grid-cols-subgrid col-span-2'>
+            <div />
+            {pc > maxIndex && pcPointer}
+          </div>
+        </div>
       </div>
     </Block>
   );
 }
 
+type ProgramInstructionProps = {
+  /**
+   * The instruction id.
+   */
+  instructionId: Reference;
+  /**
+   * Whether to show the address of the instruction.
+   */
+  showAddress?: boolean;
+  /**
+   * Children to render before the instruction.
+   * Used for the PC pointer.
+   */
+  children?: React.ReactNode;
+};
+
+/**
+ * A single instruction in the program block.
+ * Used here in program block and in stats.
+ */
 export function ProgramInstruction({
   instructionId,
-  className,
   children,
   showAddress = true,
-}: {
-  instructionId: Reference;
-  children?: React.ReactNode;
-  showAddress?: boolean;
-} & ReactClassName) {
+}: ProgramInstructionProps) {
   const instruction = useAppSelector((state) =>
     selectInputCodeModelById(state, instructionId),
   );
@@ -160,51 +184,45 @@ export function ProgramInstruction({
 
   if (!instruction || !model) return null;
 
-  const argValues = instruction.arguments;
-  const modelArgs = model.arguments;
-
-  const argsNames = [];
-  for (const arg of modelArgs) {
-    if (arg.silent) {
-      continue;
-    }
-    argsNames.push(arg.name);
-  }
-
-  const argsValues = [];
-  for (const argName of argsNames) {
-    const arg = argValues.find((a) => a.name === argName);
-    if (!arg) {
-      throw new Error(
-        `Argument ${argName} not found in instruction ${model.name}`,
-      );
-    }
-    argsValues.push(arg);
-  }
-
   // Id is mappable to address
   const address = inputCodeAddress(instructionId);
 
-  const cls = clsx(className, 'font-mono text-sm');
   return (
     <>
       {showAddress && (
-        <div className='text-xs text-gray-600 font-mono flex justify-center items-center'>
+        <div className='text-xs text-gray-600 justify-self-end self-center'>
           {address}
         </div>
       )}
-      <span className={cls}>
+      <div
+        className='rounded-sm text-sm inputcodemodel'
+        data-inputcode-id={instructionId}
+      >
         {children}
-        <span title={model.interpretableAs}>{model.name}</span>
-        {argsValues.map((arg, idx) => {
-          return (
-            <span key={arg.name}>
-              {idx === 0 ? ' ' : ','}
-              {arg.stringValue}
-            </span>
-          );
-        })}
-      </span>
+        <InstructionSyntax functionModel={model} args={instruction.arguments} />
+      </div>
     </>
   );
+}
+
+/**
+ * Renders the syntax of an instruction.
+ * Different from the InstructionSyntax from InstuctionField - handles args differently.
+ */
+function InstructionSyntax({
+  functionModel,
+  args,
+}: {
+  functionModel: InstructionFunctionModel;
+  args: InputCodeArgument[];
+}) {
+  // syntaxTemplate is an array of strings. Some of them are arguments, some are not. Example: ['addi ', 'rd', ', ', 'rs1', ', ', 'imm'].
+  const formatSplit = functionModel.syntaxTemplate;
+  // if a part matches an argument, wrap it in a tooltip
+  return formatSplit.map((part, i) => {
+    const arg = args.find((a) => a.name === part);
+    const key = `${part}-${i}`;
+    const token = arg?.stringValue ?? part;
+    return <span key={key}>{token}</span>;
+  });
 }

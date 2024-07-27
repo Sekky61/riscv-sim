@@ -30,17 +30,17 @@
  */
 
 import {
-  Extension,
+  type Extension,
   RangeSetBuilder,
   StateEffect,
   StateField,
 } from '@codemirror/state';
 import {
   Decoration,
-  DecorationSet,
-  EditorView,
+  type DecorationSet,
+  type EditorView,
   ViewPlugin,
-  ViewUpdate,
+  type ViewUpdate,
 } from '@codemirror/view';
 
 import { cLineToColor } from './lineColoring';
@@ -50,8 +50,12 @@ export function cLineToLineDecorator(cLine: number): Decoration {
   if (color === undefined) {
     throw new Error(`Invalid cLine: ${cLine}`);
   }
+  // Add a c line data attribute and asm line data attribute
   return Decoration.line({
-    attributes: { class: color },
+    attributes: {
+      class: color,
+      'data-c-line': cLine.toString(),
+    },
   });
 }
 

@@ -37,10 +37,12 @@ import {
   ChevronLast,
   ChevronLeft,
   ChevronRight,
+  Play,
 } from 'lucide-react';
 
 import {
   reloadSimulation,
+  selectSimulationStatus,
   selectStopReason,
   selectTick,
   simStepBackward,
@@ -49,43 +51,49 @@ import {
 } from '@/lib/redux/cpustateSlice';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 
-import { stopReasonToShortString } from '@/lib/utils';
 import { IconButton } from '@/components/IconButton';
-
-export type TimelineProps = Pick<
-  React.HTMLAttributes<HTMLDivElement>,
-  'className'
->;
+import { stopReasonToShortString } from '@/lib/utils';
 
 // Control ticks of simulation
 // Go forward, back, finish
-export default function Timeline({ className = '' }: TimelineProps) {
+export default function Timeline() {
   const dispatch = useAppDispatch();
   const tick = useAppSelector(selectTick);
   const stopReason = useAppSelector(selectStopReason);
-
-  const cls = clsx('timeline-grid drop-shadow', className);
+  const simulationStatus = useAppSelector(selectSimulationStatus);
 
   let state = 0;
   let message = '';
   if (tick > 0) {
     state = 1;
   }
-  if (stopReason !== 'kNotStopped') {
+  // todo why would stopReason be undefined?
+  if (stopReason !== 'kNotStopped' && stopReason !== undefined) {
     state = 2;
     message = stopReasonToShortString(stopReason);
   }
 
   // The .controls is rotated, see the css file.
+  // Loading border shows a loading animation while the simulation is loading
   // todo make buttons unselectable in certain states
   return (
-    <div className={cls} data-state={state} data-reset={false}>
-      <div className='controls rounded-full h-full box-content border bg-gray-100 flex flex-row-reverse justify-end items-center'>
+    <div
+      className='timeline-grid drop-shadow'
+      data-state={state}
+      data-reset={false}
+    >
+      <div
+        className={clsx(
+          'controls rounded-[16px] h-full box-content primary-container flex flex-row-reverse justify-end items-center',
+          simulationStatus === 'loading' && 'loading-border',
+        )}
+      >
         <IconButton
           shortCut='left'
           clickCallback={() => dispatch(simStepBackward())}
           description='Step backward'
           className='left-arrow m-1 rotate-180'
+          animate
         >
           <ChevronLeft strokeWidth={1.5} />
         </IconButton>
@@ -94,6 +102,7 @@ export default function Timeline({ className = '' }: TimelineProps) {
           clickCallback={() => dispatch(simStepForward())}
           description='Step forward'
           className='right-arrow m-1 rotate-180'
+          animate
         >
           <ChevronRight strokeWidth={1.5} />
         </IconButton>
@@ -102,23 +111,25 @@ export default function Timeline({ className = '' }: TimelineProps) {
           shortCut='ctrl+enter'
           description='Skip to the end of simulation'
           className='m-1 rotate-180'
+          animate
         >
           <ChevronLast strokeWidth={1.5} />
         </IconButton>
       </div>
-      <div className='reset h-full box-content border flex items-center justify-between bg-[#ff7171] rounded-full'>
+      <div className='reset h-full box-content flex items-center justify-between tertiary-container rounded-[16px]'>
         <IconButton
           clickCallback={() => dispatch(reloadSimulation())}
           shortCut='r'
           description='Reload simulation'
           className='m-1 rotate-180'
+          animate
         >
           <ChevronFirst strokeWidth={1.5} />
         </IconButton>
         <div
           className={`${
             state === 2 ? 'opacity-100' : 'opacity-0'
-          } flex-grow text-center rotate-180 mr-4`}
+          } flex-grow text-center rotate-180 mr-4 font-medium`}
         >
           {message}
         </div>

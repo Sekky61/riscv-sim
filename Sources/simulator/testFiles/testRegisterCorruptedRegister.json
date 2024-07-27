@@ -1,9 +1,0 @@
-{
-  "name": "Integer physical register",
-  "dataType": "kInt",
-  "bitSize": "kBit32",
-  "registerList": [
-    {"isConstant": true,"value": 0},
-    {"name": "x1", "isConstant": false,"value": 25}
-  ]
-}

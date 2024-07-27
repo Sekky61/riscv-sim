@@ -29,7 +29,7 @@ package com.gradle.superscalarsim.factories;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
-import com.gradle.superscalarsim.managers.SimCodeModelManager;
+import com.gradle.superscalarsim.managers.InstanceManager;
 import com.gradle.superscalarsim.models.instruction.InputCodeModel;
 import com.gradle.superscalarsim.models.instruction.SimCodeModel;
 
@@ -41,14 +41,14 @@ import com.gradle.superscalarsim.models.instruction.SimCodeModel;
 public class SimCodeModelFactory
 {
   int id;
-  SimCodeModelManager manager;
+  InstanceManager<SimCodeModel> manager;
   
   public SimCodeModelFactory()
   {
     this.manager = null;
   }
   
-  public SimCodeModelFactory(SimCodeModelManager manager)
+  public SimCodeModelFactory(InstanceManager<SimCodeModel> manager)
   {
     this.manager = manager;
   }

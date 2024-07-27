@@ -153,5 +153,11 @@ public class DebugLog
     {
       return cycle;
     }
+    
+    @Override
+    public String toString()
+    {
+      return "[" + cycle + "] " + message;
+    }
   }
 }

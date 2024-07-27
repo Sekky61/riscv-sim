@@ -28,11 +28,15 @@
 package com.gradle.superscalarsim.cpu;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.gradle.superscalarsim.blocks.branch.BitPredictor;
 import com.gradle.superscalarsim.models.FunctionalUnitDescription;
 
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
+
+import static com.gradle.superscalarsim.blocks.branch.BitPredictor.WEAKLY_TAKEN;
 
 /**
  * @details @JsonIgnoreProperties makes deserialization ignore any extra properties (client sends 'name' of config)
@@ -44,19 +48,27 @@ import java.util.List;
 public class CpuConfig implements Serializable
 {
   /**
+   * Provided for organizational purposes.
+   * Not used in the simulation. Displayed on frontend.
+   */
+  String name;
+  /**
    * Maximum number of instructions that can be in the ROB
    */
+  @JsonProperty(required = true)
   public int robSize;
   
   /**
    * Number of instructions that can be committed in one cycle - commitLimit on the ROB
    */
+  @JsonProperty(required = true)
   public int commitWidth;
   
   /**
    * Number of clock cycles the CPU will take to flush the pipeline.
    * For example, if a branch is mispredicted, the CPU will take this many cycles to clear the fetch, decode, and ROB.
    */
+  @JsonProperty(required = true)
   public int flushPenalty;
   
   /**
@@ -64,140 +76,155 @@ public class CpuConfig implements Serializable
    * Also determines the decode width.
    * Fetch unit can _evaluate_ one branch instruction per cycle. This means the fetch will stop before a second branch.
    */
+  @JsonProperty(required = true)
   public int fetchWidth;
   
   /**
    * Number of branch instructions that can be evaluated in one cycle.
    */
+  @JsonProperty(required = true)
   public int branchFollowLimit;
   
   /**
    * Branch target buffer size.
    */
+  @JsonProperty(required = true)
   public int btbSize;
   
   /**
    * Pattern history table size.
    */
+  @JsonProperty(required = true)
   public int phtSize;
   
   /**
    * Type of the predictor held in the PHT.
-   * One of 0bit, 1bit, 2bit.
+   * One of ZERO_BIT_PREDICTOR, ONE_BIT_PREDICTOR, TWO_BIT_PREDICTOR.
    */
-  public String predictorType;
+  @JsonProperty(required = true)
+  public BitPredictor.PredictorType predictorType;
   
   /**
-   * All predictors have this default state.
-   * For zero bit one of "Taken", "Not Taken".
-   * For one bit one of "Taken", "Not Taken".
-   * For two bit one of "Strongly Not Taken", "Weakly Not Taken", "Weakly Taken", "Strongly Taken".
+   * The initial state of all predictors in the PHT.
+   * This state is represented as a number.
+   * For zero bit it is either 1 ("Taken"), or 0 ("Not Taken").
+   * For one bit it is either 1 ("Taken"), or 0 ("Not Taken").
+   * For two bit one of 0 ("Strongly Not Taken"), 1 ("Weakly Not Taken"), 2 ("Weakly Taken"), 3 ("Strongly Taken").
    */
-  public String predictorDefault;
+  @JsonProperty(required = true)
+  public int predictorDefaultState;
   
   /**
    * Use global history vector in the PHT.
    * The GHV is a register that holds the last N branches. It effects addressing of the PHT.
    */
+  @JsonProperty(required = true)
   public boolean useGlobalHistory;
   
   /**
    * Defined function units.
    */
+  @JsonProperty(required = true)
   public List<FunctionalUnitDescription> fUnits;
   
   /**
    * Use single level cache.
    */
+  @JsonProperty(required = true)
   public boolean useCache;
   
   /**
-   * Number of cache lines.
+   * Number of cache lines. Must be a power of two multiple of cacheAssoc (example 8*assoc, 16*assoc).
    */
+  @JsonProperty(required = true)
   public int cacheLines;
   
   /**
    * Size of one cache line in bytes.
    */
+  @JsonProperty(required = true)
   public int cacheLineSize;
-  
-  /**
-   * Load delay of the cache in cycles.
-   */
-  public int cacheLoadLatency;
-  
-  /**
-   * Store delay of the cache in cycles.
-   */
-  public int cacheStoreLatency;
   
   /**
    * Cache associativity.
    */
+  @JsonProperty(required = true)
   public int cacheAssoc;
   
   /**
    * Cache replacement policy.
    * One of Random, LRU, FIFO.
    */
+  @JsonProperty(required = true)
   public String cacheReplacement;
   
   /**
    * One of write-back, write-through.
    */
+  @JsonProperty(required = true)
   public String storeBehavior;
   
   /**
    * Number of cycles that it takes to replace a cache line.
    * New line is loaded into the cache after this many cycles.
    */
+  @JsonProperty(required = true)
   public int laneReplacementDelay;
   
   /**
    * Cache access delay in cycles.
    */
+  @JsonProperty(required = true)
   public int cacheAccessDelay;
   
   /**
    * Load buffer size.
    */
+  @JsonProperty(required = true)
   public int lbSize;
   
   /**
    * Store buffer size.
    */
+  @JsonProperty(required = true)
   public int sbSize;
   
   /**
    * Main memory latency for store.
    */
+  @JsonProperty(required = true)
   public int storeLatency;
   
   /**
    * Main memory latency for load.
    */
+  @JsonProperty(required = true)
   public int loadLatency;
   
   /**
    * Call stack size in bytes.
    * Amount of memory allocated for the call stack.
    */
+  @JsonProperty(required = true)
   public int callStackSize;
   
   /**
    * Number of speculative registers.
    * This is in addition to the 32 integer and 32 floating point architectural registers.
    */
+  @JsonProperty(required = true)
   public int speculativeRegisters;
   
   /**
    * @brief Core clock frequency in Hz
    */
+  @JsonProperty(required = true)
   public int coreClockFrequency;
   
   /**
    * @brief Cache clock frequency in Hz
    */
+  @JsonProperty(required = true)
   public int cacheClockFrequency;
   
   public static CpuConfig getDefaultConfiguration()
@@ -210,11 +237,11 @@ public class CpuConfig implements Serializable
     config.commitWidth       = 4;
     config.flushPenalty      = 1;
     // Prediction
-    config.btbSize          = 1024;
-    config.phtSize          = 10;
-    config.predictorType    = "2bit";
-    config.predictorDefault = "Weakly Taken";
-    config.useGlobalHistory = false;
+    config.btbSize               = 1024;
+    config.phtSize               = 100; // TODO: test small PHT (there might be issue with false sharing)
+    config.predictorType         = BitPredictor.PredictorType.TWO_BIT_PREDICTOR;
+    config.predictorDefaultState = WEAKLY_TAKEN; // "Weakly Taken";
+    config.useGlobalHistory      = false;
     // FunctionalUnitDescriptions
     config.fUnits = Arrays.asList(new FunctionalUnitDescription(0, FunctionalUnitDescription.Type.FX, Arrays.asList(
                                           new FunctionalUnitDescription.Capability(FunctionalUnitDescription.CapabilityName.addition, 1),
@@ -238,15 +265,13 @@ public class CpuConfig implements Serializable
                                   new FunctionalUnitDescription(4, FunctionalUnitDescription.Type.Memory, 1, "Memory"));
     
     // Cache
-    config.useCache          = true;
-    config.cacheLoadLatency  = 1;
-    config.cacheStoreLatency = 1;
-    config.cacheLines        = 16;
-    config.cacheLineSize     = 32;
-    config.cacheAssoc        = 2;
-    config.cacheReplacement  = "LRU"; // TODO: Other policies have problem deserializing
-    config.storeBehavior     = "write-back";
-    config.cacheAccessDelay  = 1;
+    config.useCache         = true;
+    config.cacheLines       = 16;
+    config.cacheLineSize    = 32;
+    config.cacheAssoc       = 2;
+    config.cacheReplacement = "LRU"; // TODO: Other policies have problem deserializing
+    config.storeBehavior    = "write-back";
+    config.cacheAccessDelay = 1;
     // Memory
     config.storeLatency         = 1;
     config.loadLatency          = 1;

@@ -44,8 +44,8 @@ describe('The Unit Formatter', () => {
     expect(res3).toBe('-1 Hz');
 
     // Does not crash
-    const _res4 = formatNumberWithUnit(NaN);
-    const _res5 = formatNumberWithUnit(Infinity);
+    const _res4 = formatNumberWithUnit(Number.NaN);
+    const _res5 = formatNumberWithUnit(Number.POSITIVE_INFINITY);
   });
 
   it('Should format GHz', () => {

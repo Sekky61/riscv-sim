@@ -38,7 +38,6 @@ import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.blocks.AbstractBlock;
 import com.gradle.superscalarsim.blocks.branch.BranchTargetBuffer;
 import com.gradle.superscalarsim.blocks.branch.GShareUnit;
-import com.gradle.superscalarsim.blocks.branch.GlobalHistoryRegister;
 import com.gradle.superscalarsim.blocks.loadstore.LoadBufferBlock;
 import com.gradle.superscalarsim.blocks.loadstore.StoreBufferBlock;
 import com.gradle.superscalarsim.cpu.DebugLog;
@@ -47,20 +46,21 @@ import com.gradle.superscalarsim.cpu.StopReason;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.models.instruction.DebugInfo;
 import com.gradle.superscalarsim.models.instruction.InputCodeArgument;
-import com.gradle.superscalarsim.models.instruction.InstructionFunctionModel;
+import com.gradle.superscalarsim.models.instruction.InstructionArgument;
 import com.gradle.superscalarsim.models.instruction.SimCodeModel;
 import com.gradle.superscalarsim.models.memory.LoadBufferItem;
 import com.gradle.superscalarsim.models.memory.StoreBufferItem;
+import com.gradle.superscalarsim.models.register.RegisterModel;
 
 import java.util.ArrayDeque;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 /**
  * @class ReorderBufferBlock
- * @brief Class contains simulated implementation of Reorder buffer
+ * @brief Class contains simulated implementation of Reorder buffer.
+ * @details The BTB entry is updated, regardless of the prediction result.
  */
 @JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
 public class ReorderBufferBlock implements AbstractBlock
@@ -77,11 +77,6 @@ public class ReorderBufferBlock implements AbstractBlock
    */
   public int commitLimit;
   
-  /**
-   * Flag to mark newly added instructions as speculative.
-   * This flag is set after encountering branch instruction.
-   */
-  public boolean speculativePulls;
   /**
    * @brief Flag to be set if the simulation should halt
    */
@@ -139,10 +134,6 @@ public class ReorderBufferBlock implements AbstractBlock
    */
   @JsonIdentityReference(alwaysAsId = true)
   private StoreBufferBlock storeBufferBlock;
-  /**
-   * Issues instructions to individual issue windows
-   */
-  private IssueWindowSuperBlock issueWindowSuperBlock;
   
   public ReorderBufferBlock()
   {
@@ -159,6 +150,8 @@ public class ReorderBufferBlock implements AbstractBlock
    * @param branchTargetBuffer     Buffer holding information about branch instructions targets
    * @param instructionFetchBlock  Class that fetches code from CodeParser
    * @param statisticsCounter      Class for statistics gathering
+   * @param haltTarget             the jump target address triggering the halt
+   * @param debugLog               Debug log
    *
    * @brief Constructor
    */
@@ -168,7 +161,6 @@ public class ReorderBufferBlock implements AbstractBlock
                             DecodeAndDispatchBlock decodeAndDispatchBlock,
                             StoreBufferBlock storeBufferBlock,
                             LoadBufferBlock loadBufferBlock,
-                            IssueWindowSuperBlock issueWindowSuperBlock,
                             GShareUnit gShareUnit,
                             BranchTargetBuffer branchTargetBuffer,
                             InstructionFetchBlock instructionFetchBlock,
@@ -180,7 +172,6 @@ public class ReorderBufferBlock implements AbstractBlock
     this.decodeAndDispatchBlock = decodeAndDispatchBlock;
     this.storeBufferBlock       = storeBufferBlock;
     this.loadBufferBlock        = loadBufferBlock;
-    this.issueWindowSuperBlock  = issueWindowSuperBlock;
     
     this.gShareUnit            = gShareUnit;
     this.branchTargetBuffer    = branchTargetBuffer;
@@ -189,8 +180,6 @@ public class ReorderBufferBlock implements AbstractBlock
     this.simulationStatistics = statisticsCounter;
     
     this.reorderQueue = new ArrayDeque<>();
-    
-    this.speculativePulls = false;
     
     this.commitLimit = commitLimit;
     this.bufferSize  = bufferSize;
@@ -233,7 +222,7 @@ public class ReorderBufferBlock implements AbstractBlock
       commitInstruction(robItem, cycle);
       removeInstruction(robItem);
       
-      if (robItem.getBranchTarget() == haltTarget)
+      if (robItem.getInstructionTypeEnum() == InstructionTypeEnum.kJumpbranch && robItem.getBranchTarget() == haltTarget)
       {
         stopReason = StopReason.kCallStackHalt;
       }
@@ -245,28 +234,10 @@ public class ReorderBufferBlock implements AbstractBlock
     // Check all instructions if after commit some can be removed, remove them in other units
     flushInvalidInstructions(cycle);
     
-    // Pull new instructions from decoder, unless you are flushing
-    if (!this.decodeAndDispatchBlock.shouldFlush())
-    {
-      pullNewDecodedInstructions();
-    }
+    // Pull new instructions from decoder
+    pullNewDecodedInstructions();
   }// end of simulate
   //----------------------------------------------------------------------
-  
-  /**
-   * @brief Resets the Reorder Buffer lists/stacks/variables and calls reset on branch blocks
-   */
-  @Override
-  public void reset()
-  {
-    this.reorderQueue.clear();
-    
-    this.speculativePulls = false;
-    
-    gShareUnit.getGlobalHistoryRegister().reset();
-    gShareUnit.getPatternHistoryTable().reset();
-    branchTargetBuffer.reset();
-  }// end of reset
   
   /**
    * Writes into architectural register, updates statistics
@@ -287,59 +258,52 @@ public class ReorderBufferBlock implements AbstractBlock
       
       // Feedback to predictor
       // TODO look into gshareunit
-      if (branchActuallyTaken)
+      this.gShareUnit.getPredictor(pc).sendFeedback(branchActuallyTaken);
+      this.branchTargetBuffer.setEntry(pc, codeModel, codeModel.getBranchTarget());
+      
+      // Update GHT
+      if (codeModel.isConditionalBranch())
       {
-        this.gShareUnit.getPredictorFromOld(pc, codeModel.getIntegerId()).upTheProbability();
-      }
-      else
-      {
-        this.gShareUnit.getPredictorFromOld(pc, codeModel.getIntegerId()).downTheProbability();
+        this.gShareUnit.getGlobalHistoryRegister().commit(codeModel.getIntegerId());
       }
       
-      if (codeModel.isBranchPredicted() == branchActuallyTaken)
+      int nextPc = pc + 4;
+      if (branchActuallyTaken)
       {
-        // Correctly predicted jump
+        nextPc = codeModel.getBranchTarget();
+        // Update branch target
+      }
+      
+      int     nextPredictedPc = pc + 4;
+      boolean predictionMade  = codeModel.isBranchPredicted() && codeModel.getBranchPredictionTarget() != -1;
+      if (predictionMade)
+      {
+        // A successful positive prediction took place back in fetch
+        nextPredictedPc = codeModel.getBranchPredictionTarget();
+      }
+      
+      boolean correctAddressPrediction = nextPc == nextPredictedPc; // pc+4 is predicted if not taken
+      if (correctAddressPrediction || codeModel.isBranchComputedInDecode())
+      {
+        // The instruction stream is correct at this point
         // Update committable status of subsequent instructions
         validateInstructions();
       }
       else
       {
-        // Wrong prediction - feedback to predictor
-        int resultPc;
-        if (branchActuallyTaken)
+        // The next instruction is wrong. Flush the queue.
+        SimCodeModel robItem = this.reorderQueue.stream().skip(1).findFirst().orElse(null);
+        flush(robItem); // OK to call with null
+        
+        // Feedback to predictor
+        // Update target in BTB (branch target, regardless of if it was taken or not and if target was predicted correctly)
+        this.branchTargetBuffer.setEntry(pc, codeModel, codeModel.getBranchTarget());
+        this.instructionFetchBlock.setPc(nextPc);
+        // Update GHT
+        if (codeModel.isConditionalBranch())
         {
-          resultPc = codeModel.getBranchTarget();
-          // Update branch target
-          this.branchTargetBuffer.setEntry(pc, codeModel, resultPc, -1, cycle);
+          this.gShareUnit.getGlobalHistoryRegister().fixPrediction(branchActuallyTaken, codeModel.getIntegerId());
         }
-        else
-        {
-          resultPc = pc + 4;
-        }
-        
-        // Get the second instruction in the queue and invalidate it (flush everything after it)
-        Optional<SimCodeModel> robItem = this.reorderQueue.stream().skip(1).findFirst();
-        if (robItem.isPresent())
-        {
-          invalidateInstructions(robItem.get());
-        }
-        
-        GlobalHistoryRegister activeRegister = gShareUnit.getGlobalHistoryRegister();
-        // This also removes the value from the history stack
-        activeRegister.setHistoryValueAsCurrent(codeModel.getIntegerId());
-        activeRegister.shiftValue(false);
-        
-        this.instructionFetchBlock.setPc(resultPc);
-        
-        // Note the flush in statistics
-        simulationStatistics.incrementRobFlushes();
-      }
-      
-      // If we go to the end of the queue, we did not find a branch instruction.
-      // This means that we are not speculating at this point.
-      if (!reorderQueue.getLast().isSpeculative())
-      {
-        this.speculativePulls = false;
       }
     }
     else if (codeModel.getInstructionTypeEnum() == InstructionTypeEnum.kLoadstore)
@@ -355,7 +319,7 @@ public class ReorderBufferBlock implements AbstractBlock
         {
           // Bad load found, invalidate it
           SimCodeModel model = badLoad.getSimCodeModel();
-          invalidateInstructions(model);
+          flush(model);
           // Repeat the bad load
           this.instructionFetchBlock.setPc(model.getSavedPc());
         }
@@ -374,20 +338,24 @@ public class ReorderBufferBlock implements AbstractBlock
     }
     
     // Store registers to arch. register file
-    List<InstructionFunctionModel.Argument> arguments = codeModel.getInstructionFunctionModel().getArguments();
-    for (InstructionFunctionModel.Argument argument : arguments)
+    List<InstructionArgument> arguments = codeModel.instructionFunctionModel().arguments();
+    for (InstructionArgument argument : arguments)
     {
       if (!argument.writeBack())
       {
         continue;
       }
+      assert argument.isRegister();
       InputCodeArgument codeArgument = codeModel.getArgumentByName(argument.name());
-      String            tempRegName  = codeArgument.getValue();
       if (codeArgument == null)
       {
         throw new IllegalArgumentException("Argument " + argument.name() + " not found in code model");
       }
-      renameMapTableBlock.directCopyMapping(tempRegName);
+      RegisterModel reg = codeArgument.getRegisterValue();
+      if (reg.isSpeculative())
+      {
+        reg.copyToArchitectural();
+      }
     }
     
     // Arch registers are now updated, print debug info
@@ -406,16 +374,19 @@ public class ReorderBufferBlock implements AbstractBlock
   private void removeInstruction(SimCodeModel simCodeModel)
   {
     // Reduce references to speculative registers
-    for (InputCodeArgument argument : simCodeModel.getArguments())
+    for (InputCodeArgument argument : simCodeModel.arguments())
     {
-      if (!argument.getName().startsWith("r"))
+      if (!argument.isRegister())
       {
         continue;
       }
-      if (renameMapTableBlock.reduceReference(argument.getValue()))
+      
+      RegisterModel register = argument.getRegisterValue();
+      if (!register.isSpeculative())
       {
-        renameMapTableBlock.freeMapping(argument.getValue());
+        continue;
       }
+      renameMapTableBlock.reduceReference(argument.getRegisterValue());
     }
     
     simCodeModel.setFinished(true);
@@ -443,10 +414,6 @@ public class ReorderBufferBlock implements AbstractBlock
       // Notify all that instruction is invalid
       simulationStatistics.incrementFailedInstructions();
       robItem.setCommitId(cycle); // todo: is this correct?
-      if (robItem.getInstructionTypeEnum() == InstructionTypeEnum.kJumpbranch)
-      {
-        this.gShareUnit.getGlobalHistoryRegister().removeHistoryValue(robItem.getIntegerId());
-      }
       removeInstruction(robItem);
       this.reorderQueue.removeLast();
     }
@@ -470,13 +437,14 @@ public class ReorderBufferBlock implements AbstractBlock
       {
         // No more space, stop
         this.decodeAndDispatchBlock.setStallFlag(true);
-        this.decodeAndDispatchBlock.setStalledPullCount(pulledCount);
         break;
       }
       
-      codeModel.setSpeculative(this.speculativePulls);
+      SimCodeModel last        = this.reorderQueue.peekLast();
+      boolean      speculative = last != null && (last.isSpeculative() || last.getInstructionTypeEnum() == InstructionTypeEnum.kJumpbranch);
+      
+      codeModel.setSpeculative(speculative);
       this.reorderQueue.add(codeModel);
-      this.speculativePulls = this.speculativePulls || codeModel.getInstructionTypeEnum() == InstructionTypeEnum.kJumpbranch;
       if (codeModel.isLoad())
       {
         this.loadBufferBlock.addLoadToBuffer(codeModel);
@@ -520,13 +488,14 @@ public class ReorderBufferBlock implements AbstractBlock
   /**
    * Mark firstInvalidInstruction and all subsequent instructions as invalid.
    *
-   * @param firstInvalidInstruction First instruction that should be invalidated
+   * @param firstInvalidInstruction First instruction that should be invalidated. If null, nothing in ROB is flushed.
    *
-   * @brief Sets instruction flags to notify ROB to flush itself
+   * @brief Sets instruction flags to notify ROB to flush itself. Also flushes decode and fetch blocks.
    */
-  public void invalidateInstructions(SimCodeModel firstInvalidInstruction)
+  public void flush(SimCodeModel firstInvalidInstruction)
   {
-    boolean flush = false;
+    boolean flush           = false;
+    int     lowestFlushedId = Integer.MAX_VALUE;
     for (SimCodeModel robItem : this.reorderQueue)
     {
       flush = flush || robItem == firstInvalidInstruction;
@@ -535,27 +504,32 @@ public class ReorderBufferBlock implements AbstractBlock
         robItem.setSpeculative(false);
         robItem.setValid(false);
         robItem.setHasFailed(true);
+        lowestFlushedId = Math.min(lowestFlushedId, robItem.getIntegerId());
       }
     }
     
-    // clear what you can
-    this.decodeAndDispatchBlock.setFlush(true);
-    // TODO: move to fetch and decode block
     this.decodeAndDispatchBlock.getCodeBuffer().forEach(
-            simCodeModel -> simCodeModel.getArguments().stream().filter(argument -> argument.getName().startsWith("r"))
-                    .forEach(argument ->
-                             {
-                               if (renameMapTableBlock.reduceReference(argument.getValue()))
-                               {
-                                 renameMapTableBlock.freeMapping(argument.getValue());
-                               }
-                             }));
+            simCodeModel -> simCodeModel.arguments().stream().filter(InputCodeArgument::isRegister).forEach(argument ->
+                                                                                                            {
+                                                                                                              RegisterModel register = argument.getRegisterValue();
+                                                                                                              if (!register.isSpeculative())
+                                                                                                              {
+                                                                                                                return;
+                                                                                                              }
+                                                                                                              renameMapTableBlock.reduceReference(
+                                                                                                                      argument.getRegisterValue());
+                                                                                                            }));
+    // clear what you can
+    this.decodeAndDispatchBlock.flush();
+    this.instructionFetchBlock.flush();
     
-    this.instructionFetchBlock.clearFetchedCode();
+    simulationStatistics.incrementRobFlushes();
     
-    boolean keptAnyInstruction  = !this.reorderQueue.isEmpty();
-    boolean lastKeptSpeculative = keptAnyInstruction && this.reorderQueue.getLast().isSpeculative();
-    this.speculativePulls = keptAnyInstruction && lastKeptSpeculative;
+    // Update global history register
+    if (lowestFlushedId != Integer.MAX_VALUE)
+    {
+      gShareUnit.getGlobalHistoryRegister().flush(lowestFlushedId);
+    }
   }// end of invalidateInstructions
   //----------------------------------------------------------------------
   
@@ -583,19 +557,4 @@ public class ReorderBufferBlock implements AbstractBlock
   {
     return this.reorderQueue.stream();
   }// end of getReorderQueue
-  
-  /**
-   *
-   */
-  public void simulate_issue(int tick)
-  {
-    // Issue instruction without a IssueWindowId
-    for (SimCodeModel codeModel : this.reorderQueue)
-    {
-      if (codeModel.issueWindowId == -1)
-      {
-        issueWindowSuperBlock.selectCorrectIssueWindow(codeModel.getInstructionFunctionModel(), codeModel);
-      }
-    }
-  }
 }

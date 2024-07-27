@@ -33,6 +33,14 @@ package com.gradle.superscalarsim.code;
  */
 public record CodeToken(int line, int columnStart, String text, Type type)
 {
+  /**
+   * Copy constructor
+   */
+  public CodeToken(CodeToken token)
+  {
+    this(token.line, token.columnStart, token.text, token.type);
+  }
+  
   public int columnEnd()
   {
     return columnStart + text.length() - 1;
@@ -47,8 +55,11 @@ public record CodeToken(int line, int columnStart, String text, Type type)
     return "[" + line + ":" + columnStart + ":" + this.columnEnd() + "] " + text + " (" + type + ")";
   }
   
+  /**
+   * Symbol is an instruction ("addi", "lw", ...)
+   */
   public enum Type
   {
-    SYMBOL, L_PAREN, R_PAREN, COLON, COMMA, NEWLINE, COMMENT, EOF, STRING, NUMBER, LABEL
+    L_PAREN, R_PAREN, COLON, COMMA, NEWLINE, COMMENT, EOF, STRING, LABEL, DIRECTIVE, SYMBOL
   }
 }

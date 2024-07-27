@@ -29,20 +29,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import path from 'path';
-import { promises as fs } from 'fs';
+import { loadCodeExamples } from '@/lib/staticLoaders';
 
 export async function GET() {
-  // Find the absolute path of the "json" directory
-  const jsonDirectory = path.join(process.cwd(), 'public/json');
-  // Read the "data.json" file
-  const fileContents = await fs.readFile(
-    `${jsonDirectory}/codeExamples.json`,
-    'utf8',
-  );
-
-  const json = JSON.parse(fileContents);
-
+  const json = await loadCodeExamples();
   return Response.json(json);
 }
 

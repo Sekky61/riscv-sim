@@ -29,91 +29,154 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+'use client';
+
 import clsx from 'clsx';
-import { Fragment } from 'react';
 
 import {
   selectArithmeticFunctionUnitBlocks,
   selectBranchFunctionUnitBlocks,
   selectFpFunctionUnitBlocks,
+  selectLoadStoreFunctionUnitBlocks,
   selectMemoryAccessUnitBlocks,
 } from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
 
-import Block from '@/components/simulation/Block';
+import { DividedBadge } from '@/components/DividedBadge';
+import { Block } from '@/components/simulation/Block';
 import InstructionField from '@/components/simulation/InstructionField';
+import type {
+  AbstractFunctionUnitBlock,
+  MemoryAccessUnit,
+} from '@/lib/types/cpuApi';
+import { useBlockDescriptions } from '../BlockDescriptionContext';
+import {
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '../base/ui/dialog';
+import InstructionTable from './InstructionTable';
 
-type FUType = 'alu' | 'fp' | 'branch' | 'memory';
-
-const rowPosition = [
-  'row-start-1',
-  'row-start-2',
-  'row-start-3',
-  'row-start-4',
-  'row-start-5',
-  'row-start-6',
-  'row-start-7',
-];
+type FUType = 'alu' | 'fp' | 'branch' | 'ls' | 'memory';
 
 export type FunctionUnitGroupProps = {
   type: FUType;
+  children?: React.ReactNode;
 };
 
-function getFuInfo(type: FUType) {
-  switch (type) {
-    case 'alu':
-      return {
-        selector: selectArithmeticFunctionUnitBlocks,
-        name: 'ALU',
-        className: 'aluFu',
-      };
-    case 'fp':
-      return {
-        selector: selectFpFunctionUnitBlocks,
-        name: 'FP',
-        className: 'fpFu',
-      };
-    case 'branch':
-      return {
-        selector: selectBranchFunctionUnitBlocks,
-        name: 'Branch',
-        className: 'branchFu',
-      };
-    case 'memory':
-      return {
-        selector: selectMemoryAccessUnitBlocks,
-        name: 'Memory Access',
-        className: 'memoryFu',
-      };
-    default:
-      throw new Error(`Invalid type ${type}`);
-  }
-}
-
-export default function FunctionUnitGroup({ type }: FunctionUnitGroupProps) {
-  const { name, className, selector } = getFuInfo(type);
-  const fus = useAppSelector(selector);
-
+/**
+ * A component for displaying all functional units of a given type.
+ */
+export default function FunctionUnitGroup({
+  type,
+  children,
+}: FunctionUnitGroupProps) {
+  const fus = useAppSelector(selectors[type]);
   if (!fus) return null;
 
   // TODO: has no limit
   return (
     <>
-      {fus.map((fu, i) => {
-        const displayCounter = fu.simCodeModel === null ? 0 : fu.counter + 1;
-        const id = fu.simCodeModel ?? null;
+      {fus.map((fu) => {
         return (
-          <Fragment key={`${fu.description.name}-${fu.functionUnitId}`}>
-            <Block
-              title={fu.description.name || name}
-              stats={`${displayCounter}/${fu.delay}`}
-              className={clsx(className, 'row-span-1', rowPosition[i + 1])}
-            >
-              <InstructionField instructionId={id} />
-            </Block>
-          </Fragment>
+          <FU fu={fu} key={fu.functionUnitId} type={type}>
+            {children}
+          </FU>
         );
       })}
     </>
   );
 }
+
+type FUProps = {
+  type: FUType;
+  fu: AbstractFunctionUnitBlock;
+  children?: React.ReactNode;
+};
+
+function FU({ type, fu, children }: FUProps) {
+  const descriptions = useBlockDescriptions();
+  const { name, className } = fuInfo[type];
+
+  const handledBy = (fu as MemoryAccessUnit)?.transaction?.handledBy;
+
+  return (
+    <div className='relative'>
+      {children}
+      <Block
+        title={fu.description.name || name}
+        className={clsx(className, 'w-issue relative')}
+        detailDialog={
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>
+                Functional Unit {fu.description.name || name}
+              </DialogTitle>
+              <DialogDescription>
+                {descriptions.functionUnit?.shortDescription}
+              </DialogDescription>
+            </DialogHeader>
+            <InstructionTable
+              instructions={fu.simCodeModel !== null ? [fu.simCodeModel] : []}
+            />
+          </DialogContent>
+        }
+      >
+        <div className='flex gap-4 items-center'>
+          <div className='flex gap-2 items-center'>
+            <DividedBadge>
+              <div>Cycle</div>
+              <div>{`${fu.counter}/${fu.delay}`}</div>
+            </DividedBadge>
+            {handledBy && (
+              <DividedBadge>
+                <div className='whitespace-nowrap'>
+                  {handledPretty[handledBy]}
+                </div>
+              </DividedBadge>
+            )}
+          </div>
+          <InstructionField instructionId={fu.simCodeModel} />
+        </div>
+      </Block>
+    </div>
+  );
+}
+
+const handledPretty = {
+  main_memory: 'Memory',
+  cache: 'Cache',
+  cache_with_miss: 'Cache Miss',
+};
+
+const selectors = {
+  alu: selectArithmeticFunctionUnitBlocks,
+  fp: selectFpFunctionUnitBlocks,
+  branch: selectBranchFunctionUnitBlocks,
+  ls: selectLoadStoreFunctionUnitBlocks,
+  memory: selectMemoryAccessUnitBlocks,
+} as const;
+
+const fuInfo = {
+  alu: {
+    name: 'ALU',
+    className: 'aluFu',
+  },
+  fp: {
+    name: 'FP',
+    className: 'fpFu',
+  },
+  branch: {
+    name: 'Branch',
+    className: 'branchFu',
+  },
+  ls: {
+    name: 'Load/Store',
+    className: 'lsFu',
+  },
+  memory: {
+    name: 'Memory Access',
+    className: 'memoryFu',
+  },
+} as const;

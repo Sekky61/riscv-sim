@@ -36,44 +36,57 @@ import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.blocks.AbstractBlock;
-import com.gradle.superscalarsim.models.instruction.InstructionFunctionModel;
 import com.gradle.superscalarsim.models.instruction.SimCodeModel;
-
-import java.util.List;
 
 /**
  * @class IssueWindowSuperBlock
- * @brief Class containing logic for dispatching instructions from decode stage to Issue windows
+ * @brief Class containing logic for dispatching instructions from decode stage (ROB) to Issue windows
  */
 @JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
 public class IssueWindowSuperBlock implements AbstractBlock
 {
   /**
+   * The Fixed point issue window.
+   */
+  private final IssueWindowBlock aluIssueWindowBlock;
+  /**
+   * The Floating point issue window.
+   */
+  private final IssueWindowBlock fpIssueWindowBlock;
+  /**
+   * The Branch issue window.
+   */
+  private final IssueWindowBlock branchIssueWindowBlock;
+  /**
+   * The Load/Store issue window.
+   */
+  private final IssueWindowBlock loadStoreIssueWindowBlock;
+  /**
    * Class, which simulates instruction decode and renames registers.
    */
   @JsonIdentityReference(alwaysAsId = true)
-  private DecodeAndDispatchBlock decodeAndDispatchBlock;
+  private final ReorderBufferBlock reorderBufferBlock;
   
   /**
-   * List of all issue windows.
-   */
-  private List<IssueWindowBlock> issueWindowBlockList;
-  
-  public IssueWindowSuperBlock()
-  {
-  }
-  
-  /**
-   * @param blockScheduleTask      Task class, where blocks are periodically triggered by the GlobalTimer
-   * @param decodeAndDispatchBlock Class, which simulates instruction decode and renames registers
-   * @param loader                 Initial loader of interpretable instructions and register files
+   * @param reorderBufferBlock        ROB
+   * @param aluIssueWindowBlock       ALU issue window
+   * @param fpIssueWindowBlock        FP issue window
+   * @param branchIssueWindowBlock    Branch issue window
+   * @param loadStoreIssueWindowBlock Load/Store issue window
    *
    * @brief Constructor
    */
-  public IssueWindowSuperBlock(DecodeAndDispatchBlock decodeAndDispatchBlock, List<IssueWindowBlock> issueWindowBlocks)
+  public IssueWindowSuperBlock(ReorderBufferBlock reorderBufferBlock,
+                               IssueWindowBlock aluIssueWindowBlock,
+                               IssueWindowBlock fpIssueWindowBlock,
+                               IssueWindowBlock branchIssueWindowBlock,
+                               IssueWindowBlock loadStoreIssueWindowBlock)
   {
-    this.decodeAndDispatchBlock = decodeAndDispatchBlock;
-    this.issueWindowBlockList   = issueWindowBlocks;
+    this.reorderBufferBlock        = reorderBufferBlock;
+    this.aluIssueWindowBlock       = aluIssueWindowBlock;
+    this.fpIssueWindowBlock        = fpIssueWindowBlock;
+    this.branchIssueWindowBlock    = branchIssueWindowBlock;
+    this.loadStoreIssueWindowBlock = loadStoreIssueWindowBlock;
     
   }// end of Constructor
   //----------------------------------------------------------------------
@@ -84,55 +97,30 @@ public class IssueWindowSuperBlock implements AbstractBlock
   @Override
   public void simulate(int cycle)
   {
-    // TODO: move to decode block
-    // TODO: places like this, where simcodemodels are deleted, leave behind history of GlobalHistoryRegister
-    //    if (decodeAndDispatchBlock.shouldFlush())
-    //    {
-    //      this.decodeAndDispatchBlock.getCodeBuffer().forEach(codeModel -> codeModel.setFinished(true));
-    //      this.decodeAndDispatchBlock.getCodeBuffer().clear();
-    //      this.decodeAndDispatchBlock.setFlush(false);
-    //    }
-    //    else
-    //    {
-    //      int pullCount = !decodeAndDispatchBlock.shouldStall() ? this.decodeAndDispatchBlock.getCodeBuffer()
-    //              .size() : this.decodeAndDispatchBlock.getStalledPullCount();
-    //
-    //      for (int i = 0; i < pullCount; i++)
-    //      {
-    //        SimCodeModel             codeModel = this.decodeAndDispatchBlock.getCodeBuffer().get(i);
-    //        InstructionFunctionModel model     = codeModel.getInstructionFunctionModel();
-    //        selectCorrectIssueWindow(model, codeModel);
-    //      }
-    //    }
+    // Issue instruction without a IssueWindowId
+    this.reorderBufferBlock    // formatter trick
+            .getReorderQueue() // ROB
+            .filter(codeModel -> codeModel.issueWindowId == -1) // Only instructions not in an issue window
+            .forEach(simCodeModel -> selectCorrectIssueWindow(simCodeModel, cycle));
   }// end of simulate
   //----------------------------------------------------------------------
   
   /**
-   * @brief Resets the failed instruction stack
-   */
-  @Override
-  public void reset()
-  {
-  }// end of reset
-  //----------------------------------------------------------------------
-  
-  /**
-   * @param instruction Instruction model on which Issue window is chosen
-   * @param codeModel   Model representing instruction with set arguments
+   * @param codeModel Instruction to be dispatched
+   * @param cycle     Current cycle
    *
-   * @brief Selects issue window based on instruction type and instruction data type and dispatches the instruction
-   * TODO: is it guaranteed that a window will be found?
+   * @brief Selects issue window based on instruction type and dispatches the instruction
    */
-  public void selectCorrectIssueWindow(InstructionFunctionModel instruction, SimCodeModel codeModel)
+  public void selectCorrectIssueWindow(SimCodeModel codeModel, int cycle)
   {
-    for (IssueWindowBlock issueWindow : this.issueWindowBlockList)
+    IssueWindowBlock selectedIssue = switch (codeModel.instructionFunctionModel().instructionType())
     {
-      if (issueWindow.canHold(instruction))
-      {
-        issueWindow.dispatchInstruction(codeModel);
-        return;
-      }
-    }
+      case kIntArithmetic -> aluIssueWindowBlock;
+      case kFloatArithmetic -> fpIssueWindowBlock;
+      case kLoadstore -> loadStoreIssueWindowBlock;
+      case kJumpbranch -> branchIssueWindowBlock;
+    };
+    selectedIssue.dispatchInstruction(codeModel, cycle);
   }// end of selectCorrectIssueWindow
   //----------------------------------------------------------------------
 }

@@ -28,47 +28,35 @@
 package com.gradle.superscalarsim.serialization;
 
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
-import com.gradle.superscalarsim.managers.IInstanceManager;
+import com.gradle.superscalarsim.managers.InstanceManager;
 import com.gradle.superscalarsim.models.Identifiable;
 
 import java.io.IOException;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.WeakHashMap;
 
-public class ManagerSerializer extends StdSerializer<IInstanceManager>
+/**
+ * @brief Serializes {@link InstanceManager} to JSON object. Key is the id of the instance. Value is the instance itself.
+ */
+public class ManagerSerializer extends StdSerializer<InstanceManager<?>>
 {
   
   public ManagerSerializer()
   {
-    this(null);
-  }
-  
-  public ManagerSerializer(Class<IInstanceManager> t)
-  {
-    super(t);
+    super(InstanceManager.class, false);
   }
   
   @Override
-  public void serialize(IInstanceManager value,
-                        JsonGenerator jgen,
-                        SerializerProvider provider) throws IOException, JsonProcessingException
+  public void serialize(InstanceManager value, JsonGenerator jgen, SerializerProvider provider) throws IOException
   {
-    
     jgen.writeStartObject();
     
     // Loop over all instances and serialize them
-    // Key is the instance id, value is the instance
-    WeakHashMap                               instances = value.getInstances();
-    Iterator<Map.Entry<Identifiable, Object>> itr       = instances.entrySet().iterator();
-    while (itr.hasNext())
+    for (Object instance : value.getInstances())
     {
-      Map.Entry<Identifiable, Object> entry = itr.next();
-      String                          key   = entry.getKey().getId();
-      jgen.writeObjectField(key, entry.getKey());
+      Identifiable entry = (Identifiable) instance;
+      String       key   = entry.getId();
+      jgen.writeObjectField(key, entry);
     }
     
     jgen.writeEndObject();

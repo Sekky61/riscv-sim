@@ -29,32 +29,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { defaultAsmCode } from '@/constant/defaults';
-import { z } from 'zod';
+import { defaultAsmCode, defaultCpuConfig } from '@/constant/defaults';
+import { isPowerOfTwo } from '@/lib/utils';
+import { ZodIssueCode, z } from 'zod';
 
-export const predictorDefaults = {
-  '0bit': ['Taken', 'Not Taken'],
-  '1bit': ['Taken', 'Not Taken'],
-  '2bit': [
-    'Strongly Not Taken',
-    'Weakly Not Taken',
-    'Weakly Taken',
-    'Strongly Taken',
-  ],
-} as const;
-
-export const predictorTypes = ['0bit', '1bit', '2bit'] as const;
-export type PredictorType = (typeof predictorTypes)[number];
-
-export const predictorStates = [
-  'Taken',
-  'Not Taken',
-  'Strongly Taken',
-  'Strongly Not Taken',
-  'Weakly Taken',
-  'Weakly Not Taken',
+export const predictorTypes = [
+  'ZERO_BIT_PREDICTOR',
+  'ONE_BIT_PREDICTOR',
+  'TWO_BIT_PREDICTOR',
 ] as const;
-export type PredictorState = (typeof predictorStates)[number];
+export type PredictorType = (typeof predictorTypes)[number];
 
 export const cacheReplacementTypes = ['LRU', 'FIFO', 'Random'] as const;
 export type CacheReplacementType = (typeof cacheReplacementTypes)[number];
@@ -76,8 +60,6 @@ export const dataTypes = [
   'kDouble',
   'kBool',
   'kChar',
-  'kByte',
-  'kShort',
 ] as const;
 export const dataTypesText = [
   'Byte',
@@ -90,42 +72,79 @@ export const dataTypesText = [
   'Double',
   'Boolean',
   'Char',
-  'Byte',
-  'Short',
 ] as const;
 
 /**
  * Definition of memory location, as the API expects it
  */
-
-export const dataChunk = z.object({
+const spanTypeSchema = z.object({
+  startOffset: z.number(),
   dataType: z.enum(dataTypes),
-  values: z.array(z.string()),
 });
-export type DataChunk = z.infer<typeof dataChunk>;
+export type SpanType = z.infer<typeof spanTypeSchema>;
 
-export const memoryLocation = z.object({
-  name: z.string().min(1),
-  alignment: z.number().min(1).max(16),
-  dataChunks: z.array(dataChunk),
-});
-export type MemoryLocationApi = z.infer<typeof memoryLocation>;
+/**
+ * This schema disallows some of the accepted forms, but it is made so
+ * that the web interface is simpler.
+ * Form more info, check out the API documentation.
+ */
+export const memoryLocationSchema = z
+  .object({
+    name: z.string().min(1),
+    alignment: z.number().min(0).max(16),
+    dataType: z.enum(dataTypes),
+    data: z.discriminatedUnion('kind', [
+      z.object({
+        kind: z.literal('data'),
+        data: z.array(z.string()),
+      }),
+      z.object({
+        kind: z.literal('constant'),
+        constant: z.string(),
+        size: z.number().min(1),
+      }),
+      z.object({
+        kind: z.literal('random'),
+        min: z.number(),
+        max: z.number(),
+        size: z.number().min(1),
+      }),
+    ]),
+  })
+  .superRefine((val, ctx) => {
+    // Runs just for the one discriminated variant. If no kind is present, it's not run.
+
+    // Random
+    if (val.data.kind === 'random') {
+      if (val.data.min > val.data.max) {
+        ctx.addIssue({
+          code: ZodIssueCode.too_small,
+          path: ['data', 'max'],
+          type: 'number',
+          minimum: val.data.min,
+          inclusive: true,
+          exact: false,
+        });
+      }
+    }
+  });
+export type MemoryLocationApi = z.infer<typeof memoryLocationSchema>;
 
 export const memoryLocationDefaultValue: MemoryLocationApi = {
   name: 'Array',
   alignment: 4,
-  dataChunks: [],
+  dataType: 'kInt',
+  data: {
+    kind: 'data',
+    data: [],
+  },
 };
 
 /**
- * This is the memory location with additional fields for the form.
- * These extra fields are kept in the app, but not sent to the backend.
+ * A collection of Memory Locations
  */
-export const memoryLocationIsa = memoryLocation.extend({
-  dataType: z.enum(dataTypes),
-  dataSource: z.enum(['constant', 'random', 'file']),
-});
-export type MemoryLocationIsa = z.infer<typeof memoryLocationIsa>;
+export const memoryLocationsSchema = z.array(memoryLocationSchema);
+export type MemoryLocations = z.infer<typeof memoryLocationsSchema>;
 
 export const arithmeticUnits = ['FX', 'FP'] as const;
 export const otherUnits = ['L_S', 'Branch', 'Memory'] as const;
@@ -181,14 +200,14 @@ export const isaFormSchema = z
     // Buffers
     robSize: z.number().min(1).max(1024),
     commitWidth: z.number().min(1).max(10),
-    branchFollowLimit: z.number().min(1).max(10),
     flushPenalty: z.number().min(1).max(100),
     fetchWidth: z.number().min(1).max(10),
+    branchFollowLimit: z.number().min(1).max(10),
     // Branch
     btbSize: z.number().min(1).max(16384),
     phtSize: z.number().min(1).max(16384),
     predictorType: z.enum(predictorTypes),
-    predictorDefault: z.enum(predictorStates),
+    predictorDefaultState: z.number().min(0).max(3), // The maximum for 2bit (4 states). Must be further validated.
     useGlobalHistory: z.boolean(),
     // Functional Units
     fUnits: z.array(fUnitSchema),
@@ -196,8 +215,6 @@ export const isaFormSchema = z
     useCache: z.boolean(),
     cacheLines: z.number().min(1).max(65536),
     cacheLineSize: z.number().min(1).max(512),
-    cacheLoadLatency: z.number().min(1).max(1000),
-    cacheStoreLatency: z.number().min(1).max(1000),
     cacheAssoc: z.number().min(1),
     cacheReplacement: z.enum(cacheReplacementTypes),
     storeBehavior: z.enum(storeBehaviorTypes),
@@ -213,23 +230,53 @@ export const isaFormSchema = z
     coreClockFrequency: z.number().min(1),
     cacheClockFrequency: z.number().min(1),
   })
-  .refine((data) => {
+  .superRefine((data, ctx) => {
     // Check the predictor
-    const predictorDefault = data.predictorDefault;
+    const predictorDefault = data.predictorDefaultState;
     const predictorType = data.predictorType;
-    const predictorDefaultsForType = predictorDefaults[predictorType];
     if (
-      !(predictorDefaultsForType as readonly PredictorState[]).includes(
-        predictorDefault,
-      )
+      predictorType === 'ZERO_BIT_PREDICTOR' ||
+      predictorType === 'ONE_BIT_PREDICTOR'
     ) {
-      return "Predictor default state doesn't match the predictor type";
+      if (predictorDefault !== 0 && predictorDefault !== 1) {
+        ctx.addIssue({
+          code: ZodIssueCode.invalid_enum_value,
+          path: ['predictorDefaultState'],
+          message: 'Predictor default state must be Taken or Not Taken',
+          options: [0, 1],
+          received: predictorDefault,
+        });
+      }
     }
 
-    // Check that cacheAssoc <= cacheLines
-    if (data.cacheAssoc > data.cacheLines) {
-      return 'Cache associativity must be less than or equal to cache lines';
+    // Check that all indexes exist in cache (cacheLine / cacheAssoc = number of sets)
+    const dividesEvenly = data.cacheLines % data.cacheAssoc === 0;
+    const sets = data.cacheLines / data.cacheAssoc;
+    const setsIsPowerOfTwo = isPowerOfTwo(sets);
+    if (!dividesEvenly) {
+      ctx.addIssue({
+        code: ZodIssueCode.custom,
+        path: ['cacheAssoc'],
+        message: 'Cache lines must be divisible by cache associativity',
+      });
     }
+    if (!setsIsPowerOfTwo) {
+      ctx.addIssue({
+        code: ZodIssueCode.custom,
+        path: ['cacheLines'],
+        message: 'Number of sets must be a power of two',
+      });
+    }
+
+    // cacheLineSize must be a power of two
+    if (!isPowerOfTwo(data.cacheLineSize)) {
+      ctx.addIssue({
+        code: ZodIssueCode.custom,
+        path: ['cacheLineSize'],
+        message: 'Cache line size must be a power of two',
+      });
+    }
+
     // Config is correct
     return true;
   });
@@ -250,7 +297,7 @@ export const simulationConfig = z.object({
   /**
    * Memory locations to be allocated.
    */
-  memoryLocations: z.array(memoryLocationIsa),
+  memoryLocations: memoryLocationsSchema,
   /**
    * Entry point of the program. A label or address.
    */
@@ -258,120 +305,11 @@ export const simulationConfig = z.object({
 });
 export type SimulationConfig = z.infer<typeof simulationConfig>;
 
-/**
- * Default configuration
- */
-export const defaultCpuConfig: CpuConfig = {
-  name: 'Default',
-  robSize: 256,
-  fetchWidth: 3,
-  branchFollowLimit: 1,
-  commitWidth: 4,
-  flushPenalty: 1,
-  btbSize: 1024,
-  phtSize: 10,
-  predictorType: '2bit',
-  predictorDefault: 'Weakly Taken',
-  useGlobalHistory: false,
-  fUnits: [
-    {
-      id: 0,
-      name: 'FX Universal',
-      fuType: 'FX',
-      latency: 2,
-      operations: [
-        {
-          name: 'bitwise',
-          latency: 1,
-        },
-        {
-          name: 'addition',
-          latency: 1,
-        },
-        {
-          name: 'multiplication',
-          latency: 2,
-        },
-        {
-          name: 'division',
-          latency: 10,
-        },
-        {
-          name: 'special',
-          latency: 2,
-        },
-      ],
-    },
-    {
-      id: 1,
-      name: 'FP',
-      fuType: 'FP',
-      latency: 2,
-      operations: [
-        {
-          name: 'bitwise',
-          latency: 1,
-        },
-        {
-          name: 'addition',
-          latency: 1,
-        },
-        {
-          name: 'multiplication',
-          latency: 2,
-        },
-        {
-          name: 'division',
-          latency: 10,
-        },
-        {
-          name: 'special',
-          latency: 2,
-        },
-      ],
-    },
-    {
-      id: 2,
-      name: 'L_S',
-      fuType: 'L_S',
-      latency: 1,
-    },
-    {
-      id: 3,
-      name: 'Branch',
-      fuType: 'Branch',
-      latency: 2,
-    },
-    {
-      id: 4,
-      name: 'Memory',
-      fuType: 'Memory',
-      latency: 1,
-    },
-  ],
-  useCache: true,
-  cacheLines: 16,
-  cacheLineSize: 32,
-  cacheAssoc: 2,
-  cacheReplacement: 'LRU',
-  storeBehavior: 'write-back',
-  cacheAccessDelay: 1,
-  storeLatency: 1,
-  loadLatency: 1,
-  laneReplacementDelay: 10,
-  lbSize: 64,
-  sbSize: 64,
-  callStackSize: 512,
-  speculativeRegisters: 320,
-  coreClockFrequency: 100000000,
-  cacheClockFrequency: 100000000,
-  cacheLoadLatency: 1,
-  cacheStoreLatency: 1,
-};
-
 export const defaultSimulationConfig: SimulationConfig = {
   cpuConfig: defaultCpuConfig,
   code: defaultAsmCode,
   memoryLocations: [],
   entryPoint: 0,
 };
+
+export { defaultCpuConfig };

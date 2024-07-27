@@ -36,9 +36,7 @@ import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.blocks.AbstractBlock;
-import com.gradle.superscalarsim.blocks.base.UnifiedRegisterFileBlock;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
-import com.gradle.superscalarsim.models.instruction.InputCodeArgument;
 import com.gradle.superscalarsim.models.instruction.SimCodeModel;
 import com.gradle.superscalarsim.models.memory.LoadBufferItem;
 import com.gradle.superscalarsim.models.memory.StoreBufferItem;
@@ -76,12 +74,6 @@ public class LoadBufferBlock implements AbstractBlock
   private StoreBufferBlock storeBufferBlock;
   
   /**
-   * Class containing all registers, that simulator uses
-   */
-  @JsonIdentityReference(alwaysAsId = true)
-  private UnifiedRegisterFileBlock registerFileBlock;
-  
-  /**
    * Load Buffer size
    */
   private int bufferSize;
@@ -92,17 +84,15 @@ public class LoadBufferBlock implements AbstractBlock
   }
   
   /**
-   * @param storeBufferBlock       Block keeping all in-flight store instructions
-   * @param decodeAndDispatchBlock Class, which simulates instruction decode and renames registers
-   * @param registerFileBlock      Class containing all registers, that simulator uses
+   * @param bufferSize       Size of the load buffer
+   * @param storeBufferBlock Block keeping all in-flight store instructions
    *
    * @brief Constructor
    */
-  public LoadBufferBlock(int bufferSize, StoreBufferBlock storeBufferBlock, UnifiedRegisterFileBlock registerFileBlock)
+  public LoadBufferBlock(int bufferSize, StoreBufferBlock storeBufferBlock)
   {
-    this.storeBufferBlock  = storeBufferBlock;
-    this.registerFileBlock = registerFileBlock;
-    this.bufferSize        = bufferSize;
+    this.bufferSize       = bufferSize;
+    this.storeBufferBlock = storeBufferBlock;
     
     this.loadQueue            = new ArrayDeque<>();
     this.memoryAccessUnitList = new ArrayList<>();
@@ -145,14 +135,6 @@ public class LoadBufferBlock implements AbstractBlock
   }// end of simulate
   //-------------------------------------------------------------------------------------------
   
-  /**
-   * @brief Resets the all the lists/stacks/variables in the load buffer
-   */
-  @Override
-  public void reset()
-  {
-    this.loadQueue.clear();
-  }// end of reset
   //-------------------------------------------------------------------------------------------
   
   /**
@@ -192,7 +174,8 @@ public class LoadBufferBlock implements AbstractBlock
     LoadBufferItem workForMa = null;
     for (LoadBufferItem item : this.loadQueue)
     {
-      boolean dataShouldBeLoaded = item.getAddress() != -1 && !item.isAccessingMemory() && !item.isDestinationReady();
+      boolean ready              = item.getAddress() != -1 && !item.isAccessingMemory() && !item.isDestinationReady();
+      boolean dataShouldBeLoaded = ready && !item.hasBypassed();
       if (!dataShouldBeLoaded)
       {
         continue;
@@ -226,8 +209,7 @@ public class LoadBufferBlock implements AbstractBlock
       {
         continue;
       }
-      memoryAccessUnit.resetCounter();
-      memoryAccessUnit.setSimCodeModel(workForMa.getSimCodeModel());
+      memoryAccessUnit.startExecuting(workForMa.getSimCodeModel());
       workForMa.setAccessingMemory(true);
       workForMa.setAccessingMemoryId(cycle);
       return;
@@ -247,13 +229,13 @@ public class LoadBufferBlock implements AbstractBlock
     assert storeItem != null;
     
     // TODO: storeItem direct reference to a register
-    RegisterModel         sourceReg        = registerFileBlock.getRegister(storeItem.getSourceRegister());
+    RegisterModel         sourceReg        = storeItem.getSourceRegister();
     RegisterReadinessEnum resultState      = sourceReg.getReadiness();
     boolean               storeSourceReady = resultState == RegisterReadinessEnum.kExecuted || resultState == RegisterReadinessEnum.kAssigned;
     assert storeSourceReady;
     
     // Write to the load dest. register
-    RegisterModel destinationReg = registerFileBlock.getRegister(loadItem.getDestinationRegister());
+    RegisterModel destinationReg = loadItem.getDestinationRegister();
     // TODO: polish this, better API
     destinationReg.copyFrom(sourceReg);
     destinationReg.setReadiness(RegisterReadinessEnum.kAssigned);
@@ -279,10 +261,14 @@ public class LoadBufferBlock implements AbstractBlock
     {
       boolean addressesMatch = bufferItem.getAddress() == address;
       boolean isAfterStore   = bufferItem.getSimCodeModel().getIntegerId() > cycle;
-      // Do not mark bypassed loads as conflicting
-      boolean bypassed = bufferItem.hasBypassed();
+      if (bufferItem.hasBypassed())
+      {
+        // Bypassed means there is a address match and the value was forwarded.
+        // TODO: hasBypassed is not enough, we need to check if the store is actually the one that bypassed the load
+        continue;
+      }
       // TODO: what if the load is not yet in MA/executed?
-      if (addressesMatch && isAfterStore && !bypassed)
+      if (addressesMatch && isAfterStore)
       {
         return bufferItem;
       }
@@ -310,8 +296,7 @@ public class LoadBufferBlock implements AbstractBlock
     // TODO check if load already in buffer
     
     // Create entry in the Load Buffer
-    InputCodeArgument argument = simCodeModel.getArgumentByName("rd");
-    this.loadQueue.add(new LoadBufferItem(simCodeModel, Objects.requireNonNull(argument).getValue()));
+    this.loadQueue.add(new LoadBufferItem(simCodeModel));
   }
   
   /**

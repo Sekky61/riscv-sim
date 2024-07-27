@@ -33,24 +33,22 @@ import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
 import {
-  InputCodeModel,
-  Reference,
+  type MemoryLocationApi,
+  dataTypes,
+  dataTypesText,
+} from '@/lib/forms/Isa';
+import type {
+  DataTypeEnum,
+  InstructionFunctionModel,
   RegisterModel,
   StopReason,
 } from '@/lib/types/cpuApi';
 
+/**
+ * Utility function used mostly by shadcn/ui.
+ */
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
-}
-
-/**
- * Reference is valid if it is present and has non-negative value. A type guard.
- *
- * @param ref  Reference to check
- * @returns True if reference present and valid, false otherwise
- */
-export function isValidReference(ref: Reference | null): ref is Reference {
-  return typeof ref === 'number' && ref >= 0;
 }
 
 /**
@@ -96,8 +94,10 @@ export function isValidRegisterValue(register: RegisterModel): boolean {
 /**
  * Return the name of the instruction type.
  */
-export function instructionTypeName(inputCodeModel: InputCodeModel): string {
-  switch (inputCodeModel.instructionTypeEnum) {
+export function instructionTypeName(
+  instruction: InstructionFunctionModel,
+): string {
+  switch (instruction.instructionType) {
     case 'kIntArithmetic':
       return 'Arithmetic (int)';
     case 'kFloatArithmetic':
@@ -168,4 +168,137 @@ export function stopReasonToShortString(stopReason: StopReason): string {
 
 function unreachable(): never {
   throw new Error('Unreachable');
+}
+
+/**
+ * Save the string as a file. Prompts the user to pick a location.
+ */
+export function saveAsFile(content: string, filename: string): void {
+  const blob = new Blob([content], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+/**
+ * Save the passed object as a JSON file.
+ */
+// biome-ignore lint: any object can be serialized to JSON
+export function saveAsJsonFile(object: any, filename: string): void {
+  const content = JSON.stringify(object, null, 2);
+  saveAsFile(content, filename);
+}
+
+/**
+ * Show dialog to pick a file and calls the callback with file text contents once the file is picked.
+ */
+export function loadFile(callback: (contents: string) => void) {
+  // Show dialog
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.onchange = () => {
+    if (!input.files) {
+      console.warn('No file selected');
+      return;
+    }
+    const file = input.files[0];
+    if (file === undefined) {
+      console.warn('No file selected');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const contents = e.target?.result;
+      if (typeof contents === 'string') {
+        callback(contents);
+      }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
+
+/**
+ * Return the size of the data type in bytes.
+ */
+export function dataTypeToSize(dataType: DataTypeEnum): number {
+  switch (dataType) {
+    case 'kBool':
+    case 'kChar':
+    case 'kByte':
+      return 1;
+    case 'kShort':
+      return 2;
+    case 'kUInt':
+    case 'kInt':
+    case 'kFloat':
+      return 4;
+    case 'kDouble':
+    case 'kULong':
+    case 'kLong':
+      return 8;
+    default:
+      return unreachable();
+  }
+}
+
+/**
+ * Convert the data type to human-readable string.
+ */
+export function dataTypeToText(dataType: DataTypeEnum): string {
+  const i = dataTypes.indexOf(dataType);
+  return dataTypesText[i] ?? dataType;
+}
+
+/**
+ * Get the size of a memory location in (number of elements).
+ */
+export function memoryLocationSizeInElements(
+  location: MemoryLocationApi,
+): number {
+  let dataLengthElements = 0;
+  switch (location.data.kind) {
+    case 'data':
+      dataLengthElements = location.data.data.length;
+      break;
+    case 'constant': // fallthrough
+    case 'random':
+      dataLengthElements = location.data.size;
+      break;
+  }
+  return dataLengthElements;
+}
+
+/**
+ * Return the word in the plural form if the number is not 1
+ * Does not handle edge cases like "goose" -> "geese" :)
+ */
+export function pluralize(word: string, number: number): string {
+  return number === 1 ? word : `${word}s`;
+}
+
+/**
+ * Format the fraction as a percentage. Returns 0% for 0 denominator.
+ */
+export function formatFracPercentage(
+  numerator: number,
+  denominator: number,
+): string {
+  let frac = 0;
+  if (denominator !== 0) {
+    frac = (numerator / denominator) * 100;
+  }
+  return `${frac.toFixed(2)}%`;
+}
+
+/**
+ * Return true if the number is a power of two
+ */
+export function isPowerOfTwo(n: number): boolean {
+  return Math.log2(n) % 1 === 0;
 }

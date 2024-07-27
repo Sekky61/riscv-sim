@@ -27,6 +27,7 @@
 
 package com.gradle.superscalarsim.cpu;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gradle.superscalarsim.blocks.arithmetic.ArithmeticFunctionUnitBlock;
@@ -40,27 +41,30 @@ import com.gradle.superscalarsim.enums.cache.ReplacementPoliciesEnum;
 import com.gradle.superscalarsim.factories.InputCodeModelFactory;
 import com.gradle.superscalarsim.factories.RegisterModelFactory;
 import com.gradle.superscalarsim.factories.SimCodeModelFactory;
-import com.gradle.superscalarsim.loader.InitLoader;
+import com.gradle.superscalarsim.loader.IDataProvider;
 import com.gradle.superscalarsim.managers.ManagerRegistry;
 import com.gradle.superscalarsim.models.FunctionalUnitDescription;
 import com.gradle.superscalarsim.models.instruction.InputCodeModel;
 import com.gradle.superscalarsim.models.instruction.InstructionFunctionModel;
+import com.gradle.superscalarsim.models.register.RegisterFile;
 import com.gradle.superscalarsim.models.register.RegisterModel;
 import com.gradle.superscalarsim.serialization.Serialization;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
+import java.util.Map;
+import java.util.logging.Logger;
 
 /**
  * @class CpuState
  * @brief The state of the CPU. Assumes the config is valid.
  * @details The order of the fields is important for serialization.
- * This class sets up the RISC-V execution environment interface (EEI), which is responsible for the ISA (supported instructions).
+ * This class sets up the execution environment.
  * This is a user-level, bare-metal interface simulator.
  * The simulation will stop when the program returns from the entry function, or once the PC runs past the code and all instructions are retired.
- * There is also timeout for cycles.
+ * There is also timeout for 1 million cycles (in case of infinite loops).
  */
 public class CpuState implements Serializable
 {
@@ -68,83 +72,77 @@ public class CpuState implements Serializable
    * The manager registry is used to keep track of all relevant models in the CPU.
    */
   public ManagerRegistry managerRegistry;
-  
   public int tick;
-  
   public InstructionMemoryBlock instructionMemoryBlock;
-  
-  // Housekeeping
-  
   public SimulationStatistics statistics;
   
-  // Branch prediction
-  
+  // Housekeeping
   public BranchTargetBuffer branchTargetBuffer;
+  
+  // Branch prediction
   public GlobalHistoryRegister globalHistoryRegister;
   public PatternHistoryTable patternHistoryTable;
   public GShareUnit gShareUnit;
-  
-  // Blocks
-  
   public UnifiedRegisterFileBlock unifiedRegisterFileBlock;
   
+  // Blocks
   public RenameMapTableBlock renameMapTableBlock;
   public InstructionFetchBlock instructionFetchBlock;
   public DecodeAndDispatchBlock decodeAndDispatchBlock;
-  
   public Cache cache;
   public MemoryModel memoryModel;
   public CodeLoadStoreInterpreter loadStoreInterpreter;
   public StoreBufferBlock storeBufferBlock;
   public LoadBufferBlock loadBufferBlock;
-  
   // ALU
   public CodeArithmeticInterpreter arithmeticInterpreter;
   public List<ArithmeticFunctionUnitBlock> arithmeticFunctionUnitBlocks;
   public List<ArithmeticFunctionUnitBlock> fpFunctionUnitBlocks;
   public IssueWindowBlock aluIssueWindowBlock;
   public IssueWindowBlock fpIssueWindowBlock;
-  
   public CodeBranchInterpreter branchInterpreter;
   public List<BranchFunctionUnitBlock> branchFunctionUnitBlocks;
   public IssueWindowBlock branchIssueWindowBlock;
-  
   // Load/Store
   public List<LoadStoreFunctionUnit> loadStoreFunctionUnits;
   public IssueWindowBlock loadStoreIssueWindowBlock;
-  
   // Memory
   public List<MemoryAccessUnit> memoryAccessUnits;
-  
   public SimulatedMemory simulatedMemory;
-  
   public IssueWindowSuperBlock issueWindowSuperBlock;
-  
-  // ROB "without the state"
   public ReorderBufferBlock reorderBufferBlock;
-  
   /**
    * @brief Debug log for debugging/presentation purposes
    */
-  DebugLog debugLog;
+  public DebugLog debugLog;
+  /**
+   * Logger, hidden from serialization
+   */
+  @JsonIgnore
+  Logger logger = Logger.getLogger(CpuState.class.getName());
   
   public CpuState()
   {
     // Empty constructor for serialization
   }
   
-  public CpuState(SimulationConfig config, InitLoader initLoader)
+  public CpuState(SimulationConfig config, IDataProvider staticDataProvider)
   {
-    this.initState(config, initLoader);
+    this.initState(config, staticDataProvider);
   }
   
   /**
    * @brief Initialize the CPU state - given the configuration.
    */
-  public void initState(SimulationConfig config, InitLoader initLoader)
+  public void initState(SimulationConfig config, IDataProvider staticDataProvider)
   {
     this.tick            = 0;
     this.managerRegistry = new ManagerRegistry();
+    
+    // Load assets (register files, function models)
+    RegisterFile                          registerFile   = staticDataProvider.getRegisterFile();
+    Map<String, RegisterModel>            registerMap    = registerFile.getRegisterMap(true);
+    Map<String, InstructionFunctionModel> functionModels = staticDataProvider.getInstructionFunctionModels();
     
     // Factories (for tracking instances of models)
     InputCodeModelFactory inputCodeModelFactory = new InputCodeModelFactory(managerRegistry.inputCodeManager);
@@ -152,10 +150,8 @@ public class CpuState implements Serializable
     RegisterModelFactory  registerModelFactory  = new RegisterModelFactory(managerRegistry.registerModelManager);
     
     // Hack to load all function models and registers to manager
-    initLoader.getInstructionFunctionModels()
-            .forEach((name, model) -> managerRegistry.instructionFunctionManager.addInstance(model));
-    initLoader.getRegisterFile().getRegisterMap(false)
-            .forEach((name, model) -> managerRegistry.registerModelManager.addInstance(model));
+    registerFile.getRegisterFileModelList()
+            .forEach((model) -> managerRegistry.registerModelManager.addAllInstances(model.getRegisterList()));
     
     this.statistics      = new SimulationStatistics(-1, config.cpuConfig.coreClockFrequency, config.cpuConfig.fUnits);
     this.simulatedMemory = new SimulatedMemory(config.cpuConfig.storeLatency, config.cpuConfig.loadLatency, statistics);
@@ -164,10 +160,9 @@ public class CpuState implements Serializable
     // Parse code and allocate memory locations
     //
     
-    CodeParser codeParser = new CodeParser(initLoader.getInstructionFunctionModels(), initLoader.getRegisterFile(),
-                                           inputCodeModelFactory, config.memoryLocations);
+    CodeParser codeParser = new CodeParser(functionModels, registerMap, inputCodeModelFactory, config.memoryLocations);
     codeParser.parseCode(config.code, false); // false to avoid duplicate work
-    if (!codeParser.success())
+    if (codeParser.hasErrors())
     {
       throw new IllegalStateException("Code parsing failed: " + codeParser.getErrorMessages());
     }
@@ -175,12 +170,11 @@ public class CpuState implements Serializable
     
     // Initialize memory. This is linked to the values of labels in code, so relocating the labels changes the values in code
     MemoryInitializer memoryInitializer = new MemoryInitializer(128, config.cpuConfig.callStackSize);
-    memoryInitializer.setLabels(codeParser.getLabels());
-    memoryInitializer.addLocations(codeParser.getMemoryLocations());
+    memoryInitializer.setSymbolTable(codeParser.getSymbolTable());
     memoryInitializer.initializeMemory(simulatedMemory);
     
     codeParser.fillImmediateValues();
-    if (!codeParser.success())
+    if (codeParser.hasErrors())
     {
       throw new IllegalStateException("Code parsing failed: " + codeParser.getErrorMessages());
     }
@@ -190,13 +184,14 @@ public class CpuState implements Serializable
     codeParser.getInstructions()
             .forEach(ins -> statistics.staticInstructionMix.increment(ins.getInstructionTypeEnum()));
     
-    InstructionFunctionModel nopFM = initLoader.getInstructionFunctionModel("nop");
+    InstructionFunctionModel nopFM = functionModels.get("nop");
     InputCodeModel nop = inputCodeModelFactory.createInstance(nopFM, new ArrayList<>(),
-                                                              codeParser.getInstructions().size());
-    this.instructionMemoryBlock = new InstructionMemoryBlock(codeParser.getInstructions(), codeParser.getLabels(), nop);
+                                                              codeParser.getInstructions().size(), null);
+    this.instructionMemoryBlock = new InstructionMemoryBlock(codeParser.getInstructions(), codeParser.getSymbolTable(),
+                                                             nop);
     
     // Create memory
-    this.unifiedRegisterFileBlock = new UnifiedRegisterFileBlock(initLoader, config.cpuConfig.speculativeRegisters,
+    this.unifiedRegisterFileBlock = new UnifiedRegisterFileBlock(registerMap, config.cpuConfig.speculativeRegisters,
                                                                  registerModelFactory);
     this.debugLog                 = new DebugLog(unifiedRegisterFileBlock);
     // Set the sp to the end of the stack
@@ -207,7 +202,7 @@ public class CpuState implements Serializable
     }
     else
     {
-      System.err.println("Warning: sp register not found. Not setting stack pointer.");
+      logger.warning("sp register not found. Not setting stack pointer.");
     }
     
     // Set the ra to the exit address
@@ -218,25 +213,19 @@ public class CpuState implements Serializable
     }
     else
     {
-      System.err.println("Warning: ra register not found or explicitly overwritten. Not setting exit address.");
+      logger.warning("ra register not found or explicitly overwritten. Not setting exit address.");
     }
     
     this.renameMapTableBlock = new RenameMapTableBlock(unifiedRegisterFileBlock);
     
-    this.globalHistoryRegister = new GlobalHistoryRegister(10);
-    PatternHistoryTable.PredictorType predictorType = switch (config.cpuConfig.predictorType)
-    {
-      case "0bit" -> PatternHistoryTable.PredictorType.ZERO_BIT_PREDICTOR;
-      case "1bit" -> PatternHistoryTable.PredictorType.ONE_BIT_PREDICTOR;
-      case "2bit" -> PatternHistoryTable.PredictorType.TWO_BIT_PREDICTOR;
-      default ->
-              throw new IllegalStateException("Unexpected value for predictor type: " + config.cpuConfig.predictorType);
-    };
+    // TODO: test sharing for small global history
+    this.globalHistoryRegister = new GlobalHistoryRegister(8);
+    BitPredictor defaultPredictor = new BitPredictor(config.cpuConfig.predictorType,
+                                                     config.cpuConfig.predictorDefaultState);
     
-    boolean[] defaultTaken = getDefaultTaken(config.cpuConfig);
-    
-    this.patternHistoryTable = new PatternHistoryTable(config.cpuConfig.phtSize, defaultTaken, predictorType);
-    this.gShareUnit          = new GShareUnit(1024, this.globalHistoryRegister, this.patternHistoryTable);
+    this.patternHistoryTable = new PatternHistoryTable(config.cpuConfig.phtSize, defaultPredictor);
+    this.gShareUnit          = new GShareUnit(1024, config.cpuConfig.useGlobalHistory, this.globalHistoryRegister,
+                                              this.patternHistoryTable);
     this.branchTargetBuffer  = new BranchTargetBuffer(config.cpuConfig.btbSize);
     
     ReplacementPoliciesEnum replacementPoliciesEnum = switch (config.cpuConfig.cacheReplacement)
@@ -249,12 +238,7 @@ public class CpuState implements Serializable
     };
     
     // Define memory
-    boolean writeBack = true;
-    if (!Objects.equals(config.cpuConfig.storeBehavior, "write-back"))
-    {
-      throw new IllegalStateException("Unexpected value for store behavior: " + config.cpuConfig.storeBehavior);
-    }
-    
+    boolean writeBack = config.cpuConfig.storeBehavior.equals("write-back");
     if (config.cpuConfig.useCache)
     {
       this.cache = new Cache(simulatedMemory, config.cpuConfig.cacheLines, config.cpuConfig.cacheAssoc,
@@ -275,7 +259,7 @@ public class CpuState implements Serializable
     int entryPoint;
     if (config.entryPoint instanceof String)
     {
-      Label label = instructionMemoryBlock.getLabels().get((String) config.entryPoint);
+      Symbol label = instructionMemoryBlock.getLabels().get((String) config.entryPoint);
       if (label == null)
       {
         throw new IllegalArgumentException("Label " + config.entryPoint + " not found");
@@ -295,8 +279,7 @@ public class CpuState implements Serializable
     
     this.branchInterpreter      = new CodeBranchInterpreter();
     this.decodeAndDispatchBlock = new DecodeAndDispatchBlock(instructionFetchBlock, renameMapTableBlock,
-                                                             globalHistoryRegister, branchTargetBuffer,
-                                                             instructionMemoryBlock, config.cpuConfig.fetchWidth,
+                                                             branchTargetBuffer, config.cpuConfig.fetchWidth,
                                                              statistics, branchInterpreter);
     
     
@@ -304,24 +287,14 @@ public class CpuState implements Serializable
     this.arithmeticInterpreter = new CodeArithmeticInterpreter();
     
     // Memory blocks
-    this.storeBufferBlock = new StoreBufferBlock(config.cpuConfig.sbSize, unifiedRegisterFileBlock);
-    this.loadBufferBlock  = new LoadBufferBlock(config.cpuConfig.lbSize, storeBufferBlock, unifiedRegisterFileBlock);
-    
-    // FUs
-    this.aluIssueWindowBlock       = new IssueWindowBlock(InstructionTypeEnum.kIntArithmetic);
-    this.branchIssueWindowBlock    = new IssueWindowBlock(InstructionTypeEnum.kJumpbranch);
-    this.fpIssueWindowBlock        = new IssueWindowBlock(InstructionTypeEnum.kFloatArithmetic);
-    this.loadStoreIssueWindowBlock = new IssueWindowBlock(InstructionTypeEnum.kLoadstore);
-    
-    this.issueWindowSuperBlock = new IssueWindowSuperBlock(decodeAndDispatchBlock,
-                                                           List.of(aluIssueWindowBlock, fpIssueWindowBlock,
-                                                                   branchIssueWindowBlock, loadStoreIssueWindowBlock));
+    this.storeBufferBlock = new StoreBufferBlock(config.cpuConfig.sbSize);
+    this.loadBufferBlock  = new LoadBufferBlock(config.cpuConfig.lbSize, storeBufferBlock);
     
     // ROB
     this.reorderBufferBlock = new ReorderBufferBlock(config.cpuConfig.robSize, config.cpuConfig.commitWidth,
                                                      renameMapTableBlock, decodeAndDispatchBlock, storeBufferBlock,
-                                                     loadBufferBlock, issueWindowSuperBlock, gShareUnit,
-                                                     branchTargetBuffer, instructionFetchBlock, statistics,
+                                                     loadBufferBlock, gShareUnit, branchTargetBuffer,
+                                                     instructionFetchBlock, statistics,
                                                      memoryInitializer.getExitPointer(), debugLog);
     
     this.arithmeticFunctionUnitBlocks = new ArrayList<>();
@@ -335,20 +308,16 @@ public class CpuState implements Serializable
       {
         case FX ->
         {
-          List<String> allowedOperators = fu.getAllowedOperations();
           ArithmeticFunctionUnitBlock functionBlock = new ArithmeticFunctionUnitBlock(fu, fpIssueWindowBlock,
-                                                                                      allowedOperators, statistics);
-          functionBlock.addArithmeticInterpreter(arithmeticInterpreter);
-          this.aluIssueWindowBlock.addFunctionUnit(functionBlock);
+                                                                                      statistics,
+                                                                                      arithmeticInterpreter);
           this.arithmeticFunctionUnitBlocks.add(functionBlock);
         }
         case FP ->
         {
-          List<String> allowedOperators = fu.getAllowedOperations();
           ArithmeticFunctionUnitBlock functionBlock = new ArithmeticFunctionUnitBlock(fu, fpIssueWindowBlock,
-                                                                                      allowedOperators, statistics);
-          functionBlock.addArithmeticInterpreter(arithmeticInterpreter);
-          this.fpIssueWindowBlock.addFunctionUnit(functionBlock);
+                                                                                      statistics,
+                                                                                      arithmeticInterpreter);
           this.fpFunctionUnitBlocks.add(functionBlock);
         }
         case L_S ->
@@ -356,14 +325,12 @@ public class CpuState implements Serializable
           LoadStoreFunctionUnit loadStoreFunctionUnit = new LoadStoreFunctionUnit(fu, loadStoreIssueWindowBlock,
                                                                                   loadBufferBlock, storeBufferBlock,
                                                                                   loadStoreInterpreter, statistics);
-          this.loadStoreIssueWindowBlock.addFunctionUnit(loadStoreFunctionUnit);
           this.loadStoreFunctionUnits.add(loadStoreFunctionUnit);
         }
         case Branch ->
         {
           BranchFunctionUnitBlock branchFunctionUnitBlock = new BranchFunctionUnitBlock(fu, branchIssueWindowBlock,
                                                                                         branchInterpreter, statistics);
-          this.branchIssueWindowBlock.addFunctionUnit(branchFunctionUnitBlock);
           this.branchFunctionUnitBlocks.add(branchFunctionUnitBlock);
         }
         case Memory ->
@@ -375,42 +342,23 @@ public class CpuState implements Serializable
           this.storeBufferBlock.addMemoryAccessUnit(memoryAccessUnit);
           this.memoryAccessUnits.add(memoryAccessUnit);
         }
-        default -> throw new IllegalStateException("Unexpected FU type: " + fu.fuType);
       }
+      
+      // Issues
+      // The lists must be unmodifiable because of upcasting
+      this.aluIssueWindowBlock       = new IssueWindowBlock(InstructionTypeEnum.kIntArithmetic,
+                                                            Collections.unmodifiableList(arithmeticFunctionUnitBlocks));
+      this.branchIssueWindowBlock    = new IssueWindowBlock(InstructionTypeEnum.kJumpbranch,
+                                                            Collections.unmodifiableList(branchFunctionUnitBlocks));
+      this.fpIssueWindowBlock        = new IssueWindowBlock(InstructionTypeEnum.kFloatArithmetic,
+                                                            Collections.unmodifiableList(fpFunctionUnitBlocks));
+      this.loadStoreIssueWindowBlock = new IssueWindowBlock(InstructionTypeEnum.kLoadstore,
+                                                            Collections.unmodifiableList(loadStoreFunctionUnits));
+      
+      this.issueWindowSuperBlock = new IssueWindowSuperBlock(reorderBufferBlock, aluIssueWindowBlock,
+                                                             fpIssueWindowBlock, branchIssueWindowBlock,
+                                                             loadStoreIssueWindowBlock);
     }
-  }
-  
-  /**
-   * @param config The configuration
-   *
-   * @brief Get the default state for the predictor from the configuration
-   */
-  private static boolean[] getDefaultTaken(CpuConfig config)
-  {
-    boolean[] defaultTaken;
-    if (config.predictorType.equals("0bit") || config.predictorType.equals("1bit"))
-    {
-      if (!Objects.equals(config.predictorDefault, "Taken") && !Objects.equals(config.predictorDefault, "Not Taken"))
-      {
-        throw new IllegalStateException("Unexpected value for 0bit/1bit predictor: " + config.predictorDefault);
-      }
-      boolean take = config.predictorDefault.equals("taken");
-      defaultTaken = new boolean[]{take};
-    }
-    else
-    {
-      assert config.predictorType.equals("2bit");
-      defaultTaken = switch (config.predictorDefault)
-      {
-        case "Strongly Not Taken" -> new boolean[]{false, false};
-        case "Weakly Not Taken" -> new boolean[]{true, false};
-        case "Weakly Taken" -> new boolean[]{false, true};
-        case "Strongly Taken" -> new boolean[]{true, true};
-        default -> throw new IllegalStateException("Unexpected value for 2bit predictor: " + config.predictorDefault);
-      };
-    }
-    defaultTaken[0] = config.predictorDefault.equals("taken");
-    return defaultTaken;
   }
   
   /**
@@ -454,9 +402,9 @@ public class CpuState implements Serializable
   }
   
   /**
-   * @brief Calls all blocks and tell them to update their values (triggered by GlobalTimer)
-   * Runs ROB at the end again
-   * Mutates the object - if you want to keep the state, use `deepCopy()` first.
+   * @brief Calls all blocks and tell them to update their values.
+   * Mutates the object - if you want to keep the state, create a copy of cpu first.
+   * @details Runs each block once in a specific order. FUs are run in two phases.
    */
   public void step()
   {
@@ -468,32 +416,27 @@ public class CpuState implements Serializable
     }
     // rob
     reorderBufferBlock.simulate(tick);
+    // Empty all FUs
+    arithmeticFunctionUnitBlocks.forEach(arithmeticFunctionUnitBlock -> arithmeticFunctionUnitBlock.emptyIfDone());
+    fpFunctionUnitBlocks.forEach(arithmeticFunctionUnitBlock -> arithmeticFunctionUnitBlock.emptyIfDone());
+    loadStoreFunctionUnits.forEach(loadStoreFunctionUnit -> loadStoreFunctionUnit.emptyIfDone());
+    memoryAccessUnits.forEach(memoryAccessUnit -> memoryAccessUnit.emptyIfDone());
+    branchFunctionUnitBlocks.forEach(branchFunctionUnitBlock -> branchFunctionUnitBlock.emptyIfDone());
+    // run all AbstractIssueWindowBlock blocks
+    aluIssueWindowBlock.simulate(tick);
+    fpIssueWindowBlock.simulate(tick);
+    branchIssueWindowBlock.simulate(tick);
+    loadStoreIssueWindowBlock.simulate(tick);
+    storeBufferBlock.simulate(tick);
+    loadBufferBlock.simulate(tick);
     // Run all FUs
     arithmeticFunctionUnitBlocks.forEach(arithmeticFunctionUnitBlock -> arithmeticFunctionUnitBlock.simulate(tick));
     fpFunctionUnitBlocks.forEach(arithmeticFunctionUnitBlock -> arithmeticFunctionUnitBlock.simulate(tick));
     loadStoreFunctionUnits.forEach(loadStoreFunctionUnit -> loadStoreFunctionUnit.simulate(tick));
     memoryAccessUnits.forEach(memoryAccessUnit -> memoryAccessUnit.simulate(tick));
     branchFunctionUnitBlocks.forEach(branchFunctionUnitBlock -> branchFunctionUnitBlock.simulate(tick));
-    // Check which buffer contains older instruction at the top
-    // Null check first, if any is empty, the order does not matter
-    if (loadBufferBlock.getQueueSize() == 0 || storeBufferBlock.getQueueSize() == 0 || loadBufferBlock.getLoadQueueFirst()
-            .getIntegerId() < storeBufferBlock.getStoreQueueFirst().getIntegerId())
-    {
-      loadBufferBlock.simulate(tick);
-      storeBufferBlock.simulate(tick);
-    }
-    else
-    {
-      storeBufferBlock.simulate(tick);
-      loadBufferBlock.simulate(tick);
-    }
-    // run all AbstractIssueWindowBlock blocks
-    aluIssueWindowBlock.simulate(tick);
-    fpIssueWindowBlock.simulate(tick);
-    branchIssueWindowBlock.simulate(tick);
-    loadStoreIssueWindowBlock.simulate(tick);
-    //    issueWindowSuperBlock.simulate(tick);
-    reorderBufferBlock.simulate_issue(tick);
+    
+    issueWindowSuperBlock.simulate(tick); // put instructions into issue windows
     decodeAndDispatchBlock.simulate(tick);
     instructionFetchBlock.simulate(tick);
     // Stats
@@ -505,7 +448,8 @@ public class CpuState implements Serializable
   /**
    * The order of checks sets their priority.
    *
-   * @return Reason for stopping the simulation, or kNotStopped if the simulation is still running.
+   * @return Reason for stopping the simulation, or kNotStopped if the simulation should continue.
+   * @brief Gets the simulation status. The result controls if the simulation should continue.
    */
   public StopReason simStatus()
   {
@@ -527,8 +471,7 @@ public class CpuState implements Serializable
     boolean pcEnd         = instructionFetchBlock.getPc() >= instructionMemoryBlock.getCode().size() * 4;
     boolean renameEmpty   = decodeAndDispatchBlock.getCodeBuffer().isEmpty();
     boolean fetchNotEmpty = !instructionFetchBlock.getFetchedCode().isEmpty();
-    boolean nop           = fetchNotEmpty && instructionFetchBlock.getFetchedCode().get(0).getInstructionName()
-            .equals("nop");
+    boolean nop = fetchNotEmpty && instructionFetchBlock.getFetchedCode().get(0).getInstructionName().equals("nop");
     if (robEmpty && pcEnd && renameEmpty && nop)
     {
       return StopReason.kEndOfCode;

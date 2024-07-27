@@ -37,13 +37,13 @@ import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
 /**
- * @class GShareUnit
- * @brief Class containing GShare logic for indexing correct bit predictor
+ * @brief The interaction point between prediction and the rest of the CPU.
+ * @details Provides static and dynamic prediction, correlated and uncorrelated.
+ * <a href="https://courses.cs.washington.edu/courses/csep548/06au/lectures/branchPred.pdf">Useful link about Correlated Predictor.</a>
  */
 @JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
 public class GShareUnit
 {
-  
   /**
    * Table with all bit predictors
    */
@@ -52,6 +52,7 @@ public class GShareUnit
   
   /**
    * Bit array of branching history
+   * TODO: one architectural and a list of bit changes. The bits have to be marked with simcodeid, to know how many to flush.
    */
   @JsonIdentityReference(alwaysAsId = true)
   private GlobalHistoryRegister globalHistoryRegister;
@@ -61,28 +62,29 @@ public class GShareUnit
   private int size;
   
   /**
+   * True if the global history register is used.
+   * If false, the prediction is based only on the program counter and is no longer correlated with the history.
+   */
+  private boolean useGlobalHistory;
+  
+  /**
    * @param size                  Size of the pattern table
+   * @param useGlobalHistory      True if the global history register is used
    * @param globalHistoryRegister Bit array of branching history
    * @param patternHistoryTable   Table with all bit predictors
    *
    * @brief Constructor
    */
-  public GShareUnit(int size, GlobalHistoryRegister globalHistoryRegister, PatternHistoryTable patternHistoryTable)
+  public GShareUnit(int size,
+                    boolean useGlobalHistory,
+                    GlobalHistoryRegister globalHistoryRegister,
+                    PatternHistoryTable patternHistoryTable)
   {
-    this.patternHistoryTable   = patternHistoryTable;
-    this.globalHistoryRegister = globalHistoryRegister;
     this.size                  = size;
+    this.useGlobalHistory      = useGlobalHistory;
+    this.globalHistoryRegister = globalHistoryRegister;
+    this.patternHistoryTable   = patternHistoryTable;
   }// end of Constructor
-  //----------------------------------------------------------------------
-  
-  /**
-   * @return Active Pattern History Table object
-   * @brief Get the current instance of the Pattern History Table
-   */
-  public PatternHistoryTable getPatternHistoryTable()
-  {
-    return patternHistoryTable;
-  }// end of getPatternHistoryTable
   //----------------------------------------------------------------------
   
   /**
@@ -91,26 +93,29 @@ public class GShareUnit
    * @return Predictor on the specified index
    * @brief Get predictor from PHT
    */
-  public IBitPredictor getPredictor(int programCounter)
+  public BitPredictor getPredictor(int programCounter)
   {
-    return this.patternHistoryTable.getPredictor(
-            (programCounter % size) ^ globalHistoryRegister.getRegisterValueAsInt());
+    int index = getPredictorIndex(programCounter);
+    return this.patternHistoryTable.getPredictor(index);
   }// end of getPredictor
   //----------------------------------------------------------------------
   
   /**
-   * @param programCounter Position of the branch instruction
-   * @param id             ID of the bit array history value
+   * Ignores two lowest bits of the instruction as they are always 0.
    *
-   * @return Predictor on the specified index
-   * @brief Get predictor from PHT with older GHT value
+   * @param programCounter Address of the branch instruction
+   *
+   * @return Index of the required predictor
    */
-  public IBitPredictor getPredictorFromOld(int programCounter, int id)
+  public int getPredictorIndex(int programCounter)
   {
-    return this.patternHistoryTable.getPredictor(
-            (programCounter % size) ^ globalHistoryRegister.getHistoryValueAsInt(id));
-  }// end of getPredictorFromOld
-  //----------------------------------------------------------------------
+    int index = (programCounter >> 2) % size;
+    if (useGlobalHistory)
+    {
+      index ^= globalHistoryRegister.getRegisterValue();
+    }
+    return index;
+  }// end of getPredictorIndex
   
   /**
    * @return GHT block object

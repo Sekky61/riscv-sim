@@ -36,14 +36,15 @@ import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.blocks.AbstractBlock;
-import com.gradle.superscalarsim.blocks.base.UnifiedRegisterFileBlock;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
-import com.gradle.superscalarsim.models.instruction.InputCodeArgument;
 import com.gradle.superscalarsim.models.instruction.SimCodeModel;
 import com.gradle.superscalarsim.models.memory.LoadBufferItem;
 import com.gradle.superscalarsim.models.memory.StoreBufferItem;
 
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * @class StoreBufferBlock
@@ -66,26 +67,18 @@ public class StoreBufferBlock implements AbstractBlock
   private final List<MemoryAccessUnit> memoryAccessUnitList;
   
   /**
-   * Class containing all registers, that simulator uses
-   */
-  @JsonIdentityReference(alwaysAsId = true)
-  private final UnifiedRegisterFileBlock registerFileBlock;
-  
-  /**
    * Store Buffer size
    */
   private int bufferSize;
   
   /**
-   * @param bufferSize        Interpreter for processing load store instructions
-   * @param registerFileBlock Class containing all registers, that simulator uses
+   * @param bufferSize Interpreter for processing load store instructions
    *
    * @brief Constructor
    */
-  public StoreBufferBlock(int bufferSize, UnifiedRegisterFileBlock registerFileBlock)
+  public StoreBufferBlock(int bufferSize)
   {
-    this.registerFileBlock = registerFileBlock;
-    this.bufferSize        = bufferSize;
+    this.bufferSize = bufferSize;
     
     this.storeQueue           = new ArrayDeque<>();
     this.memoryAccessUnitList = new ArrayList<>();
@@ -129,14 +122,6 @@ public class StoreBufferBlock implements AbstractBlock
   }// end of simulate
   //-------------------------------------------------------------------------------------------
   
-  /**
-   * @brief Resets the all the lists/stacks/variables in the store buffer
-   */
-  @Override
-  public void reset()
-  {
-    this.storeQueue.clear();
-  }// end of reset
   //-------------------------------------------------------------------------------------------
   
   /**
@@ -169,7 +154,7 @@ public class StoreBufferBlock implements AbstractBlock
   {
     for (StoreBufferItem item : this.storeQueue)
     {
-      RegisterReadinessEnum state = registerFileBlock.getRegister(item.getSourceRegister()).getReadiness();
+      RegisterReadinessEnum state = item.getSourceRegister().getReadiness();
       item.setSourceReady(state == RegisterReadinessEnum.kExecuted || state == RegisterReadinessEnum.kAssigned);
     }
   }// end of updateMapValues
@@ -235,8 +220,7 @@ public class StoreBufferBlock implements AbstractBlock
     {
       if (memoryAccessUnit.isFunctionUnitEmpty())
       {
-        memoryAccessUnit.resetCounter();
-        memoryAccessUnit.setSimCodeModel(storeItem.getSimCodeModel());
+        memoryAccessUnit.startExecuting(storeItem.getSimCodeModel());
         storeItem.setAccessingMemory(true);
         storeItem.setAccessingMemoryId(cycle);
         // todo: return here??
@@ -359,9 +343,7 @@ public class StoreBufferBlock implements AbstractBlock
    */
   public void addStoreToBuffer(SimCodeModel codeModel)
   {
-    InputCodeArgument argument = codeModel.getArgumentByName("rs2");
-    this.storeQueue.add(
-            new StoreBufferItem(codeModel, Objects.requireNonNull(argument).getValue(), codeModel.getIntegerId()));
+    this.storeQueue.add(new StoreBufferItem(codeModel, codeModel.getIntegerId()));
   }// end of addStoreToBuffer
   //-------------------------------------------------------------------------------------------
 }

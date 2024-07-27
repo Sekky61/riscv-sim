@@ -31,79 +31,23 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-'use client';
+import { FormBase } from './FormBase';
 
-import { Button } from '@/components/base/ui/button';
-import MemoryForm from '@/components/form/MemoryForm';
-import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
-import { removeMemoryLocation, selectActiveConfig } from '@/lib/redux/isaSlice';
-import clsx from 'clsx';
-import Head from 'next/head';
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+export const metadata = {
+  title: 'Memory Editor',
+  description: 'The memory editor page',
+};
 
+/**
+ * This is the main page for the memory editor.
+ * It allows the user to create, edit, and delete memory locations.
+ * It also allows the user to import and export memory locations.
+ */
 export default function HomePage() {
-  // Load the active ISA
-  const dispatch = useAppDispatch();
-  const activeIsa = useAppSelector(selectActiveConfig);
-  const [activeMemoryLocation, setActiveMemoryLocation] = useState('new');
-  const memoryLocations = activeIsa?.memoryLocations;
-
-  const handleDelete = () => {
-    // remove from redux
-    dispatch(removeMemoryLocation(activeMemoryLocation));
-    setActiveMemoryLocation('new');
-  };
-
   return (
     <main className='h-full'>
-      <Head>
-        <title>Memory</title>
-      </Head>
-      <h1 className='m-2 mb-6 text-2xl'>Memory Editor</h1>
-      <div className='flex h-full flex-col'>
-        <div className='flex divide-x'>
-          <div className='w-48 p-4 flex flex-col gap-4'>
-            {memoryLocations?.length === 0 && (
-              <div className='text-gray-400 text-sm text-center'>
-                No memory locations
-              </div>
-            )}
-            {memoryLocations.map((memoryLocation) => {
-              const isActive = memoryLocation.name === activeMemoryLocation;
-              const style = clsx(isActive ? 'bg-gray-100' : '');
-              return (
-                <Button
-                  variant='ghost'
-                  className={style}
-                  onClick={() => setActiveMemoryLocation(memoryLocation.name)}
-                >
-                  {memoryLocation.name}
-                </Button>
-              );
-            })}
-            <div className='mt-4 pt-4 border-t'>
-              <Button
-                variant='ghost'
-                className={clsx(
-                  'new' === activeMemoryLocation ? 'bg-gray-100' : '',
-                  'w-full',
-                )}
-                onClick={() => setActiveMemoryLocation('new')}
-              >
-                New
-              </Button>
-            </div>
-          </div>
-          <div className='p-4 flex-grow'>
-            <MemoryForm
-              existing={activeMemoryLocation !== 'new'}
-              memoryLocationName={activeMemoryLocation}
-              deleteCallback={handleDelete}
-            />
-          </div>
-        </div>
-      </div>
+      <h1>Memory Editor</h1>
+      <FormBase />
     </main>
   );
 }

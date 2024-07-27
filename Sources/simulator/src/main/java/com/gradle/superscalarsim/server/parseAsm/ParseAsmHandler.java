@@ -27,63 +27,67 @@
 
 package com.gradle.superscalarsim.server.parseAsm;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.gradle.superscalarsim.code.CodeParser;
-import com.gradle.superscalarsim.code.ParseError;
-import com.gradle.superscalarsim.loader.InitLoader;
+import com.gradle.superscalarsim.factories.InputCodeModelFactory;
+import com.gradle.superscalarsim.loader.StaticDataProvider;
 import com.gradle.superscalarsim.serialization.Serialization;
-import com.gradle.superscalarsim.server.IRequestDeserializer;
 import com.gradle.superscalarsim.server.IRequestResolver;
+import com.gradle.superscalarsim.server.ServerException;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Collections;
+import java.io.OutputStream;
 
 /**
  * @class CompileHandler
- * @brief Handler class for compile requests
- * Gets C code, calls the compiler, returns ASM for RISC-V
+ * @brief Handler class for assembly checking requests
+ * @details Gets assembly code, checks it for errors and returns them
  */
-public class ParseAsmHandler implements IRequestResolver<ParseAsmRequest, ParseAsmResponse>, IRequestDeserializer<ParseAsmRequest>
+public class ParseAsmHandler implements IRequestResolver<ParseAsmRequest, ParseAsmResponse>
 {
+  ObjectReader parseAsmReader = Serialization.getDeserializer().readerFor(ParseAsmRequest.class);
+  ObjectWriter parseAsmWriter = Serialization.getSerializer().writerFor(ParseAsmResponse.class);
   
-  public ParseAsmResponse resolve(ParseAsmRequest request)
+  public ParseAsmResponse resolve(ParseAsmRequest request) throws ServerException
   {
-    
-    ParseAsmResponse response;
-    if (request == null || request.code == null)
+    if (request == null)
     {
-      // Send error
-      response = new ParseAsmResponse(false, Collections.singletonList(
-              new ParseError("error", "Wrong request format. Expected JSON with 'code' object field")));
-    }
-    else
-    {
-      // Parse the code
-      InitLoader loader = new InitLoader();
-      CodeParser parser = new CodeParser(loader, request.config.memoryLocations);
-      
-      parser.parseCode(request.code);
-      
-      if (parser.success())
-      {
-        // Return success
-        response = new ParseAsmResponse(true, null);
-      }
-      else
-      {
-        // Return errors
-        response = new ParseAsmResponse(false, parser.getErrorMessages());
-      }
+      throw new ServerException("root", "Missing request body");
     }
     
-    return response;
+    if (request.code == null)
+    {
+      throw new ServerException("code", "Missing code field");
+    }
+    
+    if (request.memoryLocations == null)
+    {
+      throw new ServerException("memoryLocations", "Missing memoryLocations field");
+    }
+    
+    // Parse the code
+    StaticDataProvider provider = new StaticDataProvider();
+    CodeParser parser = new CodeParser(provider.getInstructionFunctionModels(),
+                                       provider.getRegisterFile().getRegisterMap(true), new InputCodeModelFactory(),
+                                       request.memoryLocations);
+    // The memory locations will not have address assigned (fill is not called), but it is not needed for checking
+    parser.parseCode(request.code);
+    
+    // todo success() or hasErrors()?
+    return new ParseAsmResponse(parser.success(), parser.getErrorMessages());
   }
   
   @Override
   public ParseAsmRequest deserialize(InputStream json) throws IOException
   {
-    ObjectMapper deserializer = Serialization.getDeserializer();
-    return deserializer.readValue(json, ParseAsmRequest.class);
+    return parseAsmReader.readValue(json);
+  }
+  
+  @Override
+  public void serialize(ParseAsmResponse response, OutputStream stream) throws IOException
+  {
+    parseAsmWriter.writeValue(stream, response);
   }
 }

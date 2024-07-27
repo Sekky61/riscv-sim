@@ -29,11 +29,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 
 import '@/styles/globals.css';
 
-import Navbar from '@/components/Navbar';
+import { Navbar } from '@/components/Navbar';
 
 /**
  * Layout of the simualtion page.
@@ -43,7 +43,7 @@ import Navbar from '@/components/Navbar';
 export default function Layout({ children }: { children: ReactNode }) {
   return (
     <>
-      <div className='w-12 relative z-30'>
+      <div className='w-14 relative z-30'>
         <Navbar />
       </div>
       <div className='relative flex-grow overflow-y-auto'>{children}</div>

@@ -138,7 +138,11 @@ export interface InstructionStats {
   committedCount: number;
   decoded: number;
   correctlyPredicted: number;
-  cacheMisses: number;
+  /**
+   * NULL for non-load/store instructions
+   */
+  cacheHits: number | null;
+  memoryAccesses: number | null;
 }
 
 export interface Cache {
@@ -157,6 +161,8 @@ export interface Cache {
   replacementPolicy: ReplacementPolicyModel;
   memory?: SimulatedMemory;
   statistics: Reference;
+  offsetBits: number;
+  indexBits: number;
 }
 export interface CacheLineModel {
   line: string; // base64 encoded
@@ -181,6 +187,7 @@ export interface SimulatedMemory {
 
 export interface MemoryTransaction {
   data?: number[];
+  handledBy: 'main_memory' | 'cache' | 'cache_with_miss' | null;
   mmuId: number;
   timestamp: number;
   address: number;
@@ -210,7 +217,6 @@ export interface ReorderBufferBlock {
   haltTarget: number;
   commitLimit: number;
   commitId: number;
-  speculativePulls: boolean;
   bufferSize: number;
   renameMapTableBlock?: RenameMapTableBlock;
   decodeAndDispatchBlock?: DecodeAndDispatchBlock;
@@ -234,7 +240,6 @@ export interface Entry {
 }
 
 export interface ManagerRegistry {
-  instructionFunctionManager: Record<string, InstructionFunctionModel>;
   inputCodeManager: Record<string, InputCodeModel>;
   simCodeManager: Record<string, SimCodeModel>;
   registerModelManager: Record<string, RegisterModel>;
@@ -244,13 +249,15 @@ export interface InstructionMemoryBlock {
   nop: Reference;
   code: Reference[];
   labels: {
-    [k: string]: Label;
+    [k: string]: AsmSymbol;
   };
 }
 
-export interface Label {
+export interface AsmSymbol {
   name: string;
-  address: RegisterDataContainer;
+  value: RegisterDataContainer;
+  memoryLocation: MemoryLocation | null;
+  type: 'LABEL' | 'DATA';
 }
 
 export type InstructionTypeEnum =
@@ -281,11 +288,8 @@ export type RegisterTypeEnum = 'kInt' | 'kFloat';
 
 export interface InputCodeModel {
   codeId: number;
-  instructionName: string;
-  conditionalBranch: boolean;
-  arguments: InputCodeArgument[];
-  instructionTypeEnum: InstructionTypeEnum;
   instructionFunctionModel: Reference;
+  arguments: InputCodeArgument[];
   debugInfo: DebugInfo;
 }
 
@@ -303,12 +307,16 @@ export interface InputCodeArgument {
 export interface InstructionFunctionModel {
   name: string;
   instructionType: InstructionTypeEnum;
-  arguments: Argument[];
+  arguments: InstructionArgument[];
   interpretableAs: string;
   unconditionalJump: boolean;
+  /**
+   * Tokens for syntax of the instruction
+   */
+  syntaxTemplate: string[];
 }
 
-export interface Argument {
+export interface InstructionArgument {
   name: string;
   type: DataTypeEnum;
   defaultValue?: string;
@@ -321,31 +329,35 @@ export interface Argument {
 
 export interface SimCodeModel {
   id: number;
-  fetchId: number;
   inputCodeModel: Reference;
   renamedArguments: InputCodeArgument[];
   issueWindowId: number;
+  fetchId: number;
   functionUnitId: number;
   readyId: number;
   commitId: number;
   isFinished: boolean;
   hasFailed: boolean;
-  branchPredicted: boolean;
-  branchLogicResult: boolean;
-  branchTarget: number;
+  branchInfo: BranchInfo | null;
   isValid: boolean;
   isBusy: boolean;
   isSpeculative: boolean;
   exception: InstructionException | null;
-  busy: boolean;
-  valid: boolean;
-  load: boolean;
-  readyToBeCommitted: boolean;
-  readyToExecute: boolean;
-  renamedCodeLine: string;
-  speculative: boolean;
   conditionalBranch: boolean;
   store: boolean;
+  load: boolean;
+  readyToExecute: boolean;
+  readyToBeCommitted: boolean;
+}
+
+export interface BranchInfo {
+  predictorVerdict: boolean;
+  predictedTarget: number;
+  branchCondition: boolean;
+  branchTarget: number;
+  branchComputedInDecode: boolean;
+  predictorIndex: number;
+  predictorStateBeforePrediction: number;
 }
 
 export interface InstructionException {
@@ -355,16 +367,31 @@ export interface InstructionException {
 }
 
 export interface GShareUnit {
+  size: number;
+  useGlobalHistory: boolean;
   patternHistoryTable?: PatternHistoryTable;
   globalHistoryRegister?: GlobalHistoryRegister;
-  size: number;
 }
 
 export interface UnifiedRegisterFileBlock {
+  /**
+   * Only architectural, but including aliases
+   */
   registerMap: {
     [k: string]: Reference;
   };
-  speculativeRegisterFile?: SpeculativeRegisterFile;
+  speculativeRegisterFile: SpeculativeRegisterFile;
+}
+
+export interface SpeculativeRegisterFile {
+  name: string;
+  numberOfRegisters: number;
+  /**
+   * Ref to RegisterModel
+   */
+  registers: {
+    [k: string]: StringReference;
+  };
 }
 
 export interface RegisterModel {
@@ -373,6 +400,12 @@ export interface RegisterModel {
   type: RegisterTypeEnum;
   value: RegisterDataContainer;
   readiness: RegisterReadinessEnum;
+  referenceCount: number;
+  /**
+   * Ref to RegisterModel
+   */
+  renames: StringReference[];
+  architecturalRegister: StringReference | null;
   speculative: boolean;
 }
 
@@ -384,13 +417,8 @@ export interface RegisterDataContainer {
 
 export interface RenameMapTableBlock {
   freeList: string[];
-  registerMap: {
-    [k: string]: RenameMapModel;
-  };
-  referenceMap: {
-    [k: string]: number;
-  };
   registerFileBlock?: UnifiedRegisterFileBlock;
+  allocatedSpeculativeRegistersCount: number;
 }
 export interface RenameMapModel {
   architecturalRegister: StringReference;
@@ -414,15 +442,12 @@ export interface SimCodeModelFactory {
 
 export interface DecodeAndDispatchBlock {
   codeBuffer: Reference[];
-  flush: boolean;
   stallFlag: boolean;
-  stalledPullCount: number;
   decodeBufferSize: number;
   instructionFetchBlock?: InstructionFetchBlock;
   renameMapTableBlock?: RenameMapTableBlock;
   globalHistoryRegister?: GlobalHistoryRegister;
   branchTargetBuffer?: BranchTargetBuffer;
-  instructionMemoryBlock?: InstructionMemoryBlock;
   statistics: Reference;
 }
 
@@ -454,12 +479,19 @@ export interface FunctionalUnitDescription {
   name: string;
   latency: number;
   fuType: 'FX' | 'FP' | 'L_S' | 'Branch' | 'Memory';
+  /**
+   * Only for FX and FP
+   */
   operations?: Capability[];
 }
 
 export type ArithmeticFunctionUnitBlock = AbstractFunctionUnitBlock;
 export type BranchFunctionUnitBlock = AbstractFunctionUnitBlock;
-export type MemoryAccessUnit = AbstractFunctionUnitBlock;
+export type LoadStoreFunctionUnit = AbstractFunctionUnitBlock;
+export type MemoryAccessUnit = AbstractFunctionUnitBlock & {
+  transaction: MemoryTransaction;
+  handledBy: string | null;
+};
 
 // L/S
 
@@ -468,11 +500,11 @@ export interface LoadBufferBlock {
   bufferSize: number;
   memoryAccessUnitList?: MemoryAccessUnit[];
   storeBufferBlock?: StoreBufferBlock;
-  registerFileBlock?: UnifiedRegisterFileBlock;
 }
+
 export interface LoadBufferItem {
   simCodeModel: Reference;
-  destinationRegister: string;
+  destinationRegister: StringReference;
   destinationReady: boolean;
   address: number;
   isAccessingMemory: boolean;
@@ -487,12 +519,11 @@ export interface StoreBufferBlock {
   storeQueue: StoreBufferItem[];
   bufferSize: number;
   memoryAccessUnitList?: MemoryAccessUnit[];
-  registerFileBlock?: UnifiedRegisterFileBlock;
 }
 
 export interface StoreBufferItem {
   simCodeModel: Reference;
-  sourceRegister: string;
+  sourceRegister: StringReference;
   sourceResultId: number;
   sourceReady: boolean;
   address: number;
@@ -516,27 +547,30 @@ export interface BranchTargetEntryModel {
   pcTag: number;
   isConditional: boolean;
   target: number;
-  instructionId: number;
-  commitId: number;
   conditional: boolean;
 }
 
+/**
+ * Invariant: shiftRegisters.length >= 1
+ */
 export interface GlobalHistoryRegister {
-  shiftRegister: boolean[];
-  history: {
-    [k: string]: boolean[];
-  };
   size: number;
+  shiftRegisters: Register[];
 }
-export interface PatternHistoryTable {
-  predictorMap: {
-    [address: number]: IBitPredictor;
-  };
-  size: number;
-  defaultPredictorClass: '0' | '1' | '2';
-  defaultTaken: boolean[];
+export interface Register {
+  shiftRegister: number;
+  codeId: number;
 }
 
-export interface IBitPredictor {
-  state: null | [boolean] | [boolean, boolean]; // todo, how does 0bit predictor look like?
+export interface PatternHistoryTable {
+  predictorMap: {
+    [k: string]: BitPredictor;
+  };
+  size: number;
+  defaultPredictor: BitPredictor;
+}
+
+export interface BitPredictor {
+  state: number;
+  bitWidth: number;
 }

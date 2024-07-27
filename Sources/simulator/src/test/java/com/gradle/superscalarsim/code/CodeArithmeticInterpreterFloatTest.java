@@ -8,7 +8,7 @@ import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.enums.RegisterTypeEnum;
 import com.gradle.superscalarsim.factories.RegisterModelFactory;
-import com.gradle.superscalarsim.loader.InitLoader;
+import com.gradle.superscalarsim.loader.StaticDataProvider;
 import com.gradle.superscalarsim.models.instruction.InputCodeArgument;
 import com.gradle.superscalarsim.models.instruction.InputCodeModel;
 import com.gradle.superscalarsim.models.instruction.SimCodeModel;
@@ -21,11 +21,12 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 public class CodeArithmeticInterpreterFloatTest
 {
   
-  private InitLoader initLoader;
+  private StaticDataProvider staticDataProvider;
   
   private CodeArithmeticInterpreter codeArithmeticInterpreter;
   
@@ -44,8 +45,9 @@ public class CodeArithmeticInterpreterFloatTest
     RegisterFileModel floatFile = new RegisterFileModelBuilder().hasName("float").hasDataType(RegisterTypeEnum.kFloat)
             .hasRegisterList(Arrays.asList(float1, float2, float3, float4)).build();
     
-    this.initLoader = new InitLoader();
-    urf             = new UnifiedRegisterFileBlock(initLoader, 320, new RegisterModelFactory());
+    this.staticDataProvider = new StaticDataProvider();
+    Map<String, RegisterModel> registerMap = new StaticDataProvider().getRegisterFile().getRegisterMap(true);
+    urf = new UnifiedRegisterFileBlock(registerMap, 320, new RegisterModelFactory());
     // This adds the reg files, but also creates speculative registers!
     urf.setRegistersWithList(new ArrayList<>());
     urf.loadRegisters(List.of(floatFile), new RegisterModelFactory());
@@ -59,8 +61,8 @@ public class CodeArithmeticInterpreterFloatTest
     InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rd").hasRegister("f1").build();
     InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("f2").build();
     InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("f3").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("fadd.s")
-            .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
+    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(staticDataProvider)
+            .hasInstructionName("fadd.s").hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
     Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel).value();
@@ -73,8 +75,8 @@ public class CodeArithmeticInterpreterFloatTest
     InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rd").hasRegister("f1").build();
     InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("f3").build();
     InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("f2").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("fsub.s")
-            .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
+    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(staticDataProvider)
+            .hasInstructionName("fsub.s").hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
     Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel).value();
@@ -87,8 +89,8 @@ public class CodeArithmeticInterpreterFloatTest
     InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rd").hasRegister("f1").build();
     InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("f2").build();
     InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("f3").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("fmul.s")
-            .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
+    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(staticDataProvider)
+            .hasInstructionName("fmul.s").hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
     Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel).value();
@@ -101,8 +103,8 @@ public class CodeArithmeticInterpreterFloatTest
     InputCodeArgument argument1 = new InputCodeArgumentBuilder(urf).hasName("rd").hasRegister("f1").build();
     InputCodeArgument argument2 = new InputCodeArgumentBuilder(urf).hasName("rs1").hasRegister("f2").build();
     InputCodeArgument argument3 = new InputCodeArgumentBuilder(urf).hasName("rs2").hasRegister("f3").build();
-    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(initLoader).hasInstructionName("fdiv.s")
-            .hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
+    InputCodeModel inputCodeModel = new InputCodeModelBuilder().hasLoader(staticDataProvider)
+            .hasInstructionName("fdiv.s").hasArguments(Arrays.asList(argument1, argument2, argument3)).build();
     SimCodeModel codeModel = new SimCodeModel(inputCodeModel, 0, 0);
     
     Expression.Variable v = this.codeArithmeticInterpreter.interpretInstruction(codeModel).value();

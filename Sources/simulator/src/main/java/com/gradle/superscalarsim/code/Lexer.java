@@ -38,6 +38,12 @@ import java.util.List;
 public class Lexer
 {
   /**
+   * Static list of supported directives.
+   */
+  public static final List<String> DIRECTIVES = List.of(".byte", ".hword", ".word", ".align", ".ascii", ".asciiz",
+                                                        ".string", ".skip", ".zero");
+  
+  /**
    * Parsed code
    */
   String code;
@@ -194,13 +200,22 @@ public class Lexer
           symbol.append(ch);
           nextChar();
         }
+        String string = symbol.toString();
+        // label has precedence over directive (.LC0: is a label)
         if (ch == ':')
         {
-          nextChar();
           // Save token without colon
-          return new CodeToken(line, columnStart, symbol.toString(), CodeToken.Type.LABEL);
+          nextChar();
+          return new CodeToken(line, columnStart, string, CodeToken.Type.LABEL);
         }
-        return new CodeToken(line, columnStart, symbol.toString(), CodeToken.Type.SYMBOL);
+        else if (DIRECTIVES.contains(string))
+        {
+          return new CodeToken(line, columnStart, string, CodeToken.Type.DIRECTIVE);
+        }
+        else
+        {
+          return new CodeToken(line, columnStart, string, CodeToken.Type.SYMBOL);
+        }
       }
     }
   }

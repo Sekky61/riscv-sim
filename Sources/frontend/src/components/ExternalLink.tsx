@@ -35,7 +35,10 @@ export interface CenterLayoutProps {
   children: React.ReactNode;
 }
 
-export default function ExternalLink({
+/**
+ * Link with an arrow
+ */
+export function ExternalLink({
   href,
   children,
   openInNewTab = false,
@@ -47,7 +50,6 @@ export default function ExternalLink({
       className='inline-flex items-center font-medium text-blue-600 hover:cursor-pointer hover:underline'
     >
       {children}
-      {/* biome-ignore lint/a11y/noSvgWithoutTitle: <explanation> */}
       <svg
         className='ml-2 h-4 w-4'
         aria-hidden='true'

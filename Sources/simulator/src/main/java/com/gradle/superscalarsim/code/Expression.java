@@ -60,6 +60,7 @@ import java.util.regex.Pattern;
  *   <li>'==' - Equal</li>
  *   <li>'!=' - Not equal</li>
  *   <li>'=' - Assign (left to the right)</li>
+ *   <li>'c=' - Assign (left to the right, casts)</li>
  *   <li>'pick' - Pick one of the two variables based on the value of the third variable (false picks the left one)</li>
  *   <li>'float' - Convert to float (does not change the bits, interpret cast)</li>
  *   <li>'bits' - Convert to bits (does not change the bits, interpret cast)</li>
@@ -106,7 +107,7 @@ public class Expression
   /**
    * List of supported binary operators
    */
-  public static String[] binaryOperators = new String[]{"+", "-", "*", "*w", "/", "%", "&", "|", "^", "<<", ">>", ">>>", ">", ">=", "<", "<=", "==", "!=", "="};
+  public static String[] binaryOperators = new String[]{"+", "-", "*", "*w", "/", "%", "&", "|", "^", "<<", ">>", ">>>", ">", ">=", "<", "<=", "==", "!=", "=", "c="};
   
   /**
    * List of all ternary operators
@@ -115,7 +116,7 @@ public class Expression
   
   public static String[] allOperators;
   
-  public static String[] baseOperators = new String[]{"bits", "=", "pick", "!", ">", ">=", "<", "<=", "==", "!="};
+  public static String[] baseOperators = new String[]{"bits", "=", "c=", "pick", "!", ">", ">=", "<", "<=", "==", "!="};
   
   public static String[] bitwiseOperators = new String[]{"&", "|", "^", "<<", ">>", ">>>"};
   
@@ -133,9 +134,11 @@ public class Expression
     decimalPattern     = Pattern.compile("-?\\d+(\\.\\d+)?[fd]?");
     hexadecimalPattern = Pattern.compile("0x\\p{XDigit}+");
     
-    allOperators = new String[unaryOperators.length + binaryOperators.length];
+    allOperators = new String[unaryOperators.length + binaryOperators.length + ternaryOperators.length];
     System.arraycopy(unaryOperators, 0, allOperators, 0, unaryOperators.length);
     System.arraycopy(binaryOperators, 0, allOperators, unaryOperators.length, binaryOperators.length);
+    System.arraycopy(ternaryOperators, 0, allOperators, unaryOperators.length + binaryOperators.length,
+                     ternaryOperators.length);
   }
   
   /**
@@ -173,6 +176,10 @@ public class Expression
         {
           // Special handling for '=' operator (assign to the right/top variable)
           assignVariable(rVariable, lVariable);
+        }
+        else if (token.equals("c="))
+        {
+          castAssignVariable(rVariable, lVariable);
         }
         else
         {
@@ -280,16 +287,27 @@ public class Expression
     {
       throw new IllegalArgumentException("Left side of '=' operator must be of the same type as right side");
     }
-    // Assign value, with some special handling for boolean
-    // Alternatively add the cast operator
     
     if (to.isConstant)
     {
       // Assigning to a constant does not change the value
       return;
     }
+    to.value.copyFrom(from.value);
+  }
+  
+  private static void castAssignVariable(Variable to, Variable from)
+  {
+    boolean toBool    = to.type == DataTypeEnum.kBool;
+    boolean fromBool  = from.type == DataTypeEnum.kBool;
+    boolean toInt     = to.type == DataTypeEnum.kInt || to.type == DataTypeEnum.kUInt;
+    boolean fromInt   = from.type == DataTypeEnum.kInt || from.type == DataTypeEnum.kUInt;
+    boolean toLong    = to.type == DataTypeEnum.kLong || to.type == DataTypeEnum.kULong;
+    boolean fromLong  = from.type == DataTypeEnum.kLong || from.type == DataTypeEnum.kULong;
+    boolean toFloat   = to.type == DataTypeEnum.kFloat || to.type == DataTypeEnum.kDouble;
+    boolean fromFloat = from.type == DataTypeEnum.kFloat || from.type == DataTypeEnum.kDouble;
     
-    if (from.type == DataTypeEnum.kBool && to.type != DataTypeEnum.kBool)
+    if (fromBool && !toBool)
     {
       boolean value = (boolean) from.value.getValue(DataTypeEnum.kBool);
       switch (to.type)
@@ -301,17 +319,63 @@ public class Expression
         default -> throw new IllegalArgumentException("Unknown type: " + to.type);
       }
     }
-    else if ((to.type == DataTypeEnum.kInt || to.type == DataTypeEnum.kUInt) && (from.type == DataTypeEnum.kLong || from.type == DataTypeEnum.kULong))
+    else if (toInt && fromLong)
     {
       // long to int - truncate
       long value    = (long) from.value.getValue(from.type);
       int  intValue = (int) value;
       to.value = RegisterDataContainer.fromValue(intValue);
     }
+    else if (toInt && fromFloat)
+    {
+      // float/double to int - truncate
+      double value;
+      if (from.type == DataTypeEnum.kFloat)
+      {
+        value = (float) from.value.getValue(from.type);
+      }
+      else
+      {
+        value = (double) from.value.getValue(from.type);
+      }
+      int intValue = (int) value;
+      to.value = RegisterDataContainer.fromValue(intValue);
+    }
+    else if (toLong && fromFloat)
+    {
+      // float/double to long - truncate
+      double value;
+      if (from.type == DataTypeEnum.kFloat)
+      {
+        value = (float) from.value.getValue(from.type);
+      }
+      else
+      {
+        value = (double) from.value.getValue(from.type);
+      }
+      long longValue = (long) value;
+      to.value = RegisterDataContainer.fromValue(longValue);
+    }
+    else if (toFloat && fromInt)
+    {
+      // int to float
+      int   value      = (int) from.value.getValue(from.type);
+      float floatValue = (float) value;
+      to.value = RegisterDataContainer.fromValue(floatValue);
+    }
+    else if (toFloat && fromLong)
+    {
+      // long to float
+      long  value      = (long) from.value.getValue(from.type);
+      float floatValue = (float) value;
+      to.value = RegisterDataContainer.fromValue(floatValue);
+      
+    }
     else
     {
-      to.value.copyFrom(from.value);
+      throw new IllegalArgumentException("Invalid cast from " + from.type + " to " + to.type);
     }
+    
   }
   
   /**

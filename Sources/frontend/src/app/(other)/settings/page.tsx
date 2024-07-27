@@ -29,13 +29,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { SettingsForm } from '@/components/form/SettingsForm';
+import { DevTools } from './DevTools';
+import { SettingsForm } from './SettingsForm';
+
+export const metadata = {
+  title: 'Settings',
+  description: 'The settings page of the application',
+};
 
 export default function Page() {
   return (
     <main>
-      <h2 className='text-2xl mb-4'>Settings</h2>
+      <h1>Settings</h1>
       <SettingsForm />
+      <DevTools />
     </main>
   );
 }

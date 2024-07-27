@@ -29,108 +29,64 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { CodingHelp } from '@/app/(other)/help/CodingHelp';
+import { ShortcutsHelp } from '@/app/(other)/help/ShortcutsHelp';
+import Link from 'next/link';
+
+const feedbackEmail = 'misa@majer.cz';
+
+/**
+ * The help page of the application
+ * Shows coding tips and shortcuts
+ */
 export default function Page() {
   return (
-    <div className='grid grid-cols-2 gap-4'>
-      <section className='col-span-2'>
-        <h1 className='text-2xl'>Help</h1>
-        <p>This is the help page.</p>
-      </section>
+    <div className='flex flex-col gap-10 pb-16'>
       <section>
-        <h2>Tips</h2>
+        <h1 className='text-4xl'>Help</h1>
+        <p>How to operate this simulator?!</p>
+        <p>Here is the overview of the most important features.</p>
         <ul>
           <li>
-            When using the external definition of arrays, use{' '}
-            <code>extern T ptr[];</code> syntax (not a pointer!). See{' '}
-            <b>AXPY</b> example code.
+            Step through the simulation in the <Link href='/'>simulation</Link>{' '}
+            tab. The initial configuration is set for you.
+          </li>
+          <li>
+            Change the cpu parameters in the{' '}
+            <Link href='/isa'>configuration</Link> tab.
+          </li>
+          <li>
+            Write your own programs or try other <b>examples</b> the{' '}
+            <Link href='/compiler'>Code Editor</Link>.
+          </li>
+          <li>
+            Need to simulate on large data? Look at the{' '}
+            <Link href='/memory'>Memory</Link> tab.
           </li>
         </ul>
       </section>
       <section>
-        <h2 className='text-xl'>Navigation Shortcuts</h2>
-        <div className='flex flex-col gap-6'>
-          <div>
-            <div className='mb-2'>
-              Show <b>Simulation</b> tab
-            </div>
-            <kbd>1</kbd>
-          </div>
-          <div>
-            <div>
-              Show <b>Compiler</b> tab
-            </div>
-            <kbd>2</kbd>
-          </div>
-          <div>
-            <div className='mb-2'>
-              Show <b>Memory</b> tab
-            </div>
-            <kbd>3</kbd>
-          </div>
-          <div>
-            <div className='mb-2'>
-              Show <b>ISA settings</b> tab
-            </div>
-            <kbd>4</kbd>
-          </div>
-          <div>
-            <div>
-              Show <b>statistics</b> tab
-            </div>
-            <kbd>5</kbd>
-          </div>
-          <div>
-            <div>
-              Show <b>RISC-V documentation</b> tab
-            </div>
-            <kbd>6</kbd>
-          </div>
-          <div>
-            <div>
-              Show <b>Settings</b> tab
-            </div>
-            <kbd>7</kbd>
-          </div>
-          <div>
-            <div>
-              Show <b>Help</b> tab
-            </div>
-            <kbd>8</kbd>
-          </div>
-        </div>
+        <h2 id='code' className='text-2xl'>
+          Tips for writing code
+        </h2>
+        <CodingHelp />
       </section>
       <section>
-        <h2 className='text-xl'>Simulation Shortcuts</h2>
-        <div className='flex flex-col gap-6'>
-          <div>
-            <div className='mb-2'>Step simulation forward</div>
-            <kbd>→</kbd>
-          </div>
-          <div>
-            <div className='mb-2'>Step simulation backward</div>
-            <kbd>←</kbd>
-          </div>
-          <div>
-            <div className='mb-2'>Skip to the end of simulation</div>
-            <kbd>Ctrl</kbd> + <kbd>Enter</kbd>
-          </div>
-          <div>
-            <div className='mb-2'>Reload simulation</div>
-            <kbd>R</kbd>
-          </div>
-          <div>
-            <div className='mb-2'>Zoom in</div>
-            <kbd>Ctrl</kbd> + <kbd>+</kbd>
-          </div>
-          <div>
-            <div className='mb-2'>Zoom out</div>
-            <kbd>Ctrl</kbd> + <kbd>-</kbd>
-          </div>
-          <div>
-            <div className='mb-2'>Drag around</div>
-            Hold middle mouse button (wheel) and drag
-          </div>
-        </div>
+        <h2 className='text-2xl'>Shortcuts</h2>
+        <ShortcutsHelp />
+      </section>
+      <section>
+        <p className='mt-2'>
+          If you have any questions or feedback, feel free to reach out to me at{' '}
+          <a
+            href={`mailto:${feedbackEmail}`}
+            target='_blank'
+            rel='noopener noreferrer'
+            className='text-blue-500'
+          >
+            {feedbackEmail}
+          </a>
+        </p>
       </section>
     </div>
   );

@@ -33,7 +33,9 @@
 package com.gradle.superscalarsim.models.memory;
 
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gradle.superscalarsim.models.instruction.SimCodeModel;
+import com.gradle.superscalarsim.models.register.RegisterModel;
 
 /**
  * @class StoreBufferItem
@@ -41,11 +43,6 @@ import com.gradle.superscalarsim.models.instruction.SimCodeModel;
  */
 public class StoreBufferItem
 {
-  /**
-   * Name of the source register from where store takes the result
-   * TODO: change to a reference to the register
-   */
-  private final String sourceRegister;
   /**
    * ID used when getting correct store for bypassing
    */
@@ -79,15 +76,14 @@ public class StoreBufferItem
   private int memoryFailedId;
   
   /**
-   * @param sourceRegister Name of the source register from where store takes the result
-   * @param sourceId       ID used when getting correct store for bypassing
+   * @param simCodeModel Instruction itself
+   * @param sourceId     ID used when getting correct store for bypassing
    *
    * @brief Constructor
    */
-  public StoreBufferItem(SimCodeModel simCodeModel, String sourceRegister, int sourceId)
+  public StoreBufferItem(SimCodeModel simCodeModel, int sourceId)
   {
     this.simCodeModel   = simCodeModel;
-    this.sourceRegister = sourceRegister;
     this.sourceReady    = false;
     this.address        = -1;
     this.sourceResultId = sourceId;
@@ -186,10 +182,17 @@ public class StoreBufferItem
   /**
    * @return Name of the source register
    * @brief Get name of the source register
+   * @details Expects the instruction has a rs2 argument and that it is the data to store
    */
-  public String getSourceRegister()
+  @JsonProperty
+  @JsonIdentityReference(alwaysAsId = true)
+  public RegisterModel getSourceRegister()
   {
-    return sourceRegister;
+    if (simCodeModel == null)
+    {
+      return null;
+    }
+    return simCodeModel.getArgumentByName("rs2").getRegisterValue();
   }// end of getSourceRegister
   //-------------------------------------------------------------------------------------------
   

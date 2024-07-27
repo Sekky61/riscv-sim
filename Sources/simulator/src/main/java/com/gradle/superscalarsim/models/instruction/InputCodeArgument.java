@@ -33,6 +33,9 @@
 package com.gradle.superscalarsim.models.instruction;
 
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.gradle.superscalarsim.code.CodeToken;
 import com.gradle.superscalarsim.models.register.RegisterDataContainer;
 import com.gradle.superscalarsim.models.register.RegisterModel;
 
@@ -61,7 +64,8 @@ public class InputCodeArgument
    * Value of the argument.
    * Example: x5, 10, name of a label.
    */
-  private String stringValue;
+  @JsonIgnore
+  private CodeToken stringValue;
   
   /**
    * @param name  Name of the argument
@@ -69,7 +73,7 @@ public class InputCodeArgument
    *
    * @brief Constructor for textual argument
    */
-  public InputCodeArgument(final String name, final String value)
+  public InputCodeArgument(final String name, CodeToken value)
   {
     this.name          = name;
     this.stringValue   = value;
@@ -84,7 +88,7 @@ public class InputCodeArgument
   {
     this.name          = name;
     this.constantValue = constantValue;
-    this.stringValue   = constantValue.getStringRepresentation();
+    this.stringValue   = new CodeToken(0, 0, constantValue.getStringRepresentation(), CodeToken.Type.SYMBOL);
     this.registerValue = null;
   }// end of Constructor
   
@@ -99,7 +103,7 @@ public class InputCodeArgument
   {
     this.name          = name;
     this.registerValue = registerValue;
-    this.stringValue   = regName;
+    this.stringValue   = new CodeToken(0, 0, regName, CodeToken.Type.SYMBOL);
     this.constantValue = null;
   }// end of Constructor
   
@@ -111,7 +115,7 @@ public class InputCodeArgument
   public InputCodeArgument(final InputCodeArgument argument)
   {
     this.name          = argument.getName();
-    this.stringValue   = argument.getValue();
+    this.stringValue   = new CodeToken(argument.getValueToken());
     this.registerValue = argument.getRegisterValue();
     if (argument.getConstantValue() != null)
     {
@@ -133,14 +137,31 @@ public class InputCodeArgument
   }// end of getName
   
   /**
+   * @return True if the argument is a register
+   */
+  public boolean isRegister()
+  {
+    return registerValue != null;
+  }
+  
+  /**
    * @return Argument value
    * @brief Get value of the argument
    */
+  @JsonProperty("stringValue")
   public String getValue()
   {
-    return stringValue;
+    return stringValue.text();
   }// end of getValue
   //------------------------------------------------------
+  
+  /**
+   * @return string value in the form of CodeToken
+   */
+  public CodeToken getValueToken()
+  {
+    return stringValue;
+  }
   
   /**
    * @return Register value of the argument
@@ -184,7 +205,7 @@ public class InputCodeArgument
    */
   public void setStringValue(final String stringValue)
   {
-    this.stringValue = stringValue;
+    this.stringValue = new CodeToken(0, 0, stringValue, CodeToken.Type.SYMBOL);
   }// end of setValue
   //------------------------------------------------------
   

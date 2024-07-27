@@ -114,19 +114,33 @@ public class MemoryModel
   }
   
   /**
-   * @param id ID of the transaction
+   * A debug function.
    *
-   * @brief Reset the state of underlying memory
+   * @brief Get the data at address, regardless if it is in cache or memory
    */
-  public void reset()
+  public byte[] getData(long address, int size)
   {
     if (cache != null)
     {
-      cache.reset();
+      // Use cache
+      try
+      {
+        long   res  = cache.getData(address, size);
+        byte[] data = new byte[size];
+        for (int i = 0; i < size; i++)
+        {
+          data[i] = (byte) (res & 0xFF);
+          res >>= 8;
+        }
+        return data;
+      }
+      catch (Exception e)
+      {
+        // Ignore, try memory
+      }
     }
-    else
-    {
-      memory.reset();
-    }
+    
+    // Use memory
+    return memory.getFromMemory(address, size);
   }
 }

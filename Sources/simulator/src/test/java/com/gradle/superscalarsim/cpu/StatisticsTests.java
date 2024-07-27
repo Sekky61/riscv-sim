@@ -1,8 +1,11 @@
 package com.gradle.superscalarsim.cpu;
 
+import com.gradle.superscalarsim.blocks.branch.BitPredictor;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import static com.gradle.superscalarsim.blocks.branch.BitPredictor.NOT_TAKEN;
 
 public class StatisticsTests
 {
@@ -121,9 +124,9 @@ public class StatisticsTests
   public void testRobLoopFlush()
   {
     // Setup + exercise
-    cpuConfig.cpuConfig.predictorType    = "0bit";
-    cpuConfig.cpuConfig.predictorDefault = "Not Taken";
-    cpuConfig.code                       = """
+    cpuConfig.cpuConfig.predictorType         = BitPredictor.PredictorType.ZERO_BIT_PREDICTOR;
+    cpuConfig.cpuConfig.predictorDefaultState = NOT_TAKEN;
+    cpuConfig.code                            = """
             li t0, 0
                 li a1, 10
             .L2:
@@ -167,11 +170,11 @@ public class StatisticsTests
     cpu.execute(false);
     
     // Assert
-    Assert.assertEquals(0, cpu.cpuState.statistics.instructionStats.get(0).cacheMisses);
-    Assert.assertEquals(0, cpu.cpuState.statistics.instructionStats.get(1).cacheMisses);
-    Assert.assertEquals(1, cpu.cpuState.statistics.instructionStats.get(2).cacheMisses);
-    Assert.assertEquals(1, cpu.cpuState.statistics.instructionStats.get(3).cacheMisses);
-    Assert.assertEquals(0, cpu.cpuState.statistics.instructionStats.get(4).cacheMisses);
+    Assert.assertNull(cpu.cpuState.statistics.instructionStats.get(0).getCacheMisses());
+    Assert.assertNull(cpu.cpuState.statistics.instructionStats.get(1).getCacheMisses());
+    Assert.assertEquals(1, (int) cpu.cpuState.statistics.instructionStats.get(2).getCacheMisses());
+    Assert.assertEquals(1, (int) cpu.cpuState.statistics.instructionStats.get(3).getCacheMisses());
+    Assert.assertEquals(0, (int) cpu.cpuState.statistics.instructionStats.get(4).getCacheMisses());
   }
   
   @Test
@@ -190,6 +193,6 @@ public class StatisticsTests
     // 2 lines are loaded
     Assert.assertEquals(2 * 16, cpu.cpuState.statistics.mainMemoryLoadedBytes);
     // 1 cache miss
-    Assert.assertEquals(1, cpu.cpuState.statistics.instructionStats.get(3).cacheMisses);
+    Assert.assertEquals(1, (int) cpu.cpuState.statistics.instructionStats.get(3).getCacheMisses());
   }
 }

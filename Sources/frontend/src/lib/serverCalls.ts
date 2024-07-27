@@ -6,7 +6,7 @@
  *          Brno University of Technology
  *          xmajer21@stud.fit.vutbr.cz
  *
- * @brief   Call compiler API implementation
+ * @brief   Call API endpoints
  *
  * @date    19 September 2023, 22:00 (created)
  *
@@ -29,82 +29,111 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { SimulationConfig } from '@/lib/forms/Isa';
-import {
+import type {
   AsyncEndpointFunction,
   CompileRequest,
   CompileResponse,
+  EndpointMap,
   EndpointName,
+  InstructionDescriptionResponse,
   ParseAsmRequest,
   ParseAsmResponse,
+  ServerError,
   SimulateRequest,
   SimulateResponse,
 } from '@/lib/types/simulatorApi';
 
-import { CompilerOptions } from './redux/compilerSlice';
+import { apiBaseUrl } from '@/constant/env';
 
+/**
+ * Call the /compile endpoint
+ * @param request The compilation request (code, flags)
+ * @returns       The response from the server, or throws an error
+ */
 export async function callCompilerImpl(
-  code: string,
-  options: CompilerOptions,
+  request: CompileRequest,
 ): Promise<CompileResponse> {
-  const body: CompileRequest = {
-    code,
-    optimizeFlags: options.optimizeFlags,
-  };
-  return await callApi('compile' as const, body);
+  return callApi('compile' as const, request);
 }
 
+/**
+ * Call the /parseAsm endpoint
+ * @param request The parse request (code, config) (only memory is relevant)
+ * @returns    The response from the server, or throws an error
+ */
 export async function callParseAsmImpl(
-  code: string,
-  cfg: SimulationConfig, // Does not need code
+  request: ParseAsmRequest,
 ): Promise<ParseAsmResponse> {
-  const body: ParseAsmRequest = {
-    code,
-    config: cfg,
-  };
-  return await callApi('parseAsm' as const, body);
+  return callApi('parseAsm' as const, request);
 }
 
+/**
+ * Call the /simulate endpoint
+ * @param request The simulation request (code, memory, config, start address, number of cycles)
+ * @returns    The response from the server, or throws an error
+ */
 export async function callSimulationImpl(
-  tick: number | null,
-  cfg: SimulationConfig,
+  request: SimulateRequest,
 ): Promise<SimulateResponse> {
-  const body: SimulateRequest = {
-    tick,
-    config: cfg,
-  };
-  return await callApi('simulate' as const, body);
+  return callApi('simulate' as const, request);
+}
+
+/**
+ * Call the /instructionDescription endpoint
+ * @returns The response from the server, or throws an error
+ */
+export async function callInstructionDescriptionImpl(): Promise<InstructionDescriptionResponse> {
+  return callApi('instructionDescription' as const, {});
+}
+
+/**
+ * A custom exception for the case when the server returns an error.
+ */
+export class ServerErrorException extends Error {
+  constructor(obj: ServerError) {
+    super(`Server error: ${obj.message}`);
+  }
 }
 
 /**
  * Call the simulator server API. Parse the response as JSON.
+ * Throws an error if the response is not ok, it should be caught by the caller.
+ *
+ * Next.js proxies the backend simulator. Set the NEXT_PUBLIC_SIMSERVER_PORT and NEXT_PUBLIC_SIMSERVER_HOST env variables (see .env.example, Dockerfile).
+ * The default is the same host as the app is running on, but on port 8000.
  */
-async function callApi<T extends EndpointName>(
-  ...args: Parameters<AsyncEndpointFunction<T>>
-): Promise<ReturnType<AsyncEndpointFunction<T>>> {
-  const endpoint = args[0];
-  const request = args[1];
+const callApi: AsyncEndpointFunction = async <T extends EndpointName>(
+  endpoint: T,
+  request: EndpointMap[T]['request'],
+) => {
+  let apiUrl = '/api/sim/';
+  const isServer = typeof window === 'undefined';
+  if (isServer) {
+    // Running on server, use the actual server, not the Next.js proxy.
+    apiUrl = `${apiBaseUrl}/`;
+  }
 
-  const serverUrl = getSimulatorServerUrl();
+  const url = `${apiUrl}${endpoint}`;
 
-  const response = await fetch(`${serverUrl}/${endpoint}`, {
+  // In browser, the absolute path works (origin is defined), but on server (node.js) it needs a full URL.
+  // The only way to know the url at build time is to use an environment variable.
+  const response = await fetch(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(request),
   });
-  return response.json();
-}
 
-/**
- * The default is the same host as the app is running on, but on port 8000.
- * Can be overridden by setting the NEXT_PUBLIC_SIMSERVER_PORT and NEXT_PUBLIC_SIMSERVER_HOST env variables (see .env.example, Dockerfile).
- * @returns The URL of the simulator server
- */
-export function getSimulatorServerUrl(): string {
-  const hostName =
-    process.env.NEXT_PUBLIC_SIMSERVER_HOST ?? window.location.hostname;
-  const port = process.env.NEXT_PUBLIC_SIMSERVER_PORT ?? '8000';
-  return `http://${hostName}:${port}`;
-}
+  if (response.ok) {
+    // Deserialize the response. It is either the requested object or an error message.
+    return response.json();
+  }
+
+  if (response.status === 400) {
+    const error = await response.json();
+    throw new ServerErrorException(error);
+  }
+
+  throw new Error(`Network response was not ok: ${response.status}`);
+};

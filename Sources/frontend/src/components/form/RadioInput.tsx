@@ -37,9 +37,13 @@
 // - a simple `value` and `onNewValue` props
 
 import React from 'react';
-import { Control, FieldValues, Path, useController } from 'react-hook-form';
+import {
+  type Control,
+  type FieldValues,
+  type Path,
+  useController,
+} from 'react-hook-form';
 
-import { ReactClassName } from '@/lib/types/reactTypes';
 import { cn } from '@/lib/utils';
 
 import { Label } from '@/components/base/ui/label';
@@ -54,9 +58,10 @@ import * as RadioGroup from '@radix-ui/react-radio-group';
  * Uses radix ui for accessibility
  */
 
-interface RadioInputBaseProps<T extends string> extends ReactClassName {
+interface RadioInputBaseProps<T extends string> {
   choices: readonly T[];
   texts?: readonly string[];
+  className?: string;
 }
 
 type RadioInputProps<T extends string> = RadioInputBaseProps<T> & {
@@ -65,7 +70,8 @@ type RadioInputProps<T extends string> = RadioInputBaseProps<T> & {
 };
 
 /**
- * Uncontrolled radio input
+ * Uncontrolled radio input.
+ * Calls onNewValue callback on value change.
  */
 export function RadioInput<T extends string>({
   choices,
@@ -76,7 +82,7 @@ export function RadioInput<T extends string>({
   return (
     <RadioGroup.Root
       className={cn(
-        'radio-field flex h-10 items-center justify-stretch rounded-md bg-muted p-1 text-muted-foreground',
+        'radio-field flex h-10 items-center justify-evenly rounded-lg surface border p-1',
       )}
       value={value}
       onValueChange={onNewValue}
@@ -85,19 +91,18 @@ export function RadioInput<T extends string>({
         const inputId = `${choice}`;
         const text = texts ? texts[i] : choice;
         return (
-          <React.Fragment key={choice}>
-            <RadioGroup.Item value={choice} id={inputId}>
-              {/* <RadioGroup.Indicator className="flex items-center justify-center w-full h-full relative after:content-[''] after:block after:w-[11px] after:h-[11px] after:rounded-[50%] after:bg-violet11" /> */}
-            </RadioGroup.Item>
+          <RadioGroup.Item key={choice} value={choice} id={inputId}>
+            {/* <RadioGroup.Indicator className="flex items-center justify-center w-full h-full relative after:content-[''] after:block after:w-[11px] after:h-[11px] after:rounded-[50%] after:bg-violet11" /> */}
             <label
+              data-state={value === choice ? 'active' : 'inactive'}
               className={cn(
-                'hover:bg-white/60 cursor-pointer hover:text-gray-700 flex-grow inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
+                'cursor-pointer flex-grow inline-flex items-center justify-center whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-primary data-[state=active]:text-onPrimary data-[state=active]:shadow-sm',
               )}
               htmlFor={inputId}
             >
               {text}
             </label>
-          </React.Fragment>
+          </RadioGroup.Item>
         );
       })}
     </RadioGroup.Root>
@@ -165,7 +170,7 @@ export function RadioInputWithTitle<T extends FieldValues>({
               <Label htmlFor={name}>{title}&nbsp;&#9432;</Label>
             </TooltipTrigger>
             <TooltipContent>
-              <p>{hint}</p>
+              <p className='max-w-64 p-2'>{hint}</p>
             </TooltipContent>
           </Tooltip>
         ) : (

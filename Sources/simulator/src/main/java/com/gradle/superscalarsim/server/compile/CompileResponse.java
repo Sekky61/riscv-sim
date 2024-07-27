@@ -28,69 +28,91 @@
 package com.gradle.superscalarsim.server.compile;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.gradle.superscalarsim.code.ParseError;
 
 import java.util.List;
 
+/**
+ * Response for the /compile endpoint
+ */
 public class CompileResponse
 {
   /**
-   * @brief Whether the compilation was successful
+   * @brief Additional information about result of the compilation. Null if no additional information is available.
+   * <ul>
+   *   <li> "success" - Compilation succeeded</li>
+   *   <li> "warning" - Compilation succeeded, but there were warnings</li>
+   *   <li> "c" - C compilation failed</li>
+   *   <li> "asm" - Assembly compilation failed (errors are listed)</li>
+   *   <li> "internal" - Internal error</li>
+   * </ul>
    */
   @JsonProperty(required = true)
-  public boolean success;
-  
+  public String status;
   /**
-   * The RISC-V assembly code
+   * @brief A general, short message to the user.
+   * Can be null.
+   */
+  @JsonProperty(required = true)
+  public String message;
+  /**
+   * The RISC-V assembly code. Can be null if the compilation failed.
    */
   @JsonProperty(required = true)
   public String program;
-  
   /**
    * Mapping from ASM lines to C lines.
-   * The length of this list is the same as the length of the program
+   * The length of this list is the same as the length of the program.
+   * Can be null if the compilation failed.
+   * The indexing is one-based.
    */
   @JsonProperty(required = true)
-  public Integer[] asmToC;
-  
+  public List<Integer> asmToC;
   /**
-   * @brief A general, short error message
-   */
-  @JsonProperty(required = true)
-  public String error;
-  
-  /**
-   * @brief A detailed list of compiler errors
+   * @brief A detailed list of compiler errors and warnings from the C compilation.
+   * Can be null if the compilation was successful.
+   * @details Is of type Object because the type is complex.
    */
   @JsonProperty(required = true)
   public List<Object> compilerError;
+  /**
+   * @brief Errors and warnings from the analysis of the assembly code.
+   * Takes into account memory locations.
+   */
+  @JsonProperty(required = true)
+  public List<ParseError> asmErrors;
   
   public CompileResponse()
   {
-    this.success       = false;
+    this.status        = null;
     this.program       = null;
     this.asmToC        = null;
+    this.message       = null;
     this.compilerError = null;
+    this.asmErrors     = null;
   }
   
-  public CompileResponse(boolean success,
+  public CompileResponse(String status,
+                         String message,
                          String program,
                          List<Integer> asmToC,
-                         String error,
-                         List<Object> compilerError)
+                         List<Object> compilerError,
+                         List<ParseError> asmErrors)
   {
-    this.success       = success;
+    this.status        = status;
+    this.message       = message;
     this.program       = program;
-    this.asmToC        = asmToC.toArray(new Integer[0]);
-    this.error         = error;
+    this.asmToC        = asmToC;
     this.compilerError = compilerError;
+    this.asmErrors     = asmErrors;
   }
   
-  public static CompileResponse failure(String error, List<Object> compilerError)
+  /**
+   * @brief Whether the compilation was successful
+   */
+  @JsonProperty
+  public boolean success()
   {
-    CompileResponse res = new CompileResponse();
-    res.error         = error;
-    res.success       = false;
-    res.compilerError = compilerError;
-    return res;
+    return status.equals("success") || status.equals("warning");
   }
 }

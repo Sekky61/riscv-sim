@@ -40,8 +40,9 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "next.config.js"
-  ],
+    "next.config.mjs",
+    "tests",
+ "src/constant/env.js"  ],
   "exclude": [
     "node_modules"
   ],
@@ -51,3 +52,4 @@
     "node"
   ]
 }
+

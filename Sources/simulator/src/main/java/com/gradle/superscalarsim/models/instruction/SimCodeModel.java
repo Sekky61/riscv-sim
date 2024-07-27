@@ -34,7 +34,7 @@ package com.gradle.superscalarsim.models.instruction;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.code.Expression;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
@@ -73,19 +73,20 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
    */
   private final List<InputCodeArgument> renamedArguments;
   /**
-   * ID when the instruction was fetched
-   */
-  private int fetchId;
-  /**
    * ID, when was instructions accepted by the issue window
    */
   public int issueWindowId;
+  /**
+   * ID when the instruction was fetched
+   */
+  private int fetchId;
   /**
    * ID of the function block, which processed this instruction
    */
   private int functionUnitId;
   /**
    * ID marking when was result ready
+   * TODO: not set ever
    */
   private int readyId;
   /**
@@ -102,35 +103,20 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
    */
   private boolean hasFailed;
   /**
-   * Prediction made by branch predictor at the time of fetching.
-   * Used for branch instructions.
+   * Prediction and result of the branch computation.
+   * Null for non-branch instructions.
    */
-  private boolean branchPredicted;
-  /**
-   * Result of the branch computation.
-   * Used to check for mispredictions.
-   * True means branch was taken.
-   */
-  private boolean branchLogicResult;
-  /**
-   * Target of the branch instruction.
-   * NOT an offset. If you need offset, describe it in the interpretableAs field (see JAL instruction).
-   * Result of the branch actual computation, not the prediction.
-   * Used to fix BTB and PC in misprediction.
-   */
-  private int branchTarget;
+  private BranchInfo branchInfo;
   /**
    * Invalid instructions are scheduled to be removed from the system.
    * Instruction starts as valid and becomes invalid when it is flushed.
    */
   private boolean isValid;
-  
   /**
    * Instruction starts as busy and becomes not busy when the execution is finished.
    * Non-busy, non-speculative instructions are ready to be committed.
    */
   private boolean isBusy;
-  
   /**
    * Is instruction speculative?
    */
@@ -160,6 +146,8 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
     this.issueWindowId  = -1;
     this.functionUnitId = -1;
     
+    this.branchInfo = null;
+    
     isValid       = true;
     isBusy        = true;
     isSpeculative = false;
@@ -168,11 +156,21 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
     
     // Copy arguments
     this.renamedArguments = new ArrayList<>();
-    for (InputCodeArgument argument : inputCodeModel.getArguments())
+    for (InputCodeArgument argument : inputCodeModel.arguments())
     {
       this.renamedArguments.add(new InputCodeArgument(argument));
     }
   }// end of Constructor
+  
+  /**
+   * @return Target of the branch prediction. Can differ from the actual branch target, for example
+   * in the case of RET (function called from multiple places).
+   */
+  public int getBranchPredictionTarget()
+  {
+    assert branchInfo != null;
+    return branchInfo.predictedTarget;
+  }
   
   public InstructionException getException()
   {
@@ -208,6 +206,7 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
    * @return Boolean value of speculative bit
    * @brief Gets speculative bit
    */
+  @JsonIgnore
   public boolean isSpeculative()
   {
     return this.isSpeculative;
@@ -226,9 +225,20 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
   //------------------------------------------------------
   
   /**
+   * @brief Sets flag that branch was computed in decode stage.
+   * This information is used when assessing if the branch was mispredicted.
+   */
+  public void setBranchComputedInDecode()
+  {
+    assert branchInfo != null;
+    this.branchInfo.branchComputedInDecode = true;
+  }
+  
+  /**
    * @return Boolean value of busy bit
    * @brief Gets busy bit
    */
+  @JsonIgnore
   public boolean isBusy()
   {
     return this.isBusy;
@@ -247,6 +257,7 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
   /**
    * @return True if instruction is valid, false otherwise
    */
+  @JsonIgnore
   public boolean isValid()
   {
     return isValid;
@@ -279,18 +290,6 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
   {
     this.functionUnitId = functionUnitId;
   }// end of setFunctionUnitId
-  //------------------------------------------------------
-  
-  public int getReadyId()
-  {
-    return readyId;
-  }
-  //------------------------------------------------------
-  
-  public int getCommitId()
-  {
-    return commitId;
-  }
   //------------------------------------------------------
   
   /**
@@ -340,6 +339,7 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
    * @return Boolean value marking failure to finish
    * @brief Get the bit value corresponding to failure due to wrong prediction
    */
+  @JsonIgnore
   public boolean hasFailed()
   {
     return hasFailed;
@@ -357,34 +357,58 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
   }// end of setHasFailed
   //------------------------------------------------------
   
+  @JsonIgnore
+  public boolean isBranchComputedInDecode()
+  {
+    assert branchInfo != null;
+    return branchInfo.branchComputedInDecode;
+  }
+  
+  /**
+   * @return True if branch was predicted as taken, false otherwise
+   */
+  @JsonIgnore
   public boolean isBranchPredicted()
   {
-    return branchPredicted;
+    assert branchInfo != null;
+    return branchInfo.predictorVerdict;
   }
   
-  public void setBranchPredicted(boolean branchPredicted)
+  /**
+   * Initializes the branch prediction info.
+   */
+  public void registerBranch(int predictorIndex, int predictorState, boolean predictorVerdict, int predictedTarget)
   {
-    this.branchPredicted = branchPredicted;
+    branchInfo                                = new BranchInfo();
+    branchInfo.predictorVerdict               = predictorVerdict;
+    branchInfo.predictedTarget                = predictedTarget;
+    branchInfo.predictorIndex                 = predictorIndex;
+    branchInfo.predictorStateBeforePrediction = predictorState;
   }
   
+  @JsonIgnore
   public boolean isBranchLogicResult()
   {
-    return branchLogicResult;
+    assert branchInfo != null;
+    return branchInfo.branchCondition;
   }
   
   public void setBranchLogicResult(boolean branchLogicResult)
   {
-    this.branchLogicResult = branchLogicResult;
+    assert branchInfo != null;
+    this.branchInfo.branchCondition = branchLogicResult;
   }
   
   public int getBranchTarget()
   {
-    return branchTarget;
+    assert branchInfo != null;
+    return branchInfo.branchTarget;
   }
   
   public void setBranchTarget(int branchTarget)
   {
-    this.branchTarget = branchTarget;
+    assert branchInfo != null;
+    this.branchInfo.branchTarget = branchTarget;
   }
   
   /**
@@ -400,39 +424,22 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
    * Used for testing
    *
    * @return String with renamed code line
-   * @brief Gets string representation of the instruction with renamed arguments
+   * @brief Gets string representation of the instruction with renamed arguments (tags).
    */
-  @JsonProperty
   public String getRenamedCodeLine()
   {
-    StringBuilder genericLine = new StringBuilder(getInstructionName());
-    genericLine.append(" ");
-    List<InstructionFunctionModel.Argument> args = inputCodeModel.getInstructionFunctionModel().getAsmArguments();
-    for (int i = 0; i < args.size(); i++)
+    List<String>  template    = instructionFunctionModel().getSyntaxTemplate();
+    StringBuilder genericLine = new StringBuilder();
+    for (String token : template)
     {
-      boolean wrapInParens = inputCodeModel.getInstructionFunctionModel().getInstructionType()
-              .equals(InstructionTypeEnum.kLoadstore) && i == args.size() - 1;
-      if (i != 0)
+      InputCodeArgument argument = getArgumentByName(token);
+      if (argument != null)
       {
-        if (wrapInParens)
-        {
-          genericLine.append("(");
-        }
-        else
-        {
-          genericLine.append(",");
-        }
+        genericLine.append(argument.getValue());
       }
-      InstructionFunctionModel.Argument arg        = args.get(i);
-      InputCodeArgument                 renamedArg = getArgumentByName(arg.name());
-      if (renamedArg == null)
+      else
       {
-        throw new RuntimeException("Argument " + arg.name() + " not found in " + this);
-      }
-      genericLine.append(renamedArg.getValue());
-      if (wrapInParens)
-      {
-        genericLine.append(")");
+        genericLine.append(token);
       }
     }
     return genericLine.toString();
@@ -441,7 +448,7 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
   @Override
   public String getInstructionName()
   {
-    return inputCodeModel.getInstructionName();
+    return instructionFunctionModel().name();
   }
   
   /**
@@ -449,7 +456,7 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
    * @brief Gets arguments of the instruction, copied, so they are rewritable
    */
   @Override
-  public List<InputCodeArgument> getArguments()
+  public List<InputCodeArgument> arguments()
   {
     return renamedArguments;
   }
@@ -475,15 +482,15 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
    * @return ID of the instruction (index in the code)
    */
   @Override
-  public int getCodeId()
+  public int codeId()
   {
-    return inputCodeModel.getCodeId();
+    return inputCodeModel.codeId();
   }// end of getId
   
   @Override
-  public InstructionFunctionModel getInstructionFunctionModel()
+  public InstructionFunctionModel instructionFunctionModel()
   {
-    return inputCodeModel.getInstructionFunctionModel();
+    return inputCodeModel.instructionFunctionModel();
   }
   
   /**
@@ -501,16 +508,16 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
   public List<Expression.Variable> getVariables()
   {
     List<Expression.Variable> variables                = new ArrayList<>();
-    InstructionFunctionModel  instructionFunctionModel = getInstructionFunctionModel();
+    InstructionFunctionModel  instructionFunctionModel = instructionFunctionModel();
     
     variables.add(
             new Expression.Variable("pc", DataTypeEnum.kInt, RegisterDataContainer.fromValue(getSavedPc()), true));
     
-    for (InputCodeArgument var : getArguments())
+    for (InputCodeArgument var : arguments())
     {
-      InstructionFunctionModel.Argument argument   = instructionFunctionModel.getArgumentByName(var.getName());
-      RegisterDataContainer             val        = var.getConstantValue();
-      boolean                           isConstant = false;
+      InstructionArgument   argument   = instructionFunctionModel.getArgumentByName(var.getName());
+      RegisterDataContainer val        = var.getConstantValue();
+      boolean               isConstant = false;
       if (val == null)
       {
         // Try register
@@ -546,8 +553,8 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
     {
       return false;
     }
-    InstructionFunctionModel instruction = getInstructionFunctionModel();
-    return instruction != null && instruction.getInterpretableAs().startsWith("load");
+    InstructionFunctionModel instruction = instructionFunctionModel();
+    return instruction != null && instruction.interpretableAs().startsWith("load");
   }// end of isInstructionLoad
   
   /**
@@ -560,8 +567,8 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
     {
       return false;
     }
-    InstructionFunctionModel instruction = getInstructionFunctionModel();
-    return instruction != null && instruction.getInterpretableAs().startsWith("store");
+    InstructionFunctionModel instruction = instructionFunctionModel();
+    return instruction != null && instruction.interpretableAs().startsWith("store");
   }// end of isInstructionStore
   
   /**
@@ -569,7 +576,7 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
    */
   public boolean isReadyToExecute()
   {
-    for (InputCodeArgument argument : getArguments())
+    for (InputCodeArgument argument : arguments())
     {
       if (!argument.getName().startsWith("rs"))
       {
@@ -599,6 +606,62 @@ public class SimCodeModel implements IInputCodeModel, Comparable<SimCodeModel>, 
    */
   public DebugInfo getDebugInfo()
   {
-    return inputCodeModel.getDebugInfo();
+    return inputCodeModel.debugInfo();
+  }
+  
+  /**
+   * Additional information specific for branch instructions.
+   */
+  public static class BranchInfo
+  {
+    /**
+     * Prediction made by branch predictor at the time of fetch.
+     * True means the branch was predicted as taken and its target is predictedTarget.
+     * False means not taken (PC+4).
+     */
+    public boolean predictorVerdict;
+    /**
+     * Target of the branch prediction
+     */
+    public int predictedTarget;
+    /**
+     * Result of the branch computation.
+     * Used to check for mispredictions.
+     * Computed in Functional Unit.
+     * True means branch was taken.
+     */
+    public boolean branchCondition;
+    /**
+     * Absolute address of the target of the branch instruction.
+     * The address of the target, regardless of whether the branch is taken or not.
+     * NOT an offset. If you need offset, describe it in the interpretableAs field (see JAL instruction).
+     * Result of the branch actual computation, not the prediction.
+     * If present (not -1), the value is correct.
+     * Used to fix BTB and PC in misprediction.
+     */
+    public int branchTarget;
+    /**
+     * True if branch was computed in decode stage.
+     * This is done for branch instructions not requiring a register access (TODO: to be specified).
+     */
+    public boolean branchComputedInDecode;
+    /**
+     * Index of the predictor used. If -1, then not applicable (unconditional jump).
+     */
+    public int predictorIndex;
+    /**
+     * The state of the predictor from which the prediction was taken.
+     * For debugging, user output purposes.
+     */
+    public int predictorStateBeforePrediction;
+    
+    /**
+     * Constructor
+     */
+    public BranchInfo()
+    {
+      this.predictedTarget = -1;
+      this.branchTarget    = -1;
+    }
   }
 }

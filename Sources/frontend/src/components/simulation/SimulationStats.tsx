@@ -59,25 +59,16 @@ import {
   selectStatistics,
 } from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
-import {
+import type {
   FUStats,
   InstructionMix,
   InstructionStats,
   SimulationStatistics,
 } from '@/lib/types/cpuApi';
+import { formatFracPercentage } from '@/lib/utils';
 import Link from 'next/link';
 import { useState } from 'react';
 import { PieChart } from 'react-minimal-pie-chart';
-
-/**
- * @return The ratio in percentage, formatted. Zero if the denominator is zero.
- */
-function formatRatio(numerator: number, denominator: number) {
-  if (denominator === 0) {
-    return '0%';
-  }
-  return `${((numerator / denominator) * 100).toFixed(2)}%`;
-}
 
 /**
  * TODO does not show (due to the null check) after reloading the stats page
@@ -102,27 +93,27 @@ export function SimulationStats() {
   return (
     <div className='grid gap-6'>
       <div className='grid md:grid-cols-3 gap-6'>
-        <Card>
+        <Card className='flex flex-col'>
           <CardHeader>
             <CardTitle>IPC</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className='flex-grow flex items-end'>
             <span className='text-7xl'>{statistics.ipc.toFixed(2)}</span>
           </CardContent>
         </Card>
-        <Card>
+        <Card className='flex flex-col'>
           <CardHeader>
             <CardTitle>Clocks</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className='flex-grow flex items-end'>
             <span className='text-7xl'>{statistics.clockCycles}</span>
           </CardContent>
         </Card>
-        <Card>
+        <Card className='flex flex-col'>
           <CardHeader>
             <CardTitle>Branch Prediction Accuracy</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className='flex-grow flex items-end'>
             <span className='text-7xl'>{branchAccuracy}</span>
           </CardContent>
         </Card>
@@ -177,35 +168,19 @@ function InstructionStatsCard({
   commitCount,
 }: InstructionStatsProps) {
   const codeOrder = useAppSelector(selectProgramWithLabels);
-  const [stat, setStat] = useState<'cacheMisses' | 'committedCount'>(
-    'cacheMisses',
-  );
+  const [stat, setStat] = useState<'cacheHits' | 'committedCount'>('cacheHits');
 
   if (!codeOrder) {
     return null;
   }
 
-  // Find the maximum number of cache misses (to normalize the heatmap)
-  let maxMissCount = 0;
-  for (const instruction of codeOrder) {
-    if (typeof instruction === 'string') {
+  let maxFrac = 0.01;
+  for (const st of instructionStats) {
+    if (!st || commitCount === 0) {
       continue;
     }
-    const st = instructionStats[instruction];
-    if (!st) {
-      continue;
-    }
-    const missCount = st.cacheMisses;
-    maxMissCount = Math.max(maxMissCount, missCount);
-  }
-  let max = 0;
-  if (stat === 'cacheMisses') {
-    max = maxMissCount;
-  } else {
-    max = commitCount;
-  }
-  if (max === 0) {
-    max = 1;
+    const heatCoef = (st[stat] ?? 0) / commitCount;
+    maxFrac = Math.max(maxFrac, heatCoef);
   }
 
   return (
@@ -216,12 +191,12 @@ function InstructionStatsCard({
       </CardHeader>
       <CardContent>
         <RadioInput
-          choices={['cacheMisses', 'committedCount'] as const}
+          choices={['cacheHits', 'committedCount'] as const}
           texts={['Cache Hits', 'Committed']}
           value={stat}
           onNewValue={(v) => setStat(v)}
         />
-        <div className='pt-4 heatmap-transition'>
+        <div className='pt-4 heatmap-transition font-mono'>
           {codeOrder.map((instructionOrLabel) => {
             if (typeof instructionOrLabel === 'string') {
               return (
@@ -237,27 +212,40 @@ function InstructionStatsCard({
             if (!st) {
               return null;
             }
-            let instructionStat = st[stat];
-            if (stat === 'cacheMisses') {
-              instructionStat = st.committedCount - instructionStat;
-              // TODO hide stat for non-memory instructions
-            }
-            const heatCoef = instructionStat / max;
-            const percentage = formatRatio(instructionStat, max);
-            return (
-              <div
-                className='flex'
-                style={
-                  {
-                    '--heat': getHeatMapColor(heatCoef),
-                    backgroundColor: 'rgba(var(--heat), 0.2)',
-                  } as React.CSSProperties
-                }
-                key={`ins-${instructionOrLabel}`}
-              >
+            const instructionStat = st[stat];
+
+            let style: React.CSSProperties | undefined = undefined;
+            let percentageDiv = null;
+            if (instructionStat !== null) {
+              const max =
+                stat === 'cacheHits' ? st.memoryAccesses : commitCount;
+
+              if (max === null) {
+                throw new Error('max is null');
+              }
+
+              const heatCoef = instructionStat / max;
+              const percentage = formatFracPercentage(instructionStat, max);
+
+              style = {
+                '--heat': getHeatMapColor(heatCoef / maxFrac),
+                backgroundColor: 'rgba(var(--heat), 0.2)',
+              } as React.CSSProperties;
+
+              percentageDiv = (
                 <div className='font-mono text-sm text-gray-800 w-14 mr-2'>
                   {percentage}
                 </div>
+              );
+            }
+
+            return (
+              <div
+                className='flex'
+                style={style}
+                key={`ins-${instructionOrLabel}`}
+              >
+                {percentageDiv}
                 <ProgramInstruction
                   key={`ins-${instructionOrLabel}`}
                   instructionId={instructionOrLabel}
@@ -316,10 +304,15 @@ function DetailedSimulationStats({ stats }: DetailedStatsProps) {
           </TableHeader>
           <TableBody>
             {Object.entries(detailedStatNames).map(([name, displayName]) => {
+              let stat: string | number = stats[name as DetailedStatName];
+              // if needed, format to two decimal places
+              if (typeof stat === 'number' && !Number.isInteger(stat)) {
+                stat = stat.toFixed(2);
+              }
               return (
-                <TableRow>
+                <TableRow key={name}>
                   <TableCell className='font-medium'>{displayName}</TableCell>
-                  <TableCell>{stats[name as DetailedStatName]}</TableCell>
+                  <TableCell>{stat}</TableCell>
                 </TableRow>
               );
             })}
@@ -358,7 +351,7 @@ function CacheStatistics({ stats }: DetailedStatsProps) {
           <TableBody>
             {Object.entries(cacheStatNames).map(([name, displayName]) => {
               return (
-                <TableRow>
+                <TableRow key={name}>
                   <TableCell className='font-medium'>{displayName}</TableCell>
                   <TableCell>{stats.cache[name as CacheStatName]}</TableCell>
                 </TableRow>
@@ -399,11 +392,11 @@ function FuStatsDash({ stats, totalCycles }: FuStatsProps) {
           <TableBody>
             {Object.entries(stats).map(([name, stat]) => {
               return (
-                <TableRow>
+                <TableRow key={name}>
                   <TableCell className='font-medium'>{name}</TableCell>
                   <TableCell>{stat.busyCycles}</TableCell>
                   <TableCell>
-                    {formatRatio(stat.busyCycles, totalCycles)}
+                    {formatFracPercentage(stat.busyCycles, totalCycles)}
                   </TableCell>
                 </TableRow>
               );
@@ -429,11 +422,11 @@ function InstructionMixDash({ mix, title, description }: InstructionMixProps) {
     mix.memory +
     mix.other;
   const percentages = {
-    intArithmetic: formatRatio(mix.intArithmetic, total),
-    floatArithmetic: formatRatio(mix.floatArithmetic, total),
-    branch: formatRatio(mix.branch, total),
-    memory: formatRatio(mix.memory, total),
-    other: formatRatio(mix.other, total),
+    intArithmetic: formatFracPercentage(mix.intArithmetic, total),
+    floatArithmetic: formatFracPercentage(mix.floatArithmetic, total),
+    branch: formatFracPercentage(mix.branch, total),
+    memory: formatFracPercentage(mix.memory, total),
+    other: formatFracPercentage(mix.other, total),
   };
 
   return (
@@ -508,15 +501,6 @@ function InstructionMixDash({ mix, title, description }: InstructionMixProps) {
 interface PieChartProps {
   mix: InstructionMix;
 }
-/*
-<PieChart
-  data={[
-    { title: 'One', value: 10, color: '#E38627' },
-    { title: 'Two', value: 15, color: '#C13C37' },
-    { title: 'Three', value: 20, color: '#6A2135' },
-  ]}
-/>;
-*/
 
 function MixPieChart({ mix }: PieChartProps) {
   const data = [

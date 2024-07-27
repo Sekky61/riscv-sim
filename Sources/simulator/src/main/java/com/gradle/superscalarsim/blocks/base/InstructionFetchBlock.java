@@ -131,16 +131,6 @@ public class InstructionFetchBlock implements AbstractBlock
   //----------------------------------------------------------------------
   
   /**
-   * @return Number of ways
-   * @brief Gets number of ways
-   */
-  public int getNumberOfWays()
-  {
-    return numberOfWays;
-  }// end of getNumberOfWays
-  //----------------------------------------------------------------------
-  
-  /**
    * @param numberOfWays New number of fetched instructions
    *
    * @brief Set number of fetched instructions per tick
@@ -170,23 +160,14 @@ public class InstructionFetchBlock implements AbstractBlock
     if (stallFlag)
     {
       // Fetch is stalled. Do nothing, resume next cycle
-      this.stallFlag = false;
+      stallFlag = false;
       return;
     }
-    this.fetchedCode = fetchInstructions(cycle);
+    fetchedCode.clear();
+    fetchInstructions(cycle);
   }// end of simulate
   //----------------------------------------------------------------------
   
-  /**
-   * @brief Resets the all the lists/stacks/variables in the instruction fetch block
-   */
-  @Override
-  public void reset()
-  {
-    this.fetchedCode.clear();
-    this.stallFlag = false;
-    this.pc        = 0;
-  }// end of reset
   //----------------------------------------------------------------------
   
   /**
@@ -195,14 +176,12 @@ public class InstructionFetchBlock implements AbstractBlock
    * If there is an entry in the BTB, it will follow the branch.
    * Otherwise, it will fetch following instructions.
    *
-   * @return Fetched instructions
    * @brief Fetching logic
    */
-  private List<SimCodeModel> fetchInstructions(int cycle)
+  private void fetchInstructions(int cycle)
   {
-    List<SimCodeModel> fetchedCode      = new ArrayList<>();
-    int                followedBranches = 0;
-    int                encounteredJumps = 0;
+    int followedBranches = 0;
+    int encounteredJumps = 0;
     
     for (int i = 0; i < numberOfWays; i++)
     {
@@ -219,65 +198,75 @@ public class InstructionFetchBlock implements AbstractBlock
         if (encounteredJumps > branchFollowLimit)
         {
           // Stop loading instructions, fill with nops
-          codeModel.setBranchPredicted(false);
+          //          codeModel.setBranchPredicted(false, codeModel.getSavedPc() + 4);
           for (int j = i; j < numberOfWays; j++)
           {
             SimCodeModel nopCodeModel = this.simCodeModelFactory.createInstance(instructionMemoryBlock.getNop(),
-                                                                                simCodeId, cycle);
+                                                                                cycle * numberOfWays + j, cycle);
             fetchedCode.add(nopCodeModel);
           }
           break;
         }
-      }
-      
-      // TODO: If we cannot follow anymore, do we still fetch instructions, or end early?
-      // And does it matter if the branch is taken?
-      boolean branchPredicted = isBranchingPredicted(pc);
-      if (branchPredicted && followedBranches < branchFollowLimit)
-      {
-        // todo: the default example program, first fetch of jump instruction has weird behaviour
-        // Follow that branch
-        codeModel.setBranchPredicted(true);
-        int newPc = this.branchTargetBuffer.getEntryTarget(pc);
-        assert newPc >= 0;
-        this.pc = newPc;
-        followedBranches++;
+        
+        int predictorIndex = gShareUnit.getPredictorIndex(pc);
+        int predictorState = gShareUnit.getPredictor(pc).getState();
+        
+        boolean unconditional = this.branchTargetBuffer.isEntryUnconditional(pc);
+        boolean prediction    = this.gShareUnit.getPredictor(pc).getCurrentPrediction();
+        boolean shouldJump    = prediction || unconditional;
+        int     newPc         = this.branchTargetBuffer.getEntryTarget(pc);
+        boolean areWeJumping  = shouldJump && newPc >= 0;
+        codeModel.registerBranch(predictorIndex, predictorState, areWeJumping, newPc);
+        if (areWeJumping && followedBranches < branchFollowLimit)
+        {
+          this.pc = newPc;
+          followedBranches++;
+        }
+        else
+        {
+          // No jump, just increment PC
+          this.pc += 4;
+        }
+        // Update global history register
+        if (codeModel.isConditionalBranch())
+        {
+          gShareUnit.getGlobalHistoryRegister().shiftValue(areWeJumping, codeModel.getIntegerId());
+        }
       }
       else
       {
-        // No jump, just increment PC
         this.pc += 4;
       }
+      
       fetchedCode.add(codeModel);
     }
-    return fetchedCode;
   }// end of fetchInstructions
-  //----------------------------------------------------------------------
-  
-  /**
-   * @return True if branch was predicted
-   */
-  private boolean isBranchingPredicted(int pc)
-  {
-    int     target        = this.branchTargetBuffer.getEntryTarget(pc);
-    boolean prediction    = this.gShareUnit.getPredictor(pc).getCurrentPrediction();
-    boolean unconditional = this.branchTargetBuffer.isEntryUnconditional(pc);
-    return target != -1 && (prediction || unconditional);
-  }
   //----------------------------------------------------------------------
   
   /**
    * @brief Clears fetched code buffer
    */
-  public void clearFetchedCode()
+  public void flush()
   {
-    for (SimCodeModel simCode : this.getFetchedCode())
-    {
-      simCode.setFinished(true);
-    }
     this.fetchedCode.clear();
   }
   //----------------------------------------------------------------------
+  
+  /**
+   * @return Number of instructions to pull. Basically filters out nops.
+   */
+  public int getPullCount()
+  {
+    int count = 0;
+    for (SimCodeModel simCode : this.getFetchedCode())
+    {
+      if (!simCode.getInstructionName().equals("nop"))
+      {
+        count++;
+      }
+    }
+    return count;
+  }
   
   /**
    * Get fetched instructions
@@ -307,10 +296,8 @@ public class InstructionFetchBlock implements AbstractBlock
    */
   public void setPc(int pc)
   {
-    if (pc < 0)
-    {
-      throw new IllegalArgumentException("PC cannot be negative");
-    }
+    assert pc % 4 == 0;
+    assert pc >= 0;
     this.pc = pc;
   }// end of setPcCounter
 }

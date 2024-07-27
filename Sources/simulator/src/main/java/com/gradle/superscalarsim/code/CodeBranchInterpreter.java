@@ -38,7 +38,6 @@ import com.gradle.superscalarsim.models.instruction.SimCodeModel;
 import com.gradle.superscalarsim.models.util.Result;
 
 import java.util.List;
-import java.util.OptionalInt;
 
 /**
  * @class CodeBranchInterpreter
@@ -70,12 +69,12 @@ public class CodeBranchInterpreter
    * @return OptionalInt with position of next instruction to be loaded, empty if no jump is performed
    * @brief Interprets branch or jump instruction
    */
-  public Result<OptionalInt> interpretInstruction(final SimCodeModel codeModel)
+  public Result<BranchResult> interpretInstruction(final SimCodeModel codeModel)
   {
-    final InstructionFunctionModel instruction = codeModel.getInstructionFunctionModel();
+    final InstructionFunctionModel instruction = codeModel.instructionFunctionModel();
     assert instruction != null;
     
-    String[] splitInterpretableAs = instruction.getInterpretableAs().split(":");
+    String[] splitInterpretableAs = instruction.interpretableAs().split(":");
     assert splitInterpretableAs.length == 2;
     String                    targetExpr    = splitInterpretableAs[0];
     String                    conditionExpr = splitInterpretableAs[1];
@@ -86,17 +85,12 @@ public class CodeBranchInterpreter
     
     if (exprResult.isException())
     {
-      return new Result<>(OptionalInt.empty(), exprResult.exception());
+      return new Result<>(exprResult.exception());
     }
     
     Expression.Variable variable = exprResult.value();
     assert variable != null;
     boolean jumpCondition = (boolean) variable.value.getValue(DataTypeEnum.kBool);
-    if (!jumpCondition)
-    {
-      // Do not jump.
-      return new Result<>(OptionalInt.empty());
-    }
     
     // We know that we have to jump, calculate jump target
     Result<Expression.Variable> targetVar = Expression.interpret(targetExpr, variables);
@@ -105,7 +99,17 @@ public class CodeBranchInterpreter
     int target = (int) var.value.getValue(DataTypeEnum.kInt);
     
     // Return relative position of the instruction to jump to
-    return new Result<>(OptionalInt.of(target));
+    return new Result<>(new BranchResult(jumpCondition, target));
   }// end of interpretInstruction
   //-------------------------------------------------------------------------------------------
+  
+  /**
+   * @param jumpTaken True if the jump was taken, false otherwise
+   * @param target    Target of the jump. An absolute position in the program.
+   *
+   * @brief Result of the branch instruction.
+   */
+  public record BranchResult(boolean jumpTaken, int target)
+  {
+  }
 }

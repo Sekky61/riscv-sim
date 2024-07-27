@@ -236,4 +236,13 @@ public class RegisterDataContainer
   {
     return currentType;
   }
+  
+  /**
+   * String representation of the register value.
+   */
+  @Override
+  public String toString()
+  {
+    return getStringRepresentation();
+  }
 }

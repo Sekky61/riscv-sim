@@ -125,7 +125,7 @@ public class FunctionalUnitDescription
    *
    * @param expr Expression to classify (e.g. "\rs1 \rs2 * \rs3 + \rd =")
    */
-  public static CapabilityName classifyOperation(String expr)
+  public static CapabilityName classifyExpression(String expr)
   {
     for (String op : Expression.specialOperators)
     {
@@ -162,7 +162,20 @@ public class FunctionalUnitDescription
         return CapabilityName.bitwise;
       }
     }
-    return null;
+    // Probably a type cast, move. Use an adder
+    return CapabilityName.addition;
+  }
+  
+  public boolean canExecute(CapabilityName capability)
+  {
+    for (Capability c : operations)
+    {
+      if (c.name == capability)
+      {
+        return true;
+      }
+    }
+    return false;
   }
   
   /**

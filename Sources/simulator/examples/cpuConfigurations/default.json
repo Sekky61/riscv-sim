@@ -1,0 +1,109 @@
+{
+  "robSize": 256,
+  "commitWidth": 4,
+  "flushPenalty": 1,
+  "fetchWidth": 3,
+  "branchFollowLimit": 1,
+  "btbSize": 1024,
+  "phtSize": 100,
+  "predictorType": "TWO_BIT_PREDICTOR",
+  "predictorDefaultState": 2,
+  "useGlobalHistory": false,
+  "fUnits": [
+    {
+      "id": 0,
+      "name": "FX",
+      "latency": 1,
+      "fuType": "FX",
+      "operations": [
+        {
+          "name": "addition",
+          "latency": 1
+        },
+        {
+          "name": "bitwise",
+          "latency": 1
+        },
+        {
+          "name": "multiplication",
+          "latency": 2
+        },
+        {
+          "name": "division",
+          "latency": 10
+        },
+        {
+          "name": "special",
+          "latency": 2
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "name": "FP",
+      "latency": 1,
+      "fuType": "FP",
+      "operations": [
+        {
+          "name": "addition",
+          "latency": 1
+        },
+        {
+          "name": "bitwise",
+          "latency": 1
+        },
+        {
+          "name": "multiplication",
+          "latency": 2
+        },
+        {
+          "name": "division",
+          "latency": 2
+        },
+        {
+          "name": "special",
+          "latency": 2
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "L/S",
+      "latency": 1,
+      "fuType": "L_S",
+      "operations": null
+    },
+    {
+      "id": 3,
+      "name": "Branch",
+      "latency": 2,
+      "fuType": "Branch",
+      "operations": null
+    },
+    {
+      "id": 4,
+      "name": "Memory",
+      "latency": 1,
+      "fuType": "Memory",
+      "operations": null
+    }
+  ],
+  "useCache": true,
+  "cacheLines": 16,
+  "cacheLineSize": 32,
+  "cacheLoadLatency": 1,
+  "cacheStoreLatency": 1,
+  "cacheAssoc": 2,
+  "cacheReplacement": "LRU",
+  "storeBehavior": "write-back",
+  "laneReplacementDelay": 10,
+  "cacheAccessDelay": 1,
+  "lbSize": 64,
+  "sbSize": 64,
+  "storeLatency": 1,
+  "loadLatency": 1,
+  "callStackSize": 512,
+  "speculativeRegisters": 620,
+  "coreClockFrequency": 100000000,
+  "cacheClockFrequency": 100000000
+}

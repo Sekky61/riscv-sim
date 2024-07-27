@@ -34,37 +34,25 @@ package com.gradle.superscalarsim.blocks.base;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
-import com.gradle.superscalarsim.models.RenameMapModel;
 import com.gradle.superscalarsim.models.register.RegisterModel;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.Stack;
 
 /**
  * @class RenameMapTableBlock
- * @brief Class that keeps track of mappings between speculative and architectural registers
- * and free speculative registers
+ * @brief Keeps track of free speculative registers and gives API to map and free them
  */
 @JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
 public class RenameMapTableBlock
 {
   /**
-   * List of free speculative registers
+   * Set of free speculative registers. Starts out with the lowest number on top (tg0).
+   * When a register is freed, it is added to the top of the stack.
    */
-  private final List<String> freeList;
-  /**
-   * Map of speculative to architectural registers
-   */
-  @JsonIdentityReference(alwaysAsId = true)
-  private final Map<String, RenameMapModel> registerMap;
-  /**
-   * Map of references to certain speculative register
-   */
-  private final Map<String, Integer> referenceMap;
+  private final Stack<String> freeTags;
   /**
    * Class containing all registers, that simulator uses
    */
@@ -76,9 +64,7 @@ public class RenameMapTableBlock
    */
   public RenameMapTableBlock()
   {
-    this.freeList          = new ArrayList<>();
-    this.registerMap       = new TreeMap<>();
-    this.referenceMap      = new TreeMap<>();
+    this.freeTags          = new Stack<>();
     this.registerFileBlock = null;
   }
   
@@ -89,10 +75,7 @@ public class RenameMapTableBlock
    */
   public RenameMapTableBlock(UnifiedRegisterFileBlock registerFileBlock)
   {
-    this.freeList = new ArrayList<>();
-    // TreeMaps to keep the order of keys - important for comparing serialized forms
-    this.registerMap       = new TreeMap<>();
-    this.referenceMap      = new TreeMap<>();
+    this.freeTags          = new Stack<>();
     this.registerFileBlock = registerFileBlock;
     
     initiateFreeList(registerFileBlock.getSpeculativeRegisterFile().getRegisterCount());
@@ -106,25 +89,11 @@ public class RenameMapTableBlock
    */
   private void initiateFreeList(int specRegistersCount)
   {
-    for (int i = 0; i < specRegistersCount; i++)
+    for (int i = specRegistersCount - 1; i >= 0; i--)
     {
-      this.freeList.add("tg" + i);
+      this.freeTags.add("tg" + i);
     }
   }// end of createSpeculativeRegisters
-  //----------------------------------------------------------------------
-  
-  /**
-   * @brief Clears all the active mappings
-   */
-  public void clear()
-  {
-    // Broken clear. TODO: remove all clearing and resetting. We have CpuConfiguration for that
-    //    this.registerFileBlock.refreshRegisters();
-    this.freeList.clear();
-    this.registerMap.clear();
-    this.referenceMap.clear();
-    //    initiateFreeList(registerFileBlock.getSpeculativeRegisterFile().getRegisterList());
-  }// end of clear
   //----------------------------------------------------------------------
   
   /**
@@ -134,19 +103,21 @@ public class RenameMapTableBlock
    * @return Reference to the speculative register
    * @brief Maps architectural register to free speculative one
    */
-  public RegisterModel mapRegister(String registerName, int order)
+  public RegisterModel mapRegister(RegisterModel archRegister)
   {
     // TODO: what if there is no free tag or free register in the field? Currently it throws exception
-    if (this.freeList.isEmpty())
+    if (this.freeTags.isEmpty())
     {
       throw new RuntimeException("No free registers available");
     }
-    String speculativeRegister = this.freeList.iterator().next();
-    this.registerMap.put(speculativeRegister, new RenameMapModel(registerName, order));
-    this.freeList.remove(speculativeRegister);
-    this.referenceMap.put(speculativeRegister, 1);
-    this.registerFileBlock.getRegister(speculativeRegister).setReadiness(RegisterReadinessEnum.kAllocated);
-    return registerFileBlock.getRegister(speculativeRegister);
+    String        speculativeRegister = this.freeTags.pop();
+    RegisterModel register            = registerFileBlock.getRegister(speculativeRegister);
+    archRegister.addRename(register);
+    
+    register.setReadiness(RegisterReadinessEnum.kAllocated);
+    assert register.getReferenceCount() == 0;
+    register.increaseReference();
+    return register;
   }// end of mapRegister
   //----------------------------------------------------------------------
   
@@ -157,7 +128,7 @@ public class RenameMapTableBlock
    */
   public boolean hasFreeRegisters()
   {
-    return !this.freeList.isEmpty();
+    return !this.freeTags.isEmpty();
   }
   
   /**
@@ -165,35 +136,24 @@ public class RenameMapTableBlock
    *
    * @brief Increases number of references on certain speculative register
    */
-  public void increaseReference(String speculativeRegister)
+  public void increaseReference(RegisterModel speculativeRegister)
   {
-    if (referenceMap.containsKey(speculativeRegister))
-    {
-      int currentRefCount = this.referenceMap.get(speculativeRegister) + 1;
-      this.referenceMap.replace(speculativeRegister, currentRefCount);
-    }
-    else
-    {
-      this.referenceMap.put(speculativeRegister, 1);
-    }
+    speculativeRegister.increaseReference();
   }// end of increaseReference
   //----------------------------------------------------------------------
   
   /**
    * @param speculativeRegister Speculative speculativeRegister to be freed
    *
-   * @return True if the reference count reached 0, false otherwise (not found or above 0)
    * @brief Lowers speculative register reference count and eventually frees the register from registerMap
    */
-  public boolean reduceReference(String speculativeRegister)
+  public void reduceReference(RegisterModel speculativeRegister)
   {
-    if (!this.registerMap.containsKey(speculativeRegister) || !this.referenceMap.containsKey(speculativeRegister))
+    speculativeRegister.reduceReference();
+    if (speculativeRegister.getReferenceCount() == 0)
     {
-      return false;
+      freeMapping(speculativeRegister);
     }
-    int currentRefCount = this.referenceMap.get(speculativeRegister) - 1;
-    this.referenceMap.replace(speculativeRegister, currentRefCount);
-    return currentRefCount == 0;
   }// end of reduceReference
   //----------------------------------------------------------------------
   
@@ -202,86 +162,36 @@ public class RenameMapTableBlock
    *
    * @brief Only frees the specified register
    */
-  public void freeMapping(String speculativeRegister)
+  public void freeMapping(RegisterModel speculativeRegister)
   {
-    if (!isSpeculativeRegister(speculativeRegister))
+    if (!speculativeRegister.isSpeculative())
     {
       return;
     }
     
-    RegisterModel specRegister = this.registerFileBlock.getRegister(speculativeRegister);
-    if (specRegister == null)
-    {
-      throw new RuntimeException("Speculative register " + speculativeRegister + " not found");
-    }
+    speculativeRegister.setReadiness(RegisterReadinessEnum.kFree);
+    String regName = speculativeRegister.getName();
+    this.freeTags.add(regName);
     
-    this.registerFileBlock.getRegister(speculativeRegister).setReadiness(RegisterReadinessEnum.kFree);
-    this.referenceMap.remove(specRegister.getName());
-    this.registerMap.remove(specRegister.getName());
-    this.freeList.add(specRegister.getName());
-    
+    RegisterModel archRegister = speculativeRegister.getArchitecturalMapping();
+    archRegister.removeRename(speculativeRegister);
   }// end of freeMapping
-  //----------------------------------------------------------------------
-  
-  /**
-   * @param register Name of the register to be checked
-   *
-   * @return True if register is speculative, false otherwise
-   * @brief Checks if the provided register if speculative or not
-   */
-  public boolean isSpeculativeRegister(String register)
-  {
-    return freeList.contains(register) || registerMap.containsKey(register);
-  }// end of isSpeculativeRegister
-  //----------------------------------------------------------------------
-  
-  /**
-   * @param register architectural register
-   *
-   * @return Reference to a register that is currently mapped to `register`
-   */
-  public RegisterModel getMappingForRegister(String register)
-  {
-    if (this.registerFileBlock.getRegister(register).isConstant())
-    {
-      return registerFileBlock.getRegister(register);
-    }
-    // Iterate all renames, get the freshest rename
-    String newestMapping = register;
-    int    newestOrder   = -1;
-    for (Map.Entry<String, RenameMapModel> entry : this.registerMap.entrySet())
-    {
-      if (entry.getValue().getArchitecturalRegister().equals(register) && entry.getValue().getOrder() > newestOrder)
-      {
-        newestMapping = entry.getKey();
-        newestOrder   = entry.getValue().getOrder();
-      }
-    }
-    return registerFileBlock.getRegister(newestMapping);
-  }// end of getMappingForRegister
-  //----------------------------------------------------------------------
-  
-  /**
-   * @param speculativeRegister Name of the register to transfer value from
-   *
-   * @brief Directly copy the value from speculative to the mapped one
-   */
-  public void directCopyMapping(String speculativeRegister)
-  {
-    if (isSpeculativeRegister(speculativeRegister))
-    {
-      String        architecturalRegister = this.registerMap.get(speculativeRegister).getArchitecturalRegister();
-      RegisterModel register              = this.registerFileBlock.getRegister(speculativeRegister);
-      this.registerFileBlock.getRegister(architecturalRegister).copyFrom(register);
-    }
-  }// end of directCopyMapping
   //----------------------------------------------------------------------
   
   /**
    * @return Number of allocated speculative registers
    */
+  @JsonProperty
   public int getAllocatedSpeculativeRegistersCount()
   {
-    return this.registerFileBlock.getSpeculativeRegisterFile().getRegisterCount() - this.freeList.size();
+    return this.registerFileBlock.getSpeculativeRegisterFile().getRegisterCount() - this.freeTags.size();
+  }
+  
+  /**
+   * @return Number of free speculative registers
+   */
+  public int getFreeRegistersCount()
+  {
+    return this.freeTags.size();
   }
 }

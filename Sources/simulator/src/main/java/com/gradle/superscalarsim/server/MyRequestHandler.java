@@ -28,15 +28,16 @@
 package com.gradle.superscalarsim.server;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gradle.superscalarsim.app.MyLogger;
 import com.gradle.superscalarsim.serialization.Serialization;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.Headers;
 import io.undertow.util.HttpString;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @class MyRequestHandler
@@ -44,21 +45,13 @@ import java.io.OutputStream;
  */
 public class MyRequestHandler<T, U> implements HttpHandler
 {
-  
-  IRequestDeserializer<T> deserializer;
+  static Logger logger = MyLogger.initializeLogger("MyRequestHandler", Level.INFO);
   
   IRequestResolver<T, U> resolver;
   
-  public <R extends IRequestResolver<T, U> & IRequestDeserializer<T>> MyRequestHandler(R resolver)
+  public <R extends IRequestResolver<T, U>> MyRequestHandler(R resolver)
   {
-    this.resolver     = resolver;
-    this.deserializer = resolver;
-  }
-  
-  public MyRequestHandler(IRequestResolver<T, U> resolver, IRequestDeserializer<T> deserializer)
-  {
-    this.deserializer = deserializer;
-    this.resolver     = resolver;
+    this.resolver = resolver;
   }
   
   @Override
@@ -86,37 +79,61 @@ public class MyRequestHandler<T, U> implements HttpHandler
       return;
     }
     
+    // At this point, the request is in the worker thread
+    
     // TODO: If the request times out, it continues to run in the background.
     // this means it will eat resources, until it finishes (which may be never).
     exchange.startBlocking();
     
-    ObjectMapper mapper = Serialization.getSerializer();
-    
     // Deserialize
-    InputStream requestJson = exchange.getInputStream();
-    T           request     = null;
+    InputStream           requestJson  = exchange.getInputStream();
+    OutputStream          outputStream = exchange.getOutputStream();
+    T                     request      = null;
+    ByteArrayOutputStream baos         = new ByteArrayOutputStream();
+    requestJson.transferTo(baos);
+    InputStream firstClone  = new ByteArrayInputStream(baos.toByteArray());
+    InputStream secondClone = new ByteArrayInputStream(baos.toByteArray());
     try
     {
-      request = deserializer.deserialize(requestJson);
+      request = resolver.deserialize(firstClone);
     }
     catch (Exception e)
     {
       // Log it
-      System.err.println("Invalid request: " + e.getMessage());
+      logger.severe("Cannot parse request: " + e.getMessage());
+      // log the request string
+      String requestString = new String(secondClone.readAllBytes());
+      logger.info("Request: " + requestString);
       // Send back
-      exchange.setStatusCode(400);
-      ErrorResponse errorResponse = new ErrorResponse(e.getMessage());
-      ObjectMapper  serializer    = Serialization.getSerializer();
-      exchange.getResponseSender().send(serializer.writeValueAsString(errorResponse));
+      sendError(exchange, new ServerError("root", "Cannot parse request", e.getMessage()));
       return;
     }
     
-    U response = resolver.resolve(request);
-    
     // Serialize
-    OutputStream outputStream = exchange.getOutputStream();
-    mapper.writeValue(outputStream, response);
-    exchange.endExchange();
+    try
+    {
+      U response = resolver.resolve(request);
+      System.gc();
+      resolver.serialize(response, outputStream);
+      //
+      logger.info("Request handled successfully: " + response.getClass().getSimpleName());
+      exchange.endExchange();
+    }
+    catch (ServerException e)
+    {
+      // Send the error as a JSON, log it
+      ServerError error = e.getError();
+      sendError(exchange, error);
+      logger.info("Request error: " + error.message());
+    }
+    catch (Exception e)
+    {
+      ServerError error = new ServerError("root", "Internal server error");
+      sendError(exchange, error);
+      logger.severe("Internal server error: " + e.getMessage());
+      // print trace
+      e.printStackTrace();
+    }
   }
   
   /**
@@ -136,10 +153,9 @@ public class MyRequestHandler<T, U> implements HttpHandler
    * @param exchange The HttpExchange object
    *
    * @return true if the request was handled, false otherwise
-   * @throws IOException If an I/O error occurs
    * @brief Handle the request method
    */
-  public boolean handleVerb(HttpServerExchange exchange) throws IOException
+  public boolean handleVerb(HttpServerExchange exchange)
   {
     // Check that the request method is a POST or OPTIONS
     String method = exchange.getRequestMethod().toString();
@@ -157,7 +173,7 @@ public class MyRequestHandler<T, U> implements HttpHandler
       }
       default ->
       {
-        System.err.println("Invalid request method: " + method);
+        logger.info("Invalid request method: " + method);
         // Close
         exchange.setStatusCode(405);
         exchange.getResponseSender().send("Method not allowed");
@@ -168,10 +184,13 @@ public class MyRequestHandler<T, U> implements HttpHandler
   }
   
   /**
-   * Error explanation for the client.
-   * Reports the cause of the error, if it its known in the handler.
+   * @brief Send an error response
    */
-  public record ErrorResponse(String error)
+  public void sendError(HttpServerExchange exchange, ServerError error) throws IOException
   {
+    exchange.setStatusCode(400);
+    ObjectMapper mapper = Serialization.getSerializer();
+    mapper.writeValue(exchange.getOutputStream(), error);
+    exchange.endExchange();
   }
 }

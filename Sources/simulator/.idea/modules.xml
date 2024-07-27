@@ -2,7 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/simulator.iml" filepath="$PROJECT_DIR$/.idea/simulator.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/-1406407753/superscalar-simulator.jmh.iml" filepath="$PROJECT_DIR$/.idea/modules/-1406407753/superscalar-simulator.jmh.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/-1406407753/superscalar-simulator.test.iml" filepath="$PROJECT_DIR$/.idea/modules/-1406407753/superscalar-simulator.test.iml" />
     </modules>
   </component>
 </project>

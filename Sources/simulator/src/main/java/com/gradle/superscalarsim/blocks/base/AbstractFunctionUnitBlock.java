@@ -43,12 +43,20 @@ import com.gradle.superscalarsim.models.instruction.SimCodeModel;
 /**
  * @class AbstractFunctionUnitBlock
  * @brief Abstract class containing interface and shared logic for all function units
+ * @details An empty FU has the counter/delay at 0/0. The clock starts at 1, so after the first cycle in the GUI 1/X is visible.
+ * The flow of execution is defined here, the specifics are implemented in the derived classes.
  */
 @JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
 public abstract class AbstractFunctionUnitBlock implements AbstractBlock
 {
   /**
-   * ID specifying when instruction passed specified FU
+   * Counter value when the execution starts
+   */
+  final static int counterStart = 1;
+  
+  /**
+   * ID specifying when instruction passed specified FU.
+   * Must be unique.
    */
   protected int functionUnitId;
   
@@ -112,15 +120,6 @@ public abstract class AbstractFunctionUnitBlock implements AbstractBlock
   }// end of Constructor
   //----------------------------------------------------------------------
   
-  /**
-   * @brief Resets the all the lists/stacks/variables in the function unit
-   */
-  @Override
-  public void reset()
-  {
-    this.counter      = 0;
-    this.simCodeModel = null;
-  }// end of reset
   //----------------------------------------------------------------------
   
   /**
@@ -155,30 +154,43 @@ public abstract class AbstractFunctionUnitBlock implements AbstractBlock
   //----------------------------------------------------------------------
   
   /**
-   * @brief Sets the counter to zero (needs to be used before setting the new instruction)
-   */
-  public void resetCounter()
-  {
-    this.counter = 0;
-  }// end of resetCounter
-  //----------------------------------------------------------------------
-  
-  /**
    * @return True if delay has passed, false otherwise
    * @brief Moves to counter up and checks if delay has passed
    */
   protected boolean hasDelayPassed()
   {
-    return this.counter == this.delay;
+    return this.counter == (this.delay + counterStart);
   }// end of hasDelayPassed
   //----------------------------------------------------------------------
+  
+  /**
+   * If the instruction is done executing, empty the function unit.
+   * Ticks the counter.
+   */
+  public void emptyIfDone()
+  {
+    if (simCodeModel == null)
+    {
+      return;
+    }
+    if (this.simCodeModel.hasFailed())
+    {
+      handleFailedInstruction();
+      return;
+    }
+    tickCounter();
+    if (hasDelayPassed())
+    {
+      finishExecution();
+    }
+  }
   
   /**
    * @brief tick the counter one step
    */
   public void tickCounter()
   {
-    this.counter = Math.min(this.counter + 1, this.delay);
+    this.counter = this.counter + 1;
   }// end of tickCounter
   
   /**
@@ -186,7 +198,7 @@ public abstract class AbstractFunctionUnitBlock implements AbstractBlock
    */
   public boolean hasTimerStartedThisTick()
   {
-    return this.counter == 0;
+    return this.counter == counterStart;
   }
   
   /**
@@ -200,16 +212,71 @@ public abstract class AbstractFunctionUnitBlock implements AbstractBlock
   //----------------------------------------------------------------------
   
   /**
+   * @return True if function unit is busy, false otherwise
+   */
+  public boolean isBusy()
+  {
+    if (counter == delay + counterStart)
+    {
+      return false;
+    }
+    return simCodeModel != null;// && counter < delay;
+  }
+  
+  /**
    * @param decodeCodeModel Instruction to be executed
    *
-   * @brief Sets instruction to be executed
+   * @brief Sets instruction to be executed. If there is already instruction, it is finished and overwritten
    */
-  public void setSimCodeModel(SimCodeModel simCodeModel)
+  public void startExecuting(SimCodeModel simCodeModel)
   {
+    if (this.simCodeModel != null)
+    {
+      assert this.counter == this.delay;
+      finishExecution();
+    }
+    this.counter      = counterStart;
     this.simCodeModel = simCodeModel;
     this.simCodeModel.setFunctionUnitId(this.functionUnitId);
   }// end of setDecodeCodeModel
-  //----------------------------------------------------------------------
+  
+  /**
+   * The second part of FU cycle. Instruction can start work. Finishing is done in emptyIfDone.
+   *
+   * @param cycle Current cycle
+   */
+  protected void handleInstruction(int cycle)
+  {
+    if (this.simCodeModel.hasFailed())
+    {
+      handleFailedInstruction();
+      return;
+    }
+    
+    if (hasTimerStartedThisTick())
+    {
+      handleStartExecution(cycle);
+    }
+    
+    incrementBusyCycles();
+  }
+  
+  /**
+   * @brief Finishes execution of the instruction
+   */
+  protected abstract void finishExecution();
+  
+  /**
+   * @brief Action that should take place when an instruction failed.
+   * Remove the instruction, reset counter, cancel memory transaction.
+   */
+  protected abstract void handleFailedInstruction();
+  
+  /**
+   * @brief Action that should take place when an instruction starts executing.
+   * Calculate the delay, start memory transaction.
+   */
+  protected abstract void handleStartExecution(int cycle);
   
   /**
    * @return True if function unit is idle, false if busy
@@ -257,7 +324,7 @@ public abstract class AbstractFunctionUnitBlock implements AbstractBlock
    */
   public void setDelayBasedOnInstruction()
   {
-    int delay = switch (this.simCodeModel.getInstructionFunctionModel().getInstructionType())
+    int delay = switch (this.simCodeModel.instructionFunctionModel().instructionType())
     {
       case kIntArithmetic, kFloatArithmetic -> getDelayBasedOnCapability();
       case kLoadstore, kJumpbranch -> this.description.latency;
@@ -270,14 +337,8 @@ public abstract class AbstractFunctionUnitBlock implements AbstractBlock
    */
   private int getDelayBasedOnCapability()
   {
-    String                                   expr           = this.simCodeModel.getInstructionFunctionModel()
-            .getInterpretableAs();
-    FunctionalUnitDescription.CapabilityName capabilityName = FunctionalUnitDescription.classifyOperation(expr);
-    if (capabilityName == null)
-    {
-      // Probably a type cast, so just return the base latency
-      return this.description.latency;
-    }
+    String expr = this.simCodeModel.instructionFunctionModel().interpretableAs();
+    FunctionalUnitDescription.CapabilityName capabilityName = FunctionalUnitDescription.classifyExpression(expr);
     for (FunctionalUnitDescription.Capability capability : this.description.operations)
     {
       if (capability.name == capabilityName)
@@ -286,6 +347,11 @@ public abstract class AbstractFunctionUnitBlock implements AbstractBlock
       }
     }
     throw new RuntimeException("Unknown operation: " + expr);
+  }
+  
+  protected FunctionalUnitDescription getDescription()
+  {
+    return this.description;
   }
   
   /**

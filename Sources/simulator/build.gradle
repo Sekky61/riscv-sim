@@ -1,12 +1,14 @@
 plugins {
     id 'java'
     id 'groovy'
+    id 'jacoco'
     id 'application'
     id 'com.adarshr.test-logger' version '4.0.0'
+    id "me.champeau.jmh" version "0.7.2"
 }
 
 group 'com.gradle.superscalarsim'
-version '1.0-riscv-simulator'
+version '1.0'
 
 repositories {
     mavenCentral()
@@ -18,17 +20,22 @@ dependencies {
     implementation group: 'org.apache.commons', name: 'commons-text', version: '1.10.0'
 
     // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core
-    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.15.3'
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.16.1'
 
     // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind
-    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.15.3'
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.16.1'
 
     // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-annotations
-    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.15.3'
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.16.1'
 
     // Deserialization of Optional<T>
     // https://mvnrepository.com/artifact/com.fasterxml.jackson.datatype/jackson-datatype-jdk8
     implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jdk8', version: '2.16.1'
+
+    // Performance
+    // https://mvnrepository.com/artifact/com.fasterxml.jackson.module/jackson-module-blackbird
+    implementation group: 'com.fasterxml.jackson.module', name: 'jackson-module-blackbird', version: '2.16.1'
+
 
     // https://mvnrepository.com/artifact/com.kjetland/mbknor-jackson-jsonschema
     implementation group: 'com.kjetland', name: 'mbknor-jackson-jsonschema_2.13', version: '1.0.39'
@@ -45,35 +52,36 @@ dependencies {
 
     // https://mvnrepository.com/artifact/io.undertow/undertow-servlet
     implementation group: 'io.undertow', name: 'undertow-servlet', version: '2.3.8.Final'
+
+    // Logging for undertow
+    // https://mvnrepository.com/artifact/org.slf4j/slf4j-simple
+    testImplementation group: 'org.slf4j', name: 'slf4j-simple', version: '1.6.2'
+
+
+    // https://mvnrepository.com/artifact/com.opencsv/opencsv
+    implementation group: 'com.opencsv', name: 'opencsv', version: '5.9'
 }
 
 jar {
     manifest {
         attributes(
-                'Main-Class': 'RISCVsimulator',
+                'Main-Class': 'App',
                 'Class-Path': configurations.runtimeClasspath.files.collect { it.getName() }.join(' '),
                 'Application-Name': 'RISC-V simulator'
         )
     }
 }
 
+tasks.register('testProd', Test) {
+    // Configure the test task
+    systemProperty "config.profile", "prod"
+
+    // Optionally, you can specify test classes or test suites to run
+    // include 'com.example.package.*'
+}
+
 application {
     mainClass = 'App'
-}
-
-apply plugin: 'application'
-mainClassName = 'App'
-run {
-    /* Can pass all the properties: */
-    systemProperties System.getProperties()
-
-    /* Need to split the space-delimited value in the exec.args */
-    args System.getProperty("exec.args", "").split()
-}
-
-test {
-    /* Can pass all the properties: */
-    systemProperties System.getProperties()
 }
 
 testlogger {
@@ -121,4 +129,8 @@ testlogger {
 
     // set to false to hide failed standard out and error streams
     showFailedStandardStreams true
+}
+
+jacocoTestReport {
+    dependsOn test // tests are required to run before generating the report
 }

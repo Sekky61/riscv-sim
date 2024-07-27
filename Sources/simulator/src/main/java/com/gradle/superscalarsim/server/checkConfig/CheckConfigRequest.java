@@ -40,4 +40,21 @@ public class CheckConfigRequest
    */
   @JsonProperty(required = true)
   SimulationConfig config;
+  
+  /**
+   * Constructor for deserialization
+   */
+  public CheckConfigRequest()
+  {
+  }
+  
+  /**
+   * Constructor
+   *
+   * @param config The configuration to check
+   */
+  public CheckConfigRequest(SimulationConfig config)
+  {
+    this.config = config;
+  }
 }

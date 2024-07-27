@@ -41,7 +41,7 @@ public class CpuConfigValidator
   /**
    * List of all errors
    */
-  List<Error> errors;
+  List<ConfigError> errors;
   
   /**
    * Constructor
@@ -51,7 +51,7 @@ public class CpuConfigValidator
     errors = new ArrayList<>();
   }
   
-  public List<Error> getErrors()
+  public List<ConfigError> getErrors()
   {
     return errors;
   }
@@ -67,7 +67,7 @@ public class CpuConfigValidator
   {
     if (cpuConfig == null)
     {
-      errors.add(new Error("CPU configuration is null", "root"));
+      errors.add(new ConfigError("CPU configuration is null", "root"));
       return false;
     }
     validateRobAndInstructionBufferSize(cpuConfig);
@@ -86,11 +86,11 @@ public class CpuConfigValidator
   {
     if (cpuConfig.coreClockFrequency < 1)
     {
-      errors.add(new Error("Core clock frequency must be a positive integer", "coreClockFrequency"));
+      errors.add(new ConfigError("Core clock frequency must be a positive integer", "coreClockFrequency"));
     }
     if (cpuConfig.cacheClockFrequency < 1)
     {
-      errors.add(new Error("Memory clock frequency must be a positive integer", "cacheClockFrequency"));
+      errors.add(new ConfigError("Memory clock frequency must be a positive integer", "cacheClockFrequency"));
     }
   }
   
@@ -101,24 +101,24 @@ public class CpuConfigValidator
   {
     if (cpuConfig.robSize < 1 || cpuConfig.robSize > 1024)
     {
-      errors.add(new Error("ROB size must be between 1 and 1024", "robSize"));
+      errors.add(new ConfigError("ROB size must be between 1 and 1024", "robSize"));
     }
     if (cpuConfig.commitWidth < 1 || cpuConfig.commitWidth > 10)
     {
-      errors.add(new Error("Commit width must be between 1 and 10", "commitWidth"));
+      errors.add(new ConfigError("Commit width must be between 1 and 10", "commitWidth"));
     }
     if (cpuConfig.robSize < cpuConfig.commitWidth)
     {
-      errors.add(new Error("ROB size must be greater than or equal to commit width", "robSize"));
+      errors.add(new ConfigError("ROB size must be greater than or equal to commit width", "robSize"));
     }
     if (cpuConfig.flushPenalty < 0 || cpuConfig.flushPenalty > 100)
     {
-      errors.add(new Error("Flush penalty must be between 0 and 100", "flushPenalty"));
+      errors.add(new ConfigError("Flush penalty must be between 0 and 100", "flushPenalty"));
     }
     
     if (cpuConfig.fetchWidth < 1 || cpuConfig.fetchWidth > 10)
     {
-      errors.add(new Error("Fetch width must be between 1 and 10", "fetchWidth"));
+      errors.add(new ConfigError("Fetch width must be between 1 and 10", "fetchWidth"));
     }
   }
   
@@ -129,27 +129,21 @@ public class CpuConfigValidator
   {
     if (cpuConfig.btbSize < 1 || cpuConfig.btbSize > 16384)
     {
-      errors.add(new Error("BTB size must be between 1 and 16384", "btbSize"));
+      errors.add(new ConfigError("BTB size must be between 1 and 16384", "btbSize"));
     }
     if (cpuConfig.phtSize < 1 || cpuConfig.phtSize > 16384)
     {
-      errors.add(new Error("PHT size must be between 1 and 16384", "phtSize"));
+      errors.add(new ConfigError("PHT size must be between 1 and 16384", "phtSize"));
     }
     if (cpuConfig.predictorType == null)
     {
-      errors.add(new Error("Predictor type must not be null", "predictorType"));
-    }
-    // Predictor types: 0bit, 1bit, 2bit
-    if (!List.of("0bit", "1bit", "2bit").contains(cpuConfig.predictorType))
-    {
-      errors.add(new Error("Predictor type must be 0bit, 1bit, or 2bit", "predictorType"));
+      errors.add(new ConfigError("Predictor type must not be null", "predictorType"));
     }
     
     // Validate predictor default based on predictor type
-    switch (cpuConfig.predictorType)
+    if (!cpuConfig.predictorType.isValidState(cpuConfig.predictorDefaultState))
     {
-      case "0bit", "1bit" -> validateBinaryPredictorDefault(cpuConfig.predictorDefault);
-      case "2bit" -> validate2BitPredictorDefault(cpuConfig.predictorDefault);
+      errors.add(new ConfigError("Predictor default state is not valid", "predictorDefaultState"));
     }
   }
   
@@ -160,12 +154,12 @@ public class CpuConfigValidator
   {
     if (cpuConfig.fUnits == null)
     {
-      errors.add(new Error("Functional Unit (FU) configuration is null", "fus"));
+      errors.add(new ConfigError("Functional Unit (FU) configuration is null", "fus"));
       return;
     }
     if (cpuConfig.fUnits.isEmpty())
     {
-      errors.add(new Error("At least one Functional Unit (FU) is required", "fus"));
+      errors.add(new ConfigError("At least one Functional Unit (FU) is required", "fus"));
     }
     for (FunctionalUnitDescription unit : cpuConfig.fUnits)
     {
@@ -177,7 +171,7 @@ public class CpuConfigValidator
     {
       if (names.contains(unit.name))
       {
-        errors.add(new Error("Functional Unit (FU) name must be unique", "fuName"));
+        errors.add(new ConfigError("Functional Unit (FU) name must be unique", "fuName"));
       }
       names.add(unit.name);
     }
@@ -190,48 +184,49 @@ public class CpuConfigValidator
   {
     if (cpuConfig.cacheLines < 1 || cpuConfig.cacheLines > 65536)
     {
-      errors.add(new Error("Cache lines must be between 1 and 65536", "cacheLines"));
+      errors.add(new ConfigError("Cache lines must be between 1 and 65536", "cacheLines"));
     }
     if (cpuConfig.cacheLineSize < 1 || cpuConfig.cacheLineSize > 512)
     {
-      errors.add(new Error("Cache line size must be between 1 and 512", "cacheLineSize"));
+      errors.add(new ConfigError("Cache line size must be between 1 and 512", "cacheLineSize"));
     }
     boolean isLineSizePowerOfTwo = Integer.bitCount(cpuConfig.cacheLineSize) == 1;
     if (!isLineSizePowerOfTwo)
     {
-      errors.add(new Error("Cache line size must be a power of two", "cacheLineSize"));
-    }
-    if (cpuConfig.cacheStoreLatency < 1)
-    {
-      errors.add(new Error("Cache store latency must be positive", "cacheStoreLatency"));
-    }
-    if (cpuConfig.cacheLoadLatency < 1)
-    {
-      errors.add(new Error("Cache load latency must be positive", "cacheLoadLatency"));
+      errors.add(new ConfigError("Cache line size must be a power of two", "cacheLineSize"));
     }
     if (cpuConfig.cacheAssoc < 1)
     {
-      errors.add(new Error("Cache associativity must be greater than 0", "cacheAssociativity"));
+      errors.add(new ConfigError("Cache associativity must be greater than 0", "cacheAssociativity"));
     }
     if (cpuConfig.cacheAssoc > cpuConfig.cacheLines)
     {
-      errors.add(new Error("Cache associativity must be less than or equal to cache lines", "cacheAssociativity"));
+      errors.add(
+              new ConfigError("Cache associativity must be less than or equal to cache lines", "cacheAssociativity"));
+    }
+    // Cache assoc must be a power of two multiple of cacheAssoc (example 8*assoc, 16*assoc).
+    boolean dividesWithoutRemainder     = cpuConfig.cacheLines % cpuConfig.cacheAssoc == 0;
+    int     numberOfIndexes             = cpuConfig.cacheLines / cpuConfig.cacheAssoc;
+    boolean isNumberOfIndexesPowerOfTwo = Integer.bitCount(numberOfIndexes) == 1;
+    if (!dividesWithoutRemainder || !isNumberOfIndexesPowerOfTwo)
+    {
+      errors.add(new ConfigError("Cache associativity must be a power of two multiple of cacheAssoc", "cacheLines"));
     }
     if (!List.of("LRU", "FIFO", "Random").contains(cpuConfig.cacheReplacement))
     {
-      errors.add(new Error("Cache replacement must be LRU, FIFO, or Random", "cacheReplacement"));
+      errors.add(new ConfigError("Cache replacement must be LRU, FIFO, or Random", "cacheReplacement"));
     }
     if (!List.of("write-through", "write-back").contains(cpuConfig.storeBehavior))
     {
-      errors.add(new Error("Store behavior must be write-through or write-back", "storeBehavior"));
+      errors.add(new ConfigError("Store behavior must be write-through or write-back", "storeBehavior"));
     }
     if (cpuConfig.laneReplacementDelay < 0)
     {
-      errors.add(new Error("Lane replacement delay must be non-negative", "laneReplacementDelay"));
+      errors.add(new ConfigError("Lane replacement delay must be non-negative", "laneReplacementDelay"));
     }
     if (cpuConfig.cacheAccessDelay < 0)
     {
-      errors.add(new Error("Cache access delay must be non-negative", "cacheAccessDelay"));
+      errors.add(new ConfigError("Cache access delay must be non-negative", "cacheAccessDelay"));
     }
   }
   
@@ -243,28 +238,28 @@ public class CpuConfigValidator
   {
     if (cpuConfig.lbSize < 1 || cpuConfig.lbSize > 1024)
     {
-      errors.add(new Error("Load buffer size must be between 1 and 1024", "lbSize"));
+      errors.add(new ConfigError("Load buffer size must be between 1 and 1024", "lbSize"));
     }
     if (cpuConfig.sbSize < 1 || cpuConfig.sbSize > 1024)
     {
-      errors.add(new Error("Store buffer size must be between 1 and 1024", "sbSize"));
+      errors.add(new ConfigError("Store buffer size must be between 1 and 1024", "sbSize"));
     }
     if (cpuConfig.storeLatency < 1)
     {
-      errors.add(new Error("Store latency must be positive", "storeLatency"));
+      errors.add(new ConfigError("Store latency must be positive", "storeLatency"));
     }
     if (cpuConfig.loadLatency < 1)
     {
-      errors.add(new Error("Load latency must be positive", "loadLatency"));
+      errors.add(new ConfigError("Load latency must be positive", "loadLatency"));
     }
     if (cpuConfig.callStackSize < 1 || cpuConfig.callStackSize > 65536)
     {
-      errors.add(new Error("Call stack size must be between 1 and 65536", "callStackSize"));
+      errors.add(new ConfigError("Call stack size must be between 1 and 65536", "callStackSize"));
     }
     // Register file
     if (cpuConfig.speculativeRegisters < 1 || cpuConfig.speculativeRegisters > 1024)
     {
-      errors.add(new Error("Speculative registers count must be between 1 and 1024", "speculativeRegisters"));
+      errors.add(new ConfigError("Speculative registers count must be between 1 and 1024", "speculativeRegisters"));
     }
   }
   
@@ -276,24 +271,6 @@ public class CpuConfigValidator
     return errors.isEmpty();
   }
   
-  private void validateBinaryPredictorDefault(String predictorDefault)
-  {
-    if (!List.of("Taken", "Not Taken").contains(predictorDefault))
-    {
-      errors.add(new Error("Predictor default must be Taken or Not Taken", "predictorDefault"));
-    }
-  }
-  
-  private void validate2BitPredictorDefault(String predictorDefault)
-  {
-    if (!List.of("Strongly Not Taken", "Weakly Not Taken", "Weakly Taken", "Strongly Taken").contains(predictorDefault))
-    {
-      errors.add(new Error(
-              "Predictor default must be Strongly Not Taken, Weakly Not Taken, Weakly Taken, or Strongly Taken",
-              "predictorDefault"));
-    }
-  }
-  
   /**
    * Validates the FU configuration
    */
@@ -301,12 +278,12 @@ public class CpuConfigValidator
   {
     if (unit == null)
     {
-      errors.add(new Error("FU unit is null", "fu"));
+      errors.add(new ConfigError("FU unit is null", "fu"));
       return;
     }
     if (unit.name == null || unit.name.isEmpty())
     {
-      errors.add(new Error("FU name must not be null or empty", "fuName"));
+      errors.add(new ConfigError("FU name must not be null or empty", "fuName"));
     }
     switch (unit.fuType)
     {
@@ -315,19 +292,19 @@ public class CpuConfigValidator
         // Check capabilities
         if (unit.operations == null)
         {
-          errors.add(new Error("FU capabilities are null", "fuCapabilities"));
+          errors.add(new ConfigError("FU capabilities are null", "fuCapabilities"));
           return;
         }
         for (FunctionalUnitDescription.Capability capability : unit.operations)
         {
           if (capability == null)
           {
-            errors.add(new Error("FU capability is null", "fuCapabilities"));
+            errors.add(new ConfigError("FU capability is null", "fuCapabilities"));
             continue;
           }
           if (capability.latency < 0)
           {
-            errors.add(new Error("FU capability latency must non-negative", "fuCapabilities"));
+            errors.add(new ConfigError("FU capability latency must non-negative", "fuCapabilities"));
           }
         }
       }
@@ -336,31 +313,10 @@ public class CpuConfigValidator
         // Check latency
         if (unit.latency < 0)
         {
-          errors.add(new Error("FU latency must non-negative", "fuLatency"));
+          errors.add(new ConfigError("FU latency must non-negative", "fuLatency"));
         }
       }
     }
   }
   
-  /**
-   * Error item.
-   */
-  public static class Error
-  {
-    /**
-     * Error message
-     */
-    public String message;
-    
-    /**
-     * Field that caused the error
-     */
-    public String field;
-    
-    public Error(String message, String field)
-    {
-      this.message = message;
-      this.field   = field;
-    }
-  }
 }

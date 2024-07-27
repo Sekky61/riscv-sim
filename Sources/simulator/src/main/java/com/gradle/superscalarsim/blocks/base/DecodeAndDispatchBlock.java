@@ -37,18 +37,17 @@ import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.blocks.AbstractBlock;
 import com.gradle.superscalarsim.blocks.branch.BranchTargetBuffer;
-import com.gradle.superscalarsim.blocks.branch.GlobalHistoryRegister;
 import com.gradle.superscalarsim.code.CodeBranchInterpreter;
 import com.gradle.superscalarsim.cpu.SimulationStatistics;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.models.instruction.InputCodeArgument;
+import com.gradle.superscalarsim.models.instruction.InstructionArgument;
 import com.gradle.superscalarsim.models.instruction.InstructionFunctionModel;
 import com.gradle.superscalarsim.models.instruction.SimCodeModel;
 import com.gradle.superscalarsim.models.register.RegisterModel;
 import com.gradle.superscalarsim.models.util.Result;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.OptionalInt;
 
@@ -75,20 +74,10 @@ public class DecodeAndDispatchBlock implements AbstractBlock
   @JsonIdentityReference(alwaysAsId = true)
   private final RenameMapTableBlock renameMapTableBlock;
   /**
-   * Bit register marking history of predictions
-   */
-  @JsonIdentityReference(alwaysAsId = true)
-  private final GlobalHistoryRegister globalHistoryRegister;
-  /**
    * Buffer holding information about branch instructions targets
    */
   @JsonIdentityReference(alwaysAsId = true)
   private final BranchTargetBuffer branchTargetBuffer;
-  /**
-   * Parser holding parsed instructions
-   */
-  @JsonIdentityReference(alwaysAsId = true)
-  private final InstructionMemoryBlock instructionMemoryBlock;
   /**
    * Parser holding parsed instructions
    */
@@ -99,21 +88,12 @@ public class DecodeAndDispatchBlock implements AbstractBlock
    */
   private CodeBranchInterpreter codeBranchInterpreter;
   /**
-   * Boolean flag indicating if the decode block should be flushed
-   */
-  private boolean flush;
-  /**
    * Boolean flag indicating that one of the buffers is full and should simulate according to that state
    */
   private boolean stallFlag;
-  /**
-   * @brief Number of instructions that is pulled by the ROB
-   * Relevant only when the decode block is stalled.
-   */
-  private int stalledPullCount;
   
   /**
-   * Decode buffer size limit
+   * Decode buffer size limit. Usually set to the width of the fetch block.
    * TODO: Make configurable
    */
   private int decodeBufferSize;
@@ -121,19 +101,16 @@ public class DecodeAndDispatchBlock implements AbstractBlock
   /**
    * @param instructionFetchBlock Block fetching N instructions each clock event
    * @param renameMapTableBlock   Class holding mappings from architectural registers to speculative
-   * @param globalHistoryRegister A bit register holding history of predictions
    * @param branchTargetBuffer    Buffer holding information about branch instructions targets
-   * @param codeParser            Parser holding parsed instructions
    * @param decodeBufferSize      Size of the decode buffer
    * @param statistics            Statistics class holding information about the run
+   * @param codeBranchInterpreter Interpreter for interpreting branch instructions
    *
    * @brief Constructor
    */
   public DecodeAndDispatchBlock(InstructionFetchBlock instructionFetchBlock,
                                 RenameMapTableBlock renameMapTableBlock,
-                                GlobalHistoryRegister globalHistoryRegister,
                                 BranchTargetBuffer branchTargetBuffer,
-                                InstructionMemoryBlock codeParser,
                                 int decodeBufferSize,
                                 SimulationStatistics statistics,
                                 CodeBranchInterpreter codeBranchInterpreter)
@@ -142,15 +119,12 @@ public class DecodeAndDispatchBlock implements AbstractBlock
     this.renameMapTableBlock   = renameMapTableBlock;
     this.statistics            = statistics;
     
-    this.codeBuffer       = new ArrayList<>();
-    this.stallFlag        = false;
-    this.stalledPullCount = 0;
+    this.codeBuffer = new ArrayList<>();
+    this.stallFlag  = false;
     
-    this.globalHistoryRegister  = globalHistoryRegister;
-    this.branchTargetBuffer     = branchTargetBuffer;
-    this.instructionMemoryBlock = codeParser;
-    this.decodeBufferSize       = decodeBufferSize;
-    this.codeBranchInterpreter  = codeBranchInterpreter;
+    this.branchTargetBuffer    = branchTargetBuffer;
+    this.decodeBufferSize      = decodeBufferSize;
+    this.codeBranchInterpreter = codeBranchInterpreter;
   }// end of Constructor
   //----------------------------------------------------------------------
   
@@ -164,59 +138,6 @@ public class DecodeAndDispatchBlock implements AbstractBlock
   }// end of getAfterRenameCodeList
   //----------------------------------------------------------------------
   
-  
-  /**
-   * @return Boolean value of the flush flag
-   * @brief Gets the boolean value ot the flush flag
-   */
-  public boolean shouldFlush()
-  {
-    return flush;
-  }// end of shouldFlush
-  //----------------------------------------------------------------------
-  
-  /**
-   * @return Boolean value of the stall flag
-   * @brief Gets the boolean value ot the stall flag
-   */
-  public boolean shouldStall()
-  {
-    return this.stallFlag;
-  }// end of shouldStall
-  //----------------------------------------------------------------------
-  
-  /**
-   * @return Number of instruction, that were pulled by the reorder buffer
-   * @brief Get number of instruction, that were pulled by the reorder buffer
-   */
-  public int getStalledPullCount()
-  {
-    return stalledPullCount;
-  }// end of getStalledPullCount
-  //----------------------------------------------------------------------
-  
-  /**
-   * @param stalledPullCount Number of the pulled instructions
-   *
-   * @brief Set the number of instructions, that were pulled by the Reorder buffer
-   */
-  public void setStalledPullCount(int stalledPullCount)
-  {
-    this.stalledPullCount = stalledPullCount;
-  }// end of setStalledPullCount
-  //----------------------------------------------------------------------
-  
-  /**
-   * @param flush New value of the flush flag
-   *
-   * @brief Sets the flush flag
-   */
-  public void setFlush(boolean flush)
-  {
-    this.flush = flush;
-  }// end of setFlush
-  //----------------------------------------------------------------------
-  
   /**
    * @param shouldStall New boolean value of the stall flag
    *
@@ -228,69 +149,54 @@ public class DecodeAndDispatchBlock implements AbstractBlock
   }// end of setStallFlag
   //----------------------------------------------------------------------
   
-  /**
-   * @brief Simulates decoding and renaming of instructions before dispatching
-   */
   @Override
   public void simulate(int cycle)
   {
-    if (shouldFlush())
-    {
-      this.codeBuffer.clear();
-      setFlush(false);
-    }
+    decode();
+    
+    // Report map table to statistics
+    statistics.reportAllocatedRegisters(renameMapTableBlock.getAllocatedSpeculativeRegistersCount());
+    this.stallFlag = false;
+  }
+  
+  /**
+   * @brief Simulates decoding and renaming of instructions before dispatching.
+   * In normal operation, the buffer should be empty at the beginning of the cycle.
+   */
+  public void decode()
+  {
     // If ROB did not pull all instructions, stall decode block
-    
-    stallFlag |= !this.codeBuffer.isEmpty();
-    
     if (stallFlag)
     {
       // Decode is stalled. Stall fetch block (prevent fetching new instructions until decode can take the old ones)
       this.instructionFetchBlock.setStallFlag(true);
-      
-      // There are still already renamed instructions in the buffer
-      // We cant run
-      statistics.reportAllocatedRegisters(renameMapTableBlock.getAllocatedSpeculativeRegistersCount());
-      
-      this.stallFlag        = false;
-      this.stalledPullCount = 0;
       return;
     }
-    else
+    
+    // Check if all new destinations can be renamed
+    int freeRegisters = renameMapTableBlock.getFreeRegistersCount();
+    int pullCount     = instructionFetchBlock.getPullCount();
+    if (freeRegisters < pullCount)
     {
-      // Not stalled. ROB took all instructions
+      // Not enough registers to rename
+      this.instructionFetchBlock.setStallFlag(true);
       this.codeBuffer.clear();
-      // Copy fetched code to before rename list
-      this.codeBuffer.addAll(this.instructionFetchBlock.getFetchedCode());
+      return;
     }
     
-    // Filter out nops and labels
-    for (int i = this.codeBuffer.size() - 1; i >= 0; i--)
+    // Normal for!, because processBranchInstruction can remove instructions
+    for (int i = 0; i < pullCount; i++)
     {
-      SimCodeModel codeModel = this.codeBuffer.get(i);
-      if (codeModel.getInstructionName().equals("nop") || codeModel.getInstructionName().equals("label"))
+      SimCodeModel simCodeModel = this.instructionFetchBlock.getFetchedCode().get(i);
+      if (simCodeModel.getInstructionName().equals("nop"))
       {
-        codeModel.setFinished(true);
-        this.codeBuffer.remove(i);
+        pullCount++;
+        continue;
       }
-    }
-    
-    // Normal for, because processBranchInstruction can remove instructions
-    for (int i = 0; i < this.codeBuffer.size(); i++)
-    {
-      SimCodeModel simCodeModel = this.codeBuffer.get(i);
+      this.codeBuffer.add(simCodeModel);
       renameSourceRegisters(simCodeModel);
-      // Not sure if this does anything
       boolean renameSuccessful = renameDestinationRegister(simCodeModel);
-      
-      if (!renameSuccessful)
-      {
-        // discard, stall fetch, retry next cycle
-        this.stallFlag = true;
-        this.instructionFetchBlock.setStallFlag(true);
-        this.codeBuffer.clear();
-        return;
-      }
+      assert renameSuccessful;
       
       statistics.reportDecodedInstruction(simCodeModel);
       
@@ -298,45 +204,25 @@ public class DecodeAndDispatchBlock implements AbstractBlock
       // TODO: maybe, a condition should disallow this in Decode
       if (simCodeModel.getInstructionTypeEnum() == InstructionTypeEnum.kJumpbranch)
       {
-        processBranchInstruction(simCodeModel);
+        boolean stop = processBranchInstruction(simCodeModel);
+        if (stop)
+        {
+          break;
+        }
       }
     }
-    
-    // Rename ended, report map table to statistics
-    statistics.reportAllocatedRegisters(renameMapTableBlock.getAllocatedSpeculativeRegistersCount());
-    
-    this.stallFlag        = false;
-    this.stalledPullCount = 0;
   }// end of simulate
   //----------------------------------------------------------------------
   
   /**
-   * @brief Resets the all the lists/stacks/variables in the decode block
+   * @brief Clears the decode buffer
    */
-  @Override
-  public void reset()
+  public void flush()
   {
     this.codeBuffer.clear();
-    this.renameMapTableBlock.clear();
-    this.stallFlag        = false;
-    this.stalledPullCount = 0;
-  }// end of reset
+  }// end of setFlush
   //----------------------------------------------------------------------
   
-  /**
-   * @brief Checks if fetched code (beforeRenameCodeList) holds any branch instructions and processes them
-   */
-  private void checkForBranchInstructions()
-  {
-    for (int i = 0; i < this.codeBuffer.size(); i++)
-    {
-      SimCodeModel codeModel = this.codeBuffer.get(i);
-      if (codeModel.getInstructionTypeEnum() == InstructionTypeEnum.kJumpbranch)
-      {
-        processBranchInstruction(codeModel);
-      }
-    }
-  }// end of checkForBranchInstructions
   //----------------------------------------------------------------------
   
   /**
@@ -346,22 +232,21 @@ public class DecodeAndDispatchBlock implements AbstractBlock
    */
   private void renameSourceRegisters(SimCodeModel simCodeModel)
   {
-    InstructionFunctionModel functionModel = simCodeModel.getInstructionFunctionModel();
-    for (InstructionFunctionModel.Argument argDesc : functionModel.getArguments())
+    InstructionFunctionModel functionModel = simCodeModel.instructionFunctionModel();
+    for (InstructionArgument argDesc : functionModel.arguments())
     {
-      boolean shouldRename = !argDesc.writeBack() && argDesc.name().startsWith("r");
+      boolean shouldRename = !argDesc.writeBack() && argDesc.isRegister();
       if (shouldRename)
       {
-        InputCodeArgument argument         = simCodeModel.getArgumentByName(argDesc.name());
-        String            oldArgumentValue = argument.getValue();
-        RegisterModel     rename           = renameMapTableBlock.getMappingForRegister(oldArgumentValue);
+        InputCodeArgument argument = simCodeModel.getArgumentByName(argDesc.name());
+        RegisterModel     rename   = argument.getRegisterValue().getNewestMapping();
         argument.setRegisterValue(rename);
         if (rename.isSpeculative())
         {
           // Rename the string only if the register is speculative. This is because of register aliases
           argument.setStringValue(rename.getName());
+          renameMapTableBlock.increaseReference(rename);
         }
-        renameMapTableBlock.increaseReference(rename.getName());
       }
     }
   }// end of renameSourceRegisters
@@ -376,7 +261,7 @@ public class DecodeAndDispatchBlock implements AbstractBlock
   private boolean renameDestinationRegister(SimCodeModel simCodeModel)
   {
     // Rename all arguments that will be written back
-    for (InstructionFunctionModel.Argument argument : simCodeModel.getInstructionFunctionModel().getArguments())
+    for (InstructionArgument argument : simCodeModel.instructionFunctionModel().arguments())
     {
       if (argument.writeBack())
       {
@@ -387,8 +272,7 @@ public class DecodeAndDispatchBlock implements AbstractBlock
           return false;
         }
         
-        RegisterModel mappedReg = renameMapTableBlock.mapRegister(destinationArgument.getValue(),
-                                                                  simCodeModel.getIntegerId());
+        RegisterModel mappedReg = renameMapTableBlock.mapRegister(destinationArgument.getRegisterValue());
         assert mappedReg != null;
         // Set reference
         destinationArgument.setRegisterValue(mappedReg);
@@ -403,53 +287,64 @@ public class DecodeAndDispatchBlock implements AbstractBlock
   /**
    * @param codeModel Branch code model with arguments
    *
+   * @return True if the consequent instructions should be dropped
    * @brief Processes branch instructions in decode block. Can delete from the buffer.
+   * @details Some of the branch instructions can be calculated in decode stage.
    */
-  private void processBranchInstruction(final SimCodeModel codeModel)
+  private boolean processBranchInstruction(final SimCodeModel codeModel)
   {
-    InstructionFunctionModel instruction = codeModel.getInstructionFunctionModel();
+    boolean                  flush       = false;
+    InstructionFunctionModel instruction = codeModel.instructionFunctionModel();
     
     int     instructionPosition = codeModel.getSavedPc();
-    boolean unconditional       = instruction.isUnconditionalJump();
+    boolean unconditional       = !codeModel.isConditionalBranch();
     boolean prediction          = codeModel.isBranchPredicted();
     // -1 means that entry was not predicted
     // TODO: this line is sus
     int         predTarget    = this.branchTargetBuffer.getEntryTarget(instructionPosition);
     OptionalInt realTargetOpt = calculateRealBranchAddress(codeModel);
     
-    boolean globalHistoryBit = prediction && predTarget != 0;
-    boolean conditionKnown   = unconditional;
-    boolean targetKnown      = realTargetOpt.isPresent();
-    boolean badCondition     = !prediction && unconditional;
-    boolean badTarget        = targetKnown && predTarget != realTargetOpt.getAsInt();
-    boolean jumpBad          = targetKnown && conditionKnown && (badCondition || badTarget);
-    if (jumpBad)
+    boolean targetKnown    = realTargetOpt.isPresent();
+    boolean conditionKnown = unconditional;
+    boolean doJump         = unconditional;
+    if (targetKnown && conditionKnown)
     {
-      // Branch badly predicted, and we know the right target and condition
-      // Fix entry in BTB, set correct PC
-      codeModel.setBranchPredicted(true);
-      this.branchTargetBuffer.setEntry(instructionPosition, codeModel, realTargetOpt.getAsInt(),
-                                       codeModel.getIntegerId(), -1);
-      this.instructionFetchBlock.setPc(realTargetOpt.getAsInt());
-      // Drop instructions after branch
-      removeAfter(codeModel);
-      globalHistoryBit = true;
+      codeModel.setBranchComputedInDecode();
+      // The jump can be calculated in decode stage
+      // Compare to the prediction and fix if needed
+      int     target       = realTargetOpt.getAsInt();
+      boolean badTarget    = predTarget != target;
+      boolean badCondition = prediction != doJump;
+      boolean jumpBad      = badCondition || badTarget;
+      
+      if (jumpBad)
+      {
+        // Branch badly predicted,fFix entry in BTB, set correct PC
+        codeModel.setBranchTarget(target);
+        this.branchTargetBuffer.setEntry(instructionPosition, codeModel, target);
+        this.instructionFetchBlock.setPc(target);
+        // Drop instructions after branch
+        flush = true;
+      }
+      
+      // TODO: A GHT update might be missing here, though the issue may not surface since we only work with unconditional jumps here
     }
-    this.globalHistoryRegister.shiftSpeculativeValue(codeModel.getIntegerId(), globalHistoryBit);
+    
+    return flush;
   }// end of processBranchInstruction
   //----------------------------------------------------------------------
   
   /**
    * @param codeModel Branch code model
    *
-   * @return Branch jump target if possible to calculate in decode stage, empty otherwise
+   * @return Branch jump absolute target if possible to calculate in decode stage, empty otherwise
    * @brief Calculates branch instruction target if possible (label or offset)
    */
   private OptionalInt calculateRealBranchAddress(final SimCodeModel codeModel)
   {
     boolean                  canCalculateAddress = true;
-    InstructionFunctionModel instruction         = codeModel.getInstructionFunctionModel();
-    for (InstructionFunctionModel.Argument argument : instruction.getArguments())
+    InstructionFunctionModel instruction         = codeModel.instructionFunctionModel();
+    for (InstructionArgument argument : instruction.arguments())
     {
       if (argument.isRegister() && !argument.writeBack())
       {
@@ -465,39 +360,12 @@ public class DecodeAndDispatchBlock implements AbstractBlock
     // Arguments are not registers, we can calculate the address
     // TODO - maybe more relaxed check?
     
-    Result<OptionalInt> maybeTargetRes = codeBranchInterpreter.interpretInstruction(codeModel);
-    if (maybeTargetRes.isException())
-    {
-      // Couldn't calculate target
-      return OptionalInt.empty();
-    }
-    return maybeTargetRes.value();
+    Result<CodeBranchInterpreter.BranchResult> targetRes = codeBranchInterpreter.interpretInstruction(codeModel);
+    // I don't think jump target uses division
+    assert !targetRes.isException();
+    return OptionalInt.of(targetRes.value().target());
   }// end of calculateRealBranchAddress
   //----------------------------------------------------------------------
-  
-  /**
-   * @param index index of first instruction to remove
-   *
-   * @brief Remove all instructions from beforeRenameCodeList from specified index until the end
-   */
-  private void removeAfter(SimCodeModel codeModel)
-  {
-    boolean                found    = false;
-    Iterator<SimCodeModel> iterator = this.codeBuffer.iterator();
-    while (iterator.hasNext())
-    {
-      SimCodeModel next = iterator.next();
-      if (next.equals(codeModel))
-      {
-        found = true;
-        continue;
-      }
-      if (found)
-      {
-        iterator.remove();
-      }
-    }
-  }// end of removeInstructionsFromIndex
   
   /**
    * @param pulledCount Number of instructions that were pulled by the ROB

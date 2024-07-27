@@ -29,7 +29,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { FieldError } from 'react-hook-form';
+import type { FieldError } from 'react-hook-form';
 
 import { Label } from '@/components/base/ui/label';
 import {
@@ -44,7 +44,7 @@ type InputProps = React.InputHTMLAttributes<HTMLInputElement>;
 
 export type FormInputProps = {
   name: string;
-  title: string;
+  title?: string;
   type?: string;
   error?: FieldError;
   hint?: string;
@@ -56,7 +56,7 @@ export type FormInputProps = {
  * It displays error message, title, hint.
  * See example of usage in {@link src/components/form/MemoryForm.tsx}
  */
-const FormInput = React.forwardRef<HTMLInputElement, FormInputProps>(
+export const FormInput = React.forwardRef<HTMLInputElement, FormInputProps>(
   ({ name, title, error, hint, ...inputProps }: FormInputProps, ref) => {
     const isError = error !== undefined;
 
@@ -68,7 +68,7 @@ const FormInput = React.forwardRef<HTMLInputElement, FormInputProps>(
               <Label htmlFor={name}>{title}&nbsp;&#9432;</Label>
             </TooltipTrigger>
             <TooltipContent>
-              <p>{hint}</p>
+              <p className='max-w-64 p-2'>{hint}</p>
             </TooltipContent>
           </Tooltip>
         ) : (
@@ -80,17 +80,13 @@ const FormInput = React.forwardRef<HTMLInputElement, FormInputProps>(
           name={name}
           id={name}
           className={cn(
-            'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
+            'input',
             isError && 'form-input-error',
             !isError && 'focus-visible:ring-ring',
           )}
           ref={ref}
         />
-        <div className='h-6'>
-          {error?.message && (
-            <span className='mt-1 text-sm text-red-600'>{error?.message}</span>
-          )}
-        </div>
+        <ErrorDisplay error={error} />
       </div>
     );
   },
@@ -98,4 +94,15 @@ const FormInput = React.forwardRef<HTMLInputElement, FormInputProps>(
 
 FormInput.displayName = 'FormInput';
 
-export { FormInput };
+/**
+ * Displays a zod error
+ */
+export function ErrorDisplay({ error }: { error?: FieldError }) {
+  return (
+    <div className='h-6'>
+      {error?.message && (
+        <span className='mt-1 text-sm text-red-600'>{error?.message}</span>
+      )}
+    </div>
+  );
+}

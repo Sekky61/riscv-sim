@@ -65,14 +65,14 @@ public class CodeArithmeticInterpreter
    */
   public Result<Expression.Variable> interpretInstruction(final SimCodeModel simCodeModel)
   {
-    final InstructionFunctionModel instruction = simCodeModel.getInstructionFunctionModel();
+    final InstructionFunctionModel instruction = simCodeModel.instructionFunctionModel();
     if (instruction == null)
     {
       throw new IllegalArgumentException("Instruction is null");
     }
     
     // Evaluate expression
-    String                      expression = instruction.getInterpretableAs();
+    String                      expression = instruction.interpretableAs();
     List<Expression.Variable>   variables  = simCodeModel.getVariables();
     Result<Expression.Variable> result     = Expression.interpret(expression, variables);
     
@@ -86,7 +86,7 @@ public class CodeArithmeticInterpreter
     
     if (rd != null)
     {
-      DataTypeEnum resultType = instruction.getArgumentByName("rd").type();
+      DataTypeEnum resultType = instruction.getOutputType();
       rd.value.setCurrentType(resultType);
     }
     return new Result<>(rd);

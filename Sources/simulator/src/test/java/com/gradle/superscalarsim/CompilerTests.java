@@ -1,13 +1,13 @@
 package com.gradle.superscalarsim;
 
 import com.gradle.superscalarsim.code.CodeParser;
-import com.gradle.superscalarsim.code.Label;
+import com.gradle.superscalarsim.code.Symbol;
 import com.gradle.superscalarsim.compiler.AsmParser;
 import com.gradle.superscalarsim.compiler.CompiledProgram;
 import com.gradle.superscalarsim.compiler.GccCaller;
 import com.gradle.superscalarsim.cpu.Cpu;
 import com.gradle.superscalarsim.cpu.SimulationConfig;
-import com.gradle.superscalarsim.loader.InitLoader;
+import com.gradle.superscalarsim.loader.StaticDataProvider;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -80,9 +80,9 @@ public class CompilerTests
   public void test_simpleCProgram_produces_valid_riscv_asm()
   {
     // Setup
-    String     cCode  = "int f(int a) { int x = a*2; return x+1; }";
-    InitLoader loader = new InitLoader();
-    CodeParser parser = new CodeParser(loader);
+    String             cCode  = "int f(int a) { int x = a*2; return x+1; }";
+    StaticDataProvider loader = new StaticDataProvider();
+    CodeParser         parser = new CodeParser(loader);
     
     // Exercise
     GccCaller.CompileResult compileResult = GccCaller.compile(cCode, List.of());
@@ -118,8 +118,8 @@ public class CompilerTests
                 
                 return num * num;
             }""";
-    InitLoader loader = new InitLoader();
-    CodeParser parser = new CodeParser(loader);
+    StaticDataProvider loader = new StaticDataProvider();
+    CodeParser         parser = new CodeParser(loader);
     
     // Exercise
     GccCaller.CompileResult compileResult = GccCaller.compile(cCode, List.of("O2"));
@@ -135,7 +135,7 @@ public class CompilerTests
       Assert.assertFalse(parser.getInstructions().isEmpty());
       
       // There is a square label
-      Assert.assertNotNull(parser.getLabels().get("square"));
+      Assert.assertNotNull(parser.getSymbolTable().get("square"));
     }
     catch (AssertionError e)
     {
@@ -162,8 +162,8 @@ public class CompilerTests
                 }
                 return sum;
             }""";
-    InitLoader loader = new InitLoader();
-    CodeParser parser = new CodeParser(loader);
+    StaticDataProvider loader = new StaticDataProvider();
+    CodeParser         parser = new CodeParser(loader);
     
     // Exercise
     GccCaller.CompileResult compileResult = GccCaller.compile(cCode, List.of("O2"));
@@ -176,7 +176,7 @@ public class CompilerTests
     Assert.assertTrue(parser.success());
     Assert.assertFalse(parser.getInstructions().isEmpty());
     // There is a sum label
-    Assert.assertNotNull(parser.getLabels().get("sum"));
+    Assert.assertNotNull(parser.getSymbolTable().get("sum"));
   }
   
   @Test
@@ -190,8 +190,8 @@ public class CompilerTests
               return str[x] + str2[x];
             }
             """;
-    InitLoader loader = new InitLoader();
-    CodeParser parser = new CodeParser(loader);
+    StaticDataProvider loader = new StaticDataProvider();
+    CodeParser         parser = new CodeParser(loader);
     
     // Exercise
     GccCaller.CompileResult compileResult = GccCaller.compile(cCode, List.of("O2"));
@@ -204,10 +204,10 @@ public class CompilerTests
     Assert.assertTrue(parser.success());
     Assert.assertFalse(parser.getInstructions().isEmpty());
     // There is a add label
-    Assert.assertNotNull(parser.getLabels().get("add"));
+    Assert.assertNotNull(parser.getSymbolTable().get("add"));
     
     // There is a string label
-    Label str = parser.getLabels().get("str");
+    Symbol str = parser.getSymbolTable().get("str");
     Assert.assertNotNull(str);
     Assert.assertNotEquals(0, str.getAddress());
     
@@ -217,8 +217,57 @@ public class CompilerTests
     cpuConfig.code = asm;
     Cpu cpu = new Cpu(cpuConfig);
     
-    Map<String, Label> labels = cpu.cpuState.instructionMemoryBlock.getLabels();
+    Map<String, Symbol> labels = cpu.cpuState.instructionMemoryBlock.getLabels();
     Assert.assertNotNull(labels.get("str"));
     Assert.assertEquals("str", labels.get("str").name);
+  }
+  
+  @Test
+  public void test_c_matrix()
+  {
+    String cCode = """
+            int resultMatrix[16];
+            
+            int matrix1[16] =  {1,  1,  1,  1,
+                                  2,  2,  2,  2,
+                                  3,  3,  3,  3,
+                                  4,  4,  4,  4};
+            int matrix2[16] =  {1,  2,  3,  4,
+                                  1,  2,  3,  4,
+                                  1,  2,  3,  4,
+                                  1,  2,  3,  4};
+                        
+            int main()
+            {
+              for (int i = 0; i < 4; i++)
+              {
+                for(int j = 0; j < 4; j++)
+                {
+                  for(int k = 0; k < 4; k++)
+                  {
+                    resultMatrix[i*4+j] = resultMatrix[i*4+j] + matrix1[i*4+k] * matrix2[k*4+j];
+                  }
+                }
+              }
+            }
+            """;
+    StaticDataProvider loader = new StaticDataProvider();
+    CodeParser         parser = new CodeParser(loader);
+    
+    // Exercise
+    GccCaller.CompileResult compileResult = GccCaller.compile(cCode, List.of("O2"));
+    CompiledProgram         program       = AsmParser.parse(compileResult.code);
+    String                  asm           = String.join("\n", program.program);
+    parser.parseCode(asm);
+    
+    // Verify
+    Assert.assertTrue(compileResult.success);
+    Assert.assertTrue(parser.success());
+    
+    // There should be 3 memory locations, each of them 16*4 bytes
+    Map<String, Symbol> symbolTable = parser.getSymbolTable();
+    Assert.assertEquals(16 * 4, symbolTable.get("resultMatrix").getMemoryLocation().getBytes().length);
+    Assert.assertEquals(16 * 4, symbolTable.get("matrix1").getMemoryLocation().getBytes().length);
+    Assert.assertEquals(16 * 4, symbolTable.get("matrix2").getMemoryLocation().getBytes().length);
   }
 }

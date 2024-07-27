@@ -33,6 +33,7 @@
 package com.gradle.superscalarsim.blocks.loadstore;
 
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gradle.superscalarsim.blocks.base.AbstractFunctionUnitBlock;
 import com.gradle.superscalarsim.blocks.base.IssueWindowBlock;
 import com.gradle.superscalarsim.code.CodeLoadStoreInterpreter;
@@ -80,12 +81,17 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
   
   /**
    * Delay added to the memory access by this unit.
+   * TODO delete
    */
   private int baseDelay;
   
   /**
+   * Delay caused by memory access itself. Part of the total delay.
+   */
+  private int memoryDelay;
+  
+  /**
    * Current memory transaction, or null if no transaction is in progress.
-   * TODO do not serialize (or maybe it does not matter here)
    */
   private MemoryTransaction transaction;
   
@@ -135,84 +141,8 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
     }
   }// end of simulate
   
-  private void handleInstruction(int cycle)
-  {
-    incrementBusyCycles();
-    if (this.simCodeModel.hasFailed())
-    {
-      // Instruction has failed, remove it from MAU
-      this.simCodeModel.setFunctionUnitId(this.functionUnitId);
-      this.simCodeModel = null;
-      // In case this clock tick is the last one of the instruction, take result from mem/cache
-      if (hasDelayPassed())
-      {
-        memoryModel.finishTransaction(transaction.id());
-      }
-      
-      zeroTheCounter();
-      setDelay(baseDelay);
-      return;
-    }
-    
-    if (hasTimerStartedThisTick())
-    {
-      // First tick of work, leave your ID in store and load buffers
-      if (simCodeModel.isLoad())
-      {
-        this.loadBufferBlock.getLoadBufferItem(simCodeModel.getIntegerId()).setMemoryAccessId(this.functionUnitId);
-      }
-      else if (simCodeModel.isStore())
-      {
-        this.storeBufferBlock.getStoreBufferItem(simCodeModel.getIntegerId()).setMemoryAccessId(this.functionUnitId);
-      }
-      else
-      {
-        throw new RuntimeException("Instruction is not load or store");
-      }
-      
-      // Start execution
-      int delay = startExecution(cycle);
-      this.setDelay(delay);
-      // todo +baseDelay ? But careful to take the transaction result in time
-    }
-    
-    // hasDelayPassed increments counter, checks if work (waiting) is done
-    if (hasDelayPassed())
-    {
-      assert simCodeModel != null;
-      assert transaction != null;
-      // Wait for memory is over, instruction is finished
-      this.setDelay(baseDelay);
-      int simCodeId = simCodeModel.getIntegerId();
-      simCodeModel.setBusy(false);
-      // Take result
-      memoryModel.finishTransaction(transaction.id());
-      if (this.simCodeModel.isLoad())
-      {
-        InputCodeArgument destinationArgument = simCodeModel.getArgumentByName("rd");
-        RegisterModel     destRegister        = destinationArgument.getRegisterValue();
-        long              savedResult         = transaction.dataAsLong();
-        destRegister.setValue(savedResult, simCodeModel.getInstructionFunctionModel().getArgumentByName("rd").type());
-        destRegister.setReadiness(RegisterReadinessEnum.kExecuted);
-        this.loadBufferBlock.setDestinationAvailable(simCodeId);
-        this.loadBufferBlock.setMemoryAccessFinished(simCodeId);
-      }
-      else if (this.simCodeModel.isStore())
-      {
-        this.storeBufferBlock.setMemoryAccessFinished(simCodeId);
-      }
-      
-      this.simCodeModel = null;
-      this.transaction  = null;
-      zeroTheCounter();
-    }
-    
-    tickCounter();
-  }
-  //----------------------------------------------------------------------
-  
   /**
-   * @return Delay of this access and id of the transaction
+   * @return Delay of this access
    * @brief starts execution of instruction
    */
   private int startExecution(int cycle)
@@ -237,17 +167,105 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
     }
     
     
-    transaction = new MemoryTransaction(-1, functionUnitId, simCodeModel.getCodeId(), cycle, address, data,
-                                        numberOfBytes, access.isStore(), access.isSigned());
+    transaction = new MemoryTransaction(-1, functionUnitId, simCodeModel.codeId(), cycle, address, data, numberOfBytes,
+                                        access.isStore(), access.isSigned());
     // return memory delay
     return memoryModel.execute(transaction);
   }
   
+  /**
+   * @brief Finishes execution of the instruction
+   */
   @Override
-  public void reset()
+  protected void finishExecution()
   {
-    super.reset();
-    this.setDelay(baseDelay);
+    assert simCodeModel != null;
+    assert transaction != null;
+    // Wait for memory is over, instruction is finished
+    int simCodeId = simCodeModel.getIntegerId();
+    simCodeModel.setBusy(false);
+    // Take result
+    memoryModel.finishTransaction(transaction.id());
+    if (this.simCodeModel.isLoad())
+    {
+      InputCodeArgument destinationArgument = simCodeModel.getArgumentByName("rd");
+      RegisterModel     destRegister        = destinationArgument.getRegisterValue();
+      long              savedResult         = transaction.dataAsLong();
+      destRegister.setValue(savedResult, simCodeModel.instructionFunctionModel().getOutputType());
+      destRegister.setReadiness(RegisterReadinessEnum.kExecuted);
+      this.loadBufferBlock.setDestinationAvailable(simCodeId);
+      this.loadBufferBlock.setMemoryAccessFinished(simCodeId);
+    }
+    else if (this.simCodeModel.isStore())
+    {
+      this.storeBufferBlock.setMemoryAccessFinished(simCodeId);
+    }
+    
+    // stats
+    int instrIndex = simCodeModel.codeId();
+    if (instrIndex >= 0)
+    {
+      // Do not touch statistic in case the cache transaction is not related to any instruction (tests)
+      statistics.instructionStats.get(instrIndex).incrementMemoryAccesses(transaction.isHit());
+    }
+    
+    this.simCodeModel = null;
+    this.transaction  = null;
+    this.setDelay(0);
+    zeroTheCounter();
+  }
+  
+  /**
+   * @brief Action that should take place when an instruction failed.
+   * Remove the instruction, reset counter, cancel memory transaction.
+   */
+  @Override
+  protected void handleFailedInstruction()
+  {
+    // Instruction has failed, remove it from MAU
+    this.simCodeModel.setFunctionUnitId(this.functionUnitId);
+    this.simCodeModel = null;
+    // In case this clock tick is the last one of the instruction, take result from mem/cache
+    if (hasDelayPassed())
+    {
+      memoryModel.finishTransaction(transaction.id());
+    }
+    
+    // Mark the transaction as canceled
+    if (transaction != null)
+    {
+      transaction.setCanceled();
+      transaction = null;
+    }
+    
+    zeroTheCounter();
+    setDelay(baseDelay);
+  }
+  
+  /**
+   * @brief Action that should take place when an instruction starts executing.
+   * Calculate the delay, start memory transaction.
+   */
+  @Override
+  protected void handleStartExecution(int cycle)
+  {
+    // First tick of work, leave your ID in store and load buffers
+    if (simCodeModel.isLoad())
+    {
+      this.loadBufferBlock.getLoadBufferItem(simCodeModel.getIntegerId()).setMemoryAccessId(this.functionUnitId);
+    }
+    else if (simCodeModel.isStore())
+    {
+      this.storeBufferBlock.getStoreBufferItem(simCodeModel.getIntegerId()).setMemoryAccessId(this.functionUnitId);
+    }
+    else
+    {
+      throw new RuntimeException("Instruction is not load or store");
+    }
+    
+    // Start execution
+    memoryDelay = startExecution(cycle);
+    this.setDelay(memoryDelay);
   }
   
   /**
@@ -258,7 +276,7 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
   @Override
   public boolean canExecuteInstruction(SimCodeModel simCodeModel)
   {
-    return simCodeModel.getInstructionFunctionModel().getInstructionType() == InstructionTypeEnum.kLoadstore;
+    return simCodeModel.instructionFunctionModel().instructionType() == InstructionTypeEnum.kLoadstore;
   }
   
   /**
@@ -279,9 +297,13 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
     this.simCodeModel.setFunctionUnitId(this.functionUnitId - 1);
     this.simCodeModel = null;
     this.zeroTheCounter();
+    this.setDelay(0);
     
-    this.setDelay(baseDelay);
-    // todo cancel transaction?
+    if (transaction != null)
+    {
+      transaction.setCanceled();
+      transaction = null;
+    }
   }// end of tryRemoveCodeModel
   //----------------------------------------------------------------------
   
@@ -291,5 +313,18 @@ public class MemoryAccessUnit extends AbstractFunctionUnitBlock
   public void setBaseDelay(int baseDelay)
   {
     this.baseDelay = baseDelay;
+  }
+  
+  /**
+   * @return What system component is currently handling the transaction. Null if no transaction is in progress.
+   */
+  @JsonProperty
+  public String getHandledBy()
+  {
+    if (transaction == null)
+    {
+      return null;
+    }
+    return transaction.handledBy();
   }
 }

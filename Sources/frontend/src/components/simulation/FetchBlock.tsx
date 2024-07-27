@@ -34,29 +34,52 @@
 import { selectFetch } from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
 
+import { useBlockDescriptions } from '@/components/BlockDescriptionContext';
+import { DividedBadge } from '@/components/DividedBadge';
 import {
+  Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from '@/components/base/ui/dialog';
-import Block from '@/components/simulation/Block';
+import { PredictorGraphFromCodeId } from '@/components/prediction/PredictorGraph';
+import { Block } from '@/components/simulation/Block';
 import InstructionField from '@/components/simulation/InstructionField';
 import { InstructionListDisplay } from '@/components/simulation/InstructionListDisplay';
 import InstructionTable from '@/components/simulation/InstructionTable';
+import { BranchDetailDialog } from '@/components/simulation/PredictionBlock';
+import { hexPadEven } from '@/lib/utils';
+import { Expand } from 'lucide-react';
 
 /**
  * A component for displaying the Fetch block.
  */
 export default function FetchBlock() {
   const fetchObject = useAppSelector(selectFetch);
+  const descriptions = useBlockDescriptions();
 
   if (!fetchObject) return null;
 
   const fetchStats = (
     <>
-      <div>PC: {fetchObject.pc}</div>
-      <div>{fetchObject.stallFlag ? 'Stalled' : null}</div>
+      <div className='badge-container'>
+        <DividedBadge>
+          <div>PC</div>
+          <div>{hexPadEven(fetchObject.pc)}</div>
+        </DividedBadge>
+        {fetchObject.stallFlag ? <DividedBadge>Stalled</DividedBadge> : null}
+        <Dialog>
+          <DialogTrigger>
+            <DividedBadge>
+              <div>Prediction</div>
+              <Expand size={16} strokeWidth={1.5} />
+            </DividedBadge>
+          </DialogTrigger>
+          <BranchDetailDialog />
+        </Dialog>
+      </div>
     </>
   );
 
@@ -64,13 +87,13 @@ export default function FetchBlock() {
     <Block
       title='Fetch Block'
       stats={fetchStats}
-      className='fetch-position'
+      className='fetch-position w-block h-[250px]'
       detailDialog={
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Fetch Block</DialogTitle>
             <DialogDescription>
-              Detailed view of the Fetch block
+              {descriptions.fetch?.shortDescription}
             </DialogDescription>
           </DialogHeader>
           <table>
@@ -96,13 +119,18 @@ export default function FetchBlock() {
         </DialogContent>
       }
     >
-      <InstructionListDisplay
-        instructions={fetchObject.fetchedCode}
-        totalSize={fetchObject.numberOfWays}
-        instructionRenderer={(codeModel, i) => (
-          <InstructionField instructionId={codeModel} key={`instr_${i}`} />
-        )}
-      />
+      <div className='flex-grow'>
+        <InstructionListDisplay
+          instructions={fetchObject.fetchedCode}
+          totalSize={fetchObject.numberOfWays}
+          instructionRenderer={(codeModel, i) => (
+            <div className='flex gap-1' key={`instr_${codeModel}_${i}`}>
+              <InstructionField instructionId={codeModel} />
+              <PredictorGraphFromCodeId simCodeId={codeModel} />
+            </div>
+          )}
+        />
+      </div>
     </Block>
   );
 }

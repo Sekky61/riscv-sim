@@ -168,6 +168,7 @@ public class SimulatedMemory implements AbstractBlock, MemoryBlock
     int latency = transaction.isStore() ? this.storeLatency : this.loadLatency;
     transaction.setLatency(latency);
     transaction.setId(this.transactionId++);
+    transaction.setHandledBy(MemoryTransaction.MAIN_MEMORY);
     return latency;
   }
   
@@ -177,9 +178,18 @@ public class SimulatedMemory implements AbstractBlock, MemoryBlock
   @Override
   public void simulate(int cycle)
   {
+    // Remove cancelled
+    for (int i = 0; i < this.operations.size(); i++)
+    {
+      if (this.operations.get(i).isCancelled())
+      {
+        this.operations.remove(i);
+        i--;
+      }
+    }
     for (MemoryTransaction transaction : this.operations)
     {
-      assert !transaction.isFinished(); // All finished transactions should be removed from the list by the requester
+      assert !transaction.isFinished() || transaction.isCancelled(); // All finished transactions should be removed from the list by the requester
       // Check if the operation is finished this cycle
       int finishCycle = transaction.timestamp() + transaction.latency();
       assert finishCycle >= cycle;
@@ -216,14 +226,6 @@ public class SimulatedMemory implements AbstractBlock, MemoryBlock
     }
     System.arraycopy(data, 0, this.memory, (int) address, data.length);
   }// end of insertIntoMemory
-  
-  /**
-   * @brief Resets memory to its initial state
-   */
-  public void reset()
-  {
-    this.memory = new byte[0];
-  }// end of reset
   
   /**
    * Throws if the requested transaction is not in the list or not finished yet, as it would be a bug.

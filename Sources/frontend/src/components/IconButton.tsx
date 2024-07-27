@@ -29,11 +29,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+'use client';
+
 import clsx from 'clsx';
 import { useHotkeys } from 'react-hotkeys-hook';
-import { OptionsOrDependencyArray } from 'react-hotkeys-hook/dist/types';
+import type { OptionsOrDependencyArray } from 'react-hotkeys-hook/dist/types';
 
-import { ReactChildren } from '@/lib/types/reactTypes';
+import type { ReactChildren } from '@/lib/types/reactTypes';
 import { useRef } from 'react';
 
 export type IconButtonProps = {
@@ -47,6 +49,7 @@ export type IconButtonProps = {
   children: ReactChildren;
   className?: string;
   description: string;
+  animate?: boolean;
 };
 
 /**
@@ -63,6 +66,7 @@ export const IconButton = ({
   children,
   className,
   description,
+  animate = false,
 }: IconButtonProps) => {
   const buttonRef = useRef<HTMLButtonElement>(null);
 
@@ -86,7 +90,11 @@ export const IconButton = ({
     <button
       ref={buttonRef}
       type='button'
-      className={clsx('iconHighlight h-8 w-8 rounded-full p-1', className)}
+      className={clsx(
+        className,
+        'h-8 w-8 rounded-full p-1',
+        animate && 'iconHighlight',
+      )}
       onClick={onClick}
       aria-label={description}
       data-active={active ? 'true' : undefined}

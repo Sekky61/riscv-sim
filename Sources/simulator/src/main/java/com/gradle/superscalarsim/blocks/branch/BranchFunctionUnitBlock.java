@@ -47,8 +47,6 @@ import com.gradle.superscalarsim.models.instruction.SimCodeModel;
 import com.gradle.superscalarsim.models.register.RegisterModel;
 import com.gradle.superscalarsim.models.util.Result;
 
-import java.util.OptionalInt;
-
 @JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
 public class BranchFunctionUnitBlock extends AbstractFunctionUnitBlock
 {
@@ -76,72 +74,23 @@ public class BranchFunctionUnitBlock extends AbstractFunctionUnitBlock
   }// end of Constructor
   
   /**
-   * @param simCodeModel Instruction to be executed
-   *
-   * @return True if the function unit can execute the instruction, false otherwise.
+   * @brief Finishes execution of the instruction
    */
   @Override
-  public boolean canExecuteInstruction(SimCodeModel simCodeModel)
+  protected void finishExecution()
   {
-    return simCodeModel.getInstructionFunctionModel().getInstructionType() == InstructionTypeEnum.kJumpbranch;
-  }
-  //----------------------------------------------------------------------
-  
-  /**
-   * @brief Simulates execution of an instruction
-   */
-  @Override
-  public void simulate(int cycle)
-  {
-    if (!isFunctionUnitEmpty())
-    {
-      handleInstruction();
-    }
-    
-    if (isFunctionUnitEmpty())
-    {
-      this.functionUnitId += this.functionUnitCount;
-    }
-  }// end of simulate
-  
-  /**
-   * @brief Processes instruction
-   */
-  public void handleInstruction()
-  {
-    incrementBusyCycles();
-    if (this.simCodeModel.hasFailed())
-    {
-      this.simCodeModel.setFunctionUnitId(this.functionUnitId);
-      this.simCodeModel = null;
-      this.zeroTheCounter();
-      return;
-    }
-    
-    if (hasTimerStartedThisTick())
-    {
-      this.simCodeModel.setFunctionUnitId(this.functionUnitId);
-    }
-    
-    tickCounter();
-    if (!hasDelayPassed())
-    {
-      return;
-    }
-    
     // Execute
-    Result<OptionalInt> jumpTargetRes = branchInterpreter.interpretInstruction(this.simCodeModel);
+    Result<CodeBranchInterpreter.BranchResult> jumpTargetRes = branchInterpreter.interpretInstruction(
+            this.simCodeModel);
     // I don't think jump target uses division
     assert !jumpTargetRes.isException();
-    OptionalInt jumpTarget = jumpTargetRes.value();
-    boolean     jumpTaken  = jumpTarget.isPresent();
+    CodeBranchInterpreter.BranchResult jump       = jumpTargetRes.value();
+    int                                jumpTarget = jump.target();
+    boolean                            jumpTaken  = jump.jumpTaken();
     // If the branch was taken or not
     this.simCodeModel.setBranchLogicResult(jumpTaken);
     // Used to fix BTB and PC in misprediction
-    if (jumpTaken)
-    {
-      this.simCodeModel.setBranchTarget(jumpTarget.getAsInt());
-    }
+    this.simCodeModel.setBranchTarget(jumpTarget);
     InputCodeArgument destinationArgument = simCodeModel.getArgumentByName("rd");
     if (destinationArgument != null)
     {
@@ -154,6 +103,89 @@ public class BranchFunctionUnitBlock extends AbstractFunctionUnitBlock
     
     this.simCodeModel.setBusy(false);
     this.simCodeModel = null;
+    zeroTheCounter();
+    setDelay(0);
+  }
+  
+  /**
+   * @brief Action that should take place when an instruction failed.
+   * Remove the instruction, reset counter, cancel memory transaction.
+   */
+  @Override
+  protected void handleFailedInstruction()
+  {
+    this.simCodeModel.setFunctionUnitId(this.functionUnitId);
+    this.simCodeModel = null;
+    this.zeroTheCounter();
+    this.setDelay(0);
+  }
+  
+  /**
+   * @param cycle
+   *
+   * @brief Action that should take place when an instruction starts executing.
+   * Calculate the delay, start memory transaction.
+   */
+  @Override
+  protected void handleStartExecution(int cycle)
+  {
+    this.simCodeModel.setFunctionUnitId(this.functionUnitId);
+    this.setDelay(this.delay);
+  }
+  
+  /**
+   * @param simCodeModel Instruction to be executed
+   *
+   * @return True if the function unit can execute the instruction, false otherwise.
+   */
+  @Override
+  public boolean canExecuteInstruction(SimCodeModel simCodeModel)
+  {
+    return simCodeModel.instructionFunctionModel().instructionType() == InstructionTypeEnum.kJumpbranch;
+  }
+  //----------------------------------------------------------------------
+  
+  /**
+   * @brief Simulates execution of an instruction
+   */
+  @Override
+  public void simulate(int cycle)
+  {
+    if (!isFunctionUnitEmpty())
+    {
+      handleInstruction(cycle);
+    }
+    
+    if (isFunctionUnitEmpty())
+    {
+      this.functionUnitId += this.functionUnitCount;
+    }
+  }// end of simulate
+  
+  /**
+   * @brief Processes instruction
+   */
+  public void handleInstruction(int cycle)
+  {
+    if (this.simCodeModel.hasFailed())
+    {
+      handleFailedInstruction();
+      return;
+    }
+    
+    if (hasTimerStartedThisTick())
+    {
+      handleStartExecution(cycle);
+    }
+    //
+    //    tickCounter();
+    //    if (!hasDelayPassed())
+    //    {
+    //      incrementBusyCycles();
+    //      return;
+    //    }
+    //
+    //    finishExecution();
   }
   
   //----------------------------------------------------------------------

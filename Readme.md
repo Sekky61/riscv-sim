@@ -2,28 +2,36 @@
 
 ## Introduction
 
-This repository extends the superscalar simulator created by Jakub Horky and Jan Vavra. The goal is to add a WEB and CLI interface.
+This is a RISC-V Simulator Web App. The project builds on the superscalar simulator created by Jakub Horky and Jan Vavra. The goal is to add a **web** and a **CLI** interface.
 
-## Repository structure
+In this readme, you will find instructions to build and run the app both natively and in Docker.
+The project consists of two components: web app and Java simulator server. More detailed info can be found in their respective Readmes [Sources/frontend/Readme.md](Sources/frontend/Readme.md) and [Sources/simulator/Readme.md](Sources/simulator/Readme.md)).
+
+## Repository Structure
 
     .
     +--Data       - Example data, measured results, etc.
     +--Literature - Publications, references, manuals, etc.
     +--Sources    - Root folder for the sources.
-    +--Thesis     - Latex / MS Word sources of the thesis.
+    +--Thesis     - Latex sources of the thesis.
     +--Misc       - Other auxiliary materials.
     Readme.md     - Read me file
 
+## Installation Instructions
 
-## Build instructions
+> TLDR: cd Sources && ./build_container.sh && ./run_container.sh
 
 You can either build the project locally or use docker.
 First the manual build is described, then the docker build.
+
 If anything is unclear, you can refer to the Dockerfiles, which contain all the necessary steps.
+The `Sources/frontend` and `Sources/simulator` also contain their own, more detailed instructions.
 
-### Build frontend web app
+### Build and Run Frontend Web App
 
-The app was developed using npm `9.3.1` and node.js `v18.4.0`.
+> Requirements: npm, node.js
+
+The app was developed using npm `10.2.3` and node.js `v21.2.0`.
 You need to have these installed to build the frontend app (later versions should work as well).
 
 To build the production version of the app, start by navigating to `Sources/frontend` and installing dependencies:
@@ -38,36 +46,58 @@ To build the app, run:
 npm run build
 ```
 
-The production version of the app should be in the `.next` folder.
-There, you can run the app using:
-
+Unfortunately, some of the files need to be manually copied over:
 ```bash
-node server.js
+cp -r .next/static/ .next/standalone/.next/static
 ```
 
-To develop the app, see `Sources/frontend/Readme.md`.
+Now that the app is built, you can run it using:
+```bash
+node .next/standalone/server.js
+```
+Navigate to `http://localhost:3000` to see the app (or the address shown in the console).
 
-### Build backend server
+For more detailed documentation and to develop the app, see `Sources/frontend/Readme.md`.
 
-The backend server is written in Java using version `17.0.6`. Gradle is bundled with the project.
+### Build and Run Simulation Server
+
+> Requirements: Java
+
+The backend server is written in Java using version `17.0.6`. Gradle is bundled with the project, so you don't need to install it.
 
 To build the backend server, navigate to `Sources/simulator` and run:
 
 ```bash
-./run.sh server
+./scripts/install.sh
 ```
-(see `--help` for more options).
+
+To use the app (either CLI or server), run `./scripts/run.sh help` to see the available options.
+
+To run the server, type `./scripts/run.sh server`.
+
+For more detailed documentation, see `Sources/simulator/Readme.md`.
 
 ### Docker
 
-There is docker compose file in the `Sources`. It builds the frontend and backend and runs them together.
-There is a prepared script `Sources/run_container.sh` and `Sources/stop_container.sh` to run and stop the container.
+The two components have their respective Dockerfiles in their directories.
+There is a docker compose file located at `Sources/`. It builds the frontend and backend and runs them together.
 
-Developed using Docker `24.0.7`.
+There are prepared scripts `Sources/build_container.sh`, `Sources/run_container.sh` and `Sources/stop_container.sh` to run and stop the container.
+Note that sudo might be required to run the docker commands.
+Also note that older Docker versions use command `docker-compose` instead of `docker compose`.
+
+Developed using Docker `24.0.7` and `20.10.2` (version on `sc-gpu1` server).
+
+```bash
+cd Sources
+./build_container.sh
+./run_container.sh
+```
 
 ## Author information
 
  * Name: Michal Majer
  * Email: xmajer21@stud.fit.vutbr.cz, misa@majer.cz
- * Data: 2023/2024
+ * Date: 2023/2024
  * Phone: +420 773 959 458
+

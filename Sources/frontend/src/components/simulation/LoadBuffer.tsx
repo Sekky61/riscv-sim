@@ -29,36 +29,66 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { selectLoadBuffer } from '@/lib/redux/cpustateSlice';
+'use client';
+
+import {
+  type ParsedArgument,
+  selectLoadBuffer,
+} from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
-import { LoadBufferItem } from '@/lib/types/cpuApi';
+import type { LoadBufferItem, RegisterDataContainer } from '@/lib/types/cpuApi';
 import { hexPadEven } from '@/lib/utils';
 
-import Block from '@/components/simulation/Block';
-import InstructionField from '@/components/simulation/InstructionField';
+import { useBlockDescriptions } from '@/components/BlockDescriptionContext';
+import {
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/base/ui/dialog';
+import { Block } from '@/components/simulation/Block';
+import InstructionField, {
+  EmptyInstructionField,
+} from '@/components/simulation/InstructionField';
 import { InstructionListDisplay } from '@/components/simulation/InstructionListDisplay';
+import { ArgumentTableCell } from '@/components/simulation/IssueWindow';
 import RegisterReference from '@/components/simulation/RegisterReference';
+import InstructionTable from './InstructionTable';
 
 export default function LoadBuffer() {
   const loadBuffer = useAppSelector(selectLoadBuffer);
+  const descriptions = useBlockDescriptions();
 
   if (!loadBuffer) return null;
 
-  const limit = Math.min(16, loadBuffer.bufferSize);
-
   return (
-    <Block title='Load Buffer' className='loadBuffer w-96 h-96'>
+    <Block
+      title='Load Buffer'
+      className='loadBuffer w-ls h-[600px]'
+      detailDialog={
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Load Buffer</DialogTitle>
+            <DialogDescription>
+              {descriptions.loadBuffer?.shortDescription}
+            </DialogDescription>
+          </DialogHeader>
+          <InstructionTable
+            instructions={loadBuffer.loadQueue.map((item) => item.simCodeModel)}
+          />
+        </DialogContent>
+      }
+    >
       <InstructionListDisplay
         instructions={loadBuffer.loadQueue}
         totalSize={loadBuffer.bufferSize}
-        columns={4}
         legend={
-          <>
-            <div>Instruction</div>
+          <div className='flex gap-1 items-center'>
+            <div className='flex-grow'>Instruction</div>
             <div>Address</div>
             <div>Data</div>
             <div>Bypass</div>
-          </>
+          </div>
         }
         instructionRenderer={(buffItem, i) => (
           <LoadBufferItemComponent loadItem={buffItem} key={`item_${i}`} />
@@ -80,31 +110,39 @@ export function LoadBufferItemComponent({
 }: LoadBufferItemProps) {
   if (!item) {
     return (
-      <div className='instruction-bubble flex justify-center px-2 py-1 font-mono col-span-4'>
-        <span className='text-gray-400'>empty</span>
+      <div className='col-span-4 pointer-events-none w-full font-mono px-2 text-left whitespace-nowrap'>
+        <EmptyInstructionField />
       </div>
     );
   }
 
   // If address is -1, it is not known yet
-  const displayAddress = item.address === -1 ? '???' : hexPadEven(item.address);
+  const addressContainer: RegisterDataContainer = {
+    bits: item.address,
+    currentType: 'kInt',
+    stringRepresentation: hexPadEven(item.address),
+  };
+
+  const address: ParsedArgument = {
+    register: null,
+    valid: item.address !== -1,
+    origArg: {
+      name: 'address',
+      constantValue: addressContainer,
+      stringValue: '',
+      registerValue: null,
+    },
+    value: addressContainer,
+  };
 
   return (
-    <>
+    <div className='flex gap-1 justify-center items-center'>
       <InstructionField instructionId={item.simCodeModel} />
-      <div className='instruction-bubble h-full flex justify-center items-center'>
-        {displayAddress}
-      </div>
-      <div>
-        <RegisterReference
-          registerId={item.destinationRegister}
-          className='h-full flex justify-center items-center'
-          showValue
-        />
-      </div>
+      <ArgumentTableCell arg={address} />
+      <RegisterReference registerId={item.destinationRegister} />
       <div className='instruction-bubble h-full flex justify-center items-center'>
         {item.hasBypassed ? 'True' : 'False'}
       </div>
-    </>
+    </div>
   );
 }

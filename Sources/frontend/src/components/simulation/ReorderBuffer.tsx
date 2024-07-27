@@ -29,22 +29,27 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { selectROB } from '@/lib/redux/cpustateSlice';
+'use client';
+
+import { selectROB, selectSimCodeModel } from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
 
+import { useBlockDescriptions } from '@/components/BlockDescriptionContext';
+import { DividedBadge } from '@/components/DividedBadge';
 import {
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/base/ui/dialog';
-import Block from '@/components/simulation/Block';
+import { Block } from '@/components/simulation/Block';
 import InstructionField from '@/components/simulation/InstructionField';
 import { InstructionListDisplay } from '@/components/simulation/InstructionListDisplay';
 import InstructionTable from '@/components/simulation/InstructionTable';
 
 export default function ReorderBuffer() {
   const rob = useAppSelector(selectROB);
+  const descriptions = useBlockDescriptions();
 
   if (!rob) return null;
 
@@ -52,8 +57,13 @@ export default function ReorderBuffer() {
 
   const robStats = (
     <>
-      <div>
-        Capacity: {used}/{rob.bufferSize}
+      <div className='flex'>
+        <DividedBadge>
+          <div>Capacity</div>
+          <div>
+            {used}/{rob.bufferSize}
+          </div>
+        </DividedBadge>
       </div>
     </>
   );
@@ -62,13 +72,13 @@ export default function ReorderBuffer() {
     <Block
       title='Reorder Buffer'
       stats={robStats}
-      className='rob h-96'
+      className='w-block h-[500px]'
       detailDialog={
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Reorder Buffer</DialogTitle>
             <DialogDescription>
-              Detailed view of the Reorder Buffer
+              {descriptions.rob?.shortDescription}
             </DialogDescription>
           </DialogHeader>
           <h2>Buffer</h2>
@@ -83,16 +93,39 @@ export default function ReorderBuffer() {
         instructions={rob.reorderQueue}
         totalSize={rob.bufferSize}
         instructionRenderer={(simCodeModel, i) => {
-          if (simCodeModel === null) {
-            return <InstructionField instructionId={null} key={`item_${i}`} />;
-          }
           return (
-            <div className='relative' key={`item_${i}`}>
-              <InstructionField instructionId={simCodeModel} showSpeculative />
+            <div className='flex items-center gap-1' key={`item_${i}`}>
+              <InstructionField instructionId={simCodeModel} />
+              <RobInfo instructionId={simCodeModel} />
             </div>
           );
         }}
       />
     </Block>
+  );
+}
+
+export function RobInfo({ instructionId }: { instructionId: number | null }) {
+  const q = useAppSelector((state) => selectSimCodeModel(state, instructionId));
+  if (!q || instructionId === null) {
+    // Empty field
+    return null;
+  }
+
+  const { simCodeModel } = q;
+
+  return (
+    <div className='flex gap-0.5 items-start'>
+      {simCodeModel.isSpeculative && (
+        <DividedBadge title='Speculative'>S</DividedBadge>
+      )}
+      {simCodeModel.exception && (
+        <DividedBadge
+          title={`Exception: ${simCodeModel.exception.exceptionMessage}`}
+        >
+          Ex
+        </DividedBadge>
+      )}
+    </div>
   );
 }

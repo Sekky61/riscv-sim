@@ -37,70 +37,51 @@ import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.blocks.AbstractBlock;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
-import com.gradle.superscalarsim.models.instruction.InstructionFunctionModel;
 import com.gradle.superscalarsim.models.instruction.SimCodeModel;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @class AbstractIssueWindowBlock
- * @brief Abstract class, containing interface and shared logic for all Issuing windows
+ * @class IssueWindowBlock
+ * @brief Shared logic for all Issuing windows. Instructions get here from {@link IssueWindowSuperBlock}.
+ * @details TODO: Where should the conversion instructions execute (float to int, eg.)?
  */
 @JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
 public class IssueWindowBlock implements AbstractBlock
 {
   /**
-   * List of all instructions dispatched to this window, with their arguments.
+   * List of all instructions dispatched to this window.
    */
   @JsonIdentityReference(alwaysAsId = true)
   private final List<SimCodeModel> issuedInstructions;
-  
   /**
    * List of all function units associated with this window
    */
-  private List<AbstractFunctionUnitBlock> functionUnitBlockList;
-  
-  /**
-   * ID counter specifying which issue window did the instruction took
-   */
-  protected int windowId;
-  
+  private final List<AbstractFunctionUnitBlock> functionUnitBlockList;
   /**
    * Type of the instructions this window can hold.
    * Arithmetic is further differentiated into int and float.
    */
-  private InstructionTypeEnum instructionType;
+  private final InstructionTypeEnum instructionType;
   
   /**
-   * @param registerFileBlock Class containing all registers, that simulator uses
+   * @param instructionType       Type of the instructions this window can hold
+   * @param functionUnitBlockList List of all function units associated with this window
    *
    * @brief Constructor
    */
-  public IssueWindowBlock(InstructionTypeEnum instructionType)
+  public IssueWindowBlock(InstructionTypeEnum instructionType, List<AbstractFunctionUnitBlock> functionUnitBlockList)
   {
     this.issuedInstructions    = new ArrayList<>();
-    this.functionUnitBlockList = new ArrayList<>();
-    
-    this.instructionType = instructionType;
+    this.functionUnitBlockList = functionUnitBlockList;
+    this.instructionType       = instructionType;
   }// end of Constructor
   //----------------------------------------------------------------------
   
   /**
-   * @param instruction Instruction description
-   *
-   * @return True if compatible, false otherwise.
-   * @brief Checks if provided instruction is compatible with this window.
-   * TODO: Where should the conversion instructions execute (float to int, eg.)?
-   */
-  public boolean canHold(InstructionFunctionModel instruction)
-  {
-    return instruction.getInstructionType() == this.instructionType;
-  }
-  
-  /**
    * @return Issue Instruction list
-   * @brief Gets Issued Instruction list
+   * @brief Gets Issued Instruction list. Used for debugging
    */
   public List<SimCodeModel> getIssuedInstructions()
   {
@@ -108,46 +89,61 @@ public class IssueWindowBlock implements AbstractBlock
   }// end of getIssuedInstructions
   
   /**
-   * @brief Simulates issuing instructions to FUs
-   * Shared behavior for all issue windows
+   * @brief Simulates issuing instructions to FUs.
+   * Shared behavior for all issue windows.
    */
   @Override
   public void simulate(int cycle)
   {
     removeFailedInstructions();
     
-    // Iterate the function units
-    for (AbstractFunctionUnitBlock functionUnitBlock : functionUnitBlockList)
+    // If there are any issues with skipping, this is the place to fix it - simCodes are removed form iterated list
+    outer:
+    for (int i = 0; i < this.issuedInstructions.size(); i++)
     {
-      // Check if the function unit is free
-      if (functionUnitBlock.getSimCodeModel() != null)
+      SimCodeModel currentModel = this.issuedInstructions.get(i);
+      if (!currentModel.isReadyToExecute())
       {
         continue;
       }
       
-      // If there are any issues with skipping, this is the place to fix it - simCodes are removed form iterated list
-      for (SimCodeModel currentModel : this.issuedInstructions)
+      // Iterate the function units
+      boolean eligibleFound = false;
+      for (AbstractFunctionUnitBlock functionUnitBlock : functionUnitBlockList)
       {
+        
         boolean isMatch = functionUnitBlock.canExecuteInstruction(currentModel);
-        boolean isReady = currentModel.isReadyToExecute();
         // Can instruction be issued?
-        if (!isMatch || !isReady)
+        if (!isMatch)
         {
+          continue;
+        }
+        eligibleFound = true;
+        
+        if (functionUnitBlock.isBusy())
+        {
+          // FU is taken
           continue;
         }
         
         // Instruction is ready for execution and there is a free FU -> issue the instruction
-        functionUnitBlock.resetCounter();
-        functionUnitBlock.setSimCodeModel(currentModel);
+        functionUnitBlock.startExecuting(currentModel);
         functionUnitBlock.setDelayBasedOnInstruction();
         // Remove the instruction from the list
-        this.issuedInstructions.remove(currentModel);
+        this.issuedInstructions.remove(i);
+        i--;
         // This FU is taken
-        break;
+        continue outer;
+      }
+      
+      // If the instruction got here, it is ready to execute, but there is no free FU
+      // A wrong configuration for the given code
+      if (!eligibleFound)
+      {
+        throw new IllegalStateException(
+                "No eligible FU found for instruction: " + currentModel.instructionFunctionModel().name());
       }
     }
-    
-    this.windowId = cycle;
   }
   
   /**
@@ -166,35 +162,18 @@ public class IssueWindowBlock implements AbstractBlock
     }
   }// end of checkForFailedInstructions
   
-  /**
-   * @brief Resets the all the lists/stacks/variables in the issue window
-   */
-  @Override
-  public void reset()
-  {
-    this.issuedInstructions.clear();
-  }// end of reset
   //----------------------------------------------------------------------
   
   /**
    * @param codeModel Instruction to be added
+   * @param cycle     Current cycle
    *
    * @brief Adds new instruction to window list
    */
-  public void dispatchInstruction(SimCodeModel codeModel)
+  public void dispatchInstruction(SimCodeModel codeModel, int cycle)
   {
     this.issuedInstructions.add(codeModel);
-    codeModel.setIssueWindowId(this.windowId);
+    codeModel.setIssueWindowId(cycle);
   }// end of dispatchInstruction
   //----------------------------------------------------------------------
-  
-  /**
-   * @param functionUnitBlock Function unit to be added
-   *
-   * @brief Adds new function unit to the list
-   */
-  public void addFunctionUnit(AbstractFunctionUnitBlock functionUnitBlock)
-  {
-    this.functionUnitBlockList.add(functionUnitBlock);
-  }
 }

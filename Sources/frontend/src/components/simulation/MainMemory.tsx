@@ -34,71 +34,48 @@
 import { selectMemoryBytes, selectProgram } from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
 
+import { useBlockDescriptions } from '@/components/BlockDescriptionContext';
 import {
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/base/ui/dialog';
-import Block from '@/components/simulation/Block';
-import { Label } from '@/lib/types/cpuApi';
-import React, { memo, useDeferredValue } from 'react';
-
-/**
- * Get the indexes of the memory that are different
- */
-function getChangedIndexes(
-  oldMemory: Uint8Array,
-  newMemory: Uint8Array,
-): number[] {
-  const indexes: number[] = [];
-  const length = Math.min(oldMemory.length, newMemory.length);
-  for (let i = 0; i < length; i++) {
-    if (oldMemory[i] !== newMemory[i]) {
-      indexes.push(i);
-    }
-  }
-  // Add the rest of the bytes
-  const rest = oldMemory.length > newMemory.length ? oldMemory : newMemory;
-  for (let i = length; i < rest.length; i++) {
-    indexes.push(i);
-  }
-  return indexes;
-}
+import { Block } from '@/components/simulation/Block';
+import { useRefDimensions } from '@/lib/hooks/useRefDimensions';
+import type { AsmSymbol } from '@/lib/types/cpuApi';
+import { useRef } from 'react';
+import { FixedSizeList, type ListChildComponentProps } from 'react-window';
 
 /**
  * Display the memory like a hexdump.
  * Displays the whole memory, up to the highes touched address.
+ *
+ * TODO filter out program labels
  */
 export default function MainMemory() {
   const program = useAppSelector(selectProgram);
+  const descriptions = useBlockDescriptions();
   const memory = useAppSelector(selectMemoryBytes) ?? new Uint8Array(0);
-  const oldMemory = useDeferredValue(memory);
+  const oldMemory = usePrevious(memory);
 
   if (!program) {
     return null;
   }
 
-  const labelTable = [];
-  for (const label of Object.values(program.labels)) {
-    labelTable.push(
-      <tr key={label.name}>
-        <td>{label.name}</td>
-        <td>{label.address.stringRepresentation}</td>
-      </tr>,
-    );
-  }
+  // TODO Memoize labels, memory
+  const labels = Object.values(program.labels);
 
   return (
     <Block
       title='Main Memory'
-      className=''
+      className='w-block h-80'
       detailDialog={
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Main Memory</DialogTitle>
             <DialogDescription>
-              Detailed view of the Main Memory
+              {descriptions.mainMemory?.shortDescription}
             </DialogDescription>
           </DialogHeader>
           <table className='mb-4'>
@@ -108,16 +85,29 @@ export default function MainMemory() {
                 <th>Address</th>
               </tr>
             </thead>
-            <tbody>{labelTable}</tbody>
+            <tbody>
+              {labels.map((label) => {
+                return (
+                  <tr key={label.name}>
+                    <td>{label.name}</td>
+                    <td>{label.value.stringRepresentation}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
           </table>
-          <div className='py-1'>
-            Memory Inspector - shows the memory up to the highest touched
-            address
+          <div className='py-1 text-md'>
+            Memory Inspector shows the memory up to the highest touched address
           </div>
-          <div className='max-h-64 flex'>
+          <div
+            className='h-64 overflow-scroll rounded-md border p-2 shadow-inner'
+            onScroll={(e) => e.stopPropagation()}
+            onWheel={(e) => e.stopPropagation()}
+          >
             <HexDump
               memory={memory}
-              labels={program.labels}
+              oldMemory={oldMemory}
+              labels={labels}
               bytesInRow={16}
               showAscii
             />
@@ -125,17 +115,17 @@ export default function MainMemory() {
         </DialogContent>
       }
     >
-      <div className='max-h-80 flex text-sm gap-2 font-mono'>
-        {memory.length === 0 ? (
-          <div className='text-center text-gray-500'>Empty</div>
-        ) : (
-          <HexDump
-            memory={memory}
-            labels={program.labels}
-            bytesInRow={8}
-            oldMemory={oldMemory}
-          />
-        )}
+      <div
+        className='flex-grow justify-center text-sm gap-2 font-mono'
+        onScroll={(e) => e.stopPropagation()}
+        onWheel={(e) => e.stopPropagation()}
+      >
+        <HexDump
+          memory={memory}
+          oldMemory={oldMemory}
+          labels={labels}
+          bytesInRow={8}
+        />
       </div>
     </Block>
   );
@@ -143,8 +133,8 @@ export default function MainMemory() {
 
 export type HexDumpProps = {
   memory: Uint8Array;
-  oldMemory?: Uint8Array;
-  labels: { [k: string]: Label };
+  oldMemory: Uint8Array;
+  labels: AsmSymbol[];
   /**
    * Should be a multiple of 4
    */
@@ -152,96 +142,131 @@ export type HexDumpProps = {
   showAscii?: boolean;
 };
 
-export const HexDump = ({
+/**
+ * The spacing between columns is done with the .memory-grid class (see globals.css)
+ */
+function HexDump({
   memory,
   oldMemory,
   labels,
   bytesInRow,
   showAscii = false,
-}: HexDumpProps) => {
+}: HexDumpProps) {
   const rows = memory.length / bytesInRow;
+  const ref = useRef(null);
+  const dimensions = useRefDimensions(ref);
 
-  const startAddress = 624;
-
-  const addresses = [];
-  for (let i = 0; i < rows; i++) {
-    addresses.push(
-      <div key={i}>{`0x${(i * bytesInRow)
-        .toString(16)
-        .padStart(4, '0')}`}</div>,
-    );
+  if (memory.length === 0) {
+    return <div className='text-center text-gray-500'>Empty</div>;
   }
 
-  const bytes = [];
-  for (const [index, byte] of memory.entries()) {
-    bytes.push(
-      <div key={index} className={byte === 0 ? 'text-gray-500' : undefined}>
-        {byte.toString(16).padStart(2, '0')}
-      </div>,
-    );
+  // A lookup structure for labels. Key is the address
+  const labelsLookup = new Map<number, string>();
+  for (const label of labels) {
+    labelsLookup.set(label.value.bits, label.name);
   }
-  // Add labels
-  // TODO: separate the data labels and code labels using an extra field in the label object
-  for (const label of Object.values(labels)) {
-    const el = bytes[Number(label.address.stringRepresentation)];
-    bytes[Number(label.address.stringRepresentation)] = (
-      <div
-        key={label.address.bits}
-        className='relative bg-gray-200 -m-1 p-1 rounded hover:bg-red-500 hover:rounded-l-none duration-150 group'
-      >
-        <div className='absolute top-0 right-full h-full p-1 rounded-l bg-red-500 invisible opacity-0 group-hover:visible group-hover:opacity-100 duration-150 translate-x-6 group-hover:translate-x-0'>
-          {label.name}
-        </div>
-        {el}
-      </div>
-    );
+
+  // A lookup structure for memory changes. Key is the address
+  const memoryChanges: object = {};
+  for (let i = 0; i < memory.length; i++) {
+    if (oldMemory[i] !== memory[i]) {
+      //@ts-ignore
+      memoryChanges[i] = null;
+    }
   }
-  // Highlight changed bytes
-  // todo scroll to changed bytes
-  if (oldMemory) {
-    const changedIndexes = getChangedIndexes(oldMemory, memory);
-    for (const index of changedIndexes) {
-      const el = bytes[index];
-      bytes[index] = (
-        <div key={index} className='bg-yellow-300'>
-          {el}
+
+  const Row = ({ index, style }: ListChildComponentProps) => {
+    const baseAddress = index * bytesInRow;
+    const bytes = [];
+    for (let addr = baseAddress; addr < baseAddress + bytesInRow; addr++) {
+      const byte = memory[addr] ?? 0;
+      const label = labelsLookup.get(addr);
+      const changed = Object.hasOwn(memoryChanges, addr);
+      const style = `${changed ? 'bg-red-200' : ''} ${
+        byte !== 0 ? 'text-black dark:text-white' : ''
+      }`;
+      let cell = (
+        <div key={addr} data-value={byte} className={style}>
+          {byte.toString(16).padStart(2, '0')}
         </div>
       );
-    }
-  }
-
-  const ascii = [];
-  if (showAscii) {
-    // Build string of bytesInRow bytes
-    for (let i = 0; i < memory.length; i += bytesInRow) {
-      let str = '';
-      for (let j = 0; j < bytesInRow; j++) {
-        const byte = memory[i + j];
-        if (byte === undefined) {
-          break;
-        }
-        if (byte >= 32 && byte <= 126) {
-          str += String.fromCharCode(byte);
-        } else {
-          str += '.';
-        }
+      if (label !== undefined) {
+        cell = (
+          <div
+            key={addr}
+            data-value={byte}
+            className='relative bg-secondary-80 dark:bg-secondary-20 -m-1 p-1 rounded hover:bg-red-500 hover:rounded-l-none duration-150 group'
+          >
+            <div className='absolute top-0 right-full h-full p-1 rounded-l bg-red-500 invisible opacity-0 group-hover:visible group-hover:opacity-100 duration-150 translate-x-6 group-hover:translate-x-0'>
+              {label}
+            </div>
+            {cell}
+          </div>
+        );
       }
-      ascii.push(<div key={i}>{str}</div>);
+      bytes.push(cell);
     }
-  }
+
+    return (
+      <div style={style} className='flex gap-2'>
+        <div className='surface-text'>{`0x${baseAddress
+          .toString(16)
+          .padStart(4, '0')}`}</div>
+        <div className='flex gap-0.5 items-center'>{bytes}</div>
+        {showAscii && (
+          <Ascii memory={memory} base={baseAddress} bytesInRow={bytesInRow} />
+        )}
+      </div>
+    );
+  };
 
   return (
-    <div className='overflow-y-auto flex text-sm gap-2 font-mono'>
-      <div className='flex flex-col gap-1'>{addresses}</div>
-      <div
-        className='grid memory-grid justify-center gap-1'
-        style={{
-          gridTemplateColumns: `repeat(${bytesInRow}, max-content)`,
-        }}
+    <div ref={ref} className='h-full font-mono surface-variant-text'>
+      <FixedSizeList
+        width={dimensions.width}
+        height={dimensions.height}
+        itemSize={25}
+        itemCount={rows}
       >
-        {bytes}
-      </div>
-      {showAscii && <div className='flex flex-col gap-1'>{ascii}</div>}
+        {Row}
+      </FixedSizeList>
     </div>
   );
+}
+
+type AsciiProps = {
+  memory: Uint8Array;
+  base: number;
+  bytesInRow: number;
 };
+
+function Ascii({ memory, base, bytesInRow }: AsciiProps) {
+  // Build string of bytesInRow bytes
+  let str = '';
+  for (let j = 0; j < bytesInRow; j++) {
+    const byte = memory[base + j];
+    if (byte === undefined) {
+      break;
+    }
+    if (byte >= 32 && byte <= 126) {
+      str += String.fromCharCode(byte);
+    } else {
+      str += '.';
+    }
+  }
+  return <div className='flex flex-col gap-2'>{str}</div>;
+}
+
+/**
+ * Custom hook to keep track of the previous value
+ * Source: https://github.com/sergeyleschev/react-custom-hooks
+ */
+function usePrevious<T>(value: T) {
+  const currentRef = useRef(value);
+  const previousRef = useRef<T>(value);
+  if (currentRef.current !== value) {
+    previousRef.current = currentRef.current;
+    currentRef.current = value;
+  }
+  return previousRef.current;
+}

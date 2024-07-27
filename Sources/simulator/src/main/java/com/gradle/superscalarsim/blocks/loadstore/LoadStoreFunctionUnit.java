@@ -98,18 +98,6 @@ public class LoadStoreFunctionUnit extends AbstractFunctionUnitBlock
   }// end of Constructor
   
   /**
-   * @param simCodeModel Instruction to be executed
-   *
-   * @return True if the function unit can execute the instruction, false otherwise.
-   */
-  @Override
-  public boolean canExecuteInstruction(SimCodeModel simCodeModel)
-  {
-    return simCodeModel.getInstructionFunctionModel().getInstructionType() == InstructionTypeEnum.kLoadstore;
-  }
-  //----------------------------------------------------------------------
-  
-  /**
    * @brief Simulates execution of an instruction
    */
   @Override
@@ -117,7 +105,7 @@ public class LoadStoreFunctionUnit extends AbstractFunctionUnitBlock
   {
     if (!isFunctionUnitEmpty())
     {
-      handleInstruction();
+      handleInstruction(cycle);
     }
     
     if (isFunctionUnitEmpty())
@@ -127,32 +115,11 @@ public class LoadStoreFunctionUnit extends AbstractFunctionUnitBlock
   }// end of simulate
   
   /**
-   * Assumes there is an active instruction in the function unit.
-   *
-   * @brief Handles instruction in the function unit (Computes address).
+   * @brief Finishes execution of the instruction
    */
-  private void handleInstruction()
+  @Override
+  protected void finishExecution()
   {
-    incrementBusyCycles();
-    if (this.simCodeModel.hasFailed())
-    {
-      this.simCodeModel.setFunctionUnitId(this.functionUnitId);
-      this.simCodeModel = null;
-      this.zeroTheCounter();
-      return;
-    }
-    
-    if (hasTimerStartedThisTick())
-    {
-      this.simCodeModel.setFunctionUnitId(this.functionUnitId);
-    }
-    
-    tickCounter();
-    if (!hasDelayPassed())
-    {
-      return;
-    }
-    
     // Execute
     Result<Long> addressRes = loadStoreInterpreter.interpretAddress(simCodeModel);
     
@@ -177,6 +144,46 @@ public class LoadStoreFunctionUnit extends AbstractFunctionUnitBlock
       }
     }
     this.simCodeModel = null;
+    this.zeroTheCounter();
+    this.setDelay(0);
+  }
+  
+  /**
+   * @brief Action that should take place when an instruction failed.
+   * Remove the instruction, reset counter, cancel memory transaction.
+   */
+  @Override
+  protected void handleFailedInstruction()
+  {
+    this.simCodeModel.setFunctionUnitId(this.functionUnitId);
+    this.simCodeModel = null;
+    this.zeroTheCounter();
+    this.setDelay(0);
+  }
+  //----------------------------------------------------------------------
+  
+  /**
+   * @param cycle
+   *
+   * @brief Action that should take place when an instruction starts executing.
+   * Calculate the delay, start memory transaction.
+   */
+  @Override
+  protected void handleStartExecution(int cycle)
+  {
+    this.simCodeModel.setFunctionUnitId(this.functionUnitId);
+    this.setDelay(this.delay);
+  }
+  
+  /**
+   * @param simCodeModel Instruction to be executed
+   *
+   * @return True if the function unit can execute the instruction, false otherwise.
+   */
+  @Override
+  public boolean canExecuteInstruction(SimCodeModel simCodeModel)
+  {
+    return simCodeModel.instructionFunctionModel().instructionType() == InstructionTypeEnum.kLoadstore;
   }
   //----------------------------------------------------------------------
 }

@@ -72,13 +72,13 @@ public class CodeLoadStoreInterpreter
    */
   public Result<MemoryAccess> interpretInstruction(final SimCodeModel codeModel)
   {
-    final InstructionFunctionModel instruction = codeModel.getInstructionFunctionModel();
+    final InstructionFunctionModel instruction = codeModel.instructionFunctionModel();
     if (instruction == null)
     {
       throw new IllegalStateException("Instruction is null");
     }
     
-    String[] interpretableAsParams = instruction.getInterpretableAs().split(":");
+    String[] interpretableAsParams = instruction.interpretableAs().split(":");
     
     if (interpretableAsParams.length != 3 && interpretableAsParams.length != 4)
     {
@@ -113,7 +113,7 @@ public class CodeLoadStoreInterpreter
     }
     else
     {
-      boolean isSigned = instruction.getArgumentByName("rd").type().isSigned();
+      boolean isSigned = instruction.getOutputType().isSigned();
       res = MemoryAccess.load(address.value(), sizeBytes, isSigned);
     }
     return new Result<>(res);
@@ -127,13 +127,13 @@ public class CodeLoadStoreInterpreter
    */
   public Result<Long> interpretAddress(final SimCodeModel codeModel)
   {
-    final InstructionFunctionModel instruction = codeModel.getInstructionFunctionModel();
+    final InstructionFunctionModel instruction = codeModel.instructionFunctionModel();
     if (instruction == null)
     {
       throw new IllegalStateException("Instruction is null");
     }
     
-    String[] interpretableAsParams = instruction.getInterpretableAs().split(":");
+    String[] interpretableAsParams = instruction.interpretableAs().split(":");
     if (interpretableAsParams.length < 3)
     {
       throw new IllegalStateException("Unexpected number of parameters: " + interpretableAsParams.length);

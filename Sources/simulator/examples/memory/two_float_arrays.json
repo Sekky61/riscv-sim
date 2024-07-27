@@ -1,0 +1,22 @@
+[
+  {
+    "name": "a",
+    "alignment": 4,
+    "dataType": "kFloat",
+    "data": {
+      "kind": "constant",
+      "constant": "7",
+      "size": 100
+    }
+  },
+  {
+    "name": "b",
+    "alignment": 4,
+    "dataType": "kFloat",
+    "data": {
+      "kind": "constant",
+      "constant": "1",
+      "size": 100
+    }
+  }
+]

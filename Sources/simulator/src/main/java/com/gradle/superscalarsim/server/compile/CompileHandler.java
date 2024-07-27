@@ -27,60 +27,94 @@
 
 package com.gradle.superscalarsim.server.compile;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import com.gradle.superscalarsim.code.CodeParser;
 import com.gradle.superscalarsim.compiler.AsmParser;
 import com.gradle.superscalarsim.compiler.CompiledProgram;
 import com.gradle.superscalarsim.compiler.GccCaller;
+import com.gradle.superscalarsim.factories.InputCodeModelFactory;
+import com.gradle.superscalarsim.loader.StaticDataProvider;
 import com.gradle.superscalarsim.serialization.Serialization;
-import com.gradle.superscalarsim.server.IRequestDeserializer;
 import com.gradle.superscalarsim.server.IRequestResolver;
+import com.gradle.superscalarsim.server.ServerException;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  * @class CompileHandler
  * @brief Handler class for compile requests
  * Gets C code, calls the compiler, returns ASM for RISC-V
  */
-public class CompileHandler implements IRequestResolver<CompileRequest, CompileResponse>, IRequestDeserializer<CompileRequest>
+public class CompileHandler implements IRequestResolver<CompileRequest, CompileResponse>
 {
+  ObjectReader compileReqReader = Serialization.getDeserializer().readerFor(CompileRequest.class);
+  ObjectWriter compileRespWriter = Serialization.getSerializer().writerFor(CompileResponse.class);
   
-  public CompileResponse resolve(CompileRequest request)
+  public CompileResponse resolve(CompileRequest request) throws ServerException
   {
-    
-    CompileResponse response;
-    if (request == null || request.code == null)
+    if (request == null)
     {
-      // Send error
-      response = CompileResponse.failure("Wrong request format. Expected JSON with 'code' object field", null);
+      throw new ServerException("root", "Missing request body");
     }
-    else
+    
+    if (request.code == null)
     {
-      // Compile
-      GccCaller.CompileResult res = GccCaller.compile(request.code, request.optimizeFlags);
-      if (!res.success)
+      throw new ServerException("code", "Missing code");
+    }
+    
+    if (request.optimizeFlags == null)
+    {
+      throw new ServerException("optimizeFlags", "Missing optimizeFlags");
+    }
+    
+    // Compile
+    GccCaller.CompileResult res = GccCaller.compile(request.code, request.optimizeFlags);
+    if (!res.success)
+    {
+      return new CompileResponse("c", res.error, null, null, res.compilerErrors, null);
+    }
+    
+    CompiledProgram program             = AsmParser.parse(res.code);
+    String          concatenatedProgram = StringUtils.join(program.program, "\n");
+    
+    // Compilation OK, now asm check
+    
+    StaticDataProvider provider = new StaticDataProvider();
+    CodeParser parser = new CodeParser(provider.getInstructionFunctionModels(),
+                                       provider.getRegisterFile().getRegisterMap(true), new InputCodeModelFactory(),
+                                       request.memoryLocations);
+    parser.parseCode(concatenatedProgram);
+    
+    if (!parser.success())
+    {
+      if (parser.containsErrors())
       {
-        System.err.println("Failed to compile code");
-        response = CompileResponse.failure("GCC returned an error", res.compilerErrors);
+        return new CompileResponse("asm", "ASM contains errors", null, null, null, parser.getErrorMessages());
       }
       else
       {
-        int             cCodeLen            = request.code.split("\n").length;
-        CompiledProgram program             = AsmParser.parse(res.code);
-        String          concatenatedProgram = StringUtils.join(program.program, "\n");
-        response = new CompileResponse(true, concatenatedProgram, program.asmToC, null, null);
+        // Warnings
+        return new CompileResponse("warning", "ASM contains warnings", concatenatedProgram, program.asmToC, null,
+                                   parser.getErrorMessages());
       }
     }
     
-    return response;
+    return new CompileResponse("success", "Compilation successful", concatenatedProgram, program.asmToC, null, null);
   }
   
   @Override
   public CompileRequest deserialize(InputStream json) throws IOException
   {
-    ObjectMapper deserializer = Serialization.getDeserializer();
-    return deserializer.readValue(json, CompileRequest.class);
+    return compileReqReader.readValue(json);
+  }
+  
+  @Override
+  public void serialize(CompileResponse response, OutputStream stream) throws IOException
+  {
+    compileRespWriter.writeValue(stream, response);
   }
 }

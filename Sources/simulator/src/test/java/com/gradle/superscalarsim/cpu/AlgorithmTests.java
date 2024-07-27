@@ -35,6 +35,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
@@ -42,68 +43,7 @@ import java.util.List;
 
 public class AlgorithmTests
 {
-  static String recursiveFactorialCode = """
-          int main() {
-              int num = 2;
-              int result = factorial(num);
-              return result;
-          }
-          
-          int factorial(int n) {
-              // Base case: factorial of 0 is 1
-              if (n == 0 || n == 1) {
-                  return 1;
-              } else {
-                  // Recursive case: n! = n * (n-1)!
-                  return n * factorial(n - 1);
-              }
-          }
-          """;
-  
-  static String quickSortCode = """
-          
-          // NOT the same as `extern char *arr`;
-          extern char arr[];
-          
-          // Starts here
-          int main() {
-              int size = 16;
-              quicksort(arr, 0, size - 1);
-              return 0;
-          }
-          
-          void swap(char *a, char *b) {
-              char temp = *a;
-              *a = *b;
-              *b = temp;
-          }
-          
-          int partition(char arr[], int low, int high) {
-              char pivot = arr[high];
-              int i = low - 1;
-              
-              for (int j = low; j < high; j++) {
-                  if (arr[j] <= pivot) {
-                      i++;
-                      swap(&arr[i], &arr[j]);
-                  }
-              }
-              
-              swap(&arr[i + 1], &arr[high]);
-              return i + 1;
-          }
-          
-          void quicksort(char arr[], int low, int high) {
-              if (low < high) {
-                  int pivotIndex = partition(arr, low, high);
-                  
-                  quicksort(arr, low, pivotIndex - 1);
-                  quicksort(arr, pivotIndex + 1, high);
-              }
-          }
-          """;
-  
-  static String quicksortAssembly = """
+  public static String quicksortAssembly = """
           main:
               addi sp,sp,-16
               li a2,15
@@ -301,16 +241,78 @@ public class AlgorithmTests
           .L38:
               ret
               """;
-  
-  static String writeLoopCode = """
-          int ptr[32];
+  static String quickSortCode = """
           
-          int writeMem() {
-            for(int i = 0; i < 32; i++) {
-              ptr[i] = i;
-            }
+          // NOT the same as `extern char *arr`;
+          extern char arr[];
+          
+          // Starts here
+          int main() {
+              int size = 16;
+              quicksort(arr, 0, size - 1);
+              return 0;
+          }
+          
+          void swap(char *a, char *b) {
+              char temp = *a;
+              *a = *b;
+              *b = temp;
+          }
+          
+          int partition(char arr[], int low, int high) {
+              char pivot = arr[high];
+              int i = low - 1;
+              
+              for (int j = low; j < high; j++) {
+                  if (arr[j] <= pivot) {
+                      i++;
+                      swap(&arr[i], &arr[j]);
+                  }
+              }
+              
+              swap(&arr[i + 1], &arr[high]);
+              return i + 1;
+          }
+          
+          void quicksort(char arr[], int low, int high) {
+              if (low < high) {
+                  int pivotIndex = partition(arr, low, high);
+                  
+                  quicksort(arr, low, pivotIndex - 1);
+                  quicksort(arr, pivotIndex + 1, high);
+              }
           }
           """;
+  
+  String writeMem = """
+          writeMem:
+              addi sp,sp,-32
+              sw s0,28(sp)
+              addi s0,sp,32
+              sw zero,-20(s0)
+              j .L2
+          .L3:
+              lla a4,ptr
+              lw a5,-20(s0)
+              slli a5,a5,2
+              add a5,a4,a5
+              lw a4,-20(s0)
+              sw a4,0(a5)
+              lw a5,-20(s0)
+              addi a5,a5,1
+              sw a5,-20(s0)
+          .L2:
+              lw a4,-20(s0)
+              li a5,31
+              ble a4,a5,.L3
+              nop
+              mv a0,a5
+              lw s0,28(sp)
+              addi sp,sp,32
+              jr ra
+              .align 2
+          ptr:
+              .zero 128""";
   
   @Test
   public void test_quicksort()
@@ -343,7 +345,7 @@ public class AlgorithmTests
   public void test_recursiveFactorial()
   {
     // Alignment 2^4
-    Cpu cpu = setupCpu(recursiveFactorialCode, "main", List.of(), true);
+    Cpu cpu = setupCCode("/c/recursiveFactorial.c", "main", List.of(), true);
     cpu.execute(false);
     
     // Assert
@@ -353,8 +355,20 @@ public class AlgorithmTests
   /**
    * Setup cpu instance with the C code
    */
-  private Cpu setupCpu(String cCode, String entryPoint, List<MemoryLocation> memoryLocations, boolean optimize)
+  private Cpu setupCCode(String cCodeResourcePath,
+                         String entryPoint,
+                         List<MemoryLocation> memoryLocations,
+                         boolean optimize)
   {
+    String cCode = null;
+    try
+    {
+      cCode = new String(AlgorithmTests.class.getResourceAsStream(cCodeResourcePath).readAllBytes());
+    }
+    catch (IOException e)
+    {
+      throw new RuntimeException(e);
+    }
     List<String>            optimizationFlags = optimize ? List.of("O2") : List.of();
     GccCaller.CompileResult res               = GccCaller.compile(cCode, optimizationFlags);
     Assert.assertTrue(res.success);
@@ -368,26 +382,6 @@ public class AlgorithmTests
     return new Cpu(cfg);
   }
   
-  @Test
-  public void simulate_badSpeculativeLoad()
-  {
-    SimulationConfig cfg = SimulationConfig.getDefaultConfiguration();
-    cfg.code = """
-             addi x12, x12, -5
-             subi x13, x0, 5
-             beq x12, x13, label
-             lw x12, 0(x12)
-            label:
-            """;
-    // The load will be to a negative address, but it will be purely speculative.
-    // It should not crash the simulation
-    
-    Cpu cpu = new Cpu(cfg);
-    cpu.execute(false);
-    
-    Assert.assertEquals(-5, (int) cpu.cpuState.unifiedRegisterFileBlock.getRegister("x12").getValue(DataTypeEnum.kInt));
-  }
-  
   /**
    * TODO: miscompiles for arrayLen=1
    * Used to fail at arrayLen>50 due to losing instructions between decode and rob
@@ -396,20 +390,7 @@ public class AlgorithmTests
   public void test_simpleArrayProgram()
   {
     // Setup
-    int arrayLen = 55;
-    String cCode = String.format("""
-                                         extern float a[];
-                                         extern float b[];
-                                         const float c = 10;
-                                         
-                                         void main(){
-                                           
-                                           for (int i = 0; i < %d; i++)
-                                              a[i] += b[i]*c;
-                                              
-                                           return;
-                                         }""", arrayLen);
-    
+    int          arrayLen     = 55;
     List<String> hundredOnes  = new ArrayList<>();
     List<String> hundredNines = new ArrayList<>();
     for (int i = 0; i < arrayLen; i++)
@@ -421,7 +402,7 @@ public class AlgorithmTests
     List<MemoryLocation> memoryLocations = List.of(new MemoryLocation("a", 4, DataTypeEnum.kFloat, hundredOnes),
                                                    new MemoryLocation("b", 4, DataTypeEnum.kFloat, hundredNines));
     
-    Cpu cpu = setupCpu(cCode, "main", memoryLocations, true);
+    Cpu cpu = setupCCode("/c/axpy.c", "main", memoryLocations, true);
     cpu.execute(true);
     
     // Verify
@@ -441,5 +422,96 @@ public class AlgorithmTests
     }
     
     Assert.assertEquals(arrayLen, correct);
+  }
+  
+  @Test
+  public void test_simpleMatrixMul()
+  {
+    // Setup
+    Cpu cpu = setupCCode("/c/simpleMatrixMul.c", "main", List.of(), true);
+    cpu.execute(true);
+    
+    int[] result = new int[]{4, 8, 12, 16, 8, 16, 24, 32, 12, 24, 36, 48, 16, 32, 48, 64};
+    
+    // Verify
+    // Check array resultMatrix
+    long resultMatrixPtr = cpu.cpuState.instructionMemoryBlock.getLabelPosition("resultMatrix");
+    
+    for (int i = 0; i < 16; i++)
+    {
+      Assert.assertEquals(result[i], cpu.cpuState.simulatedMemory.getFromMemory(resultMatrixPtr + i * 4));
+    }
+  }
+  
+  @Test
+  public void test_LinkedList() throws IOException
+  {
+    // Setup
+    SimulationConfig cfg = SimulationConfig.getDefaultConfiguration();
+    String code = new String(AlgorithmTests.class.getResourceAsStream("/assembler/linkedList.r5").readAllBytes());
+    cfg.code       = code;
+    cfg.entryPoint = "main";
+    Cpu cpu = new Cpu(cfg);
+    cpu.execute(true);
+    
+    // Assert
+    // There should be prints
+    List<DebugLog.Entry> logEntries = cpu.cpuState.debugLog.getEntries();
+    Assert.assertFalse(logEntries.isEmpty());
+    Assert.assertTrue(logEntries.get(0).getMessage().startsWith("Insert 1"));
+    Assert.assertTrue(logEntries.get(1).getMessage().startsWith("Insert 2"));
+    Assert.assertTrue(logEntries.get(2).getMessage().startsWith("Insert 3"));
+    Assert.assertTrue(logEntries.get(3).getMessage().startsWith("Insert 4"));
+    Assert.assertTrue(logEntries.get(4).getMessage().startsWith("Insert 5"));
+    // Print backwards
+    Assert.assertTrue(logEntries.get(5).getMessage().startsWith("Node 5"));
+    Assert.assertTrue(logEntries.get(6).getMessage().startsWith("Node 4"));
+    Assert.assertTrue(logEntries.get(7).getMessage().startsWith("Node 3"));
+    Assert.assertTrue(logEntries.get(8).getMessage().startsWith("Node 2"));
+    Assert.assertTrue(logEntries.get(9).getMessage().startsWith("Node 1"));
+  }
+  
+  @Test
+  public void test_DynamicDispatch() throws IOException
+  {
+    // Setup
+    SimulationConfig cfg = new SimulationConfig();
+    String code = new String(AlgorithmTests.class.getResourceAsStream("/assembler/functionPointers.r5").readAllBytes());
+    cfg.code                                              = code;
+    cfg.entryPoint                                        = "main";
+    cfg.cpuConfig.fUnits.get(0).operations.get(0).latency = 5;
+    Cpu cpu = new Cpu(cfg);
+    cpu.execute(true);
+    
+    // Assert
+    // There should be prints, first a drawCircle, then a drawRectangle
+    List<DebugLog.Entry> logEntries = cpu.cpuState.debugLog.getEntries();
+    Assert.assertEquals(4, logEntries.size());
+    Assert.assertTrue(logEntries.get(0).getMessage().startsWith("drawCircle"));
+    Assert.assertTrue(logEntries.get(1).getMessage().startsWith("drawRectangle"));
+    Assert.assertTrue(logEntries.get(2).getMessage().startsWith("drawCircle"));
+    Assert.assertTrue(logEntries.get(3).getMessage().startsWith("drawRectangle"));
+  }
+  
+  @Test
+  public void test_writeMem()
+  {
+    // Setup
+    SimulationConfig cfg = SimulationConfig.getDefaultConfiguration();
+    cfg.code       = writeMem;
+    cfg.entryPoint = "writeMem";
+    Cpu cpu = new Cpu(cfg);
+    cpu.execute(true);
+    
+    // Assert
+    // TODO, for now just happy it doesn't crash
+    
+    // get ptr, it should be an array: [0, 1, 2, 3, ..., 31]
+    long ptr = cpu.cpuState.instructionMemoryBlock.getLabelPosition("ptr");
+    for (int i = 0; i < 32; i++)
+    {
+      byte[] data = cpu.cpuState.memoryModel.getData(ptr + 4 * i, 4);
+      Assert.assertEquals(i, data[0]);
+    }
   }
 }

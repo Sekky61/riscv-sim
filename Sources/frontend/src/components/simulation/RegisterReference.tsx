@@ -29,70 +29,46 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import clsx from 'clsx';
-
 import {
-  highlightRegister,
-  selectHighlightedRegister,
+  type ParsedArgument,
   selectRegisterById,
-  unhighlightRegister,
 } from '@/lib/redux/cpustateSlice';
-import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
-import { ReactClassName } from '@/lib/types/reactTypes';
+import { useAppSelector } from '@/lib/redux/hooks';
 
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/components/base/ui/tooltip';
-import ValueInformation from '@/components/simulation/ValueTooltip';
+import { ArgumentTableCell } from '@/components/simulation/IssueWindow';
 import { isValidRegisterValue } from '@/lib/utils';
 
 export type RegisterReferenceProps = {
   registerId: string;
-  showValue?: boolean;
-} & ReactClassName;
+};
 
 export default function RegisterReference({
   registerId,
-  className,
-  showValue = false,
 }: RegisterReferenceProps) {
-  const dispatch = useAppDispatch();
   const register = useAppSelector((state) =>
     selectRegisterById(state, registerId),
   );
-  const highlightedId = useAppSelector(selectHighlightedRegister);
 
   if (!register) return null;
 
-  const highlighted = highlightedId === registerId;
   const valid = isValidRegisterValue(register);
 
   let displayValue = registerId;
-  if (showValue && valid) {
+  if (valid) {
     displayValue = register.value.stringRepresentation ?? '???';
   }
 
-  const cls = clsx(highlighted && 'bg-gray-200', className);
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <span
-          className={cls}
-          onMouseEnter={() => {
-            dispatch(highlightRegister(registerId));
-          }}
-          onMouseLeave={() => {
-            dispatch(unhighlightRegister(registerId));
-          }}
-        >
-          {displayValue}
-        </span>
-      </TooltipTrigger>
-      <TooltipContent>
-        <ValueInformation value={register.value} valid={valid} />
-      </TooltipContent>
-    </Tooltip>
-  );
+  const arg: ParsedArgument = {
+    register,
+    valid,
+    origArg: {
+      constantValue: null,
+      name: registerId,
+      stringValue: displayValue,
+      registerValue: register.name,
+    },
+    value: register.value,
+  };
+
+  return <ArgumentTableCell arg={arg} />;
 }

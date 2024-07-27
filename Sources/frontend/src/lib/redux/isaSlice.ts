@@ -29,18 +29,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { PayloadAction, createSelector, createSlice } from '@reduxjs/toolkit';
+import {
+  type PayloadAction,
+  createSelector,
+  createSlice,
+} from '@reduxjs/toolkit';
 
 // Import as type to avoid circular dependency
 import type { RootState } from '@/lib/redux/store';
 
 import {
-  CpuConfig,
-  MemoryLocationIsa,
-  SimulationConfig,
   defaultCpuConfig,
+  floatSimulationConfig,
+  realisticSimulationConfig,
+} from '@/constant/defaults';
+import {
+  type CpuConfig,
+  type MemoryLocationApi,
+  type SimulationConfig,
   defaultSimulationConfig,
-} from '../forms/Isa';
+} from '@/lib/forms/Isa';
 
 /**
  * The slice state type
@@ -61,7 +69,11 @@ interface IsaState {
  * One ISA is always present, called "Default". It is selected.
  */
 const initialState: IsaState = {
-  isas: [defaultSimulationConfig],
+  isas: [
+    defaultSimulationConfig,
+    realisticSimulationConfig,
+    floatSimulationConfig,
+  ],
   activeIsaName: defaultSimulationConfig.cpuConfig.name,
 };
 
@@ -107,7 +119,7 @@ export const isaSlice = createSlice({
       state,
       action: PayloadAction<{ oldName: string; isa: CpuConfig }>,
     ) => {
-      if (action.payload.oldName === 'Default') {
+      if (action.payload.oldName === defaultCpuConfig.name) {
         throw new Error('Cannot edit the default ISA');
       }
       // Update the ISA
@@ -117,10 +129,15 @@ export const isaSlice = createSlice({
         }
       }
     },
+    setMemoryLocations: (state, action: PayloadAction<MemoryLocationApi[]>) => {
+      const activeIsa = findIsaByName(state.isas, state.activeIsaName);
+      if (activeIsa === undefined) throw new Error('Active ISA not found');
+      activeIsa.memoryLocations = action.payload;
+    },
     /**
      * Enforces unique memory location names
      */
-    addMemoryLocation: (state, action: PayloadAction<MemoryLocationIsa>) => {
+    addMemoryLocation: (state, action: PayloadAction<MemoryLocationApi>) => {
       const activeIsa = findIsaByName(state.isas, state.activeIsaName);
       if (activeIsa === undefined) throw new Error('Active ISA not found');
       // Check if the name is unique
@@ -140,7 +157,7 @@ export const isaSlice = createSlice({
       state,
       action: PayloadAction<{
         oldName: string;
-        memoryLocation: MemoryLocationIsa;
+        memoryLocation: MemoryLocationApi;
       }>,
     ) => {
       const activeIsa = findIsaByName(state.isas, state.activeIsaName);
@@ -190,6 +207,7 @@ export const {
   createIsa,
   updateIsa,
   removeIsa,
+  setMemoryLocations,
   addMemoryLocation,
   removeMemoryLocation,
   updateMemoryLocation,

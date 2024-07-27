@@ -32,36 +32,43 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
 import {
-  Action,
-  PayloadAction,
-  ThunkAction,
+  type Action,
+  type PayloadAction,
+  type ThunkAction,
   createAsyncThunk,
   createSelector,
   createSlice,
 } from '@reduxjs/toolkit';
-import { toByteArray } from 'base64-js';
+import { Base64 } from 'js-base64';
 
 import { selectAsmCode, selectEntryPoint } from '@/lib/redux/compilerSlice';
 import { selectActiveConfig } from '@/lib/redux/isaSlice';
 import { selectRunningConfig } from '@/lib/redux/simConfigSlice';
 import type { RootState } from '@/lib/redux/store';
-import { callSimulationImpl } from '@/lib/serverCalls';
+import {
+  ServerErrorException,
+  callInstructionDescriptionImpl,
+  callSimulationImpl,
+} from '@/lib/serverCalls';
 import type {
+  AsmSymbol,
   Cache,
   CacheLineModel,
   CpuState,
   InputCodeArgument,
   InputCodeModel,
   InstructionFunctionModel,
-  Label,
   Reference,
   RegisterDataContainer,
   RegisterModel,
   SimCodeModel,
   StopReason,
 } from '@/lib/types/cpuApi';
-import { SimulateResponse } from '@/lib/types/simulatorApi';
-import { isValidReference, isValidRegisterValue } from '@/lib/utils';
+import type {
+  InstructionDescriptionResponse,
+  SimulateResponse,
+} from '@/lib/types/simulatorApi';
+import { isValidRegisterValue } from '@/lib/utils';
 import { toast } from 'sonner';
 
 /**
@@ -73,35 +80,75 @@ interface CpuSlice {
    */
   state: CpuState | null;
   /**
-   * Reference to the currently highlighted line in the input code.
-   * Used to highlight the corresponding objects in visualizations.
-   */
-  highlightedInputCode: Reference | null;
-  /**
-   * Reference to the currently highlighted line in the simulation code.
-   * Used to highlight the corresponding objects in visualizations.
-   */
-  highlightedSimCode: Reference | null;
-  /**
-   * Reference to the currently highlighted register.
-   */
-  highlightedRegister: string | null;
-  /**
    * Reason for stopping the simulation. Enumeration of possible reasons, like exception, end of program, etc.
    */
   stopReason: StopReason;
+  /**
+   * Descriptions of all instructions in the program. Loaded from the server separately, as a static resource.
+   */
+  instructionFunctionModels: Record<Reference, InstructionFunctionModel>;
+  /**
+   * State of request to the simulation API
+   */
+  simulationStatus: 'idle' | 'loading' | 'failed';
+  /**
+   * True if the autoplay is on, false otherwise
+   */
+  autoplay: boolean;
+  /**
+   * Interval of the autoplay in milliseconds
+   */
+  autoplayIntervalMs: number;
+  /**
+   * Error message from the server, if any. To be displayed in a popup and middle of the simgrid.
+   */
+  errorMessage?: string;
 }
 
 /**
  * The initial state
  */
-const initialState: CpuSlice = {
+export const cpuInitialState: CpuSlice = {
   state: null,
-  highlightedInputCode: null,
-  highlightedSimCode: null,
-  highlightedRegister: null,
   stopReason: 'kNotStopped',
+  instructionFunctionModels: {},
+  simulationStatus: 'idle',
+  autoplay: false,
+  autoplayIntervalMs: 1000,
 };
+
+/**
+ * Load the instruction descriptions from the server
+ */
+export const loadFunctionModels =
+  createAsyncThunk<InstructionDescriptionResponse>(
+    'cpu/loadFunctionModels',
+    async () => {
+      // If already loaded, do not load again, just return
+      // @ts-ignore
+      try {
+        return callInstructionDescriptionImpl();
+      } catch (err) {
+        // Log error and show simple error message to the user
+        console.warn(
+          'Try clearing the local storage (application tab) and reloading the page',
+        );
+        let message = 'See the console for more details';
+        if (err instanceof ServerErrorException) {
+          message = err.message;
+        } else if (err instanceof SyntaxError) {
+          // Unexpected token < in JSON
+          message = 'Invalid response from the server';
+        } else if (err instanceof TypeError) {
+          message = 'Server not reachable';
+        } else if (err instanceof Error) {
+          message = err.message;
+        }
+        toast.error(`Loading assets failed: ${message}`);
+        throw err;
+      }
+    },
+  );
 
 /**
  * Reload the simulation (reset it to the step 0)
@@ -159,9 +206,7 @@ export const simStepEnd = (): ThunkAction<
   unknown,
   Action<string>
 > => {
-  return async (dispatch, getState) => {
-    const state: RootState = getState();
-    const config = selectRunningConfig(state);
+  return async (dispatch) => {
     dispatch(callSimulation(null));
   };
 };
@@ -177,19 +222,21 @@ export const callSimulation = createAsyncThunk<SimulateResponse, number | null>(
   async (arg, { getState, dispatch }) => {
     // @ts-ignore
     const state: RootState = getState();
-    const config = selectRunningConfig(state);
-    const tick = arg;
+    const request = {
+      tick: arg,
+      config: selectRunningConfig(state),
+    };
     try {
-      const response = await callSimulationImpl(tick, config);
-      return response;
+      return await callSimulationImpl(request);
     } catch (err) {
       // Log error and show simple error message to the user
-      console.error(err);
       console.warn(
         'Try clearing the local storage (application tab) and reloading the page',
       );
       let message = 'See the console for more details';
-      if (err instanceof SyntaxError) {
+      if (err instanceof ServerErrorException) {
+        message = err.message;
+      } else if (err instanceof SyntaxError) {
         // Unexpected token < in JSON
         message = 'Invalid response from the server';
       } else if (err instanceof TypeError) {
@@ -197,6 +244,7 @@ export const callSimulation = createAsyncThunk<SimulateResponse, number | null>(
       } else if (err instanceof Error) {
         message = err.message;
       }
+      dispatch(setErrorMessage(message));
       toast.error(`Simulation failed: ${message}`);
       throw err;
     }
@@ -206,58 +254,57 @@ export const callSimulation = createAsyncThunk<SimulateResponse, number | null>(
 export const cpuSlice = createSlice({
   name: 'cpu',
   // `createSlice` will infer the state type from the `initialState` argument
-  initialState,
+  initialState: cpuInitialState,
   reducers: {
-    highlightSimCode: (state, action: PayloadAction<Reference | null>) => {
-      if (action.payload === null) {
-        throw new Error('highlightSimCode: action.payload === null');
-      }
-      state.highlightedSimCode = action.payload;
-      const simCodeModel =
-        state.state?.managerRegistry.simCodeManager[action.payload];
-      if (simCodeModel) {
-        state.highlightedInputCode = simCodeModel.inputCodeModel;
-      }
+    /**
+     * Set the autoplay state
+     */
+    setAutoplay: (state, action: PayloadAction<boolean>) => {
+      state.autoplay = action.payload;
     },
-    unhighlightSimCode: (state, action: PayloadAction<Reference | null>) => {
-      // Do not unhighlight somebody else's highlight
-      if (state.highlightedSimCode === action.payload) {
-        state.highlightedSimCode = null;
-        state.highlightedInputCode = null;
-      }
+    /**
+     * Set the autoplay interval
+     */
+    setAutoplayInterval: (state, action: PayloadAction<number>) => {
+      // Cap between 200 and 10000
+      state.autoplayIntervalMs = Math.min(10000, Math.max(200, action.payload));
     },
-    highlightRegister: (state, action: PayloadAction<string | null>) => {
-      state.highlightedRegister = action.payload;
-    },
-    unhighlightRegister: (state, action: PayloadAction<string | null>) => {
-      // Do not unhighlight somebody else's highlight
-      if (state.highlightedRegister === action.payload) {
-        state.highlightedRegister = null;
-      }
+    /**
+     * Set the error message
+     */
+    setErrorMessage: (state, action: PayloadAction<string>) => {
+      state.errorMessage = action.payload;
     },
   },
   extraReducers: (builder) => {
     builder
       .addCase(callSimulation.fulfilled, (state, action) => {
+        state.simulationStatus = 'idle';
         state.state = action.payload.state;
         state.stopReason = action.payload.stopReason;
       })
       .addCase(callSimulation.rejected, (state, _action) => {
+        state.simulationStatus = 'failed';
         state.state = null;
         state.stopReason = 'kNotStopped';
       })
-      .addCase(callSimulation.pending, (_state, _action) => {
+      .addCase(callSimulation.pending, (state, _action) => {
+        state.simulationStatus = 'loading';
+      })
+      .addCase(loadFunctionModels.fulfilled, (state, action) => {
+        state.instructionFunctionModels = action.payload.models;
+      })
+      .addCase(loadFunctionModels.rejected, (_state, _action) => {
+        // nothing
+      })
+      .addCase(loadFunctionModels.pending, (_state, _action) => {
         // nothing
       });
   },
 });
 
-export const {
-  highlightSimCode,
-  unhighlightSimCode,
-  highlightRegister,
-  unhighlightRegister,
-} = cpuSlice.actions;
+export const { setAutoplay, setAutoplayInterval, setErrorMessage } =
+  cpuSlice.actions;
 
 //
 // Selectors
@@ -266,13 +313,22 @@ export const {
 export const selectCpu = (state: RootState) => state.cpu.state;
 export const selectTick = (state: RootState) => state.cpu.state?.tick ?? 0;
 export const selectStopReason = (state: RootState) => state.cpu.stopReason;
+export const selectSimulationStatus = (state: RootState) =>
+  state.cpu.simulationStatus;
+
+export const selectAutoplay = (state: RootState) => state.cpu.autoplay;
+export const selectAutoplayInterval = (state: RootState) =>
+  state.cpu.autoplayIntervalMs;
+
+export const selectErrorMessage = (state: RootState) => state.cpu.errorMessage;
+export const selectStateOk = (state: RootState) => state.cpu.state !== null;
 
 export const selectAllInstructionFunctionModels = (state: RootState) =>
-  state.cpu.state?.managerRegistry.instructionFunctionManager;
+  state.cpu.instructionFunctionModels;
 export const selectInstructionFunctionModelById = (
   state: RootState,
   id: Reference,
-) => state.cpu.state?.managerRegistry.instructionFunctionManager[id];
+) => state.cpu.instructionFunctionModels[id];
 
 export const selectAllInputCodeModels = (state: RootState) =>
   state.cpu.state?.managerRegistry.inputCodeManager;
@@ -294,21 +350,12 @@ export const selectMemoryBytes = createSelector([selectMemory], (memory) => {
   if (!memory) {
     return null;
   }
-  const arr = toByteArray(memory.memoryBase64 ?? '');
+  const arr = Base64.toUint8Array(memory.memoryBase64 ?? '');
   return arr;
 });
 
 export const selectProgram = (state: RootState) =>
   state.cpu.state?.instructionMemoryBlock;
-
-export const selectHighlightedSimCode = (state: RootState) =>
-  state.cpu.highlightedSimCode;
-
-export const selectHighlightedInputCode = (state: RootState) =>
-  state.cpu.highlightedInputCode;
-
-export const selectHighlightedRegister = (state: RootState) =>
-  state.cpu.highlightedRegister;
 
 export const selectLabels = (state: RootState) =>
   state.cpu.state?.instructionMemoryBlock?.labels;
@@ -324,17 +371,17 @@ export const selectProgramWithLabels = createSelector(
     }
 
     // Collect labels that are not after the end of the program
-    const labels: Array<Label & { labelName: string }> = [];
+    const labels: Array<AsmSymbol & { labelName: string }> = [];
     for (const [labelName, label] of Object.entries(program.labels)) {
       // Do not insert labels that are well after the end of the program
-      if (label.address.bits >= (program.code.length + 1) * 4) {
+      if (label.value.bits >= (program.code.length + 1) * 4) {
         continue;
       }
       labels.push({ ...label, labelName });
     }
 
     // Sort labels by address, ascending
-    labels.sort((a, b) => a.address.bits - b.address.bits);
+    labels.sort((a, b) => a.value.bits - b.value.bits);
 
     // Upsert labels into the code
     let offset = 0;
@@ -343,7 +390,7 @@ export const selectProgramWithLabels = createSelector(
       const address = i * 4;
       // Insert labels before the instruction they point to
       let lab = labels[offset];
-      while (lab !== undefined && lab.address.bits === address) {
+      while (lab !== undefined && lab.value.bits === address) {
         codeOrder.push(lab.labelName);
         offset++;
         lab = labels[offset];
@@ -362,8 +409,18 @@ export const selectProgramWithLabels = createSelector(
 export const selectAllRegisters = (state: RootState) =>
   state.cpu.state?.managerRegistry.registerModelManager;
 
+export const selectSpecRegisters = (state: RootState) =>
+  state.cpu.state?.unifiedRegisterFileBlock.speculativeRegisterFile.registers;
+
 export const selectRegisterIdMap = (state: RootState) =>
   state.cpu.state?.unifiedRegisterFileBlock.registerMap;
+
+export const selectRenameMap = (state: RootState) =>
+  state.cpu.state?.renameMapTableBlock;
+
+export const selectSpecRegisterCount = (state: RootState) =>
+  state.cpu.state?.unifiedRegisterFileBlock.speculativeRegisterFile
+    .numberOfRegisters;
 
 /**
  * Add aliases to the map of registers.
@@ -403,35 +460,20 @@ export type ParsedArgument = {
    */
   valid: boolean;
   origArg: InputCodeArgument;
+  value: RegisterDataContainer;
 };
-
-/**
- * Extract the value of an argument.
- * TODO: move to utils
- */
-export function getValue(arg: ParsedArgument): RegisterDataContainer {
-  if (arg.origArg.constantValue !== null) {
-    return arg.origArg.constantValue;
-  }
-
-  // Must be a register
-  if (!arg.register) {
-    throw new Error(`Argument ${arg.origArg.name} has no value`);
-  }
-
-  return arg.register.value;
-}
 
 type DetailedSimCodeModel = {
   simCodeModel: SimCodeModel;
   inputCodeModel: InputCodeModel;
   functionModel: InstructionFunctionModel;
-  args: Array<ParsedArgument>;
+  argsMap: Record<string, ParsedArgument>;
 };
 
 /**
- * Select simcodemodel, inputcodemodel and instructionfunctionmodel for a given simcode id.
+ * Rejoin the references of instruction and its description, args.
  * Resolves references to registers.
+ * Should be called once per new simulation state.
  */
 const selectDetailedSimCodeModels = createSelector(
   [
@@ -457,54 +499,50 @@ const selectDetailedSimCodeModels = createSelector(
 
     // Create a lookup table with entry for each simcode
     const lookup: Record<Reference, DetailedSimCodeModel> = {};
-    for (const [id, simCodeModel] of Object.entries(simCodeModels)) {
-      const reference = parseInt(id, 10);
-      if (Number.isNaN(reference)) {
-        throw new Error(`Invalid simcode id: ${id}`);
-      }
+    for (const id in simCodeModels) {
+      const simCodeModel = simCodeModels[id] as SimCodeModel;
       const inputCodeModel = inputCodeModels[simCodeModel.inputCodeModel];
       if (!inputCodeModel) {
-        throw new Error(`Invalid simcode id: ${id}`);
+        throw new Error(`Invalid inputcode id: ${simCodeModel.inputCodeModel}`);
       }
       const functionModel =
         instructionFunctionModels[inputCodeModel.instructionFunctionModel];
       if (!functionModel || !inputCodeModel || !simCodeModel) {
-        throw new Error(`Invalid simcode id: ${id}`);
+        throw new Error(`Invalid simcode id: ${simCodeModel.id}`);
       }
       const detail: DetailedSimCodeModel = {
         simCodeModel,
         inputCodeModel,
         functionModel,
-        args: [],
+        argsMap: {},
       };
-      for (const renamedArg of simCodeModel.renamedArguments) {
+
+      for (const origArg of simCodeModel.renamedArguments) {
+        const regName = origArg.registerValue;
+        //@ts-ignore indexing with null is ok - it would return undefined
+        const register = registers[regName] ?? null;
         const arg: ParsedArgument = {
-          register: null,
-          valid: false,
-          origArg: renamedArg,
+          register,
+          origArg,
+          valid: register === null || isValidRegisterValue(register.value),
+          value: register?.value ?? origArg.constantValue,
         };
-        const regName = renamedArg.registerValue;
-        if (regName !== null) {
-          const arch = registers[regName];
-          if (arch === undefined) {
-            console.warn(`Register ${regName} not found ()`);
-            throw new Error(`Register ${regName} not found`);
-          }
-          arg.register = arch;
-        }
-        arg.valid = arg.register === null || isValidRegisterValue(arg.register);
-        detail.args.push(arg);
+        detail.argsMap[origArg.name] = arg;
       }
-      lookup[reference] = detail;
+      lookup[simCodeModel.id] = detail;
     }
     return lookup;
   },
 );
 
-export const selectSimCodeModel = (state: RootState, id: Reference | null) => {
-  if (!isValidReference(id)) {
-    return null;
-  }
+/**
+ * Retrieve the detailed model of a simcode from the index.
+ */
+export const selectSimCodeModel = (
+  state: RootState,
+  id: Reference | null,
+): DetailedSimCodeModel | undefined => {
+  // @ts-ignore indexing with null is ok - it would return undefined
   return selectDetailedSimCodeModels(state)?.[id];
 };
 
@@ -513,27 +551,6 @@ export const selectSimCodeModel = (state: RootState, id: Reference | null) => {
  */
 export const selectRegisterById = (state: RootState, regName: string) =>
   selectRegisterMap(state)?.[regName] ?? null;
-
-/**
- * Get architectural register for a given speculative register.
- */
-export const selectArchRegisterBySpeculative = (
-  state: RootState,
-  regName: string,
-): RegisterModel | null => {
-  const map = state.cpu.state?.renameMapTableBlock.registerMap;
-  if (!map) {
-    return null;
-  }
-
-  const register = map[regName];
-  const archName = register?.architecturalRegister;
-  if (!archName) {
-    return null;
-  }
-
-  return selectRegisterById(state, archName);
-};
 
 // Stages
 
@@ -556,6 +573,15 @@ export const selectGlobalHistoryRegister = (state: RootState) =>
 
 export const selectPatternHistoryTable = (state: RootState) =>
   state.cpu.state?.patternHistoryTable;
+
+export const selectPredictorWidth = (state: RootState) =>
+  state.cpu.state?.patternHistoryTable.defaultPredictor.bitWidth;
+
+export const selectPredictor = (state: RootState, pc: number) =>
+  state.cpu.state?.patternHistoryTable.predictorMap[pc] ??
+  state.cpu.state?.patternHistoryTable.defaultPredictor;
+
+export const selectGShare = (state: RootState) => state.cpu.state?.gShareUnit;
 
 // Issue window blocks
 
@@ -581,6 +607,9 @@ export const selectFpFunctionUnitBlocks = (state: RootState) =>
 
 export const selectBranchFunctionUnitBlocks = (state: RootState) =>
   state.cpu.state?.branchFunctionUnitBlocks;
+
+export const selectLoadStoreFunctionUnitBlocks = (state: RootState) =>
+  state.cpu.state?.loadStoreFunctionUnits;
 
 export const selectMemoryAccessUnitBlocks = (state: RootState) =>
   state.cpu.state?.memoryAccessUnits; // todo: inconsistent name
@@ -627,7 +656,7 @@ export const selectCache = createSelector(
     // decode the base64 string in each cache line
     for (const isl of copy.cache) {
       for (const line of isl) {
-        const ba = toByteArray(line.line ?? '');
+        const ba = Base64.toUint8Array(line.line ?? '');
         line.decodedLine = Array.from(ba);
       }
     }

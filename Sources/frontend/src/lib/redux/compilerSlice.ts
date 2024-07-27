@@ -30,7 +30,7 @@
  */
 
 import {
-  PayloadAction,
+  type PayloadAction,
   createAsyncThunk,
   createSelector,
   createSlice,
@@ -40,26 +40,25 @@ import { defaultAsmCode } from '@/constant/defaults';
 import { transformErrors } from '@/lib/editor/transformErrors';
 import { selectActiveConfig } from '@/lib/redux/isaSlice';
 import type { RootState } from '@/lib/redux/store';
-import { callCompilerImpl, callParseAsmImpl } from '@/lib/serverCalls';
 import {
+  ServerErrorException,
+  callCompilerImpl,
+  callParseAsmImpl,
+} from '@/lib/serverCalls';
+import type { CodeExample } from '@/lib/types/codeExamples';
+import type {
   CompileResponse,
   ComplexErrorItem,
   ParseAsmResponse,
   SimpleParseError,
 } from '@/lib/types/simulatorApi';
+import { saveAsFile } from '@/lib/utils';
 import { toast } from 'sonner';
-import { CodeExample } from '@/lib/types/codeExamples';
 
-export type OptimizeOption =
-  | 'O2'
-  | 'rename'
-  | 'unroll'
-  | 'peel'
-  | 'inline'
-  | 'omit-frame-pointer';
+export type OptimizeOption = 'O0' | 'O2' | 'O3' | 'Os';
 
 export interface CompilerOptions {
-  optimizeFlags: OptimizeOption[];
+  optimizeFlag: OptimizeOption;
 }
 
 // Define a type for the slice state
@@ -69,8 +68,6 @@ interface CompilerState extends CompilerOptions {
   // Mapping from c_line to asm_line(s) and back
   asmToC: number[];
   compileStatus: 'idle' | 'loading' | 'success' | 'failed';
-  // Editor options
-  editorMode: 'c' | 'asm';
   entryPoint: string | number;
   // True if the c_code or asm code has been changed since the last call to the compiler
   cDirty: boolean;
@@ -82,18 +79,13 @@ interface CompilerState extends CompilerOptions {
 
 // Define the initial state using that type
 const initialState: CompilerState = {
-  cCode:
-    'int add(int a, int b) {\n  int d = 2*a + 2;\n  int x = d + b;\n  for(int i = 0; i < a; i++) {\n    x += b;\n  }\n  return x;\n} ',
+  cCode: '',
   asmCode: defaultAsmCode,
-  asmToC: [
-    0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 5, 5, 5, 5, 4, 4, 4, 4,
-    4, 4, 4, 7, 8, 8, 8, 8,
-  ],
+  asmToC: [],
   cDirty: false,
   asmDirty: false,
   compileStatus: 'idle',
-  optimizeFlags: [],
-  editorMode: 'c',
+  optimizeFlag: 'O2',
   entryPoint: 0,
   asmManuallyEdited: false,
   cErrors: [],
@@ -107,18 +99,34 @@ const initialState: CompilerState = {
  */
 export const callCompiler = createAsyncThunk<CompileResponse>(
   'compiler/callCompiler',
-  async (arg, { getState, dispatch }) => {
+  async (_, { getState }) => {
     // @ts-ignore
-    const code: string = getState().compiler.cCode;
-    // @ts-ignore
-    const options: CompilerState = getState().compiler;
-    const response = await callCompilerImpl(code, options)
+    const state: RootState = getState();
+    const activeIsa = selectActiveConfig(state);
+    const request = {
+      code: state.compiler.cCode,
+      optimizeFlags: [state.compiler.optimizeFlag], // todo api allows multiple flags
+      memoryLocations: activeIsa.memoryLocations,
+    };
+    const response = await callCompilerImpl(request)
       .then((res) => {
         if (res.success) {
-          toast.success('Compilation successful');
+          if (res.status === 'success') {
+            toast.success(res.message);
+          } else if (res.status === 'warning') {
+            toast.warning(res.message);
+          }
         } else {
           // Show the short error message
-          toast.error(`Compilation failed: ${res.error}`, {
+          let message = res.message;
+          if (res.asmErrors && res.asmErrors?.length > 0) {
+            let msg = res.asmErrors[0]?.message;
+            if (!msg) {
+              msg = 'Unknown error';
+            }
+            message = msg;
+          }
+          toast.error(`Compilation failed: ${message}`, {
             dismissible: true,
             duration: 0,
           });
@@ -126,7 +134,11 @@ export const callCompiler = createAsyncThunk<CompileResponse>(
         return res;
       })
       .catch((err) => {
-        toast.error('Compilation failed: server error');
+        if (err instanceof ServerErrorException) {
+          toast.error(`Server error: ${err.message}`);
+        } else {
+          toast.error('Compilation failed: server error');
+        }
         // Rethrow
         throw err;
       });
@@ -141,12 +153,14 @@ export const callCompiler = createAsyncThunk<CompileResponse>(
  */
 export const callParseAsm = createAsyncThunk<ParseAsmResponse>(
   'compiler/callParseAsm',
-  async (arg, { getState, dispatch }) => {
+  async (_, { getState }) => {
     // @ts-ignore
     const state: RootState = getState();
-    const code: string = state.compiler.asmCode;
-    const config = selectActiveConfig(state);
-    const response = await callParseAsmImpl(code, config)
+    const request = {
+      code: state.compiler.asmCode,
+      memoryLocations: selectActiveConfig(state).memoryLocations,
+    };
+    const response = await callParseAsmImpl(request)
       .then((res) => {
         if (res.success) {
           toast.success('The assembly code is valid');
@@ -157,7 +171,11 @@ export const callParseAsm = createAsyncThunk<ParseAsmResponse>(
         return res;
       })
       .catch((err) => {
-        toast.error('Compilation failed: server error');
+        if (err instanceof ServerErrorException) {
+          toast.error(`Server error: ${err.message}`);
+        } else {
+          toast.error('Compilation failed: server error');
+        }
         // Rethrow
         throw err;
       });
@@ -181,25 +199,18 @@ export const openExampleAndCompile = createAsyncThunk<void, CodeExample>(
 );
 
 /**
- * Save the active code to a file. A dialog is shown to the user, they can choose the file name.
+ * Save the code to a file. A dialog is shown to the user, they can choose the file name.
  *
- * Example: dispatch(saveToFile());
+ * Example: dispatch(saveToFile('c'));
  */
-export const saveToFile = createAsyncThunk<void>(
+export const saveCodeToFile = createAsyncThunk<void, 'c' | 'asm'>(
   'compiler/saveToFile',
-  async (arg, { getState }) => {
+  async (mode, { getState }) => {
     // @ts-ignore
     const state: RootState = getState();
-    const code = selectActiveCode(state);
-    const suggestedFileName =
-      selectEditorMode(state) === 'c' ? 'code.c' : 'code.asm';
-
-    const blob = new Blob([code], { type: 'text/plain;charset=utf-8' });
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = suggestedFileName;
-    link.click();
+    const suggestedFileName = mode === 'c' ? 'code.c' : 'code.asm';
+    const code = mode === 'c' ? state.compiler.cCode : state.compiler.asmCode;
+    saveAsFile(code, suggestedFileName);
   },
 );
 
@@ -238,30 +249,19 @@ export const compilerSlice = createSlice({
     setEntryPoint: (state, action: PayloadAction<number | string>) => {
       state.entryPoint = action.payload;
     },
-    toggleOptimizeFlag: (state, action: PayloadAction<OptimizeOption>) => {
-      // Special case for -O2
-      if (action.payload === 'O2' && !state.optimizeFlags.includes('O2')) {
-        state.optimizeFlags = ['O2', 'omit-frame-pointer', 'inline', 'rename'];
-        return;
-      }
-      const idx = state.optimizeFlags.indexOf(action.payload);
-      if (idx === -1) {
-        state.optimizeFlags.push(action.payload);
-      } else {
-        state.optimizeFlags.splice(idx, 1);
-      }
-    },
-    enterEditorMode: (state, action: PayloadAction<'c' | 'asm'>) => {
-      state.editorMode = action.payload;
+    setOptimizeFlag: (state, action: PayloadAction<OptimizeOption>) => {
+      state.optimizeFlag = action.payload;
     },
     openExample: (state, action: PayloadAction<CodeExample>) => {
       state.cCode = action.payload.type === 'c' ? action.payload.code : '';
       state.asmCode = action.payload.type === 'asm' ? action.payload.code : '';
       state.asmToC = [];
-      state.editorMode = action.payload.type;
       state.cDirty = false;
       state.asmDirty = false;
-      state.entryPoint = action.payload.entryPoint || 0;
+      state.asmErrors = [];
+      state.cErrors = [];
+      state.asmManuallyEdited = false;
+      state.entryPoint = action.payload.entryPoint ?? 0;
     },
     openFile: (
       state,
@@ -275,7 +275,6 @@ export const compilerSlice = createSlice({
         state.asmCode = action.payload.code;
       }
       state.asmToC = [];
-      state.editorMode = action.payload.type;
       state.cDirty = false;
       state.asmDirty = false;
       state.entryPoint = 0;
@@ -287,9 +286,11 @@ export const compilerSlice = createSlice({
       .addCase(callCompiler.fulfilled, (state, action) => {
         state.cDirty = false;
         state.asmDirty = false;
+
+        state.cErrors = action.payload.compilerError ?? [];
+        state.asmErrors = action.payload.asmErrors ?? [];
         if (!action.payload.success) {
           state.compileStatus = 'failed';
-          state.cErrors = action.payload.compilerError;
           // Delete mapping
           state.asmToC = [];
           state.asmCode = '';
@@ -300,7 +301,6 @@ export const compilerSlice = createSlice({
         state.cErrors = [];
         state.asmManuallyEdited = false;
         state.asmToC = action.payload.asmToC;
-        state.entryPoint = 0;
       })
       .addCase(callCompiler.rejected, (state, _action) => {
         state.compileStatus = 'failed';
@@ -317,7 +317,7 @@ export const compilerSlice = createSlice({
       .addCase(callParseAsm.fulfilled, (state, action) => {
         state.asmDirty = false;
         if (!action.payload.success) {
-          state.asmErrors = action.payload.errors;
+          state.asmErrors = action.payload.errors || [];
           return;
         }
         state.asmErrors = [];
@@ -332,8 +332,7 @@ export type CompilerReducer = ReturnType<typeof compilerSlice.reducer>;
 export const {
   setCCode,
   setAsmCode,
-  toggleOptimizeFlag,
-  enterEditorMode,
+  setOptimizeFlag,
   cFieldTyping,
   asmFieldTyping,
   openExample,
@@ -348,9 +347,7 @@ export const selectCompileStatus = (state: RootState) =>
 export const selectCErrors = (state: RootState) => state.compiler.cErrors;
 export const selectAsmErrors = (state: RootState) => state.compiler.asmErrors;
 export const selectAsmCode = (state: RootState) => state.compiler.asmCode;
-export const selectOptimize = (state: RootState) =>
-  state.compiler.optimizeFlags;
-export const selectEditorMode = (state: RootState) => state.compiler.editorMode;
+export const selectOptimize = (state: RootState) => state.compiler.optimizeFlag;
 export const selectCDirty = (state: RootState) => state.compiler.cDirty;
 export const selectAsmDirty = (state: RootState) => state.compiler.asmDirty;
 export const selectAsmManuallyEdited = (state: RootState) =>
@@ -364,8 +361,7 @@ export const selectCCodeMappings = createSelector(
     const codeLength = lines.length;
     const arr = new Array(codeLength + 1);
     // Go through the mapping, note that the mapping is 1-indexed
-    for (let i = 0; i < asmToC.length; i++) {
-      const cLine = asmToC[i];
+    for (const cLine of asmToC) {
       if (cLine === undefined || cLine === 0) {
         continue;
       }
@@ -375,13 +371,6 @@ export const selectCCodeMappings = createSelector(
     return arr;
   },
 );
-
-export const selectActiveCode = (state: RootState) => {
-  if (state.compiler.editorMode === 'c') {
-    return state.compiler.cCode;
-  }
-  return state.compiler.asmCode;
-};
 
 export interface Instruction {
   // Id of instruction in program. ~line number
@@ -421,7 +410,9 @@ export const selectCCodeMirrorErrors = createSelector(
   },
 );
 
-// Provides errors in the form expected by code mirror
+/**
+ * Provides errors in the form expected by code mirror
+ */
 export const selectAsmCodeMirrorErrors = createSelector(
   [selectAsmErrors, selectAsmCode, selectAsmDirty],
   (errors, asmCode, dirty) => {

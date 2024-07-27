@@ -29,30 +29,41 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+'use client';
+
 import clsx from 'clsx';
 
 import {
-  ParsedArgument,
-  getValue,
+  type ParsedArgument,
   selectAluIssueWindowBlock,
   selectBranchIssueWindowBlock,
   selectFpIssueWindowBlock,
   selectLoadStoreIssueWindowBlock,
-  selectRegisterById,
   selectSimCodeModel,
 } from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
-import { Reference, RegisterDataContainer } from '@/lib/types/cpuApi';
+import type { Reference } from '@/lib/types/cpuApi';
 
+import { useBlockDescriptions } from '@/components/BlockDescriptionContext';
+import { DividedBadge } from '@/components/DividedBadge';
+import { useHighlight } from '@/components/HighlightProvider';
+import {
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/base/ui/dialog';
 import {
   Tooltip,
   TooltipContent,
+  TooltipPortal,
   TooltipTrigger,
 } from '@/components/base/ui/tooltip';
-import Block from '@/components/simulation/Block';
+import { Block } from '@/components/simulation/Block';
 import InstructionField from '@/components/simulation/InstructionField';
 import { InstructionListDisplay } from '@/components/simulation/InstructionListDisplay';
-import ValueInformation from '@/components/simulation/ValueTooltip';
+import { ShortValueInformation } from '@/components/simulation/ValueTooltip';
+import InstructionTable from './InstructionTable';
 
 type IssueType = 'alu' | 'fp' | 'branch' | 'ls';
 
@@ -86,6 +97,7 @@ function getGridClassName(type: IssueType) {
 
 export default function IssueWindow({ type }: IssueWindowProps) {
   const issue = useAppSelector(getSelector(type));
+  const descriptions = useBlockDescriptions();
 
   if (!issue) return null;
   const instrCount = issue.issuedInstructions.length;
@@ -94,26 +106,43 @@ export default function IssueWindow({ type }: IssueWindowProps) {
 
   const stats = (
     <>
-      <div>
-        {instrCount} {instrCount === 1 ? 'instruction' : 'instructions'}
+      <div className='flex'>
+        <DividedBadge>
+          <div>Instructions</div>
+          <div>{instrCount}</div>
+        </DividedBadge>
       </div>
     </>
   );
 
-  const cls = clsx(getGridClassName(type), 'w-80 h-96');
+  const cls = clsx(getGridClassName(type), 'w-issue h-96');
 
   // TODO: Is this limit suitable?
   return (
-    <Block title={title} stats={stats} className={cls}>
+    <Block
+      title={title}
+      stats={stats}
+      className={cls}
+      detailDialog={
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Issue Window</DialogTitle>
+            <DialogDescription>
+              {descriptions.issue?.shortDescription}
+            </DialogDescription>
+          </DialogHeader>
+          <InstructionTable instructions={issue.issuedInstructions} />
+        </DialogContent>
+      }
+    >
       <InstructionListDisplay
-        columns={3}
         instructions={issue.issuedInstructions}
         legend={
-          <>
-            <div>Instruction</div>
+          <div className='flex gap-1 items-center'>
+            <div className='flex-grow'>Instruction</div>
             <div>Arg 1</div>
             <div>Arg 2</div>
-          </>
+          </div>
         }
         instructionRenderer={(instruction, i) => (
           <IssueWindowItem simCodeId={instruction} key={`instr_${i}`} />
@@ -140,63 +169,92 @@ export function IssueWindowItem({ simCodeId }: IssueWindowItemProps) {
     );
   }
 
-  const { args } = q;
+  const { argsMap } = q;
 
-  let item1: RegisterDataContainer | null = null;
-  let item1Valid = false;
-  let item2: RegisterDataContainer | null = null;
-  let item2Valid = false;
-  for (const arg of args) {
-    if (arg.origArg.name !== 'rd') {
-      if (item1 === null) {
-        item1 = getValue(arg);
-        item1Valid = arg.valid;
-      } else {
-        item2 = getValue(arg);
-        item2Valid = arg.valid;
-      }
+  return (
+    <div className='flex gap-1'>
+      <InstructionField instructionId={simCodeId} />
+      {Object.entries(argsMap).map(([argName, arg]) => {
+        if (argName === 'rd') return null;
+        return (
+          <div
+            key={argName}
+            className='min-w-[40px] flex justify-center items-center'
+          >
+            <ArgumentTableCell arg={arg} />
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+type ArgumentTableCellProps = {
+  arg: ParsedArgument | null;
+};
+
+/**
+ * Displays a single parameter of a specific instruction.
+ * If the value is valid, it shows the value in green.
+ * It displays the register name if not valid.
+ */
+export function ArgumentTableCell({ arg }: ArgumentTableCellProps) {
+  const { setHighlightedRegister } = useHighlight();
+  const idToHighlight = arg?.register?.name || arg?.origArg.constantValue?.bits;
+
+  const item = arg?.value;
+  const registerName = arg?.register?.name;
+  const valid = arg?.valid;
+
+  const itemStyle = clsx(
+    'register rounded flex px-2 h-full flex justify-center items-center min-w-[40px]',
+    valid && 'text-green-700',
+  );
+
+  let text = '-';
+  if (item) {
+    if (arg.valid) {
+      text = item.stringRepresentation;
+    } else {
+      text = registerName || arg?.origArg.stringValue || '-';
     }
   }
 
-  const item1Style = clsx(
-    'instruction-bubble flex px-2',
-    item1Valid && 'text-green-500',
-    item1 === null && 'invisible',
-  );
-  const item2Style = clsx(
-    'instruction-bubble flex px-2',
-    item2Valid && 'text-green-500',
-    item2 === null && 'invisible',
-  );
+  const handleMouseEnter = () => {
+    if (idToHighlight) {
+      setHighlightedRegister(idToHighlight as string);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    setHighlightedRegister(null);
+  };
 
   return (
-    <>
-      <InstructionField instructionId={simCodeId} />
-      <Tooltip>
-        <TooltipTrigger>
-          <div className={item1Style}>{item1?.stringRepresentation ?? '-'}</div>
-        </TooltipTrigger>
+    <Tooltip>
+      <TooltipTrigger>
+        <div
+          className={itemStyle}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+          data-register-id={idToHighlight}
+        >
+          {text}
+        </div>
+      </TooltipTrigger>
+      <TooltipPortal>
         <TooltipContent>
-          {item1 ? (
-            <ValueInformation value={item1} valid={item1Valid} />
+          {item ? (
+            <ShortValueInformation
+              value={item}
+              valid={arg.valid}
+              register={arg.register}
+            />
           ) : (
             <div className='text-gray-400'>No value</div>
           )}
         </TooltipContent>
-      </Tooltip>
-      <Tooltip>
-        <TooltipTrigger>
-          <div className={item2Style}>{item2?.stringRepresentation ?? '-'}</div>
-        </TooltipTrigger>
-
-        <TooltipContent>
-          {item2 ? (
-            <ValueInformation value={item2} valid={item2Valid} />
-          ) : (
-            <div className='text-gray-400'>No value</div>
-          )}
-        </TooltipContent>
-      </Tooltip>
-    </>
+      </TooltipPortal>
+    </Tooltip>
   );
 }

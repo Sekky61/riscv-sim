@@ -30,20 +30,28 @@
  */
 
 import { Inter as FontSans } from 'next/font/google';
-import { type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 
 import '@/styles/globals.css';
 
 import { cn } from '@/lib/utils';
 
-import Navbar from '@/components/Navbar';
+import { BlockDescriptionProvider } from '@/components/BlockDescriptionContext';
+import { ThemeProvider } from '@/components/ThemeProvider';
+import { WelcomeTour } from '@/components/WelcomeTour';
+import { Toaster } from '@/components/base/ui/sonner';
 import { TooltipProvider } from '@/components/base/ui/tooltip';
 import PersistedStoreProvider from '@/lib/redux/PersistedStoreProvider';
-import { Toaster } from '@/components/base/ui/sonner';
+import { loadBlockDescriptions } from '@/lib/staticLoaders';
 
+/**
+ * Font loading by next.js.
+ * The display: swap is important for loading, but it is badly documented. It worked for a long time without it.
+ */
 const fontSans = FontSans({
   subsets: ['latin'],
   variable: '--font-sans',
+  display: 'swap',
 });
 
 /**
@@ -52,28 +60,41 @@ const fontSans = FontSans({
  *
  * Other layout are nested inside this layout.
  */
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default async function RootLayout({
+  children,
+}: { children: ReactNode }) {
+  // Body is overflow-hidden to prevent FU configuration from expanding the page
+  const descriptions = await loadBlockDescriptions();
+
   return (
     <html lang='en'>
       <head>
-        <meta
-          name='viewport'
-          content='width=device-width, initial-scale=1.0, maximum-scale=1.0,user-scalable=0'
-        />
+        <meta name='viewport' content='width=device-width, initial-scale=1.0' />
         <title>RISC-V Simulator</title>
       </head>
       <body
         className={cn(
-          'min-h-screen bg-background font-sans antialiased',
+          'min-h-screen font-sans antialiased overflow-hidden',
           fontSans.variable,
         )}
       >
-        <PersistedStoreProvider>
-          <TooltipProvider delayDuration={0}>
-            <div className='flex h-screen max-h-screen'>{children}</div>
-            <Toaster position='top-right' />
-          </TooltipProvider>
-        </PersistedStoreProvider>
+        <WelcomeTour>
+          <ThemeProvider
+            attribute='class'
+            defaultTheme='system'
+            enableSystem
+            disableTransitionOnChange
+          >
+            <BlockDescriptionProvider descriptions={descriptions}>
+              <PersistedStoreProvider>
+                <TooltipProvider delayDuration={700} skipDelayDuration={0}>
+                  <div className='flex h-screen'>{children}</div>
+                  <Toaster position='top-right' closeButton />
+                </TooltipProvider>
+              </PersistedStoreProvider>
+            </BlockDescriptionProvider>
+          </ThemeProvider>
+        </WelcomeTour>
       </body>
     </html>
   );

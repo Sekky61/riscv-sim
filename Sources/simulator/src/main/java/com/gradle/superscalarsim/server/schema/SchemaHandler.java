@@ -28,14 +28,17 @@
 package com.gradle.superscalarsim.server.schema;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.gradle.superscalarsim.serialization.Serialization;
-import com.gradle.superscalarsim.server.IRequestDeserializer;
 import com.gradle.superscalarsim.server.IRequestResolver;
+import com.gradle.superscalarsim.server.ServerException;
 import com.gradle.superscalarsim.server.checkConfig.CheckConfigRequest;
 import com.gradle.superscalarsim.server.checkConfig.CheckConfigResponse;
 import com.gradle.superscalarsim.server.compile.CompileRequest;
 import com.gradle.superscalarsim.server.compile.CompileResponse;
+import com.gradle.superscalarsim.server.instructionDescriptions.InstructionDescriptionRequest;
+import com.gradle.superscalarsim.server.instructionDescriptions.InstructionDescriptionResponse;
 import com.gradle.superscalarsim.server.parseAsm.ParseAsmRequest;
 import com.gradle.superscalarsim.server.parseAsm.ParseAsmResponse;
 import com.gradle.superscalarsim.server.simulate.SimulateRequest;
@@ -43,16 +46,24 @@ import com.gradle.superscalarsim.server.simulate.SimulateResponse;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Objects;
 
-public class SchemaHandler implements IRequestResolver<SchemaRequest, JsonNode>, IRequestDeserializer<SchemaRequest>
+public class SchemaHandler implements IRequestResolver<SchemaRequest, JsonNode>
 {
+  ObjectReader schemaReqReader = Serialization.getDeserializer().readerFor(SchemaRequest.class);
+  ObjectWriter schemaRespWriter = Serialization.getSerializer().writerFor(JsonNode.class);
   
   @Override
   public SchemaRequest deserialize(InputStream json) throws IOException
   {
-    ObjectMapper deserializer = Serialization.getDeserializer();
-    return deserializer.readValue(json, SchemaRequest.class);
+    return schemaReqReader.readValue(json);
+  }
+  
+  @Override
+  public void serialize(JsonNode response, OutputStream stream) throws IOException
+  {
+    schemaRespWriter.writeValue(stream, response);
   }
   
   /**
@@ -62,9 +73,22 @@ public class SchemaHandler implements IRequestResolver<SchemaRequest, JsonNode>,
    * @brief Find the correct schema for the request
    */
   @Override
-  public JsonNode resolve(SchemaRequest request)
+  public JsonNode resolve(SchemaRequest request) throws ServerException
   {
-    System.out.println("SchemaHandler.resolve " + request);
+    if (request == null)
+    {
+      throw new ServerException("root", "Missing request body");
+    }
+    
+    if (request.endpoint == null)
+    {
+      throw new ServerException("endpoint", "Missing endpoint");
+    }
+    
+    if (request.requestResponse == null)
+    {
+      throw new ServerException("requestResponse", "Missing requestResponse");
+    }
     
     boolean isRequest = Objects.equals(request.requestResponse, SchemaRequest.RequestResponse.request);
     
@@ -76,6 +100,7 @@ public class SchemaHandler implements IRequestResolver<SchemaRequest, JsonNode>,
       case compile -> isRequest ? CompileRequest.class : CompileResponse.class;
       case schema -> isRequest ? SchemaRequest.class : JsonNode.class;
       case checkConfig -> isRequest ? CheckConfigRequest.class : CheckConfigResponse.class;
+      case instructionDescription -> isRequest ? InstructionDescriptionRequest.class : InstructionDescriptionResponse.class;
     };
     
     // Get the schema for the handler

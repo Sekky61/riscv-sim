@@ -33,6 +33,7 @@ package com.gradle.superscalarsim.blocks.loadstore;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.blocks.AbstractBlock;
 import com.gradle.superscalarsim.cpu.SimulationStatistics;
@@ -53,6 +54,9 @@ import java.util.List;
  * <p>
  * The cache is non-blocking. This means, that the cache can resolve multiple misses at the same time.
  * It can also work on multiple transactions at the same time.
+ * </p>
+ * <p>
+ * If the cache is in write-through mode, the store is as slow as the main memory (they are done together).
  * </p>
  * <p>
  * Only {@link MemoryAccessUnit} can work with the cache.
@@ -195,11 +199,13 @@ public class Cache implements AbstractBlock, MemoryBlock
     
     //Initialize cache - everything is invalid and clean with value zero for data and tag
     this.cache = new CacheLineModel[numberOfLines / associativity][associativity];
-    for (int i = 0; i < numberOfLines / associativity; i++)
+    assert numberOfLines % associativity == 0;
+    int poolCount = numberOfLines / associativity;
+    for (int index = 0; index < poolCount; index++)
     {
       for (int j = 0; j < associativity; j++)
       {
-        cache[i][j] = new CacheLineModel(lineSize, i * associativity + j);
+        cache[index][j] = new CacheLineModel(lineSize, index);
       }
     }
   }
@@ -310,6 +316,7 @@ public class Cache implements AbstractBlock, MemoryBlock
   /**
    * @return Number of bits needed to index the contents of a cache line.
    */
+  @JsonProperty
   public int getOffsetBits()
   {
     // Basically a log2
@@ -319,6 +326,7 @@ public class Cache implements AbstractBlock, MemoryBlock
   /**
    * @return Number of bits needed to index the associativity sets.
    */
+  @JsonProperty
   public int getIndexBits()
   {
     // Basically a log2
@@ -335,23 +343,23 @@ public class Cache implements AbstractBlock, MemoryBlock
       // Check if the operation is finished this cycle
       int finishCycle = transaction.timestamp() + transaction.latency();
       assert finishCycle >= cycle;
+      if (transaction.isCancelled())
+      {
+        toRemove.add(transaction);
+        continue;
+      }
       if (finishCycle == cycle)
       {
         // Main memory transaction finished
         memory.finishTransaction(transaction.id());
-        int simCodeId = transaction.getInstructionId();
-        if (simCodeId >= 0)
-        {
-          // Do not touch statistic in case the cache transaction is not related to any instruction (tests)
-          statistics.instructionStats.get(simCodeId).incrementCacheMisses();
-        }
         toRemove.add(transaction);
         if (!transaction.isStore())
         {
           // Load new line into cache
           Triplet<Long, Integer, Integer> split = splitAddress(transaction.address());
           long                            tag   = split.getFirst();
-          CacheLineModel line = pickLineToUse(transaction.address(), cycle, transaction.getInstructionId());
+          CacheLineModel                  line  = pickLineToUse(transaction.address(), cycle,
+                                                                transaction.getInstructionId());
           // The replacement policy was updated when the line was picked
           line.setLineData(transaction.data());
           line.setValid(true);
@@ -364,6 +372,15 @@ public class Cache implements AbstractBlock, MemoryBlock
     memoryTransactions.removeAll(toRemove);
     
     // Cache operations
+    // Remove cancelled
+    for (int i = 0; i < this.cacheTransactions.size(); i++)
+    {
+      if (this.cacheTransactions.get(i).isCancelled())
+      {
+        this.cacheTransactions.remove(i);
+        i--;
+      }
+    }
     for (MemoryTransaction transaction : this.cacheTransactions)
     {
       assert !transaction.isFinished(); // All finished transactions should be removed from the list by the requester
@@ -384,22 +401,6 @@ public class Cache implements AbstractBlock, MemoryBlock
         transaction.finish();
       }
     }
-  }
-  
-  /**
-   * @brief Resets the cache state
-   */
-  public void reset()
-  {
-    //Initialize cache - everything is invalid and clean with value zero for data and tag
-    for (int i = 0; i < numberOfLines / associativity; i++)
-    {
-      for (int j = 0; j < associativity; j++)
-      {
-        cache[i][j] = new CacheLineModel(lineSize, i * associativity + j);
-      }
-    }
-    memory.reset();
   }
   
   /**
@@ -500,6 +501,7 @@ public class Cache implements AbstractBlock, MemoryBlock
     
     CacheLineModel line = findLane(address, true);
     assert line != null;
+    
     if (writeBack)
     {
       // todo memory transaction here (into else)
@@ -550,7 +552,7 @@ public class Cache implements AbstractBlock, MemoryBlock
     boolean isHit      = line != null;
     int     cacheDelay = (transaction.isStore() ? storeDelay : loadDelay);
     transaction.setId(cacheAccessId++);
-    
+    transaction.setHandledBy(MemoryTransaction.CACHE);
     
     int latency = cacheDelay;
     // todo what if the line disappears from cache later?
@@ -560,6 +562,7 @@ public class Cache implements AbstractBlock, MemoryBlock
       // Create a memory transaction for the whole cache line
       latency = cacheDelay + requestCacheLineLoad(transaction.address(), transaction.timestamp(),
                                                   transaction.getInstructionId());
+      transaction.setHandledBy(MemoryTransaction.CACHE_WITH_MISS);
     }
     
     boolean spansTwoLines = (transaction.address() & (lineSize - 1)) + transaction.size() > lineSize;
@@ -575,6 +578,15 @@ public class Cache implements AbstractBlock, MemoryBlock
         latency = cacheDelay + requestCacheLineLoad(nextAddress, transaction.timestamp(),
                                                     transaction.getInstructionId());
       }
+    }
+    
+    // Write through store is as slow as the main memory
+    if (!writeBack && transaction.isStore())
+    {
+      // Write to memory as well
+      MemoryTransaction transactionCopy = new MemoryTransaction(transaction);
+      latency = Math.max(latency, memory.scheduleTransaction(transactionCopy));
+      memoryTransactions.add(transactionCopy);
     }
     
     transaction.setLatency(latency);

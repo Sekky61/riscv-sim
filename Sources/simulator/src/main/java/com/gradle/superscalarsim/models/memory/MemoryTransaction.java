@@ -31,12 +31,18 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Objects;
 
+import static java.util.Arrays.copyOf;
+
 /**
  * @class MemoryTransaction
  * @brief Data class describing a memory transaction
  */
 public final class MemoryTransaction
 {
+  public static final String MAIN_MEMORY = "main_memory";
+  public static final String CACHE = "cache";
+  public static final String CACHE_WITH_MISS = "cache_with_miss";
+  
   private final int mmuId;
   /**
    * ID (index) of the instruction in code. aka. getCodeId() aka. ID of InputCodeModel
@@ -55,18 +61,37 @@ public final class MemoryTransaction
   private byte[] data;
   private boolean isFinished = false;
   private int latency;
-  
-  public boolean isHit()
-  {
-    return isHit;
-  }
-  
-  public void setHit(boolean hit)
-  {
-    isHit = hit;
-  }
-  
+  /**
+   * @brief Who is handling the transaction: main memory, cache, or cache with miss
+   */
+  private String handledBy;
+  /**
+   * A cancelled transaction does not need to be finished.
+   * A transaction gets cancelled when the owner of the transaction (instruction) is flushed.
+   */
+  private boolean cancelled;
   private boolean isHit;
+  
+  /**
+   * Copy constructor
+   *
+   * @param transaction Transaction to be copied
+   */
+  public MemoryTransaction(MemoryTransaction transaction)
+  {
+    this.id            = transaction.id;
+    this.mmuId         = transaction.mmuId;
+    this.instructionId = transaction.instructionId;
+    this.timestamp     = transaction.timestamp;
+    this.address       = transaction.address;
+    this.data          = copyOf(transaction.data, transaction.data.length);
+    this.size          = transaction.size;
+    this.isStore       = transaction.isStore;
+    this.isSigned      = transaction.isSigned;
+    this.latency       = transaction.latency;
+    this.isFinished    = transaction.isFinished;
+    this.isHit         = transaction.isHit;
+  }
   
   /**
    * Constructor
@@ -144,6 +169,32 @@ public final class MemoryTransaction
   public static MemoryTransaction load(long address, int size, int timestamp)
   {
     return new MemoryTransaction(-1, -1, -1, timestamp, address, null, size, false, false);
+  }
+  
+  public String handledBy()
+  {
+    return handledBy;
+  }
+  
+  public void setHandledBy(String handledBy)
+  {
+    this.handledBy = handledBy;
+    this.isHit     = !handledBy.equals(CACHE_WITH_MISS);
+  }
+  
+  public boolean isCancelled()
+  {
+    return cancelled;
+  }
+  
+  public boolean isHit()
+  {
+    return isHit;
+  }
+  
+  public void setHit(boolean hit)
+  {
+    isHit = hit;
   }
   
   public int getInstructionId()
@@ -289,4 +340,8 @@ public final class MemoryTransaction
     return "MemoryTransaction[" + "timestamp=" + timestamp + ", " + "address=" + address + ", " + "data=" + data + ", " + "size=" + size + ", " + "isStore=" + isStore + ", " + "isSigned=" + isSigned + ']';
   }
   
+  public void setCanceled()
+  {
+    this.cancelled = true;
+  }
 }

@@ -15,7 +15,8 @@ FROM deps AS build
 WORKDIR /app
 COPY . . 
 # gradle build would run the tests as well
-RUN gradle assemble
+# Unclear if -Dconfig.profile=prod is needed
+RUN gradle assemble -Dconfig.profile=prod
 
 # Package stage
 
@@ -23,9 +24,10 @@ FROM deps AS runner
 WORKDIR /app
 COPY . . 
 EXPOSE 8000
-CMD gradle run --args="server --host=0.0.0.0 --port=8000" -Dconfig.profile=prod
+RUN ./scripts/install.sh
+CMD ./scripts/run.sh server --host=0.0.0.0 --port=8000 --gcc-path=/usr/bin/riscv-none-elf-gcc
 
 FROM deps as test
 WORKDIR /app
 COPY . . 
-RUN gradle build -i -Dconfig.profile=prod
+RUN gradle testProd -i

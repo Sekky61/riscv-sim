@@ -29,33 +29,60 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+'use client';
+
 import { selectDecode } from '@/lib/redux/cpustateSlice';
 import { useAppSelector } from '@/lib/redux/hooks';
 
-import Block from '@/components/simulation/Block';
+import { useBlockDescriptions } from '@/components/BlockDescriptionContext';
+import { Badge } from '@/components/base/ui/badge';
+import {
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/base/ui/dialog';
+import { Block } from '@/components/simulation/Block';
 import InstructionField from '@/components/simulation/InstructionField';
 import { InstructionListDisplay } from '@/components/simulation/InstructionListDisplay';
+import InstructionTable from './InstructionTable';
 
 export default function DecodeBlock() {
   const decode = useAppSelector(selectDecode);
+  const descriptions = useBlockDescriptions();
 
   if (!decode) return null;
 
-  const after = decode.codeBuffer;
-
-  const decodeStats = (
-    <>
-      <div>Stalled: {decode.stallFlag ? 'Yes' : 'No'}</div>
-    </>
-  );
-
   return (
-    <Block title='Decode Block' stats={decodeStats} className='decode'>
+    <Block
+      title='Decode Block'
+      stats={
+        <>
+          {decode.stallFlag ? (
+            <Badge variant='destructive'>Stalled</Badge>
+          ) : null}
+        </>
+      }
+      detailDialog={
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Decode Block</DialogTitle>
+            <DialogDescription>
+              {descriptions.decode?.shortDescription}
+            </DialogDescription>
+          </DialogHeader>
+          <InstructionTable instructions={decode.codeBuffer} />
+        </DialogContent>
+      }
+      className='decode w-block h-[250px]'
+    >
       <InstructionListDisplay
-        instructions={after}
+        instructions={decode.codeBuffer}
         totalSize={decode.decodeBufferSize}
         instructionRenderer={(instruction, i) => (
-          <InstructionField instructionId={instruction} key={`instr_${i}`} />
+          <div key={`instr_${i}`}>
+            <InstructionField instructionId={instruction} />
+          </div>
         )}
       />
     </Block>

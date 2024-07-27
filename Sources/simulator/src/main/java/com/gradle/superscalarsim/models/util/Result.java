@@ -34,6 +34,7 @@ import com.gradle.superscalarsim.models.instruction.InstructionException;
  * @param exception Exception raised by instruction execution
  *
  * @brief Class representing result of instruction execution. Can be either value or exception.
+ * @details Invariant: value != null xor exception != null
  */
 public record Result<T>(T value, InstructionException exception)
 {

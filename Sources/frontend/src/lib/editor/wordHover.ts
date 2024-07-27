@@ -33,7 +33,7 @@
 
 import { hoverTooltip } from '@codemirror/view';
 
-import { InstructionDescription } from '../types/instructionsDatabase';
+import type { InstructionDescription } from '../types/instructionsDatabase';
 
 /**
  * Create a tooltip (HTML element) for the given instruction
@@ -48,79 +48,91 @@ function instructionTooltip(instruction: InstructionDescription) {
   instructionName.textContent = instruction.name;
   instructionName.className = 'tooltip-name';
 
-  const instructionSyntax = document.createElement('div');
-  instructionSyntax.textContent = `Syntax: ${instruction.instructionSyntax}`;
+  const argumentList = document.createElement('ul');
+  for (const arg of instruction.arguments) {
+    const argElement = document.createElement('li');
+    const typ = arg.register ? 'register' : 'immediate';
+    if (arg.writeBack) {
+      argElement.classList.add('font-bold');
+    }
+    argElement.textContent = `${arg.name} (${typ})`;
+    argumentList.appendChild(argElement);
+  }
+
+  // TODO: add syntax example to InstructionFunctionModel
 
   const instructionInterpretable = document.createElement('div');
-  instructionInterpretable.textContent = `Interpretable as: ${instruction.interpretableAs}`;
+  const interpretableAs = document.createElement('div');
+  interpretableAs.textContent = 'Interpretable as';
+  interpretableAs.className = 'font-bold';
+  instructionInterpretable.appendChild(interpretableAs);
+  const interp = document.createElement('div');
+  interp.textContent = instruction.interpretableAs;
+  instructionInterpretable.appendChild(interp);
 
   dom.appendChild(instructionName);
-  dom.appendChild(instructionSyntax);
+  dom.appendChild(argumentList);
   dom.appendChild(instructionInterpretable);
 
   return dom;
 }
 
-let supportedInstructions: Record<string, InstructionDescription> = {};
-
 /**
- * Load supported instructions from the API immediately after the page loads
+ * It is ok if the supportedInstructions is empty, the hover will just not work.
+ * Factory pattern is used to hand over the instruction list from redux state.
+ *
+ * @param supportedInstructions All supported instructions and their descriptions
+ * @returns Word hover xtension for the ASM code editor
  */
-async function fetchSupportedInstructions() {
-  const data = await fetch('/api/supportedInstructions');
-  const instructions = await data.json();
+export const wordHoverFactory = (
+  supportedInstructions: Record<string, InstructionDescription>,
+) => {
+  return hoverTooltip((view, pos, side) => {
+    // Extract hovered word
+    const { from, to, text } = view.state.doc.lineAt(pos);
+    let start = pos;
+    let end = pos;
 
-  supportedInstructions = instructions;
-}
-fetchSupportedInstructions();
-
-/**
- * Setup the word hover tooltip
- */
-export const wordHover = hoverTooltip((view, pos, side) => {
-  // Extract hovered word
-  const { from, to, text } = view.state.doc.lineAt(pos);
-  let start = pos;
-  let end = pos;
-
-  while (start > from) {
-    const l = text[start - from - 1];
-    if (!l || !/\w/.test(l)) {
-      break;
+    // A word is alphanumeric characters and dots
+    while (start > from) {
+      const l = text[start - from - 1];
+      if (!l || !/[\w\.]/.test(l)) {
+        break;
+      }
+      start--;
     }
-    start--;
-  }
 
-  while (end < to) {
-    const l = text[end - from];
-    if (!l || !/\w/.test(l)) {
-      break;
+    while (end < to) {
+      const l = text[end - from];
+      if (!l || !/[\w\.]/.test(l)) {
+        break;
+      }
+      end++;
     }
-    end++;
-  }
 
-  if ((start === pos && side < 0) || (end === pos && side > 0)) {
-    return null;
-  }
+    if ((start === pos && side < 0) || (end === pos && side > 0)) {
+      return null;
+    }
 
-  // Check if the word is an instruction
-  const word = text.slice(start - from, end - from);
+    // Check if the word is an instruction
+    const word = text.slice(start - from, end - from);
 
-  // Get info and create tooltip
-  const instructionInfo = supportedInstructions[word];
+    // Get info and create tooltip
+    const instructionInfo = supportedInstructions[word];
 
-  if (!instructionInfo) {
-    return null;
-  }
+    if (!instructionInfo) {
+      return null;
+    }
 
-  return {
-    pos: start,
-    end,
-    above: true,
-    create(_view) {
-      // Gets wrapped in a .cm-tooltip
-      const dom = instructionTooltip(instructionInfo);
-      return { dom };
-    },
-  };
-});
+    return {
+      pos: start,
+      end,
+      above: true,
+      create(_view) {
+        // Gets wrapped in a .cm-tooltip
+        const dom = instructionTooltip(instructionInfo);
+        return { dom };
+      },
+    };
+  });
+};

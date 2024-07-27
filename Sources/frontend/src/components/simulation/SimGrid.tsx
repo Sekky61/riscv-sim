@@ -29,9 +29,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-'use client';
-
-import BranchBlock from '@/components/simulation/BranchBlock';
+import { Trace } from '@/app/(simulation)/Trace';
+import { HighlightProvider } from '@/components/HighlightProvider';
 import CacheBlock from '@/components/simulation/CacheBlock';
 import DecodeBlock from '@/components/simulation/DecodeBlock';
 import FetchBlock from '@/components/simulation/FetchBlock';
@@ -40,42 +39,104 @@ import IssueWindow from '@/components/simulation/IssueWindow';
 import LoadBuffer from '@/components/simulation/LoadBuffer';
 import MainMemory from '@/components/simulation/MainMemory';
 import Program from '@/components/simulation/Program';
+import RegisterBlock from '@/components/simulation/RegisterBlock';
 import ReorderBuffer from '@/components/simulation/ReorderBuffer';
 import StoreBuffer from '@/components/simulation/StoreBuffer';
 
 export function SimGrid() {
   return (
-    <div className='global-grid'>
-      <div className='top-grid'>
-        <Program />
-        <div className='block-stack'>
-          <BranchBlock />
-          <FetchBlock />
-          <DecodeBlock />
+    <HighlightProvider>
+      <main className='global-grid'>
+        <div className='top-grid'>
+          <Program />
+          <div className='block-stack'>
+            <div className='relative'>
+              <Trace top='50%' right='100%' />
+              <FetchBlock />
+            </div>
+            <div className='relative'>
+              <Trace bottom='100%' left='50%' vertical />
+              <Trace top='50%' left='100%' />
+              <DecodeBlock />
+            </div>
+          </div>
+          <div className='w-[1px] relative'>
+            <Trace top='-2.5rem' left='0' length='calc(100% + 5rem)' vertical />
+          </div>
+          <div className='relative'>
+            <Trace bottom='100%' left='50%' vertical />
+            <Trace top='-2.5rem' left='-2.5rem' length='calc(100% + 2.5rem)' />
+            <ReorderBuffer />
+          </div>
+          <div className='issue relative'>
+            <Trace top='-2.5rem' left='-2.5rem' length='calc(100% + 2.5rem)' />
+            <div className='relative'>
+              <IssueWindow type='alu' />
+              <Trace bottom='100%' left='50%' vertical />
+            </div>
+            <FunctionUnitGroup type='alu'>
+              <Trace bottom='100%' left='50%' vertical />
+            </FunctionUnitGroup>
+          </div>
+          <div className='issue relative'>
+            <Trace top='-2.5rem' left='-2.5rem' length='calc(100% + 2.5rem)' />
+            <div className='relative'>
+              <IssueWindow type='fp' />
+              <Trace bottom='100%' left='50%' vertical />
+              <Trace top='100%' left='50%' vertical />
+            </div>
+            <FunctionUnitGroup type='fp' />
+          </div>
+          <div className='issue relative'>
+            <Trace top='-2.5rem' left='-2.5rem' length='calc(50% + 2.5rem)' />
+            <div className='relative'>
+              <IssueWindow type='branch' />
+              <Trace bottom='100%' left='50%' vertical />
+              <Trace top='100%' left='50%' vertical />
+            </div>
+            <FunctionUnitGroup type='branch' />
+          </div>
         </div>
-        <ReorderBuffer />
-        <div className='issue'>
-          <IssueWindow type='alu' />
-          <FunctionUnitGroup type='alu' />
+        <div />
+        <div className='bottom-grid pb-8'>
+          <div className='bottom-grid-mem'>
+            <div className='relative'>
+              <Trace top='-2.5rem' left='50%' length='50%' />
+              <Trace bottom='100%' left='50%' vertical />
+
+              <StoreBuffer />
+            </div>
+            <div className='relative'>
+              <Trace top='-2.5rem' left='-2.5rem' length='calc(50% + 2.5rem)' />
+              <Trace bottom='100%' left='50%' vertical />
+              <LoadBuffer />
+            </div>
+            <div className='block-stack'>
+              <div className='grid-gap flex flex-col'>
+                <FunctionUnitGroup type='ls'>
+                  <Trace top='50%' right='100%' length='10rem' />
+                </FunctionUnitGroup>
+              </div>
+              <div className='relative'>
+                <Trace top='100%' left='50%' vertical />
+                <div className='grid-gap flex flex-col'>
+                  <FunctionUnitGroup type='memory'>
+                    <Trace top='50%' left='100%' />
+                    <Trace top='50%' right='100%' length='10rem' />
+                  </FunctionUnitGroup>
+                </div>
+              </div>
+              <MainMemory />
+            </div>
+            <div className=' col-span-2 flex'>
+              <RegisterBlock />
+            </div>
+          </div>
+          <div>
+            <CacheBlock />
+          </div>
         </div>
-        <div className='issue'>
-          <IssueWindow type='fp' />
-          <FunctionUnitGroup type='fp' />
-        </div>
-        <div className='issue'>
-          <IssueWindow type='branch' />
-          <FunctionUnitGroup type='branch' />
-        </div>
-      </div>
-      <div className='bottom-grid pb-8'>
-        <StoreBuffer />
-        <LoadBuffer />
-        <div className='block-stack'>
-          <FunctionUnitGroup type='memory' />
-          <MainMemory />
-        </div>
-        <CacheBlock />
-      </div>
-    </div>
+      </main>
+    </HighlightProvider>
   );
 }

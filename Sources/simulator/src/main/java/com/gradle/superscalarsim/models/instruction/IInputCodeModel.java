@@ -41,7 +41,7 @@ public interface IInputCodeModel
   /**
    * @return List of arguments of the instruction
    */
-  List<InputCodeArgument> getArguments();
+  List<InputCodeArgument> arguments();
   
   /**
    * @param name Name of the argument
@@ -60,12 +60,12 @@ public interface IInputCodeModel
    *
    * @return ID of the instruction (index in the code)
    */
-  int getCodeId();
+  int codeId();
   
   /**
    * Get description of the instruction
    *
    * @return Instruction function model
    */
-  InstructionFunctionModel getInstructionFunctionModel();
+  InstructionFunctionModel instructionFunctionModel();
 }

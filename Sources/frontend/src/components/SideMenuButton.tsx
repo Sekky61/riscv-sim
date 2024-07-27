@@ -33,46 +33,47 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { ReactNode } from 'react';
+import type { ReactNode } from 'react';
 
-import { IconButton } from '@/components/IconButton';
+import clsx from 'clsx';
+import { useHotkeys } from 'react-hotkeys-hook';
 
 export type SideMenuButtonProps = {
-  Icon: ReactNode;
+  icon: ReactNode;
   href: string;
-  shortcut?: string;
+  shortcut: string;
   hoverText: string;
 };
 
-export default function SideMenuButton({
-  Icon,
+/**
+ * The Icon prop is expected to be 24px in size.
+ * Uses info from router to style itself.
+ */
+export function SideMenuButton({
+  icon,
   href,
   shortcut,
   hoverText,
 }: SideMenuButtonProps) {
-  const router = useRouter();
   const path = usePathname();
   const isActive = path === href;
+  const router = useRouter();
 
-  // Navigate to href
-  const clickCallback = () => {
+  const cls = clsx(
+    'sidemenu-button h-12 flex items-center rounded-full',
+    isActive && 'secondary-container',
+    !isActive && 'surface-variant hover:bg-neutral-20/[0.08]',
+  );
+
+  useHotkeys(shortcut, () => {
+    // redirect to the page
     router.push(href);
-  };
+  });
 
   return (
-    <Link
-      href={href}
-      className='flex gap-4 items-center rounded-full hover:bg-gray-200 hover:underline'
-    >
-      <IconButton
-        active={isActive}
-        clickCallback={clickCallback}
-        shortCut={shortcut}
-        description={hoverText}
-      >
-        {Icon}
-      </IconButton>
-      <div className='nav-text text-nowrap'>{hoverText}</div>
+    <Link href={href} className={cls} aria-label={hoverText}>
+      {icon}
+      <div className='nav-text text-nowrap ml-[8px]'>{hoverText}</div>
     </Link>
   );
 }

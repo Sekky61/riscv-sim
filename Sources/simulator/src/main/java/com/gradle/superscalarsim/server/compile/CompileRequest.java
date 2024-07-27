@@ -28,6 +28,7 @@
 package com.gradle.superscalarsim.server.compile;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.gradle.superscalarsim.cpu.MemoryLocation;
 
 import java.util.List;
 
@@ -46,6 +47,13 @@ public class CompileRequest
   List<String> optimizeFlags;
   
   /**
+   * @brief The defined memory locations.
+   * This is not required, but if it is present, it will be used to inform the parser about the defined memory locations.
+   */
+  @JsonProperty(required = false)
+  List<MemoryLocation> memoryLocations;
+  
+  /**
    * @brief Default constructor for deserialization
    */
   public CompileRequest()
@@ -53,9 +61,10 @@ public class CompileRequest
   
   }
   
-  public CompileRequest(String code, List<String> optimizeFlags)
+  public CompileRequest(String code, List<String> optimizeFlags, List<MemoryLocation> memoryLocations)
   {
-    this.code          = code;
-    this.optimizeFlags = optimizeFlags;
+    this.code            = code;
+    this.optimizeFlags   = optimizeFlags;
+    this.memoryLocations = memoryLocations;
   }
 }

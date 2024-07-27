@@ -2,13 +2,11 @@
  * @file    page.tsx
  *
  * @author  Michal Majer
- *          Faculty of Information Technology 
-
- *          Brno University of Technology 
-
+ *          Faculty of Information Technology
+ *          Brno University of Technology
  *          xmajer21@stud.fit.vutbr.cz
  *
- * @brief   The compiler page
+ * @brief   The compiler page root
  *
  * @date    19 September 2023, 22:00 (created)
  *
@@ -31,31 +29,33 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-'use client';
+import { AsmDisplay } from '@/app/(other)/compiler/AsmDisplay';
+import { CCodeInput } from '@/app/(other)/compiler/CCodeInput';
+import { CompileOptions } from '@/app/(other)/compiler/CompileOptions';
+import { LineHighlightProvider } from '@/app/(other)/compiler/LineHighlightContext';
 
-import Head from 'next/head';
+export const metadata = {
+  title: 'Code Editor',
+  description: 'The code editor and compiler page',
+};
 
-import AsmDisplay from '@/components/codeEditor/AsmDisplay';
-import CCodeInput from '@/components/codeEditor/CCodeInput';
-import CompileOptions from '@/components/codeEditor/CompileOptions';
-import CompilerShortcuts from '@/components/shortcuts/CompilerShortcuts';
-
-export default function HomePage() {
+export default function Page() {
   // Note: min-h-0 fixes overflow of the flex container
   return (
-    <main className='h-full'>
-      <Head>
-        <title>Code Editor</title>
-      </Head>
-      <div className='flex h-full flex-col'>
-        <h1 className='m-2 mb-6 text-2xl'>Code Editor</h1>
-        <div className=' editor-container grid min-h-0 flex-grow grid-cols-[160px_2fr_minmax(350px,1fr)] gap-4'>
+    <>
+      <h1>Code Editor</h1>
+      <div className='flex-grow flex h-full flex-col'>
+        <div
+          id='editor'
+          className='editor-container grid min-h-0 h-full flex-grow grid-cols-1 md:grid-cols-[160px_minmax(230px,5fr)_minmax(230px,3fr)] gap-4'
+        >
           <CompileOptions />
-          <CCodeInput />
-          <AsmDisplay />
+          <LineHighlightProvider>
+            <CCodeInput />
+            <AsmDisplay />
+          </LineHighlightProvider>
         </div>
       </div>
-      <CompilerShortcuts />
-    </main>
+    </>
   );
 }

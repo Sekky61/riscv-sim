@@ -32,10 +32,16 @@
 'use client';
 
 import { IconButton } from '@/components/IconButton';
-import { ReactChildren } from '@/lib/types/reactTypes';
+import type { ReactChildren } from '@/lib/types/reactTypes';
 import clsx from 'clsx';
 import { ZoomIn, ZoomOut } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import {
+  type TouchEventHandler,
+  type WheelEventHandler,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 
 type CanvasWindowProps = {
@@ -44,85 +50,141 @@ type CanvasWindowProps = {
 
 /**
  * Canvas window component.
- * Scrollable, draggable with middle click.
+ * Scrollable, draggable with middle click, scrollable with touch.
  * Zoomable with scale prop.
  */
-export default function CanvasWindow({ children }: CanvasWindowProps) {
+export function CanvasWindow({ children }: CanvasWindowProps) {
   const elRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
   const [middleHeld, setMiddleHeld] = useState(false);
-  const [scale, setScale] = useState(1);
+  const pos = useRef({ x: 0, y: 0, scale: 1 });
+  const lastDrag = useRef({ x: 0, y: 0 });
 
   const scaleUp = () => {
-    setScale(scale + 0.2);
+    pos.current.scale += 0.1;
+    if (contentRef.current) {
+      contentRef.current.style.transform = getTransformString(pos.current);
+    }
   };
 
   const scaleDown = () => {
-    setScale(scale - 0.2);
+    pos.current.scale -= 0.1;
+    if (contentRef.current) {
+      contentRef.current.style.transform = getTransformString(pos.current);
+    }
   };
 
   // Middle click hold and drag
 
   function onPointerUpDown(e: PointerEvent) {
-    const isDown = e.type === 'pointerdown';
     const isMiddle = e.button === 1;
-    if (isMiddle) {
-      setMiddleHeld(isDown);
-      if (isDown) {
-        // Pointer capture solves the problem of pointer leaving the element
-        elRef.current?.setPointerCapture(e.pointerId);
-        elRef.current?.addEventListener('pointermove', onPointerMove);
-      } else {
-        elRef.current?.releasePointerCapture(e.pointerId);
-        elRef.current?.removeEventListener('pointermove', onPointerMove);
-      }
+    if (!isMiddle) {
+      return;
+    }
+    const isDown = e.type === 'pointerdown';
+    setMiddleHeld(isDown);
+    if (isDown) {
+      // Pointer capture solves the problem of pointer leaving the element
+      elRef.current?.setPointerCapture(e.pointerId);
+      elRef.current?.addEventListener('pointermove', onPointerMove);
+    } else {
+      elRef.current?.releasePointerCapture(e.pointerId);
+      elRef.current?.removeEventListener('pointermove', onPointerMove);
     }
   }
 
   function onPointerMove(ee: PointerEvent) {
     // get the change in x and y
+    // set the new offset
+    if (!elRef.current || !contentRef.current) {
+      return;
+    }
+
     const dx = ee.movementX;
     const dy = ee.movementY;
-    // set the new offset
-    if (elRef.current) {
-      const newOffsetLeft = elRef.current.scrollLeft - dx;
-      const newOffsetTop = elRef.current.scrollTop - dy;
-      elRef.current.scrollLeft = newOffsetLeft;
-      elRef.current.scrollTop = newOffsetTop;
-    }
+
+    pos.current.x += dx;
+    pos.current.y += dy;
+
+    contentRef.current.style.transform = getTransformString(pos.current);
   }
 
-  function onScroll(e: Event) {
-    // Roll the background with the scroll
-    const el = e.target;
-    if (!(el instanceof HTMLElement)) return;
-    el.style.backgroundPosition = `${0 - el.scrollLeft}px ${
-      0 - el.scrollTop
-    }px`;
-  }
+  const onWheel: WheelEventHandler<HTMLDivElement> = (event) => {
+    if (!elRef.current || !contentRef.current) {
+      return;
+    }
+
+    // do not scroll the view if scrolling a scrollable (instruction list)
+
+    // offset in the scroll direction
+    // with shift, scroll horizontally
+    const horizontal = event.shiftKey ? event.deltaY : event.deltaX;
+    const vertical = event.shiftKey ? event.deltaX : event.deltaY;
+
+    pos.current.x -= horizontal;
+    pos.current.y -= vertical;
+
+    contentRef.current.style.transform = getTransformString(pos.current);
+  };
 
   // Register on component mount
+  // biome-ignore lint/correctness/useExhaustiveDependencies: hooks on mount, unhooks on unmount
   useEffect(() => {
     elRef.current?.addEventListener('pointerdown', onPointerUpDown);
     elRef.current?.addEventListener('pointerup', onPointerUpDown);
-    elRef.current?.addEventListener('scroll', onScroll);
     return () => {
       elRef.current?.removeEventListener('pointerdown', onPointerUpDown);
       elRef.current?.removeEventListener('pointerup', onPointerUpDown);
-      elRef.current?.removeEventListener('scroll', onScroll);
     };
   }, []);
 
+  const onTouchMove: TouchEventHandler = (event) => {
+    if (!elRef.current || !contentRef.current) {
+      return;
+    }
+
+    if (event.touches.length === 1) {
+      // just drag
+      const touch = event.touches[0];
+      if (!touch) {
+        return;
+      }
+      const dx = touch.clientX - lastDrag.current.x;
+      const dy = touch.clientY - lastDrag.current.y;
+      lastDrag.current.x = touch.clientX;
+      lastDrag.current.y = touch.clientY;
+
+      pos.current.x += dx;
+      pos.current.y += dy;
+
+      contentRef.current.style.transform = getTransformString(pos.current);
+    }
+  };
+
   const cls = clsx(
-    'overflow-auto dotted-bg min-h-full min-w-full',
-    middleHeld && 'cursor-grabbing',
-    !middleHeld && 'cursor-grab',
+    'overflow-hidden sim-bg min-h-full min-w-full',
+    middleHeld ? 'cursor-grabbing' : 'cursor-grab',
   );
 
-  // The w-6 h-6 trick to make the overflow not affect initial size of the component
   return (
-    <div className={cls} ref={elRef}>
-      <div style={{ transform: `scale(${scale})` }} className='h-6 w-6'>
-        {children}
+    <div
+      className={cls}
+      ref={elRef}
+      onWheel={onWheel}
+      onTouchMove={onTouchMove}
+      onTouchStart={(e) => {
+        const touch = e.touches[0];
+        if (!touch) {
+          return;
+        }
+        lastDrag.current.x = touch.clientX;
+        lastDrag.current.y = touch.clientY;
+      }}
+    >
+      <div className='relative w-6 h-6'>
+        <div className='absolute h-6 w-6' ref={contentRef}>
+          {children}
+        </div>
       </div>
       <ScaleButtons scaleUp={scaleUp} scaleDown={scaleDown} />
     </div>
@@ -140,16 +202,17 @@ export type ScaleButtonsProps = {
  */
 const ScaleButtons = ({ scaleUp, scaleDown }: ScaleButtonsProps) => {
   useHotkeys(
-    'ctrl-+',
+    // Add is the numeric plus key
+    ['+', 'Add'],
     () => {
       scaleUp();
     },
-    { combinationKey: '-', preventDefault: true },
+    { combinationKey: '-' },
     [scaleUp],
   );
 
   useHotkeys(
-    'ctrl+-',
+    ['-', 'Subtract'],
     () => {
       scaleDown();
     },
@@ -158,25 +221,28 @@ const ScaleButtons = ({ scaleUp, scaleDown }: ScaleButtonsProps) => {
   );
 
   return (
-    <div className='absolute bottom-0 right-0 flex flex-col gap-4 p-6'>
-      <IconButton
-        shortCut='ctrl-+'
-        shortCutOptions={{ combinationKey: '-', preventDefault: true }}
-        clickCallback={scaleUp}
-        className='bg-gray-100 rounded-full drop-shadow'
-        description='Zoom in'
-      >
-        <ZoomIn strokeWidth={1.5} />
-      </IconButton>
-      <IconButton
-        shortCut='ctrl+-'
-        shortCutOptions={{ preventDefault: true }}
-        clickCallback={scaleDown}
-        className='bg-gray-100 rounded-full drop-shadow'
-        description='Zoom out'
-      >
-        <ZoomOut strokeWidth={1.5} />
-      </IconButton>
+    <div className='absolute bottom-0 right-[100px] flex flex-col gap-4 p-6'>
+      <div className='secondary-container rounded-[9px] drop-shadow w-8 h-8'>
+        <IconButton clickCallback={scaleUp} description='Zoom in' animate>
+          <ZoomIn strokeWidth={1.5} />
+        </IconButton>
+      </div>
+      <div className='secondary-container rounded-[9px] drop-shadow w-8 h-8'>
+        <IconButton clickCallback={scaleDown} description='Zoom out' animate>
+          <ZoomOut strokeWidth={1.5} />
+        </IconButton>
+      </div>
     </div>
   );
 };
+
+/**
+ * Create the transform() css property string for the element
+ */
+function getTransformString({
+  x,
+  y,
+  scale,
+}: { x: number; y: number; scale: number }) {
+  return `translate(${x}px, ${y}px) scale(${scale})`;
+}

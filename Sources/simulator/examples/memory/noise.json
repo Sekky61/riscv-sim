@@ -1,0 +1,13 @@
+[
+  {
+    "name": "noise",
+    "alignment": 1,
+    "dataType": "kByte",
+    "data": {
+      "kind": "random",
+      "min": 0,
+      "max": 255,
+      "size": 32
+    }
+  }
+]

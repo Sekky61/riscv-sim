@@ -30,12 +30,8 @@ package com.gradle.superscalarsim.code;
 import com.gradle.superscalarsim.cpu.MemoryLocation;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.factories.InputCodeModelFactory;
-import com.gradle.superscalarsim.loader.InitLoader;
-import com.gradle.superscalarsim.models.instruction.DebugInfo;
-import com.gradle.superscalarsim.models.instruction.InputCodeArgument;
-import com.gradle.superscalarsim.models.instruction.InputCodeModel;
-import com.gradle.superscalarsim.models.instruction.InstructionFunctionModel;
-import com.gradle.superscalarsim.models.register.IRegisterFile;
+import com.gradle.superscalarsim.loader.IDataProvider;
+import com.gradle.superscalarsim.models.instruction.*;
 import com.gradle.superscalarsim.models.register.RegisterDataContainer;
 import com.gradle.superscalarsim.models.register.RegisterModel;
 
@@ -44,8 +40,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
-
-import static com.gradle.superscalarsim.compiler.AsmParser.splitLines;
 
 /**
  * @brief Transforms tokens from the lexer into instructions and labels. Also collects defined data.
@@ -68,13 +62,9 @@ public class CodeParser
    */
   Map<String, InstructionFunctionModel> instructionModels;
   /**
-   * Descriptions of all memory locations defined in code
-   */
-  List<MemoryLocation> memoryLocations;
-  /**
    * Descriptions of all register files. Links arguments to registers.
    */
-  IRegisterFile registerFileModelList;
+  Map<String, RegisterModel> registers;
   /**
    * Factory for creating instances of InputCodeModel
    */
@@ -88,62 +78,73 @@ public class CodeParser
    */
   List<InputCodeModel> instructions;
   /**
-   * Result of the parsing - list of labels.
+   * Result of the parsing - list of labels (to code or data).
    * Some keys may point to the same label object.
+   * Handles forward references. Is checked after parsing for errors.
    */
-  Map<String, Label> labels;
+  Map<String, Symbol> symbolTable;
   /**
    * Error messages from parsing ASM code.
    *
-   * @brief List of error messages
+   * @brief List of error messages. Contains warnings and errors. Warnings do not fail the compilation.
    */
   List<ParseError> errorMessages;
   
   /**
+   * Last defined symbol. Used for assigning data to labels.
+   */
+  String lastSymbol;
+  /**
+   * True if the lastSymbol is bound to an object. Used for pointing several symbols to the same object.
+   */
+  boolean lastSymbolBound;
+  
+  /**
+   * Alignment of the next object. Default is 0 (2^0 = 1 byte alignment).
+   */
+  int nextAlignment;
+  
+  /**
    * For cases when instance manager is not needed
    */
-  public CodeParser(InitLoader initLoader)
+  public CodeParser(IDataProvider dataProvider)
   {
-    this(initLoader.getInstructionFunctionModels(), initLoader.getRegisterFile(), new InputCodeModelFactory(),
-         new ArrayList<>());
+    this(dataProvider.getInstructionFunctionModels(), dataProvider.getRegisterFile().getRegisterMap(true),
+         new InputCodeModelFactory(), new ArrayList<>());
   }
   
   /**
    * @brief Constructor
    */
   public CodeParser(Map<String, InstructionFunctionModel> instructionModels,
-                    IRegisterFile registerFileModelList,
+                    Map<String, RegisterModel> registers,
                     InputCodeModelFactory manager,
                     List<MemoryLocation> memoryLocations)
   {
+    
+    this.instructionModels     = instructionModels;
+    this.registers             = registers;
     this.inputCodeModelFactory = manager;
     
-    this.registerFileModelList = registerFileModelList;
-    this.instructionModels     = instructionModels;
-    this.lexer                 = null;
-    this.errorMessages         = new ArrayList<>();
+    this.symbolTable = new HashMap<>();
+    if (memoryLocations != null)
+    {
+      for (MemoryLocation mem : memoryLocations)
+      {
+        Symbol symbol = new Symbol(mem.getName(), Symbol.SymbolType.DATA, new RegisterDataContainer(), mem);
+        assert mem.names != null;
+        for (String alias : mem.names)
+        {
+          this.symbolTable.put(alias, symbol);
+        }
+      }
+    }
     
-    // Copy list, but not the objects
-    this.labels          = new HashMap<>();
-    this.memoryLocations = new ArrayList<>();
-    this.memoryLocations.addAll(memoryLocations);
-  }
-  
-  /**
-   * For cases when instance manager is not needed, but memory locations are needed.
-   */
-  public CodeParser(InitLoader initLoader, List<MemoryLocation> memoryLocations)
-  {
-    this(initLoader.getInstructionFunctionModels(), initLoader.getRegisterFile(), new InputCodeModelFactory(),
-         memoryLocations);
-  }
-  
-  /**
-   * @return List of memory locations defined in the code
-   */
-  public List<MemoryLocation> getMemoryLocations()
-  {
-    return memoryLocations;
+    this.lexer           = null;
+    this.errorMessages   = new ArrayList<>();
+    this.lastSymbol      = null;
+    this.nextAlignment   = 0;
+    this.lastSymbolBound = true; // Starts as true, because the first label is created to be bound to nothing
   }
   
   /**
@@ -169,28 +170,9 @@ public class CodeParser
     // First, scan the code for directives like .asciiz, .word, etc. and note their locations and values
     // Then filter them out so lexer only sees instructions and labels
     this.errorMessages = new ArrayList<>();
-    collectMemoryLocations(code);
-    String filteredCode = filterDirectives(code);
     // memoryLocations now has ALL memory locations, including those defined in the code and config
     
-    this.lexer = new Lexer(filteredCode);
-    // Collect labels before parsing instructions
-    collectCodeLabels();
-    // Memory location names must also be known as labels
-    for (MemoryLocation mem : memoryLocations)
-    {
-      // Address not yet known
-      Label label = new Label(mem.name, -1);
-      this.labels.put(mem.name, label);
-      if (mem.aliases != null)
-      {
-        for (String alias : mem.aliases)
-        {
-          this.labels.put(alias, label);
-        }
-      }
-    }
-    
+    this.lexer        = new Lexer(code);
     this.instructions = new ArrayList<>();
     
     parse();
@@ -203,208 +185,10 @@ public class CodeParser
     }
     
     // Delete code if errors
-    if (!this.errorMessages.isEmpty())
+    if (containsErrors())
     {
       this.instructions = new ArrayList<>();
-      this.labels       = new HashMap<>();
-    }
-  }
-  
-  /**
-   * Fills the memoryLocations list with memory locations defined in the code.
-   * Does not understand expressions and many obscure directives.
-   *
-   * @param code ASM code
-   */
-  private void collectMemoryLocations(String code)
-  {
-    List<String>   lines       = splitLines(code);
-    MemoryLocation mem         = new MemoryLocation(null, 1);
-    boolean        isDataLabel = false;
-    
-    // Go through the program
-    // Take note of .byte, .hword, .word, .align, .ascii, .asciiz, .string, .skip, .zero
-    for (String line : lines)
-    {
-      if ((!isDirective(line) || line.startsWith(".align")) && (!isLabel(line) || isDataLabel) && mem.name != null)
-      {
-        // Labeled memory ends. Save memory location.
-        if (isDataLabel)
-        {
-          memoryLocations.add(mem);
-          // Start new memory location
-        }
-        mem         = new MemoryLocation(null, 1);
-        isDataLabel = false;
-        // We still want to parse .align and labels
-        if (!line.startsWith(".align") && !isLabel(line))
-        {
-          continue;
-        }
-      }
-      
-      if (isLabel(line))
-      {
-        // todo multiple labels on one line
-        String labelName = line.substring(0, line.length() - 1);
-        if (mem.name == null)
-        {
-          mem.name = labelName;
-        }
-        else
-        {
-          mem.addAlias(labelName);
-        }
-        continue;
-      }
-      
-      // Split, but do not split strings such as "Hello, world!"
-      List<String> tokens = tokenizeLine(line); //line.split("[\\s,]+");
-      
-      String directive = tokens.get(0);
-      int    argCount  = tokens.size() - 1;
-      switch (directive)
-      {
-        case ".byte", ".hword", ".word" ->
-        {
-          if (argCount == 0)
-          {
-            addError(new CodeToken(0, 0, directive, CodeToken.Type.EOF),
-                     directive + " expected at least 1 argument, got " + argCount);
-            break;
-          }
-          if (mem.name == null)
-          {
-            addError(new CodeToken(0, 0, directive, CodeToken.Type.EOF), directive + " expected label before it");
-            break;
-          }
-          DataTypeEnum t = switch (directive)
-          {
-            case ".byte" -> DataTypeEnum.kByte;
-            case ".hword" -> DataTypeEnum.kShort;
-            case ".word" -> DataTypeEnum.kInt;
-            default -> null;
-          };
-          mem.addDataChunk(t);
-          isDataLabel = true;
-          for (int j = 1; j < tokens.size(); j++)
-          {
-            // It may be a label
-            mem.addValue(tokens.get(j));
-          }
-        }
-        case ".align" ->
-        {
-          if (argCount != 1)
-          {
-            addError(new CodeToken(0, 0, directive, CodeToken.Type.EOF), ".align expected 1 argument, got " + argCount);
-            break;
-          }
-          if (mem.name != null)
-          {
-            addError(new CodeToken(0, 0, directive, CodeToken.Type.EOF), ".align expected before a label");
-          }
-          mem.alignment = Integer.parseInt(tokens.get(1));
-        }
-        case ".ascii", ".asciiz", ".string" ->
-        {
-          // todo: escape sequences (https://ftp.gnu.org/old-gnu/Manuals/gas-2.9.1/html_chapter/as_3.html#SEC33)
-          mem.addDataChunk(DataTypeEnum.kChar);
-          isDataLabel = true;
-          if (argCount == 0)
-          {
-            addError(new CodeToken(0, 0, directive, CodeToken.Type.EOF),
-                     directive + " expected at least 1 argument, got " + argCount);
-            break;
-          }
-          
-          for (int j = 1; j < tokens.size(); j++)
-          {
-            String token = tokens.get(j);
-            if (!token.startsWith("\"") || !token.endsWith("\""))
-            {
-              addError(new CodeToken(0, 0, token, CodeToken.Type.EOF), "Expected string literal, got " + token);
-              break;
-            }
-            token = token.substring(1, token.length() - 1);
-            for (char c : token.toCharArray())
-            {
-              mem.addValue(c + "");
-            }
-            if (directive.equals(".asciiz") || directive.equals(".string"))
-            {
-              mem.addValue("\0");
-            }
-          }
-        }
-        case ".skip", ".zero" ->
-        {
-          // .zero is an alias for .skip
-          mem.addDataChunk(DataTypeEnum.kByte);
-          if (argCount != 1 && argCount != 2)
-          {
-            addError(new CodeToken(0, 0, directive, CodeToken.Type.EOF), ".skip expected 1 argument, got " + argCount);
-            break;
-          }
-          int    size = Integer.parseInt(tokens.get(1));
-          String fill = "0";
-          if (argCount == 2)
-          {
-            fill = tokens.get(2);
-          }
-          for (int j = 0; j < size; j++)
-          {
-            mem.addValue(fill);
-          }
-        }
-      }
-    }
-    // Save last memory location
-    if (mem.name != null)
-    {
-      memoryLocations.add(mem);
-    }
-  }
-  
-  /**
-   * @return The code, without directives (data) and without labels pointing to data
-   */
-  private String filterDirectives(String code)
-  {
-    String[]      lines   = code.split("\n");
-    StringBuilder builder = new StringBuilder();
-    for (String line : lines)
-    {
-      String trimmedLine = line.trim();
-      // do not filter out labels
-      if (trimmedLine.startsWith(".") && !trimmedLine.endsWith(":"))
-      {
-        // Directive
-        continue;
-      }
-      builder.append(line).append("\n");
-    }
-    return builder.toString();
-  }
-  
-  private void collectCodeLabels()
-  {
-    List<CodeToken> tokens = lexer.getTokens();
-    for (CodeToken token : tokens)
-    {
-      if (token.type().equals(CodeToken.Type.LABEL))
-      {
-        String labelName = token.text();
-        if (labels.containsKey(labelName))
-        {
-          addError(token, "Label '" + labelName + "' already defined");
-          continue;
-        }
-        // todo multiple labels pointing to the same address/instruction - alias in the map
-        // Add label, this is in "bytes"
-        Label lab = new Label(labelName, -1);
-        labels.put(labelName, lab);
-      }
+      this.symbolTable  = new HashMap<>();
     }
   }
   
@@ -427,10 +211,21 @@ public class CodeParser
         continue;
       }
       
-      // Directive or instruction
+      // Directive or instruction. Not both.
       if (lexer.currentToken().type().equals(CodeToken.Type.SYMBOL))
       {
-        parseDirectiveOrInstruction();
+        parseInstruction();
+        
+        // Maybe the instruction parsing failed. Skip until newline, comment, EOF
+        while (!lexer.currentToken().type().equals(CodeToken.Type.NEWLINE) && !lexer.currentToken().type()
+                .equals(CodeToken.Type.EOF) && !lexer.currentToken().type().equals(CodeToken.Type.COMMENT))
+        {
+          nextToken();
+        }
+      }
+      else if (lexer.currentToken().type().equals(CodeToken.Type.DIRECTIVE))
+      {
+        parseDirective();
       }
       
       // Skip comment. Comment is also parsed in instruction parsing, where it can be a debug info.
@@ -457,141 +252,89 @@ public class CodeParser
   }
   
   /**
-   * @brief Fills the constantValue field of immediate arguments based on the string representation of the value.
-   * It is an expression of labels and constants.
-   * Examples: "6", "0x6", "label1", "label1+4".
+   * @brief Fills the missing constantValue field of immediate arguments based on the string representation of the value.
+   * Missing should be only arithmetic expressions like "ptr+4".
    */
   public void fillImmediateValues()
   {
     for (InputCodeModel instruction : instructions)
     {
       argloop:
-      for (InputCodeArgument argument : instruction.getArguments())
+      for (InputCodeArgument argument : instruction.arguments())
       {
-        InstructionFunctionModel.Argument argModel = instruction.getInstructionFunctionModel()
-                .getArgumentByName(argument.getName());
-        String argumentToken = argument.getValue();
-        if (argModel.isImmediate())
+        InstructionArgument argModel = instruction.instructionFunctionModel().getArgumentByName(argument.getName());
+        if (!argModel.isImmediate() || argument.getConstantValue() != null)
         {
-          String[] tokens = ExpressionEvaluator.tokenize(argumentToken);
-          // Replace labels with numbers
-          for (int i = 0; i < tokens.length; i++)
+          // Not constant or already filled
+          continue;
+        }
+        CodeToken valueToken    = argument.getValueToken();
+        String    argumentToken = valueToken.text();
+        String[]  tokens        = ExpressionEvaluator.tokenize(argumentToken);
+        // Replace labels with numbers
+        for (int i = 0; i < tokens.length; i++)
+        {
+          String token = tokens[i];
+          if (ExpressionEvaluator.isLiteral(token) || ExpressionEvaluator.isOperator(token))
           {
-            String token = tokens[i];
-            if (ExpressionEvaluator.isLiteral(token) || ExpressionEvaluator.isOperator(token))
-            {
-              continue;
-            }
-            Label label = labels.get(token);
-            if (label == null)
-            {
-              addError(new CodeToken(0, 0, argumentToken, CodeToken.Type.EOF),
-                       "Label '" + argumentToken + "' is not defined");
-              continue argloop;
-            }
-            // Replace label with its address
-            assert label.getAddress() != -1; // code addresses must be known
-            long address;
-            if (argModel.isOffset())
-            {
-              // Offset must compute the difference between the label and the current instruction
-              // and so cannot be linked to the label
-              long offset = label.getAddress() - instruction.getPc();
-              address = offset;
-              argument.setConstantValue(RegisterDataContainer.fromValue(offset));
-            }
-            else
-            {
-              // If label is not defined, it will be caught later
-              // This links the constant and the label through the shared reference
-              argument.setConstantValue(label.getAddressContainer());
-              address = label.getAddress();
-            }
-            tokens[i] = String.valueOf(address);
+            continue;
           }
-          long evaluated = ExpressionEvaluator.evaluate(tokens);
-          // May be a label or a constant
-          RegisterDataContainer constantValue = RegisterDataContainer.parseAs(String.valueOf(evaluated),
-                                                                              argModel.type());
-          if (constantValue != null)
+          Symbol symbol = symbolTable.get(token);
+          if (symbol == null || symbol.getValue() == null)
           {
-            // Constant
-            argument.setConstantValue(constantValue);
+            addWarning(valueToken, "Symbol '" + argumentToken + "' is not defined");
+            continue argloop;
+          }
+          // Replace label with its address
+          assert symbol.getValue() != null; // code addresses must be known
+          long address;
+          if (argModel.isOffset())
+          {
+            // Offset must compute the difference between the label and the current instruction
+            // and so cannot be linked to the label
+            long offset = symbol.getAddress() - instruction.getPc();
+            address = offset;
+            argument.setConstantValue(RegisterDataContainer.fromValue(offset));
           }
           else
           {
-            throw new RuntimeException("Unknown constant value");
+            // If label is not defined, it will be caught later
+            // This links the constant and the label through the shared reference
+            argument.setConstantValue(symbol.getValue());
+            address = symbol.getAddress();
           }
-          boolean isLValue = argument.getName().equals("rd");
-          checkImmediateArgument(argument, isLValue, new CodeToken(0, 0, argumentToken, CodeToken.Type.EOF));
+          tokens[i] = String.valueOf(address);
         }
-      }
-    }
-  }
-  
-  /**
-   * @return True if the line is a directive, false otherwise
-   */
-  private boolean isDirective(String line)
-  {
-    return line.startsWith(".") && !line.endsWith(":");
-  }
-  
-  private boolean isLabel(String line)
-  {
-    return line.endsWith(":");
-  }
-  
-  /**
-   * @param line Line to tokenize
-   *
-   * @return Tokens of the assembly line, split by spaces and commas, but not inside strings
-   */
-  private List<String> tokenizeLine(String line)
-  {
-    List<String>  tokens       = new ArrayList<>();
-    StringBuilder currentToken = new StringBuilder();
-    boolean       inString     = false;
-    for (char c : line.toCharArray())
-    {
-      if (c == '"')
-      {
-        inString = !inString;
-      }
-      if (c == ',' && !inString)
-      {
-        tokens.add(currentToken.toString());
-        currentToken = new StringBuilder();
-      }
-      else if (c == ' ' && !inString)
-      {
-        if (!currentToken.isEmpty())
+        long evaluated = ExpressionEvaluator.evaluate(tokens);
+        // May be a label or a constant
+        RegisterDataContainer constantValue = RegisterDataContainer.parseAs(String.valueOf(evaluated), argModel.type());
+        if (constantValue != null)
         {
-          tokens.add(currentToken.toString());
-          currentToken = new StringBuilder();
+          // Constant
+          argument.setConstantValue(constantValue);
+        }
+        else
+        {
+          throw new RuntimeException("Unknown constant value");
         }
       }
-      else
-      {
-        currentToken.append(c);
-      }
+      
     }
-    if (!currentToken.isEmpty())
-    {
-      tokens.add(currentToken.toString());
-    }
-    return tokens;
   }
   
   /**
-   * @param token   Token where the error occurred
-   * @param message Error message
-   *
-   * @brief Adds a single-line error message to the list of errors
+   * @return True if there are any errors in the code. Warning messages are not considered errors.
    */
-  private void addError(CodeToken token, String message)
+  public boolean containsErrors()
   {
-    this.errorMessages.add(new ParseError("error", message, token.line(), token.columnStart(), token.columnEnd()));
+    for (ParseError error : errorMessages)
+    {
+      if (error.kind.equals("error"))
+      {
+        return true;
+      }
+    }
+    return false;
   }
   
   /**
@@ -610,63 +353,37 @@ public class CodeParser
       addError(lexer.currentToken(), "Invalid label name '" + labelName + "'");
     }
     
-    assert labels.containsKey(labelName);
-    
-    labels.get(labelName).getAddressContainer().setValue(instructions.size() * 4);
+    if (symbolTable.containsKey(labelName))
+    {
+      if (symbolTable.get(labelName).getValue() == null)
+      {
+        // Label was used before definition
+        // Assign the address to the label
+        symbolTable.get(labelName).setValue(RegisterDataContainer.fromValue(instructions.size() * 4));
+      }
+      else
+      {
+        // second definition (wrong)
+        addError(lexer.currentToken(), "Label '" + labelName + "' already defined");
+      }
+    }
+    else if (lastSymbolBound)
+    {
+      symbolTable.put(labelName, new Symbol(labelName, Symbol.SymbolType.LABEL,
+                                            RegisterDataContainer.fromValue(instructions.size() * 4), null));
+      lastSymbol      = labelName;
+      lastSymbolBound = false;
+    }
+    else
+    {
+      // Label points to the same symbol as the last one
+      symbolTable.put(labelName, symbolTable.get(lastSymbol));
+      lastSymbol = labelName;
+    }
     
     // Consume label token
     nextToken();
   }
-  
-  /**
-   * @brief Parse directive or instruction. Current token is a symbol.
-   */
-  private void parseDirectiveOrInstruction()
-  {
-    assert lexer.currentToken().type().equals(CodeToken.Type.SYMBOL);
-    
-    String symbolName = lexer.currentToken().text();
-    
-    // Check if symbol is a directive
-    if (!symbolName.startsWith("."))
-    {
-      parseInstruction();
-      
-      // Maybe the instruction parsing failed. Skip until newline, comment, EOF
-      while (!lexer.currentToken().type().equals(CodeToken.Type.NEWLINE) && !lexer.currentToken().type()
-              .equals(CodeToken.Type.EOF) && !lexer.currentToken().type().equals(CodeToken.Type.COMMENT))
-      {
-        nextToken();
-      }
-    }
-    // todo maybe filtering would not be necessary if directives were parsed here
-  }
-  
-  /**
-   * @brief Load next token
-   */
-  private void nextToken()
-  {
-    this.lexer.nextToken();
-  }
-  
-  /**
-   * @param argument Argument to be verified. Must be an immediate value, either a label or a constant
-   * @param isLValue True if the argument is a lvalue, false otherwise
-   * @param token    Token of the argument, for error reporting
-   *
-   * @return True if argument is valid immediate value, otherwise false
-   * @brief Verifies if argument is immediate value
-   */
-  private boolean checkImmediateArgument(final InputCodeArgument argument, final boolean isLValue, CodeToken token)
-  {
-    if (isLValue)
-    {
-      this.addError(token, "LValue cannot be immediate value.");
-      return false;
-    }
-    return true;
-  }// end of checkImmediateArgument
   
   /**
    * @brief Parse instruction. Current token is a symbol with the name of the instruction.
@@ -677,6 +394,7 @@ public class CodeParser
   private void parseInstruction()
   {
     assert lexer.currentToken().type().equals(CodeToken.Type.SYMBOL);
+    lastSymbolBound = true;
     
     CodeToken                instructionNameToken = lexer.currentToken();
     String                   instructionName      = instructionNameToken.text();
@@ -708,7 +426,7 @@ public class CodeParser
     int collectedArgsIndex = 0;
     boolean useDefaultArgs = numArguments < instructionModel.getAsmArguments()
             .size() && instructionModel.hasDefaultArguments();
-    for (InstructionFunctionModel.Argument argument : instructionModel.getArguments())
+    for (InstructionArgument argument : instructionModel.arguments())
     {
       boolean   hasDefault = argument.defaultValue() != null;
       CodeToken argumentToken;
@@ -734,15 +452,20 @@ public class CodeParser
       
       String            argumentName      = argument.name();
       boolean           isValid           = true;
-      InputCodeArgument inputCodeArgument = new InputCodeArgument(argumentName, argumentToken.text());
+      InputCodeArgument inputCodeArgument = new InputCodeArgument(argumentName, argumentToken);
       if (argument.isRegister())
       {
         // Try to find the register. Its existence ic checked in the next step
-        RegisterModel register = registerFileModelList.getRegister(argumentToken.text());
+        RegisterModel register = registers.get(argumentToken.text());
         inputCodeArgument.setRegisterValue(register);
         isValid = checkRegisterArgument(inputCodeArgument, argument.type(), argumentToken);
       }
-      else if (!argument.isImmediate())
+      else if (argument.isImmediate())
+      {
+        boolean isLValue = argumentName.equals("rd");
+        checkImmediateArgument(inputCodeArgument, isLValue, argumentToken);
+      }
+      else
       {
         // Immediate values are checked later
         throw new RuntimeException("Unknown argument type");
@@ -760,10 +483,8 @@ public class CodeParser
       return;
     }
     
-    InputCodeModel inputCodeModel = inputCodeModelFactory.createInstance(instructionModel, codeArguments,
-                                                                         instructions.size());
-    
     // Optional debug info
+    DebugInfo debugInfo = null;
     if (lexer.currentToken().type().equals(CodeToken.Type.COMMENT))
     {
       boolean isDebugInfo = lexer.currentToken().text().startsWith("DEBUG\"") && lexer.currentToken().text()
@@ -771,14 +492,238 @@ public class CodeParser
       if (isDebugInfo)
       {
         // Filter out the meat
-        String debugInfo = lexer.currentToken().text().substring(6, lexer.currentToken().text().length() - 1);
-        inputCodeModel.setDebugInfo(new DebugInfo(debugInfo));
+        String debugInfoStr = lexer.currentToken().text().substring(6, lexer.currentToken().text().length() - 1);
+        debugInfo = new DebugInfo(debugInfoStr);
       }
       nextToken();
     }
+    InputCodeModel inputCodeModel = inputCodeModelFactory.createInstance(instructionModel, codeArguments,
+                                                                         instructions.size(), debugInfo);
     
     instructions.add(inputCodeModel);
   }
+  
+  /**
+   * @brief Load next token
+   */
+  private void nextToken()
+  {
+    this.lexer.nextToken();
+  }
+  
+  /**
+   * @brief Parse directive. Current token is the directive name.
+   * It may either be an align directive or a data directive.
+   * Data directives bind to the last defined label.
+   */
+  private void parseDirective()
+  {
+    assert lexer.currentToken().type().equals(CodeToken.Type.DIRECTIVE);
+    
+    CodeToken directiveToken = lexer.currentToken();
+    String    directive      = directiveToken.text();
+    
+    if (directive.equals(".align"))
+    {
+      // Align directive
+      nextToken();
+      if (!lexer.currentToken().type().equals(CodeToken.Type.SYMBOL))
+      {
+        addError(lexer.currentToken(), "Expected number after .align");
+        return;
+      }
+      nextAlignment = Integer.parseInt(lexer.currentToken().text());
+      nextToken();
+      return;
+    }
+    
+    // Data directive
+    
+    if (lastSymbol == null)
+    {
+      addError(lexer.currentToken(), "Data directive must be preceded by a label");
+      return;
+    }
+    
+    lastSymbolBound = true;
+    
+    Symbol symbol = symbolTable.get(lastSymbol);
+    assert symbol != null;
+    MemoryLocation mem = symbol.getMemoryLocation();
+    if (mem == null)
+    {
+      // Create new memory location
+      mem           = new MemoryLocation(List.of(symbol.name), nextAlignment, new ArrayList<>(), new ArrayList<>());
+      nextAlignment = 0;
+      symbol.setMemoryLocation(mem);
+    }
+    else
+    {
+      // Align it (ceil to the next multiple of alignment)
+      mem.alignment = nextAlignment;
+    }
+    
+    // Collect arguments (until newline, comment, EOF)
+    List<CodeToken> args = new ArrayList<>();
+    nextToken();
+    
+    // First argument
+    if (!lexer.currentToken().type().equals(CodeToken.Type.NEWLINE) && !lexer.currentToken().type()
+            .equals(CodeToken.Type.EOF) && !lexer.currentToken().type().equals(CodeToken.Type.COMMENT))
+    {
+      args.add(lexer.currentToken());
+      nextToken();
+    }
+    
+    // rest: [, arg]*
+    while (!lexer.currentToken().type().equals(CodeToken.Type.NEWLINE) && !lexer.currentToken().type()
+            .equals(CodeToken.Type.EOF) && !lexer.currentToken().type().equals(CodeToken.Type.COMMENT))
+    {
+      // assert a comma
+      if (!lexer.currentToken().type().equals(CodeToken.Type.COMMA))
+      {
+        addError(lexer.currentToken(), "Expected comma, got " + lexer.currentToken().type());
+        return;
+      }
+      nextToken();
+      args.add(lexer.currentToken());
+      nextToken();
+    }
+    int argCount = args.size();
+    
+    switch (directive)
+    {
+      case ".byte", ".hword", ".word" ->
+      {
+        if (argCount == 0)
+        {
+          addError(directiveToken, directive + " expected at least 1 argument, got " + argCount);
+          break;
+        }
+        if (mem.getName() == null)
+        {
+          addError(directiveToken, directive + " expected label before it");
+          break;
+        }
+        DataTypeEnum t = switch (directive)
+        {
+          case ".byte" -> DataTypeEnum.kByte;
+          case ".hword" -> DataTypeEnum.kShort;
+          case ".word" -> DataTypeEnum.kInt;
+          default -> null;
+        };
+        mem.addDataChunk(t);
+        for (int i = 0; i < args.size(); i++)
+        {
+          CodeToken arg = args.get(i);
+          // It may be a label
+          mem.addValue(arg.text());
+        }
+      }
+      case ".ascii", ".asciiz", ".string" ->
+      {
+        // todo: escape sequences (https://ftp.gnu.org/old-gnu/Manuals/gas-2.9.1/html_chapter/as_3.html#SEC33)
+        mem.addDataChunk(DataTypeEnum.kChar);
+        if (argCount == 0)
+        {
+          addError(new CodeToken(0, 0, directive, CodeToken.Type.EOF),
+                   directive + " expected at least 1 argument, got " + argCount);
+          break;
+        }
+        
+        for (int j = 0; j < args.size(); j++)
+        {
+          CodeToken str = args.get(j);
+          if (!str.type().equals(CodeToken.Type.STRING))
+          {
+            addError(str, "Expected string literal, got " + str);
+            break;
+          }
+          for (char c : str.text().toCharArray())
+          {
+            mem.addValue(c + "");
+          }
+          if (directive.equals(".asciiz") || directive.equals(".string"))
+          {
+            mem.addValue("\0");
+          }
+        }
+      }
+      case ".skip", ".zero" ->
+      {
+        // .zero is an alias for .skip
+        // https://stackoverflow.com/questions/65641034/what-is-zero-in-gnu-gas
+        mem.addDataChunk(DataTypeEnum.kByte);
+        
+        
+        // first arg is the size
+        if (argCount == 0)
+        {
+          addError(directiveToken, directive + " expected at least 1 argument, got " + argCount);
+          break;
+        }
+        
+        int size = Integer.parseInt(args.get(0).text());
+        
+        // second arg (if present, after comma) is the fill value
+        String fill = "0";
+        if (argCount == 2)
+        {
+          if (args.get(1).type() != CodeToken.Type.SYMBOL)
+          {
+            addError(args.get(1), "Expected fill value, got " + args.get(2).text());
+            break;
+          }
+          fill = args.get(1).text();
+        }
+        
+        for (int j = 0; j < size; j++)
+        {
+          mem.addValue(fill);
+        }
+      }
+    }
+  }
+  
+  /**
+   * @param token   Token where the error occurred
+   * @param message Error message
+   *
+   * @brief Adds a single-line error message to the list of errors
+   */
+  private void addError(CodeToken token, String message)
+  {
+    this.errorMessages.add(new ParseError("error", message, token.line(), token.columnStart(), token.columnEnd()));
+  }
+  
+  /**
+   * @param token   Token where the error occurred
+   * @param message Error message
+   *
+   * @brief Adds a single-line warning message to the list of errors. Warnings do not fail the compilation.
+   */
+  private void addWarning(CodeToken token, String message)
+  {
+    this.errorMessages.add(new ParseError("warning", message, token.line(), token.columnStart(), token.columnEnd()));
+  }
+  
+  /**
+   * @param argument Argument to be verified. Must be an immediate value, either a label or a constant
+   * @param isLValue True if the argument is a lvalue, false otherwise
+   * @param token    Token of the argument, for error reporting
+   *
+   * @return True if argument is valid immediate value, otherwise false
+   * @brief Verifies if argument is immediate value
+   */
+  private boolean checkImmediateArgument(final InputCodeArgument argument, final boolean isLValue, CodeToken token)
+  {
+    if (isLValue)
+    {
+      this.addError(token, "LValue cannot be immediate value.");
+      return false;
+    }
+    return true;
+  }// end of checkImmediateArgument
   
   /**
    * @return List of tokens representing arguments, null in case of error.
@@ -916,14 +861,22 @@ public class CodeParser
     return this.errorMessages.isEmpty();
   }
   
+  /**
+   * @return True if there are errors
+   */
+  public boolean hasErrors()
+  {
+    return !errorMessages.isEmpty();
+  }
+  
   public List<InputCodeModel> getInstructions()
   {
     return instructions;
   }
   
-  public Map<String, Label> getLabels()
+  public Map<String, Symbol> getSymbolTable()
   {
-    return labels;
+    return symbolTable;
   }
   
   public List<ParseError> getErrorMessages()

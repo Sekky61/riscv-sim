@@ -1,5 +1,5 @@
 /**
- * @file SimulationRequest.java
+ * @file SimulateRequest.java
  * @author Michal Majer
  * Faculty of Information Technology
  * Brno University of Technology
@@ -42,6 +42,7 @@ public class SimulateRequest
    * Tick 0 is the initial state of the simulation.
    * If not specified, the state of the last tick is returned (the end of the simulation).
    */
+  @JsonProperty(required = true)
   Optional<Integer> tick;
   /**
    * The configuration to use for the simulation
@@ -49,4 +50,14 @@ public class SimulateRequest
    */
   @JsonProperty(required = true)
   SimulationConfig config;
+  
+  public SimulateRequest()
+  {
+  }
+  
+  public SimulateRequest(SimulationConfig config, Optional<Integer> tick)
+  {
+    this.config = config;
+    this.tick   = tick;
+  }
 }

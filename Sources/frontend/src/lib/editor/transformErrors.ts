@@ -29,13 +29,23 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import type { Diagnostic } from '@codemirror/lint';
+import type { Action, Diagnostic } from '@codemirror/lint';
 
-import { ComplexErrorItem } from '@/lib/types/simulatorApi';
+import type { ComplexErrorItem } from '@/lib/types/simulatorApi';
+
+/**
+ * Code action to navigate to memory tab
+ */
+const jumpToMemoryAction: Action = {
+  name: 'Go to memory tab',
+  apply(view, from, to) {
+    window.location.href = '/memory';
+  },
+};
 
 /**
  * Transforms errors from compiler API to codemirror diagnostics.
- * Most notably, it converts line and column to character index.
+ * Most notably, it converts line and column to 1D character index.
  *
  * @param errors  Array of errors from compiler API
  * @param code   Code to which the errors belong
@@ -50,7 +60,7 @@ export function transformErrors(
   const lineLengthsPrefixSum = [0];
   for (const lineLength of lineLengths) {
     // todo test this
-    const prev = lineLengthsPrefixSum[lineLengthsPrefixSum.length - 1];
+    const prev = lineLengthsPrefixSum.at(-1);
     if (prev === undefined) {
       throw new Error('Invalid line lengths');
     }
@@ -62,11 +72,17 @@ export function transformErrors(
     // We need to convert the line and column to a character index
     const span = error.locations[0];
     if (!span) {
-      throw new Error('Invalid error span (0 locations)');
+      console.error('Invalid error span from server', error);
+      return {
+        from: 0,
+        to: 0,
+        message: error.message,
+        severity: error.kind,
+      };
     }
     // 1-based line and column
     const line = span.caret.line;
-    const index = line - 1 < 0 ? 0 : line - 1;
+    const index = line <= 0 ? 0 : line - 1;
     const lineStart = lineLengthsPrefixSum[index];
     if (lineStart === undefined) {
       console.warn('Invalid line start', line, lineLengthsPrefixSum);
@@ -76,11 +92,10 @@ export function transformErrors(
         message: error.message,
         severity: error.kind,
       };
-      // throw new Error(`Invalid line start for line ${line}`);
     }
     const charIndex = lineStart + span.caret['display-column'] - 1;
 
-    let charIndexEnd;
+    let charIndexEnd: number;
     if (span.finish) {
       charIndexEnd =
         charIndex +
@@ -90,11 +105,15 @@ export function transformErrors(
       charIndexEnd = charIndex;
     }
 
+    const undefSymbolMatch = error.message.match(/Symbol .* is not defined/);
+    const isUndefinedSymbol = undefSymbolMatch !== null;
+
     return {
       from: charIndex,
       to: charIndexEnd,
       message: error.message,
       severity: error.kind,
+      actions: isUndefinedSymbol ? [jumpToMemoryAction] : undefined,
     };
   });
 }

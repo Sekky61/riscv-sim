@@ -2,10 +2,7 @@ package com.gradle.superscalarsim.blocks;
 
 import com.gradle.superscalarsim.blocks.base.InstructionFetchBlock;
 import com.gradle.superscalarsim.blocks.base.InstructionMemoryBlock;
-import com.gradle.superscalarsim.blocks.branch.BranchTargetBuffer;
-import com.gradle.superscalarsim.blocks.branch.GShareUnit;
-import com.gradle.superscalarsim.blocks.branch.GlobalHistoryRegister;
-import com.gradle.superscalarsim.blocks.branch.PatternHistoryTable;
+import com.gradle.superscalarsim.blocks.branch.*;
 import com.gradle.superscalarsim.builders.InputCodeModelBuilder;
 import com.gradle.superscalarsim.factories.SimCodeModelFactory;
 import com.gradle.superscalarsim.models.instruction.InputCodeModel;
@@ -30,9 +27,10 @@ public class InstructionFetchBlockTest
     InputCodeModel nop = new InputCodeModelBuilder().hasInstructionName("nop").build();
     this.instructionMemoryBlock = new InstructionMemoryBlock(null, null, nop);
     this.branchTargetBuffer     = new BranchTargetBuffer(1000);
-    this.gShareUnit             = new GShareUnit(1, new GlobalHistoryRegister(1000),
-                                                 new PatternHistoryTable(10, new boolean[]{true, false},
-                                                                         PatternHistoryTable.PredictorType.TWO_BIT_PREDICTOR));
+    this.gShareUnit             = new GShareUnit(1, false, new GlobalHistoryRegister(8), new PatternHistoryTable(10,
+                                                                                                                 new BitPredictor(
+                                                                                                                         BitPredictor.PredictorType.TWO_BIT_PREDICTOR,
+                                                                                                                         2)));
     SimCodeModelFactory simCodeModelFactory = new SimCodeModelFactory();
     this.instructionFetchBlock = new InstructionFetchBlock(3, 1, simCodeModelFactory, this.instructionMemoryBlock,
                                                            this.gShareUnit, this.branchTargetBuffer);

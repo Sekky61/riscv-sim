@@ -6,7 +6,7 @@
  *          Brno University of Technology
  *          xmajer21@stud.fit.vutbr.cz
  *
- * @brief   Redux store
+ * @brief   Redux store - global state
  *
  * @date    19 September 2023, 22:00 (created)
  *
@@ -35,7 +35,7 @@ import {
   PAUSE,
   PERSIST,
   PURGE,
-  PersistedState,
+  type PersistedState,
   REGISTER,
   REHYDRATE,
   createMigrate,
@@ -45,15 +45,20 @@ import {
 import hardSet from 'redux-persist/lib/stateReconciler/hardSet';
 import storage from 'redux-persist/lib/storage';
 
-import compilerReducer, { CompilerReducer } from '@/lib/redux/compilerSlice';
+import compilerReducer, {
+  type CompilerReducer,
+} from '@/lib/redux/compilerSlice';
 import cpuReducer from '@/lib/redux/cpustateSlice';
-import isaReducer, { IsaReducer } from '@/lib/redux/isaSlice';
+import isaReducer, { type IsaReducer } from '@/lib/redux/isaSlice';
 import shortcutsReducer from '@/lib/redux/shortcutsSlice';
-import simConfigReducer, { SimConfigReducer } from '@/lib/redux/simConfigSlice';
+import simConfigReducer, {
+  type SimConfigReducer,
+} from '@/lib/redux/simConfigSlice';
 
 /**
  * This is the root of the global state.
  * It is a combination of all the reducers defined in this directory.
+ * I recommend the official docs: https://redux.js.org/introduction/getting-started
  *
  * The configuration is persisted in the local storage.
  * If the schema changes, the version number _must be increased_, otherwise the wrong data will be loaded and the app will not work.
@@ -73,10 +78,33 @@ import simConfigReducer, { SimConfigReducer } from '@/lib/redux/simConfigSlice';
  * https://github.com/rt2zz/redux-persist/blob/HEAD/docs/migrations.md
  */
 const migrations = {
+  2: () => {
+    // Changed MemoryLocation, compile
+    return undefined;
+  },
+  3: () => {
+    return undefined;
+  },
   10: (state: PersistedState) => {
     return state;
   },
-  11: (state: PersistedState) => {
+  11: () => {
+    return undefined;
+  },
+  12: () => {
+    // Added instructionFunctionModels
+    return undefined;
+  },
+  13: () => {
+    // Changed MemoryLocation
+    return undefined;
+  },
+  14: () => {
+    // Changed MemoryLocation
+    return undefined;
+  },
+  15: () => {
+    // Changed MemoryLocation
     return undefined;
   },
 };
@@ -86,9 +114,9 @@ const migrations = {
 // TODO: look at https://github.com/localForage/localForage
 const persistIsaConfig = {
   // The key in localStorage
-  key: 'root',
+  key: 'isa',
   // Change the version when changing the schema
-  version: 11,
+  version: 15,
   storage,
   stateReconciler: hardSet,
   // This migration is used when the version number is increased
@@ -97,7 +125,7 @@ const persistIsaConfig = {
 
 const persistSimConfig = {
   key: 'simConfig',
-  version: 1,
+  version: 4,
   storage,
   stateReconciler: hardSet,
   migrate: createMigrate(migrations),
@@ -105,7 +133,7 @@ const persistSimConfig = {
 
 const persistCompileConfig = {
   key: 'compiler',
-  version: 1,
+  version: 2,
   storage,
   stateReconciler: hardSet,
   migrate: createMigrate(migrations),
@@ -136,6 +164,11 @@ const reducers = combineReducers({
     }),
 }); */
 
+/**
+ * Create the store with the preloaded state, persistor and the reducers.
+ *
+ * Note: What is defined in preloadedState stays after the state is updated.
+ */
 export const makeStore = () => {
   const store = configureStore({
     reducer: reducers,
@@ -150,8 +183,8 @@ export const makeStore = () => {
   return { store, persistor };
 };
 
-export type AppPersistedStore = ReturnType<typeof makeStore>;
-export type AppStore = ReturnType<typeof makeStore>['store'];
+export type AppPersistedStore = Awaited<ReturnType<typeof makeStore>>;
+export type AppStore = AppPersistedStore['store'];
 // Infer the `RootState` and `AppDispatch` types from the store itself
 // Infer the `RootState` and `AppDispatch` types from the store itself
 export type RootState = ReturnType<AppStore['getState']>;

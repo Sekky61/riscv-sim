@@ -32,10 +32,8 @@
  */
 package com.gradle.superscalarsim.models.instruction;
 
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.models.Identifiable;
@@ -44,62 +42,29 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @class InstructionFunctionModel
+ * @param name            Instruction name (has to be unique)
+ * @param instructionType Type of the instruction (arithmetic, load/store, branch)
+ * @param arguments       List of arguments of the instruction
+ * @param interpretableAs Codified interpretation of instruction
+ *
  * @brief Definition of instruction from instruction set
  * @details Class contains definition of instruction, which is used to interpret and show real value in I-cache and to
  * interpret functionality of that instruction. Set (list) of instruction gives instruction set.
  * Json file, which is used to create object of this class, follows same name structure for each variable.
  * ID is the name of the instruction.
  */
-@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "name")
-public class InstructionFunctionModel implements Identifiable
+public record InstructionFunctionModel(String name, InstructionTypeEnum instructionType,
+                                       List<InstructionArgument> arguments,
+                                       String interpretableAs) implements Identifiable
 {
   /**
-   * Name of the instruction
+   * @return True if the instruction is a NOP
    */
-  private final String name;
-  
-  /**
-   * Type of the instruction (arithmetic, load/store, branch)
-   */
-  private final InstructionTypeEnum instructionType;
-  
-  /**
-   * Definition of instruction arguments for parsing and validation.
-   */
-  private final List<Argument> arguments;
-  
-  /**
-   * @brief Codified interpretation of instruction
-   */
-  private final String interpretableAs;
-  
-  public InstructionFunctionModel()
+  @JsonIgnore
+  public boolean isNop()
   {
-    this.name            = "";
-    this.instructionType = InstructionTypeEnum.kIntArithmetic;
-    this.arguments       = new ArrayList<>();
-    this.interpretableAs = "";
-  }
-  
-  /**
-   * @param name            Instruction name (has to unique)
-   * @param instructionType Type of the instruction
-   * @param arguments       List of arguments of the instruction
-   * @param interpretableAs String of code, which tells how to interpret instruction
-   *
-   * @brief Constructor
-   */
-  public InstructionFunctionModel(String name,
-                                  InstructionTypeEnum instructionType,
-                                  List<Argument> arguments,
-                                  String interpretableAs)
-  {
-    this.name            = name;
-    this.instructionType = instructionType;
-    this.arguments       = arguments;
-    this.interpretableAs = interpretableAs;
-  }// end of Constructor
+    return name.equals("nop");
+  }// end of isNop
   
   /**
    * @return String representation of the object
@@ -113,81 +78,37 @@ public class InstructionFunctionModel implements Identifiable
   //------------------------------------------------------
   
   /**
-   * @return Instruction name
-   * @brief Get name of an instruction
+   * @return Argument with given name, or null if not found
    */
-  public String getName()
+  public InstructionArgument getArgumentByName(String name)
   {
-    return name;
-  }// end of getName
-  //------------------------------------------------------
-  
-  /**
-   * @return Instruction type
-   * @brief Get type of instruction
-   */
-  public InstructionTypeEnum getInstructionType()
-  {
-    return instructionType;
-  }// end of getInstructionType
-  //------------------------------------------------------
-  
-  /**
-   * @return Instruction arguments
-   * @brief Get instruction arguments, used for parsing and validation
-   */
-  public List<Argument> getArguments()
-  {
-    return arguments;
-  }// end of getArguments
-  //------------------------------------------------------
-  
-  /**
-   * @return List of arguments, which are not silent
-   */
-  public List<Argument> getAsmArguments()
-  {
-    List<Argument> asmArguments = new ArrayList<>();
-    for (Argument argument : arguments)
-    {
-      if (!argument.silent)
-      {
-        asmArguments.add(argument);
-      }
-    }
-    return asmArguments;
+    return arguments.stream().filter(argument -> argument.name().equals(name)).findFirst().orElse(null);
   }
   
   /**
-   * @return Argument with given name
+   * @return The type of value this instruction produces
    */
-  public Argument getArgumentByName(String name)
+  public DataTypeEnum getOutputType()
   {
-    return arguments.stream().filter(argument -> argument.name.equals(name)).findFirst().orElse(null);
+    return getArgumentByName("rd").type();
   }
   
+  /**
+   * @return True if the instruction can have default arguments (arguments with default values).
+   */
   public boolean hasDefaultArguments()
   {
-    return arguments.stream().anyMatch(argument -> argument.defaultValue != null);
+    return arguments.stream().anyMatch(argument -> argument.defaultValue() != null);
   }
   
   /**
-   * @return String of java code
-   * @brief Get string of code for interpreting an instruction. Interpretation depends on instruction type.
+   * @return True if instruction is a conditional jump. Assumes that the instruction is a jump.
    */
-  public String getInterpretableAs()
+  public boolean isConditionalJump()
   {
-    return interpretableAs;
-  }// end of getInterpretableAs
-  //------------------------------------------------------
-  
-  /**
-   * @return True if instruction is an unconditional jump
-   */
-  public boolean isUnconditionalJump()
-  {
-    return interpretableAs.endsWith("true");
+    return !interpretableAs.endsWith("true");
   }// end of isUnconditionalJump
+  //------------------------------------------------------
   
   /**
    * @return Unique identifier of the object
@@ -200,113 +121,57 @@ public class InstructionFunctionModel implements Identifiable
   }// end of getId
   
   /**
-   * @param name         Name of the argument (example: "rd")
-   * @param type         Data type of the argument (example: "kInt")
-   * @param defaultValue Default value of the argument (example: "0" or null)
-   * @param writeBack    True if the argument should be written back to register file on commit
+   * Used for creating string representation of the instruction with renamed arguments
+   * Example of an output: "addi rd, rs1, imm", "lw rd, imm(rs1)", only it is tokenized, so ["addi ", "rd", ",", "rs1", ",", "imm"].
+   * Note the space after instruction name.
    *
-   * @brief Could be a record, but is not because of serialization issues. Name convention: "r" for register, "i" for immediate.
-   * TODO: is serialized redundantly.
+   * @return List of tokens representing the template of the instruction
    */
-  public static class Argument
+  @JsonProperty
+  public List<String> getSyntaxTemplate()
   {
-    @JsonProperty
-    private String name;
-    @JsonProperty
-    private DataTypeEnum type;
-    @JsonProperty
-    private String defaultValue;
-    @JsonProperty
-    private boolean writeBack;
-    
-    /**
-     * @brief If true, count this argument as data dependency, but is not allowed to be used in ASM code.
-     */
-    @JsonProperty
-    private boolean silent;
-    /**
-     * @brief True if the argument is an offset.
-     * By default, false. Used by offset instructions.
-     */
-    @JsonProperty
-    private boolean isOffset;
-    
-    /**
-     * @brief Default Constructor for deserialization
-     */
-    Argument()
+    List<String> syntaxTemplate = new ArrayList<>();
+    syntaxTemplate.add(name + " ");
+    boolean                   isLoadStore = instructionType == InstructionTypeEnum.kLoadstore;
+    List<InstructionArgument> args        = getAsmArguments();
+    for (int i = 0; i < args.size(); i++)
     {
+      boolean wrapInParens = isLoadStore && i == args.size() - 1;
+      if (i != 0)
+      {
+        if (wrapInParens)
+        {
+          syntaxTemplate.add("(");
+        }
+        else
+        {
+          syntaxTemplate.add(",");
+        }
+      }
+      InstructionArgument arg = args.get(i);
+      syntaxTemplate.add(arg.name());
     }
-    
-    public Argument(String name, DataTypeEnum type, String defaultValue)
+    if (isLoadStore)
     {
-      this.name         = name;
-      this.type         = type;
-      this.defaultValue = defaultValue;
-      this.writeBack    = false;
-      this.silent       = false;
+      syntaxTemplate.add(")");
     }
-    
-    public Argument(String name, DataTypeEnum type, String defaultValue, boolean writeBack)
+    return syntaxTemplate;
+  }// end of getRenamedCodeLine
+  
+  /**
+   * @return List of arguments, which are not silent
+   */
+  public List<InstructionArgument> getAsmArguments()
+  {
+    List<InstructionArgument> asmArguments = new ArrayList<>();
+    for (InstructionArgument argument : arguments)
     {
-      this.name         = name;
-      this.type         = type;
-      this.defaultValue = defaultValue;
-      this.writeBack    = writeBack;
-      this.silent       = false;
+      if (!argument.silent())
+      {
+        asmArguments.add(argument);
+      }
     }
-    
-    @JsonIgnore
-    public boolean isOffset()
-    {
-      return isOffset;
-    }
-    
-    public String name()
-    {
-      return name;
-    }
-    
-    public DataTypeEnum type()
-    {
-      return type;
-    }
-    
-    public String defaultValue()
-    {
-      return defaultValue;
-    }
-    
-    public boolean writeBack()
-    {
-      return writeBack;
-    }
-    
-    public boolean silent()
-    {
-      return silent;
-    }
-    
-    @Override
-    public String toString()
-    {
-      return name + ":" + type + (defaultValue != null ? ":" + defaultValue : "");
-    }
-    
-    /**
-     * @return True if the argument is a register
-     */
-    public boolean isRegister()
-    {
-      return name.startsWith("r");
-    }
-    
-    /**
-     * @return True if the argument is an immediate
-     */
-    public boolean isImmediate()
-    {
-      return name.startsWith("i");
-    }
+    return asmArguments;
   }
+  
 }

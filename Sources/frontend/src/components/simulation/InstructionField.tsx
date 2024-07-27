@@ -32,17 +32,14 @@
 import clsx from 'clsx';
 
 import {
-  ParsedArgument,
-  getValue,
-  highlightSimCode,
-  selectHighlightedSimCode,
+  type ParsedArgument,
   selectSimCodeModel,
   selectStatistics,
-  unhighlightSimCode,
 } from '@/lib/redux/cpustateSlice';
-import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
-import { Reference } from '@/lib/types/cpuApi';
+import { useAppSelector } from '@/lib/redux/hooks';
+import type { InstructionFunctionModel, Reference } from '@/lib/types/cpuApi';
 
+import { useHighlight } from '@/components/HighlightProvider';
 import {
   Dialog,
   DialogContent,
@@ -54,18 +51,24 @@ import {
 import {
   Tooltip,
   TooltipContent,
+  TooltipPortal,
   TooltipTrigger,
 } from '@/components/base/ui/tooltip';
-import ValueInformation from '@/components/simulation/ValueTooltip';
+import { BranchTable } from '@/components/prediction/BranchTable';
 import {
+  ShortValueInformation,
+  ValueInformation,
+} from '@/components/simulation/ValueTooltip';
+import {
+  formatFracPercentage,
   hexPadEven,
   instructionTypeName,
   isValidRegisterValue,
 } from '@/lib/utils';
+import { DialogPortal } from '@radix-ui/react-dialog';
 
 export type InstructionFieldProps = {
   instructionId: Reference | null;
-  showSpeculative?: boolean;
 };
 
 /**
@@ -75,67 +78,26 @@ export type InstructionFieldProps = {
  */
 export default function InstructionField({
   instructionId: simCodeId,
-  showSpeculative = false,
 }: InstructionFieldProps) {
-  const dispatch = useAppDispatch();
+  const { setHighlightedInstruction } = useHighlight();
   const q = useAppSelector((state) => selectSimCodeModel(state, simCodeId));
-  const statistics = useAppSelector(selectStatistics);
-  const highlightedId = useAppSelector((state) =>
-    selectHighlightedSimCode(state),
-  );
-  if (!q || simCodeId === null || statistics === undefined) {
+  if (!q || simCodeId === null) {
     // Empty field
-    return (
-      <div className='instruction-bubble flex justify-center items-center px-2 font-mono'>
-        <span className='text-gray-400'>empty</span>
-      </div>
-    );
+    return <EmptyInstructionField />;
   }
 
-  const { simCodeModel, args, inputCodeModel, functionModel } = q;
-  const highlighted = highlightedId === simCodeId;
-  const isBranch = functionModel.instructionType === 'kJumpbranch';
-  const pc = inputCodeModel.codeId * 4;
-
-  // This can be null because of NOP
-  const instructionStats = statistics.instructionStats[simCodeId] ?? {
-    committedCount: 0,
-    correctlyPredicted: 0,
-  };
+  const { argsMap, inputCodeModel, functionModel } = q;
 
   const handleMouseEnter = () => {
-    dispatch(highlightSimCode(simCodeId));
+    setHighlightedInstruction({
+      simcode: simCodeId,
+      inputcode: inputCodeModel.codeId,
+    });
   };
 
   const handleMouseLeave = () => {
-    dispatch(unhighlightSimCode(simCodeId));
+    setHighlightedInstruction(null);
   };
-
-  function renderInstructionSyntax() {
-    // simCodeModel.renamedCodeLine contains the instruction with renamed arguments, e.g. addi r1, r2, 5
-    // Wrap the arguments in a tooltip and make them highlightable
-    const formatSplit = simCodeModel.renamedCodeLine.split(/( |,|\)|\()/g);
-    // if a part matches an argument, wrap it in a tooltip
-    return formatSplit.map((part, i) => {
-      // This may cause problems in the future, if the argument is not unique (e.g. addi sp, sp, -40)
-      const arg = args.find((a) => a.origArg.stringValue === part);
-      const key = `${simCodeModel.renamedCodeLine}-${i}`;
-      if (arg) {
-        return <InstructionArgument arg={arg} key={key} />;
-      }
-      // Add z-index to make the argument highlight below the parentheses etc.
-      return (
-        <span className='relative z-10' key={key}>
-          {part}
-        </span>
-      );
-    });
-  }
-
-  const cls = clsx(
-    'group instruction-bubble w-full font-mono px-2 text-left whitespace-nowrap',
-    highlighted ? 'bg-gray-200' : '',
-  );
 
   // Tabindex and button for accessibility
   return (
@@ -143,20 +105,36 @@ export default function InstructionField({
       <DialogTrigger asChild>
         <button
           type='button'
-          className={cls}
+          className='group instruction rounded-[6px] h-8 w-full font-mono px-2 text-left whitespace-nowrap overflow-hidden'
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
+          data-instruction-id={simCodeId}
         >
-          {renderInstructionSyntax()}
-          {showSpeculative && (
-            <span className='absolute top-0 right-0 p-1 text-xs'>
-              {simCodeModel.speculative ? 'S' : ''}
-            </span>
-          )}
+          <InstructionSyntax functionModel={functionModel} args={argsMap} />
         </button>
       </DialogTrigger>
-      <InstructionDetailPopup simCodeId={simCodeId} />
+      <DialogPortal>
+        <InstructionDetailPopup simCodeId={simCodeId} />
+      </DialogPortal>
     </Dialog>
+  );
+}
+
+/**
+ * A reusable element for empty instruction field.
+ * Displays a disabled button with the text 'empty'.
+ */
+export function EmptyInstructionField() {
+  // aria-disabled is set to true to prevent the button from being focused and to suppress the contrast warning
+  return (
+    <button
+      type='button'
+      className='pointer-events-none group instruction rounded-[6px] h-8 w-full font-mono px-2 text-left whitespace-nowrap overflow-hidden'
+      aria-disabled='true'
+      tabIndex={-1}
+    >
+      <span className='text-gray-500'>empty</span>
+    </button>
   );
 }
 
@@ -169,41 +147,42 @@ export function InstructionDetailPopup({
     // Empty field
     return (
       <div className='instruction-bubble flex justify-center items-center px-2 font-mono'>
-        <span className='text-gray-400'>empty</span>
+        <span className='text-gray-400' aria-disabled='true'>
+          empty
+        </span>
       </div>
     );
   }
 
-  const { simCodeModel, args, inputCodeModel, functionModel } = q;
+  const { simCodeModel, inputCodeModel, functionModel, argsMap } = q;
   const isBranch = functionModel.instructionType === 'kJumpbranch';
   const pc = inputCodeModel.codeId * 4;
 
-  // This can be null because of NOP
-  const instructionStats = statistics.instructionStats[simCodeId] ?? {
-    committedCount: 0,
-    correctlyPredicted: 0,
-  };
+  const instructionStats = statistics.instructionStats[inputCodeModel.codeId];
+
+  // This can be null because of NOP, so clicking NOP does not show the dialog
+  if (!instructionStats) {
+    return null;
+  }
 
   return (
-    <DialogContent className='max-w-4xl'>
+    <DialogContent className='max-w-6xl max-h-screen'>
       <DialogHeader>
-        <DialogTitle>{simCodeModel.renamedCodeLine}</DialogTitle>
-        <DialogDescription>
+        <DialogTitle className='text-4xl'>
+          <InstructionSyntax functionModel={functionModel} args={argsMap} />
+        </DialogTitle>
+        <DialogDescription className='surface-variant'>
           Detailed view of instruction #{simCodeModel.id}
         </DialogDescription>
       </DialogHeader>
-      <div className='grid grid-cols-2 gap-4'>
+      <div
+        className={clsx('grid gap-4', isBranch ? 'grid-cols-3' : 'grid-cols-2')}
+      >
         <div>
-          <h1 className='text-2xl'>
-            {inputCodeModel.instructionName.toUpperCase()}
-          </h1>
-          <ul>
-            <li>Type: {instructionTypeName(inputCodeModel)}</li>
-          </ul>
-          <h2 className='text-xl mt-2'>Operands</h2>
+          <h2>Operands</h2>
           <ul className='flex flex-col gap-4'>
-            {args.map((operand) => {
-              const value = getValue(operand);
+            {Object.values(argsMap).map((operand) => {
+              const value = operand.value;
               const valid = operand.register
                 ? isValidRegisterValue(operand.register)
                 : true;
@@ -212,25 +191,32 @@ export function InstructionDetailPopup({
                   key={operand.origArg.name}
                   className='text-sm border rounded-md p-4'
                 >
-                  <span className='text-lg'>
-                    {operand.origArg.name}: {value.stringRepresentation}
-                  </span>
-                  {value && <ValueInformation value={value} valid={valid} />}
+                  {value && (
+                    <ValueInformation
+                      value={value}
+                      valid={valid}
+                      register={operand.register}
+                    />
+                  )}
                 </li>
               );
             })}
           </ul>
         </div>
-        <div>
-          <h1 className='text-2xl'>Runtime</h1>
-          <ul>
+        <div className='flex flex-col gap-2'>
+          <ul className='list-none'>
             <li>ID: {simCodeModel.id}</li>
+            <li>Type: {instructionTypeName(functionModel)}</li>
             <li>
               Address: {hexPadEven(pc)} ({pc})
             </li>
             <li>Committed: {instructionStats.committedCount} times</li>
+            <li>
+              Exception Raised: {simCodeModel.exception ? 'Yes -' : 'No'}{' '}
+              {simCodeModel.exception?.exceptionMessage}
+            </li>
           </ul>
-          <h2 className='text-xl mt-2'>Timestamps</h2>
+          <h2>Timestamps</h2>
           <table>
             <thead>
               <tr>
@@ -257,7 +243,7 @@ export function InstructionDetailPopup({
               </tr>
             </tbody>
           </table>
-          <h2 className='text-xl mt-2'>Flags</h2>
+          <h2>Flags</h2>
           <table>
             <thead>
               <tr>
@@ -292,30 +278,42 @@ export function InstructionDetailPopup({
               </tr>
             </tbody>
           </table>
-          {isBranch && (
-            <>
-              <h2 className='text-xl mt-2'>Branch</h2>
-              <ul>
-                <li>
-                  {functionModel.unconditionalJump
-                    ? 'Unconditional'
-                    : 'Conditional'}
-                </li>
-                <li>
-                  Branch Result:{' '}
-                  {simCodeModel.branchPredicted ? 'Branch' : 'Do not branch'}
-                </li>
-                <li>Prediction target: {simCodeModel.branchTarget}</li>
-                <li>Prediction Accuracy: {instructionStats.committedCount}</li>
-              </ul>
-            </>
-          )}
-          <h2 className='text-xl mt-2'>Exception Raised</h2>
-          <p>
-            {simCodeModel.exception ? 'Yes' : 'No'}
-            {simCodeModel.exception?.exceptionMessage}
-          </p>
         </div>
+        {isBranch && (
+          <div className='flex flex-col gap-2'>
+            <h2>Branch</h2>
+            <table>
+              <thead>
+                <tr>
+                  <th>Flag</th>
+                  <th>Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Branch</td>
+                  <td>
+                    {functionModel.unconditionalJump
+                      ? 'Unconditional'
+                      : 'Conditional'}
+                  </td>
+                </tr>
+                <tr>
+                  <td>Prediction Accuracy</td>
+                  <td>
+                    {formatFracPercentage(
+                      instructionStats.correctlyPredicted,
+                      instructionStats.committedCount,
+                    )}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            {simCodeModel.branchInfo && (
+              <BranchTable branchInfo={simCodeModel.branchInfo} />
+            )}
+          </div>
+        )}
       </div>
     </DialogContent>
   );
@@ -328,22 +326,42 @@ export interface InstructionArgumentProps {
 /**
  * Displays a single argument of an instruction.
  * Delegaltes to RegisterReference if the argument is a register.
- * Highlights the argument on hover.
+ * Highlights the argument on hover, whether it is a register or not.
  */
 function InstructionArgument({ arg }: InstructionArgumentProps) {
-  const value = getValue(arg);
+  const { setHighlightedRegister } = useHighlight();
+  const idToHighlight = arg.register?.name ?? arg.origArg.stringValue;
+
+  const handleMouseEnter = () => {
+    setHighlightedRegister(idToHighlight);
+  };
+
+  const handleMouseLeave = () => {
+    setHighlightedRegister(null);
+  };
 
   // Add negative margin so the highlight is bigger
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <span className='rounded hover:bg-gray-300 -m-1 p-1'>
+        <span
+          className='register rounded -m-1 p-1'
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+          data-register-id={idToHighlight}
+        >
           {arg.origArg.stringValue}
         </span>
       </TooltipTrigger>
-      <TooltipContent>
-        <ValueInformation value={value} valid={arg.valid} />
-      </TooltipContent>
+      <TooltipPortal>
+        <TooltipContent>
+          <ShortValueInformation
+            value={arg.value}
+            valid={arg.valid}
+            register={arg.register}
+          />
+        </TooltipContent>
+      </TooltipPortal>
     </Tooltip>
   );
 }
@@ -358,3 +376,38 @@ const renderTimestamp = (timestamp: number) =>
  * Render a flag.
  */
 const renderFlag = (flag: boolean) => (flag ? 'Yes' : 'No');
+
+/**
+ * Render the instruction syntax.
+ * Wraps the arguments in a tooltip and makes them highlightable.
+ */
+export function InstructionSyntax({
+  functionModel,
+  args,
+}: {
+  functionModel: InstructionFunctionModel;
+  args: Record<string, ParsedArgument>;
+}) {
+  // syntaxTemplate is an array of strings. Some of them are arguments, some are not. Example: ['addi ', 'rd', ', ', 'rs1', ', ', 'imm'].
+  const formatSplit = [...functionModel.syntaxTemplate] as (
+    | string
+    | React.ReactNode
+  )[];
+
+  for (let i = 1; i < formatSplit.length; i++) {
+    const form: string = formatSplit[i] as string;
+    const arg = args[form];
+    if (arg) {
+      // Replace the argument name with the actual argument
+      formatSplit[i] = <InstructionArgument arg={arg} key={i} />;
+    } else {
+      formatSplit[i] = (
+        <span className='relative z-10' key={i}>
+          {form}
+        </span>
+      );
+    }
+  }
+
+  return <>{formatSplit}</>;
+}

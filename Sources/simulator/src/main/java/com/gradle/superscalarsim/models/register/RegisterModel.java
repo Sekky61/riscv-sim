@@ -33,6 +33,7 @@
 package com.gradle.superscalarsim.models.register;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.enums.DataTypeEnum;
@@ -40,9 +41,12 @@ import com.gradle.superscalarsim.enums.RegisterReadinessEnum;
 import com.gradle.superscalarsim.enums.RegisterTypeEnum;
 import com.gradle.superscalarsim.models.Identifiable;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * @class RegisterModel
- * @brief Definition of single register in register file
+ * @brief Definition of single register in register file. It also holds data needed for renaming (references to speculative registers).
  */
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "name")
 public class RegisterModel implements Identifiable
@@ -72,12 +76,29 @@ public class RegisterModel implements Identifiable
    * Architecture registers are `kAssigned` by default, speculative ones are `kFree`
    */
   private RegisterReadinessEnum readiness;
+  /**
+   * Reference count. Relevant only for speculative registers.
+   */
+  private int referenceCount;
+  
+  /**
+   * List of renames to speculative registers. Relevant only for architectural registers.
+   */
+  @JsonIdentityReference(alwaysAsId = true)
+  List<RegisterModel> renames;
+  
+  /**
+   * The architectural register that this speculative register is mapped to. Relevant only for speculative registers.
+   */
+  @JsonIdentityReference(alwaysAsId = true)
+  private RegisterModel architecturalRegister;
   
   /**
    * @brief Default constructor for deserialization
    */
   public RegisterModel()
   {
+    renames = new ArrayList<>();
   }
   
   /**
@@ -98,7 +119,6 @@ public class RegisterModel implements Identifiable
     this(name, isConstant, type, readiness);
     this.value.setValue(value);
   }// end of Constructor
-  //------------------------------------------------------
   
   /**
    * @param name       Register name
@@ -110,11 +130,13 @@ public class RegisterModel implements Identifiable
    */
   public RegisterModel(String name, boolean isConstant, RegisterTypeEnum type, RegisterReadinessEnum readiness)
   {
-    this.name       = name;
-    this.isConstant = isConstant;
-    this.type       = type;
-    this.readiness  = readiness;
-    this.value      = new RegisterDataContainer();
+    this.name             = name;
+    this.isConstant       = isConstant;
+    this.type             = type;
+    this.readiness        = readiness;
+    this.value            = new RegisterDataContainer();
+    renames               = new ArrayList<>();
+    architecturalRegister = null;
   }// end of Constructor
   //------------------------------------------------------
   
@@ -169,9 +191,19 @@ public class RegisterModel implements Identifiable
     this.name       = register.name;
     this.isConstant = register.isConstant;
     this.type       = register.type;
-    this.value      = register.value;
     this.readiness  = register.readiness;
+    this.value      = new RegisterDataContainer(register.value);
+    
+    this.referenceCount   = register.referenceCount;
+    this.renames          = new ArrayList<>(register.renames);
+    architecturalRegister = register.architecturalRegister;
   }// end of Copy constructor
+  //------------------------------------------------------
+  
+  public int getReferenceCount()
+  {
+    return referenceCount;
+  }
   
   /**
    * @return String representation of the object
@@ -328,7 +360,7 @@ public class RegisterModel implements Identifiable
    */
   public boolean isSpeculative()
   {
-    // todo: a small hack
+    // todo: this is a small hack
     return this.name.startsWith("tg");
   }
   
@@ -346,4 +378,71 @@ public class RegisterModel implements Identifiable
       case kFloat, kDouble -> type == RegisterTypeEnum.kFloat;
     };
   }// end of checkDatatype
+  
+  /**
+   * @brief Decrease reference count
+   */
+  public void reduceReference()
+  {
+    referenceCount--;
+  }
+  
+  /**
+   * @brief Increase reference count
+   */
+  public void increaseReference()
+  {
+    referenceCount++;
+  }
+  
+  /**
+   * Add a rename to an architectural register. Invalid to call on speculative registers.
+   * Link the rename back, both ways.
+   */
+  public void addRename(RegisterModel rename)
+  {
+    renames.add(rename);
+    rename.architecturalRegister = this;
+  }
+  
+  /**
+   * @return The architectural register that this speculative register is mapped to, or null if it is not mapped.
+   */
+  public RegisterModel getArchitecturalMapping()
+  {
+    return architecturalRegister;
+  }
+  
+  /**
+   * @param speculativeRegister Speculative register to be removed from the list of renames
+   *
+   * @brief Remove a rename from the list of renames. Removes both ways of relation.
+   */
+  public void removeRename(RegisterModel speculativeRegister)
+  {
+    // called on the architectural register
+    renames.removeIf(rename -> rename == speculativeRegister);
+    speculativeRegister.architecturalRegister = null;
+  }
+  
+  /**
+   * @return The newest mapping of the register. If the register is constant or has no renames, returns itself.
+   */
+  public RegisterModel getNewestMapping()
+  {
+    if (isConstant() || renames.isEmpty())
+    {
+      return this;
+    }
+    
+    return renames.get(renames.size() - 1);
+  }
+  
+  /**
+   * Transfer the value of this register to the architectural register it is mapped to.
+   */
+  public void copyToArchitectural()
+  {
+    getArchitecturalMapping().copyFrom(this);
+  }
 }

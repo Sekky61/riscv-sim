@@ -1,0 +1,12 @@
+[
+  {
+    "name": "ptr",
+    "alignment": 4,
+    "dataType": "kInt",
+    "data": {
+      "kind": "constant",
+      "constant": "0",
+      "size": 32
+    }
+  }
+]

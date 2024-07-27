@@ -1,4 +1,6 @@
-# Next.js frontend
+# Next.js Frontend
+
+Readme focused on development and build instructions.
 
 Technology stack:
 
@@ -6,7 +8,7 @@ Technology stack:
 - [React](https://reactjs.org/)
 - [TypeScript](https://www.typescriptlang.org/)
 - [Tailwind CSS](https://tailwindcss.com/)
-- [Jest](https://jestjs.io/)
+- [Vitest]()
 - [biomejs](https://biomejs.dev/)
 
 ## Structure
@@ -15,17 +17,22 @@ Technology stack:
 ./src
   +--__tests__  - Tests
   +--app        - Pages of the application.
-  +--components - Units of UI.
-  +--constant   - Data (examples, descriptions of instructions)
-  +--lib        - Non-UI modules (Global state, API, etc.)
+  +--components - Composable units of UI.
+  +--constant   - Data
+  +--lib        - Non-UI modules (Global state, API, types, etc.)
     +--__tests__- Tests
   +--styles     - Global styles
 Readme.md       - Read me file
+Many configuration files
 ```
+
+Note: `src/components/base/ui` contains vendored code (shadcn/ui) that has only been modified, but not fully authored.
 
 ### Install steps
 
-To install the dependencies, run this command:
+The app was developed using npm `10.2.3` and node.js `v21.2.0`.
+Package dependencies are defined in `package.json`.
+They can be installed the usual way, by running this command in the frontend root (`Sources/frontend`):
 
 ```bash
 npm install
@@ -34,9 +41,12 @@ npm install
 ### Define environment variables
 
 The variables do have default values, but you can override them.
+Dockerfile sets these variables.
 
-`NEXT_PUBLIC_SIMSERVER_PORT`
-`NEXT_PUBLIC_SIMSERVER_HOST`
+- `NEXT_PUBLIC_SIMSERVER_PORT`
+- `NEXT_PUBLIC_SIMSERVER_HOST`
+
+Also, you can use the `.env` file. See `.env.example` for inspiration.
 
 ### Run the development server
 
@@ -46,8 +56,11 @@ You can start the server using this command:
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-Other commands, like lint are defined in `package.json`.
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the app.
+Other commands, like lint and typecheck are defined in `package.json`.
+
+Notes:
+- Changing the environment variables requires a server restart.
 
 ### Inspect bundle size
 
@@ -62,5 +75,4 @@ Inspired by [this article](https://blog.logrocket.com/how-analyze-next-js-app-bu
 - [Redux](https://redux.js.org/) - Global state management
 - [lucide-react](https://lucide.dev/guide/packages/lucide-react) - Icons
 - [react-hotkeys-hook](https://www.npmjs.com/package/react-hotkeys-hook) - Keyboard shortcuts
-- [react-modal](https://www.npmjs.com/package/react-modal) - Modal
-- [reapop](https://www.npmjs.com/package/reapop) - Notifications
+- [shadcn/ui](https://ui.shadcn.com/) - UI components

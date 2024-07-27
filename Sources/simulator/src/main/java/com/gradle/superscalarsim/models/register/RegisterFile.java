@@ -34,8 +34,9 @@
 package com.gradle.superscalarsim.models.register;
 
 import com.gradle.superscalarsim.enums.RegisterTypeEnum;
-import com.gradle.superscalarsim.loader.InitLoader;
+import com.gradle.superscalarsim.loader.RegisterMapping;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -56,7 +57,7 @@ public class RegisterFile implements IRegisterFile
    * The key is the architecture name (x0), the value is the alias (zero).
    * Must be a list - register x8 has two aliases (s0 and fp).
    */
-  private List<InitLoader.RegisterMapping> registerAliases;
+  private List<RegisterMapping> registerAliases;
   
   /**
    * @param registerFileModelList List of register files
@@ -64,10 +65,25 @@ public class RegisterFile implements IRegisterFile
    *
    * @brief Constructor of register file
    */
-  public RegisterFile(List<RegisterFileModel> registerFileModelList, List<InitLoader.RegisterMapping> registerAliases)
+  public RegisterFile(List<RegisterFileModel> registerFileModelList, List<RegisterMapping> registerAliases)
   {
     this.registerFileModelList = registerFileModelList;
     this.registerAliases       = registerAliases;
+  }
+  
+  /**
+   * Deep copy of register file.
+   * Aliases are not copied.
+   */
+  public RegisterFile(RegisterFile registerFile)
+  {
+    this.registerAliases       = registerFile.registerAliases;
+    this.registerFileModelList = new ArrayList<>();
+    
+    for (RegisterFileModel registerFileModel : registerFile.registerFileModelList)
+    {
+      this.registerFileModelList.add(new RegisterFileModel(registerFileModel));
+    }
   }
   
   /**
@@ -88,7 +104,7 @@ public class RegisterFile implements IRegisterFile
   public RegisterModel getRegister(String registerName)
   {
     // Look for an alias first
-    for (InitLoader.RegisterMapping registerMapping : registerAliases)
+    for (RegisterMapping registerMapping : registerAliases)
     {
       if (registerMapping.alias.equals(registerName))
       {
@@ -145,11 +161,16 @@ public class RegisterFile implements IRegisterFile
       return registerMap;
     }
     // Add aliases
-    for (InitLoader.RegisterMapping alias : registerAliases)
+    for (RegisterMapping alias : registerAliases)
     {
       RegisterModel register = registerMap.get(alias.register);
       registerMap.put(alias.alias, register);
     }
     return registerMap;
+  }
+  
+  public List<RegisterFileModel> getRegisterFileModelList()
+  {
+    return registerFileModelList;
   }
 }

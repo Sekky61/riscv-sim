@@ -22,7 +22,7 @@ rm -r report
 # -n: non-GUI mode
 # -t: test plan
 # -l: log file
-$JMETER_PATH -n -t compiling_group.jmx -l results.jtl
+$JMETER_PATH -n -t compiling_group.jmx -Jjmeter.reportgenerator.overall_granularity=1500 -l results.jtl
 
 # Generate the report to HTML
 $JMETER_PATH -g results.jtl -o report

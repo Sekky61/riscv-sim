@@ -33,6 +33,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.fasterxml.jackson.module.blackbird.BlackbirdModule;
 import com.kjetland.jackson.jsonSchema.JsonSchemaGenerator;
 
 /**
@@ -41,31 +42,34 @@ import com.kjetland.jackson.jsonSchema.JsonSchemaGenerator;
 public class Serialization
 {
   /**
+   * Reuse the same ObjectMapper for all serialization and deserialization.
+   */
+  static ObjectMapper mapper = createObjectMapper();
+  
+  /**
    * @return ObjectMapper for serialization
    */
   public static ObjectMapper getSerializer()
   {
-    return createObjectMapper();
+    return mapper;
   }
   
   /**
-   * Internal method for creating the ObjectMapper
+   * @return ObjectMapper for serialization, with pretty printing
    */
-  private static ObjectMapper createObjectMapper()
+  public static ObjectMapper enablePrettySerializer()
   {
-    ObjectMapper objectMapper = new ObjectMapper();
-    // Add JDS types
-    objectMapper.registerModule(new Jdk8Module());
-    // Allow serialization of empty beans (empty objects)
-    objectMapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
-    // Configure that all fields are serialized, but getters and setters are not
-    objectMapper.setVisibility(objectMapper.getSerializationConfig().getDefaultVisibilityChecker()
-                                       .withFieldVisibility(JsonAutoDetect.Visibility.ANY)
-                                       .withGetterVisibility(JsonAutoDetect.Visibility.NONE)
-                                       .withSetterVisibility(JsonAutoDetect.Visibility.NONE)
-                                       .withCreatorVisibility(JsonAutoDetect.Visibility.NONE));
-    objectMapper.registerModule(new CustomSerializerModule());
-    return objectMapper;
+    mapper.enable(SerializationFeature.INDENT_OUTPUT);
+    return mapper;
+  }
+  
+  /**
+   * @return ObjectMapper for serialization, without pretty printing
+   */
+  public static ObjectMapper disablePrettySerializer()
+  {
+    mapper.disable(SerializationFeature.INDENT_OUTPUT);
+    return mapper;
   }
   
   /**
@@ -73,7 +77,7 @@ public class Serialization
    */
   public static ObjectMapper getDeserializer()
   {
-    return createObjectMapper();
+    return mapper;
   }
   
   /**
@@ -86,5 +90,29 @@ public class Serialization
     ObjectMapper        objectMapper = createObjectMapper();
     JsonSchemaGenerator schemaGen    = new JsonSchemaGenerator(objectMapper);
     return schemaGen.generateJsonSchema(cls);
+  }
+  
+  /**
+   * Internal method for creating the ObjectMapper
+   */
+  private static ObjectMapper createObjectMapper()
+  {
+    // Builder, had issues
+    //    ObjectMapper objectMapper = JsonMapper.builder().addModule(new Jdk8Module()).addModule(new AfterburnerModule())
+    //            .build();
+    ObjectMapper objectMapper = new ObjectMapper();
+    // Add JDS types
+    objectMapper.registerModule(new BlackbirdModule());
+    objectMapper.registerModule(new Jdk8Module());
+    // Allow serialization of empty beans (empty objects)
+    objectMapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
+    // Configure that all fields are serialized, but getters and setters are not
+    objectMapper.setVisibility(objectMapper.getSerializationConfig().getDefaultVisibilityChecker()
+                                       .withFieldVisibility(JsonAutoDetect.Visibility.ANY)
+                                       .withGetterVisibility(JsonAutoDetect.Visibility.NONE)
+                                       .withSetterVisibility(JsonAutoDetect.Visibility.NONE)
+                                       .withCreatorVisibility(JsonAutoDetect.Visibility.NONE));
+    objectMapper.registerModule(new CustomSerializerModule());
+    return objectMapper;
   }
 }

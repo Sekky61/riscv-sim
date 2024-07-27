@@ -30,7 +30,7 @@
  */
 
 /**
- * Example code. Describes the JSON structure in @/constant/codeExamples.json
+ * Example code. Describes the JSON structure in /public/json/codeExamples.json which is also served through the API.
  */
 export type CodeExample = {
   name: string;
@@ -38,3 +38,14 @@ export type CodeExample = {
   code: string;
   entryPoint?: number | string;
 };
+
+/**
+ * Description of a block such as fetch, decode, PHT
+ */
+export type BlockDescription = {
+  name: string;
+  shortDescription: string;
+  longDescription: string;
+};
+
+export type BlockDescriptions = Record<string, BlockDescription>;

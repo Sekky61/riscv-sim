@@ -27,7 +27,9 @@
  */
 package com.gradle.superscalarsim.cpu;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.enums.InstructionTypeEnum;
 import com.gradle.superscalarsim.models.FunctionalUnitDescription;
 import com.gradle.superscalarsim.models.instruction.SimCodeModel;
@@ -41,6 +43,7 @@ import java.util.Map;
  * @class SimulationStatistics
  * @brief Class that contains data from blocks for displaying statistics about the run
  */
+@JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
 public class SimulationStatistics
 {
   /**
@@ -194,7 +197,7 @@ public class SimulationStatistics
    */
   public void reportDecodedInstruction(SimCodeModel codeModel)
   {
-    InstructionStats statObj = instructionStats.get(codeModel.getCodeId());
+    InstructionStats statObj = instructionStats.get(codeModel.codeId());
     statObj.incrementDecoded();
   }
   
@@ -204,7 +207,7 @@ public class SimulationStatistics
   public void reportCommittedInstruction(SimCodeModel codeModel)
   {
     this.committedInstructions++;
-    this.dynamicInstructionMix.increment(codeModel.getInstructionFunctionModel().getInstructionType());
+    this.dynamicInstructionMix.increment(codeModel.instructionFunctionModel().instructionType());
     
     boolean isBranch = codeModel.getInstructionTypeEnum() == InstructionTypeEnum.kJumpbranch;
     if (isBranch)
@@ -226,7 +229,7 @@ public class SimulationStatistics
     }
     
     // Per instruction statistics
-    InstructionStats statObj = instructionStats.get(codeModel.getCodeId());
+    InstructionStats statObj = instructionStats.get(codeModel.codeId());
     statObj.incrementCommittedCycles();
     if (isBranch && codeModel.isConditionalBranch())
     {
@@ -588,11 +591,16 @@ public class SimulationStatistics
      */
     public int correctlyPredicted;
     /**
-     * Cache misses of this instruction. Zero for all non-memory instructions.
-     * Cache hits of this instruction can be calculated as (committedCount - cacheMisses).
+     * Cache hits of this instruction. Zero for all non-memory instructions.
+     * Cache misses of this instruction can be calculated as (memoryAccesses - cacheHits).
      * Misaligned access that causes to load 2 cache lines counts as a single miss.
+     * Null if the instruction is not a memory instruction.
      */
-    public int cacheMisses;
+    public Integer cacheHits;
+    /**
+     * Memory Access count. Null for non-memory instructions.
+     */
+    public Integer memoryAccesses;
     
     /**
      * Constructor
@@ -628,9 +636,35 @@ public class SimulationStatistics
     /**
      * @brief Increments number of cache misses
      */
-    public void incrementCacheMisses()
+    public void incrementMemoryAccesses(boolean isHit)
     {
-      this.cacheMisses++;
+      // Init
+      if (memoryAccesses == null)
+      {
+        memoryAccesses = 0;
+      }
+      if (cacheHits == null)
+      {
+        cacheHits = 0;
+      }
+      
+      this.memoryAccesses++;
+      if (isHit)
+      {
+        this.cacheHits++;
+      }
+    }
+    
+    /**
+     * @return Cache misses
+     */
+    public Integer getCacheMisses()
+    {
+      if (memoryAccesses == null || cacheHits == null)
+      {
+        return null;
+      }
+      return memoryAccesses - cacheHits;
     }
   }
 }

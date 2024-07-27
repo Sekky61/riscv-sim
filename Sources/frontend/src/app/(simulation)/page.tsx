@@ -29,27 +29,40 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import CanvasWindow from '@/components/CanvasWindow';
+import { CanvasWindow } from '@/components/CanvasWindow';
 import { ReloadSimModal } from '@/components/ReloadSimModal';
 import { SidePanel } from '@/components/simulation/SidePanel';
 import { SimGrid } from '@/components/simulation/SimGrid';
 import Timeline from '@/components/simulation/Timeline';
+import { AutoPlay } from './AutoPlay';
+import { ErrorMessage } from './ErrorMessage';
+import { WelcomeMessage } from './WelcomeMessage';
+
+export const metadata = {
+  title: 'RISC-V simulator',
+  description: 'Interactive RISC-V superscalar simulator',
+};
 
 export default function HomePage() {
   return (
     <div className='flex'>
-      <div className='py-2 flex-grow h-screen'>
-        <div className='relative rounded-lg border w-full h-full shadow-inner'>
+      <div className='flex-grow h-screen'>
+        <div className='relative w-full h-full shadow-inner'>
+          <ErrorMessage />
           <CanvasWindow>
             <SimGrid />
           </CanvasWindow>
-          <div className='fixed top-4 left-1/2'>
+          <div className='absolute top-3 left-1/2'>
             <Timeline />
           </div>
+          <div className='absolute top-3 right-[280px]'>
+            <AutoPlay />
+          </div>
+          <SidePanel />
         </div>
       </div>
-      <SidePanel />
       <ReloadSimModal />
+      <WelcomeMessage />
     </div>
   );
 }

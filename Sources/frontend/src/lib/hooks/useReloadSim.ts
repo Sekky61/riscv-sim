@@ -31,7 +31,11 @@
 
 import { useEffect } from 'react';
 
-import { reloadSimulation, selectCpu } from '@/lib/redux/cpustateSlice';
+import {
+  loadFunctionModels,
+  reloadSimulation,
+  selectCpu,
+} from '@/lib/redux/cpustateSlice';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 
 import { selectAsmCode, selectEntryPoint } from '@/lib/redux/compilerSlice';
@@ -39,27 +43,31 @@ import { selectActiveConfig } from '@/lib/redux/isaSlice';
 import { pullSimConfig, selectRunningConfig } from '@/lib/redux/simConfigSlice';
 import { toast } from 'sonner';
 
+/**
+ * Provides function to call when reload of simulation with new configuration is requested
+ * The value same is a boolean: true means the config has not changed.
+ */
 export const useReloadSim = () => {
   const dispatch = useAppDispatch();
   const cpu = useAppSelector(selectCpu);
-
   const same = useAreSame();
 
   // On page load, check if the simulation config is up to date, show modal to warn and offer to reload
   // biome-ignore lint: supposed to run only once after page load
   useEffect(() => {
     if (cpu === null) {
-      reload();
+      cleanReload();
     }
   }, []);
 
-  const reload = () => {
+  const cleanReload = () => {
     dispatch(pullSimConfig());
+    dispatch(loadFunctionModels());
     dispatch(reloadSimulation());
     toast.success('Simulation reloaded');
   };
 
-  return { same, reload };
+  return { same, cleanReload };
 };
 
 /**

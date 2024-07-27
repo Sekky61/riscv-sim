@@ -30,15 +30,13 @@
  */
 
 import type { SimulationConfig } from '@/lib/forms/Isa';
+import type { MemoryLocationApi } from '@/lib/forms/Isa';
 import type { OptimizeOption } from '@/lib/redux/compilerSlice';
-import type { CpuState, StopReason } from '@/lib/types/cpuApi';
-
-export type EndpointName =
-  | 'compile'
-  | 'parseAsm'
-  | 'checkConfig'
-  | 'simulate'
-  | 'schema';
+import type {
+  CpuState,
+  InstructionFunctionModel,
+  StopReason,
+} from '@/lib/types/cpuApi';
 
 type EndpointMap = {
   compile: CompileEndpoint;
@@ -46,12 +44,32 @@ type EndpointMap = {
   checkConfig: CheckConfigEndpoint;
   simulate: SimulateEndpoint;
   schema: SchemaEndpoint;
+  instructionDescription: InstructionDescriptionEndpoint;
 };
+export type EndpointName = keyof EndpointMap;
 
-export type AsyncEndpointFunction<T extends EndpointName> = (
-  name: T,
+/**
+ * The API call
+ * As a note, there is a difference between generic type and a type that is a generic function (https://stackoverflow.com/questions/51197819/declaring-const-of-generic-type).
+ */
+export type AsyncEndpointFunction = <T extends EndpointName>(
+  endpoint: T,
   request: EndpointMap[T]['request'],
-) => EndpointMap[T]['response'];
+) => Promise<EndpointMap[T]['response']>;
+
+//
+// Error type
+//
+
+/**
+ * This type is returned on 400 errors.
+ * The name is a bit misleading, as it is sent on user errors.
+ */
+export type ServerError = {
+  field: string;
+  message: string;
+  extra?: unknown;
+};
 
 //
 // /schema
@@ -85,19 +103,26 @@ export interface CompileEndpoint {
 export interface CompileRequest {
   code: string;
   optimizeFlags: OptimizeOption[];
+  memoryLocations: MemoryLocationApi[];
 }
 
-export type CompileResponse =
+export type CompileResponse = {
+  // common fields
+  message: string;
+  compilerError: ComplexErrorItem[] | null;
+  asmErrors: SimpleParseError[] | null;
+} & (
   | {
       success: true;
+      status: 'success' | 'warning' | null;
       program: string;
       asmToC: number[];
     }
   | {
       success: false;
-      error: string;
-      compilerError: ComplexErrorItem[];
-    };
+      status: 'c' | 'asm' | 'internal';
+    }
+);
 
 export type ComplexErrorItem = {
   kind: 'error' | 'warning';
@@ -106,13 +131,17 @@ export type ComplexErrorItem = {
 };
 
 /**
- * Finish is optional, meaning that the error is a single character
+ * Finish is optional. If not present, it means that the error is a single character
  */
 export type ErrorSpan = {
   caret: ErrorLocation;
   finish?: ErrorLocation;
 };
 
+/**
+ * Both line and column are 1-based
+ * https://gcc.gnu.org/onlinedocs/gcc/Diagnostic-Message-Formatting-Options.html#index-fdiagnostics-format
+ */
 export type ErrorLocation = {
   line: number;
   'display-column': number;
@@ -128,10 +157,10 @@ export interface ParseAsmEndpoint {
   response: ParseAsmResponse;
 }
 
-export interface ParseAsmRequest {
+export type ParseAsmRequest = {
   code: string;
-  config?: SimulationConfig;
-}
+  memoryLocations: MemoryLocation[];
+};
 
 export type ParseAsmResponse =
   | {
@@ -192,3 +221,19 @@ export interface SimulateResponse {
   state: CpuState;
   stopReason: StopReason;
 }
+
+//
+// /instructionDescription
+//
+
+export interface InstructionDescriptionEndpoint {
+  name: 'instructionDescription';
+  request: InstructionDescriptionRequest;
+  response: InstructionDescriptionResponse;
+}
+
+export type InstructionDescriptionRequest = Record<string, never>;
+
+export type InstructionDescriptionResponse = {
+  models: Record<string, InstructionFunctionModel>;
+};

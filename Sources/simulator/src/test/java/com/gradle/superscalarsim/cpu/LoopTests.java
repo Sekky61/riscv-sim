@@ -27,11 +27,8 @@
 
 package com.gradle.superscalarsim.cpu;
 
-import com.gradle.superscalarsim.models.instruction.InputCodeModel;
 import org.junit.Assert;
 import org.junit.Test;
-
-import java.util.List;
 
 public class LoopTests
 {
@@ -55,74 +52,34 @@ public class LoopTests
     Assert.assertTrue(cpu.cpuState.statistics.getCommittedInstructions() > 10);
   }
   
-  /**
-   * Simcodes hold references to input code models.
-   * When renaming, the original input code model should not be changed.
-   */
   @Test
-  public void LoopInstructionRenamingTest()
+  public void testLoopArrayWrite()
   {
     SimulationConfig cfg = SimulationConfig.getDefaultConfiguration();
-    cfg.code = ExecuteUtil.getLoopProgram(5);
-    Cpu cpu = new Cpu(cfg);
-    
-    // Obtain original value of inputcodemodels
-    List<InputCodeModel> parsedCode = cpu.cpuState.instructionMemoryBlock.getCode();
-    // Copy the list
-    List<InputCodeModel> parsedCodeCopy = List.copyOf(parsedCode);
-    
-    
-    // Count steps
-    int steps = 0;
-    while (!cpu.simEnded())
-    {
-      cpu.step();
-      steps++;
-    }
-    
-    // Assert that the original input code models are not changed
-    Assert.assertEquals(parsedCode, parsedCodeCopy);
-  }
-  
-  /**
-   * The program writes numbers from 0 to 19 to memory
-   * TODO: go back to it later
-   */
-  //  @Test
-  public void test_write_memory()
-  {
-    SimulationConfig cfg = SimulationConfig.getDefaultConfiguration();
-    cfg.code = """
-            wr:
-                addi sp,sp,-32
-                sw s0,28(sp)
-                addi s0,sp,32
-                sw zero,-20(s0)
-                j .L2
-            .L3:
-                lw a5,-20(s0)
-                lw a4,-20(s0)
-                andi a4,a4,0xff
-                sb a4,0(a5)
-                lw a5,-20(s0)
-                addi a5,a5,1
-                sw a5,-20(s0)
+    String codeTemplate = """
+            writeMem:
+                lla a4,ptr
+                li a5,0
+                li a3,%d
             .L2:
-                lw a4,-20(s0)
-                li a5,19
-                ble a4,a5,.L3
-                nop
-                mv a0,a5
-                lw s0,28(sp)
-                addi sp,sp,32
-                """;
+                sb a5,0(a4)
+                addi a5,a5,1
+                addi a4,a4,1
+                bne a5,a3,.L2
+                ret
+                .align 2
+            ptr:
+                .zero %d""";
+    cfg.cpuConfig.storeBehavior = "write-through";
+    cfg.code                    = codeTemplate.formatted(17, 17);
+    
     Cpu cpu = new Cpu(cfg);
     cpu.execute(false);
     
-    // Assert that bytes 0 to 19 are written to memory
-    for (int i = 0; i < 20; i++)
+    int ptr = cpu.cpuState.instructionMemoryBlock.getLabelPosition("ptr");
+    for (int i = 0; i < 9; i++)
     {
-      Assert.assertEquals(i, cpu.cpuState.simulatedMemory.getFromMemory((long) i));
+      Assert.assertEquals(i, cpu.cpuState.simulatedMemory.getFromMemory(ptr + i));
     }
   }
 }

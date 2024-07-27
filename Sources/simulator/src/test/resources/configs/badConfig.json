@@ -1,0 +1,106 @@
+{
+  "robSize": 0,
+  "lbSize": 64,
+  "sbSize": 64,
+  "fetchWidth": 3,
+  "commitWidth": 4,
+  "btbSize": 1024,
+  "phtSize": 100,
+  "predictorType": "1bit",
+  "predictorDefault": "Not Taken",
+  "fUnits": [
+    {
+      "id": 0,
+      "name": "FX",
+      "fuType": "FX",
+      "latency": 2,
+      "operations": [
+        {
+          "name": "special",
+          "latency": "2"
+        },
+        {
+          "name": "addition",
+          "latency": "1"
+        },
+        {
+          "name": "division",
+          "latency": "10"
+        },
+        {
+          "name": "multiplication",
+          "latency": "2"
+        },
+        {
+          "name": "bitwise",
+          "latency": "1"
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "name": "FP",
+      "fuType": "FP",
+      "latency": 2,
+      "operations": [
+        {
+          "name": "special",
+          "latency": "2"
+        },
+        {
+          "name": "addition",
+          "latency": "1"
+        },
+        {
+          "name": "division",
+          "latency": "10"
+        },
+        {
+          "name": "multiplication",
+          "latency": "2"
+        },
+        {
+          "name": "bitwise",
+          "latency": "1"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "LS",
+      "fuType": "L_S",
+      "latency": 1,
+      "operations": null
+    },
+    {
+      "id": 3,
+      "name": "BR",
+      "fuType": "Branch",
+      "latency": 2,
+      "operations": null
+    },
+    {
+      "id": 4,
+      "name": "Mem",
+      "fuType": "Memory",
+      "latency": 1,
+      "operations": null
+    }
+  ],
+  "cacheLines": 16,
+  "cacheLineSize": 32,
+  "cacheAssoc": 2,
+  "cacheReplacement": "Random",
+  "storeBehavior": "write-back",
+  "cacheLoadLatency": 1,
+  "cacheStoreLatency": 1,
+  "storeLatency": 1,
+  "loadLatency": 1,
+  "laneReplacementDelay": 10,
+  "addRemainingDelay": false,
+  "memoryLocations": [],
+  "callStackSize": 512,
+  "speculativeRegisters": 256,
+  "coreClockFrequency": 1000,
+  "cacheClockFrequency": 1000
+}

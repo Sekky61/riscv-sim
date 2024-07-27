@@ -35,15 +35,16 @@ package com.gradle.superscalarsim.blocks.branch;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.gradle.superscalarsim.models.BranchTargetEntryModel;
-import com.gradle.superscalarsim.models.instruction.IInputCodeModel;
-import com.gradle.superscalarsim.models.instruction.InstructionFunctionModel;
+import com.gradle.superscalarsim.models.instruction.SimCodeModel;
 
 import java.util.Map;
 import java.util.TreeMap;
 
 /**
  * @class BranchTargetBuffer
- * @brief Class holding targets for branch instructions
+ * @brief Table where each entry holds the target of a branch instruction.
+ * The target can be unknown (-1). The table is indexed by the PC of the branch instruction
+ * and the tag is compared to determine if the entry is valid or shared.
  */
 @JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "id")
 public class BranchTargetBuffer
@@ -66,56 +67,24 @@ public class BranchTargetBuffer
   public BranchTargetBuffer(int size)
   {
     // TreeMap is used to have sorted keys - display in GUI
+    // TODO: change, measure if SparseArray is faster
     this.buffer = new TreeMap<>();
-    reallocateTargetBuffer(size);
+    this.size   = size;
   }// end of Constructor
-  //----------------------------------------------------------------------
-  
-  /**
-   * @param size New size of the buffer
-   *
-   * @brief Reallocates buffer to new size
-   */
-  public void reallocateTargetBuffer(int size)
-  {
-    this.size = size;
-    this.buffer.clear();
-  }// end of reallocateTargetBuffer
-  //----------------------------------------------------------------------
-  
-  /**
-   * @brief Resets the BTB
-   */
-  public void reset()
-  {
-    this.buffer.clear();
-    reallocateTargetBuffer(size);
-  }// end of reset
-  
-  /**
-   * @return Map of BTB entries
-   * @brief Get whole BTB
-   */
-  public Map<Integer, BranchTargetEntryModel> getBuffer()
-  {
-    return buffer;
-  }// end of getBuffer
   //----------------------------------------------------------------------
   
   /**
    * @param programCounter Position fo the instruction in program
    * @param codeModel      Branch code model
    * @param target         Target of the branch code model
-   * @param commitId       ID marking when branch instruction get committed
    *
    * @brief Sets entry to BTB
    */
-  public void setEntry(int programCounter, IInputCodeModel codeModel, int target, int id, int commitId)
+  public void setEntry(int programCounter, SimCodeModel codeModel, int target)
   {
-    InstructionFunctionModel instruction = codeModel.getInstructionFunctionModel();
-    BranchTargetEntryModel entryModel = new BranchTargetEntryModel(programCounter,
-                                                                   instruction != null && !instruction.isUnconditionalJump(),
-                                                                   target, id, commitId);
+    assert codeModel != null;
+    BranchTargetEntryModel entryModel = new BranchTargetEntryModel(programCounter, codeModel.isConditionalBranch(),
+                                                                   target);
     
     this.buffer.put(programCounter % this.size, entryModel);
   }// end of setEntry
@@ -123,7 +92,7 @@ public class BranchTargetBuffer
   
   BranchTargetEntryModel getBranchEntry(int programCounter)
   {
-    return this.buffer.getOrDefault(programCounter % this.size, new BranchTargetEntryModel(-1, false, -1, -1, -1));
+    return this.buffer.getOrDefault(programCounter % this.size, new BranchTargetEntryModel(-1, false, -1));
   }
   //----------------------------------------------------------------------
   
@@ -136,19 +105,15 @@ public class BranchTargetBuffer
   public int getEntryTarget(int programCounter)
   {
     BranchTargetEntryModel entryModel = getBranchEntry(programCounter);
-    if (entryModel == null) // todo redundant
-    {
-      return -1;
-    }
     return entryModel.getPcTag() == programCounter ? entryModel.getTarget() : -1;
   }// end of getEntryTarget
   //----------------------------------------------------------------------
   
   /**
-   * @param programCounter - Position of the instruction in the program
+   * @param programCounter Position of the instruction in the program
    *
    * @return True if the entry is unconditional, false otherwise
-   * @brief Ccheck if an entry is of unconditional branch instruction
+   * @brief Check if an entry is of unconditional branch instruction
    */
   public boolean isEntryUnconditional(int programCounter)
   {
