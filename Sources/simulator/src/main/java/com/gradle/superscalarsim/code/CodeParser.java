@@ -39,6 +39,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.Arrays;
 import java.util.regex.Pattern;
 
 /**
@@ -384,6 +387,14 @@ public class CodeParser
     // Consume label token
     nextToken();
   }
+
+  /**
+   * @brief Names of all double instructions
+   * Used for detecting double instructions
+   */
+  private static final Set<String> DOUBLE_INSTRUCTION_NAMES = new HashSet<>(Arrays.asList("fmadd.d", "fmsub.d", "fnmsub.d", "fnmadd.d",
+          "fadd.d", "fsub.d", "fmul.d", "fdiv.d", "fsqrt.d", "fmin.d", "fmax.d", "feq.d", "flt.d", "fle.d",
+          "fclass.d", "fcvt.l.d", "fcvt.lu.d", "fcvt.d.l", "fcvt.d.lu", "fmv.x.d", "fmv.d.x"));
   
   /**
    * @brief Parse instruction. Current token is a symbol with the name of the instruction.
@@ -403,6 +414,12 @@ public class CodeParser
     // Check if instruction is valid
     if (instructionModel == null)
     {
+      // Special error for double instructions
+      if (DOUBLE_INSTRUCTION_NAMES.contains(instructionName))
+      {
+        addError(lexer.currentToken(), "Double instructions are not supported (caused by '" + instructionName + "')");
+        return;
+      }
       addError(lexer.currentToken(), "Unknown instruction '" + instructionName + "'");
       return;
     }
