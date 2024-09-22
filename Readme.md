@@ -79,6 +79,12 @@ To run the server, type `./scripts/run.sh server`.
 
 For more detailed documentation, see `Sources/simulator/Readme.md`.
 
+### HTTPS
+
+Add SSL/TLS certificates to `Sources/proxy/certs` to enable HTTPS. A Nginx proxy is created as a Docker container during the startup.
+Note, that this step is not necessary to run the app.
+For details, see [Sources/proxy/Readme.md](Sources/proxy/Readme.md).
+
 ### Docker
 
 The two components have their respective Dockerfiles in their directories.
@@ -90,9 +96,17 @@ Also note that older Docker versions use command `docker-compose` instead of `do
 
 Developed using Docker `24.0.7` and `20.10.2` (version on `sc-gpu1` server).
 
+Below is the recommended way to build and run the project using Docker.
+
 ```bash
 cd Sources
 ./build_container.sh
 ./run_container.sh
 ```
+
+Once the containers are running, one of two things can happen:
+
+1. You supplied keys to `Sources/proxy/certs` and the app is available on port 3120 (http) and 3121 (https).
+
+2. You didn't supply keys and the app is available on port 3100 (http).
 

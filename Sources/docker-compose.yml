@@ -1,5 +1,4 @@
 name: riscvsim
-
 version: "2.3"
 services:
   web:
@@ -11,7 +10,7 @@ services:
     environment:
       - NODE_ENV=production
     ports:
-      - 3120:3000
+      - 3100:3000
     logging:
       driver: "local"
       options:
@@ -20,7 +19,20 @@ services:
     depends_on:
       - simserver
     links:
-      - simserver # The web server uses port 8000 to communicate with the server, 8120 is exposed to the host
+      - simserver
+
+  nginx:
+    image: nginx:alpine
+    container_name: nginx_proxy
+    ports:
+      - "3120:3120"
+      - "3121:3121"
+    volumes:
+      - ./proxy/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./proxy/certs:/etc/nginx/certs:ro
+    depends_on:
+      - web
+
   simserver:
     build:
       context: ./simulator
