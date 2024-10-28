@@ -110,3 +110,11 @@ Once the containers are running, one of two things can happen:
 
 2. You didn't supply keys and the app is available on port 3100 (http).
 
+## Nix
+
+Another way to use the project is through Nix.
+I prefer this method as it is more reproducible and doesn't require installing anything manually.
+
+Run `nix develop` in the root directory to enter the development environment.
+Run `nix run .#simulator` to run the simulator and `nix run .#frontend` to run the frontend.
+

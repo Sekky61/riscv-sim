@@ -76,3 +76,8 @@ Inspired by [this article](https://blog.logrocket.com/how-analyze-next-js-app-bu
 - [lucide-react](https://lucide.dev/guide/packages/lucide-react) - Icons
 - [react-hotkeys-hook](https://www.npmjs.com/package/react-hotkeys-hook) - Keyboard shortcuts
 - [shadcn/ui](https://ui.shadcn.com/) - UI components
+
+## Nix
+
+To update the flakes, run `node2nix -l`.
+
