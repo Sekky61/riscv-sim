@@ -29,7 +29,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Inter as FontSans } from 'next/font/google';
 import type { ReactNode } from 'react';
 
 import '@/styles/globals.css';
@@ -43,16 +42,16 @@ import { Toaster } from '@/components/base/ui/sonner';
 import { TooltipProvider } from '@/components/base/ui/tooltip';
 import PersistedStoreProvider from '@/lib/redux/PersistedStoreProvider';
 import { loadBlockDescriptions } from '@/lib/staticLoaders';
+import localFont from 'next/font/local';
 
 /**
  * Font loading by next.js.
  * The display: swap is important for loading, but it is badly documented. It worked for a long time without it.
  */
-const fontSans = FontSans({
-  subsets: ['latin'],
-  variable: '--font-sans',
+const myFont = localFont({
+  src: '../../public/Inter.ttf',
   display: 'swap',
-});
+})
 
 /**
  * This is the root layout of the app. It provides the state (redux), toast notifications and
@@ -74,8 +73,8 @@ export default async function RootLayout({
       </head>
       <body
         className={cn(
-          'min-h-screen font-sans antialiased overflow-hidden',
-          fontSans.variable,
+          'min-h-screen antialiased overflow-hidden',
+          myFont.className,
         )}
       >
         <WelcomeTour>

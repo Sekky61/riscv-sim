@@ -37,9 +37,6 @@ export default {
   darkMode: ['selector'],
   theme: {
     extend: {
-      fontFamily: {
-        sans: ['var(--font-sans)', ...fontFamily.sans],
-      },
       colors: {
         border: 'hsl(var(--border))',
         input: '#6F797A',
