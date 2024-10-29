@@ -1,7 +1,7 @@
 # Nginx proxy
 
 This directory contains the Nginx proxy configuration for the project.
-It is not a necessary part of the project and the app works without it (ignore the failing container).
+It is not a necessary part of the project and the app works without it (ignore the failing container) and use the ports exposed by the servers directly.
 
 **Directory Contents:**
 
@@ -21,7 +21,6 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
  -keyout privkey.pem \
  -out fullchain.pem \
  -subj "/C=US/ST=State/L=City/O=Organization/CN=localhost"
-
 ```
 
 **Running the Nginx Proxy:**

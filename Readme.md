@@ -19,15 +19,21 @@ The project consists of two components: web app and Java simulator server. More 
     +--Misc       - Other auxiliary materials.
     Readme.md     - Read me file
 
-## Installation Instructions
+## Installation
 
-> TLDR: cd Sources && ./build_container.sh && ./run_container.sh
-
-You can either build the project locally or use docker.
-First the manual build is described, then the docker build.
+First, the one-line quickstart using Docker:
+```bash
+curl -L https://raw.githubusercontent.com/Sekky61/riscv-sim/refs/heads/master/Sources/docker-compose.yml | docker compose -f - up
+```
+The app will be available on `http://localhost:3120`.
+For proper deployment or HTTPS support, clone the repository and run
+```bash
+cd Sources && ./build_container.sh && ./run_container.sh
+```
 
 If anything is unclear, you can refer to the Dockerfiles, which contain all the necessary steps.
 The `Sources/frontend` and `Sources/simulator` also contain their own, more detailed instructions.
+Now to the manual installation instructions.
 
 ### Build and Run Frontend Web App
 
@@ -81,8 +87,9 @@ For more detailed documentation, see `Sources/simulator/Readme.md`.
 
 ### HTTPS
 
-Add SSL/TLS certificates to `Sources/proxy/certs` to enable HTTPS. A Nginx proxy is created as a Docker container during the startup.
-Note, that this step is not necessary to run the app.
+Add SSL/TLS certificates to `Sources/proxy/certs` to enable HTTPS.
+An Nginx proxy is created as a Docker container during the startup.
+Note, that this step is not necessary to run the app, but the nginx container will fail to start.
 For details, see [Sources/proxy/Readme.md](Sources/proxy/Readme.md).
 
 ### Docker
