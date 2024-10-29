@@ -2,6 +2,7 @@ name: riscvsim
 version: "2.3"
 services:
   web:
+    image: majeris/riscv-sim-frontend:latest
     build:
       context: ./frontend
       target: runner
@@ -34,6 +35,7 @@ services:
       - web
 
   simserver:
+    image: majeris/riscv-sim-backend:latest
     build:
       context: ./simulator
       target: runner

@@ -6,7 +6,7 @@ FROM base AS deps
 # locking to specific versions threw errors
 RUN apk add \
   gcc-riscv-none-elf \
-  gradle
+  maven
 # RUN /usr/bin/riscv-none-elf-gcc-13.1.0 --version
 RUN /usr/bin/riscv-none-elf-gcc --version
 WORKDIR /app
@@ -14,9 +14,6 @@ WORKDIR /app
 FROM deps AS build
 WORKDIR /app
 COPY . . 
-# gradle build would run the tests as well
-# Unclear if -Dconfig.profile=prod is needed
-RUN gradle assemble -Dconfig.profile=prod
 
 # Package stage
 
