@@ -20,9 +20,9 @@ maven.buildMavenPackage {
   '';
 
   meta = with lib; {
-    description = "Simple command line wrapper around JD Core Java Decompiler project";
-    homepage = "https://github.com/intoolswetrust/jd-cli";
-    license = licenses.gpl3Plus;
-    maintainers = with maintainers; [ majiir ];
+    description = "Java-based RISC-V simulator backend";
+    homepage = "https://github.com/Sekky61/riscv-sim";
+    license = licenses.gpl3;
+    mainProgram = "riscv-sim-backend";
   };
 }

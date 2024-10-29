@@ -88,7 +88,7 @@ For details, see [Sources/proxy/Readme.md](Sources/proxy/Readme.md).
 ### Docker
 
 The two components have their respective Dockerfiles in their directories.
-There is a docker compose file located at `Sources/`. It builds the frontend and backend and runs them together.
+There is a docker compose file located at `Sources/`. It builds the frontend and backend and runs them together with nginx proxy.
 
 There are prepared scripts `Sources/build_container.sh`, `Sources/run_container.sh` and `Sources/stop_container.sh` to run and stop the container.
 Note that sudo might be required to run the docker commands.
@@ -97,6 +97,13 @@ Also note that older Docker versions use command `docker-compose` instead of `do
 Developed using Docker `24.0.7` and `20.10.2` (version on `sc-gpu1` server).
 
 Below is the recommended way to build and run the project using Docker.
+
+```bash
+cd Sources
+docker compose up
+```
+
+In case you want to build and run the containers manually and not download the images, you can do so:
 
 ```bash
 cd Sources
@@ -115,6 +122,7 @@ Once the containers are running, one of two things can happen:
 Another way to use the project is through Nix.
 I prefer this method as it is more reproducible and doesn't require installing anything manually.
 
-Run `nix develop` in the root directory to enter the development environment.
-Run `nix run .#simulator` to run the simulator and `nix run .#frontend` to run the frontend.
+- Run `nix run .#simulator` to run the simulator and `nix run .#frontend` to run the frontend.
+- Run `nix build .#frontend-docker` (or `#simulator-docker`) to create a Docker image. Load it with `docker load < result`.
+- Run `nix develop` in the root directory to enter the development environment with all the necessary tools.
 

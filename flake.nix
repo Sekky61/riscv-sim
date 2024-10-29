@@ -43,18 +43,39 @@
               cp -r .next/standalone $out/
               cp -r .next/static $out/standalone/.next/
             '';
+
+            meta = with pkgs.lib; {
+              description = "RISC-V Simulator Frontend";
+              homepage = "https://github.com/Sekky61/riscv-sim";
+              license = licenses.gpl3;
+              mainProgram = "riscv-sim-frontend";
+            };
           };
 
           backend = pkgs.callPackage ./Sources/simulator/package.nix { };
+
+          frontend-docker = pkgs.dockerTools.buildLayeredImage {
+            name = "riscv-sim-frontend";
+            tag = "latest";
+            config.Cmd = "${startFront}/bin/start-frontend";
+          };
+
+          backend-docker = pkgs.dockerTools.buildLayeredImage {
+            name = "riscv-sim-backend";
+            tag = "latest";
+            config.Cmd = "${startSim}/bin/start-simulator";
+          };
         };
 
         apps.frontend = {
           type = "app";
+          pname = "riscv-sim-frontend";
           program = "${startFront}/bin/start-frontend";
         };
 
         apps.simulator = {
           type = "app";
+          pname = "riscv-sim-backend";
           program = "${startSim}/bin/start-simulator";
         };
 
