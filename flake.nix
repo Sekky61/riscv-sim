@@ -3,8 +3,12 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
+    gitignore = {
+      url = "github:hercules-ci/gitignore.nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
-  outputs = { self, nixpkgs, flake-utils }:
+  outputs = { self, nixpkgs, flake-utils, gitignore }:
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
@@ -34,14 +38,21 @@
         formatter = pkgs.nixpkgs-fmt;
         
         packages = {
-          frontend = pkgs.buildNpmPackage {
+
+          frontend = pkgs.callPackage ./Sources/frontend/package.nix { gitignoreSource = gitignore.lib.gitignoreSource; };
+          
+          frontend-old = pkgs.buildNpmPackage {
             name = "riscv-sim-frontend";
             version = "1.0.0";
             src = ./Sources/frontend;
             nodejs = pkgs.bun // { python = pkgs.python3; };
             npmDepsHash = "sha256-LUqXgp/60j69u7ZqEm2OrYq39ovntZO/cUm1g83zcjc=";
-            dontNpmInstall = true;
-            nativeBuildInputs = [ pkgs.nodejs_20 ]; # for npm
+            nativeBuildInputs = [ pkgs.bun ];
+
+            buildPhase = ''
+              bun install
+            '';
+
             installPhase = ''
               mkdir -p $out/standalone/.next/
               cp -r .next/standalone $out/
