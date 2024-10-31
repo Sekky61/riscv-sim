@@ -30,12 +30,12 @@ Note: `src/components/base/ui` contains vendored code (shadcn/ui) that has only 
 
 ### Install steps
 
-The app was developed using npm `10.2.3` and node.js `v21.2.0`.
+The app is run with bun, specifically `1.1.31`.
 Package dependencies are defined in `package.json`.
 They can be installed the usual way, by running this command in the frontend root (`Sources/frontend`):
 
 ```bash
-npm install
+bun install
 ```
 
 ### Define environment variables
@@ -76,8 +76,4 @@ Inspired by [this article](https://blog.logrocket.com/how-analyze-next-js-app-bu
 - [lucide-react](https://lucide.dev/guide/packages/lucide-react) - Icons
 - [react-hotkeys-hook](https://www.npmjs.com/package/react-hotkeys-hook) - Keyboard shortcuts
 - [shadcn/ui](https://ui.shadcn.com/) - UI components
-
-## Nix
-
-To update the flakes, run `node2nix -l`.
 
