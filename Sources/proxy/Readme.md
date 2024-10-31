@@ -30,6 +30,12 @@ and run the containers.
 This is more precisely described in the main Readme.
 
 ```bash
+docker compose up
+```
+
+or
+
+```bash
 cd Sources
 ./build_container.sh
 ./run_container.sh

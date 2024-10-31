@@ -21,19 +21,17 @@ The project consists of two components: web app and Java simulator server. More 
 
 ## Installation
 
-First, the one-line quickstart using Docker:
+First, the one-line quickstart run-it-from-anywhere using Docker:
 ```bash
-curl -L https://raw.githubusercontent.com/Sekky61/riscv-sim/refs/heads/master/Sources/docker-compose.yml | docker compose -f - up
+curl -L https://raw.githubusercontent.com/Sekky61/riscv-sim/refs/heads/master/Sources/docker-compose.http.yml | docker compose -f - up
 ```
 The app will be available on `http://localhost:3120`.
-For proper deployment or HTTPS support, clone the repository and run
+For proper deployment and HTTPS support, clone the repository, create HTTPS certificates and run
 ```bash
-cd Sources && ./build_container.sh && ./run_container.sh
+cd Sources && docker compose up
 ```
 
-If anything is unclear, you can refer to the Dockerfiles, which contain all the necessary steps.
-The `Sources/frontend` and `Sources/simulator` also contain their own, more detailed instructions.
-Now to the manual installation instructions.
+Refer to Readmes in the respective directories, Dockerfiles and the Nix flake for more detailed instructions.
 
 ### Build and Run Frontend Web App
 
@@ -94,15 +92,6 @@ For details, see [Sources/proxy/Readme.md](Sources/proxy/Readme.md).
 
 ### Docker
 
-The two components have their respective Dockerfiles in their directories.
-There is a docker compose file located at `Sources/`. It builds the frontend and backend and runs them together with nginx proxy.
-
-There are prepared scripts `Sources/build_container.sh`, `Sources/run_container.sh` and `Sources/stop_container.sh` to run and stop the container.
-Note that sudo might be required to run the docker commands.
-Also note that older Docker versions use command `docker-compose` instead of `docker compose`.
-
-Developed using Docker `24.0.7` and `20.10.2` (version on `sc-gpu1` server).
-
 Below is the recommended way to build and run the project using Docker.
 
 ```bash
@@ -110,7 +99,20 @@ cd Sources
 docker compose up
 ```
 
-In case you want to build and run the containers manually and not download the images, you can do so:
+or, in case you do not want to setup HTTPS certificates:
+
+```bash
+cd Sources
+docker compose -f docker-compose.http.yml up
+```
+
+The Docker compose files located at `Sources/` build the frontend and backend and runs them together with nginx proxy.
+
+Note that sudo might be required to run the docker commands.
+
+> Note that older Docker versions use command `docker-compose` instead of `docker compose`. Developed using Docker `24.0.7` and `20.10.2`.
+
+There is an alternative way to build the containers - scripts `Sources/build_container.sh`, `Sources/run_container.sh` and `Sources/stop_container.sh` to run and stop the container.
 
 ```bash
 cd Sources
@@ -118,11 +120,9 @@ cd Sources
 ./run_container.sh
 ```
 
-Once the containers are running, one of two things can happen:
-
-1. You supplied keys to `Sources/proxy/certs` and the app is available on port 3120 (http) and 3121 (https).
-
-2. You didn't supply keys and the app is available on port 3100 (http).
+After running the container, the state of the app should be:
+1. You chose the `.http.yml` file and the app is available on port 3120.
+2. You supplied keys to `Sources/proxy/certs` and chose the `.yml` file. The app is available on port 3120 (http) and 3121 (https) (do check the `http://` prefix).
 
 ## Nix
 
