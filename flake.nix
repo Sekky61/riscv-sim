@@ -13,6 +13,7 @@
           crossSystem = { config = "riscv64-unknown-linux-gnu"; };
           inherit system;
         };
+        riscvGcc = "${cross.buildPackages.gcc12}/bin/riscv64-unknown-linux-gnu-gcc";
 
         # Wrapper script to run the Next.js server
         startFront = pkgs.writeShellScriptBin "start-frontend" ''
@@ -26,7 +27,7 @@
         startSim = pkgs.writeShellScriptBin "start-simulator" ''
           #!/bin/sh
           cd ${self.packages.${system}.backend}/bin
-          exec ./backend server --gcc-path ${cross.buildPackages.gcc12}/bin/riscv64-unknown-linux-gnu-gcc
+          exec ./backend server --gcc-path ${riscvGcc}
         '';
       in
       {

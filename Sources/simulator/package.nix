@@ -1,5 +1,16 @@
-{ lib, jre, makeWrapper, maven }:
+{ lib, jre_minimal, jdk21_headless, makeWrapper, maven }:
 
+let 
+  my_jre = jre_minimal.override {
+    jdk = jdk21_headless;
+    modules = [
+      "java.base"
+      "java.logging"
+      "java.security.sasl"
+      "jdk.unsupported"
+    ];
+  };
+in
 maven.buildMavenPackage {
   pname = "riscv-sim-backend";
   version = "1.0.0";
@@ -12,10 +23,11 @@ maven.buildMavenPackage {
 
   mvnParameters = "-Dmaven.test.skip";
 
+
   installPhase = ''
     mkdir -p $out/bin/
     cp target/superscalar-simulator-1.0.jar $out/bin/backend.jar
-    makeWrapper ${jre}/bin/java $out/bin/backend \
+    makeWrapper ${my_jre}/bin/java $out/bin/backend \
       --add-flags "-jar $out/bin/backend.jar"
   '';
 
