@@ -1,4 +1,4 @@
-# Alpine image - originally ubuntu, but caused issues with olfer docker versions
+# Alpine image - originally ubuntu, but caused issues with older docker versions
 FROM alpine:3.18 AS base
 
 # Install dependencies only when needed
@@ -24,7 +24,9 @@ EXPOSE 8000
 RUN ./scripts/install.sh
 CMD ./scripts/run.sh server --host=0.0.0.0 --port=8000 --gcc-path=/usr/bin/riscv-none-elf-gcc
 
-FROM deps as test
+FROM deps AS test
 WORKDIR /app
 COPY . . 
-RUN gradle testProd -i
+# Run mvn test with property gcc.path
+RUN mvn test -Dgcc.path=/usr/bin/riscv-none-elf-gcc -Dconfig.profile=prod
+

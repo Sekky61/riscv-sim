@@ -30,6 +30,16 @@ jobs:
       - name: Run the Maven verify phase
         run: mvn --batch-mode --update-snapshots verify
 
-      - name: Run tests
-        run: mvn test
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./Sources/simulator
+    steps:
+      - uses: actions/checkout@v4
+
+      # Building it tests it
+      - name: Build Container
+        run: docker build -t simulator .
 
