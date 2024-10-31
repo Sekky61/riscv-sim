@@ -52,7 +52,7 @@ import { apiBaseUrl } from '@/constant/env';
 const myFont = localFont({
   src: '../../public/Inter.ttf',
   display: 'swap',
-})
+});
 
 console.info(`Loaded base layout. Simulator path is ${apiBaseUrl}`);
 

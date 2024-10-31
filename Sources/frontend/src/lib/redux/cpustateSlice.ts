@@ -524,7 +524,8 @@ const selectDetailedSimCodeModels = createSelector(
           register,
           origArg,
           valid: register === null || isValidRegisterValue(register),
-          value: register?.value ?? origArg.constantValue as RegisterDataContainer, // todo: fix type
+          value:
+            register?.value ?? (origArg.constantValue as RegisterDataContainer), // todo: fix type
         };
         detail.argsMap[origArg.name] = arg;
       }
