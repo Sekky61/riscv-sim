@@ -1,0 +1,48 @@
+name: riscvsim
+version: "2.3"
+services:
+  web:
+    image: majeris/riscv-sim-frontend:latest
+    build:
+      context: ./frontend
+      target: runner
+      args:
+        DOCKER_BUILDKIT: 1
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_SIMSERVER_HOST=simserver # The name of the service in the docker-compose file
+    ports:
+      - 3100:3000
+    logging:
+      driver: "local"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    depends_on:
+      - simserver
+    links:
+      - simserver
+
+  gateway:
+    image: majeris/riscv-sim-gateway:latest
+    build:
+      context: ./proxy
+    container_name: nginx_gateway
+    ports:
+      - "3120:3120"
+      - "3121:3121"
+    depends_on:
+      - web
+
+  simserver:
+    image: majeris/riscv-sim-backend:latest
+    build:
+      context: ./simulator
+      target: runner
+    ports:
+      - 8120:8000
+    logging:
+      driver: "local"
+      options:
+        max-size: "10m"
+        max-file: "3"
