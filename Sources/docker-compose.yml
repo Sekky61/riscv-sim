@@ -10,6 +10,7 @@ services:
         DOCKER_BUILDKIT: 1
     environment:
       - NODE_ENV=production
+      - NEXT_PUBLIC_SIMSERVER_HOST=simserver # The name of the service in the docker-compose file
     ports:
       - 3100:3000
     logging:

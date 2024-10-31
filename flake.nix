@@ -20,7 +20,7 @@
           #!/bin/sh
           PORT=''${PORT:-3000}
           cd ${self.packages.${system}.frontend}/standalone
-          exec ${pkgs.nodejs_20}/bin/node server.js
+          exec ${pkgs.bun}/bin/bun server.js
         '';
 
         # Wrapper script to run the simulator
@@ -38,8 +38,10 @@
             name = "riscv-sim-frontend";
             version = "1.0.0";
             src = ./Sources/frontend;
+            nodejs = pkgs.bun // { python = pkgs.python3; };
             npmDepsHash = "sha256-LUqXgp/60j69u7ZqEm2OrYq39ovntZO/cUm1g83zcjc=";
             dontNpmInstall = true;
+            nativeBuildInputs = [ pkgs.nodejs_20 ]; # for npm
             installPhase = ''
               mkdir -p $out/standalone/.next/
               cp -r .next/standalone $out/
@@ -56,6 +58,11 @@
 
           backend = pkgs.callPackage ./Sources/simulator/package.nix { };
 
+          # Publish: ```
+          # docker tag <image> majeris/<image>:latest
+          # docker tag <image> majeris/<image>:<version>
+          # docker push majeris/<image>:latest
+          # docker push majeris/<image>:<version>
           frontend-docker = pkgs.dockerTools.buildLayeredImage {
             name = "riscv-sim-frontend";
             tag = "latest";

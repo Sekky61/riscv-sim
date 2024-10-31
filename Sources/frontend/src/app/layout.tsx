@@ -43,6 +43,7 @@ import { TooltipProvider } from '@/components/base/ui/tooltip';
 import PersistedStoreProvider from '@/lib/redux/PersistedStoreProvider';
 import { loadBlockDescriptions } from '@/lib/staticLoaders';
 import localFont from 'next/font/local';
+import { apiBaseUrl } from '@/constant/env';
 
 /**
  * Font loading by next.js.
@@ -52,6 +53,8 @@ const myFont = localFont({
   src: '../../public/Inter.ttf',
   display: 'swap',
 })
+
+console.info(`Loaded base layout. Simulator path is ${apiBaseUrl}`);
 
 /**
  * This is the root layout of the app. It provides the state (redux), toast notifications and

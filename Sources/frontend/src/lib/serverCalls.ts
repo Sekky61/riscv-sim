@@ -115,6 +115,8 @@ const callApi: AsyncEndpointFunction = async <T extends EndpointName>(
 
   const url = `${apiUrl}${endpoint}`;
 
+  console.info(`Calling API endpoint ${url}`);
+
   // In browser, the absolute path works (origin is defined), but on server (node.js) it needs a full URL.
   // The only way to know the url at build time is to use an environment variable.
   const response = await fetch(url, {
@@ -126,6 +128,7 @@ const callApi: AsyncEndpointFunction = async <T extends EndpointName>(
   });
 
   if (response.ok) {
+    console.info(`API call to ${url} successful`);
     // Deserialize the response. It is either the requested object or an error message.
     return response.json();
   }
