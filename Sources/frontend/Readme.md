@@ -8,7 +8,6 @@ Technology stack:
 - [React](https://reactjs.org/)
 - [TypeScript](https://www.typescriptlang.org/)
 - [Tailwind CSS](https://tailwindcss.com/)
-- [Vitest]()
 - [biomejs](https://biomejs.dev/)
 
 ## Structure
@@ -53,7 +52,7 @@ Also, you can use the `.env` file. See `.env.example` for inspiration.
 You can start the server using this command:
 
 ```bash
-npm run dev
+bun run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the app.
@@ -62,11 +61,17 @@ Other commands, like lint and typecheck are defined in `package.json`.
 Notes:
 - Changing the environment variables requires a server restart.
 
+### Run tests
+
+```bash
+bun test
+```
+
 ### Inspect bundle size
 
 Inspired by [this article](https://blog.logrocket.com/how-analyze-next-js-app-bundles).
 
-`ANALYZE=true npm run build` creates `client.html`, `nodejs.html`, and `edge.html`.
+`ANALYZE=true bun run build` creates `client.html`, `nodejs.html`, and `edge.html`.
 
 ### The most important libraries used
 
