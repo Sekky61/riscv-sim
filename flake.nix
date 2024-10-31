@@ -36,6 +36,7 @@
         packages = {
           frontend = pkgs.buildNpmPackage {
             name = "riscv-sim-frontend";
+            version = "1.0.0";
             src = ./Sources/frontend;
             npmDepsHash = "sha256-LUqXgp/60j69u7ZqEm2OrYq39ovntZO/cUm1g83zcjc=";
             dontNpmInstall = true;
@@ -80,7 +81,7 @@
           program = "${startSim}/bin/start-simulator";
         };
 
-        # For development
+        # Development environment
         devShell = pkgs.mkShell {
           buildInputs = with pkgs; [
             nodejs_20
@@ -88,6 +89,7 @@
             cross.buildPackages.gcc12
             startSim
             startFront
+            jre
           ];
         };
       }
