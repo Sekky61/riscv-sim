@@ -14,8 +14,7 @@
     "test:watch": "vitest dev",
     "format": "@biomejs/biome format src/ --write",
     "format:check": "@biomejs/biome format ./src",
-    "postbuild": "next-sitemap --config next-sitemap.config.js",
-    "dependencies": "npm-check-updates --interactive"
+    "postbuild": "next-sitemap --config next-sitemap.config.js"
   },
   "dependencies": {
     "@codemirror/lint": "^6.7.0",
