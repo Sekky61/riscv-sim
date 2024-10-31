@@ -8,7 +8,6 @@ Technology stack:
 - [React](https://reactjs.org/)
 - [TypeScript](https://www.typescriptlang.org/)
 - [Tailwind CSS](https://tailwindcss.com/)
-- [Vitest]()
 - [biomejs](https://biomejs.dev/)
 
 ## Structure
@@ -30,12 +29,12 @@ Note: `src/components/base/ui` contains vendored code (shadcn/ui) that has only 
 
 ### Install steps
 
-The app was developed using npm `10.2.3` and node.js `v21.2.0`.
+The app is run with bun, specifically `1.1.31`.
 Package dependencies are defined in `package.json`.
 They can be installed the usual way, by running this command in the frontend root (`Sources/frontend`):
 
 ```bash
-npm install
+bun install
 ```
 
 ### Define environment variables
@@ -53,7 +52,7 @@ Also, you can use the `.env` file. See `.env.example` for inspiration.
 You can start the server using this command:
 
 ```bash
-npm run dev
+bun run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the app.
@@ -62,11 +61,17 @@ Other commands, like lint and typecheck are defined in `package.json`.
 Notes:
 - Changing the environment variables requires a server restart.
 
+### Run tests
+
+```bash
+bun test
+```
+
 ### Inspect bundle size
 
 Inspired by [this article](https://blog.logrocket.com/how-analyze-next-js-app-bundles).
 
-`ANALYZE=true npm run build` creates `client.html`, `nodejs.html`, and `edge.html`.
+`ANALYZE=true bun run build` creates `client.html`, `nodejs.html`, and `edge.html`.
 
 ### The most important libraries used
 
@@ -76,8 +81,4 @@ Inspired by [this article](https://blog.logrocket.com/how-analyze-next-js-app-bu
 - [lucide-react](https://lucide.dev/guide/packages/lucide-react) - Icons
 - [react-hotkeys-hook](https://www.npmjs.com/package/react-hotkeys-hook) - Keyboard shortcuts
 - [shadcn/ui](https://ui.shadcn.com/) - UI components
-
-## Nix
-
-To update the flakes, run `node2nix -l`.
 

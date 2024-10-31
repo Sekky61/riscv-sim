@@ -35,21 +35,19 @@ Refer to Readmes in the respective directories, Dockerfiles and the Nix flake fo
 
 ### Build and Run Frontend Web App
 
-> Requirements: npm, node.js
+> Requirements: bun
 
-The app was developed using npm `10.2.3` and node.js `v21.2.0`.
-You need to have these installed to build the frontend app (later versions should work as well).
-
+The app was developed using bun `1.1.31`. Any version should work to build the frontend app.
 To build the production version of the app, start by navigating to `Sources/frontend` and installing dependencies:
 
 ```bash
-npm install
+bun install
 ```
 
 To build the app, run:
 
 ```bash
-npm run build
+bun run build
 ```
 
 Unfortunately, some of the files need to be manually copied over:
@@ -59,7 +57,7 @@ cp -r .next/static/ .next/standalone/.next/static
 
 Now that the app is built, you can run it using:
 ```bash
-node .next/standalone/server.js
+bun .next/standalone/server.js
 ```
 Navigate to `http://localhost:3000` to see the app (or the address shown in the console).
 
