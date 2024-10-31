@@ -102,7 +102,7 @@
         # Development environment
         devShell = pkgs.mkShell {
           buildInputs = with pkgs; [
-            nodejs_20
+            bun
             nodePackages.npm
             cross.buildPackages.gcc12
             startSim
