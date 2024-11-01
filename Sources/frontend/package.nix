@@ -43,7 +43,7 @@ let
       runHook postInstall
     '';
 
-    outputHash = if stdenv.isLinux then "sha256-wzHge7710KN3DgUUUsIUSMv3c4NwdagQZ2URFiXoENo=" else "";
+    outputHash = "sha256-z8JihwTKqr4rDPUgXbJzr2tDxxFbGDqNOUFVdiAhfrY=";
     outputHashAlgo = "sha256";
     outputHashMode = "recursive";
   };
@@ -74,6 +74,7 @@ stdenv.mkDerivation {
   buildPhase = ''
     runHook preBuild
 
+    bun run typecheck
     bun run build
 
     runHook postBuild
