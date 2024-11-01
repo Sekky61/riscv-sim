@@ -28,6 +28,8 @@ jobs:
       - name: Extract release version
         run: echo "RELEASE_VERSION=${{ github.event.release.tag_name }}" >> $GITHUB_ENV
 
+      # FRONTEND
+
       - name: Build frontend Docker image
         run: |
           nix build .#frontend-docker
@@ -49,6 +51,31 @@ jobs:
       - name: Push Docker image
         run: docker push ${{ secrets.DOCKER_USERNAME }}/riscv-sim-frontend:latest
 
+      # BACKEND
+      
+      - name: Build backend Docker image
+        run: |
+          nix build .#backend-docker
+
+      - name: Load Docker image
+        run: docker load < result
+
+      - name: Tag Docker image n.1
+        run: |
+          docker image tag riscv-sim-backend ${{ secrets.DOCKER_USERNAME }}/riscv-sim-backend:$RELEASE_VERSION
+
+      - name: Tag Docker image n.2
+        run: |
+          docker image tag riscv-sim-backend ${{ secrets.DOCKER_USERNAME }}/riscv-sim-backend:latest
+
+      - name: Push Docker image
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/riscv-sim-backend:$RELEASE_VERSION
+
+      - name: Push Docker image
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/riscv-sim-backend:latest
+
+      # GATEWAY
+
       - name: Build gateway Docker image
         working-directory: ./Sources/proxy
         run: |
@@ -68,12 +95,4 @@ jobs:
       - name: Push Gateway Docker image
         run: docker push ${{ secrets.DOCKER_USERNAME }}/riscv-sim-gateway:latest
 
-  generate_release_notes:
-    needs: release
-    runs-on: ubuntu-latest
 
-    steps:
-      - name: Generate release notes
-        uses: release-drafter/release-drafter@v5
-        with:
-          config-name: 'release-drafter.yml'
