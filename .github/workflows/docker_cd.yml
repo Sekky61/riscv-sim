@@ -49,6 +49,25 @@ jobs:
       - name: Push Docker image
         run: docker push ${{ secrets.DOCKER_USERNAME }}/riscv-sim-frontend:latest
 
+      - name: Build gateway Docker image
+        working-directory: ./Sources/proxy
+        run: |
+          docker build . -t riscv-sim-gateway
+
+      - name: Tag Gateway Docker image n.1
+        run: |
+          docker image tag riscv-sim-gateway ${{ secrets.DOCKER_USERNAME }}/riscv-sim-gateway:$RELEASE_VERSION
+
+      - name: Tag Gateway Docker image n.2
+        run: |
+          docker image tag riscv-sim-gateway ${{ secrets.DOCKER_USERNAME }}/riscv-sim-gateway:latest
+
+      - name: Push Gateway Docker image
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/riscv-sim-gateway:$RELEASE_VERSION
+
+      - name: Push Gateway Docker image
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/riscv-sim-gateway:latest
+
   generate_release_notes:
     needs: release
     runs-on: ubuntu-latest
