@@ -103,10 +103,7 @@
         devShell = pkgs.mkShell {
           buildInputs = with pkgs; [
             bun
-            nodePackages.npm
             cross.buildPackages.gcc12
-            startSim
-            startFront
             jre
           ];
         };

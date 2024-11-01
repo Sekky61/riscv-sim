@@ -1,2 +1,2 @@
 [test]
-preload = ["src/test/happydom.ts", "src/test/testing-library.ts"]
+preload = ["test/happydom.ts", "test/testing-library.ts"]
