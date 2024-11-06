@@ -52,11 +52,11 @@ export default function Page() {
 
 function Acknowledgments() {
   return (
-    <section className="mt-10">
+    <section className='mt-10'>
       <h2>Acknowledgments</h2>
       <p>
         This application is the result of the effort of
-        <ul className="m-1">
+        <ul className='m-1'>
           <li>Jakub Horky</li>
           <li>Jiri Jaros</li>
           <li>Michal Majer</li>
@@ -64,7 +64,7 @@ function Acknowledgments() {
         </ul>
         A huge thank you to everyone who contributed along the way.
       </p>
-      <Image src={FitLogo} alt="BUT FIT" className="min-w-64 w-80 mt-4" />
+      <Image src={FitLogo} alt='BUT FIT' className='min-w-64 w-80 mt-4' />
     </section>
   );
 }

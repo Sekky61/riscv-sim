@@ -67,17 +67,19 @@ export function WelcomeMessage() {
           </h1>
 
           <p className='mt-2'>
-            Get hands-on with superscalar processing. Step through each execution phase to understand processor behavior in detail.
+            Get hands-on with superscalar processing. Step through each
+            execution phase to understand processor behavior in detail.
           </p>
           <p className='mt-2'>
             Start by loading an example program in the{' '}
             <Link href='/compiler' className='link'>
               code editor
-            </Link>.
-            For a full overview of features, visit the{' '}
+            </Link>
+            . For a full overview of features, visit the{' '}
             <Link href='/help' className='link'>
               help section
-            </Link>.
+            </Link>
+            .
           </p>
         </div>
         <div className='flex gap-4 items-center justify-center mb-6'>
