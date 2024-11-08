@@ -12,12 +12,12 @@ The project consists of two components: web app and Java simulator server. More 
 ## Repository Structure
 
     .
-    +--Data       - Example data, measured results, etc.
-    +--Literature - Publications, references, manuals, etc.
-    +--Sources    - Root folder for the sources.
-    +--Thesis     - Latex sources of the thesis.
-    +--Misc       - Other auxiliary materials.
-    Readme.md     - Read me file
+    +--Literature    - Publications, references, manuals, etc.
+    +--Sources       - Root folder for the sources.
+    +--Thesis        - Latex sources of the thesis.
+    flake.(nix|lock) - Nix flake
+    LICENSE          - The projects license
+    Readme.md        - Read me file
 
 ## Installation
 

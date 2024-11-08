@@ -43,7 +43,7 @@ import type {
   SimulateResponse,
 } from '@/lib/types/simulatorApi';
 
-import { apiBaseUrl } from '@/constant/env';
+import env from '@/constant/env';
 
 /**
  * Call the /compile endpoint
@@ -96,29 +96,32 @@ export class ServerErrorException extends Error {
 }
 
 /**
+ * Get the API hostname, which might be different on client and server
+ * TODO: The internal prefix leaks to client, but might not be an issue.
+ */
+function getApiPrefix(): string {
+  // In browser, the absolute path works (origin is defined), but on server (node.js) it needs a full URL.
+  // The only way to know the url at build time is to use an environment variable.
+  if (typeof window === 'undefined') {
+    return env.simApiInternalPrefix;
+  }
+  return env.simApiExternalPrefix;
+  }
+
+/**
  * Call the simulator server API. Parse the response as JSON.
  * Throws an error if the response is not ok, it should be caught by the caller.
  *
- * Next.js proxies the backend simulator. Set the NEXT_PUBLIC_SIMSERVER_PORT and NEXT_PUBLIC_SIMSERVER_HOST env variables (see .env.example, Dockerfile).
- * The default is the same host as the app is running on, but on port 8000.
+ * See Readmes for how to define the API path
  */
 const callApi: AsyncEndpointFunction = async <T extends EndpointName>(
   endpoint: T,
   request: EndpointMap[T]['request'],
 ) => {
-  let apiUrl = '/api/sim/';
-  const isServer = typeof window === 'undefined';
-  if (isServer) {
-    // Running on server, use the actual server, not the Next.js proxy.
-    apiUrl = `${apiBaseUrl}/`;
-  }
-
-  const url = `${apiUrl}${endpoint}`;
+  const url = `${getApiPrefix()}/${endpoint}`;
 
   console.info(`Calling API endpoint ${url}`);
 
-  // In browser, the absolute path works (origin is defined), but on server (node.js) it needs a full URL.
-  // The only way to know the url at build time is to use an environment variable.
   const response = await fetch(url, {
     method: 'POST',
     headers: {

@@ -10,7 +10,11 @@ services:
         DOCKER_BUILDKIT: 1
     environment:
       - NODE_ENV=production
-      - NEXT_PUBLIC_SIMSERVER_HOST=simserver # The name of the service in the docker-compose file
+      # The name of the service in the docker-compose file.
+      - NEXT_PUBLIC_INTERNAL_SIM_API_PREFIX=simserver:8000
+      # External prefix is *relative absolute path* by default, but can be reconfigured like this.
+      - NEXT_PUBLIC_EXTERNAL_SIM_API_PREFIX=/api/sim
+      # - NEXT_PUBLIC_BASE_PATH=/riscvsimapp
     ports:
       - 3100:3000
     logging:

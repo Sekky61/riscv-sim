@@ -44,31 +44,30 @@ const isLocal = process.env.NODE_ENV === 'development';
 
 /**
  * True if the logger should be shown.
+ * TODO: use and document, along with improvements to logging
  */
 const showLogger = isLocal
   ? true
-  : process.env.NEXT_PUBLIC_SHOW_LOGGER === 'true' ?? false;
+  : (process.env.NEXT_PUBLIC_SHOW_LOGGER === 'true' ?? false);
 
 /**
- * The host of the API server. Is always defined,
+ * The simulator API server address used by the client. For example `riscvsim.com`, `http://localhost:1234`, or just `/api/prefix`.
+ * Is always defined - by default, it is empty, so that api calls go to the same host (`GET /api/something` - relative absolute path).
  */
-const apiServerHost = process.env.NEXT_PUBLIC_SIMSERVER_HOST ?? 'localhost';
+const simApiExternalPrefix =
+  process.env.NEXT_PUBLIC_EXTERNAL_SIM_API_PREFIX ?? 'http://localhost:8000';
 
 /**
- * The port of the actual Java API server.
- * Is always defined.
+ * The simulator API server address used by the server. It may differ form the external based on deployment of the app.
  */
-const apiServerPort = process.env.NEXT_PUBLIC_SIMSERVER_PORT ?? 8000;
-
-/**
- * This is the base URL of the API server. It should not be used directly, this is only for debugging and logging.
- */
-const apiBaseUrl = `http://${apiServerHost}:${apiServerPort}`;
+const simApiInternalPrefix =
+  process.env.NEXT_PUBLIC_INTERNAL_SIM_API_PREFIX ??
+  process.env.NEXT_PUBLIC_EXTERNAL_SIM_API_PREFIX ??
+  'localhost:8000';
 
 module.exports = {
-  apiBaseUrl,
-  apiServerHost,
-  apiServerPort,
+  simApiExternalPrefix,
+  simApiInternalPrefix,
   isLocal,
   isProd,
   showLogger,

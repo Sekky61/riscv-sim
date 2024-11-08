@@ -16,9 +16,18 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# The default values are the same host as the client, port 8000! Not 8120, that is client facing
-ENV NEXT_PUBLIC_SIMSERVER_PORT=8000
-ENV NEXT_PUBLIC_SIMSERVER_HOST=simserver
+# The available args and default values are defined here
+
+ARG INTERNAL_SIM_API_PREFIX=simserver:8000
+ENV NEXT_PUBLIC_INTERNAL_SIM_API_PREFIX=$INTERNAL_SIM_API_PREFIX
+
+ARG EXTERNAL_SIM_API_PREFIX="http://localhost:8000"
+ENV NEXT_PUBLIC_EXTERNAL_SIM_API_PREFIX=$EXTERNAL_SIM_API_PREFIX
+
+ARG BASE_PATH=""
+ENV NEXT_PUBLIC_BASE_PATH=$BASE_PATH
+
+# End of args
 
 RUN bun run build
 
