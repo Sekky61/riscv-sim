@@ -8,7 +8,7 @@ services:
       target: runner
       args:
         DOCKER_BUILDKIT: 1
-        BASE_PATH: '' # This param only works at build-time
+        BASE_PATH: '${BASE_PATH}' # This param only works at build-time
     environment:
       - NODE_ENV=production
       - INTERNAL_SIM_API_PREFIX=${INTERNAL_SIM_API_PREFIX:-simserver:8000}

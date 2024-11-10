@@ -2,13 +2,14 @@
 # m4_ignore(
 echo "This is just a script template, not the script (yet) - pass it to 'argbash' to fix this." >&2
 exit 11  #)Created by argbash-init v2.10.0
+# ARG_OPTIONAL_SINGLE([base-path],[],[Path prefix of the app],[""])
 # ARG_OPTIONAL_SINGLE([internal-api],[],[Internal API prefix],[simserver:8000])
 # ARG_OPTIONAL_SINGLE([external-api],[],[External API prefix],[/api/sim])
 # ARG_OPTIONAL_SINGLE([http-port],[],[HTTP port],[3120])
 # ARG_OPTIONAL_SINGLE([https-port],[],[HTTPS port],[3121])
 # ARG_OPTIONAL_SINGLE([ssl-conf],[],[Path to SSL configuration],[])
 # ARG_OPTIONAL_SINGLE([certs-path],[],[Path to SSL certificates],[])
-# ARG_OPTIONAL_SINGLE([build-strategy],[],[Build strategy (pull/build)],[pull])
+# ARG_OPTIONAL_SINGLE([build-strategy],[],[Build strategy (pull/build)],[build])
 # ARG_OPTIONAL_SINGLE([compose-command],[],[Docker compose command (docker compose/docker-compose)],[docker compose])
 # ARG_POSITIONAL_SINGLE([command],[Command to execute (up/down/status/logs)],[])
 # ARG_HELP([Management script for RISC-V Simulator Docker environment])
@@ -76,6 +77,7 @@ check_requirements() {
 
 # Export environment variables for docker-compose
 export_variables() {
+    export BASE_PATH="$_arg_base_path"
     export INTERNAL_SIM_API_PREFIX="$_arg_internal_api"
     export EXTERNAL_SIM_API_PREFIX="$_arg_external_api"
     export HTTP_PORT="$_arg_http_port"

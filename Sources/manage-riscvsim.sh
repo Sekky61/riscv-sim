@@ -1,12 +1,13 @@
 #!/bin/bash
 # Created by argbash-init v2.10.0
+# ARG_OPTIONAL_SINGLE([base-path],[],[Path prefix of the app],[""])
 # ARG_OPTIONAL_SINGLE([internal-api],[],[Internal API prefix],[simserver:8000])
 # ARG_OPTIONAL_SINGLE([external-api],[],[External API prefix],[/api/sim])
 # ARG_OPTIONAL_SINGLE([http-port],[],[HTTP port],[3120])
 # ARG_OPTIONAL_SINGLE([https-port],[],[HTTPS port],[3121])
 # ARG_OPTIONAL_SINGLE([ssl-conf],[],[Path to SSL configuration],[])
 # ARG_OPTIONAL_SINGLE([certs-path],[],[Path to SSL certificates],[])
-# ARG_OPTIONAL_SINGLE([build-strategy],[],[Build strategy (pull/build)],[pull])
+# ARG_OPTIONAL_SINGLE([build-strategy],[],[Build strategy (pull/build)],[build])
 # ARG_OPTIONAL_SINGLE([compose-command],[],[Docker compose command (docker compose/docker-compose)],[docker compose])
 # ARG_POSITIONAL_SINGLE([command],[Command to execute (up/down/status/logs)],[])
 # ARG_HELP([Management script for RISC-V Simulator Docker environment])
@@ -37,28 +38,30 @@ begins_with_short_option()
 # THE DEFAULTS INITIALIZATION - POSITIONALS
 _positionals=()
 # THE DEFAULTS INITIALIZATION - OPTIONALS
+_arg_base_path=""
 _arg_internal_api="simserver:8000"
 _arg_external_api="/api/sim"
 _arg_http_port="3120"
 _arg_https_port="3121"
 _arg_ssl_conf=
 _arg_certs_path=
-_arg_build_strategy="pull"
+_arg_build_strategy="build"
 _arg_compose_command="docker compose"
 
 
 print_help()
 {
 	printf '%s\n' "Management script for RISC-V Simulator Docker environment"
-	printf 'Usage: %s [--internal-api <arg>] [--external-api <arg>] [--http-port <arg>] [--https-port <arg>] [--ssl-conf <arg>] [--certs-path <arg>] [--build-strategy <arg>] [--compose-command <arg>] [-h|--help] [-v|--version] <command>\n' "$0"
+	printf 'Usage: %s [--base-path <arg>] [--internal-api <arg>] [--external-api <arg>] [--http-port <arg>] [--https-port <arg>] [--ssl-conf <arg>] [--certs-path <arg>] [--build-strategy <arg>] [--compose-command <arg>] [-h|--help] [-v|--version] <command>\n' "$0"
 	printf '\t%s\n' "<command>: Command to execute (up/down/status/logs)"
+	printf '\t%s\n' "--base-path: Path prefix of the app (default: '""')"
 	printf '\t%s\n' "--internal-api: Internal API prefix (default: 'simserver:8000')"
 	printf '\t%s\n' "--external-api: External API prefix (default: '/api/sim')"
 	printf '\t%s\n' "--http-port: HTTP port (default: '3120')"
 	printf '\t%s\n' "--https-port: HTTPS port (default: '3121')"
 	printf '\t%s\n' "--ssl-conf: Path to SSL configuration (no default)"
 	printf '\t%s\n' "--certs-path: Path to SSL certificates (no default)"
-	printf '\t%s\n' "--build-strategy: Build strategy (pull/build) (default: 'pull')"
+	printf '\t%s\n' "--build-strategy: Build strategy (pull/build) (default: 'build')"
 	printf '\t%s\n' "--compose-command: Docker compose command (docker compose/docker-compose) (default: 'docker compose')"
 	printf '\t%s\n' "-h, --help: Prints help"
 	printf '\t%s\n' "-v, --version: Prints version"
@@ -72,6 +75,14 @@ parse_commandline()
 	do
 		_key="$1"
 		case "$_key" in
+			--base-path)
+				test $# -lt 2 && die "Missing value for the optional argument '$_key'." 1
+				_arg_base_path="$2"
+				shift
+				;;
+			--base-path=*)
+				_arg_base_path="${_key##--base-path=}"
+				;;
 			--internal-api)
 				test $# -lt 2 && die "Missing value for the optional argument '$_key'." 1
 				_arg_internal_api="$2"
@@ -254,6 +265,7 @@ check_requirements() {
 
 # Export environment variables for docker-compose
 export_variables() {
+    export BASE_PATH="$_arg_base_path"
     export INTERNAL_SIM_API_PREFIX="$_arg_internal_api"
     export EXTERNAL_SIM_API_PREFIX="$_arg_external_api"
     export HTTP_PORT="$_arg_http_port"
