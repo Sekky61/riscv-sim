@@ -1,19 +1,15 @@
-# Nginx proxy
+# Traefik proxy
 
-This directory contains the Nginx proxy configuration for the project.
-It is not a necessary part of the project and the app works without it (ignore the failing container) and use the ports exposed by the servers directly.
+This directory contains part of the proxy configuration for the project.
+It is not a necessary part of the project - you can use the ports exposed by the servers directly.
 
 **Directory Contents:**
 
-* `nginx.conf`: The main Nginx configuration file.
-* `certs/`: A directory containing SSL/TLS certificates for secure connections.
+* `traefik.yaml`: The configuration file.
 
 **Creating the Certs Directory:**
 
-To use this configuration, you will need to create a `certs` directory within
-this directory. It should contain your SSL/TLS certificates.
-
-The proxy expects a `certs/privkey.pem` and `certs/fullchain.pem` files.
+To use the proxy, you will need to create a `certs` directory within the `Sources/` directory. It should contain your SSL/TLS certificates called `certs/privkey.pem` and `certs/fullchain.pem` files.
 Below is an example for creating such self-signed files.
 
 ```bash
@@ -23,21 +19,5 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
  -subj "/C=US/ST=State/L=City/O=Organization/CN=localhost"
 ```
 
-**Running the Nginx Proxy:**
-
-To run the Nginx proxy as a Docker container, navigate to the parent directory
-and run the containers.
-This is more precisely described in the main Readme.
-
-```bash
-docker compose up
-```
-
-or
-
-```bash
-cd Sources
-./build_container.sh
-./run_container.sh
-```
+This command is also available in `Sources/certs/create.sh`.
 

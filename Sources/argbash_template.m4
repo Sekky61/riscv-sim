@@ -7,7 +7,6 @@ exit 11  #)Created by argbash-init v2.10.0
 # ARG_OPTIONAL_SINGLE([external-api],[],[External API prefix],[/api/sim])
 # ARG_OPTIONAL_SINGLE([http-port],[],[HTTP port],[3120])
 # ARG_OPTIONAL_SINGLE([https-port],[],[HTTPS port],[3121])
-# ARG_OPTIONAL_SINGLE([ssl-conf],[],[Path to SSL configuration],[])
 # ARG_OPTIONAL_SINGLE([certs-path],[],[Path to SSL certificates],[])
 # ARG_OPTIONAL_SINGLE([build-strategy],[],[Build strategy (pull/build)],[build])
 # ARG_OPTIONAL_SINGLE([compose-command],[],[Docker compose command (docker compose/docker-compose)],[docker compose])
@@ -66,9 +65,6 @@ check_requirements() {
     fi
 
     if [ "$_arg_command" = "up" ]; then
-        if [ ! -f "$_arg_ssl_conf" ]; then
-            warning "SSL configuration file not found at $_arg_ssl_conf"
-        fi
         if [ ! -d "$_arg_certs_path" ]; then
             warning "Certificates directory not found at $_arg_certs_path"
         fi

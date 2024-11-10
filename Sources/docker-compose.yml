@@ -16,9 +16,14 @@ services:
     ports:
       - 3100:3000
     labels:
-      - "traefik.http.routers.web.entrypoints=web,websecure"
-      - "traefik.http.routers.web.priority=49"
-      - "traefik.http.routers.web.rule=PathPrefix(`/`)"
+      - "traefik.http.routers.web-http.entrypoints=web"
+      - "traefik.http.routers.web-http.priority=49"
+      - "traefik.http.routers.web-http.rule=PathPrefix(`/`)"
+      # HTTPS
+      - "traefik.http.routers.web-https.entrypoints=websecure"
+      - "traefik.http.routers.web-https.priority=59"
+      - "traefik.http.routers.web-https.rule=Host(`localhost`) && PathPrefix(`/`)"
+      - "traefik.http.routers.web-https.tls=true"
     logging:
       driver: "local"
       options:
@@ -32,18 +37,15 @@ services:
   reverse-proxy:
     image: traefik:v3.2
     command:
-      - "--api.insecure=true"
-      - "--providers.docker"
-      - "--entryPoints.web.address=:${HTTP_PORT:-3120}"
-      - "--entryPoints.websecure.address=:${HTTPS_PORT:-3121}"
       - "--log.level=DEBUG" # DEBUG, PANIC, FATAL, ERROR, WARN, INFO
     ports:
       - "${HTTP_PORT:-3120}:${HTTP_PORT:-3120}"
       - "${HTTPS_PORT:-3121}:${HTTPS_PORT:-3121}"
       - "8080:8080" # dashboard
     volumes:
-      # So that Traefik can listen to the Docker events
+      - ./proxy/traefik.yaml:/etc/traefik/traefik.yaml
       - /var/run/docker.sock:/var/run/docker.sock
+      - "./certs/:/certs/"
 
   simserver:
     image: majeris/riscv-sim-backend:latest
@@ -54,11 +56,17 @@ services:
       - 8120:8000
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.simserver.entrypoints=web,websecure"
-      - "traefik.http.routers.simserver.priority=50"
-      - "traefik.http.routers.simserver.rule=PathPrefix(`${EXTERNAL_SIM_API_PREFIX:-/api/sim}`)"
-      - "traefik.http.routers.simserver.middlewares=api-stripprefix"
-      - "traefik.http.middlewares.api-stripprefix.stripprefix.prefixes=${EXTERNAL_SIM_API_PREFIX:-/api/sim,/}"
+      - "traefik.http.middlewares.api-stripprefix.stripprefix.prefixes=${EXTERNAL_SIM_API_PREFIX:-/api/sim}"
+      - "traefik.http.routers.simserver-http.entrypoints=web"
+      - "traefik.http.routers.simserver-http.priority=50"
+      - "traefik.http.routers.simserver-http.rule=PathPrefix(`${EXTERNAL_SIM_API_PREFIX:-/api/sim}`)"
+      - "traefik.http.routers.simserver-http.middlewares=api-stripprefix"
+      # HTTPS
+      - "traefik.http.routers.simserver-https.entrypoints=websecure"
+      - "traefik.http.routers.simserver-https.priority=60"
+      - "traefik.http.routers.simserver-https.rule=Host(`localhost`) && PathPrefix(`${EXTERNAL_SIM_API_PREFIX:-/api/sim}`)"
+      - "traefik.http.routers.simserver-https.middlewares=api-stripprefix"
+      - "traefik.http.routers.simserver-https.tls=true"
     logging:
       driver: "local"
       options:
