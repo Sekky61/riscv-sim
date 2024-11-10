@@ -1,4 +1,3 @@
-import { apiBaseUrl } from './src/constant/env.js';
 import analyzer from '@next/bundle-analyzer';
 
 // @ts-check
@@ -14,6 +13,7 @@ const nextConfig = withBundleAnalyzer({
   reactStrictMode: true,
   swcMinify: true,
   output: 'standalone',
+  basePath: process.env.BASE_PATH || '',
 
   // Uncoment to add domain whitelist
   // images: {

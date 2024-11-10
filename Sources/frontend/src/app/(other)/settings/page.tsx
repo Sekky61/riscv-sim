@@ -30,9 +30,9 @@
  */
 
 import Image from 'next/image';
+import FitLogo from '@public/FIT_color_EN.png';
 import { DevTools } from './DevTools';
 import { SettingsForm } from './SettingsForm';
-import FitLogo from '../../../../public/FIT_color_EN.png';
 
 export const metadata = {
   title: 'Settings',
@@ -54,16 +54,14 @@ function Acknowledgments() {
   return (
     <section className='mt-10'>
       <h2>Acknowledgments</h2>
-      <p>
-        This application is the result of the effort of
-        <ul className='m-1'>
-          <li>Jakub Horky</li>
-          <li>Jiri Jaros</li>
-          <li>Michal Majer</li>
-          <li>Jan Vavra</li>
-        </ul>
-        A huge thank you to everyone who contributed along the way.
-      </p>
+      <p>This application is the result of the effort of</p>
+      <ul className='m-1'>
+        <li>Jakub Horky</li>
+        <li>Jiri Jaros</li>
+        <li>Michal Majer</li>
+        <li>Jan Vavra</li>
+      </ul>
+      <p>A huge thank you to everyone who contributed along the way.</p>
       <Image src={FitLogo} alt='BUT FIT' className='min-w-64 w-80 mt-4' />
     </section>
   );

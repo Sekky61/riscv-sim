@@ -36,9 +36,9 @@ import { Button } from '@/components/base/ui/button';
 import { Dialog, DialogContent } from '@/components/base/ui/dialog';
 import { useTour } from '@reactour/tour';
 import { useLocalStorage } from '@uidotdev/usehooks';
-import Link from 'next/link';
 import Image from 'next/image';
-import FitLogo from '../../../public/FIT_color_EN.png';
+import Link from 'next/link';
+import FitLogo from '@public/FIT_color_EN.png';
 
 /**
  * The welcome message dialog.
