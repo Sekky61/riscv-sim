@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.gradle.superscalarsim</groupId>
+  <artifactId>superscalar-simulator</artifactId>
+  <version nix="true">1.1.0</version>
   <!-- This module was also published with a richer model, Gradle metadata,  -->
   <!-- which should be used instead. Do not delete the following line which  -->
   <!-- is to indicate to Gradle or any Gradle module metadata file consumer  -->
@@ -49,16 +53,12 @@
     </plugins>
   </build>
 
-<properties>
-    <maven.compiler.source>17</maven.compiler.source>
-    <maven.compiler.target>17</maven.compiler.target>
-    <java.version>17</java.version>
-</properties>
+  <properties>
+      <maven.compiler.source>17</maven.compiler.source>
+      <maven.compiler.target>17</maven.compiler.target>
+      <java.version>17</java.version>
+  </properties>
 
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>com.gradle.superscalarsim</groupId>
-  <artifactId>superscalar-simulator</artifactId>
-  <version>1.0</version>
   <dependencies>
     <dependency>
       <groupId>org.jetbrains</groupId>

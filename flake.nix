@@ -9,12 +9,6 @@
       let
         pkgs = nixpkgs.legacyPackages.${system};
 
-        cross = import nixpkgs.outPath {
-          crossSystem = { config = "riscv64-unknown-linux-gnu"; };
-          inherit system;
-        };
-        riscvGcc = "${cross.buildPackages.gcc12}/bin/riscv64-unknown-linux-gnu-gcc";
-
         # Wrapper script to run the Next.js server
         startFront = pkgs.writeShellScriptBin "start-frontend" ''
           #!/bin/sh
@@ -27,12 +21,22 @@
         startSim = pkgs.writeShellScriptBin "start-simulator" ''
           #!/bin/sh
           cd ${self.packages.${system}.backend}/bin
-          exec ./backend server --gcc-path ${riscvGcc}
+          exec ./backend
         '';
+
+        riscv-toolchain =
+          import nixpkgs {
+            localSystem = "${system}";
+            crossSystem = {
+              config = "riscv64-none-elf";
+              libc = "newlib-nano";
+              abi = "ilp32";
+            };
+          };
       in
       {
         formatter = pkgs.nixpkgs-fmt;
-        
+
         packages = {
 
           frontend = pkgs.callPackage ./Sources/frontend/package.nix {
@@ -40,7 +44,9 @@
             # base-path = "/riscvapp";
           };
 
-          backend = pkgs.callPackage ./Sources/simulator/package.nix { };
+          backend = pkgs.callPackage ./Sources/simulator/package.nix {
+            riscv-gcc = riscv-toolchain.buildPackages.gcc;
+          };
 
           # Publish: ```
           # docker tag <image> majeris/<image>:latest
@@ -49,13 +55,13 @@
           # docker push majeris/<image>:<version>
           frontend-docker = pkgs.dockerTools.buildLayeredImage {
             name = "riscv-sim-frontend";
-            tag = "latest";
+            tag = "v${self.packages.${system}.frontend.version}";
             config.Cmd = "${startFront}/bin/start-frontend";
           };
 
           backend-docker = pkgs.dockerTools.buildLayeredImage {
             name = "riscv-sim-backend";
-            tag = "latest";
+            tag = "v${self.packages.${system}.backend.version}";
             config.Cmd = "${startSim}/bin/start-simulator";
           };
         };

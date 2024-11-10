@@ -1,10 +1,9 @@
-{
-  lib,
-  nix-gitignore,
-  stdenv,
-  bun,
-  nodejs-slim_latest,
-  base-path ? ""
+{ lib
+, nix-gitignore
+, stdenv
+, bun
+, nodejs-slim_latest
+, base-path ? ""
 }:
 let
   # These properties are overridable, like this:
@@ -20,7 +19,7 @@ let
   pname = packageJson.name;
   version = packageJson.version;
 
-  gitignoreSource = nix-gitignore.gitignoreSource [];
+  gitignoreSource = nix-gitignore.gitignoreSource [ ];
   src = gitignoreSource ./.;
   packageJson = lib.importJSON "${src}/package.json";
 
