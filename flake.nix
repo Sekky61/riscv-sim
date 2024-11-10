@@ -3,21 +3,11 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
-    gitignore = {
-      url = "github:hercules-ci/gitignore.nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
   };
-  outputs = { self, nixpkgs, flake-utils, gitignore }:
+  outputs = { self, nixpkgs, flake-utils }:
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
-
-        cross = import nixpkgs.outPath {
-          crossSystem = { config = "riscv64-unknown-linux-gnu"; };
-          inherit system;
-        };
-        riscvGcc = "${cross.buildPackages.gcc12}/bin/riscv64-unknown-linux-gnu-gcc";
 
         # Wrapper script to run the Next.js server
         startFront = pkgs.writeShellScriptBin "start-frontend" ''
@@ -31,43 +21,32 @@
         startSim = pkgs.writeShellScriptBin "start-simulator" ''
           #!/bin/sh
           cd ${self.packages.${system}.backend}/bin
-          exec ./backend server --gcc-path ${riscvGcc}
+          exec ./backend
         '';
+
+        riscv-toolchain =
+          import nixpkgs {
+            localSystem = "${system}";
+            crossSystem = {
+              config = "riscv64-none-elf";
+              libc = "newlib-nano";
+              abi = "ilp32";
+            };
+          };
       in
       {
         formatter = pkgs.nixpkgs-fmt;
-        
+
         packages = {
 
-          frontend = pkgs.callPackage ./Sources/frontend/package.nix { gitignoreSource = gitignore.lib.gitignoreSource; };
-          
-          frontend-old = pkgs.buildNpmPackage {
-            name = "riscv-sim-frontend";
-            version = "1.0.0";
-            src = ./Sources/frontend;
-            nodejs = pkgs.bun // { python = pkgs.python3; };
-            npmDepsHash = "sha256-LUqXgp/60j69u7ZqEm2OrYq39ovntZO/cUm1g83zcjc=";
-            nativeBuildInputs = [ pkgs.bun ];
-
-            buildPhase = ''
-              bun install
-            '';
-
-            installPhase = ''
-              mkdir -p $out/standalone/.next/
-              cp -r .next/standalone $out/
-              cp -r .next/static $out/standalone/.next/
-            '';
-
-            meta = with pkgs.lib; {
-              description = "RISC-V Simulator Frontend";
-              homepage = "https://github.com/Sekky61/riscv-sim";
-              license = licenses.gpl3;
-              mainProgram = "riscv-sim-frontend";
-            };
+          frontend = pkgs.callPackage ./Sources/frontend/package.nix {
+            # Override params here
+            # base-path = "/riscvapp";
           };
 
-          backend = pkgs.callPackage ./Sources/simulator/package.nix { };
+          backend = pkgs.callPackage ./Sources/simulator/package.nix {
+            riscv-gcc = riscv-toolchain.buildPackages.gcc;
+          };
 
           # Publish: ```
           # docker tag <image> majeris/<image>:latest
@@ -76,13 +55,13 @@
           # docker push majeris/<image>:<version>
           frontend-docker = pkgs.dockerTools.buildLayeredImage {
             name = "riscv-sim-frontend";
-            tag = "latest";
+            tag = "v${self.packages.${system}.frontend.version}";
             config.Cmd = "${startFront}/bin/start-frontend";
           };
 
           backend-docker = pkgs.dockerTools.buildLayeredImage {
             name = "riscv-sim-backend";
-            tag = "latest";
+            tag = "v${self.packages.${system}.backend.version}";
             config.Cmd = "${startSim}/bin/start-simulator";
           };
         };
