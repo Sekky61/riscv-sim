@@ -22,7 +22,7 @@ services:
       # HTTPS
       - "traefik.http.routers.web-https.entrypoints=websecure"
       - "traefik.http.routers.web-https.priority=59"
-      - "traefik.http.routers.web-https.rule=Host(`localhost`) && PathPrefix(`/`)"
+      - "traefik.http.routers.web-https.rule=Host(`${DOMAIN:-localhost}`) && PathPrefix(`/`)"
       - "traefik.http.routers.web-https.tls=true"
     logging:
       driver: "local"
@@ -45,7 +45,7 @@ services:
     volumes:
       - ./proxy/traefik.yaml:/etc/traefik/traefik.yaml
       - /var/run/docker.sock:/var/run/docker.sock
-      - "./certs/:/certs/"
+      - "${CERTS_PATH:-./certs/}:/certs/"
 
   simserver:
     image: majeris/riscv-sim-backend:latest
@@ -64,7 +64,7 @@ services:
       # HTTPS
       - "traefik.http.routers.simserver-https.entrypoints=websecure"
       - "traefik.http.routers.simserver-https.priority=60"
-      - "traefik.http.routers.simserver-https.rule=Host(`localhost`) && PathPrefix(`${EXTERNAL_SIM_API_PREFIX:-/api/sim}`)"
+      - "traefik.http.routers.simserver-https.rule=Host(`${DOMAIN:-localhost}`) && PathPrefix(`${EXTERNAL_SIM_API_PREFIX:-/api/sim}`)"
       - "traefik.http.routers.simserver-https.middlewares=api-stripprefix"
       - "traefik.http.routers.simserver-https.tls=true"
     logging:

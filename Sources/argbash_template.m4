@@ -7,12 +7,13 @@ exit 11  #)Created by argbash-init v2.10.0
 # ARG_OPTIONAL_SINGLE([external-api],[],[External API prefix],[/api/sim])
 # ARG_OPTIONAL_SINGLE([http-port],[],[HTTP port],[3120])
 # ARG_OPTIONAL_SINGLE([https-port],[],[HTTPS port],[3121])
-# ARG_OPTIONAL_SINGLE([certs-path],[],[Path to SSL certificates],[])
+# ARG_OPTIONAL_SINGLE([certs-path],[],[Path to SSL certificates directory],[./certs/])
+# ARG_OPTIONAL_SINGLE([domain],[],[Domain name (for TLS)],[localhost])
 # ARG_OPTIONAL_SINGLE([build-strategy],[],[Build strategy (pull/build)],[build])
 # ARG_OPTIONAL_SINGLE([compose-command],[],[Docker compose command (docker compose/docker-compose)],[docker compose])
 # ARG_POSITIONAL_SINGLE([command],[Command to execute (up/down/status/logs)],[])
 # ARG_HELP([Management script for RISC-V Simulator Docker environment])
-# ARG_VERSION([echo $0 v0.1])
+# ARG_VERSION([echo $0 v1.1])
 # ARGBASH_GO
 
 
@@ -78,8 +79,8 @@ export_variables() {
     export EXTERNAL_SIM_API_PREFIX="$_arg_external_api"
     export HTTP_PORT="$_arg_http_port"
     export HTTPS_PORT="$_arg_https_port"
-    export SSL_CONF_PATH="$_arg_ssl_conf"
     export CERTS_PATH="$_arg_certs_path"
+    export DOMAIN="$_arg_domain"
 }
 
 # Execute docker-compose commands

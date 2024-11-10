@@ -15,100 +15,42 @@ First, the one-line quickstart run-it-from-anywhere using Docker:
 ```bash
 curl -L https://raw.githubusercontent.com/Sekky61/riscv-sim/refs/heads/master/Sources/docker-compose.http.yml | docker compose -f - up
 ```
-The app will be available on `http://localhost:3120`.
+The app will be available on [`http://localhost:3120`](http://localhost:3120).
 
-For proper deployment, HTTPS support and custom base path, clone the repository, create HTTPS certificates and run
-```bash
-cd Sources && docker compose up
-```
-Refer to Readmes in the respective directories, Dockerfiles and the Nix flake for more detailed instructions.
+For proper deployment, HTTPS support and parametrization like custom base path:
 
-### Build and Run Frontend Web App
+1. Clone the repository
+2. [Create HTTPS certificates](Sources/proxy/Readme.md)
+3. Run `cd Sources && ./manage-riscvsim.sh up`
 
-> Requirements: bun
+`./manage-riscvsim.sh --help` explains all parameters.
+Refer to Readmes in the respective directories, Dockerfiles and the Nix flake in case you need more context.
 
-The app was developed using bun `1.1.31`. Any version should work to build the frontend app, and a modern node.js should work as well.
-To build the production version of the app, start by navigating to `Sources/frontend` and installing dependencies:
-
-```bash
-bun install
-```
-
-To build the app, run:
-
-```bash
-bun run build
-```
-
-Now you can either `bun run start` or alternatively:
-
-```bash
-cp -r .next/static/ .next/standalone/.next/static
-bun .next/standalone/server.js
-```
-
-Navigate to `http://localhost:3000` (or the address shown in the console on startup) to see the app.
-
-For more detailed documentation including how to develop the app, see `Sources/frontend/Readme.md`.
-
-### Build and Run Simulation Server
-
-> Requirements: Java, Maven, gcc
-
-The backend server is written in Java using version `17.0.6`.
-It is built with Maven (developed on `3.9.9`).
-
-To build the backend server, navigate to `Sources/simulator` and run:
-
-```bash
-./scripts/install.sh
-```
-
-To run the server, type `./scripts/run.sh server`.
-To see full options, including the CLI mode, run `./scripts/run.sh help`.
-
-For more detailed documentation, see `Sources/simulator/Readme.md`.
+Generally, for production deployment you may need `--domain`, `--http-port`, `--https-port`.
+If the app is exposed on a specific prefix, use the `--base-path`, so that the links on the web page are correct.
 
 ### Docker
 
-Basically, you can pull prebuilt images from Docker hub, or build them yourself.
+By default, the images are built using the Dockerfiles.
+You can also pull prebuilt images from Docker hub, or build them yourself.
 You need to build them only if you need to change the *base path* of the app (for example if you want to deploy the app under `example.com/riscvsim`).
 
-Another choice to make is whether you need HTTPS or not.
-If you only need HTTP, use
-```bash
-cd Sources
-docker compose -f docker-compose.http.yml up
-```
-This is the easiest one for local deployment.
-
-If you need both HTTP and HTTPS, create the certificates and use the `docker-compose.yml` file.
-The Docker compose files are located at `Sources/`.
-
-To use your own built images use the `build_container.sh` and `run_container.sh` commands.
+You can use the `docker-compose.yml` file manually. It uses environment variables for the parameters.
 
 > [!NOTE]  
 > `sudo` might be required to run the docker commands.
 
 > [!NOTE]  
-> Older Docker versions use command `docker-compose` instead of `docker compose`. Developed using Docker `24.0.7` and `20.10.2`.
+> Older Docker versions use command `docker-compose` instead of `docker compose`. See the `--compose-command` argument.
 
-### HTTPS
 
-Add SSL/TLS certificates to `Sources/proxy/certs` to enable HTTPS support.
-An Nginx proxy is created as a Docker container during the startup via docker compose.
-Note, that this step is not necessary to run the app, but the nginx container will fail to start without the certificates.
-For details, see [Sources/proxy/Readme.md](Sources/proxy/Readme.md).
+### Build and Run Frontend Web App
 
-## Repository Structure
+See the [frontend readme](Sources/frontend/Readme.md).
 
-    .
-    +--Literature    - Publications, references, manuals, etc.
-    +--Sources       - Root folder for the sources.
-    +--Thesis        - Latex sources of the thesis.
-    flake.(nix|lock) - Nix flake
-    LICENSE          - The projects license
-    Readme.md        - Read me file
+### Build and Run Simulation Server
+
+See the [simulator readme](Sources/simulator/Readme.md).
 
 ## Nix
 
@@ -118,4 +60,14 @@ I prefer this method as it is more reproducible and doesn't require installing a
 - Run `nix run .#simulator` to run the simulator and `nix run .#frontend` to run the frontend.
 - Run `nix build .#frontend-docker` (or `#backend-docker`) to create a Docker image. Load it with `docker load < result`.
 - Run `nix develop` in the root directory to enter the development environment with all the necessary tools.
+
+## Repository Structure
+
+.
++--Literature    - Publications, references, manuals, etc.
++--Sources       - Root folder for the sources.
++--Thesis        - Latex sources of the thesis.
+flake.(nix|lock) - Nix flake
+LICENSE          - The projects license
+Readme.md        - Read me file
 
