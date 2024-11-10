@@ -13,7 +13,7 @@ const nextConfig = withBundleAnalyzer({
   reactStrictMode: true,
   swcMinify: true,
   output: 'standalone',
-  basePath: process.env.NEXT_PUBLIC_BASE_PATH || '',
+  basePath: process.env.BASE_PATH || '',
 
   // Uncoment to add domain whitelist
   // images: {

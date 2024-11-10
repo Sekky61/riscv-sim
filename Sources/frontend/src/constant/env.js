@@ -55,20 +55,22 @@ const showLogger = isLocal
  * Is always defined - by default, it is empty, so that api calls go to the same host (`GET /api/something` - relative absolute path).
  */
 const simApiExternalPrefix =
-  process.env.NEXT_PUBLIC_EXTERNAL_SIM_API_PREFIX ?? 'http://localhost:8000';
+  process.env.EXTERNAL_SIM_API_PREFIX ?? 'http://localhost:8000';
 
 /**
  * The simulator API server address used by the server. It may differ form the external based on deployment of the app.
  */
 const simApiInternalPrefix =
-  process.env.NEXT_PUBLIC_INTERNAL_SIM_API_PREFIX ??
-  process.env.NEXT_PUBLIC_EXTERNAL_SIM_API_PREFIX ??
+  process.env.INTERNAL_SIM_API_PREFIX ??
+  process.env.EXTERNAL_SIM_API_PREFIX ??
   'localhost:8000';
 
-module.exports = {
+const env = {
   simApiExternalPrefix,
   simApiInternalPrefix,
   isLocal,
   isProd,
   showLogger,
 };
+
+module.exports = env;

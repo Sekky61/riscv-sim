@@ -2,21 +2,65 @@ name: riscvsim
 version: "2.3"
 services:
   web:
-    extends:
-      file: docker-compose.http.yml
-      service: web
+    image: majeris/riscv-sim-frontend:latest
+    build:
+      context: ./frontend
+      target: runner
+      args:
+        DOCKER_BUILDKIT: 1
+        BASE_PATH: '' # This param only works at build-time
+    environment:
+      - NODE_ENV=production
+      - INTERNAL_SIM_API_PREFIX=${INTERNAL_SIM_API_PREFIX:-simserver:8000}
+      - EXTERNAL_SIM_API_PREFIX=${EXTERNAL_SIM_API_PREFIX:-/api/sim}
+    ports:
+      - 3100:3000
+    labels:
+      - "traefik.http.routers.web.entrypoints=web,websecure"
+      - "traefik.http.routers.web.priority=49"
+      - "traefik.http.routers.web.rule=PathPrefix(`/`)"
+    logging:
+      driver: "local"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    depends_on:
+      - simserver
+    links:
+      - simserver
 
-  gateway:
-    extends:
-      file: docker-compose.http.yml
-      service: gateway
+  reverse-proxy:
+    image: traefik:v3.2
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker"
+      - "--entryPoints.web.address=:${HTTP_PORT:-3120}"
+      - "--entryPoints.websecure.address=:${HTTPS_PORT:-3121}"
+      - "--log.level=DEBUG" # DEBUG, PANIC, FATAL, ERROR, WARN, INFO
+    ports:
+      - "${HTTP_PORT:-3120}:${HTTP_PORT:-3120}"
+      - "${HTTPS_PORT:-3121}:${HTTPS_PORT:-3121}"
+      - "8080:8080" # dashboard
     volumes:
-      # The HTTPS compose is reliant on the SSL configuration.
-      # Therefore, run it from Sources/
-      - ./proxy/ssl.conf:/etc/nginx/ssl.conf:ro
-      - ./proxy/certs:/etc/nginx/certs:ro
+      # So that Traefik can listen to the Docker events
+      - /var/run/docker.sock:/var/run/docker.sock
 
   simserver:
-    extends:
-      file: docker-compose.http.yml
-      service: simserver
+    image: majeris/riscv-sim-backend:latest
+    build:
+      context: ./simulator
+      target: runner
+    ports:
+      - 8120:8000
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.simserver.entrypoints=web,websecure"
+      - "traefik.http.routers.simserver.priority=50"
+      - "traefik.http.routers.simserver.rule=PathPrefix(`${EXTERNAL_SIM_API_PREFIX:-/api/sim}`)"
+      - "traefik.http.routers.simserver.middlewares=api-stripprefix"
+      - "traefik.http.middlewares.api-stripprefix.stripprefix.prefixes=${EXTERNAL_SIM_API_PREFIX:-/api/sim,/}"
+    logging:
+      driver: "local"
+      options:
+        max-size: "10m"
+        max-file: "3"

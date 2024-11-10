@@ -40,7 +40,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/base/ui/card';
-import { apiBaseUrl } from '@/constant/env';
 import { useAppSelector } from '@/lib/redux/hooks';
 import { selectActiveConfig } from '@/lib/redux/isaSlice';
 import { saveAsFile, saveAsJsonFile } from '@/lib/utils';
@@ -54,11 +53,6 @@ export function SettingsForm() {
   const activeConfig = useAppSelector(selectActiveConfig);
   const router = useRouter();
   const tour = useTour();
-
-  // Log to console the address of API server
-  console.info(
-    `API server address (that Next.js backend proxies): ${apiBaseUrl}`,
-  );
 
   const clearLocalMemory = () => {
     // confirm

@@ -7,17 +7,7 @@
 This is a RISC-V Simulator Web App. The project builds on the superscalar simulator created by Jakub Horky and Jan Vavra. The goal is to add a **web** and a **CLI** interface.
 
 In this readme, you will find instructions to build and run the app both natively and in Docker.
-The project consists of two components: web app and Java simulator server. More detailed info can be found in their respective Readmes [Sources/frontend/Readme.md](Sources/frontend/Readme.md) and [Sources/simulator/Readme.md](Sources/simulator/Readme.md)).
-
-## Repository Structure
-
-    .
-    +--Literature    - Publications, references, manuals, etc.
-    +--Sources       - Root folder for the sources.
-    +--Thesis        - Latex sources of the thesis.
-    flake.(nix|lock) - Nix flake
-    LICENSE          - The projects license
-    Readme.md        - Read me file
+The project consists of two components: a web app and a Java simulator server. More detailed info can be found in their respective Readmes [Sources/frontend/Readme.md](Sources/frontend/Readme.md) and [Sources/simulator/Readme.md](Sources/simulator/Readme.md)).
 
 ## Installation
 
@@ -26,18 +16,18 @@ First, the one-line quickstart run-it-from-anywhere using Docker:
 curl -L https://raw.githubusercontent.com/Sekky61/riscv-sim/refs/heads/master/Sources/docker-compose.http.yml | docker compose -f - up
 ```
 The app will be available on `http://localhost:3120`.
-For proper deployment and HTTPS support, clone the repository, create HTTPS certificates and run
+
+For proper deployment, HTTPS support and custom base path, clone the repository, create HTTPS certificates and run
 ```bash
 cd Sources && docker compose up
 ```
-
 Refer to Readmes in the respective directories, Dockerfiles and the Nix flake for more detailed instructions.
 
 ### Build and Run Frontend Web App
 
 > Requirements: bun
 
-The app was developed using bun `1.1.31`. Any version should work to build the frontend app.
+The app was developed using bun `1.1.31`. Any version should work to build the frontend app, and a modern node.js should work as well.
 To build the production version of the app, start by navigating to `Sources/frontend` and installing dependencies:
 
 ```bash
@@ -50,24 +40,23 @@ To build the app, run:
 bun run build
 ```
 
-Unfortunately, some of the files need to be manually copied over:
+Now you can either `bun run start` or alternatively:
+
 ```bash
 cp -r .next/static/ .next/standalone/.next/static
-```
-
-Now that the app is built, you can run it using:
-```bash
 bun .next/standalone/server.js
 ```
-Navigate to `http://localhost:3000` to see the app (or the address shown in the console).
 
-For more detailed documentation and to develop the app, see `Sources/frontend/Readme.md`.
+Navigate to `http://localhost:3000` (or the address shown in the console on startup) to see the app.
+
+For more detailed documentation including how to develop the app, see `Sources/frontend/Readme.md`.
 
 ### Build and Run Simulation Server
 
-> Requirements: Java
+> Requirements: Java, Maven, gcc
 
-The backend server is written in Java using version `17.0.6`. Gradle is bundled with the project, so you don't need to install it.
+The backend server is written in Java using version `17.0.6`.
+It is built with Maven (developed on `3.9.9`).
 
 To build the backend server, navigate to `Sources/simulator` and run:
 
@@ -75,52 +64,51 @@ To build the backend server, navigate to `Sources/simulator` and run:
 ./scripts/install.sh
 ```
 
-To use the app (either CLI or server), run `./scripts/run.sh help` to see the available options.
-
 To run the server, type `./scripts/run.sh server`.
+To see full options, including the CLI mode, run `./scripts/run.sh help`.
 
 For more detailed documentation, see `Sources/simulator/Readme.md`.
 
-### HTTPS
-
-Add SSL/TLS certificates to `Sources/proxy/certs` to enable HTTPS.
-An Nginx proxy is created as a Docker container during the startup.
-Note, that this step is not necessary to run the app, but the nginx container will fail to start.
-For details, see [Sources/proxy/Readme.md](Sources/proxy/Readme.md).
-
 ### Docker
 
-Below is the recommended way to build and run the project using Docker.
+Basically, you can pull prebuilt images from Docker hub, or build them yourself.
+You need to build them only if you need to change the *base path* of the app (for example if you want to deploy the app under `example.com/riscvsim`).
 
-```bash
-cd Sources
-docker compose up
-```
-
-or, in case you do not want to setup HTTPS certificates:
-
+Another choice to make is whether you need HTTPS or not.
+If you only need HTTP, use
 ```bash
 cd Sources
 docker compose -f docker-compose.http.yml up
 ```
+This is the easiest one for local deployment.
 
-The Docker compose files located at `Sources/` build the frontend and backend and runs them together with nginx proxy.
+If you need both HTTP and HTTPS, create the certificates and use the `docker-compose.yml` file.
+The Docker compose files are located at `Sources/`.
 
-Note that sudo might be required to run the docker commands.
+To use your own built images use the `build_container.sh` and `run_container.sh` commands.
 
-> Note that older Docker versions use command `docker-compose` instead of `docker compose`. Developed using Docker `24.0.7` and `20.10.2`.
+> [!NOTE]  
+> `sudo` might be required to run the docker commands.
 
-There is an alternative way to build the containers - scripts `Sources/build_container.sh`, `Sources/run_container.sh` and `Sources/stop_container.sh` to run and stop the container.
+> [!NOTE]  
+> Older Docker versions use command `docker-compose` instead of `docker compose`. Developed using Docker `24.0.7` and `20.10.2`.
 
-```bash
-cd Sources
-./build_container.sh
-./run_container.sh
-```
+### HTTPS
 
-After running the container, the state of the app should be:
-1. You chose the `.http.yml` file and the app is available on port 3120.
-2. You supplied keys to `Sources/proxy/certs` and chose the `.yml` file. The app is available on port 3120 (http) and 3121 (https) (do check the `http://` prefix).
+Add SSL/TLS certificates to `Sources/proxy/certs` to enable HTTPS support.
+An Nginx proxy is created as a Docker container during the startup via docker compose.
+Note, that this step is not necessary to run the app, but the nginx container will fail to start without the certificates.
+For details, see [Sources/proxy/Readme.md](Sources/proxy/Readme.md).
+
+## Repository Structure
+
+    .
+    +--Literature    - Publications, references, manuals, etc.
+    +--Sources       - Root folder for the sources.
+    +--Thesis        - Latex sources of the thesis.
+    flake.(nix|lock) - Nix flake
+    LICENSE          - The projects license
+    Readme.md        - Read me file
 
 ## Nix
 

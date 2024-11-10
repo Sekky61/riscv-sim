@@ -29,6 +29,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { EnvContextType, env } from '@/constant/envProvider';
 import type {
   AsyncEndpointFunction,
   CompileRequest,
@@ -42,8 +43,6 @@ import type {
   SimulateRequest,
   SimulateResponse,
 } from '@/lib/types/simulatorApi';
-
-import env from '@/constant/env';
 
 /**
  * Call the /compile endpoint
@@ -97,16 +96,25 @@ export class ServerErrorException extends Error {
 
 /**
  * Get the API hostname, which might be different on client and server
- * TODO: The internal prefix leaks to client, but might not be an issue.
  */
-function getApiPrefix(): string {
+async function getApiPrefix(): Promise<string> {
   // In browser, the absolute path works (origin is defined), but on server (node.js) it needs a full URL.
-  // The only way to know the url at build time is to use an environment variable.
+  // environment variables are pulled from server so that they can be configured at runtime
+  
+  if(!cachedEnv) {
+    cachedEnv = await env();
+  }
+
   if (typeof window === 'undefined') {
-    return env.simApiInternalPrefix;
+    return cachedEnv.simApiInternalPrefix;
   }
-  return env.simApiExternalPrefix;
-  }
+  return cachedEnv.simApiExternalPrefix;
+}
+
+/**
+* The environment variables pulled from the server are cached here.
+*/
+let cachedEnv: EnvContextType | null = null;
 
 /**
  * Call the simulator server API. Parse the response as JSON.
@@ -118,7 +126,7 @@ const callApi: AsyncEndpointFunction = async <T extends EndpointName>(
   endpoint: T,
   request: EndpointMap[T]['request'],
 ) => {
-  const url = `${getApiPrefix()}/${endpoint}`;
+  const url = `${await getApiPrefix()}/${endpoint}`;
 
   console.info(`Calling API endpoint ${url}`);
 
