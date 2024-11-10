@@ -48,7 +48,7 @@ const isLocal = process.env.NODE_ENV === 'development';
  */
 const showLogger = isLocal
   ? true
-  : (process.env.NEXT_PUBLIC_SHOW_LOGGER === 'true' ?? false);
+  : process.env.NEXT_PUBLIC_SHOW_LOGGER === 'true' ?? false;
 
 /**
  * The simulator API server address used by the client. For example `riscvsim.com`, `http://localhost:1234`, or just `/api/prefix`.

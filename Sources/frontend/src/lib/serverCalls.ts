@@ -100,8 +100,8 @@ export class ServerErrorException extends Error {
 async function getApiPrefix(): Promise<string> {
   // In browser, the absolute path works (origin is defined), but on server (node.js) it needs a full URL.
   // environment variables are pulled from server so that they can be configured at runtime
-  
-  if(!cachedEnv) {
+
+  if (!cachedEnv) {
     cachedEnv = await env();
   }
 
@@ -112,8 +112,8 @@ async function getApiPrefix(): Promise<string> {
 }
 
 /**
-* The environment variables pulled from the server are cached here.
-*/
+ * The environment variables pulled from the server are cached here.
+ */
 let cachedEnv: EnvContextType | null = null;
 
 /**

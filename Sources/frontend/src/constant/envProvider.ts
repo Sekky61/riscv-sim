@@ -26,5 +26,3 @@ export type EnvContextType = ReturnType<typeof envObject>;
 export const env = async () => {
   return envObject();
 };
-
-
