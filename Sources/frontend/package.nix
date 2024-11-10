@@ -1,17 +1,28 @@
 {
   lib,
-  gitignoreSource,
+  nix-gitignore,
   stdenv,
   bun,
   nodejs-slim_latest,
+  base-path ? ""
 }:
 let
-  # Source: https://github.com/NixOS/nixpkgs/issues/255890#issuecomment-2308881422
-  src = gitignoreSource ./.;
+  # These properties are overridable, like this:
+  # nixpkgs.overlays = [
+  #   (self: super: {
+  #     frontend = super.frontend.override {
+  #       base-path = "/riscvapp";
+  #     };
+  #   })
 
-  packageJson = lib.importJSON "${src}/package.json";
-  version = packageJson.version;
+  # Source: https://github.com/NixOS/nixpkgs/issues/255890#issuecomment-2308881422
+
   pname = packageJson.name;
+  version = packageJson.version;
+
+  gitignoreSource = nix-gitignore.gitignoreSource [];
+  src = gitignoreSource ./.;
+  packageJson = lib.importJSON "${src}/package.json";
 
   node_modules = stdenv.mkDerivation {
     pname = "${pname}_node-modules";
@@ -56,6 +67,11 @@ stdenv.mkDerivation {
     nodejs-slim_latest
     bun
   ];
+
+  env = {
+    BASE_PATH = base-path;
+    # Rest of the args are runtime
+  };
 
   configurePhase = ''
     runHook preConfigure

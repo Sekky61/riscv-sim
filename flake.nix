@@ -3,12 +3,8 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
-    gitignore = {
-      url = "github:hercules-ci/gitignore.nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
   };
-  outputs = { self, nixpkgs, flake-utils, gitignore }:
+  outputs = { self, nixpkgs, flake-utils }:
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
@@ -39,32 +35,9 @@
         
         packages = {
 
-          frontend = pkgs.callPackage ./Sources/frontend/package.nix { gitignoreSource = gitignore.lib.gitignoreSource; };
-          
-          frontend-old = pkgs.buildNpmPackage {
-            name = "riscv-sim-frontend";
-            version = "1.0.0";
-            src = ./Sources/frontend;
-            nodejs = pkgs.bun // { python = pkgs.python3; };
-            npmDepsHash = "sha256-LUqXgp/60j69u7ZqEm2OrYq39ovntZO/cUm1g83zcjc=";
-            nativeBuildInputs = [ pkgs.bun ];
-
-            buildPhase = ''
-              bun install
-            '';
-
-            installPhase = ''
-              mkdir -p $out/standalone/.next/
-              cp -r .next/standalone $out/
-              cp -r .next/static $out/standalone/.next/
-            '';
-
-            meta = with pkgs.lib; {
-              description = "RISC-V Simulator Frontend";
-              homepage = "https://github.com/Sekky61/riscv-sim";
-              license = licenses.gpl3;
-              mainProgram = "riscv-sim-frontend";
-            };
+          frontend = pkgs.callPackage ./Sources/frontend/package.nix {
+            # Override params here
+            # base-path = "/riscvapp";
           };
 
           backend = pkgs.callPackage ./Sources/simulator/package.nix { };
