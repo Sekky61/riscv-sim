@@ -3,13 +3,14 @@
 This directory contains part of the proxy configuration for the project.
 It is not a necessary part of the project - you can use the ports exposed by the servers directly.
 
-**Directory Contents:**
+## Creating the Certs Directory
 
-* `traefik.yaml`: The configuration file.
+To use the proxy with HTTPS, you will need to create a `certs` directory within the `Sources/` directory.
+The directory location can be customized with `--certs-path`.
 
-**Creating the Certs Directory:**
+The directory may contain your SSL/TLS certificates called `certs/privkey.pem` and `certs/fullchain.pem` files.
+Without the files present, the proxy still works, but only the HTTP port.
 
-To use the proxy, you will need to create a `certs` directory within the `Sources/` directory. It should contain your SSL/TLS certificates called `certs/privkey.pem` and `certs/fullchain.pem` files.
 Below is an example for creating such self-signed files.
 
 ```bash
@@ -20,4 +21,8 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
 ```
 
 This command is also available in `Sources/certs/create.sh`.
+
+## Directory Contents
+
+* `traefik.yaml`: The configuration file.
 

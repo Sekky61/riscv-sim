@@ -17,25 +17,28 @@ curl -L https://raw.githubusercontent.com/Sekky61/riscv-sim/refs/heads/master/So
 ```
 The app will be available on [`http://localhost:3120`](http://localhost:3120).
 
-For proper deployment, HTTPS support and parametrization like custom base path:
+For proper deployment, HTTPS support and parametrization like custom base path, do:
 
 1. Clone the repository
-2. [Create HTTPS certificates](Sources/proxy/Readme.md)
+2. (Optionally) [Create HTTPS certificates](Sources/proxy/Readme.md)
 3. Run `cd Sources && ./manage-riscvsim.sh up`
 
 `./manage-riscvsim.sh --help` explains all parameters.
 Refer to Readmes in the respective directories, Dockerfiles and the Nix flake in case you need more context.
 
-Generally, for production deployment you may need `--domain`, `--http-port`, `--https-port`.
+Generally, for production deployment you may need `--domain`, `--http-port` and `--https-port`.
 If the app is exposed on a specific prefix, use the `--base-path`, so that the links on the web page are correct.
 
 ### Docker
 
-By default, the images are built using the Dockerfiles.
-You can also pull prebuilt images from Docker hub, or build them yourself.
-You need to build them only if you need to change the *base path* of the app (for example if you want to deploy the app under `example.com/riscvsim`).
+You can use the `docker-compose.yml` file manually.
+It uses environment variables for the parameters.
 
-You can use the `docker-compose.yml` file manually. It uses environment variables for the parameters.
+By default, the images are built using the Dockerfiles.
+You can also pull prebuilt images from Docker hub (`--build-strategy`).
+
+> [!WARNING]  
+> `--base-path` is a build-time paremeter, and so it will **not** work with Docker hub images.
 
 > [!NOTE]  
 > `sudo` might be required to run the docker commands.
