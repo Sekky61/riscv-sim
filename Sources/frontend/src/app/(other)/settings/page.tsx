@@ -30,9 +30,9 @@
  */
 
 import Image from 'next/image';
-import FitLogo from '@public/FIT_color_EN.png';
 import { DevTools } from './DevTools';
 import { SettingsForm } from './SettingsForm';
+import FitLogo from '@public/FIT_color_EN.png';
 
 export const metadata = {
   title: 'Settings',
