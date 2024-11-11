@@ -48,7 +48,7 @@ const isLocal = process.env.NODE_ENV === 'development';
  */
 const showLogger = isLocal
   ? true
-  : process.env.NEXT_PUBLIC_SHOW_LOGGER === 'true' ?? false;
+  : (process.env.NEXT_PUBLIC_SHOW_LOGGER === 'true' ?? false);
 
 /**
  * The simulator API server address used by the client. For example `riscvsim.com`, `http://localhost:1234`, or just `/api/prefix`.
@@ -56,6 +56,11 @@ const showLogger = isLocal
  */
 const simApiExternalPrefix =
   process.env.EXTERNAL_SIM_API_PREFIX ?? 'http://localhost:8000';
+
+/**
+ * Prefix path of deployment
+ */
+const basePath = process.env.BASE_PATH ?? '';
 
 /**
  * The simulator API server address used by the server. It may differ form the external based on deployment of the app.
@@ -71,6 +76,7 @@ const env = {
   isLocal,
   isProd,
   showLogger,
+  basePath,
 };
 
 module.exports = env;

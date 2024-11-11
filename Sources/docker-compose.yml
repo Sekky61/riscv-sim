@@ -72,3 +72,50 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+
+  umami:
+    image: sparanoid/umami:postgresql-latest
+    ports:
+      - 8090:3000
+    environment:
+      DATABASE_URL: postgresql://umami:umami@db:5432/umami
+      DATABASE_TYPE: postgresql
+      APP_SECRET: B5q00BnOjXsaTviKtQPP
+      BASE_PATH: /analytics
+      DISABLE_TELEMETRY: 1
+      TRACKER_SCRIPT_NAME: script
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: always
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.middlewares.analytics-stripprefix.stripprefix.prefixes=${BASE_PATH}${ANALYTICS_PREFIX:-/analytics}"
+      - "traefik.http.routers.analytics-http.entrypoints=web"
+      - "traefik.http.routers.analytics-http.priority=65"
+      - "traefik.http.routers.analytics-http.rule=PathPrefix(`${BASE_PATH}${ANALYTICS_PREFIX:-/analytics}`)"
+      - "traefik.http.routers.analytics-http.middlewares=analytics-stripprefix"
+      # HTTPS
+      - "traefik.http.routers.analytics-https.entrypoints=websecure"
+      - "traefik.http.routers.analytics-https.priority=70"
+      - "traefik.http.routers.analytics-https.rule=Host(`${DOMAIN:-localhost}`) && PathPrefix(`${BASE_PATH}${ANALYTICS_PREFIX:-/analytics}`)"
+      - "traefik.http.routers.analytics-https.middlewares=analytics-stripprefix"
+      - "traefik.http.routers.analytics-https.tls=true"
+
+  db:
+    image: postgres:17.0-alpine3.20
+    environment:
+      POSTGRES_DB: umami
+      POSTGRES_USER: umami
+      POSTGRES_PASSWORD: umami
+    volumes:
+      - umami-db-data:/var/lib/postgresql/data
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  umami-db-data:

@@ -64,6 +64,12 @@ I prefer this method as it is more reproducible and doesn't require installing a
 - Run `nix build .#frontend-docker` (or `#backend-docker`) to create a Docker image. Load it with `docker load < result`.
 - Run `nix develop` in the root directory to enter the development environment with all the necessary tools.
 
+## Analytics
+
+Umami collects no PII and serves only as a visitor counter.
+The analytics dashboard is available on port `8090`.
+The login is `admin/umami`.
+
 ## Repository Structure
 
 .
