@@ -58,6 +58,11 @@ const simApiExternalPrefix =
   process.env.EXTERNAL_SIM_API_PREFIX ?? 'http://localhost:8000';
 
 /**
+ * Prefix path of deployment
+ */
+const basePath = process.env.BASE_PATH ?? '';
+
+/**
  * The simulator API server address used by the server. It may differ form the external based on deployment of the app.
  */
 const simApiInternalPrefix =
@@ -71,6 +76,7 @@ const env = {
   isLocal,
   isProd,
   showLogger,
+  basePath,
 };
 
 module.exports = env;

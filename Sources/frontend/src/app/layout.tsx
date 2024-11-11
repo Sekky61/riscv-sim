@@ -43,6 +43,7 @@ import { TooltipProvider } from '@/components/base/ui/tooltip';
 import PersistedStoreProvider from '@/lib/redux/PersistedStoreProvider';
 import { loadBlockDescriptions } from '@/lib/staticLoaders';
 import localFont from 'next/font/local';
+import { basePath } from '@/constant/env';
 
 /**
  * Font loading by next.js.
@@ -69,6 +70,12 @@ export default async function RootLayout({
     <html lang='en'>
       <head>
         <meta name='viewport' content='width=device-width, initial-scale=1.0' />
+        <script
+          async
+          defer
+          data-website-id='76eac74f-d57e-4227-b87f-a975fba3a8b8'
+          src={`${basePath}/analytics/script.js`}
+        />
         <title>RISC-V Simulator</title>
       </head>
       <body
