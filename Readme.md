@@ -67,8 +67,10 @@ I prefer this method as it is more reproducible and doesn't require installing a
 ## Analytics
 
 Umami collects no PII and serves only as a visitor counter.
-The analytics dashboard is available on port `8090`.
-The login is `admin/umami`.
+
+After running the docker compose, the analytics dashboard is available on port `8090`.
+The login is `admin/umami`. You need to add the website manually: go to [http://localhost:8090/settings](http://localhost:8090/settings) and add the website ([guide here](https://www.paulsblog.dev/self-host-umami-analytics-with-docker-compose/#post-installation-tasks:~:text=stack%20rm%20NAME_OF_STACK-,Post%20Installation%20Tasks,-Now%2C%20as%20our).
+As far as I can tell, this cannot be automated.
 
 ## Repository Structure
 
