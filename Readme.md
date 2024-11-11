@@ -11,7 +11,7 @@ The project consists of two components: a web app and a Java simulator server. M
 
 ## Installation
 
-First, the one-line quickstart run-it-from-anywhere using Docker:
+First, the one-line quickstart run-it-from-anywhere (x86 systems only) using Docker:
 ```bash
 curl -L https://raw.githubusercontent.com/Sekky61/riscv-sim/refs/heads/master/Sources/docker-compose.yml | docker compose -f - up
 ```
