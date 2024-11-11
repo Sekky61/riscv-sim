@@ -13,7 +13,7 @@ The project consists of two components: a web app and a Java simulator server. M
 
 First, the one-line quickstart run-it-from-anywhere using Docker:
 ```bash
-curl -L https://raw.githubusercontent.com/Sekky61/riscv-sim/refs/heads/master/Sources/docker-compose.http.yml | docker compose -f - up
+curl -L https://raw.githubusercontent.com/Sekky61/riscv-sim/refs/heads/master/Sources/docker-compose.yml | docker compose -f - up
 ```
 The app will be available on [`http://localhost:3120`](http://localhost:3120).
 
