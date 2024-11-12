@@ -13,7 +13,7 @@ Designed to deepen your understanding of processor design and HW-SW co-design, t
 In this README, you'll find instructions on how to build and run the app both natively and in Docker.
 The project consists of two components: a web app and a Java simulator server. For more details, refer to their respective READMEs:
 - [Frontend](Sources/frontend/Readme.md)
-- [Simulator](Sources/simulator/Readme.md).
+- [Simulator](Sources/simulator/Readme.md)
 
 ## Installation
 
