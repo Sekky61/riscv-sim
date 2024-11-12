@@ -36,9 +36,9 @@ import { useEffect, useState } from 'react';
 
 type UmamiTrackerProps = {
   envObject: EnvContextType; // from server component
-  };
+};
 
-export function UmamiTracker({envObject}: UmamiTrackerProps) {
+export function UmamiTracker({ envObject }: UmamiTrackerProps) {
   const basePath = envObject.basePath;
   const [umamiId, setUmamiId] = useState<string | null>(null);
 
