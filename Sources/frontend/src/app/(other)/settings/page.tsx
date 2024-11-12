@@ -56,10 +56,15 @@ function Acknowledgments() {
       <h2>Acknowledgments</h2>
       <p>This application is the result of the effort of</p>
       <ul className='m-1'>
-        <li>Michal Majer (<a href="mailto:misa@majer.cz">misa@majer.cz</a>)</li>
+        <li>
+          Michal Majer (<a href='mailto:misa@majer.cz'>misa@majer.cz</a>)
+        </li>
         <li>Jakub Horky</li>
         <li>Jan Vavra</li>
-        <li>Jiri Jaros (<a href="mailto:jarosjir@fit.vut.cz">jarosjir@fit.vut.cz</a>)</li>
+        <li>
+          Jiri Jaros (
+          <a href='mailto:jarosjir@fit.vut.cz'>jarosjir@fit.vut.cz</a>)
+        </li>
       </ul>
       <p>A huge thank you to everyone who contributed along the way.</p>
       <Image src={FitLogo} alt='BUT FIT' className='min-w-64 w-80 mt-4' />
