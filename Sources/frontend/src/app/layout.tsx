@@ -40,10 +40,12 @@ import { ThemeProvider } from '@/components/ThemeProvider';
 import { WelcomeTour } from '@/components/WelcomeTour';
 import { Toaster } from '@/components/base/ui/sonner';
 import { TooltipProvider } from '@/components/base/ui/tooltip';
+import { basePath } from '@/constant/env';
 import PersistedStoreProvider from '@/lib/redux/PersistedStoreProvider';
 import { loadBlockDescriptions } from '@/lib/staticLoaders';
 import localFont from 'next/font/local';
-import { basePath } from '@/constant/env';
+import { UmamiTracker } from '@/components/UmamiTracker';
+import { env } from '@/constant/envProvider';
 
 /**
  * Font loading by next.js.
@@ -65,17 +67,13 @@ export default async function RootLayout({
 }: { children: ReactNode }) {
   // Body is overflow-hidden to prevent FU configuration from expanding the page
   const descriptions = await loadBlockDescriptions();
+  const envObject = await env();
 
   return (
     <html lang='en'>
       <head>
         <meta name='viewport' content='width=device-width, initial-scale=1.0' />
-        <script
-          async
-          defer
-          data-website-id='76eac74f-d57e-4227-b87f-a975fba3a8b8'
-          src={`${basePath}/analytics/script.js`}
-        />
+        <UmamiTracker envObject={envObject} />
         <title>RISC-V Simulator</title>
       </head>
       <body

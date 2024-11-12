@@ -29,6 +29,11 @@ Refer to Readmes in the respective directories, Dockerfiles and the Nix flake in
 Generally, for production deployment you may need `--domain`, `--http-port` and `--https-port`.
 If the app is exposed on a specific prefix, use the `--base-path`, so that the links on the web page are correct.
 
+An extra example:
+```bash
+./manage-riscvsim.sh up --base-path /riscvapp --domain example.com --certs-path ~/certs
+```
+
 ### Docker
 
 You can use the `docker-compose.yml` file manually.
@@ -67,10 +72,10 @@ I prefer this method as it is more reproducible and doesn't require installing a
 ## Analytics
 
 Umami collects no PII and serves only as a visitor counter.
+The data collection should work automatically, but `--domain` should be specified.
 
 After running the docker compose, the analytics dashboard is available on port `8090`.
-The login is `admin/umami`. You need to add the website manually: go to [http://localhost:8090/settings](http://localhost:8090/settings) and add the website ([guide here](https://www.paulsblog.dev/self-host-umami-analytics-with-docker-compose/#post-installation-tasks:~:text=stack%20rm%20NAME_OF_STACK-,Post%20Installation%20Tasks,-Now%2C%20as%20our).
-As far as I can tell, this cannot be automated.
+The login is `admin/umami`.
 
 ## Repository Structure
 
