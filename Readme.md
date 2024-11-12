@@ -77,6 +77,19 @@ The data collection should work automatically, but `--domain` should be specifie
 After running the docker compose, the analytics dashboard is available on port `8090`.
 The login is `admin/umami`.
 
+## Acknowledgements
+
+I would like to thank everyone who contributed to this project through collaboration and valuable input. Special thanks to:
+
+- Michal Majer - [misa@majer.cz](misa@majer.cz)
+- Jakub Horky
+- Jan Vavra
+- Jiri Jaros - [jarosjir@fit.vut.cz](jarosjir@fit.vut.cz)
+
+For further reading, refer to the theses available in the [Literature/](Literature/) directory.
+
+![image](Sources/frontend/public/FIT_color_EN.png)
+
 ## Repository Structure
 
 .
