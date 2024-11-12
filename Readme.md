@@ -4,10 +4,16 @@
 
 ## Introduction
 
-This is a RISC-V Simulator Web App. The project builds on the superscalar simulator created by Jakub Horky and Jan Vavra. The goal is to add a **web** and a **CLI** interface.
+Unlock the power of superscalar processor design with our cutting-edge RISC-V simulator! Tailored for IT students, researchers, and HPC professionals, this web-based tool brings complex architectures to life with an intuitive, customizable interface. Explore processor components, tweak configurations, and benchmark code snippets-all from your browser.
 
-In this readme, you will find instructions to build and run the app both natively and in Docker.
-The project consists of two components: a web app and a Java simulator server. More detailed info can be found in their respective Readmes [Sources/frontend/Readme.md](Sources/frontend/Readme.md) and [Sources/simulator/Readme.md](Sources/simulator/Readme.md)).
+The simulator offers seamless support for C and assembly programs, built-in performance metrics, and full GCC compiler integration for various optimization levels. Whether you're learning or innovating, this tool enables you to experiment with different architectural setups, analyze results, and export configurations for sharing.
+
+Designed to deepen your understanding of processor design and HW-SW co-design, the simulator supports both interactive exploration and batch processing via command-line. Perfect for those aiming to optimize RISC-V processors and HPC codes, it's more than just a learning tool-it's a powerful platform for research and development. Get ready to elevate your skills and performance optimization with this advanced simulator!
+
+In this README, you'll find instructions on how to build and run the app both natively and in Docker.
+The project consists of two components: a web app and a Java simulator server. For more details, refer to their respective READMEs:
+- [Sources/frontend/Readme.md](Sources/frontend/Readme.md)
+- [Sources/simulator/Readme.md](Sources/simulator/Readme.md)).
 
 ## Installation
 
@@ -92,6 +98,7 @@ For further reading, refer to the theses available in the [Literature/](Literatu
 
 ## Repository Structure
 
+```
 .
 +--Literature    - Publications, references, manuals, etc.
 +--Sources       - Root folder for the sources.
@@ -99,4 +106,5 @@ For further reading, refer to the theses available in the [Literature/](Literatu
 flake.(nix|lock) - Nix flake
 LICENSE          - The projects license
 Readme.md        - Read me file
+```
 
