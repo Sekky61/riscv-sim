@@ -88,7 +88,7 @@ I would like to thank everyone who contributed to this project through collabora
 
 For further reading, refer to the theses available in the [Literature/](Literature/) directory.
 
-![image](Sources/frontend/public/FIT_color_EN.png)
+<img src="Sources/frontend/public/FIT_color_EN.png" alt="BUT FIT" width="300"/>
 
 ## Repository Structure
 
