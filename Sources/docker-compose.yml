@@ -74,7 +74,7 @@ services:
         max-file: "3"
 
   umami:
-    image: sparanoid/umami:postgresql-latest
+    image: ghcr.io/umami-software/umami:postgresql-latest
     ports:
       - 8090:3000
     environment:

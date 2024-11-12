@@ -1,11 +1,12 @@
 'use server';
 
 import {
-  simApiExternalPrefix,
-  simApiInternalPrefix,
+  basePath,
   isLocal,
   isProd,
   showLogger,
+  simApiExternalPrefix,
+  simApiInternalPrefix,
 } from './env';
 
 function envObject() {
@@ -15,6 +16,7 @@ function envObject() {
     isLocal,
     isProd,
     showLogger,
+    basePath,
   };
 }
 
