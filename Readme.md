@@ -96,11 +96,13 @@ For further reading, refer to the theses available in the [Literature/](Literatu
 
 <img src="Sources/frontend/public/FIT_color_EN.png" alt="BUT FIT" width="300"/>
 
-## Citing the RISC-V SIM
+## Citing the riscv-sim
 
-If you find the toolbox useful for your academic work, please consider citing one or more of the following papers:
+If you find the simulator useful for your academic work, please consider citing one or more of the following papers:
 
-- Jiri Jaros and Michal Majer and Jakub Horky and Jan Vavra: Web-Based Simulator of Superscalar RISC-V Processors, arXiv/2411.07721, 2024
+Jiri Jaros, Michal Majer, Jakub Horky, and Jan Vavra: Web-Based Simulator of Superscalar RISC-V Processors, arXiv/2411.07721, 2024
+
+[https://arxiv.org/abs/2411.07721](https://arxiv.org/abs/2411.07721)
 
 ```
 @misc{jaros2024webbasedsimulatorsuperscalarriscv,
