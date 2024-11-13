@@ -66,7 +66,7 @@ See the [frontend readme](Sources/frontend/Readme.md).
 
 See the [simulator readme](Sources/simulator/Readme.md).
 
-## Nix
+### Nix
 
 Another way to use the project is through Nix.
 I prefer this method as it is more reproducible and doesn't require installing anything manually.
@@ -88,13 +88,31 @@ The login is `admin/umami`.
 I would like to thank everyone who contributed to this project through collaboration and valuable input. Special thanks to:
 
 - Michal Majer - [misa@majer.cz](misa@majer.cz)
-- Jakub Horky
-- Jan Vavra
+- Jakub Horky - [horkykuba@email.cz](horkykuba@email.cz)
+- Jan Vavra - [jv369@seznam.cz](jv369@seznam.cz)
 - Jiri Jaros - [jarosjir@fit.vut.cz](jarosjir@fit.vut.cz)
 
 For further reading, refer to the theses available in the [Literature/](Literature/) directory.
 
 <img src="Sources/frontend/public/FIT_color_EN.png" alt="BUT FIT" width="300"/>
+
+## Citing the RISC-V SIM
+
+If you find the toolbox useful for your academic work, please consider citing one or more of the following papers:
+
+- Jiri Jaros and Michal Majer and Jakub Horky and Jan Vavra: Web-Based Simulator of Superscalar RISC-V Processors, arXiv/2411.07721, 2024
+
+```
+@misc{jaros2024webbasedsimulatorsuperscalarriscv,
+      title={Web-Based Simulator of Superscalar RISC-V Processors},
+      author={Jiri Jaros and Michal Majer and Jakub Horky and Jan Vavra},
+      year={2024},
+      eprint={2411.07721},
+      archivePrefix={arXiv},
+      primaryClass={cs.AR},
+      url={https://arxiv.org/abs/2411.07721},
+}
+```
 
 ## Repository Structure
 
