@@ -42,7 +42,7 @@ import {
 } from '@/components/base/ui/card';
 import { useAppSelector } from '@/lib/redux/hooks';
 import { selectActiveConfig } from '@/lib/redux/isaSlice';
-import { saveAsFile, saveAsJsonFile } from '@/lib/utils';
+import { clearLocalMemory, saveAsFile, saveAsJsonFile } from '@/lib/utils';
 import { useTour } from '@reactour/tour';
 import { useRouter } from 'next/navigation';
 
@@ -53,16 +53,6 @@ export function SettingsForm() {
   const activeConfig = useAppSelector(selectActiveConfig);
   const router = useRouter();
   const tour = useTour();
-
-  const clearLocalMemory = () => {
-    // confirm
-    const doit = confirm('Are you sure you want to clear local memory?');
-    if (!doit) return;
-
-    localStorage.clear();
-    console.info('Local memory cleared');
-    // window.location.reload();
-  };
 
   const saveCpuConfig = () => {
     saveAsJsonFile(activeConfig.cpuConfig, 'cpu-config.json');
@@ -126,7 +116,9 @@ export function SettingsForm() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button onClick={clearLocalMemory}>Clear Local Memory</Button>
+              <Button onClick={() => clearLocalMemory()}>
+                Clear Local Memory
+              </Button>
             </CardContent>
           </Card>
           <Card className='flex-auto'>
