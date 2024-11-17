@@ -116,7 +116,9 @@ export function SettingsForm() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button onClick={() => clearLocalMemory()}>Clear Local Memory</Button>
+              <Button onClick={() => clearLocalMemory()}>
+                Clear Local Memory
+              </Button>
             </CardContent>
           </Card>
           <Card className='flex-auto'>

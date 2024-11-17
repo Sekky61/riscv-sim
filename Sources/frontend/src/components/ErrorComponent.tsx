@@ -4,7 +4,7 @@ import { clearLocalMemory } from '@/lib/utils';
 import { Textarea } from './base/ui/textarea';
 import { ExternalLink } from './ExternalLink';
 
-const githubNewIssueLink = "https://github.com/Sekky61/riscv-sim/issues/new";
+const githubNewIssueLink = 'https://github.com/Sekky61/riscv-sim/issues/new';
 
 export default function ErrorComponent({
   error,
@@ -34,10 +34,18 @@ export default function ErrorComponent({
         <Button onClick={() => clearLocalMemory()}>Delete Local Data</Button>
       </div>
       <div>
-        <p>Also, please consider <ExternalLink href={githubNewIssueLink} openInNewTab>reporting the issue on GitHub</ExternalLink>.</p>
+        <p>
+          Also, please consider{' '}
+          <ExternalLink href={githubNewIssueLink} openInNewTab>
+            reporting the issue on GitHub
+          </ExternalLink>
+          .
+        </p>
         <p>Context of the error:</p>
-        <p className="font-bold">{error.name}: {error.message}</p>
-        <pre className="h-48 overflow-scroll">{error.stack}</pre>
+        <p className='font-bold'>
+          {error.name}: {error.message}
+        </p>
+        <pre className='h-48 overflow-scroll'>{error.stack}</pre>
       </div>
     </div>
   );
