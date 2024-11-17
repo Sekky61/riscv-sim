@@ -59,7 +59,6 @@ export function UmamiTracker({ envObject }: UmamiTrackerProps) {
 
     fetchUmamiId();
   }, [basePath]);
-  console.log('Render UmamiTracker', umamiId);
   if (!umamiId) {
     return null;
   }
