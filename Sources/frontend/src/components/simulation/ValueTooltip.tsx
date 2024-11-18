@@ -107,7 +107,7 @@ export function ShortValueInformation({
           <div>{value.currentType}</div>
         </>
       ) : (
-        <div className='col-span-2'>Invalid register</div>
+        <div className='col-span-2'>Unassigned value</div>
       )}
     </div>
   );

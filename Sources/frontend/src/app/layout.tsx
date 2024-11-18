@@ -29,7 +29,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Inter as FontSans } from 'next/font/google';
 import type { ReactNode } from 'react';
 
 import '@/styles/globals.css';
@@ -41,16 +40,19 @@ import { ThemeProvider } from '@/components/ThemeProvider';
 import { WelcomeTour } from '@/components/WelcomeTour';
 import { Toaster } from '@/components/base/ui/sonner';
 import { TooltipProvider } from '@/components/base/ui/tooltip';
+import { basePath } from '@/constant/env';
 import PersistedStoreProvider from '@/lib/redux/PersistedStoreProvider';
 import { loadBlockDescriptions } from '@/lib/staticLoaders';
+import localFont from 'next/font/local';
+import { UmamiTracker } from '@/components/UmamiTracker';
+import { env } from '@/constant/envProvider';
 
 /**
  * Font loading by next.js.
  * The display: swap is important for loading, but it is badly documented. It worked for a long time without it.
  */
-const fontSans = FontSans({
-  subsets: ['latin'],
-  variable: '--font-sans',
+const myFont = localFont({
+  src: '../../public/Inter.ttf',
   display: 'swap',
 });
 
@@ -65,17 +67,19 @@ export default async function RootLayout({
 }: { children: ReactNode }) {
   // Body is overflow-hidden to prevent FU configuration from expanding the page
   const descriptions = await loadBlockDescriptions();
+  const envObject = await env();
 
   return (
     <html lang='en'>
       <head>
         <meta name='viewport' content='width=device-width, initial-scale=1.0' />
+        <UmamiTracker envObject={envObject} />
         <title>RISC-V Simulator</title>
       </head>
       <body
         className={cn(
-          'min-h-screen font-sans antialiased overflow-hidden',
-          fontSans.variable,
+          'min-h-screen antialiased overflow-hidden',
+          myFont.className,
         )}
       >
         <WelcomeTour>

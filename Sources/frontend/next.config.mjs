@@ -1,4 +1,3 @@
-import { apiBaseUrl } from './src/constant/env.js';
 import analyzer from '@next/bundle-analyzer';
 
 // @ts-check
@@ -14,6 +13,7 @@ const nextConfig = withBundleAnalyzer({
   reactStrictMode: true,
   swcMinify: true,
   output: 'standalone',
+  basePath: process.env.BASE_PATH || '',
 
   // Uncoment to add domain whitelist
   // images: {
@@ -21,17 +21,6 @@ const nextConfig = withBundleAnalyzer({
   //     'res.cloudinary.com',
   //   ],
   // },
-
-  // Proxy simulation requests to Java backend API.
-  // The destination is on the same network (localhost).
-  async rewrites() {
-    return [
-      {
-        source: '/api/sim/:slug',
-        destination: `${apiBaseUrl}/:slug`,
-      },
-    ];
-  },
 
   webpack(config) {
     // Grab the existing rule that handles SVG imports

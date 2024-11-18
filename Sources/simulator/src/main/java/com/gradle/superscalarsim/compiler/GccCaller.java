@@ -115,6 +115,7 @@ public class GccCaller
     catch (Exception e)
     {
       logger.severe("Error starting GCC");
+      logger.severe(e.getMessage());
       return CompileResult.failure("Error starting GCC", List.of());
     }
     // Write the code to the process

@@ -126,6 +126,10 @@ export const isaSlice = createSlice({
       for (const isa of state.isas) {
         if (isa.cpuConfig.name === action.payload.oldName) {
           isa.cpuConfig = action.payload.isa;
+          // Update active name if it got changed
+          if (state.activeIsaName === action.payload.oldName) {
+            state.activeIsaName = action.payload.isa.name;
+          }
         }
       }
     },
@@ -192,7 +196,7 @@ export const isaSlice = createSlice({
       );
       // If the active ISA was removed, make the first one active
       if (state.activeIsaName === action.payload) {
-        const defaultIsa = state.isas[0];
+        const defaultIsa = state.isas[0]; // always valid
         if (defaultIsa === undefined) throw new Error('No default ISA found');
         state.activeIsaName = defaultIsa.cpuConfig.name;
       }

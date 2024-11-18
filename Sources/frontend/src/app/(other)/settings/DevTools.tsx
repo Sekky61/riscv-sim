@@ -32,7 +32,13 @@
 'use client';
 
 import { Button } from '@/components/base/ui/button';
-import { Card, CardTitle } from '@/components/base/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/base/ui/card';
 import { loadFile } from '@/lib/utils';
 
 /**
@@ -51,8 +57,13 @@ export function DevTools() {
 
   return (
     <Card>
-      <CardTitle>Developer tools</CardTitle>
-      <Button onClick={handleFileLoad}>Load localStorage</Button>
+      <CardHeader>
+        <CardTitle>Developer tools</CardTitle>
+        <CardDescription>Visible only to you</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Button onClick={handleFileLoad}>Load localStorage</Button>
+      </CardContent>
     </Card>
   );
 }

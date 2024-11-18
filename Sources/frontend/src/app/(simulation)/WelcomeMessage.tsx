@@ -36,7 +36,9 @@ import { Button } from '@/components/base/ui/button';
 import { Dialog, DialogContent } from '@/components/base/ui/dialog';
 import { useTour } from '@reactour/tour';
 import { useLocalStorage } from '@uidotdev/usehooks';
+import Image from 'next/image';
 import Link from 'next/link';
+import FitLogo from '@public/FIT_color_EN.png';
 
 /**
  * The welcome message dialog.
@@ -57,33 +59,40 @@ export function WelcomeMessage() {
     <Dialog open={open} onOpenChange={() => saveVisited(true)}>
       <DialogContent>
         <div className='p-4'>
+          <div>
+            <Image className='w-2/3 mb-12' src={FitLogo} alt='BUT FIT' />
+          </div>
           <h1 className='text-2xl font-bold'>
-            Welcome to the RISC-V Superscalar simulator!
+            Welcome to the RISC-V Superscalar Simulator!
           </h1>
+
           <p className='mt-2'>
-            This app allows you to simulate the execution of a superscalar
-            processor step by step.
+            Get hands-on with superscalar processing. Step through each
+            execution phase to understand processor behavior in detail.
           </p>
           <p className='mt-2'>
-            To get started, navigate to the{' '}
+            Start by loading an example program in the{' '}
             <Link href='/compiler' className='link'>
               code editor
-            </Link>{' '}
-            and load an example program.
-          </p>
-          <p className='mt-2'>
-            You can find more information about the app in the{' '}
+            </Link>
+            . For a full overview of features, visit the{' '}
             <Link href='/help' className='link'>
               help section
             </Link>
             .
           </p>
         </div>
-        <h3>Pick a theme</h3>
-        <div className='flex justify-center'>
-          <ModeToggle />
+        <div className='flex gap-4 items-center justify-center mb-6'>
+          <div className='relative'>
+            <span className='absolute right-full font-semibold text-nowrap mr-4 mt-[6px] h-full'>
+              Choose a Theme
+            </span>
+            <ModeToggle />
+          </div>
         </div>
-        <Button onClick={startTour}>Start the tour!</Button>
+        <Button onClick={startTour} className='py-8 mx-8'>
+          Start the Tour!
+        </Button>
       </DialogContent>
     </Dialog>
   );

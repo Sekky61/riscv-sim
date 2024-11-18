@@ -14,6 +14,8 @@ See [the official Java website](https://www.java.com/en/) for installation instr
 
 GCC is only required for the server mode.
 See [RISC-V toolchain](https://github.com/riscv-collab/riscv-gnu-toolchain).
+The path to the GCC executable is probably different on your system, so use the `help` command to
+specify the path to the GCC executable.
 
 ## Installation
 
@@ -196,3 +198,12 @@ To run a specific benchmark, use the following command:
 ```bash
 java -jar build/libs/superscalar-simulator-1.0-jmh.jar -i 5  "CpuLoopBenchmark"
 ```
+
+## Nix
+
+To update dependencies, run:
+
+```bash
+nix run github:fzakaria/mvn2nix/9c6907edc3e17abe5c804f09b3dd0ef398c39f78#mvn2nix > mvn2nix-lock.json
+```
+

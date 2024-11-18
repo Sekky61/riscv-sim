@@ -519,13 +519,13 @@ const selectDetailedSimCodeModels = createSelector(
 
       for (const origArg of simCodeModel.renamedArguments) {
         const regName = origArg.registerValue;
-        //@ts-ignore indexing with null is ok - it would return undefined
-        const register = registers[regName] ?? null;
+        const register = regName ? registers[regName] ?? null : null;
         const arg: ParsedArgument = {
           register,
           origArg,
-          valid: register === null || isValidRegisterValue(register.value),
-          value: register?.value ?? origArg.constantValue,
+          valid: register === null || isValidRegisterValue(register),
+          value:
+            register?.value ?? (origArg.constantValue as RegisterDataContainer), // todo: fix type
         };
         detail.argsMap[origArg.name] = arg;
       }

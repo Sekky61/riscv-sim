@@ -52,6 +52,7 @@ export function ErrorMessage() {
   const errorMessage = useAppSelector(selectErrorMessage);
   const simulationStatus = useAppSelector(selectSimulationStatus);
 
+  // TODO: catches unrelated errors as well
   const isSymbolMissingError = errorMessage?.includes('is not defined');
 
   // Prevents a flash of the error message when the simulation is loading

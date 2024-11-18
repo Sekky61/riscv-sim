@@ -1,21 +1,18 @@
 {
   "name": "riscv-sim-frontend",
-  "version": "0.2.0",
+  "version": "1.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "npx @biomejs/biome check src",
+    "lint": "biome check src",
     "lint:fix": "biome check --apply ./src",
     "lint:fix-unsafe": "biome check --apply-unsafe ./src",
     "typecheck": "tsc --noEmit --incremental false",
-    "test": "vitest run",
-    "test:watch": "vitest dev",
-    "format": "npx @biomejs/biome format src/ --write",
-    "format:check": "npx @biomejs/biome format ./src",
-    "postbuild": "next-sitemap --config next-sitemap.config.js",
-    "dependencies": "npx npm-check-updates --interactive"
+    "format": "npx biome format src/ --write",
+    "format:check": "biome format ./src",
+    "postbuild": "next-sitemap --config next-sitemap.config.js"
   },
   "dependencies": {
     "@codemirror/lint": "^6.7.0",
@@ -63,10 +60,12 @@
   },
   "devDependencies": {
     "@biomejs/biome": "1.7.3",
+    "@happy-dom/global-registrator": "^15.7.4",
     "@next/bundle-analyzer": "^14.2.3",
     "@svgr/webpack": "^8.1.0",
     "@testing-library/jest-dom": "^6.4.5",
     "@testing-library/react": "^15.0.7",
+    "@types/bun": "^1.1.12",
     "@types/jest": "^29.5.12",
     "@types/react": "^18.3.2",
     "@types/react-window": "^1.8.8",
@@ -78,7 +77,6 @@
     "postcss": "^8.4.38",
     "tailwindcss": "^3.4.3",
     "tsd": "^0.31.0",
-    "typescript": "^5.4.5",
-    "vitest": "^1.6.0"
+    "typescript": "^5.4.5"
   }
 }

@@ -4,109 +4,127 @@
 
 ## Introduction
 
-This is a RISC-V Simulator Web App. The project builds on the superscalar simulator created by Jakub Horky and Jan Vavra. The goal is to add a **web** and a **CLI** interface.
+Unlock the power of superscalar processor design with our cutting-edge RISC-V simulator! Tailored for IT students, researchers, and HPC professionals, this web-based tool brings complex architectures to life with an intuitive, customizable interface. Explore processor components, tweak configurations, and benchmark code snippets-all from your browser.
 
-In this readme, you will find instructions to build and run the app both natively and in Docker.
-The project consists of two components: web app and Java simulator server. More detailed info can be found in their respective Readmes [Sources/frontend/Readme.md](Sources/frontend/Readme.md) and [Sources/simulator/Readme.md](Sources/simulator/Readme.md)).
+The simulator offers seamless support for C and assembly programs, built-in performance metrics, and full GCC compiler integration for various optimization levels. Whether you're learning or innovating, this tool enables you to experiment with different architectural setups, analyze results, and export configurations for sharing.
 
-## Repository Structure
+Designed to deepen your understanding of processor design and HW-SW co-design, the simulator supports both interactive exploration and batch processing via command-line. Perfect for those aiming to optimize RISC-V processors and HPC codes, it's more than just a learning tool-it's a powerful platform for research and development. Get ready to elevate your skills and performance optimization with this advanced simulator!
 
-    .
-    +--Data       - Example data, measured results, etc.
-    +--Literature - Publications, references, manuals, etc.
-    +--Sources    - Root folder for the sources.
-    +--Thesis     - Latex sources of the thesis.
-    +--Misc       - Other auxiliary materials.
-    Readme.md     - Read me file
+In this README, you'll find instructions on how to build and run the app both natively and in Docker.
+The project consists of two components: a web app and a Java simulator server. For more details, refer to their respective READMEs:
+- [Frontend](Sources/frontend/Readme.md)
+- [Simulator](Sources/simulator/Readme.md)
 
-## Installation Instructions
+## Installation
 
-> TLDR: cd Sources && ./build_container.sh && ./run_container.sh
-
-You can either build the project locally or use docker.
-First the manual build is described, then the docker build.
-
-If anything is unclear, you can refer to the Dockerfiles, which contain all the necessary steps.
-The `Sources/frontend` and `Sources/simulator` also contain their own, more detailed instructions.
-
-### Build and Run Frontend Web App
-
-> Requirements: npm, node.js
-
-The app was developed using npm `10.2.3` and node.js `v21.2.0`.
-You need to have these installed to build the frontend app (later versions should work as well).
-
-To build the production version of the app, start by navigating to `Sources/frontend` and installing dependencies:
-
+First, the one-line quickstart run-it-from-anywhere (x86 systems only) using Docker:
 ```bash
-npm install
+curl -L https://raw.githubusercontent.com/Sekky61/riscv-sim/refs/heads/master/Sources/docker-compose.yml | docker compose -f - up
 ```
+The app will be available on [`http://localhost:3120`](http://localhost:3120).
 
-To build the app, run:
+For proper deployment, HTTPS support and parametrization like custom base path, do:
 
+1. Clone the repository
+2. (Optionally) [Create HTTPS certificates](Sources/proxy/Readme.md)
+3. Run `cd Sources && ./manage-riscvsim.sh up`
+
+`./manage-riscvsim.sh --help` explains all parameters.
+Refer to Readmes in the respective directories, Dockerfiles and the Nix flake in case you need more context.
+
+Generally, for production deployment you may need `--domain`, `--http-port` and `--https-port`.
+If the app is exposed on a specific prefix, use the `--base-path`, so that the links on the web page are correct.
+
+An extra example:
 ```bash
-npm run build
+./manage-riscvsim.sh up --base-path /riscvapp --domain example.com --certs-path ~/certs
 ```
-
-Unfortunately, some of the files need to be manually copied over:
-```bash
-cp -r .next/static/ .next/standalone/.next/static
-```
-
-Now that the app is built, you can run it using:
-```bash
-node .next/standalone/server.js
-```
-Navigate to `http://localhost:3000` to see the app (or the address shown in the console).
-
-For more detailed documentation and to develop the app, see `Sources/frontend/Readme.md`.
-
-### Build and Run Simulation Server
-
-> Requirements: Java
-
-The backend server is written in Java using version `17.0.6`. Gradle is bundled with the project, so you don't need to install it.
-
-To build the backend server, navigate to `Sources/simulator` and run:
-
-```bash
-./scripts/install.sh
-```
-
-To use the app (either CLI or server), run `./scripts/run.sh help` to see the available options.
-
-To run the server, type `./scripts/run.sh server`.
-
-For more detailed documentation, see `Sources/simulator/Readme.md`.
-
-### HTTPS
-
-Add SSL/TLS certificates to `Sources/proxy/certs` to enable HTTPS. A Nginx proxy is created as a Docker container during the startup.
-Note, that this step is not necessary to run the app.
-For details, see [Sources/proxy/Readme.md](Sources/proxy/Readme.md).
 
 ### Docker
 
-The two components have their respective Dockerfiles in their directories.
-There is a docker compose file located at `Sources/`. It builds the frontend and backend and runs them together.
+You can use the `docker-compose.yml` file manually.
+It uses environment variables for the parameters.
 
-There are prepared scripts `Sources/build_container.sh`, `Sources/run_container.sh` and `Sources/stop_container.sh` to run and stop the container.
-Note that sudo might be required to run the docker commands.
-Also note that older Docker versions use command `docker-compose` instead of `docker compose`.
+By default, the images are built using the Dockerfiles.
+You can also pull prebuilt images from Docker hub (`--build-strategy`).
 
-Developed using Docker `24.0.7` and `20.10.2` (version on `sc-gpu1` server).
+> [!WARNING]  
+> `--base-path` is a build-time paremeter, and so it will **not** work with Docker hub images.
 
-Below is the recommended way to build and run the project using Docker.
+> [!NOTE]  
+> `sudo` might be required to run the docker commands.
 
-```bash
-cd Sources
-./build_container.sh
-./run_container.sh
+> [!NOTE]  
+> Older Docker versions use command `docker-compose` instead of `docker compose`. See the `--compose-command` argument.
+
+
+### Build and Run Frontend Web App
+
+See the [frontend readme](Sources/frontend/Readme.md).
+
+### Build and Run Simulation Server
+
+See the [simulator readme](Sources/simulator/Readme.md).
+
+### Nix
+
+Another way to use the project is through Nix.
+I prefer this method as it is more reproducible and doesn't require installing anything manually.
+
+- Run `nix run .#simulator` to run the simulator and `nix run .#frontend` to run the frontend.
+- Run `nix build .#frontend-docker` (or `#backend-docker`) to create a Docker image. Load it with `docker load < result`.
+- Run `nix develop` in the root directory to enter the development environment with all the necessary tools.
+
+## Analytics
+
+Umami collects no PII and serves only as a visitor counter.
+The data collection should work automatically, but `--domain` should be specified.
+
+After running the docker compose, the analytics dashboard is available on port `8090`.
+The login is `admin/umami`.
+
+## Acknowledgements
+
+I would like to thank everyone who contributed to this project through collaboration and valuable input. Special thanks to:
+
+- Michal Majer - [misa@majer.cz](misa@majer.cz)
+- Jakub Horky - [horkykuba@email.cz](horkykuba@email.cz)
+- Jan Vavra - [jv369@seznam.cz](jv369@seznam.cz)
+- Jiri Jaros - [jarosjir@fit.vut.cz](jarosjir@fit.vut.cz)
+
+For further reading, refer to the theses available in the [Literature/](Literature/) directory.
+
+<img src="Sources/frontend/public/FIT_color_EN.png" alt="BUT FIT" width="300"/>
+
+## Citing the riscv-sim
+
+If you find the simulator useful for your academic work, please consider citing one or more of the following papers:
+
+Jiri Jaros, Michal Majer, Jakub Horky, and Jan Vavra: Web-Based Simulator of Superscalar RISC-V Processors, arXiv/2411.07721, 2024
+
+[https://arxiv.org/abs/2411.07721](https://arxiv.org/abs/2411.07721)
+
+```
+@misc{jaros2024webbasedsimulatorsuperscalarriscv,
+      title={Web-Based Simulator of Superscalar RISC-V Processors},
+      author={Jiri Jaros and Michal Majer and Jakub Horky and Jan Vavra},
+      year={2024},
+      eprint={2411.07721},
+      archivePrefix={arXiv},
+      primaryClass={cs.AR},
+      url={https://arxiv.org/abs/2411.07721},
+}
 ```
 
-Once the containers are running, one of two things can happen:
+## Repository Structure
 
-1. You supplied keys to `Sources/proxy/certs` and the app is available on port 3120 (http) and 3121 (https).
-
-2. You didn't supply keys and the app is available on port 3100 (http).
+```
+.
++--Literature    - Publications, references, manuals, etc.
++--Sources       - Root folder for the sources.
++--Thesis        - Latex sources of the thesis.
+flake.(nix|lock) - Nix flake
+LICENSE          - The projects license
+Readme.md        - Read me file
+```
 

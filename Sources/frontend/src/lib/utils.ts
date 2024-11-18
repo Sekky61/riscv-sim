@@ -302,3 +302,18 @@ export function formatFracPercentage(
 export function isPowerOfTwo(n: number): boolean {
   return Math.log2(n) % 1 === 0;
 }
+
+/**
+ * Deletes local data after confirming the popup.
+ */
+export function clearLocalMemory(reload = false) {
+  // confirm
+  const doit = confirm('Are you sure you want to clear local memory?');
+  if (!doit) return;
+
+  localStorage.clear();
+  console.info('Local memory cleared');
+  if (reload) {
+    window.location.reload();
+  }
+}
