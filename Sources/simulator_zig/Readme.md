@@ -6,7 +6,7 @@ A dockerfile is included for deployment convenience.
 
 ## pre-requisites
 
-1. [zig](https://ziglang.org) 0.13.0 or later
+1. [zig](https://ziglang.org) 0.13.0 or later (Nix flake uses the master branch)
 2. gcc for risc-v (`gcc-riscv-none-elf`)
    gcc is only needed for the server mode.
    you can find installation details in the [risc-v toolchain repository](https://github.com/riscv-collab/riscv-gnu-toolchain).
