@@ -10,9 +10,16 @@
       gitignore.inputs.nixpkgs.follows = "nixpkgs";
 
       flake-utils.url = "github:numtide/flake-utils";
+
+      zls.url = "github:zigtools/zls";
+      zls.inputs = {
+        nixpkgs.follows = "nixpkgs";
+        zig-overlay.follows = "zig-overlay";
+        gitignore.follows = "gitignore";
+      };
     };
 
-  outputs = { self, nixpkgs, zig-overlay, gitignore, flake-utils }:
+  outputs = { self, nixpkgs, zig-overlay, gitignore, flake-utils, zls }:
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
@@ -37,6 +44,10 @@
           checkPhase = ''
             zig build test --cache-dir $(pwd)/.zig-cache --global-cache-dir $(pwd)/.cache -Dcpu=baseline
           '';
+        };
+
+        devShells.default = pkgs.mkShell {
+          buildInputs = [ zls.packages.${system}.default zig ];
         };
       }
     );
