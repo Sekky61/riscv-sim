@@ -39,6 +39,7 @@
           doCheck = true;
           buildPhase = ''
             mkdir -p .cache
+            ln -s ${pkgs.callPackage ./deps.nix { }} .cache/p
             zig build install --cache-dir $(pwd)/.zig-cache --global-cache-dir $(pwd)/.cache -Dcpu=baseline -Doptimize=ReleaseSafe --prefix $out
           '';
           checkPhase = ''
