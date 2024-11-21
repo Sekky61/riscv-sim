@@ -1,58 +1,110 @@
 import json
-from collections import defaultdict
 import sys
+from dataclasses import dataclass, field
+from typing import List, Dict, Tuple
 
-# See https://github.com/riscv/riscv-opcodes/blob/master/README.md
-# For the input
+# Mapping fields to instruction layouts
+field_to_type = {
+    frozenset(["rd", "imm20"]): "U",
+    frozenset(["rd", "jimm20"]): "J",
+    frozenset(['bimm12hi', 'rs1', 'rs2', 'bimm12lo']): "B",
+    frozenset(['imm12hi', 'rs1', 'rs2', 'imm12lo']): "S",
+    frozenset(["imm", "rs1", "rs2"]): "S",
+    frozenset(["rd", "rs1", "rs2"]): "R",
+    frozenset(["rd", "rs1", "imm12"]): "I",
+    frozenset(["rd", "rs1", "imm"]): "I",
+}
 
-# Load the JSON
-json_data = sys.stdin.read()
+def instructionFilter(instruction: str) -> bool:
+    """Filter out instructions that we don't want to include."""
+    banned = [
+        "ebreak",
+        "ecall",
+        "wfi",
+        "fence",
+        "sfence",
+        "csrr",
+        "csrw",
+        "csrs",
+        "csrc",
+    ]
+    if instruction in banned:
+        return False
+    return True
 
-# Parse the JSON
-instructions = json.loads(json_data)
+@dataclass
+class InstructionEntry:
+    """Represents an instruction match and name."""
+    match: str
+    instruction: str
 
-# Group instructions by mask
-mask_groups = {}
-for name, data in instructions.items():
-    mask = data["mask"]
-    if mask not in mask_groups:
-        mask_groups[mask] = []
-    mask_groups[mask].append({"match": data["match"], "instruction": name})
+@dataclass
+class MaskGroup:
+    """Holds a group of instructions for a specific mask and layout."""
+    mask: str
+    layout: str
+    entries: List[InstructionEntry] = field(default_factory=list)
 
-# sort by match inside each mask group
-for mask, entries in mask_groups.items():
-    # convert hex strings to integers
-    mask_groups[mask] = sorted(entries, key=lambda x: int(x["match"], 16))
+def parse_json(data: str) -> Dict[Tuple[str, str], MaskGroup]:
+    """Parses JSON and groups instructions by mask and layout."""
+    instructions = json.loads(data)
+    groups = {}
+    for name, details in instructions.items():
+        # Filter
+        if not instructionFilter(name):
+            continue
+        mask = details["mask"]
+        layout = field_to_type.get(frozenset(details["variable_fields"]), "Unknown")
+        if layout == "Unknown":
+            print(f"Unknown layout for instruction {name}: {details['variable_fields']}")
+        key = (mask, layout)
+        if key not in groups:
+            groups[key] = MaskGroup(mask=mask, layout=layout)
+        groups[key].entries.append(InstructionEntry(match=details["match"], instruction=name))
 
-def sanitize(name):
-    if name == "break" or name == "or" or name == "and":
+    return groups
+
+def sanitize(name: str) -> str:
+    """Sanitizes instruction names for Zig compatibility."""
+    if name in {"break", "or", "and"}:
         return f"@\"{name}\""
     return name
 
+def generate_zig_encodings(groups: Dict[Tuple[str, str], MaskGroup]) -> str:
+    """Generates Zig encoding array."""
+    zig_code = "const encodings: []const DecodingTable([]const InstructionEncoding) = &.{\n"
+    for group in groups.values():
+        zig_code += f"    .{{\n"
+        zig_code += f"        .mask = {group.mask},\n"
+        zig_code += f"        .layout = .{group.layout},\n"
+        zig_code += "        .table = &.{\n"
+        for entry in sorted(group.entries, key=lambda x: int(x.match, 16)):
+            instr_sanitized = sanitize(entry.instruction)
+            zig_code += f"            .{{ .match = {entry.match}, .instruction = .{instr_sanitized} }},\n"
+        zig_code += "        },\n"
+        zig_code += "    },\n"
+    zig_code += "};\n"
+    return zig_code
+
+def generate_zig_enum(instructions: set[str]) -> str:
+    """Generates Zig enum for instructions."""
+    zig_enum = "const Opcode = enum {\n"
+    for name in sorted(instructions):
+        zig_enum += f"    {sanitize(name)},\n"
+    zig_enum += "};\n"
+    return zig_enum
+
+# Read JSON from stdin
+json_data = sys.stdin.read()
+
+# Parse JSON and group instructions
+mask_groups = parse_json(json_data)
+
 # Generate Zig code
-zig_code = "const encodings: []const DecodingTable([]const InstructionEncoding) = &.{\n"
-for mask, entries in mask_groups.items():
-    zig_code += f"    .{{\n"
-    zig_code += f"        .mask = {mask},\n"
-    zig_code += "        .table = &.{\n"
-    for entry in entries:
-        instr_sanitized = sanitize(entry["instruction"])
-        zig_code += f"            .{{ .match = {entry['match']}, .instruction = .{instr_sanitized} }},\n"
-    zig_code += "        },\n"
-    zig_code += "    },\n"
-zig_code += "};\n"
+zig_encodings = generate_zig_encodings(mask_groups)
+all_instructions = {entry.instruction for group in mask_groups.values() for entry in group.entries}
+zig_enum = generate_zig_enum(all_instructions)
 
-# Output Zig code
-print(zig_code)
-
-# Extract all instruction names
-instruction_names = sorted(instructions.keys())
-
-# Generate Zig `enum` code
-zig_enum = "const Instruction = enum {\n"
-for name in instruction_names:
-    zig_enum += f"    {sanitize(name)},\n"
-zig_enum += "};\n"
-
-# Output Zig code
+# Print Zig output
+print(zig_encodings)
 print(zig_enum)
