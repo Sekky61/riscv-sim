@@ -29,13 +29,15 @@ pub fn build(b: *std.Build) void {
     // running `zig build`).
     b.installArtifact(lib);
 
+    const args_dependency = b.dependency("args", .{ .target = target, .optimize = optimize }).module("args");
+
     const exe = b.addExecutable(.{
         .name = "riscvsim",
         .root_source_file = b.path("src/main.zig"),
         .target = target,
         .optimize = optimize,
     });
-    exe.root_module.addImport("args", b.dependency("args", .{ .target = target, .optimize = optimize }).module("args"));
+    exe.root_module.addImport("args", args_dependency);
 
     // This declares intent for the executable to be installed into the
     // standard location when the user invokes the "install" step (the default
@@ -76,10 +78,12 @@ pub fn build(b: *std.Build) void {
     const run_lib_unit_tests = b.addRunArtifact(lib_unit_tests);
 
     const exe_unit_tests = b.addTest(.{
+        .name = "src test",
         .root_source_file = b.path("src/main.zig"),
         .target = target,
         .optimize = optimize,
     });
+    exe_unit_tests.root_module.addImport("args", args_dependency);
 
     const run_exe_unit_tests = b.addRunArtifact(exe_unit_tests);
 
