@@ -1,0 +1,32 @@
+name: Test Zig
+
+# On every pull_request push and push to master and development
+on:
+  push:
+    branches:
+      - master
+      - development
+  pull_request:
+
+jobs:
+  build:
+    name: Build and Test
+    strategy:
+      fail-fast: false
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./Sources/simulator_zig
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: mlugg/setup-zig@v1
+        with:
+          version: master
+
+      - name: Run zig fmt
+        if: matrix.os == 'ubuntu-latest'
+        run: zig fmt --check .
+
+      - name: Run Tests
+        run: zig build test --summary all
