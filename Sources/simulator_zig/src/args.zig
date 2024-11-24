@@ -1,6 +1,8 @@
+const std = @import("std");
+
 // This declares long options for double hyphen
 @"gcc-path": ?[]const u8 = null,
-@"log-level": ?[]const u8 = null,
+@"log-level": std.log.Level = .info,
 @"log-file": ?[]const u8 = null,
 
 // This declares short-hand options for single hyphen

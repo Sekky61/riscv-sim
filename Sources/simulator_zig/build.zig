@@ -80,6 +80,7 @@ pub fn build(b: *std.Build) void {
     const exe_unit_tests = b.addTest(.{
         .name = "src test",
         .root_source_file = b.path("src/main.zig"),
+        .test_runner = b.path("src/test_runner.zig"),
         .target = target,
         .optimize = optimize,
     });
