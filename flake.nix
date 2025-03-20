@@ -3,11 +3,32 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
+
+    zig-overlay.url = "github:mitchellh/zig-overlay";
+    zig-overlay.inputs.nixpkgs.follows = "nixpkgs";
+
+    zls.url = "github:zigtools/zls";
+    zls.inputs = {
+      nixpkgs.follows = "nixpkgs";
+      zig-overlay.follows = "zig-overlay";
+      gitignore.follows = "gitignore";
+    };
+
+    gitignore.url = "github:hercules-ci/gitignore.nix";
+    gitignore.inputs.nixpkgs.follows = "nixpkgs";
   };
-  outputs = { self, nixpkgs, flake-utils }:
-    flake-utils.lib.eachDefaultSystem (system:
-      let
+  outputs = {
+    self,
+    nixpkgs,
+    zig-overlay,
+    flake-utils,
+    zls,
+    ...
+  } @ inputs:
+    flake-utils.lib.eachDefaultSystem (
+      system: let
         pkgs = nixpkgs.legacyPackages.${system};
+        zig = zig-overlay.packages.${system}.master;
 
         # Wrapper script to run the Next.js server
         startFront = pkgs.writeShellScriptBin "start-frontend" ''
@@ -24,29 +45,26 @@
           exec ./backend
         '';
 
-        riscv-toolchain =
-          import nixpkgs {
-            localSystem = "${system}";
-            crossSystem = {
-              config = "riscv64-none-elf";
-              libc = "newlib-nano";
-              abi = "ilp32";
-            };
+        riscv-toolchain = import nixpkgs {
+          localSystem = "${system}";
+          crossSystem = {
+            config = "riscv64-none-elf";
+            libc = "newlib-nano";
+            abi = "ilp32";
           };
-      in
-      {
+        };
+        riscv-gcc = riscv-toolchain.buildPackages.gcc;
+      in {
         formatter = pkgs.nixpkgs-fmt;
 
         packages = {
-
-          frontend = pkgs.callPackage ./Sources/frontend/package.nix {
-            # Override params here
-            # base-path = "/riscvapp";
-          };
+          frontend = pkgs.callPackage ./Sources/frontend/package.nix {};
 
           backend = pkgs.callPackage ./Sources/simulator/package.nix {
-            riscv-gcc = riscv-toolchain.buildPackages.gcc;
+            inherit riscv-gcc;
           };
+
+          simulator_zig = pkgs.callPackage ./Sources/simulator_zig/package.nix inputs;
 
           # Publish: ```
           # docker tag <image> majeris/<image>:latest
@@ -81,9 +99,18 @@
         # Development environment
         devShell = pkgs.mkShell {
           buildInputs = with pkgs; [
+            # Frontend
             bun
-            cross.buildPackages.gcc12
+
+            # Java server
+            riscv-toolchain.buildPackages.gcc
             jre
+
+            # Zig
+            zls.packages.${system}.default
+            zig
+            wasmtime
+            wabt # wasm tools
           ];
         };
       }
