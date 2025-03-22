@@ -29,12 +29,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { useWasm } from "./useWasm";
+import { useWasm } from './useWasm';
 
 export type SimulationApi = {
   add: (x: number, y: number) => number;
 };
 
 export const useSimWasm = () => {
-  return useWasm<SimulationApi>("/wasm/bin/riscvsim.wasm", {});
+  return useWasm<SimulationApi>('/wasm/bin/riscvsim.wasm', {});
 };

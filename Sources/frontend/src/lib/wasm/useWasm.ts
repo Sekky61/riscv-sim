@@ -31,7 +31,7 @@
 
 // Source: https://github.com/Romainlg29/use-wasm/tree/main
 
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 
 export interface useWasmReturn<T> {
   /**
@@ -87,7 +87,7 @@ export const useWasm = <T>(path: string, options?: useWasmOptions) => {
 
   useEffect(() => {
     if (!path) {
-      throw new Error("Path is required");
+      throw new Error('Path is required');
     }
 
     /**
@@ -123,7 +123,7 @@ export const useWasm = <T>(path: string, options?: useWasmOptions) => {
         ...options?.fetchOptions,
         headers: {
           ...options?.fetchOptions?.headers,
-          "Content-Type": "application/wasm",
+          'Content-Type': 'application/wasm',
         },
       });
 
