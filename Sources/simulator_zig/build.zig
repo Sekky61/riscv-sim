@@ -57,6 +57,37 @@ pub fn build(b: *std.Build) void {
     });
     const run_exe_unit_tests = b.addRunArtifact(exe_unit_tests);
 
+    // === WASM LIB ===
+    // Create a separate target for WebAssembly
+    const wasm_target = b.resolveTargetQuery(.{
+        .cpu_arch = .wasm32,
+        .os_tag = .freestanding,
+    });
+
+    // Create a module for the WASM library
+    const wasm_lib_root_module = b.addModule("wasm_lib_root_module", .{
+        .root_source_file = b.path("src/root.zig"),
+        .target = wasm_target,
+        .optimize = optimize,
+    });
+
+    // Build the WASM library
+    const wasm_lib = b.addExecutable(.{
+        .name = "riscvsim-wasm",
+        .root_module = wasm_lib_root_module,
+    });
+
+    // WASM-specific linking options
+    wasm_lib.rdynamic = true;
+    wasm_lib.entry = .disabled;
+    b.installArtifact(wasm_lib);
+    //
+    // Create a custom step to rename and move the WASM file to a more convenient location
+    const wasm_install_step = b.addInstallBinFile(
+        wasm_lib.getEmittedBin(),
+        "riscvsim.wasm",
+    );
+
     // === STEPS ===
 
     // Run from the installation dir instead of cache
@@ -76,4 +107,8 @@ pub fn build(b: *std.Build) void {
     const test_step = b.step("test", "Run unit tests");
     test_step.dependOn(&run_lib_unit_tests.step);
     test_step.dependOn(&run_exe_unit_tests.step);
+
+    // Add a step to build the WASM library specifically
+    const wasm_step = b.step("wasm", "Build the library as WebAssembly");
+    wasm_step.dependOn(&wasm_install_step.step);
 }
