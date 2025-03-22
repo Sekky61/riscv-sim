@@ -38,20 +38,20 @@
 export type ApiResult<Res> = ApiResultError | ApiResultResponse<Res>;
 
 type ApiResultError = {
-  type: "error";
+  type: 'error';
   message: string;
 };
 type ApiResultResponse<Res> = {
-  type: "response";
+  type: 'response';
   data: Res;
 };
 
 export function isResponse<Res>(
   result: ApiResult<Res>,
 ): result is ApiResultResponse<Res> {
-  return result.type === "response";
+  return result.type === 'response';
 }
 
 export function isError<Res>(result: ApiResult<Res>): result is ApiResultError {
-  return result.type === "error";
+  return result.type === 'error';
 }

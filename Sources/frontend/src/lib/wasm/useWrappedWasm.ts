@@ -29,8 +29,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import type { ApiResult } from "./ApiResult";
-import { useWasm } from "./useWasm";
+import type { ApiResult } from './ApiResult';
+import { useWasm } from './useWasm';
 
 /** Every api should satisfy this */
 // biome-ignore lint/suspicious/noExplicitAny: lib code
@@ -73,7 +73,7 @@ function readWasmString(memory: WebAssembly.Memory, ptrOffset: number) {
   // Read the length (next 4 bytes)
   const len = dataView.getUint32(ptrOffset + 4, true);
   const bytes = new Uint8Array(memory.buffer, ptr, len);
-  return new TextDecoder("utf-8").decode(bytes);
+  return new TextDecoder('utf-8').decode(bytes);
 }
 
 /** Parse the serialized response */
@@ -83,7 +83,7 @@ function readWasmResponse(memory: WebAssembly.Memory, ptrOffset: number) {
     const obj = JSON.parse(string);
     return obj as ApiResult<unknown>;
   } catch (e) {
-    console.error("Could not parse WASM response", e);
+    console.error('Could not parse WASM response', e);
     return null;
   }
 }
@@ -98,9 +98,9 @@ function wrapWasmFunction<F extends (...args: any[]) => Pointer>(
     const response = readWasmResponse(memory, ptr);
     if (!response) {
       return {
-        type: "error",
+        type: 'error',
         message:
-          "Could not parse WASM response on the client side. This is a bug.",
+          'Could not parse WASM response on the client side. This is a bug.',
       };
     }
     return response;
@@ -108,7 +108,7 @@ function wrapWasmFunction<F extends (...args: any[]) => Pointer>(
 }
 
 export function useWrappedWasm<Api extends BaseWasmApi>() {
-  const wasm = useWasm<GlueApi<Api>>("/wasm/bin/riscvsim.wasm", {});
+  const wasm = useWasm<GlueApi<Api>>('/wasm/bin/riscvsim.wasm', {});
 
   // todo: cache it
   const apiEntries = Object.entries(wasm.fn).map(([fnName, fn]) => [

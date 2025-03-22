@@ -29,8 +29,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import type { SimulationConfig } from "../forms/Isa";
-import { useWrappedWasm } from "./useWrappedWasm";
+import type { SimulationConfig } from '../forms/Isa';
+import { useWrappedWasm } from './useWrappedWasm';
 
 /**
  * The simulation API
