@@ -29,6 +29,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import type { SimulationConfig } from "../forms/Isa";
 import { useWrappedWasm } from "./useWrappedWasm";
 
 /**
@@ -36,8 +37,14 @@ import { useWrappedWasm } from "./useWrappedWasm";
  */
 export type SimulationApi = {
   add: (x: number, y: number) => number;
+  getDefaultCpuConfig: () => SimulationConfig;
 };
 
+/**
+ * This hook is the interface between WASM simulator and
+ * frontend code. Call functions and get results from it.
+ * TODO: make calling wasm async
+ */
 export function useSimWasm() {
   return useWrappedWasm<SimulationApi>();
 }
