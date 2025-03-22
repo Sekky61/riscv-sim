@@ -1,10 +1,11 @@
-// Source: https://gist.github.com/karlseguin/c6bea5b35e4e8d26af6f81c22cb5d76b
-//
+// Changed Jan 29, 2025 to accomodate latest Zig changes
+// See history if you're using an older version of Zig.
+
 // in your build.zig, you can specify a custom test runner:
 // const tests = b.addTest(.{
 //   .target = target,
 //   .optimize = optimize,
-//   .test_runner = "test_runner.zig", // add this line
+//   .test_runner = .{ .path = b.path("test_runner.zig"), .mode = .simple }, // add this line
 //   .root_source_file = b.path("src/main.zig"),
 // });
 
@@ -40,7 +41,6 @@ pub fn main() !void {
 
     for (builtin.test_functions) |t| {
         if (isSetup(t)) {
-            current_test = friendlyName(t.name);
             t.func() catch |err| {
                 printer.status(.fail, "\nsetup \"{s}\" failed: {}\n", .{ t.name, err });
                 return err;
@@ -63,15 +63,22 @@ pub fn main() !void {
             }
         }
 
-        const friendly_name = friendlyName(t.name);
+        const friendly_name = blk: {
+            const name = t.name;
+            var it = std.mem.splitScalar(u8, name, '.');
+            while (it.next()) |value| {
+                if (std.mem.eql(u8, value, "test")) {
+                    const rest = it.rest();
+                    break :blk if (rest.len > 0) rest else name;
+                }
+            }
+            break :blk name;
+        };
+
         current_test = friendly_name;
         std.testing.allocator_instance = .{};
         const result = t.func();
         current_test = null;
-
-        if (is_unnamed_test) {
-            continue;
-        }
 
         const ns_taken = slowest.endTiming(friendly_name);
 
@@ -110,7 +117,6 @@ pub fn main() !void {
 
     for (builtin.test_functions) |t| {
         if (isTeardown(t)) {
-            current_test = friendlyName(t.name);
             t.func() catch |err| {
                 printer.status(.fail, "\nteardown \"{s}\" failed: {}\n", .{ t.name, err });
                 return err;
@@ -131,17 +137,6 @@ pub fn main() !void {
     try slowest.display(printer);
     printer.fmt("\n", .{});
     std.posix.exit(if (fail == 0) 0 else 1);
-}
-
-fn friendlyName(name: []const u8) []const u8 {
-    var it = std.mem.splitScalar(u8, name, '.');
-    while (it.next()) |value| {
-        if (std.mem.eql(u8, value, "test")) {
-            const rest = it.rest();
-            return if (rest.len > 0) rest else name;
-        }
-    }
-    return name;
 }
 
 const Printer = struct {
@@ -290,12 +285,14 @@ const Env = struct {
     }
 };
 
-pub fn panic(msg: []const u8, error_return_trace: ?*std.builtin.StackTrace, ret_addr: ?usize) noreturn {
-    if (current_test) |ct| {
-        std.debug.print("\x1b[31m{s}\npanic running \"{s}\"\n{s}\x1b[0m\n", .{ BORDER, ct, BORDER });
+pub const panic = std.debug.FullPanic(struct {
+    pub fn panicFn(msg: []const u8, first_trace_addr: ?usize) noreturn {
+        if (current_test) |ct| {
+            std.debug.print("\x1b[31m{s}\npanic running \"{s}\"\n{s}\x1b[0m\n", .{ BORDER, ct, BORDER });
+        }
+        std.debug.defaultPanic(msg, first_trace_addr);
     }
-    std.debug.defaultPanic(msg, error_return_trace, ret_addr);
-}
+}.panicFn);
 
 fn isUnnamed(t: std.builtin.TestFn) bool {
     const marker = ".test_";

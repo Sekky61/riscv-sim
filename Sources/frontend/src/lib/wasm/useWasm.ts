@@ -67,6 +67,7 @@ export interface useWasmOptions {
   /**
    * Wasm environment
    */
+  // biome-ignore lint/suspicious/noExplicitAny: lib code
   env?: (memory: WebAssembly.Memory) => { [key: string]: any };
 }
 
@@ -85,6 +86,7 @@ export const useWasm = <T>(path: string, options?: useWasmOptions) => {
     memory: options?.memory ?? ({} as WebAssembly.Memory),
   });
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: lib code
   useEffect(() => {
     if (!path) {
       throw new Error('Path is required');
@@ -171,6 +173,7 @@ export const useWasm = <T>(path: string, options?: useWasmOptions) => {
       /**
        * Force the type of the exports to Exports (with memory)
        */
+      // biome-ignore lint/complexity/noBannedTypes: lib code
       const exports: Exports<{}> = wa.instance.exports as Exports<{}>;
 
       /**

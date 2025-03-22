@@ -1,12 +1,12 @@
 /**
- * @file    useSimWasm.ts
+ * @file    ApiResult.ts
  *
  * @author  Michal Majer
  *          Faculty of Information Technology
  *          Brno University of Technology
  *          xmajer21@stud.fit.vutbr.cz
  *
- * @brief   React hook for running simulation wasm
+ * @brief   Result type of WASM API call
  *
  * @date    23 March 2025, 19:00 (created)
  *
@@ -29,22 +29,29 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import type { SimulationConfig } from '../forms/Isa';
-import { useWrappedWasm } from './useWrappedWasm';
-
 /**
- * The simulation API
+ * The serialized response has this type.
+ * WASM call actually returns a pointer to a pair [pointer, length].
+ * This pair points at utf-8 serialized JSON that has this format
+ * The values are generated in `Sources/simulator_zig/src/wasm/glue.zig`
  */
-export type SimulationApi = {
-  add: (x: number, y: number) => number;
-  getDefaultCpuConfig: () => SimulationConfig;
+export type ApiResult<Res> = ApiResultError | ApiResultResponse<Res>;
+
+type ApiResultError = {
+  type: 'error';
+  message: string;
+};
+type ApiResultResponse<Res> = {
+  type: 'response';
+  data: Res;
 };
 
-/**
- * This hook is the interface between WASM simulator and
- * frontend code. Call functions and get results from it.
- * TODO: make calling wasm async
- */
-export function useSimWasm() {
-  return useWrappedWasm<SimulationApi>();
+export function isResponse<Res>(
+  result: ApiResult<Res>,
+): result is ApiResultResponse<Res> {
+  return result.type === 'response';
+}
+
+export function isError<Res>(result: ApiResult<Res>): result is ApiResultError {
+  return result.type === 'error';
 }
