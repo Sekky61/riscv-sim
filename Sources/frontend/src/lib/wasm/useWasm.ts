@@ -31,7 +31,7 @@
 
 // Source: https://github.com/Romainlg29/use-wasm/tree/main
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 
 export interface useWasmReturn<T> {
   /**
@@ -67,6 +67,7 @@ export interface useWasmOptions {
   /**
    * Wasm environment
    */
+  // biome-ignore lint/suspicious/noExplicitAny: lib code
   env?: (memory: WebAssembly.Memory) => { [key: string]: any };
 }
 
@@ -85,9 +86,10 @@ export const useWasm = <T>(path: string, options?: useWasmOptions) => {
     memory: options?.memory ?? ({} as WebAssembly.Memory),
   });
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: lib code
   useEffect(() => {
     if (!path) {
-      throw new Error('Path is required');
+      throw new Error("Path is required");
     }
 
     /**
@@ -123,7 +125,7 @@ export const useWasm = <T>(path: string, options?: useWasmOptions) => {
         ...options?.fetchOptions,
         headers: {
           ...options?.fetchOptions?.headers,
-          'Content-Type': 'application/wasm',
+          "Content-Type": "application/wasm",
         },
       });
 
@@ -171,6 +173,7 @@ export const useWasm = <T>(path: string, options?: useWasmOptions) => {
       /**
        * Force the type of the exports to Exports (with memory)
        */
+      // biome-ignore lint/complexity/noBannedTypes: lib code
       const exports: Exports<{}> = wa.instance.exports as Exports<{}>;
 
       /**
