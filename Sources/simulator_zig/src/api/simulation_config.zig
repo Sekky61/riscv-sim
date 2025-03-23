@@ -1,4 +1,6 @@
 const std = @import("std");
+const CpuConfig = @import("cpu_config.zig").CpuConfig;
+const MemoryLocation = @import("memory_location.zig").MemoryLocation;
 pub const Allocator = std.mem.Allocator;
 
 /// Represents an entry point, which can be a label (string) or an address (int).
@@ -21,7 +23,7 @@ pub const SimulationConfig = struct {
     memoryLocations: []MemoryLocation = &.{},
 
     /// Configuration of the CPU.
-    cpuConfig: CpuConfig = CpuConfig.defaultConfiguration(),
+    cpuConfig: CpuConfig = CpuConfig.getDefaultConfiguration(),
 
     /// The address of the entry point of the code.
     /// Can be a label (string) or a number (int).

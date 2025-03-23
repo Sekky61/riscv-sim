@@ -8,12 +8,11 @@ pub const SimulationStatistics = struct {
     dynamicInstructionMix: InstructionMix = .{},
     /// Cache statistics
     cache: CacheStatistics = .{},
-    /// Functional unit statistics.
-    /// Using an AutoHashMap with key type []const u8 (unit name) and value FUStats.
-    fuStats: std.AutoHashMap([]const u8, FUStats),
+    /// Functional unit statistics. Index it using id of functional unit
+    fuStats: std.ArrayListUnmanaged(FUStats) = .empty,
     /// Per instruction statistics.
     /// Indexed as the instructions appear in the code (id in InputCodeModel).
-    instructionStats: std.ArrayList(InstructionStats),
+    instructionStats: std.ArrayListUnmanaged(InstructionStats) = .empty,
     /// Counter for committed instructions.
     /// A committed instruction is one that has successfully left ROB.
     committedInstructions: i64 = 0,
@@ -41,71 +40,12 @@ pub const SimulationStatistics = struct {
     /// Maximal number of allocated speculative registers.
     maxAllocatedRegisters: i32 = 0,
 
-    /// Allocate a new SimulationStatistics instance (constructor equivalent)
-    /// with the given instructionCount and clockHz.
-    /// Allocator is used for building the internal ArrayList and AutoHashMap.
-    pub fn init(
-        allocator: *std.mem.Allocator,
-        instructionCount: i32,
-        clockHz: i32,
-    ) !SimulationStatistics {
-        return SimulationStatistics{
-            .staticInstructionMix = InstructionMix{ .intArithmetic = 0, .floatArithmetic = 0, .memory = 0, .branch = 0, .other = 0 },
-            .dynamicInstructionMix = InstructionMix{ .intArithmetic = 0, .floatArithmetic = 0, .memory = 0, .branch = 0, .other = 0 },
-            .cache = .{}.init(),
-            .fuStats = try std.AutoHashMap([]const u8, FUStats).init(allocator),
-            .instructionStats = try std.ArrayList(InstructionStats).init(allocator),
-            .committedInstructions = 0,
-            .clockCycles = 0,
-            .flushedInstructions = 0,
-            .robFlushes = 0,
-            .clock = clockHz,
-            .correctlyPredictedBranches = 0,
-            .conditionalBranches = 0,
-            .takenBranches = 0,
-            .mainMemoryLoadedBytes = 0,
-            .mainMemoryStoredBytes = 0,
-            .maxAllocatedRegisters = 0,
-        };
-    }
-
-    /// Constructor equivalent that also takes a list of functional units.
-    /// fUnits is an array of strings that represent the names.
-    pub fn initWithFUnits(
-        allocator: *std.mem.Allocator,
-        instructionCount: i32,
-        clockHz: i32,
-        fUnits: []const []const u8,
-    ) !SimulationStatistics {
-        var self = try SimulationStatistics.init(allocator, instructionCount, clockHz);
-        for (fUnits) |fUnit| {
-            // Insert new FUStats with key fUnit.
-            try self.fuStats.put(fUnit, .{}.init());
+    /// Increment busy cycles of FU with given id.
+    pub fn incrementBusyCycles(self: *SimulationStatistics, fuId: i32) !void {
+        if (fuId >= self.fuStats.items.len) {
+            return error.UnknownIdError;
         }
-        return self;
-    }
-
-    /// Allocate new per instruction statistics.
-    /// Used in tests.
-    pub fn allocateInstructionStats(self: *SimulationStatistics, instructionCount: i32) !void {
-        try self.instructionStats.ensureTotalCapacity(instructionCount);
-        self.instructionStats.clear();
-        var i: i32 = 0;
-        while (i < instructionCount) : (i += 1) {
-            try self.instructionStats.append(.{}.init());
-        }
-    }
-
-    /// Increment busy cycles of FU with given name.
-    /// Asserts that fuName is not null.
-    pub fn incrementBusyCycles(self: *SimulationStatistics, fuName: []const u8) !void {
-        // In Zig we assume that fuName is valid.
-        // If key is not found, add a new FUStats.
-        if (!self.fuStats.contains(fuName)) {
-            try self.fuStats.put(fuName, .{}.init());
-        }
-        const mutable_entry = self.fuStats.get(fuName) orelse unreachable;
-        mutable_entry.incrementBusyCycles();
+        self.fuStats.items[fuId].incrementBusyCycles();
     }
 
     /// Increment main memory traffic.
@@ -162,149 +102,26 @@ pub const SimulationStatistics = struct {
     pub fn incrementFailedInstructions(self: *SimulationStatistics) void {
         self.flushedInstructions += 1;
     }
-
-    /// Get number of committed instructions.
-    pub fn getCommittedInstructions(self: *SimulationStatistics) i64 {
-        return self.committedInstructions;
-    }
-
-    /// Get number of committed conditional branch instructions.
-    pub fn getConditionalBranches(self: *SimulationStatistics) i64 {
-        return self.conditionalBranches;
-    }
-
-    /// Get number of committed unconditional branch instructions.
-    /// Calculated as (dynamicInstructionMix.branch - conditionalBranches).
-    pub fn getUnconditionalBranches(self: *SimulationStatistics) i64 {
-        return self.dynamicInstructionMix.branch - self.conditionalBranches;
-    }
-
-    /// Get number of correctly predicted branches.
-    pub fn getCorrectlyPredictedBranches(self: *SimulationStatistics) i64 {
-        return self.correctlyPredictedBranches;
-    }
-
-    /// Get number of taken branches.
-    pub fn getTakenBranches(self: *SimulationStatistics) i64 {
-        return self.takenBranches;
-    }
-
-    /// Get the arithmetic intensity of the code.
-    pub fn getArithmeticIntensity(self: *SimulationStatistics) f64 {
-        if (self.committedInstructions == 0) {
-            return 0;
-        }
-        return (@floatFromInt(self.dynamicInstructionMix.intArithmetic +
-            self.dynamicInstructionMix.floatArithmetic)) / (@floatFromInt(self.committedInstructions));
-    }
-
-    /// Get prediction accuracy.
-    pub fn getPredictionAccuracy(self: *SimulationStatistics) f64 {
-        if (self.conditionalBranches == 0) {
-            return 0;
-        }
-        return (@intToFloat(f64, self.correctlyPredictedBranches)) /
-            (@intToFloat(f64, self.dynamicInstructionMix.branch));
-    }
-
-    /// Get FLOPS.
-    pub fn getFlops(self: *SimulationStatistics) f64 {
-        if (self.clock == 0) {
-            return 0;
-        }
-        return (@intToFloat(f64, self.dynamicInstructionMix.intArithmetic +
-            self.dynamicInstructionMix.floatArithmetic)) / (@intToFloat(f64, self.clock));
-    }
-
-    /// Get IPC.
-    pub fn getIpc(self: *SimulationStatistics) f64 {
-        if (self.clockCycles == 0) {
-            return 0;
-        }
-        return (@intToFloat(f64, self.committedInstructions)) /
-            (@intToFloat(f64, self.clockCycles));
-    }
-
-    /// Get wall time.
-    /// clock is the clock frequency (Hz)
-    pub fn getWallTime(self: *SimulationStatistics) f64 {
-        return (@intToFloat(f64, self.clockCycles)) /
-            (@intToFloat(f64, self.clock));
-    }
-
-    /// Get memory throughput (bytes/s).
-    pub fn getMemoryThroughput(self: *SimulationStatistics) f64 {
-        return (@intToFloat(f64, self.mainMemoryLoadedBytes + self.mainMemoryStoredBytes)) /
-            (@intToFloat(f64, self.clock));
-    }
 };
 
 /// A structure that represents cache statistics.
 pub const CacheStatistics = struct {
     /// Counter for how many times cache has been accessed for read.
-    readAccesses: i32,
+    readAccesses: i32 = 0,
     /// Counter for how many times cache has been accessed for write.
-    writeAccesses: i32,
+    writeAccesses: i32 = 0,
     /// Counter for the number of cache hits.
-    hits: i32,
+    hits: i32 = 0,
     /// Counter for the number of cache misses.
     /// Misaligned access that causes to load 2 cache lines counts as a single miss.
-    misses: i32,
+    misses: i32 = 0,
     /// Counter for the total delay caused by cache accesses.
     /// TODO
-    totalDelay: i32,
+    totalDelay: i32 = 0,
     /// Number of bytes written to cache.
-    bytesWritten: i32,
+    bytesWritten: i32 = 0,
     /// Number of bytes read from cache.
-    bytesRead: i32,
-
-    /// Initialize CacheStatistics.
-    pub fn init(self: CacheStatistics) CacheStatistics {
-        return CacheStatistics{
-            .readAccesses = 0,
-            .writeAccesses = 0,
-            .hits = 0,
-            .misses = 0,
-            .totalDelay = 0,
-            .bytesWritten = 0,
-            .bytesRead = 0,
-        };
-    }
-
-    /// Get cache hits.
-    pub fn getHits(self: *CacheStatistics) i32 {
-        return self.hits;
-    }
-
-    /// Get cache misses.
-    pub fn getMisses(self: *CacheStatistics) i32 {
-        return self.misses;
-    }
-
-    /// Get cache hit rate.
-    pub fn getHitRate(self: *CacheStatistics) f64 {
-        const all = self.hits + self.misses;
-        if (all == 0) {
-            return 0;
-        }
-        return (@intToFloat(f64, self.hits)) / (@intToFloat(f64, all));
-    }
-
-    pub fn getReadAccesses(self: *CacheStatistics) i32 {
-        return self.readAccesses;
-    }
-
-    pub fn getWriteAccesses(self: *CacheStatistics) i32 {
-        return self.writeAccesses;
-    }
-
-    pub fn getBytesWritten(self: *CacheStatistics) i32 {
-        return self.bytesWritten;
-    }
-
-    pub fn getBytesRead(self: *CacheStatistics) i32 {
-        return self.bytesRead;
-    }
+    bytesRead: i32 = 0,
 
     /// Increment read accesses and add bytesRead.
     pub fn incrementReadAccesses(self: *CacheStatistics, bytesRead: i32) void {
@@ -358,6 +175,7 @@ pub const InstructionMix = struct {
 
 /// FUStats represents functional unit statistics.
 pub const FUStats = struct {
+    fuId: i32 = 0,
     /// The number of cycles that the FU was busy.
     busyCycles: i32 = 0,
 

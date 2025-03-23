@@ -82,7 +82,44 @@ export function SimulationStats() {
     console.log("wasm loading", wasm);
   } else {
     console.log("api", api, wasm);
-    const res = api.parseAsm({ code: "Hello code", memoryLocations: [] });
+    const res = api.simulate({
+      tick: 0,
+      config: {
+        code: "",
+        cpuConfig: {
+          branchFollowLimit: 0,
+          name: "",
+          robSize: 0,
+          commitWidth: 0,
+          flushPenalty: 0,
+          fetchWidth: 0,
+          btbSize: 0,
+          phtSize: 0,
+          predictorType: "ZERO_BIT_PREDICTOR",
+          predictorDefaultState: 0,
+          useGlobalHistory: false,
+          fUnits: [],
+          useCache: false,
+          cacheLines: 0,
+          cacheLineSize: 0,
+          cacheAssoc: 0,
+          cacheReplacement: "LRU",
+          storeBehavior: "write-back",
+          laneReplacementDelay: 0,
+          cacheAccessDelay: 0,
+          lbSize: 0,
+          sbSize: 0,
+          storeLatency: 0,
+          loadLatency: 0,
+          callStackSize: 0,
+          speculativeRegisters: 0,
+          coreClockFrequency: 0,
+          cacheClockFrequency: 0,
+        },
+        memoryLocations: [],
+        entryPoint: "",
+      },
+    });
     console.log("allocated", res);
   }
 

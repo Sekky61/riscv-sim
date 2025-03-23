@@ -143,6 +143,12 @@ pub const Word = packed struct {
         u: U,
         j: J,
     };
+
+    pub fn jsonStringify(self: *const @This(), jw: anytype) !void {
+        // jw is a pointer to this WriteStream
+        const value: u32 = @bitCast(self.*);
+        try jw.write(value);
+    }
 };
 
 pub const Layout = enum {
@@ -478,4 +484,24 @@ test "Instruction API" {
     // ori x0, x4, 10
     const ori = decoder.decode(0b00000000101000100110000000010011).?;
     try hasRegisters(ori, .x0, .x4, null);
+}
+
+test "Word can be JSON serialized" {
+    try testing.expect(std.meta.hasFn(Word, "jsonStringify"));
+    try testing.expect(std.meta.hasUniqueRepresentation(Word));
+    try testing.expectEqual(@sizeOf(Word), 4);
+
+    const num = 0b00000001000111001000000000100011;
+    const numAsString = try std.fmt.allocPrint(testing.allocator, "{}", .{num});
+    defer testing.allocator.free(numAsString);
+
+    var decoder = try Decoder.init(testing.allocator);
+    defer decoder.deinit(testing.allocator);
+    const sb = decoder.decode(num).?;
+    const word = sb.word;
+
+    var string: std.ArrayList(u8) = .init(testing.allocator);
+    defer string.deinit();
+    try std.json.stringify(word, .{}, string.writer());
+    try testing.expectEqualSlices(u8, numAsString, string.items);
 }

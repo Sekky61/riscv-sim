@@ -1,10 +1,9 @@
 //! Just a wrapper for root_indirect.zig
 
-const api = @import("api/cpu_state.zig");
+const api = @import("api.zig");
 const glue = @import("wasm/glue.zig");
 const allocator = @import("allocator.zig");
 const Serialized = glue.Serialized;
-const parse_asm = @import("api/parse_asm.zig");
 const root = @import("root_indirect.zig");
 
 // todo reduce boilerplate
@@ -28,8 +27,16 @@ pub export fn returnError(allocationError: bool) Serialized(i32) {
     return glue.respondErrorMessage("Test error", allocator.getAllocator());
 }
 
-pub export fn parseAsm(request: Serialized(parse_asm.ParseAsmRequest)) Serialized(parse_asm.ParseAsmResponse) {
+pub export fn parseAsm(request: Serialized(api.parse_asm.ParseAsmRequest)) Serialized(api.parse_asm.ParseAsmResponse) {
     return root.parseAsm(request);
+}
+
+pub export fn checkConfig(request: Serialized(api.check_config.CheckConfigRequest)) Serialized(api.check_config.CheckConfigResponse) {
+    return root.checkConfig(request);
+}
+
+pub export fn simulate(request: Serialized(api.simulate.SimulateRequest)) Serialized(api.simulate.SimulateResponse) {
+    return root.simulate(request);
 }
 
 pub export fn getDefaultCpuConfig() Serialized(api.CpuConfig) {

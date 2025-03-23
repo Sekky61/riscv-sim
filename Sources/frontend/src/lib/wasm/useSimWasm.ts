@@ -30,7 +30,14 @@
  */
 
 import type { SimulationConfig } from "../forms/Isa";
-import type { ParseAsmRequest, ParseAsmResponse } from "../types/simulatorApi";
+import type {
+  CheckConfigRequest,
+  CheckConfigResponse,
+  ParseAsmRequest,
+  ParseAsmResponse,
+  SimulateRequest,
+  SimulateResponse,
+} from "../types/simulatorApi";
 import { useWrappedWasm } from "./useWrappedWasm";
 
 /**
@@ -45,6 +52,8 @@ export type SimulationApi = {
   allocRequestSpace: (sizeBytes: number) => { ptr: number; len: number };
   getDefaultCpuConfig: () => SimulationConfig;
   parseAsm: (request: ParseAsmRequest) => ParseAsmResponse;
+  checkConfig: (request: CheckConfigRequest) => CheckConfigResponse;
+  simulate: (request: SimulateRequest) => SimulateResponse;
 
   /**
    * For testing error messages

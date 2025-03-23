@@ -23,6 +23,7 @@ fn buildResponse(comptime T: type, data: T, gpa: Allocator) !i32 {
     return @intCast(@intFromPtr(resultSlotAddress));
 }
 
+// See how to write custom structures in [docs](https://ziglang.org/documentation/master/std/#std.json.stringify.WriteStream.write)
 fn buildErrorWithMessage(errMsg: []const u8, gpa: Allocator) i32 {
     const allocationFailedMessageAddress: i32 = @intCast(@intFromPtr(&allocationFailedMessage));
     result.clearAndFree(gpa);
