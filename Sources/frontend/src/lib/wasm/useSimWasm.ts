@@ -29,15 +29,27 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import type { SimulationConfig } from '../forms/Isa';
-import { useWrappedWasm } from './useWrappedWasm';
+import type { SimulationConfig } from "../forms/Isa";
+import type { ParseAsmRequest, ParseAsmResponse } from "../types/simulatorApi";
+import { useWrappedWasm } from "./useWrappedWasm";
 
 /**
  * The simulation API
  */
 export type SimulationApi = {
   add: (x: number, y: number) => number;
+  /**
+   * @param sizeBytes the requested buffer size
+   * @returns pointer to slice
+   */
+  allocRequestSpace: (sizeBytes: number) => { ptr: number; len: number };
   getDefaultCpuConfig: () => SimulationConfig;
+  parseAsm: (request: ParseAsmRequest) => ParseAsmResponse;
+
+  /**
+   * For testing error messages
+   */
+  returnError: (allocationError: boolean) => unknown;
 };
 
 /**
@@ -46,5 +58,5 @@ export type SimulationApi = {
  * TODO: make calling wasm async
  */
 export function useSimWasm() {
-  return useWrappedWasm<SimulationApi>();
+  return useWrappedWasm<SimulationApi>("allocRequestSpace");
 }
