@@ -29,7 +29,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import type { ApiResult } from './ApiResult';
+import { isError, type ApiResult } from './ApiResult';
 import { useWasm } from './useWasm';
 
 /** Every api should satisfy this */
@@ -61,17 +61,23 @@ type WasmWrap<F> = F extends (...args: infer A) => any
   ? (...args: A) => Pointer
   : never;
 
+function readSliceAt(memory: WebAssembly.Memory, ptrOffset: number) {
+  const dataView = new DataView(memory.buffer);
+  // Read the pointer (first 4 bytes)
+  const ptr = dataView.getUint32(ptrOffset, true);
+  // Read the length (next 4 bytes)
+  const len = dataView.getUint32(ptrOffset + 4, true);
+  console.log('read slice at', ptrOffset, 'ptr', ptr, 'len', len);
+  return { ptr, len };
+}
+
 /**
  * Function to read a string from WebAssembly memory.
  * This is how data serialization is designed.
  * Assumes little-endian
  */
 function readWasmString(memory: WebAssembly.Memory, ptrOffset: number) {
-  const dataView = new DataView(memory.buffer);
-  // Read the pointer (first 4 bytes)
-  const ptr = dataView.getUint32(ptrOffset, true);
-  // Read the length (next 4 bytes)
-  const len = dataView.getUint32(ptrOffset + 4, true);
+  const { ptr, len } = readSliceAt(memory, ptrOffset);
   const bytes = new Uint8Array(memory.buffer, ptr, len);
   return new TextDecoder('utf-8').decode(bytes);
 }
@@ -88,14 +94,18 @@ function readWasmResponse(memory: WebAssembly.Memory, ptrOffset: number) {
   }
 }
 
-// biome-ignore lint/suspicious/noExplicitAny: lib code
-function wrapWasmFunction<F extends (...args: any[]) => Pointer>(
+function wasmFunctionFactory<F extends (arg?: unknown) => Pointer>(
   fn: F,
-  memory: WebAssembly.Memory,
+  options: {
+    memory: WebAssembly.Memory;
+    argWrapper?: (arg: unknown) => Pointer | null;
+  },
 ) {
-  return (...args: unknown[]): ApiResult<unknown> => {
-    const ptr = fn(...args);
-    const response = readWasmResponse(memory, ptr);
+  return (arg: unknown): ApiResult<unknown> => {
+    const argWrapper = options?.argWrapper ?? ((x) => x);
+    const wrappedArg = arg ? argWrapper(arg) : null;
+    const ptr = fn(wrappedArg);
+    const response = readWasmResponse(options.memory, ptr);
     if (!response) {
       return {
         type: 'error',
@@ -107,13 +117,57 @@ function wrapWasmFunction<F extends (...args: any[]) => Pointer>(
   };
 }
 
-export function useWrappedWasm<Api extends BaseWasmApi>() {
+export function useWrappedWasm<Api extends BaseWasmApi>(
+  allocationFnName: keyof Api,
+) {
   const wasm = useWasm<GlueApi<Api>>('/wasm/bin/riscvsim.wasm', {});
+
+  const serializeRequestArg = (arg: unknown) => {
+    let serializedArg = null;
+    try {
+      serializedArg = JSON.stringify(arg);
+    } catch (e) {
+      console.error('Could not JSON serialize arg', arg);
+      return null;
+    }
+    const argBytes = new TextEncoder().encode(serializedArg);
+    const allocFn = wasmFunctionFactory(wasm.fn[allocationFnName], {
+      memory: wasm.memory,
+    });
+    console.log(
+      `Requesting allocation of ${argBytes.length}B for '${serializedArg}'`,
+    );
+    const allocResult = allocFn(argBytes.length);
+    if (isError(allocResult)) {
+      console.error(`Allocation failed: ${allocResult.message}`);
+      return null;
+    }
+
+    console.log('request of allocation returned data', allocResult.data);
+    const sliceAddress = allocResult.data as Pointer;
+    const { ptr, len } = readSliceAt(wasm.memory, sliceAddress);
+    console.log('request of allocation pointed to', ptr, len);
+
+    if (len !== argBytes.length) {
+      console.error(
+        `Lengths of input do not match; allocated: ${len}, message: ${argBytes.length}`,
+      );
+    }
+    // Copy the serialized JSON bytes into WebAssembly memory
+    const u8Array = new Uint8Array(wasm.memory.buffer, ptr, len);
+    argBytes.forEach((element, i) => {
+      u8Array[i] = element;
+    });
+    return sliceAddress;
+  };
 
   // todo: cache it
   const apiEntries = Object.entries(wasm.fn).map(([fnName, fn]) => [
     fnName,
-    wrapWasmFunction(fn, wasm.memory),
+    wasmFunctionFactory(fn, {
+      memory: wasm.memory,
+      argWrapper: serializeRequestArg,
+    }),
   ]);
   const api = Object.fromEntries(apiEntries) as WasmApi<Api>;
 

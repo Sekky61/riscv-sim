@@ -66,6 +66,7 @@ import type {
   SimulationStatistics,
 } from '@/lib/types/cpuApi';
 import { formatFracPercentage } from '@/lib/utils';
+import { useSimWasm } from '@/lib/wasm/useSimWasm';
 import Link from 'next/link';
 import { useState } from 'react';
 import { PieChart } from 'react-minimal-pie-chart';

@@ -30,6 +30,14 @@
  */
 
 import type { SimulationConfig } from '../forms/Isa';
+import type {
+  CheckConfigRequest,
+  CheckConfigResponse,
+  ParseAsmRequest,
+  ParseAsmResponse,
+  SimulateRequest,
+  SimulateResponse,
+} from '../types/simulatorApi';
 import { useWrappedWasm } from './useWrappedWasm';
 
 /**
@@ -37,7 +45,20 @@ import { useWrappedWasm } from './useWrappedWasm';
  */
 export type SimulationApi = {
   add: (x: number, y: number) => number;
+  /**
+   * @param sizeBytes the requested buffer size
+   * @returns pointer to slice
+   */
+  allocRequestSpace: (sizeBytes: number) => { ptr: number; len: number };
   getDefaultCpuConfig: () => SimulationConfig;
+  parseAsm: (request: ParseAsmRequest) => ParseAsmResponse;
+  checkConfig: (request: CheckConfigRequest) => CheckConfigResponse;
+  simulate: (request: SimulateRequest) => SimulateResponse;
+
+  /**
+   * For testing error messages
+   */
+  returnError: (allocationError: boolean) => unknown;
 };
 
 /**
@@ -46,5 +67,5 @@ export type SimulationApi = {
  * TODO: make calling wasm async
  */
 export function useSimWasm() {
-  return useWrappedWasm<SimulationApi>();
+  return useWrappedWasm<SimulationApi>('allocRequestSpace');
 }
