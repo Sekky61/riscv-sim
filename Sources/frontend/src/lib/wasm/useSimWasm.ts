@@ -29,7 +29,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import type { SimulationConfig } from "../forms/Isa";
+import type { SimulationConfig } from '../forms/Isa';
 import type {
   CheckConfigRequest,
   CheckConfigResponse,
@@ -37,8 +37,8 @@ import type {
   ParseAsmResponse,
   SimulateRequest,
   SimulateResponse,
-} from "../types/simulatorApi";
-import { useWrappedWasm } from "./useWrappedWasm";
+} from '../types/simulatorApi';
+import { useWrappedWasm } from './useWrappedWasm';
 
 /**
  * The simulation API
@@ -67,5 +67,5 @@ export type SimulationApi = {
  * TODO: make calling wasm async
  */
 export function useSimWasm() {
-  return useWrappedWasm<SimulationApi>("allocRequestSpace");
+  return useWrappedWasm<SimulationApi>('allocRequestSpace');
 }

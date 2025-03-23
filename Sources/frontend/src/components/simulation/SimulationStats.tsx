@@ -29,7 +29,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-"use client";
+'use client';
 
 import {
   Card,
@@ -37,7 +37,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/base/ui/card";
+} from '@/components/base/ui/card';
 import {
   Table,
   TableBody,
@@ -45,31 +45,31 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/base/ui/table";
+} from '@/components/base/ui/table';
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@/components/base/ui/tabs";
-import { RadioInput } from "@/components/form/RadioInput";
-import { ProgramInstruction } from "@/components/simulation/Program";
+} from '@/components/base/ui/tabs';
+import { RadioInput } from '@/components/form/RadioInput';
+import { ProgramInstruction } from '@/components/simulation/Program';
 import {
   selectProgramWithLabels,
   selectStatistics,
-} from "@/lib/redux/cpustateSlice";
-import { useAppSelector } from "@/lib/redux/hooks";
+} from '@/lib/redux/cpustateSlice';
+import { useAppSelector } from '@/lib/redux/hooks';
 import type {
   FUStats,
   InstructionMix,
   InstructionStats,
   SimulationStatistics,
-} from "@/lib/types/cpuApi";
-import { formatFracPercentage } from "@/lib/utils";
-import { useSimWasm } from "@/lib/wasm/useSimWasm";
-import Link from "next/link";
-import { useState } from "react";
-import { PieChart } from "react-minimal-pie-chart";
+} from '@/lib/types/cpuApi';
+import { formatFracPercentage } from '@/lib/utils';
+import { useSimWasm } from '@/lib/wasm/useSimWasm';
+import Link from 'next/link';
+import { useState } from 'react';
+import { PieChart } from 'react-minimal-pie-chart';
 
 /**
  * TODO does not show (due to the null check) after reloading the stats page
@@ -77,59 +77,13 @@ import { PieChart } from "react-minimal-pie-chart";
 export function SimulationStats() {
   const statistics = useAppSelector(selectStatistics);
 
-  const [api, wasm] = useSimWasm();
-  if (wasm.isLoading) {
-    console.log("wasm loading", wasm);
-  } else {
-    console.log("api", api, wasm);
-    const res = api.simulate({
-      tick: 0,
-      config: {
-        code: "",
-        cpuConfig: {
-          branchFollowLimit: 0,
-          name: "",
-          robSize: 0,
-          commitWidth: 0,
-          flushPenalty: 0,
-          fetchWidth: 0,
-          btbSize: 0,
-          phtSize: 0,
-          predictorType: "ZERO_BIT_PREDICTOR",
-          predictorDefaultState: 0,
-          useGlobalHistory: false,
-          fUnits: [],
-          useCache: false,
-          cacheLines: 0,
-          cacheLineSize: 0,
-          cacheAssoc: 0,
-          cacheReplacement: "LRU",
-          storeBehavior: "write-back",
-          laneReplacementDelay: 0,
-          cacheAccessDelay: 0,
-          lbSize: 0,
-          sbSize: 0,
-          storeLatency: 0,
-          loadLatency: 0,
-          callStackSize: 0,
-          speculativeRegisters: 0,
-          coreClockFrequency: 0,
-          cacheClockFrequency: 0,
-        },
-        memoryLocations: [],
-        entryPoint: "",
-      },
-    });
-    console.log("allocated", res);
-  }
-
   if (!statistics) {
     return (
-      <div className="text-2xl">
-        No Simulation Running.{" "}
-        <Link href="/" className="link">
+      <div className='text-2xl'>
+        No Simulation Running.{' '}
+        <Link href='/' className='link'>
           Start Simulating
-        </Link>{" "}
+        </Link>{' '}
         and come back here later.
       </div>
     );
@@ -138,47 +92,47 @@ export function SimulationStats() {
   const branchAccuracy = `${(statistics.predictionAccuracy * 100).toFixed(2)}%`;
 
   return (
-    <div className="grid gap-6">
-      <div className="grid md:grid-cols-3 gap-6">
-        <Card className="flex flex-col">
+    <div className='grid gap-6'>
+      <div className='grid md:grid-cols-3 gap-6'>
+        <Card className='flex flex-col'>
           <CardHeader>
             <CardTitle>IPC</CardTitle>
           </CardHeader>
-          <CardContent className="flex-grow flex items-end">
-            <span className="text-7xl">{statistics.ipc.toFixed(2)}</span>
+          <CardContent className='flex-grow flex items-end'>
+            <span className='text-7xl'>{statistics.ipc.toFixed(2)}</span>
           </CardContent>
         </Card>
-        <Card className="flex flex-col">
+        <Card className='flex flex-col'>
           <CardHeader>
             <CardTitle>Clocks</CardTitle>
           </CardHeader>
-          <CardContent className="flex-grow flex items-end">
-            <span className="text-7xl">{statistics.clockCycles}</span>
+          <CardContent className='flex-grow flex items-end'>
+            <span className='text-7xl'>{statistics.clockCycles}</span>
           </CardContent>
         </Card>
-        <Card className="flex flex-col">
+        <Card className='flex flex-col'>
           <CardHeader>
             <CardTitle>Branch Prediction Accuracy</CardTitle>
           </CardHeader>
-          <CardContent className="flex-grow flex items-end">
-            <span className="text-7xl">{branchAccuracy}</span>
+          <CardContent className='flex-grow flex items-end'>
+            <span className='text-7xl'>{branchAccuracy}</span>
           </CardContent>
         </Card>
         <InstructionMixDash
-          title="Static Instruction Mix"
-          description="Instruction mix of the program"
+          title='Static Instruction Mix'
+          description='Instruction mix of the program'
           mix={statistics.staticInstructionMix}
         />
         <InstructionMixDash
-          title="Dynamic Instruction Mix"
-          description="Instruction mix of committed instructions"
+          title='Dynamic Instruction Mix'
+          description='Instruction mix of committed instructions'
           mix={statistics.dynamicInstructionMix}
         />
         <FuStatsDash
           totalCycles={statistics.clockCycles}
           stats={statistics.fuStats}
         />
-        <div className="">
+        <div className=''>
           <DetailedSimulationStats stats={statistics} />
         </div>
         <CacheStatistics stats={statistics} />
@@ -215,7 +169,7 @@ function InstructionStatsCard({
   commitCount,
 }: InstructionStatsProps) {
   const codeOrder = useAppSelector(selectProgramWithLabels);
-  const [stat, setStat] = useState<"cacheHits" | "committedCount">("cacheHits");
+  const [stat, setStat] = useState<'cacheHits' | 'committedCount'>('cacheHits');
 
   if (!codeOrder) {
     return null;
@@ -238,18 +192,18 @@ function InstructionStatsCard({
       </CardHeader>
       <CardContent>
         <RadioInput
-          choices={["cacheHits", "committedCount"] as const}
-          texts={["Cache Hits", "Committed"]}
+          choices={['cacheHits', 'committedCount'] as const}
+          texts={['Cache Hits', 'Committed']}
           value={stat}
           onNewValue={(v) => setStat(v)}
         />
-        <div className="pt-4 heatmap-transition font-mono">
+        <div className='pt-4 heatmap-transition font-mono'>
           {codeOrder.map((instructionOrLabel) => {
-            if (typeof instructionOrLabel === "string") {
+            if (typeof instructionOrLabel === 'string') {
               return (
                 <div
                   key={`lab-${instructionOrLabel}`}
-                  className="font-bold text-sm"
+                  className='font-bold text-sm'
                 >
                   {instructionOrLabel}:
                 </div>
@@ -265,22 +219,22 @@ function InstructionStatsCard({
             let percentageDiv = null;
             if (instructionStat !== null) {
               const max =
-                stat === "cacheHits" ? st.memoryAccesses : commitCount;
+                stat === 'cacheHits' ? st.memoryAccesses : commitCount;
 
               if (max === null) {
-                throw new Error("max is null");
+                throw new Error('max is null');
               }
 
               const heatCoef = instructionStat / max;
               const percentage = formatFracPercentage(instructionStat, max);
 
               style = {
-                "--heat": getHeatMapColor(heatCoef / maxFrac),
-                backgroundColor: "rgba(var(--heat), 0.2)",
+                '--heat': getHeatMapColor(heatCoef / maxFrac),
+                backgroundColor: 'rgba(var(--heat), 0.2)',
               } as React.CSSProperties;
 
               percentageDiv = (
-                <div className="font-mono text-sm text-gray-800 w-14 mr-2">
+                <div className='font-mono text-sm text-gray-800 w-14 mr-2'>
                   {percentage}
                 </div>
               );
@@ -288,7 +242,7 @@ function InstructionStatsCard({
 
             return (
               <div
-                className="flex"
+                className='flex'
                 style={style}
                 key={`ins-${instructionOrLabel}`}
               >
@@ -315,23 +269,23 @@ interface DetailedStatsProps {
  * Just the string/number keys of statistics
  */
 const detailedStatNames = {
-  predictionAccuracy: "Prediction Accuracy",
-  committedInstructions: "Committed Instructions",
-  clockCycles: "Clock Cycles",
-  flushedInstructions: "Flushed Instructions",
-  robFlushes: "ROB Flushes",
-  correctlyPredictedBranches: "Correctly Predicted Branches",
-  conditionalBranches: "Conditional Branches",
-  takenBranches: "Taken Branches",
-  maxAllocatedRegisters: "Max Allocated Registers",
-  arithmeticIntensity: "Arithmetic Intensity",
-  flops: "FLOPS",
-  ipc: "IPC",
-  wallTime: "Wall Time",
-  memoryThroughput: "Memory Throughput",
-  clock: "Clock",
-  mainMemoryLoadedBytes: "Main Memory Loaded Bytes",
-  mainMemoryStoredBytes: "Main Memory Stored Bytes",
+  predictionAccuracy: 'Prediction Accuracy',
+  committedInstructions: 'Committed Instructions',
+  clockCycles: 'Clock Cycles',
+  flushedInstructions: 'Flushed Instructions',
+  robFlushes: 'ROB Flushes',
+  correctlyPredictedBranches: 'Correctly Predicted Branches',
+  conditionalBranches: 'Conditional Branches',
+  takenBranches: 'Taken Branches',
+  maxAllocatedRegisters: 'Max Allocated Registers',
+  arithmeticIntensity: 'Arithmetic Intensity',
+  flops: 'FLOPS',
+  ipc: 'IPC',
+  wallTime: 'Wall Time',
+  memoryThroughput: 'Memory Throughput',
+  clock: 'Clock',
+  mainMemoryLoadedBytes: 'Main Memory Loaded Bytes',
+  mainMemoryStoredBytes: 'Main Memory Stored Bytes',
 } as const;
 type DetailedStatName = keyof typeof detailedStatNames;
 
@@ -353,12 +307,12 @@ function DetailedSimulationStats({ stats }: DetailedStatsProps) {
             {Object.entries(detailedStatNames).map(([name, displayName]) => {
               let stat: string | number = stats[name as DetailedStatName];
               // if needed, format to two decimal places
-              if (typeof stat === "number" && !Number.isInteger(stat)) {
+              if (typeof stat === 'number' && !Number.isInteger(stat)) {
                 stat = stat.toFixed(2);
               }
               return (
                 <TableRow key={name}>
-                  <TableCell className="font-medium">{displayName}</TableCell>
+                  <TableCell className='font-medium'>{displayName}</TableCell>
                   <TableCell>{stat}</TableCell>
                 </TableRow>
               );
@@ -372,13 +326,13 @@ function DetailedSimulationStats({ stats }: DetailedStatsProps) {
 
 type CacheStatName = keyof typeof cacheStatNames;
 const cacheStatNames = {
-  readAccesses: "Read Accesses",
-  writeAccesses: "Write Accesses",
-  hits: "Hits",
-  misses: "Misses",
-  totalDelay: "Total Delay",
-  bytesWritten: "Bytes Written",
-  bytesRead: "Bytes Read",
+  readAccesses: 'Read Accesses',
+  writeAccesses: 'Write Accesses',
+  hits: 'Hits',
+  misses: 'Misses',
+  totalDelay: 'Total Delay',
+  bytesWritten: 'Bytes Written',
+  bytesRead: 'Bytes Read',
 } as const;
 
 function CacheStatistics({ stats }: DetailedStatsProps) {
@@ -399,7 +353,7 @@ function CacheStatistics({ stats }: DetailedStatsProps) {
             {Object.entries(cacheStatNames).map(([name, displayName]) => {
               return (
                 <TableRow key={name}>
-                  <TableCell className="font-medium">{displayName}</TableCell>
+                  <TableCell className='font-medium'>{displayName}</TableCell>
                   <TableCell>{stats.cache[name as CacheStatName]}</TableCell>
                 </TableRow>
               );
@@ -440,7 +394,7 @@ function FuStatsDash({ stats, totalCycles }: FuStatsProps) {
             {Object.entries(stats).map(([name, stat]) => {
               return (
                 <TableRow key={name}>
-                  <TableCell className="font-medium">{name}</TableCell>
+                  <TableCell className='font-medium'>{name}</TableCell>
                   <TableCell>{stat.busyCycles}</TableCell>
                   <TableCell>
                     {formatFracPercentage(stat.busyCycles, totalCycles)}
@@ -483,8 +437,8 @@ function InstructionMixDash({ mix, title, description }: InstructionMixProps) {
         {description && <CardDescription>{description}</CardDescription>}
       </CardHeader>
       <CardContent>
-        <Tabs defaultValue="table">
-          <TabsContent value="table" className="h-80">
+        <Tabs defaultValue='table'>
+          <TabsContent value='table' className='h-80'>
             <Table>
               <TableHeader>
                 <TableRow>
@@ -495,49 +449,49 @@ function InstructionMixDash({ mix, title, description }: InstructionMixProps) {
               </TableHeader>
               <TableBody>
                 <TableRow>
-                  <TableCell className="font-medium">Integer</TableCell>
+                  <TableCell className='font-medium'>Integer</TableCell>
                   <TableCell>{mix.intArithmetic}</TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className='text-right'>
                     {percentages.intArithmetic}
                   </TableCell>
                 </TableRow>
                 <TableRow>
-                  <TableCell className="font-medium">Float</TableCell>
+                  <TableCell className='font-medium'>Float</TableCell>
                   <TableCell>{mix.floatArithmetic}</TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className='text-right'>
                     {percentages.floatArithmetic}
                   </TableCell>
                 </TableRow>
                 <TableRow>
-                  <TableCell className="font-medium">Branch</TableCell>
+                  <TableCell className='font-medium'>Branch</TableCell>
                   <TableCell>{mix.branch}</TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className='text-right'>
                     {percentages.branch}
                   </TableCell>
                 </TableRow>
                 <TableRow>
-                  <TableCell className="font-medium">Memory</TableCell>
+                  <TableCell className='font-medium'>Memory</TableCell>
                   <TableCell>{mix.memory}</TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className='text-right'>
                     {percentages.memory}
                   </TableCell>
                 </TableRow>
                 <TableRow>
-                  <TableCell className="font-medium">Other</TableCell>
+                  <TableCell className='font-medium'>Other</TableCell>
                   <TableCell>{mix.other}</TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className='text-right'>
                     {percentages.other}
                   </TableCell>
                 </TableRow>
               </TableBody>
             </Table>
           </TabsContent>
-          <TabsContent value="chart" className="h-80">
+          <TabsContent value='chart' className='h-80'>
             <MixPieChart mix={mix} />
           </TabsContent>
-          <TabsList className="w-full">
-            <TabsTrigger value="table">Table</TabsTrigger>
-            <TabsTrigger value="chart">Chart</TabsTrigger>
+          <TabsList className='w-full'>
+            <TabsTrigger value='table'>Table</TabsTrigger>
+            <TabsTrigger value='chart'>Chart</TabsTrigger>
           </TabsList>
         </Tabs>
       </CardContent>
@@ -551,17 +505,17 @@ interface PieChartProps {
 
 function MixPieChart({ mix }: PieChartProps) {
   const data = [
-    { title: "Integer", value: mix.intArithmetic, color: "#f3bc00" },
-    { title: "Float", value: mix.floatArithmetic, color: "#00af82" },
-    { title: "Branch", value: mix.branch, color: "#a6d854" },
-    { title: "Memory", value: mix.memory, color: "#fc8d62" },
-    { title: "Other", value: mix.other, color: "#9f9f9f" },
+    { title: 'Integer', value: mix.intArithmetic, color: '#f3bc00' },
+    { title: 'Float', value: mix.floatArithmetic, color: '#00af82' },
+    { title: 'Branch', value: mix.branch, color: '#a6d854' },
+    { title: 'Memory', value: mix.memory, color: '#fc8d62' },
+    { title: 'Other', value: mix.other, color: '#9f9f9f' },
   ];
 
   const allEmpty = data.every((d) => d.value === 0);
   if (allEmpty) {
     return (
-      <div className="text-lg flex justify-center items-center h-full">
+      <div className='text-lg flex justify-center items-center h-full'>
         Nothing to show
       </div>
     );
@@ -573,13 +527,13 @@ function MixPieChart({ mix }: PieChartProps) {
         data={data}
         label={(p) => {
           if (p.dataEntry.value === 0) {
-            return "";
+            return '';
           }
           return p.dataEntry.title;
         }}
         labelStyle={{
-          fontSize: "5px",
-          fontFamily: "sans-serif",
+          fontSize: '5px',
+          fontFamily: 'sans-serif',
         }}
       />
     </div>

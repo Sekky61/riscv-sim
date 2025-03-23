@@ -29,8 +29,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { isError, type ApiResult } from "./ApiResult";
-import { useWasm } from "./useWasm";
+import { isError, type ApiResult } from './ApiResult';
+import { useWasm } from './useWasm';
 
 /** Every api should satisfy this */
 // biome-ignore lint/suspicious/noExplicitAny: lib code
@@ -67,7 +67,7 @@ function readSliceAt(memory: WebAssembly.Memory, ptrOffset: number) {
   const ptr = dataView.getUint32(ptrOffset, true);
   // Read the length (next 4 bytes)
   const len = dataView.getUint32(ptrOffset + 4, true);
-  console.log("read slice at", ptrOffset, "ptr", ptr, "len", len);
+  console.log('read slice at', ptrOffset, 'ptr', ptr, 'len', len);
   return { ptr, len };
 }
 
@@ -79,7 +79,7 @@ function readSliceAt(memory: WebAssembly.Memory, ptrOffset: number) {
 function readWasmString(memory: WebAssembly.Memory, ptrOffset: number) {
   const { ptr, len } = readSliceAt(memory, ptrOffset);
   const bytes = new Uint8Array(memory.buffer, ptr, len);
-  return new TextDecoder("utf-8").decode(bytes);
+  return new TextDecoder('utf-8').decode(bytes);
 }
 
 /** Parse the serialized response */
@@ -89,7 +89,7 @@ function readWasmResponse(memory: WebAssembly.Memory, ptrOffset: number) {
     const obj = JSON.parse(string);
     return obj as ApiResult<unknown>;
   } catch (e) {
-    console.error("Could not parse WASM response", e);
+    console.error('Could not parse WASM response', e);
     return null;
   }
 }
@@ -108,9 +108,9 @@ function wasmFunctionFactory<F extends (arg?: unknown) => Pointer>(
     const response = readWasmResponse(options.memory, ptr);
     if (!response) {
       return {
-        type: "error",
+        type: 'error',
         message:
-          "Could not parse WASM response on the client side. This is a bug.",
+          'Could not parse WASM response on the client side. This is a bug.',
       };
     }
     return response;
@@ -120,14 +120,14 @@ function wasmFunctionFactory<F extends (arg?: unknown) => Pointer>(
 export function useWrappedWasm<Api extends BaseWasmApi>(
   allocationFnName: keyof Api,
 ) {
-  const wasm = useWasm<GlueApi<Api>>("/wasm/bin/riscvsim.wasm", {});
+  const wasm = useWasm<GlueApi<Api>>('/wasm/bin/riscvsim.wasm', {});
 
   const serializeRequestArg = (arg: unknown) => {
     let serializedArg = null;
     try {
       serializedArg = JSON.stringify(arg);
     } catch (e) {
-      console.error("Could not JSON serialize arg", arg);
+      console.error('Could not JSON serialize arg', arg);
       return null;
     }
     const argBytes = new TextEncoder().encode(serializedArg);
@@ -143,10 +143,10 @@ export function useWrappedWasm<Api extends BaseWasmApi>(
       return null;
     }
 
-    console.log("request of allocation returned data", allocResult.data);
+    console.log('request of allocation returned data', allocResult.data);
     const sliceAddress = allocResult.data as Pointer;
     const { ptr, len } = readSliceAt(wasm.memory, sliceAddress);
-    console.log("request of allocation pointed to", ptr, len);
+    console.log('request of allocation pointed to', ptr, len);
 
     if (len !== argBytes.length) {
       console.error(
